@@ -1,0 +1,88 @@
+.bv_title {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+
+}
+
+
+.bv_batchListValidator .pasteListArea {
+    /*border: solid;*/
+    /*border-width: 1px;*/
+    width: 125px;
+    height: 200px;
+}
+
+.bv_group_currentFileName.error {
+    border-color: red;
+    border-style: solid;
+    border-width: 1px;
+
+}
+/*.bv_batchListValidator .batchList {*/
+    /*overflow: auto;*/
+    /*border: solid;*/
+    /*border-width: 1px;*/
+    /*width: 180px;*/
+    /*height: 200px;*/
+/*}*/
+
+/*.bv_batchListValidator .batchListContainer .batchNameView {*/
+    /*background-image:url('images/bg.png');*/
+    /*background-repeat:repeat-x;*/
+    /*background-color: #E6E6E6;*/
+    /*height: 22px;*/
+/*}*/
+
+/*.bv_batchListValidator .batchNameView .nameOrAlias {*/
+    /*padding-top: 3px;*/
+    /*padding-left: 3px;*/
+/*}*/
+
+.bv_batchListValidator .batchListContainer .batchNameView .bv_removeBatch {
+    display: block;
+    background-image:url('images/minusButton.png');
+    width: 22px;
+    height: 22px;
+    /*float: right;*/
+}
+
+/*FFFF66
+#FF6666
+*/
+
+.bv_batchListValidator .batchListContainer .batchNameView .bv_preferredName.warning {
+
+    color: rgb(0, 93, 209);
+}
+
+.bv_preferredName.error{
+    color: #FF6666;
+}
+
+.bv_batchListValidator .batchListContainer .batchNameView .bv_comment.error {
+    border-color: #FF6666;
+}
+
+
+
+/*.bv_batchListValidator .pasteListContainer {*/
+    /*float: left;*/
+/*}*/
+
+/*.bv_batchListValidator .addButtonContainer {*/
+    /*padding-right: 15px;*/
+    /*padding-left: 15px;*/
+    /*padding-top: 75px;*/
+    /*float:left;*/
+
+/*}*/
+
+/*.bv_batchListValidator .batchListContainer {*/
+    /*float:left;*/
+/*}*/
+
+/*.bv_batchListValidator {*/
+    /*clear: both;*/
+/*}*/
+

@@ -1,0 +1,22 @@
+extends layout
+block content
+    div.navbar.navbar-inverse.navbar-fixed-top
+        div.navbar-inner
+            div.container-fluid
+                div.brand ACAS
+    - if (message != "")
+        div.offset1.alert.alert-error(style="width:175px;margin-bottom:10px;") #{message}
+
+    form(action="/login", method="post")
+        div.offset1
+            label Username:
+            input(type="text", name="username")
+            br
+        div.offset1
+            label Password:
+            input(type="password", name="password")
+        div.offset1
+            input.btn(type="submit", value="Submit")
+        p.offset1.muted
+            small hint - bob:secret
+

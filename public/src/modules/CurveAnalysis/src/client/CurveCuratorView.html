@@ -1,0 +1,23 @@
+<script type="text/template" id="CurveSummaryView" xmlns="http://www.w3.org/1999/html">
+    <img class="bv_thumbnail" src="<%= curveUrl %>" />
+</script>
+
+<script type="text/template" id="CurveSummaryListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_curveSummaries pull-left well well-small"></div>
+</script>
+
+<script type="text/template" id="CurveEditorView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_loading span8 pull-left">Loading Curve Editor...</div>
+    <iframe class="bv_shinyContainer span8 pull-left" src="<%= curveUrl %>" >No Curve Selected</iframe>
+</script>
+
+<script type="text/template" id="CurveCuratorView" xmlns="http://www.w3.org/1999/html">
+    <!-- Headers -->
+    <div class="pull-left" style="min-width:1170px;">
+        <h5 class="span2">Curve Summaries</h5>
+        <h5 class="span7 offset1">Curve Editor</h5>
+    </div>
+    <!-- End Headers -->
+    <div class="bv_curveList" ></div>
+    <div class="bv_curveEditor" ></div>
+</script>

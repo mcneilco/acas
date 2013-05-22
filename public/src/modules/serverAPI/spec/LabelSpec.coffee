@@ -1,0 +1,85 @@
+beforeEach ->
+	@fixture = $.clone($("#fixture").get(0))
+
+afterEach ->
+	$("#fixture").remove()
+	$("body").append $(@fixture)
+
+describe "Label module testing", ->
+	describe "Label model test", ->
+		beforeEach ->
+			@el = new Label()
+		describe "Basic new label", ->
+			it "Class should exist", ->
+				expect(@el).toBeDefined()
+			it "should have defaults", ->
+				expect(@el.get 'labelType').toEqual 'name'
+				expect(@el.get 'labelKind').toEqual ''
+				expect(@el.get 'labelText').toEqual ''
+				expect(@el.get 'ignored').toEqual(false)
+				expect(@el.get 'preferred').toEqual(false)
+				expect(@el.get 'recordedDate').toEqual ''
+				expect(@el.get 'recordedBy').toEqual ''
+				expect(@el.get 'physicallyLabled').toEqual(false)
+				expect(@el.get 'imageFile').toBeNull()
+	describe "Label List testing", ->
+		describe "label list features when loaded from existing list", ->
+			beforeEach ->
+				@ell = new LabelList window.experimentServiceTestJSON.experimentLabels
+			it "Class should exist", ->
+				expect(@ell).toBeDefined()
+			it "Class should have labels", ->
+				expect(@ell.length).toEqual 4
+			it "Should return current (not ignored) labels", ->
+				expect(@ell.getCurrent().length).toEqual 3
+			it "Should return not ignored name labels", ->
+				expect(@ell.getNames().length).toEqual 2
+			it "Should return not ignored preferred labels", ->
+				expect(@ell.getPreferred().length).toEqual 1
+			describe "best label picker", ->
+				it "Should select newest preferred label when there are preferred labels", ->
+					expect(@ell.pickBestLabel().get('labelText')).toEqual "FLIPR target A biochemical"
+				it "Should select newest name when there are no preferred labels but there are names", ->
+					@ell2 = new LabelList window.experimentServiceTestJSON.experimentLabelsNoPreferred
+					expect(@ell2.pickBestLabel().get('labelText')).toEqual "FLIPR target A biochemical with additional name awesomness"
+				it "Should select newest label when there are no preferred labels and no names", ->
+					@ell2 = new LabelList window.experimentServiceTestJSON.experimentLabelsNoPreferredNoNames
+					expect(@ell2.pickBestLabel().get('labelText')).toEqual "AAABBD13343434"
+			describe "best name picker", ->
+				it "Should select newest preferred name label", ->
+					expect(@ell.pickBestName().get('labelText')).toEqual "FLIPR target A biochemical"
+			describe "setBestName functionality", ->
+				it "should update existing unsaved label when best name changed", ->
+					oldBestId = @ell.pickBestLabel().id
+					@ell.setBestName new Label
+						labelText: "new best name"
+						recordedBy: "fmcneil"
+						recordedDate: 3362435677000
+					expect(@ell.pickBestLabel().get('labelText')).toEqual "new best name"
+					expect(@ell.pickBestLabel().isNew).toBeTruthy()
+					expect(@ell.get(oldBestId).get 'ignored').toBeTruthy()
+		describe "label list features when new and empty", ->
+			beforeEach ->
+				@ell = new LabelList()
+			it "Class should have labels", ->
+				expect(@ell.length).toEqual 0
+			describe "setBestName functionality", ->
+				beforeEach ->
+					@ell.setBestName new Label
+						labelText: "best name"
+						recordedBy: "jmcneil"
+						recordedDate: 2362435677000
+				it "should add new label when best name added for first time", ->
+					expect(@ell.pickBestLabel().get('labelText')).toEqual "best name"
+					expect(@ell.pickBestLabel().get('recordedBy')).toEqual "jmcneil"
+					expect(@ell.pickBestLabel().get('recordedDate')).toEqual 2362435677000
+
+				it "should update existing unsaved label when best name changed", ->
+					@ell.setBestName new Label
+						labelText: "new best name"
+						recordedBy: "fmcneil"
+						recordedDate: 3362435677000
+					expect(@ell.length).toEqual 1
+					expect(@ell.pickBestLabel().get('labelText')).toEqual "new best name"
+					expect(@ell.pickBestLabel().get('recordedBy')).toEqual "fmcneil"
+					expect(@ell.pickBestLabel().get('recordedDate')).toEqual 3362435677000
