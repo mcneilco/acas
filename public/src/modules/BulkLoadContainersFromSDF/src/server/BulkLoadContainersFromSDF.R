@@ -265,7 +265,7 @@ bulkLoadContainersFromSDF <- function(request) {
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   
-  configList <- readConfigFile("public/src/conf/configuration.js")
+  configList <- readConfigFile("public/src/conf/configurationNode.js")
   
   # Set the global for the JSON library
   lsServerURL <<- configList$serverPath

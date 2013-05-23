@@ -1298,7 +1298,7 @@ runPrimaryAnalysis <- function(request) {
   #testMode <- interpretJSONBoolean(testMode)
   
   # Read the config file
-  configList <- readConfigFile("public/src/conf/configuration.js")
+  configList <- readConfigFile("public/src/conf/configurationNode.js")
   
   # Set the global for the library
   lsServerURL <<- configList$serverPath

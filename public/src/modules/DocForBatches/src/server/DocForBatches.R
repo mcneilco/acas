@@ -2,25 +2,25 @@
 #   Before running: 
 #     Set your working directory to the checkout of SeuratAddOns
 #     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
+#
+# Some example input, put into JSON (enters this code already as a list)
+# {"docForBatches":{"id":1235,"docUpload":{"id":1234,"url":"","currentFileName":"/Users/smeyer/Documents/ACAS/serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls","description":"importantDocument","docType":"file","documentKind":"experiment"},"batchNameList":{"id":11,"requestName":"CMPD-0000123-01","preferredName":"CMPD-0000123-01","comment":"okay"},"user":"smeyer"},"user":"smeyer"}
 
 runMain <- function(request) {
   require('rjson')
   require('RCurl')
-  source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
   
   request <- translateRequestFromMessyJSON(request)
   
-  configList <- readConfigFile()
-  
   # Set the global (within this environment) for the JSON library
-  lsServerURL <<- configList$serverPath
+  lsServerURL <<- racas::applicationSettings$serverPath
   
   validateRequest(request)
   
   lsTransaction <- createLsTransaction(comments = "docForBatches upload")
   
   # Get the protocol if it exists
-  protocol <- fromJSON(getURL(paste0(configList$serverPath, "/protocols/codename/ACASdocForBatches")))
+  protocol <- fromJSON(getURL(paste0(lsServerURL, "/protocols/codename/ACASdocForBatches")))
   
   # Make the protocol if it does not exist
   if (length(protocol)==0) {
@@ -79,22 +79,6 @@ validateRequest <- function(request) {
       stop(paste("No preferred name was found for requested name:",as.list(batchName)$requestName))
     }
   }
-}
-
-readConfigFile <- function () {
-  # Reads the config file and turns it into a list object
-  #
-  # Args:
-  #   NULL
-  # Returns:
-  #   A list containing the configuration information
-  
-  configFile <- readLines("public/src/conf/configuration.js")
-  configurations <- configFile[grepl("SeuratAddOns.configuration.",configFile, fixed=TRUE)]
-  configList <- gsub("SeuratAddOns\\.configuration\\.(.*) = (.*)", "\\2", configurations)
-  configList <- as.list(gsub("\"","",configList))
-  names(configList) <- gsub("SeuratAddOns\\.configuration\\.(.*) = (.*)", "\\1", configurations)
-  return(configList)
 }
 
 createDocForBatchesProtocol <- function(request, lsTransaction) {
@@ -215,24 +199,6 @@ createDocForBatchesAnalysisGroups <- function(request, lsTransaction, experiment
   response <- saveAnalysisGroups(analysisGroups)
   return(NULL)
 }
-tryCatch.W.E <- function(expr) {
-  # This function is taken from the R demo file and edited
-  # http://svn.r-project.org/R/trunk/src/library/base/demo/error.catching.R
-  # R-help mailing list, Dec 9, 2010
-  #
-  # It stores the warnings rather than letting them exit as normal for tryCatch
-  #
-  W <- list()
-  
-  w.handler <- function(w){ # warning handler
-    W <<- c(W,list(w))
-    invokeRestart("muffleWarning")
-  }
-  
-  return(list(value = withCallingHandlers(tryCatch(expr, error = function(e) e),
-                                          warning = w.handler),
-              warningList = W))
-}
 
 getWarningMessage <- function (warn) {
   # This function takes in a warning and outputs only the message part
@@ -240,6 +206,7 @@ getWarningMessage <- function (warn) {
 }
 
 saveDocForBatches <- function(request) {
+  require(racas)
   
   # Run the main function with error handling
   loadResult <- tryCatch.W.E(runMain(request))

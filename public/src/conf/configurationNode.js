@@ -12,8 +12,8 @@
 		exports.serverConfigurationParams.configuration.driverLocation = "public/src/modules/GenericDataParser/src/server/ojdbc6.jar";
 		exports.serverConfigurationParams.configuration.databaseLocation = "jdbc:oracle:thin:@";
 		exports.serverConfigurationParams.configuration.databasePort = ":1521:osl";
-		exports.serverConfigurationParams.configuration.username = "seurat";
-		exports.serverConfigurationParams.configuration.password = "seurat";
+		exports.serverConfigurationParams.configuration.username = "acas_dev";
+		exports.serverConfigurationParams.configuration.password = "acas_dev_password";
 		exports.serverConfigurationParams.configuration.serverPath = "http://suse.labsynch.com:8080/acas/";
 
 // For preferred ID service
@@ -31,6 +31,16 @@
 //		exports.serverConfigurationParams.configuration.userAuthenticationType = "DNS";
 //		exports.serverConfigurationParams.configuration.userAuthenticationServiceURL = "http://imapp01:8080/DNS/persons/v1/Persons/authenticate";
 
+// For racas
+		exports.serverConfigurationParams.configuration.appName = "ACAS";
+		exports.serverConfigurationParams.configuration.db_driver = "JDBC('oracle.jdbc.driver.OracleDriver', 'public/src/modules/GenericDataParser/src/server/ojdbc6.jar')";
+		exports.serverConfigurationParams.configuration.db_user = "acas_dev";
+		exports.serverConfigurationParams.configuration.db_password = "acas_dev_password";
+		exports.serverConfigurationParams.configuration.db_name = "osl";
+		exports.serverConfigurationParams.configuration.db_host = "ora.labsynch.com";
+		exports.serverConfigurationParams.configuration.db_port = "1521";
+		exports.serverConfigurationParams.configuration.stringsAsFactors = "FALSE";
+		exports.serverConfigurationParams.configuration.db_driver_package = "require(RJDBC)";
 
 // For R curve curation
 		exports.serverConfigurationParams.configuration.rapache = "http://suse.labsynch.com/r-services-api";

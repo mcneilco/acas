@@ -1,10 +1,11 @@
 readConfigFile <- function(configLocation) {
   configFile <- readLines(configLocation)
-  configurations <- configFile[grepl("^SeuratAddOns\\.configuration\\.",configFile)]
-  configList <- gsub("SeuratAddOns\\.configuration\\.(.*) = (.*)", "\\2", configurations)
-  configList <- as.list(gsub("\"","",configList))
-  names(configList) <- gsub("SeuratAddOns\\.configuration\\.(.*) = (.*)", "\\1", configurations)
-  return (configList)
+  configurations <- configFile[grepl("exports\\.serverConfigurationParams\\.configuration\\.",configFile)]
+  configList <- gsub(".*exports\\.serverConfigurationParams\\.configuration\\.(.*) = (.*)", "\\2", configurations)
+  configList <- gsub(";$", "", configList)
+  applicationSettings <- as.data.frame(as.list(gsub("\"","",configList)), stringsAsFactors=FALSE)
+  names(applicationSettings) <- gsub(".*exports\\.serverConfigurationParams\\.configuration\\.(.*) = (.*)", "\\1", configurations)
+  return (applicationSettings)
 }
 
 interpretJSONBoolean <- function(JSONBoolean) {
