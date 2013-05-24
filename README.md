@@ -30,11 +30,11 @@ There is a way to undo this so don't worry so much (see undoing rebase below)!
 ...then go to the master branch...
 
     git checkout master
-    
+
 ... pull down the latest changes...
 
     git pull
-    
+
 ...switch back to your branch and rebase your commits on top of this master...
 
     git checkout host3.labsynch.com
@@ -44,6 +44,22 @@ There is a way to undo this so don't worry so much (see undoing rebase below)!
 
     git push origin host3.labsynch.com
 
+## Returning to state before a bad rebase
+
+We use 'git reflog' for this.  This lets you examine the history of your branch to find out where you were right before the rebase.
+
+
+Starting from the top of the list, you look for the first instance of 'moving from master to host3.labsynch.com'
+
+    git reflog
+
+    f46c634 HEAD@{9}: checkout: moving from master to host3.labsynch.com HEAD@{12}: pull origin host3.labsynch.com: Fast-forward
+
+to reset
+
+    git reset f46c634 --hard
+    
+You should not be back where you started
 
 ## Information for editing this markdown file
  
