@@ -44,6 +44,8 @@ There is a way to undo this so don't worry so much (see undoing rebase below)!
 
     git push origin host3.labsynch.com
 
+## Returning to state before a bad rebase
+
 
 ## Information for editing this markdown file
  
