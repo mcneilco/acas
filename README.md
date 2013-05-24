@@ -39,7 +39,7 @@ There is a way to undo this so don't worry so much (see undoing rebase below)!
 
     git checkout host3.labsynch.com
     git rebase master
-    
+
 ... you can then push your changes back up to the origin branch with your new master base...
 
     git push origin host3.labsynch.com
@@ -58,8 +58,61 @@ Starting from the top of the list, you look for the first instance of 'moving fr
 to reset
 
     git reset f46c634 --hard
-    
+
 You should not be back where you started
+
+## If there are conflicts during the rebase you resolve
+
+Example:
+
+    [bbolt@host3 acas]$ git rebase master
+    First, rewinding head to replay your work on top of it...
+    Applying: testing small change
+    Applying: README.md edited online with Bitbucket    
+    Using index info to reconstruct a base tree...    
+    M	README.md   
+    Falling back to patching base and 3-way merge...    
+    Auto-merging README.md    
+    CONFLICT (content): Merge conflict in README.md    
+    Failed to merge in the changes.    
+    Patch failed at 0002 README.md edited online with Bitbucket        
+    When you have resolved this problem run "git rebase --continue".    
+    If you would prefer to skip this patch, instead run "git rebase --skip".   
+    To check out the original branch and stop rebasing run "git rebase --abort".
+
+Git Status should reveal something like this:
+
+        [bbolt@host3 acas]$ git status
+    # Not currently on any branch.
+    # Unmerged paths:
+    #   (use "git reset HEAD <file>..." to unstage)
+    #   (use "git add/rm <file>..." as appropriate to mark resolution)
+    #
+    #	both modified:      README.md
+    #
+    no changes added to commit (use "git add" and/or "git commit -a")
+
+To accept theirs:
+
+    git checkout --theirs README.md 
+
+To accept yours:
+
+    git checkout --ours README.md 
+
+Or if you have a merge tools installed:
+
+    git mergetool
+    
+
+Finally, add the change and continue the rebase
+
+    git add README.md 
+    git rebase --continue
+
+       Applying: README.md edited online with Bitbucket
+
+
 
 ## Information for editing this markdown file
  
