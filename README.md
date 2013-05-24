@@ -6,11 +6,12 @@
 Usually done in /opt
 
     curl --digest --user gitusername:gitpassword https://bitbucket.org/mcneilco/acas/get/host3.labsynch.com.tar.gz | tar xvz
-    mv mcneilco-acas-f46a5c67fbd4/ acas
-    cd acas
+    cd mcneilco-acas-f46a5c67fbd4
     npm install
     forever start app.js
     forever start serverOnlyModules/blueimp-file-upload-node/server.js
+
+*Note, do not rename mcneilco-acas-f46a5c67fbd4 because this tell us which checkout of acas is running
     
 Configuration file is in acas/public/src/conf/configurationNode.js
 
