@@ -1,8 +1,25 @@
 # ACAS
  
  
+## Deploying a customer branch
+
+Usually done in /opt
+
+    curl --digest --user gitusername:gitpassword https://bitbucket.org/mcneilco/acas/get/host3.labsynch.com.tar.gz | tar xvz
+    cd mcneilco-acas-f46a5c67fbd4
+    npm install
+    forever start app.js
+    forever start serverOnlyModules/blueimp-file-upload-node/server.js
+
+*Note, do not rename mcneilco-acas-f46a5c67fbd4 because this tell us which checkout of acas is running
+    
+Configuration file is in acas/public/src/conf/configurationNode.js
+
+Depending on the port and host in the configuration file, you should be able to now go to something like:
+
+    http://host3.labsynch.com:3000/#
+
 ## Creating a customer branch
- 
  
 Each customer should have a branch and this is how you create the branch
  
