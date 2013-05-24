@@ -1,9 +1,5 @@
 # ACAS
  
-Hashify Editor turns any `textarea` into a capable [Markdown][1] editor. It's
-similar to John Fraser's [wmd][2], but more modular and much lighter weight.
- 
- 
  
 ## Creating a customer branch
  
