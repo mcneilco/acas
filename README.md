@@ -26,7 +26,7 @@ This is for when you want to merge all the changes that have been made in the ma
     
 ...bring those changes back into develop...
 
-    git checkout develop
+    git checkout host3.labsynch.com
     git rebase master
     
 ...make some more changes...
