@@ -13,29 +13,33 @@ Each customer should have a branch and this is how you create the branch
 
 ## Pulling down changes from Master to Branch
 
-This is for when you want to merge all the changes that have been made in the master branch, down to your customer branch
+This is for when you want to merge all the changes that have been made in the master branch, down to your customer branch.
 
-    git checkout -b host3.labsynch.com
+The overall idea is that you are taking all your current branch commits and placing them on top of a new master checkout.  This is what git calls "rebasing"
+
+There is a way to undo this so don't worry so much (see undoing rebase below)!
+
+Workflow:
+
+...starting in your branch...
+
+    git checkout host3.labsynch.com
     
 ...make some changes...
 ...notice master has been updated...
-...commit changes to develop...
+...commit changes to host3.labsynch.com...
 
     git checkout master
     git pull
     
-...bring those changes back into develop...
+...bring those changes back into host3.labsynch.com...
 
     git checkout host3.labsynch.com
     git rebase master
     
-...make some more changes...
-...commit them to develop...
-...merge them into master...
+... commit your current changes to your branch...
 
-    git checkout master
-    git pull
-    git merge develop
+    git push origin host3.labsynch.com...
 
 
 ## Sites using Hashify Editor
