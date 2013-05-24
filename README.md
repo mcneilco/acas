@@ -125,9 +125,12 @@ Finally, add the change and continue the rebase
 
     git merge host3.labsynch.com
 
+... push master to origin...
 
+    git push origin master
     
-
+    
+    
 ## Information for editing this markdown file
  
   - [Bitbucket  Markdown Tutorial][1]
