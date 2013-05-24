@@ -1,4 +1,3 @@
-
 # ACAS
  
  
@@ -43,10 +42,10 @@ There is a way to undo this so don't worry so much (see undoing rebase below)!
     
 ... you can then push your changes back up to the origin branch with your new master base...
 
-    git push origin host3.labsynch.com...
+    git push origin host3.labsynch.com
 
 
-## Sites using Hashify Editor
+## Information for editing this markdown file
  
   - [Bitbucket  Markdown Tutorial][1]
   - [Markdown editor (for previewing changes)][2]
