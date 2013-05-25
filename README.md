@@ -138,12 +138,34 @@ Finally, add the change and continue the rebase
 
     git checkout master
   
-... merge your branch....
+...merge your branch in dry run....
 
-    git merge host3.labsynch.com
+    git merge --no-commit --no-ff host3.labsynch.com
+    Auto-merging README.md
+    Automatic merge went well; stopped before committing as requested
 
-
+...if that goes well...
+   
+    git merge --no-commit host3.labsynch.com
+    fatal: You have not concluded your merge (MERGE_HEAD exists).
+    Please, commit your changes before you can merge.
     
+...you don't want to commit your configuration files, so...
+
+    git reset HEAD public/src/conf/configuration.js
+    git reset HEAD public/src/conf/configurationNode.js
+    git checkout -- public/src/conf/configurationNode.js 
+    git checkout -- public/src/conf/configuration.js
+
+...review the changes before committing...
+
+    git status
+
+...finally...
+
+    git commit -m "merged with host3.labsynch.com"
+    git push origin master
+
 
 ## Information for editing this markdown file
  
