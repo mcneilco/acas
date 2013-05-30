@@ -30,6 +30,8 @@
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", testMode = "true"))
 #       file.copy(from="~/Documents/clients/DNS/Neuro/Example upload 3_13_2013_testVersion.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Example upload 3_13_2013_testVersion.xlsx", dryRunMode = "true", testMode = "true"))
+#       file.copy(from="~/Documents/clients/DNS/Neuro/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", testMode = "true"))
 # To use traceback() for debugging purposes:
 #   runMain(pathToGenericDataFormatExcelFile,serverPath,dryRun,developmentMode,testOutputLocation)
 #     runMain(pathToGenericDataFormatExcelFile="serverOnlyModules/blueimp-file-upload-node/public/files/Example upload 3_13_2013_version6.xlsx",serverPath,dryRun=TRUE,developmentMode=TRUE,configList=configList)
@@ -1262,7 +1264,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   recordedBy <- metaData$Scientist[1]
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction)
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$fileService)
   
   
   # Analysis group
@@ -2032,7 +2034,7 @@ createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningLis
   #brew(text=htmlOutputFormat,output="GenericDataParserTest.html")
   return(paste(capture.output(brew(text=htmlOutputFormat)),collapse="\n"))
   }
-moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy, lsTransaction) {
+moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy, lsTransaction, fileServiceType, fileService) {
   # Creates a folder for the excel file that was parsed and puts the file there. Returns the new location.
   # 
   # Args:
@@ -2046,17 +2048,30 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   
   experimentCodeName <- experiment$codeName
   
-  experimentFolderLocation <- file.path(dirname(fileStartLocation),"experiments")
-  dir.create(experimentFolderLocation, showWarnings = FALSE)
-  
-  fullFolderLocation <- file.path(experimentFolderLocation, experimentCodeName)
-  dir.create(fullFolderLocation, showWarnings = FALSE)
-  
-  # Move the file
-  file.rename(from=fileStartLocation, to=file.path(fullFolderLocation, fileName))
-  
-  serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
-  
+  if (fileServiceType == "blueimp") {
+    experimentFolderLocation <- file.path(dirname(fileStartLocation),"experiments")
+    dir.create(experimentFolderLocation, showWarnings = FALSE)
+    
+    fullFolderLocation <- file.path(experimentFolderLocation, experimentCodeName)
+    dir.create(fullFolderLocation, showWarnings = FALSE)
+    
+    # Move the file
+    file.rename(from=fileStartLocation, to=file.path(fullFolderLocation, fileName))
+    
+    serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
+  } else if (fileServiceType == "DNS") {
+    require("XML")
+    
+    # TODO: figure out what the fileServiceURL is and how it compares to fileService
+    response <- postForm(fileService,
+                         FILE=fileUpload(filename = fileStartLocation),
+                         CREATED_BY_LOGIN=recordedBy)
+    parsedXML <- xmlParse(response)
+    serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)
+  } else {
+    stop("Invalid file service")
+  }
+
   locationState <- experiment$experimentStates[lapply(experiment$experimentStates,readElement,"stateKind")=="report locations"]
   
   # Record the location
