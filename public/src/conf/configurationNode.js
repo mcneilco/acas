@@ -44,7 +44,13 @@
 
 // For R curve curation
 		exports.serverConfigurationParams.configuration.rapache = "http://suse.labsynch.com/r-services-api";
-		exports.serverConfigurationParams.configuration.rshiny = "http://suse.labsynch.com:3838"
+		exports.serverConfigurationParams.configuration.rshiny = "http://suse.labsynch.com:3838";
+		
+// For generic data parser
+		exports.serverConfigurationParams.configuration.projectService = "http://suse.labsynch.com:8080/a/project/service";
+		exports.serverConfigurationParams.configuration.fileServiceType = "blueimp";
+		exports.serverConfigurationParams.configuration.fileService = "http://suse.labsynch.com:8080/a/file/service"
+
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
 
