@@ -1,7 +1,7 @@
 readConfigFile <- function(configLocation) {
   configFile <- readLines(configLocation)
-  configurations <- configFile[grepl("exports\\.serverConfigurationParams\\.configuration\\.",configFile)]
-  configList <- gsub(".*exports\\.serverConfigurationParams\\.configuration\\.(.*) = (.*)", "\\2", configurations)
+  configurations <- configFile[grepl("^\t\texports\\.serverConfigurationParams\\.configuration\\.",configFile)]
+  configList <- gsub("^\t\t.*exports\\.serverConfigurationParams\\.configuration\\.(.*) = (.*)", "\\2", configurations)
   configList <- gsub(";$", "", configList)
   applicationSettings <- as.data.frame(as.list(gsub("\"","",configList)), stringsAsFactors=FALSE)
   names(applicationSettings) <- gsub(".*exports\\.serverConfigurationParams\\.configuration\\.(.*) = (.*)", "\\1", configurations)
