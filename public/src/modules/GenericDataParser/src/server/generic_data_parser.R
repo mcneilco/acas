@@ -30,6 +30,8 @@
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", testMode = "true"))
 #       file.copy(from="~/Documents/clients/DNS/Neuro/Example upload 3_13_2013_testVersion.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Example upload 3_13_2013_testVersion.xlsx", dryRunMode = "true", testMode = "true"))
+#       file.copy(from="~/Documents/clients/DNS/Neuro/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", testMode = "true"))
 # To use traceback() for debugging purposes:
 #   runMain(pathToGenericDataFormatExcelFile,serverPath,dryRun,developmentMode,testOutputLocation)
 #     runMain(pathToGenericDataFormatExcelFile="serverOnlyModules/blueimp-file-upload-node/public/files/Example upload 3_13_2013_version6.xlsx",serverPath,dryRun=TRUE,developmentMode=TRUE,configList=configList)
@@ -280,7 +282,7 @@ validateNumeric <- function(inputValue) {
   }
   return(suppressWarnings(as.numeric(as.character(inputValue))))
 }
-validateMetaData <- function(metaData) {
+validateMetaData <- function(metaData, configList) {
   # Valides the meta data section
   #
   # Args:
@@ -378,6 +380,11 @@ validateMetaData <- function(metaData) {
   metaDataNames <- names(metaData)
   if ("Assay Completion Date" %in% metaDataNames) {
     validatedMetaData$"Assay Date" <- validatedMetaData$"Assay Completion Date"
+  }
+  
+  if (!is.null(metaData$Project)) {
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList)
+    
   }
   
   # Return the validated Meta Data
@@ -1129,7 +1136,7 @@ createNewProtocol <- function(metaData, lsTransaction) {
   
   # Create the protocol
   protocol <- createProtocol(lsTransaction = lsTransaction,
-                             shortDescription="no description entered",  
+                             shortDescription="protocol created by generic data parser",  
                              recordedBy=metaData$Scientist[1], 
                              protocolLabels=protocolLabels,
                              protocolStates=protocolStates)
@@ -1170,12 +1177,17 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                      stringValue = "running")
   experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "clobValue",
                                                                      valueKind = "analysis result html",
-                                                                     stringValue = "<p>Analysis not yet completed</p>")
+                                                                     clobValue = "<p>Analysis not yet completed</p>")
   
   if (!is.null(metaData$Project)) {
-    experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
+    # TODO: add to config:
+    #   name of service
+    #   type of service (which code to use)
+    #   if project is required
+
+    experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "codeValue",
                                                                        valueKind = "project",
-                                                                       stringValue = metaData$Project[1])
+                                                                       codeValue = metaData$Project[1])
   }
   
   # Create an experiment state for metadata
@@ -1197,13 +1209,32 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experiment <- createExperiment(lsTransaction = lsTransaction, 
                                  protocol = protocol,
                                  kind = "generic loader",
-                                 shortDescription="no description entered",  
+                                 shortDescription="experiment created by generic data parser",  
                                  recordedBy=metaData$Scientist[1], 
                                  experimentLabels=experimentLabels,
                                  experimentStates=experimentStates)
-
+  
   # Save the experiment to the server
   experiment <- saveExperiment(experiment)
+}
+validateProject <- function(projectName, configList) {
+  require('RCurl')
+  require('rjson')
+  projectList <- getURL(configList$projectService)
+  tryCatch({
+    projectList <- fromJSON(projectList)
+  }, error = function(e) {
+    errorList <<- c(errorList, paste("There was an error in validating your project:", projectList))
+    return("")
+  })
+  projectCodes <- sapply(projectList, function(x) x$DNSCode$code)
+  if(length(projectCodes) == 0) {errorList <<- c(errorList, "No projects are available, contact your system administrator")}
+  if (projectName %in% projectCodes) {
+    return(projectName)
+  } else {
+    errorList <<- c(errorList, "The project you entered is not an available project. Please enter a valid project.")
+    return("")
+  }
 }
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, configList, stateGroups) {
   # For use in uploading when the results go into subjects rather than analysis groups
@@ -1233,7 +1264,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   recordedBy <- metaData$Scientist[1]
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction)
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$fileService)
   
   
   # Analysis group
@@ -1773,7 +1804,7 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
   
-  validatedMetaData <- validateMetaData(metaData)
+  validatedMetaData <- validateMetaData(metaData, configList)
   
   format <- metaData$Format
   
@@ -1839,7 +1870,8 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
   }
   
   experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList)
-  newExperiment <- is.na(experiment[[1]])
+  
+  newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
   
   # If there are errors, do not allow an upload (yes, this is needed a second time)
   errorFree <- length(errorList)==0
@@ -2002,7 +2034,7 @@ createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningLis
   #brew(text=htmlOutputFormat,output="GenericDataParserTest.html")
   return(paste(capture.output(brew(text=htmlOutputFormat)),collapse="\n"))
   }
-moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy, lsTransaction) {
+moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy, lsTransaction, fileServiceType, fileService) {
   # Creates a folder for the excel file that was parsed and puts the file there. Returns the new location.
   # 
   # Args:
@@ -2016,17 +2048,30 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   
   experimentCodeName <- experiment$codeName
   
-  experimentFolderLocation <- file.path(dirname(fileStartLocation),"experiments")
-  dir.create(experimentFolderLocation, showWarnings = FALSE)
-  
-  fullFolderLocation <- file.path(experimentFolderLocation, experimentCodeName)
-  dir.create(fullFolderLocation, showWarnings = FALSE)
-  
-  # Move the file
-  file.rename(from=fileStartLocation, to=file.path(fullFolderLocation, fileName))
-  
-  serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
-  
+  if (fileServiceType == "blueimp") {
+    experimentFolderLocation <- file.path(dirname(fileStartLocation),"experiments")
+    dir.create(experimentFolderLocation, showWarnings = FALSE)
+    
+    fullFolderLocation <- file.path(experimentFolderLocation, experimentCodeName)
+    dir.create(fullFolderLocation, showWarnings = FALSE)
+    
+    # Move the file
+    file.rename(from=fileStartLocation, to=file.path(fullFolderLocation, fileName))
+    
+    serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
+  } else if (fileServiceType == "DNS") {
+    require("XML")
+    
+    # TODO: figure out what the fileServiceURL is and how it compares to fileService
+    response <- postForm(fileService,
+                         FILE=fileUpload(filename = fileStartLocation),
+                         CREATED_BY_LOGIN=recordedBy)
+    parsedXML <- xmlParse(response)
+    serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)
+  } else {
+    stop("Invalid file service")
+  }
+
   locationState <- experiment$experimentStates[lapply(experiment$experimentStates,readElement,"stateKind")=="report locations"]
   
   # Record the location
@@ -2106,7 +2151,7 @@ parseGenericData <- function(request) {
   enableJIT(3)
   options("scipen"=15)
   
-  # Info (now in config file at SeuratAddOns/public/src/conf/configuration.js)
+  # Info (now in config file at SeuratAddOns/public/src/conf/configurationNode.js)
   #serverPath <- "http://host3.labsynch.com:8080/labseer"
   
   # This is used for outputting the JSON rather than sending it to the server
