@@ -32,37 +32,62 @@
   };
 
   exports.findByUsername = function(username, fn) {
-    var i, len, user;
+    var config, i, len, user;
 
-    i = 0;
-    len = users.length;
-    while (i < len) {
-      user = users[i];
-      if (user.username === username) {
-        return fn(null, user);
+    config = require('../public/src/conf/configurationNode.js');
+    if (config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
+      i = 0;
+      len = users.length;
+      while (i < len) {
+        user = users[i];
+        if (user.username === username) {
+          return fn(null, user);
+        }
+        i++;
       }
-      i++;
+    } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
+      return fn(null, {
+        id: null,
+        username: username,
+        pasword: null,
+        email: null
+      });
     }
     return fn(null, null);
   };
 
   exports.loginStrategy = function(username, password, done) {
+    var config;
+
+    config = require('../public/src/conf/configurationNode.js');
     return process.nextTick(function() {
       return exports.findByUsername(username, function(err, user) {
-        if (err) {
-          return done(err);
-        }
-        if (!user) {
-          return done(null, false, {
-            message: "Unknown user " + username
+        if (config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
+          if (err) {
+            return done(err);
+          }
+          if (!user) {
+            return done(null, false, {
+              message: "Unknown user " + username
+            });
+          }
+          if (user.password !== password) {
+            return done(null, false, {
+              message: "Invalid password"
+            });
+          }
+          return done(null, user);
+        } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
+          return dnsAuthCheck(username, password, function(results) {
+            if (results.indexOf("Success") >= 0) {
+              return done(null, user);
+            } else {
+              return done(null, false, {
+                message: "Invalid credentials"
+              });
+            }
           });
         }
-        if (user.password !== password) {
-          return done(null, false, {
-            message: "Invalid password"
-          });
-        }
-        return done(null, user);
       });
     });
   };

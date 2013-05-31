@@ -1,5 +1,5 @@
 (function() {
-  var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, genericDataParserRoutes, http, loginRoutes, passport, path, preferredBatchIdRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
+  var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, genericDataParserRoutes, http, loginRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
 
   express = require('express');
 
@@ -53,11 +53,11 @@
   app.get('/LiveServiceSpecRunner', routes.liveServiceSpecRunner);
 
   passport.serializeUser(function(user, done) {
-    return done(null, user.id);
+    return done(null, user.username);
   });
 
-  passport.deserializeUser(function(id, done) {
-    return loginRoutes.findById(id, function(err, user) {
+  passport.deserializeUser(function(username, done) {
+    return loginRoutes.findByUsername(username, function(err, user) {
       return done(err, user);
     });
   });
@@ -100,6 +100,10 @@
   app.post('/api/experiments', experimentRoutes.postExperiment);
 
   app.put('/api/experiments', experimentRoutes.putExperiment);
+
+  projectServiceRoutes = require('./routes/ProjectServiceRoutes.js');
+
+  app.get('/api/projects', projectServiceRoutes.getProjects);
 
   docForBatchesRoutes = require('./routes/DocForBatchesRoutes.js');
 

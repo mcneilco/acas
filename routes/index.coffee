@@ -109,6 +109,7 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/LSFileInputSpec.js'
 		'javascripts/spec/LSFileChooserSpec.js'
 		'javascripts/spec/LSErrorNotificationSpec.js'
+		'javascripts/spec/ProjectsServiceSpec.js'
 		'src/modules/DocForBatches/spec/testFixtures/testJSON.js'
 		# For DocForBatchesModule
 		'javascripts/spec/BatchListValidatorSpec.js'
@@ -150,6 +151,8 @@ exports.liveServiceSpecRunner = (req, res) ->
 	]
 
 	specScripts = [
+		# For Components module
+		'javascripts/spec/ProjectsServiceSpec.js'
 		# For serverAPI module
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		#For login module

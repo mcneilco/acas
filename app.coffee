@@ -46,10 +46,15 @@ app.get '/SpecRunner', routes.specRunner
 app.get '/LiveServiceSpecRunner', routes.liveServiceSpecRunner
 
 # login routes
+#passport.serializeUser (user, done) ->
+#	done null, user.id
+#passport.deserializeUser (id, done) ->
+#	loginRoutes.findById id, (err, user) ->
+#		done err, user
 passport.serializeUser (user, done) ->
-	done null, user.id
-passport.deserializeUser (id, done) ->
-	loginRoutes.findById id, (err, user) ->
+	done null, user.username
+passport.deserializeUser (username, done) ->
+	loginRoutes.findByUsername username, (err, user) ->
 		done err, user
 passport.use new LocalStrategy loginRoutes.loginStrategy
 
@@ -74,6 +79,11 @@ app.get '/api/experiments/codename/:code', experimentRoutes.experimentByCodename
 app.get '/api/experiments/:id', experimentRoutes.experimentById
 app.post '/api/experiments', experimentRoutes.postExperiment
 app.put '/api/experiments', experimentRoutes.putExperiment
+
+#Components routes
+projectServiceRoutes = require './routes/ProjectServiceRoutes.js'
+app.get '/api/projects', projectServiceRoutes.getProjects
+
 
 # DocForBatches routes
 docForBatchesRoutes = require './routes/DocForBatchesRoutes.js'

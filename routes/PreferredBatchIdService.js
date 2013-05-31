@@ -49,8 +49,7 @@
           if (!error && response.statusCode === 200) {
             console.log(body);
             batchName.preferredName = body;
-          }
-          if (!error && response.statusCode === 204) {
+          } else if (!error && response.statusCode === 204) {
             batchName.preferredName = "";
           } else {
             console.log('got ajax error trying to validate batch name');

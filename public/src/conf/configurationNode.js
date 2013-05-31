@@ -31,6 +31,10 @@
 //		exports.serverConfigurationParams.configuration.userAuthenticationType = "DNS";
 //		exports.serverConfigurationParams.configuration.userAuthenticationServiceURL = "http://imapp01:8080/DNS/persons/v1/Persons/authenticate";
 
+// For Projects
+		exports.serverConfigurationParams.configuration.projectsType = "DNS";
+		exports.serverConfigurationParams.configuration.projectsServiceURL = "http://dsanpimapp01:8080/DNS/core/v1/DNSCode/Project.json";
+
 // For racas
 		exports.serverConfigurationParams.configuration.appName = "ACAS";
 		exports.serverConfigurationParams.configuration.db_driver = "JDBC('oracle.jdbc.driver.OracleDriver', 'public/src/modules/GenericDataParser/src/server/ojdbc6.jar')";

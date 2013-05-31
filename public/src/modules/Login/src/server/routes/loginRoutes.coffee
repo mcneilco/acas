@@ -23,27 +23,45 @@ exports.findById = (id, fn) ->
 		fn new Error("User " + id + " does not exist")
 
 exports.findByUsername = (username, fn) ->
-	i = 0
-	len = users.length
-	while i < len
-		user = users[i]
-		return fn(null, user)  if user.username is username
-		i++
+	config = require '../public/src/conf/configurationNode.js'
+	if config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
+		i = 0
+		len = users.length
+		while i < len
+			user = users[i]
+			return fn(null, user)  if user.username is username
+			i++
+	else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
+		return fn null,
+			id: null
+			username: username
+			pasword: null
+			email: null
 	fn null, null
 
 exports.loginStrategy = (username, password, done) ->
+	config = require '../public/src/conf/configurationNode.js'
 	process.nextTick ->
 		exports.findByUsername username, (err, user) ->
-			return done(err)  if err
-			unless user
-				return done(null, false,
-					message: "Unknown user " + username
-				)
-			unless user.password is password
-				return done(null, false,
-					message: "Invalid password"
-				)
-			done null, user
+			if config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
+				return done(err)  if err
+				unless user
+					return done(null, false,
+						message: "Unknown user " + username
+					)
+				unless user.password is password
+					return done(null, false,
+						message: "Invalid password"
+					)
+				return done null, user
+			else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
+				dnsAuthCheck username, password, (results) ->
+					if results.indexOf("Success")>=0
+						return done null, user
+					else
+						return done(null, false,
+							message: "Invalid credentials"
+						)
 
 exports.loginPage = (req, res) ->
 	user = null

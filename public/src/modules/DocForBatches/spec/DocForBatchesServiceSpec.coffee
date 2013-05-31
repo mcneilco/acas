@@ -8,7 +8,6 @@ goodExampleData =
 	docForBatches: window.testJSON.docForBatches
 	user: 'jmcneil'
 
-
 #The expected return format for save or update success is:
 returnExampleSuccess =
 	transactionId: 1234
