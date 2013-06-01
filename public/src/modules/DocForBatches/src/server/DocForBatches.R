@@ -6,12 +6,15 @@
 # Some example input, put into JSON (enters this code already as a list)
 # {"docForBatches":{"id":1235,"docUpload":{"id":1234,"url":"","currentFileName":"/Users/smeyer/Documents/ACAS/serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls","description":"importantDocument","docType":"file","documentKind":"experiment"},"batchNameList":{"id":11,"requestName":"CMPD-0000123-01","preferredName":"CMPD-0000123-01","comment":"okay"},"user":"smeyer"},"user":"smeyer"}
 
+# TODO: move file to new location
+
 runMain <- function(request) {
   require('rjson')
   require('RCurl')
   
   request <- translateRequestFromMessyJSON(request)
   
+  save(request, file="request.Rda")
   # Set the global (within this environment) for the JSON library
   lsServerURL <<- racas::applicationSettings$serverPath
   
@@ -34,7 +37,7 @@ runMain <- function(request) {
   
   createDocForBatchesAnalysisGroups(request, lsTransaction, experiment)
 
-  return(lsTransaction)
+  return(list(lsTransaction=lsTransaction, experimentId = experiment$id, experimentCodeName = experiment$codeName))
 }
 
 translateRequestFromMessyJSON <- function (request) {
@@ -216,13 +219,18 @@ saveDocForBatches <- function(request) {
   
 	# If the output has class simpleError, save it as an error
   lsTransaction <- NULL
+  experimentId <- NULL
+  experimentCodeName <- NULL
   errorList <- list()
 	if(class(loadResult$value)[1]=="simpleError") {
 	  errorList <- list(loadResult$value$message)
 	  loadResult$errorList <- errorList
 	  loadResult$value <- NULL
 	} else {
-    lsTransaction <- loadResult$value
+    loadValue <- loadResult$value
+    lsTransaction <- loadValue$lsTransaction
+    experimentId <- loadValue$experimentId
+    experimentCodeName <- loadValue$experimentCodeName
 	}
 	
 	# Save warning messages but not the function call, which is only useful while programming
@@ -251,7 +259,8 @@ saveDocForBatches <- function(request) {
 	  commit= !hasError,
 	  transactionId= lsTransaction$id,
 	  results= list(
-	    id= lsTransaction$id
+	    id= experimentId,
+      codeName= experimentCodeName
 	  ),
 	  error= hasError,
     #hasWarning = FALSE,
