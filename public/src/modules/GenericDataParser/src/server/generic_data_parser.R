@@ -1551,7 +1551,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     treatmentGroupCodeNameNumber <- 1
   }
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction)
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   
   # Each analysisGroupID creates an analysis group
   analysisGroups <- list()
