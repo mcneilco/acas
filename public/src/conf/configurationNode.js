@@ -53,7 +53,7 @@
 // For generic data parser
 		exports.serverConfigurationParams.configuration.projectService = "http://suse.labsynch.com:8080/a/project/service";
 		exports.serverConfigurationParams.configuration.fileServiceType = "blueimp";
-		exports.serverConfigurationParams.configuration.fileService = "http://suse.labsynch.com:8080/a/file/service"
+		exports.serverConfigurationParams.configuration.externalFileService = "http://suse.labsynch.com:8080/a/file/service"
 
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
