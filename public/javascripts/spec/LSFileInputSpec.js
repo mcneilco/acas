@@ -13,7 +13,7 @@
           this.echoFileController = new LSFileInputController({
             el: '#fixture',
             inputTitle: 'Test File',
-            url: SeuratAddOns.configuration.fileServiceURL,
+            url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
             fieldIsRequired: true
           });
           return this.echoFileController.render();

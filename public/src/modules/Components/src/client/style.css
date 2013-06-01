@@ -3,7 +3,10 @@
     margin-top: 10px;
 }
 
-.bv_parseFile {
+.bv_fileUploadWrapper .bv_parseFile {
+    width: 670px;
+}
+.bv_fileUploadWrapper .bv_reportFile {
     width: 670px;
 }
 

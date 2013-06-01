@@ -5,8 +5,12 @@
       menuName: "Load Data"
     }, {
       isHeader: false,
-      menuName: "Load From Generic Format",
+      menuName: "Load Experiment",
       mainControllerClassName: "GenericDataParserController"
+    }, {
+      isHeader: false,
+      menuName: "Load Full PK Experiment",
+      mainControllerClassName: "FullPKParserController"
     }, {
       isHeader: false,
       menuName: "Annotate Batches with File",

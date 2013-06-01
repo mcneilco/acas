@@ -163,7 +163,7 @@
 
     UploadAndRunPrimaryAnalsysisController.prototype.initialize = function() {
       UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(this, arguments);
-      this.fileProcessorURL = this.serverName + ":" + SeuratAddOns.configuration.portNumber + "/api/primaryAnalysis/runPrimaryAnalysis";
+      this.fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis";
       this.errorOwnerName = 'UploadAndRunPrimaryAnalsysisController';
       return this.$('.bv_moduleTitle').html("Upload Data and Analyze");
     };

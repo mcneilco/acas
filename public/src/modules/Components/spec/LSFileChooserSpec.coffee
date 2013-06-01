@@ -75,7 +75,7 @@ describe 'LS File Chooser Behavior Testing', ->
 					dropZoneClassId: 'field1'
 					autoUpload: false
 					maxNumberOfFiles: 1
-					url: SeuratAddOns.configuration.fileServiceURL
+					url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
 				@fc.render()
 				
 			it 'should have upload url', ->

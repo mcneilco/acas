@@ -147,7 +147,7 @@ class window.BatchListValidatorController extends Backbone.View
 			@$(".bv_addButton").attr "disabled", true
 			$.ajax
 				type: "POST"
-				url: SeuratAddOns.configuration.preferredBatchIdService
+				url: window.configurationNode.serverConfigurationParams.configuration.preferredBatchIdService
 				data:
 					requests: @currentReqArray
 					testMode: window.AppLaunchParams.testMode

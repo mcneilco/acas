@@ -15,6 +15,7 @@ parseFullPKData <- function(request){
   #		assayDate
   #		project
   #		fileLocation
+  #		reportFileLocation
   #		bioavailability
   #		AUCType
   #

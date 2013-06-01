@@ -94,7 +94,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 	initialize: ->
 		UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(@, arguments)
-		@fileProcessorURL = @serverName + ":"+SeuratAddOns.configuration.portNumber+"/api/primaryAnalysis/runPrimaryAnalysis"
+		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
 		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
 		@$('.bv_moduleTitle').html("Upload Data and Analyze")
 
