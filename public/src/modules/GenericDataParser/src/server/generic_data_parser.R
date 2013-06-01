@@ -1090,13 +1090,23 @@ getExperimentByName <- function(experimentName, protocol, configList) {
   require('RCurl')
   require('rjson')
   
-  experimentList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName))))
+  tryCatch({
+    a <- URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName))
+    save(a, file="test.Rda")
+    experimentList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName))))
+  }, error = function(e) {
+    stop("There was an error checking if the experiment already exists. Please contact your system administrator.")
+  })
   
   # If no experiment with the given name exists, warn the user
   if (length(experimentList)==0) {
     experiment <- NA
   } else {
-    protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/", experimentList[[1]]$protocol$id))))
+    tryCatch({
+      protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/", experimentList[[1]]$protocol$id))))
+    }, error = function(e) {
+      stop("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
+    })
     
     #TODO choose the preferred label
     if(is.na(protocol) || protocolOfExperiment$protocolLabels[[1]]$id != protocol$protocolLabels[[1]]$id) {
@@ -1264,7 +1274,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   recordedBy <- metaData$Scientist[1]
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$fileService)
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   
   
   # Analysis group
