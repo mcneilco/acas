@@ -96,7 +96,7 @@
             dropZoneClassId: 'field1',
             autoUpload: false,
             maxNumberOfFiles: 1,
-            url: SeuratAddOns.configuration.fileServiceURL
+            url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
           });
           return this.fc.render();
         });

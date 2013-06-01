@@ -259,7 +259,7 @@
         this.$(".bv_addButton").attr("disabled", true);
         return $.ajax({
           type: "POST",
-          url: SeuratAddOns.configuration.preferredBatchIdService,
+          url: window.configurationNode.serverConfigurationParams.configuration.preferredBatchIdService,
           data: {
             requests: this.currentReqArray,
             testMode: window.AppLaunchParams.testMode

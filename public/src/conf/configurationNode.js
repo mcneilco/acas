@@ -7,6 +7,7 @@
 		exports.serverConfigurationParams.configuration.serverName = "http://localhost";
 		exports.serverConfigurationParams.configuration.portNumber = 3000;
 		exports.serverConfigurationParams.configuration.fileServiceURL = "http://localhost:8888";
+		exports.serverConfigurationParams.configuration.serverRelativeFilePath = "serverOnlyModules/blueimp-file-upload-node/public/files/";
 		exports.serverConfigurationParams.configuration.serverAddress = "ora.labsynch.com";
 		exports.serverConfigurationParams.configuration.driver = "oracle.jdbc.driver.OracleDriver";
 		exports.serverConfigurationParams.configuration.driverLocation = "public/src/modules/GenericDataParser/src/server/ojdbc6.jar";

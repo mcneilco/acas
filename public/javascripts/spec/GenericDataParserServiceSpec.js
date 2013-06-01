@@ -15,6 +15,7 @@ This service parses data from the generic format and saves it to the database
 
   badDataRequest = {
     fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls",
+    reportFile: null,
     dryRun: true,
     user: 'jmcneil',
     testMode: true
@@ -25,6 +26,7 @@ This service parses data from the generic format and saves it to the database
     results: {
       path: "path/to/file",
       fileToParse: "filename.xls",
+      reportFile: null,
       htmlSummary: "HTML from service",
       dryRun: true
     },
@@ -38,6 +40,7 @@ This service parses data from the generic format and saves it to the database
     results: {
       path: "path/to/file",
       fileToParse: "filename.xls",
+      reportFile: null,
       htmlSummary: "Error: There is a problem in this file...",
       dryRun: true
     },
