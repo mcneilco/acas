@@ -14,7 +14,6 @@ runMain <- function(request) {
   
   request <- translateRequestFromMessyJSON(request)
   
-  save(request, file="request.Rda")
   # Set the global (within this environment) for the JSON library
   lsServerURL <<- racas::applicationSettings$serverPath
   
