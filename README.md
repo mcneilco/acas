@@ -68,6 +68,8 @@ There is a way to undo this so don't worry so much (see undoing rebase below)!
 
     git checkout host3.labsynch.com
     git rebase master
+    
+... if anything goes wrong, read the two sections below, otherwise...
 
 ... you can then push your changes back up to the origin branch with your new master base...
 
@@ -133,6 +135,7 @@ Or if you have a merge tools installed:
 
     git mergetool
 
+If not, you can edit the file with a text editor.
 
 Finally, add the change and continue the rebase
 
