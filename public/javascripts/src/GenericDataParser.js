@@ -12,10 +12,11 @@
     }
 
     GenericDataParserController.prototype.initialize = function() {
-      BulkLoadContainersFromSDFController.__super__.initialize.apply(this, arguments);
-      this.fileProcessorURL = this.serverName + ":" + SeuratAddOns.configuration.portNumber + "/api/genericDataParser";
+      this.loadReportFile = true;
+      this.fileProcessorURL = "/api/genericDataParser";
       this.errorOwnerName = 'GenericDataParser';
-      return this.$('.bv_moduleTitle').html('Generic Data Parser');
+      GenericDataParserController.__super__.initialize.call(this);
+      return this.$('.bv_moduleTitle').html('Simple Experiment Loader');
     };
 
     return GenericDataParserController;

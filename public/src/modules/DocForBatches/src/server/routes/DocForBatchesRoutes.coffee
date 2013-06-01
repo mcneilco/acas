@@ -50,7 +50,7 @@ applicationScripts = [
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
 	#for this module
-	'/src/conf/configuration.js'
+	'/src/conf/configurationNode.js'
 	'/javascripts/src/BatchListValidator.js'
 	'/javascripts/src/DocUpload.js'
 	'/javascripts/src/DocForBatches.js'

@@ -19,7 +19,7 @@ requiredScripts = [
 
 applicationScripts = [
 	'/src/conf/configurationNode.js'
-	'/src/conf/configuration.js'
+	#'/src/conf/configuration.js'
 	# For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'
@@ -49,6 +49,8 @@ applicationScripts = [
 	#'javascripts/src/AppController.js'
 	# For Generic Data Parser module
 	'/javascripts/src/GenericDataParser.js'
+	# For FullPK module
+	'/javascripts/src/FullPK.js'
 	# For BulkLoadContainersFromSDF module
 	'/javascripts/src/BulkLoadContainersFromSDF.js'
 	# For BulkLoadSampleTransfers module

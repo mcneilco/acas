@@ -12,8 +12,8 @@
     }
 
     BulkLoadContainersFromSDFController.prototype.initialize = function() {
-      BulkLoadContainersFromSDFController.__super__.initialize.apply(this, arguments);
-      this.fileProcessorURL = this.serverName + ":" + SeuratAddOns.configuration.portNumber + "/api/bulkLoadContainersFromSDF";
+      BulkLoadContainersFromSDFController.__super__.initialize.call(this);
+      this.fileProcessorURL = "/api/bulkLoadContainersFromSDF";
       this.errorOwnerName = 'BulkLoadContainersFromSDFController';
       return this.$('.bv_moduleTitle').html('Load Containers From SDF');
     };
