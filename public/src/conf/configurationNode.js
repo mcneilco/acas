@@ -54,6 +54,7 @@
 		exports.serverConfigurationParams.configuration.fileServiceType = "blueimp";
 		exports.serverConfigurationParams.configuration.externalFileService = "http://suse.labsynch.com:8080/a/file/service"
 
+
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
 
 }).call(this);
