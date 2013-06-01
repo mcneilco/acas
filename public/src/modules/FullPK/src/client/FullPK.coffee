@@ -162,4 +162,3 @@ class window.FullPKParserController extends BasicFileValidateAndSaveController
 				inputParameters: @fpkc.model.toJSON()
 			super()
 
-	#TODO fix the date validation and model set
