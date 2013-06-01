@@ -170,17 +170,20 @@ createDocForBatchesAnalysisGroups <- function(request, lsTransaction, experiment
       urlValue = if (request$docForBatches$docUpload$docType == "url") {
         request$docForBatches$docUpload$url
       } else {NULL},
-      comment = uploadSet$comment
+      comment = uploadSet$comment,
+      lsTransaction=lsTransaction
     )
     analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
       valueType = "codeValue",
       valueKind = "batch code",
-      codeValue = uploadSet$preferredName
+      codeValue = uploadSet$preferredName,
+      lsTransaction = lsTransaction
     )
     analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
       valueType = "stringValue",
       valueKind = "document kind",
-      stringValue = request$docForBatches$docUpload$documentKind
+      stringValue = request$docForBatches$docUpload$documentKind,
+      lsTransaction = lsTransaction
     )        
     
     analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
