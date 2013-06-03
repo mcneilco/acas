@@ -709,14 +709,14 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   # Return the validated Meta Data
   return(returnDataFrame)
 }
-organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, format = "Generic", stateGroups = NULL) {
+organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, rawOnlyFormat = FALSE, stateGroups = NULL) {
   # Organizes the calculated results section
   #
   # Args:
   #   calculatedResults: 			A "data.frame" of the columns containing the calculated results for the experiment
   #   lockCorpBatchId:        A boolean which marks if the corporate batch id is locked as the left column
   #   replaceFakeCorpBatchId: A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
-  #   format:                 A string that is the format of the sheet
+  #   rawOnlyFormat:          A boolean that describes the data format, subject based or analysis group based
   #
   # Returns:
   #	  a data frame containing the organized calculated data
@@ -781,7 +781,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   #Temp for treatment groups
   # TODO: may need separate formats for each sheet, as Context fear has a Condition column that NOR does not
-  if (format=="DNS In Vivo Behavior") {
+  if (rawOnlyFormat) {
     treatmentGrouping <- which(lapply(stateGroups, getElement, "stateKind") == "treatment")
     groupingColumns <- stateGroups[[treatmentGrouping]]$valueKinds
     groupingColumns <- groupingColumns[groupingColumns %in% names(results)]
@@ -1816,13 +1816,21 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
   
   validatedMetaData <- validateMetaData(metaData, configList)
   
-  format <- metaData$Format
+  inputFormat <- metaData$Format
   
-  if (format=="DNS In Vivo Behavior") {
+  if ("stateGroupsScript" %in% names(configList)) {
+    source(configList$stateGroupsScript)
+    formatSettings <- getFormatSettings()
+  } else {
+    formatSettings <- list()
+  }
+
+  rawOnlyFormat <- inputFormat %in% names(formatSettings)
+  if (rawOnlyFormat) {
     lookFor <- "Raw Data"
     lockCorpBatchId <- FALSE
     replaceFakeCorpBatchId <- "Vehicle"
-    stateGroups <- getStateGroups()
+    stateGroups <- getStateGroups(formatSettings[[inputFormat]])
   } else {
     lookFor <- "Calculated Results"
     lockCorpBatchId <- TRUE
@@ -1834,7 +1842,7 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
-  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, format, stateGroups)
+  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, rawOnlyFormat, stateGroups)
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(calculatedResults, preferredIdService=configList$preferredBatchIdService, 
@@ -1872,7 +1880,7 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
   }
   
   # Get the protocol and experiment and, when not on a dry run, create them if they do not exist
-  protocol <- getProtocolByName(protocolName = validatedMetaData$'Protocol Name'[1], configList, format)
+  protocol <- getProtocolByName(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
   newProtocol <- is.na(protocol[[1]])
   
   if (!dryRun && newProtocol && errorFree) {
@@ -1898,7 +1906,7 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
   
   # Upload the data if this is not a dry run
   if(!dryRun & errorFree) {
-    if(format=="DNS In Vivo Behavior") {      
+    if(rawOnlyFormat) {      
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, stateGroups)
     } else {
@@ -1908,9 +1916,9 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
     }
   }
   
-  if (format=="DNS In Vivo Behavior") {
+  if (rawOnlyFormat) {
     summaryInfo <- list(
-      format = "DNS In Vivo Behavior",
+      format = inputFormat,
       lsTransactionId = lsTransaction$id,
       info = list(
         "Format" = as.character(validatedMetaData$Format),
@@ -2118,33 +2126,14 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   
   return(serverFileLocation)
 }
-getStateGroups <- function() {
-  #Stub for getting from protocol
-  # TODO: make real
+getStateGroups <- function(formatSettings) {
+  #Gets stateGroups from configuration list
   
-  stateGroups <- list(list(entityKind = "subject",
-                           stateType = "metadata", 
-                           stateKind = "animal information", 
-                           valueKinds = c("Animal ID"),
-                           includesOthers = FALSE,
-                           includesCorpName = FALSE),
-                      list(entityKind = "subject",
-                           stateType = "data",
-                           stateKind = "treatment",
-                           valueKinds = c("Condition", "Dose", "Vehicle", "Administration route","Treatment Time"),
-                           includesOthers = FALSE,
-                           includesCorpName = TRUE),
-                      list(entityKind = "subject",
-                           stateType = "data",
-                           stateKind = "raw data",
-                           includesOthers = TRUE,
-                           includesCorpName = FALSE),
-                      list(entityKind = "container",
-                           stateType = "metadata",
-                           stateKind = "animal information",
-                           valueKinds = c("Species","Strain","Sex","Vendor","Date of Arrival", "Date of Birth", "Animal ID"),
-                           includesOthers = FALSE,
-                           includesCorpName = FALSE))
+  tryCatch({
+    stateGroups <- formatSettings$stateGroups
+  }, error = function(e) {
+    stop(paste("The format", inputFormat, "is missing stateGroup settings in the configuration file. Contact your system administrator."))
+  })
   return(stateGroups)
 }
 parseGenericData <- function(request) {
