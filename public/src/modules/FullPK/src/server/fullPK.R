@@ -21,8 +21,16 @@ parseFullPKData <- function(request){
   # format will be "In Vivo Full PK"
   request <- as.list(request)
   inputParameters <- request$inputParameters
+  inputParameters <- c(experimentMetaData = "", scientist= request$user, inputParameters)
+  fileLocationIndex <- which(names(inputParameters)=="fileLocation")
+  inputParameters <- c(inputParameters[1:fileLocationIndex], list("", "rawData"=""), inputParameters[(fileLocationIndex+1):length(inputParameters)])
   parserInput <- list(fileToParse = preprocessPK(inputParameters))
   parserInput$dryRun <- request$dryRun
   parserInput$testMode <- request$testMode
   return(parseGenericData(parserInput))
 }
+
+# Testing code
+#   request<- list()
+#   request$user <- "smeyer"
+#   request$inputParameters <- list("format"="In Vivo Full PK","protocolName"="PK Protocol 1","experimentName"="PK experiment 1","notebook"="SAM-000123", "inLifeNotebook"="LIFE-123","page"="4","assayDate"="2013-05-22","project"="PK","fileLocation"="public/src/modules/FullPK/spec/specFiles/Worksheet.xls","bioavailability"="42.3","AUCType"="AUC-0")

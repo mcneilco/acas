@@ -309,20 +309,18 @@ validateMetaData <- function(metaData, configList) {
     stop("A Format must be entered in the Experiment Meta Data.")
   }
   
-  if (metaData$Format == "DNS In Vivo Behavior") {
-    expectedDataFormat <- data.frame(
-      headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","Assay Completion Date","Project"),
-      class = c("Text", "Text", "Text", "Text", "Text", "Date","Text"),
-      isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,FALSE)
-    )
-  } else {
-    expectedDataFormat <- data.frame(
-      headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","Page","Assay Date"),
-      class = c("Text", "Text", "Text", "Text", "Text", "Text", "Date"),
-      isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)
-    )
-  }
+  expectedDataFormat <- data.frame(
+    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","Page","Assay Date"),
+    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)
+  )
   
+  if (!is.null(configList$includeProject) && configList$includeProject == "TRUE") {
+    expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
+  }
+  if (!is.null(configList$includeInLifeNotebook) && configList$includeInLifeNotebook == "TRUE") {
+    expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE))
+  }
   
   # Extract the expected headers from the input variable
   expectedHeaders <- expectedDataFormat$headers
@@ -1797,15 +1795,23 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
     stop("Cannot find input file")
   }
   
-  if (!grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
-    stop("The input file must have extension .xls or .xlsx")
+  if (grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
+    tryCatch({
+      genericDataFileDataFrame <- read.xls(pathToGenericDataFormatExcelFile, header = FALSE, blank.lines.skip = FALSE)
+    }, error = function(e) {
+      stop("Cannot read input excel file")
+    })
+  } else if (grepl("\\.csv$",pathToGenericDataFormatExcelFile)){
+    tryCatch({
+      genericDataFileDataFrame <- read.csv(pathToGenericDataFormatExcelFile, header = FALSE)
+    }, error = function(e) {
+      stop("Cannot read input csv file")
+    })
+  } else {
+    stop("The input file must have extension .xls, .xlsx, or .csv")
   }
   
-  tryCatch({
-    genericDataFileDataFrame <- read.xls(pathToGenericDataFormatExcelFile, header = FALSE, blank.lines.skip = FALSE)
-  }, error = function(e) {
-    stop("Cannot read input excel file")
-  })
+
   
   if (nrow(genericDataFileDataFrame) > 3500) {
     stop("The input excel is too long. Please limit your files to under 3500 lines.")
