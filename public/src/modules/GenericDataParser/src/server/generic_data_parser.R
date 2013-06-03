@@ -326,7 +326,8 @@ validateMetaData <- function(metaData, configList) {
   expectedHeaders <- expectedDataFormat$headers
   
   # Validate that there are no missing required columns, add errors for any expected fields that are missing
-  missingColumns <- expectedHeaders[is.na(match(toupper(expectedHeaders),toupper(names(metaData))))]
+  missingColumns <- expectedHeaders[is.na(match(toupper(expectedHeaders),toupper(names(metaData)))) 
+                                    & !(expectedDataFormat$isNullable)]
   for(m in missingColumns) {
     errorList <<- c(errorList,paste("The loader could not find required Experiment Meta Data row:",m))
   }
@@ -1235,12 +1236,13 @@ validateProject <- function(projectName, configList) {
     errorList <<- c(errorList, paste("There was an error in validating your project:", projectList))
     return("")
   })
-  projectCodes <- sapply(projectList, function(x) x$DNSCode$code)
+  projectCodes <- sapply(projectList, function(x) x$code)
   if(length(projectCodes) == 0) {errorList <<- c(errorList, "No projects are available, contact your system administrator")}
   if (projectName %in% projectCodes) {
     return(projectName)
   } else {
-    errorList <<- c(errorList, "The project you entered is not an available project. Please enter a valid project.")
+    errorList <<- c(errorList, paste0("The project you entered is not an available project. Please enter one of these projects: '",
+                                      paste(projectCodes, collapse = "', '"), "'."))
     return("")
   }
 }
@@ -1509,7 +1511,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
 }
 uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
-                       serverPath,protocol,experiment, fileStartLocation) {
+                       serverPath,protocol,experiment, fileStartLocation, configList) {
   # Uploads all the data to the server
   # 
   # Args:
@@ -1918,7 +1920,7 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
-                 fileStartLocation = pathToGenericDataFormatExcelFile)
+                 fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList)
     }
   }
   

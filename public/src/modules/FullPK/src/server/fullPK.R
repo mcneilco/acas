@@ -33,4 +33,4 @@ parseFullPKData <- function(request){
 # Testing code
 #   request<- list()
 #   request$user <- "smeyer"
-#   request$inputParameters <- list("format"="In Vivo Full PK","protocolName"="PK Protocol 1","experimentName"="PK experiment 1","notebook"="SAM-000123", "inLifeNotebook"="LIFE-123","page"="4","assayDate"="2013-05-22","project"="PK","fileLocation"="public/src/modules/FullPK/spec/specFiles/Worksheet.xls","bioavailability"="42.3","AUCType"="AUC-0")
+#   request$inputParameters <- list("format"="In Vivo Full PK","protocolName"="PK Protocol 1","experimentName"="PK experiment 1","notebook"="SAM-000123", "inLifeNotebook"="LIFE-123","assayDate"="2013-05-22","project"="UNASSIGNED","fileLocation"="public/src/modules/FullPK/spec/specFiles/Worksheet.xls","bioavailability"="42.3","AUCType"="AUC-0")
