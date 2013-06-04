@@ -1,5 +1,5 @@
 (function() {
-  var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, genericDataParserRoutes, http, loginRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
+  var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
 
   express = require('express');
 
@@ -118,6 +118,10 @@
   genericDataParserRoutes = require('./routes/GenericDataParserRoutes.js');
 
   app.post('/api/genericDataParser', genericDataParserRoutes.parseGenericData);
+
+  fullPKParserRoutes = require('./routes/FullPKParserRoutes.js');
+
+  app.post('/api/fullPKParser', fullPKParserRoutes.parseFullPKData);
 
   bulkLoadContainersFromSDFRoutes = require('./routes/BulkLoadContainersFromSDFRoutes.js');
 

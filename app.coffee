@@ -96,6 +96,10 @@ app.post '/api/docForBatches', docForBatchesRoutes.saveDocForBatches
 genericDataParserRoutes = require './routes/GenericDataParserRoutes.js'
 app.post '/api/genericDataParser', genericDataParserRoutes.parseGenericData
 
+# FullPKParser routes
+fullPKParserRoutes = require './routes/FullPKParserRoutes.js'
+app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
+
 # BulkLoadContainersFromSDF routes
 bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
 app.post '/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF

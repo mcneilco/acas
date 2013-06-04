@@ -17,7 +17,7 @@ parseFullPKData <- function(request){
   #		fileLocation
   #		reportFileLocation
   #		bioavailability
-  #		AUCType
+  #		aucType
   #
   # format will be "In Vivo Full PK"
   request <- as.list(request)

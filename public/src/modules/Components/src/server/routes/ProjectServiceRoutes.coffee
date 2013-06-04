@@ -7,12 +7,18 @@ app.get '/api/projects', projectServiceRoutes.getProjects
 
 
 exports.getProjects = (req, resp) ->
+	config = require '../public/src/conf/configurationNode.js'
 	if global.specRunnerTestmode
 		projectServiceTestJSON = require '../public/javascripts/spec/testFixtures/projectServiceTestJSON.js'
 		resp.end JSON.stringify projectServiceTestJSON.projects
 	else
 		console.log "calling live projects service"
-		dnsGetProjects resp
+		if config.serverConfigurationParams.configuration.projectsType == "ACAS"
+			#TODO Replace with service to look in ACAS database for registered projects
+			projectServiceTestJSON = require '../public/javascripts/spec/testFixtures/projectServiceTestJSON.js'
+			resp.end JSON.stringify projectServiceTestJSON.projects
+		else if config.serverConfigurationParams.configuration.projectsType == "DNS"
+			dnsGetProjects resp
 
 dnsGetProjects = (resp) ->
 	config = require '../public/src/conf/configurationNode.js'

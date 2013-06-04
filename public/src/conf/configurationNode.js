@@ -33,8 +33,10 @@
 //		exports.serverConfigurationParams.configuration.userAuthenticationServiceURL = "http://imapp01:8080/DNS/persons/v1/Persons/authenticate";
 
 // For Projects
-		exports.serverConfigurationParams.configuration.projectsType = "DNS";
-		exports.serverConfigurationParams.configuration.projectsServiceURL = "http://dsanpimapp01:8080/DNS/core/v1/DNSCode/Project.json";
+		exports.serverConfigurationParams.configuration.projectsType = "ACAS";
+		exports.serverConfigurationParams.configuration.projectsServiceURL = "http://tbd";
+//		exports.serverConfigurationParams.configuration.projectsType = "DNS";
+//		exports.serverConfigurationParams.configuration.projectsServiceURL = "http://dsanpimapp01:8080/DNS/core/v1/DNSCode/Project.json";
 
 // For racas
 		exports.serverConfigurationParams.configuration.appName = "ACAS";
