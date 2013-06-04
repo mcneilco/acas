@@ -42,13 +42,15 @@ requiredScripts = [
 applicationScripts = [
 	#For Experiment moudle
 	'/javascripts/src/Label.js'
+	'/javascripts/src/Protocol.js'
 	'/javascripts/src/AnalysisGroup.js'
+	'/javascripts/src/AbstractFormController.js'
 	'/javascripts/src/Experiment.js'
 	#For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'
 	'/javascripts/src/LSErrorNotification.js'
-	'/javascripts/src/AbstractFormController.js'
+
 	#for this module
 	'/src/conf/configuration.js'
 	'/javascripts/src/BatchListValidator.js'

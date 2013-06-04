@@ -29,8 +29,8 @@ applicationScripts = [
 	# For serverAPI module
 	'/javascripts/src/Label.js'
 	'/javascripts/src/AnalysisGroup.js'
-	'/javascripts/src/Experiment.js'
 	'/javascripts/src/Protocol.js'
+	'/javascripts/src/Experiment.js'
 	#Primary Screen module
 	'/javascripts/src/PrimaryScreenExperiment.js'
 	'/javascripts/src/DoseResponseAnalysis.js'
