@@ -26,7 +26,7 @@ requiredScripts = [
 	'/src/lib/json2.js'
 	'/src/lib/underscore.js'
 	'/src/lib/backbone-min.js'
-	'/src/lib/backbone-localstorage.js'
+#	'/src/lib/backbone-localstorage.js'
 	'/src/lib/bootstrap/bootstrap-tooltip.js'
 	'/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js'
 	'/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js'
