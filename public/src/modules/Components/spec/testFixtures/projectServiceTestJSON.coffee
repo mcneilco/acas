@@ -16,5 +16,5 @@
 		name: "Project 3"
 		ignored: false
 	]
-) (if (typeof process is "undefined" or not process.versions) then window.curveCuratorTestJSON = window.curveCuratorTestJSON or {} else exports)
+) (if (typeof process is "undefined" or not process.versions) then window.projectServiceTestJSON = window.projectServiceTestJSON or {} else exports)
 

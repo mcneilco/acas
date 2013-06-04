@@ -26,6 +26,7 @@ applicationScripts = [
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
+	'/javascripts/src/PickList.js'
 	# For serverAPI module
 	'/javascripts/src/Label.js'
 	'/javascripts/src/AnalysisGroup.js'
@@ -112,8 +113,10 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/LSFileChooserSpec.js'
 		'javascripts/spec/LSErrorNotificationSpec.js'
 		'javascripts/spec/ProjectsServiceSpec.js'
-		'src/modules/DocForBatches/spec/testFixtures/testJSON.js'
+		'javascripts/spec/PickListSpec.js'
+		'javascripts/spec/testFixtures/projectServiceTestJSON.js'
 		# For DocForBatchesModule
+		'src/modules/DocForBatches/spec/testFixtures/testJSON.js'
 		'javascripts/spec/BatchListValidatorSpec.js'
 		'javascripts/spec/DocUploadSpec.js'
 		'javascripts/spec/DocForBatchesSpec.js'
@@ -121,6 +124,10 @@ exports.specRunner = (req, res) ->
 		# For Generic Data Parser module
 		'javascripts/spec/GenericDataParserSpec.js'
 		'javascripts/spec/GenericDataParserServiceSpec.js'
+		# For Full PK Parser module
+		'javascripts/spec/testFixtures/FullPKTestJSON.js'
+		'javascripts/spec/FullPKSpec.js'
+		'javascripts/spec/FullPKParserServiceSpec.js'
 		# For BulkLoadContainersFromSDF module
 		'javascripts/spec/BulkLoadContainersFromSDFSpec.js'
 		'javascripts/spec/BulkLoadContainersFromSDFServerSpec.js'
