@@ -38,7 +38,6 @@ describe 'Full PK Behavior Testing', ->
 					err.attribute=='protocolName'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-
 			it 'should require that experimentName not be ""', ->
 				@fullPK.set
 					experimentName: ""
@@ -110,6 +109,7 @@ describe 'Full PK Behavior Testing', ->
 					err.attribute=='assayDate'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
+
 
 	describe 'FullPK Controller', ->
 		describe 'when instantiated', ->

@@ -14,7 +14,6 @@ class window.PickListList extends Backbone.Collection
 		@filter (pl) ->
 			!(pl.get 'ignored')
 
-
 class window.PickListOptionController extends Backbone.View
 	tagName: "option"
 	initialize: ->
