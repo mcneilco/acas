@@ -2088,7 +2088,6 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   } else if (fileServiceType == "DNS") {
     require("XML")
     
-    # TODO: figure out what the fileServiceURL is and how it compares to fileService
     response <- postForm(fileService,
                          FILE=fileUpload(filename = fileStartLocation),
                          CREATED_BY_LOGIN=recordedBy)
@@ -2239,7 +2238,7 @@ parseGenericData <- function(request) {
   #   
   
   # Create the HTML to display
-  if (!is.null(loadResult$value$format) && !is.na(loadResult$value$format) && loadResult$value$format=="DNS In Vivo Behavior") {
+  if (!is.null(loadResult$value$info)) {
     htmlSummary <- createHTML(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
   } else {
     htmlSummary <- createGenericDataParserHTML(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
