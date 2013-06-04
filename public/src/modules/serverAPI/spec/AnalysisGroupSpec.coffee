@@ -66,3 +66,5 @@ describe 'AnalysisGroup CRUD testing', ->
 					expect(@ag.get('analysisGroupStates').at(0).get('stateKind')).toEqual "Document for Batch"
 				it "states should have values", ->
 					expect(@ag.get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual "annotation"
+				it "states should have ignored to be false", ->
+					expect(@ag.get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('ignored')).toBeFalsy()

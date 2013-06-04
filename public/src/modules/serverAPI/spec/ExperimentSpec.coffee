@@ -99,8 +99,27 @@ describe "Experiment module testing", ->
 				it "should have the analysisGroup List", ->
 					expect(@exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy()
 				it "should have the analysisGroup ", ->
-					console.log @exp.get('analysisGroups').at(0) instanceof AnalysisGroup
 					expect(@exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy()
+				it "should have the analysisGroupStates ", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy()
+
+				it "should have the analysisGroupStates stateKind ", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateKind')).toEqual 'Document for Batch'
+				it "should have the analysisGroupStates stateType", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateType')).toEqual 'results'
+				it "should have the analysisGroupStates recordedBy", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('recordedBy')).toEqual 'jmcneil'
+
+				it "should have the AnalysisGroupValues ", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy()
+				it "should have the AnalysisGroupValue valueKind ", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual "annotation"
+				it "should have the AnalysisGroupValue valueType", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueType')).toEqual "fileValue"
+				it "should have the AnalysisGroupValue value", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(1).get('analysisGroupValues').at(0).get('value')).toEqual ""
+				it "should have the AnalysisGroupValue comment", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('comments')).toEqual "ok"
 				it "should have the analysisGroup id ", ->
 					expect(@exp.get('analysisGroups').at(0).id ).toEqual 64782
 				it "should have a code ", ->

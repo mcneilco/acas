@@ -54,13 +54,50 @@ class window.DocForBatches extends Backbone.Model
 			return null
 		recBy = window.AppLaunchParams.loginUserName
 		recDate = new Date().getTime()
-		analysisGroup = new AnalysisGroup
-			id:123456
+		analysisGroup = new AnalysisGroup()
 		analysisGroups = new AnalysisGroupList(analysisGroup)
 		if @get('docUpload').get('docType') == "file"
 			eName = @get('docUpload').get('currentFileName')
+			stateValue_1 = new AnalysisGroupValue
+				valueType: 'fileValue'
+				valueKind: 'annotation'
+				value: eName
+				ignored: false
 		else
 			eName = @get('docUpload').get('url')
+			stateValue_1 = new AnalysisGroupValue
+				valueType: 'urlValue'
+				valueKind: 'annotation'
+				value: eName
+				ignored: false
+		stateValue_2 = new AnalysisGroupValue
+			valueType: 'stringValue'
+			valueKind: 'document kind'
+			value: @get('docUpload').get('documentKind')
+			ignored: false
+		stateValues = new AnalysisGroupValueList()
+		stateValues.add(stateValue_1)
+		stateValues.add(stateValue_2)
+		#  _.each myArray, (elem) ->
+		@get('batchNameList').each (batchName) ->
+			stateValue = new AnalysisGroupValue
+				valueType: 'codeValue'
+				valueKind: 'batch code'
+				comments: batchName.get('comment')
+				value: batchName.get('preferredName')
+				ignored: false
+			stateValues.add(stateValue)
+
+		analysisGroupState = new AnalysisGroupState
+			analysisGroupValues:stateValues
+			stateKind: 'Document for Batch'
+			stateType: 'results'
+			recordedBy: @.protocol.get('recordedBy')
+		analysisGroupStates = new AnalysisGroupStateList()
+		analysisGroupStates.add(analysisGroupState)
+		analysisGroup = new AnalysisGroup
+			analysisGroupStates : analysisGroupStates
+		analysisGroups = new AnalysisGroupList(analysisGroup)
 		exp = new Experiment
 			protocol: @protocol
 			kind: "ACAS doc for batches"
@@ -76,6 +113,38 @@ class window.DocForBatches extends Backbone.Model
 
 
 		exp
+	updateDocForBatches: ->
+		newDocUpload = new DocUpload()
+		newBatchNameList= new BatchNameList()
+		console.log @get('experiment')
+		@get('experiment').get('analysisGroups').at(0).get('analysisGroupStates').each (analysisGroupState) ->
+			analysisGroupState.get('analysisGroupValues').each (analysisGroupValue) ->
+				valueType= analysisGroupValue.get('valueType')
+				console.log valueType
+				switch valueType
+					when "fileValue"
+						if  analysisGroupValue.get('fileValue')!= null
+							newDocUpload.set
+								currentFileName: analysisGroupValue.get('fileValue')
+					when "urlValue"
+						if  analysisGroupValue.get('urlValue')!= null
+							newDocUpload.set
+								url: analysisGroupValue.get('urlValue')
+					when "stringValue"
+						if  analysisGroupValue.get('stringValue')!= null
+							newDocUpload.set
+								documentKind: analysisGroupValue.get('stringValue')
+					when "codeValue"
+						if  analysisGroupValue.get('codeValue')!= null
+							newBatchName= new BatchName
+								id: analysisGroupValue.id
+								preferredName: analysisGroupValue.get('codeValue')
+								comment: analysisGroupValue.get('comments')
+							newBatchNameList.add(newBatchName)
+		@set
+			batchNameList: newBatchNameList
+			docUpload: newDocUpload
+		@
 
 
 
@@ -135,21 +204,21 @@ class window.DocForBatchesController extends Backbone.View
 
 	save: =>
 		if @model.isValid()
-			#console.log @model.attributes
-			$.ajax
-				type: 'POST'
-				url: "/api/docForBatches"
-				data:
-					docForBatches: JSON.stringify(@model)
-					user: window.AppLaunchParams.loginUserName
-				success: (response) =>
-					@model.set
-						id: response.results.id
-					@trigger 'amClean'
-					@render()
-				error: (err) =>
-					@serviceReturn = null
-				dataType: 'json'
+			exp = @model.asExperiment()
+			exp.save(null,{
+			wait:true,
+			success:(model, response)=>
+				console.log('Successfully saved!')
+				console.log(model)
+				@model.set
+					experiment: model
+				@trigger 'amClean'
+				@render()
+			error: (model, error)=>
+				console.log(model.toJSON())
+				console.log('error.responseText')
+			})
+			console.log @model.attributes
 
 	resetForm: =>
 		$(@el).empty()

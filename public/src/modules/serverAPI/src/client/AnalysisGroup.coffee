@@ -1,4 +1,10 @@
 class window.AnalysisGroupValue extends Backbone.Model
+	defaults:
+		valueKind: ""
+		valueType: ""
+		value: ""
+		comments: ""
+		ignored: false
 
 class window.AnalysisGroupValueList extends Backbone.Collection
 	model: AnalysisGroupValue
@@ -6,6 +12,9 @@ class window.AnalysisGroupValueList extends Backbone.Collection
 class window.AnalysisGroupState extends Backbone.Model
 	defaults:
 		analysisGroupValues: new AnalysisGroupValueList()
+		recordedBy: ''
+		stateType: 'results'
+		stateKind: 'Document for Batch'
 	initialize: ->
 		if @has('analysisGroupValues')
 			if @get('analysisGroupValues') not instanceof AnalysisGroupValueList

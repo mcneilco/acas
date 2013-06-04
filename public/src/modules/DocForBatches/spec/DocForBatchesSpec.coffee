@@ -69,7 +69,39 @@ describe 'Doc For Batches Behavior Testing', ->
 				it "experiment should have analysisGroup in analysisGroupList", ->
 					runs ->
 						expect(@exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy()
-
+				it "experiment should have state in analysisGroup", ->
+					runs ->
+						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy()
+				it "experiment should have state in state list", ->
+					runs ->
+						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').length).toEqual 1
+				it "experiment should have statevalue list in state", ->
+					runs ->
+						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy()
+				it "experiment should have statevalues", ->
+					runs ->
+						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').length).toEqual 5
+				it "experiment should have statevalues", ->
+					runs ->
+						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0) instanceof AnalysisGroupValue).toBeTruthy()
+				it "experiment should have statevalues kind", ->
+					runs ->
+						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual 'annotation'
+				it "experiment should have statevalues type", ->
+					runs ->
+						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueType')).toEqual 'fileValue'
+				it "state value should not be ignored", ->
+					runs ->
+						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('ignored')).toBeFalsy()
+				it "new docForBatches should have different value", ->
+					runs ->
+						@newExp =new Experiment window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup
+						console.log @newExp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(1).set
+							codeValue: 'CMPD_12'
+						@docForBatches.set
+							experiment: @newExp
+						@docForBatches.updateDocForBatches()
+						expect(@docForBatches.get('batchNameList').at(0).get('preferredName')).toEqual "CMPD_12"
 
 		#update existing saved experiment
 		#TODO Replace with new from experiment
