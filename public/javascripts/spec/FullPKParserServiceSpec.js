@@ -1,5 +1,6 @@
 /*
-This service parses data from the generic format and saves it to the database
+This service parses data from the Full PK aloonf format and saves it to the database
+It also takes a series pf parameters that would normally be in a header block
 */
 
 
@@ -9,14 +10,16 @@ This service parses data from the generic format and saves it to the database
   goodDataRequest = {
     fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve_with_warnings.xls",
     reportFile: null,
+    inputParameters: window.FullPKTestJSON.validFullPK,
     dryRun: true,
     user: 'jmcneil',
     testMode: true
   };
 
   badDataRequest = {
-    fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls",
+    fileToParse: "fred",
     reportFile: null,
+    inputParameters: window.FullPKTestJSON.validFullPK,
     dryRun: true,
     user: 'jmcneil',
     testMode: true
@@ -58,7 +61,7 @@ This service parses data from the generic format and saves it to the database
     ]
   };
 
-  describe('Generic data parser Service testing', function() {
+  describe('Full PK Parser Service testing', function() {
     beforeEach(function() {
       return this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
@@ -71,7 +74,7 @@ This service parses data from the generic format and saves it to the database
 
           return $.ajax({
             type: 'POST',
-            url: "api/genericDataParser",
+            url: "api/fullPKParser",
             data: goodDataRequest,
             success: function(json) {
               return _this.serviceReturn = json;
@@ -101,7 +104,7 @@ This service parses data from the generic format and saves it to the database
 
           return $.ajax({
             type: 'POST',
-            url: "api/genericDataParser",
+            url: "api/fullPKParser",
             data: badDataRequest,
             success: function(json) {
               return _this.serviceReturn = json;
