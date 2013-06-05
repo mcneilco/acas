@@ -29,9 +29,14 @@
         });
       });
       return describe("Upon init", function() {
-        return it("should get options from server", function() {
+        it("should get options from server", function() {
           return runs(function() {
             return expect(this.pickListList.length).toEqual(4);
+          });
+        });
+        return it("should return non-ignored values", function() {
+          return runs(function() {
+            return expect(this.pickListList.getCurrent().length).toEqual(3);
           });
         });
       });
@@ -58,7 +63,7 @@
           });
           it(" should have three choices", function() {
             return runs(function() {
-              return expect(this.pickListController.$("option").length).toEqual(4);
+              return expect(this.pickListController.$("option").length).toEqual(3);
             });
           });
           it("should return selected model", function() {
@@ -70,7 +75,7 @@
               expect(mdl.get("code")).toEqual("project2");
               this.pickListController.$("option")[2].selected = true;
               mdl = this.pickListController.getSelectedModel();
-              return expect(mdl.get("code")).toEqual("proj3ct3");
+              return expect(mdl.get("code")).toEqual("project3");
             });
           });
           return it("should return selected code", function() {
@@ -119,7 +124,7 @@
           });
           it("should have five choices", function() {
             return runs(function() {
-              return expect(this.pickListController.$("option").length).toEqual(5);
+              return expect(this.pickListController.$("option").length).toEqual(4);
             });
           });
           return it("should not set selected", function() {

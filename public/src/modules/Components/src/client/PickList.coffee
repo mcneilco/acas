@@ -10,6 +10,11 @@ class window.PickListList extends Backbone.Collection
 		@detect (enu) ->
 			enu.get("code") is code
 
+	getCurrent: ->
+		@filter (pl) ->
+			!(pl.get 'ignored')
+
+
 class window.PickListOptionController extends Backbone.View
 	tagName: "option"
 	initialize: ->
@@ -45,8 +50,8 @@ class window.PickListSelectController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		self = this
-		@collection.each (enm) ->
-			$(self.el).append new PickListOptionController(model: enm).render().el
+		@collection.each (enm) =>
+			@addOne enm
 
 		$(@el).val @selectedCode  if @selectedCode
 
@@ -56,7 +61,9 @@ class window.PickListSelectController extends Backbone.View
 		@rendered = true
 
 	addOne: (enm) =>
-		$(@el).append new PickListOptionController(model: enm).render().el
+		console.log enm
+		if !enm.get 'ignored'
+			$(@el).append new PickListOptionController(model: enm).render().el
 
 	setSelectedCode: (code) ->
 		@selectedCode = code
