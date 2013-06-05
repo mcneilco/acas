@@ -61,7 +61,6 @@ class window.PickListSelectController extends Backbone.View
 		@rendered = true
 
 	addOne: (enm) =>
-		console.log enm
 		if !enm.get 'ignored'
 			$(@el).append new PickListOptionController(model: enm).render().el
 

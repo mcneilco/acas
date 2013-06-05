@@ -100,7 +100,6 @@
         return describe("parameter editing", function() {
           return it("should update the model with when the threshold is changed", function() {
             var value;
-
             this.psac.$('.bv_hitThreshold').val('0.8');
             this.psac.$('.bv_hitThreshold').change();
             value = this.psac.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");

@@ -58,7 +58,6 @@
 
     BatchName.prototype.validate = function(attrs) {
       var errors;
-
       errors = [];
       if (attrs.preferredName === "" || attrs.comment === "") {
         errors.push({
@@ -81,7 +80,8 @@
     __extends(BatchNameList, _super);
 
     function BatchNameList() {
-      this.isValid = __bind(this.isValid, this);      _ref1 = BatchNameList.__super__.constructor.apply(this, arguments);
+      this.isValid = __bind(this.isValid, this);
+      _ref1 = BatchNameList.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -96,7 +96,6 @@
     BatchNameList.prototype.add = function(model, options) {
       var isDupe,
         _this = this;
-
       if (model instanceof Array) {
         return _.each(model, function(mdl) {
           return _this.add(mdl, options);
@@ -128,7 +127,8 @@
     __extends(BatchNameController, _super);
 
     function BatchNameController() {
-      this.render = __bind(this.render, this);      _ref2 = BatchNameController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref2 = BatchNameController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
@@ -184,7 +184,8 @@
     __extends(BatchNameListController, _super);
 
     function BatchNameListController() {
-      this.add = __bind(this.add, this);      _ref3 = BatchNameListController.__super__.constructor.apply(this, arguments);
+      this.add = __bind(this.add, this);
+      _ref3 = BatchNameListController.__super__.constructor.apply(this, arguments);
       return _ref3;
     }
 
@@ -194,7 +195,6 @@
 
     BatchNameListController.prototype.render = function() {
       var _this = this;
-
       $(this.el).empty();
       this.collection.each(function(bName) {
         return $(_this.el).append(new BatchNameController({
@@ -219,7 +219,8 @@
       this.isValid = __bind(this.isValid, this);
       this.updateValidCount = __bind(this.updateValidCount, this);
       this.itemRemoved = __bind(this.itemRemoved, this);
-      this.itemChanged = __bind(this.itemChanged, this);      _ref4 = BatchListValidatorController.__super__.constructor.apply(this, arguments);
+      this.itemChanged = __bind(this.itemChanged, this);
+      _ref4 = BatchListValidatorController.__super__.constructor.apply(this, arguments);
       return _ref4;
     }
 
@@ -275,7 +276,6 @@
     BatchListValidatorController.prototype.getPreferredIdReturn = function(data) {
       var i, results,
         _this = this;
-
       if (data.error) {
         alert("Preferred Batch ID service had this error: " + JSON.stringify(data.errorMessages));
         this.$(".bv_addButton").removeAttr("disabled");
@@ -299,7 +299,6 @@
 
     BatchListValidatorController.prototype.getCleanRequestedBatchList = function() {
       var cleanArray, reqArray, treq;
-
       cleanArray = new Array();
       if (this.$(".bv_pasteListArea").val().trim() !== "") {
         reqArray = this.$(".bv_pasteListArea").val().split("\n");

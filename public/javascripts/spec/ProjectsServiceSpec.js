@@ -9,7 +9,6 @@
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'GET',
             url: "api/projects",

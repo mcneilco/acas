@@ -10,7 +10,8 @@
     function PrimaryScreenExperimentController() {
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
-      this.handleSaveClicked = __bind(this.handleSaveClicked, this);      _ref = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
+      this.handleSaveClicked = __bind(this.handleSaveClicked, this);
+      _ref = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -71,7 +72,8 @@
     function PrimaryScreenAnalysisController() {
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.handleHitThresholdChanged = __bind(this.handleHitThresholdChanged, this);
-      this.render = __bind(this.render, this);      _ref1 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -103,7 +105,6 @@
 
     PrimaryScreenAnalysisController.prototype.getHitThreshold = function() {
       var desc, value;
-
       value = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       desc = "";
       if (value !== null) {
@@ -114,7 +115,6 @@
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
       var analysisStatus, resultValue;
-
       analysisStatus = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
       if (analysisStatus !== null) {
         this.analysisStatus = analysisStatus.get('stringValue');
@@ -130,7 +130,6 @@
 
     PrimaryScreenAnalysisController.prototype.handleHitThresholdChanged = function() {
       var value;
-
       value = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       return value.set({
         numericValue: parseFloat(this.$('.bv_hitThreshold').val().trim())

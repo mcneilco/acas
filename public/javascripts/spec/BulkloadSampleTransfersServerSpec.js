@@ -92,7 +92,6 @@ Transfer Date
     describe('when run with good input file', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'POST',
@@ -121,7 +120,6 @@ Transfer Date
     return describe('when run with flawed input file', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'POST',

@@ -48,7 +48,6 @@ This service saves and fetches DocForBatches items
         beforeEach(function() {
           return runs(function() {
             var _this = this;
-
             return $.ajax({
               type: 'GET',
               url: "api/docForBatches/1",
@@ -83,7 +82,6 @@ This service saves and fetches DocForBatches items
         beforeEach(function() {
           return runs(function() {
             var _this = this;
-
             return $.ajax({
               type: 'POST',
               url: "api/docForBatches",
@@ -123,7 +121,6 @@ This service saves and fetches DocForBatches items
       return describe('when run with bad data', function() {
         beforeEach(function() {
           var _this = this;
-
           goodExampleData.docForBatches.batchNameList[0].preferredName = "";
           return $.ajax({
             type: 'POST',
