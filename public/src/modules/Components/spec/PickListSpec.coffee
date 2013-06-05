@@ -24,6 +24,9 @@ describe "PickList Select Unit Testing", ->
 			it "should get options from server", ->
 				runs ->
 					expect(@pickListList.length).toEqual 4
+			it "should return non-ignored values", ->
+				runs ->
+					expect(@pickListList.getCurrent().length).toEqual 3
 
 	describe "PickList controller", ->
 		beforeEach ->
@@ -42,7 +45,7 @@ describe "PickList Select Unit Testing", ->
 						@pickListList.length > 0
 				it " should have three choices", ->
 					runs ->
-						expect(@pickListController.$("option").length).toEqual 4
+						expect(@pickListController.$("option").length).toEqual 3
 				it "should return selected model", ->
 					runs ->
 						@pickListController.$("option")[1].selected = true
@@ -50,7 +53,7 @@ describe "PickList Select Unit Testing", ->
 						expect(mdl.get("code")).toEqual "project2"
 						@pickListController.$("option")[2].selected = true
 						mdl = @pickListController.getSelectedModel()
-						expect(mdl.get("code")).toEqual "proj3ct3"
+						expect(mdl.get("code")).toEqual "project3"
 				it "should return selected code", ->
 					runs ->
 						@pickListController.$("option")[1].selected = true
@@ -83,7 +86,7 @@ describe "PickList Select Unit Testing", ->
 						@pickListList.length > 0
 				it "should have five choices", ->
 					runs ->
-						expect(@pickListController.$("option").length).toEqual 5
+						expect(@pickListController.$("option").length).toEqual 4
 				it "should not set selected", ->
 					runs ->
 						expect($(@pickListController.el).val()).toEqual "not_set"

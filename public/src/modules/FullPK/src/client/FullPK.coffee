@@ -68,4 +68,9 @@ class window.FullPKParserController extends BasicFileValidateAndSaveController
 		@loadReportFile = true
 		super()
 		@$('.bv_moduleTitle').html('Full PK Experiment Loader')
+		@fpkc = new FullPKController
+			model: new FullPK()
+			el: @$('.bv_additionalValuesForm')
+		@fpkc.render()
+
 
