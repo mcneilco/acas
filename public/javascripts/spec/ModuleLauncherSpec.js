@@ -42,10 +42,8 @@
       describe("activation", function() {
         return it("should trigger activation request", function() {
           var _this = this;
-
           runs(function() {
             var _this = this;
-
             this.modLauncher.bind('activationRequested', function() {
               return _this.gotTrigger = true;
             });
@@ -62,10 +60,8 @@
       describe("de-activation", function() {
         return it("should trigger deactivation request", function() {
           var _this = this;
-
           runs(function() {
             var _this = this;
-
             this.modLauncher.bind('deactivationRequested', function() {
               return _this.gotTrigger = true;
             });
@@ -118,7 +114,6 @@
       describe("When clicked", function() {
         beforeEach(function() {
           var _this = this;
-
           this.modLauncherMenuController.bind("selected", function() {
             return _this.gotTrigger = true;
           });
@@ -132,7 +127,6 @@
         });
         return it("should trigger a selected event", function() {
           var _this = this;
-
           runs(function() {});
           waitsFor(function() {
             return _this.gotTrigger;
@@ -231,7 +225,6 @@
         describe("when second activated", function() {
           beforeEach(function() {
             var _this = this;
-
             this.ModLauncherMenuListController.bind("selectionUpdated", function() {
               return _this.gotTrigger = true;
             });

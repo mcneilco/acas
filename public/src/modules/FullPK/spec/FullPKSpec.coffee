@@ -39,6 +39,69 @@ describe 'Full PK Behavior Testing', ->
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
+			it 'should require that experimentName not be ""', ->
+				@fullPK.set
+					experimentName: ""
+				expect(@fullPK.isValid()).toBeFalsy()
+				filtErrors = _.filter(@fullPK.validationError, (err) ->
+					err.attribute=='experimentName'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
+			it 'should require that scientist not be ""', ->
+				@fullPK.set
+					scientist: ""
+				expect(@fullPK.isValid()).toBeFalsy()
+				filtErrors = _.filter(@fullPK.validationError, (err) ->
+					err.attribute=='scientist'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
+			it 'should require that notebook not be ""', ->
+				@fullPK.set
+					notebook: ""
+				expect(@fullPK.isValid()).toBeFalsy()
+				filtErrors = _.filter(@fullPK.validationError, (err) ->
+					err.attribute=='notebook'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
+			it 'should require that inLifeNotebook not be ""', ->
+				@fullPK.set
+					inLifeNotebook: ""
+				expect(@fullPK.isValid()).toBeFalsy()
+				filtErrors = _.filter(@fullPK.validationError, (err) ->
+					err.attribute=='inLifeNotebook'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
+			it 'should require that project not be "unassigned"', ->
+				@fullPK.set
+					project: "unassigned"
+				expect(@fullPK.isValid()).toBeFalsy()
+				filtErrors = _.filter(@fullPK.validationError, (err) ->
+					err.attribute=='project'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
+			it 'should require that bioavailability not be ""', ->
+				@fullPK.set
+					bioavailability: ""
+				expect(@fullPK.isValid()).toBeFalsy()
+				filtErrors = _.filter(@fullPK.validationError, (err) ->
+					err.attribute=='bioavailability'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
+			it 'should require that aucType not be ""', ->
+				@fullPK.set
+					aucType: ""
+				expect(@fullPK.isValid()).toBeFalsy()
+				filtErrors = _.filter(@fullPK.validationError, (err) ->
+					err.attribute=='aucType'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
 	describe 'FullPK Controller', ->
 		describe 'when instantiated', ->
 			beforeEach ->
@@ -68,9 +131,41 @@ describe 'Full PK Behavior Testing', ->
 					@fpkc.$('.bv_protocolName').val "test protocol"
 					@fpkc.$('.bv_protocolName').change()
 					expect(@fpkc.model.get('protocolName')).toEqual "test protocol"
-				#TODO test rest of editable fields
+				it "should update the experimentName", ->
+					@fpkc.$('.bv_experimentName').val "test experiment"
+					@fpkc.$('.bv_experimentName').change()
+					expect(@fpkc.model.get('experimentName')).toEqual "test experiment"
+				it "should update the scientist", ->
+					@fpkc.$('.bv_scientist').val "test scientist"
+					@fpkc.$('.bv_scientist').change()
+					expect(@fpkc.model.get('scientist')).toEqual "test scientist"
+				it "should update the notebook", ->
+					@fpkc.$('.bv_notebook').val "test notebook"
+					@fpkc.$('.bv_notebook').change()
+					expect(@fpkc.model.get('notebook')).toEqual "test notebook"
+				it "should update the inLifeNotebook", ->
+					@fpkc.$('.bv_inLifeNotebook').val "test inLifeNotebook"
+					@fpkc.$('.bv_inLifeNotebook').change()
+					expect(@fpkc.model.get('inLifeNotebook')).toEqual "test inLifeNotebook"
+				it "should update the project", ->
+					waitsFor ->
+						@fpkc.$('.bv_project option').length > 0
+					,
+					1000
+					runs ->
+						@fpkc.$('.bv_project').val "project2"
+						@fpkc.$('.bv_project').change()
+						expect(@fpkc.model.get('project')).toEqual "project2"
+				it "should update the bioavailability", ->
+					@fpkc.$('.bv_bioavailability').val "test bioavailability"
+					@fpkc.$('.bv_bioavailability').change()
+					expect(@fpkc.model.get('bioavailability')).toEqual "test bioavailability"
+				it "should update the aucType", ->
+					@fpkc.$('.bv_aucType').val "test aucType"
+					@fpkc.$('.bv_aucType').change()
+					expect(@fpkc.model.get('aucType')).toEqual "test aucType"
 
-		describe "validation testting", ->
+		describe "validation testing", ->
 			beforeEach ->
 				@fpkc = new FullPKController
 					model: new FullPK window.FullPKTestJSON.validFullPK
@@ -80,4 +175,36 @@ describe 'Full PK Behavior Testing', ->
 				@fpkc.$(".bv_protocolName").val ""
 				@fpkc.$(".bv_protocolName").change()
 				expect(@fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy()
-			#TODO validation test rest of editable fields
+			it 'should show error if experimentName is empty', ->
+				@fpkc.$(".bv_experimentName").val ""
+				@fpkc.$(".bv_experimentName").change()
+				expect(@fpkc.$(".bv_group_experimentName").hasClass("error")).toBeTruthy()
+			it 'should show error if scientist is empty', ->
+				@fpkc.$(".bv_scientist").val ""
+				@fpkc.$(".bv_scientist").change()
+				expect(@fpkc.$(".bv_group_scientist").hasClass("error")).toBeTruthy()
+			it 'should show error if notebook is empty', ->
+				@fpkc.$(".bv_notebook").val ""
+				@fpkc.$(".bv_notebook").change()
+				expect(@fpkc.$(".bv_group_notebook").hasClass("error")).toBeTruthy()
+			it 'should show error if inLifeNotebook is empty', ->
+				@fpkc.$(".bv_inLifeNotebook").val ""
+				@fpkc.$(".bv_inLifeNotebook").change()
+				expect(@fpkc.$(".bv_group_inLifeNotebook").hasClass("error")).toBeTruthy()
+			it 'should show error if project is unassigned', ->
+				waitsFor ->
+					@fpkc.$('.bv_project option').length > 0
+				,
+				1000
+				runs ->
+					@fpkc.$(".bv_project").val "unassigned"
+					@fpkc.$(".bv_project").change()
+					expect(@fpkc.$(".bv_group_project").hasClass("error")).toBeTruthy()
+			it 'should show error if bioavailability is empty', ->
+				@fpkc.$(".bv_bioavailability").val ""
+				@fpkc.$(".bv_bioavailability").change()
+				expect(@fpkc.$(".bv_group_bioavailability").hasClass("error")).toBeTruthy()
+			it 'should show error if aucType is empty', ->
+				@fpkc.$(".bv_aucType").val ""
+				@fpkc.$(".bv_aucType").change()
+				expect(@fpkc.$(".bv_group_aucType").hasClass("error")).toBeTruthy()

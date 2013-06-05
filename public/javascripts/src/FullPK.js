@@ -27,12 +27,53 @@
 
     FullPK.prototype.validate = function(attrs) {
       var errors;
-
       errors = [];
       if (attrs.protocolName === "") {
         errors.push({
           attribute: 'protocolName',
           message: "Protocol Name must be provided"
+        });
+      }
+      if (attrs.experimentName === "") {
+        errors.push({
+          attribute: 'experimentName',
+          message: "Experiment Name must be provided"
+        });
+      }
+      if (attrs.scientist === "") {
+        errors.push({
+          attribute: 'scientist',
+          message: "Scientist must be provided"
+        });
+      }
+      if (attrs.notebook === "") {
+        errors.push({
+          attribute: 'notebook',
+          message: "Notebook must be provided"
+        });
+      }
+      if (attrs.inLifeNotebook === "") {
+        errors.push({
+          attribute: 'inLifeNotebook',
+          message: "inLifeNotebook must be provided"
+        });
+      }
+      if (attrs.project === "unassigned") {
+        errors.push({
+          attribute: 'project',
+          message: "Project must be provided"
+        });
+      }
+      if (attrs.bioavailability === "") {
+        errors.push({
+          attribute: 'bioavailability',
+          message: "Bioavailability must be provided"
+        });
+      }
+      if (attrs.aucType === "") {
+        errors.push({
+          attribute: 'aucType',
+          message: "aucType must be provided"
         });
       }
       if (errors.length > 0) {
@@ -51,14 +92,22 @@
 
     function FullPKController() {
       this.attributeChanged = __bind(this.attributeChanged, this);
-      this.render = __bind(this.render, this);      _ref1 = FullPKController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = FullPKController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
     FullPKController.prototype.template = _.template($("#FullPKView").html());
 
     FullPKController.prototype.events = {
-      'change .bv_protocolName': "attributeChanged"
+      'change .bv_protocolName': "attributeChanged",
+      'change .bv_experimentName': "attributeChanged",
+      'change .bv_scientist': "attributeChanged",
+      'change .bv_notebook': "attributeChanged",
+      'change .bv_inLifeNotebook': "attributeChanged",
+      'change .bv_project': "attributeChanged",
+      'change .bv_bioavailability': "attributeChanged",
+      'change .bv_aucType': "attributeChanged"
     };
 
     FullPKController.prototype.initialize = function() {
@@ -69,23 +118,35 @@
     };
 
     FullPKController.prototype.render = function() {
+      var date;
+      this.$('.bv_assayDate').datepicker();
+      this.$('.bv_assayDate').datepicker("option", "dateFormat", "yy-mm-dd");
+      if (this.model.get('assayDate') !== null) {
+        date = new Date(this.model.get('assayDate'));
+        this.$('.bv_assayDate').val(date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate());
+      }
       return this;
     };
 
     FullPKController.prototype.attributeChanged = function() {
-      console.log("got attr changed");
       this.trigger('amDirty');
       return this.updateModel();
     };
 
     FullPKController.prototype.updateModel = function() {
       return this.model.set({
-        protocolName: this.$('.bv_protocolName').val()
+        protocolName: this.$('.bv_protocolName').val(),
+        experimentName: this.$('.bv_experimentName').val(),
+        scientist: this.$('.bv_scientist').val(),
+        notebook: this.$('.bv_notebook').val(),
+        inLifeNotebook: this.$('.bv_inLifeNotebook').val(),
+        project: this.$('.bv_project').val(),
+        bioavailability: this.$('.bv_bioavailability').val(),
+        aucType: this.$('.bv_aucType').val()
       });
     };
 
     FullPKController.prototype.setupProjectSelect = function() {
-      console.log(this.$('.bv_project'));
       this.projectList = new PickListList();
       this.projectList.url = "/api/projects";
       return this.projectListController = new PickListSelectController({
