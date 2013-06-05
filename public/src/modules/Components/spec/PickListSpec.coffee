@@ -46,7 +46,6 @@ describe "PickList Select Unit Testing", ->
 				it " should have three choices", ->
 					runs ->
 						expect(@pickListController.$("option").length).toEqual 3
-						expect(@pickListController.$("option").length).toEqual 4
 				it "should return selected model", ->
 					runs ->
 						@pickListController.$("option")[1].selected = true
@@ -55,7 +54,6 @@ describe "PickList Select Unit Testing", ->
 						@pickListController.$("option")[2].selected = true
 						mdl = @pickListController.getSelectedModel()
 						expect(mdl.get("code")).toEqual "project3"
-						expect(mdl.get("code")).toEqual "proj3ct3"
 				it "should return selected code", ->
 					runs ->
 						@pickListController.$("option")[1].selected = true
