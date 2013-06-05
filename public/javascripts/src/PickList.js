@@ -36,6 +36,12 @@
       });
     };
 
+    PickListList.prototype.getCurrent = function() {
+      return this.filter(function(pl) {
+        return !(pl.get('ignored'));
+      });
+    };
+
     return PickListList;
 
   })(Backbone.Collection);
@@ -101,14 +107,13 @@
     };
 
     PickListSelectController.prototype.render = function() {
-      var self;
+      var self,
+        _this = this;
 
       $(this.el).empty();
       self = this;
       this.collection.each(function(enm) {
-        return $(self.el).append(new PickListOptionController({
-          model: enm
-        }).render().el);
+        return _this.addOne(enm);
       });
       if (this.selectedCode) {
         $(this.el).val(this.selectedCode);
@@ -119,9 +124,12 @@
     };
 
     PickListSelectController.prototype.addOne = function(enm) {
-      return $(this.el).append(new PickListOptionController({
-        model: enm
-      }).render().el);
+      console.log(enm);
+      if (!enm.get('ignored')) {
+        return $(this.el).append(new PickListOptionController({
+          model: enm
+        }).render().el);
+      }
     };
 
     PickListSelectController.prototype.setSelectedCode = function(code) {

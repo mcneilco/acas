@@ -116,7 +116,12 @@
       this.errorOwnerName = 'FullPKParser';
       this.loadReportFile = true;
       FullPKParserController.__super__.initialize.call(this);
-      return this.$('.bv_moduleTitle').html('Full PK Experiment Loader');
+      this.$('.bv_moduleTitle').html('Full PK Experiment Loader');
+      this.fpkc = new FullPKController({
+        model: new FullPK(),
+        el: this.$('.bv_additionalValuesForm')
+      });
+      return this.fpkc.render();
     };
 
     return FullPKParserController;
