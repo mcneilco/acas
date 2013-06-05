@@ -10,7 +10,8 @@
     function AbstractFormController() {
       this.handleModelChange = __bind(this.handleModelChange, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
-      this.validationError = __bind(this.validationError, this);      _ref = AbstractFormController.__super__.constructor.apply(this, arguments);
+      this.validationError = __bind(this.validationError, this);
+      _ref = AbstractFormController.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -41,7 +42,6 @@
     AbstractFormController.prototype.validationError = function() {
       var errors,
         _this = this;
-
       errors = this.model.validationError;
       this.clearValidationErrorStyles();
       _.each(errors, function(err) {
@@ -58,7 +58,6 @@
     AbstractFormController.prototype.clearValidationErrorStyles = function() {
       var errorElms,
         _this = this;
-
       errorElms = this.$('.input_error');
       this.trigger('clearErrors', this.errorOwnerName);
       return _.each(errorElms, function(ee) {
