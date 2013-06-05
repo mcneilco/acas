@@ -64,7 +64,6 @@
 
     LSAbstractNotificationCounterController.prototype.render = function() {
       var counterPopoverText, template;
-
       template = _.template($(this.templateTypeId).html(), {
         count: this.notificationsList.length
       });
@@ -153,7 +152,6 @@
 
     LSMessageController.prototype.render = function() {
       var template;
-
       template = _.template($(this.alertType).html(), {
         message: this.message
       });
@@ -193,7 +191,6 @@
 
     LSErrorController.prototype.render = function() {
       var self;
-
       $(this.el).empty();
       this.countController.render();
       self = this;
@@ -237,7 +234,6 @@
 
     LSWarningController.prototype.render = function() {
       var self;
-
       $(this.el).empty();
       self = this;
       this.countController.render();
@@ -281,7 +277,6 @@
 
     LSInfoController.prototype.render = function() {
       var self;
-
       $(this.el).empty();
       self = this;
       this.countController.render();
@@ -301,7 +296,8 @@
     __extends(LSNotificationController, _super);
 
     function LSNotificationController() {
-      this.toggleShowNotificationMessages = __bind(this.toggleShowNotificationMessages, this);      _ref10 = LSNotificationController.__super__.constructor.apply(this, arguments);
+      this.toggleShowNotificationMessages = __bind(this.toggleShowNotificationMessages, this);
+      _ref10 = LSNotificationController.__super__.constructor.apply(this, arguments);
       return _ref10;
     }
 
@@ -363,7 +359,6 @@
 
     LSNotificationController.prototype.addNotifications = function(owner, notes) {
       var _this = this;
-
       return _.each(notes, function(note) {
         note.owner = owner;
         return _this.addNotification(note);
@@ -402,7 +397,6 @@
 
     LSNotificationController.prototype.addInfo = function(message) {
       var self;
-
       self = this;
       this.$('.bv_notificationMessagePreview').hide();
       this.$('.bv_notificationMessagePreview').html(message);
@@ -438,7 +432,6 @@
 
     LSNotificationController.prototype.render = function() {
       var template;
-
       $(this.el).empty;
       template = _.template($("#LSNotificationView").html());
       $(this.el).html(template);

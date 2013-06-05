@@ -10,7 +10,6 @@
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/userAuthentication",

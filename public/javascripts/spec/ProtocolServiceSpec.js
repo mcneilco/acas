@@ -17,7 +17,6 @@ See ProtocolServiceTestJSON.coffee for examples
     describe('when fetching Protocol stub by code', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'GET',
@@ -45,7 +44,6 @@ See ProtocolServiceTestJSON.coffee for examples
     describe('when fetching full Protocol by id', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'GET',
@@ -73,7 +71,6 @@ See ProtocolServiceTestJSON.coffee for examples
     describe('when saving new protocol', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'POST',
@@ -99,7 +96,6 @@ See ProtocolServiceTestJSON.coffee for examples
     return describe('when updating existing protocol', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'PUT',

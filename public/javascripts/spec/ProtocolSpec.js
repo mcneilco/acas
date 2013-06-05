@@ -38,7 +38,6 @@
           return it("should trigger change when value changed in state", function() {
             runs(function() {
               var _this = this;
-
               this.stateChanged = false;
               this.ps.on('change', function() {
                 return _this.stateChanged = true;
@@ -135,7 +134,6 @@
           this.prot = new Protocol(window.protocolServiceTestJSON.stubSavedProtocol[0]);
           return runs(function() {
             var _this = this;
-
             this.fetchReturned = false;
             return this.prot.fetch({
               success: function() {
@@ -172,7 +170,6 @@
         beforeEach(function() {
           runs(function() {
             var _this = this;
-
             this.saveSucessful = false;
             this.saveComplete = false;
             this.prot = new Protocol(window.protocolServiceTestJSON);
@@ -214,7 +211,6 @@
         it("should trigger change when label changed", function() {
           runs(function() {
             var _this = this;
-
             this.prot = new Protocol();
             this.protocolChanged = false;
             this.prot.get('protocolLabels').setBestName(new Label({
@@ -244,7 +240,6 @@
         return it("should trigger change when value changed in state", function() {
           runs(function() {
             var _this = this;
-
             this.prot = new Protocol(window.protocolServiceTestJSON.fullSavedProtocol);
             this.protocolChanged = false;
             this.prot.on('change', function() {

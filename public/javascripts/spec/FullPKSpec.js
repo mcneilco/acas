@@ -34,15 +34,91 @@
         it("should be valid as initialized", function() {
           return expect(this.fullPK.isValid()).toBeTruthy();
         });
-        return it('should require that protocolName not be ""', function() {
+        it('should require that protocolName not be ""', function() {
           var filtErrors;
-
           this.fullPK.set({
             protocolName: ""
           });
           expect(this.fullPK.isValid()).toBeFalsy();
           filtErrors = _.filter(this.fullPK.validationError, function(err) {
             return err.attribute === 'protocolName';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it('should require that experimentName not be ""', function() {
+          var filtErrors;
+          this.fullPK.set({
+            experimentName: ""
+          });
+          expect(this.fullPK.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.fullPK.validationError, function(err) {
+            return err.attribute === 'experimentName';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it('should require that scientist not be ""', function() {
+          var filtErrors;
+          this.fullPK.set({
+            scientist: ""
+          });
+          expect(this.fullPK.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.fullPK.validationError, function(err) {
+            return err.attribute === 'scientist';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it('should require that notebook not be ""', function() {
+          var filtErrors;
+          this.fullPK.set({
+            notebook: ""
+          });
+          expect(this.fullPK.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.fullPK.validationError, function(err) {
+            return err.attribute === 'notebook';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it('should require that inLifeNotebook not be ""', function() {
+          var filtErrors;
+          this.fullPK.set({
+            inLifeNotebook: ""
+          });
+          expect(this.fullPK.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.fullPK.validationError, function(err) {
+            return err.attribute === 'inLifeNotebook';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it('should require that project not be "unassigned"', function() {
+          var filtErrors;
+          this.fullPK.set({
+            project: "unassigned"
+          });
+          expect(this.fullPK.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.fullPK.validationError, function(err) {
+            return err.attribute === 'project';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it('should require that bioavailability not be ""', function() {
+          var filtErrors;
+          this.fullPK.set({
+            bioavailability: ""
+          });
+          expect(this.fullPK.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.fullPK.validationError, function(err) {
+            return err.attribute === 'bioavailability';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it('should require that aucType not be ""', function() {
+          var filtErrors;
+          this.fullPK.set({
+            aucType: ""
+          });
+          expect(this.fullPK.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.fullPK.validationError, function(err) {
+            return err.attribute === 'aucType';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -80,14 +156,54 @@
           });
         });
         return describe('update model when fields changed', function() {
-          return it("should update the protocolName", function() {
+          it("should update the protocolName", function() {
             this.fpkc.$('.bv_protocolName').val("test protocol");
             this.fpkc.$('.bv_protocolName').change();
             return expect(this.fpkc.model.get('protocolName')).toEqual("test protocol");
           });
+          it("should update the experimentName", function() {
+            this.fpkc.$('.bv_experimentName').val("test experiment");
+            this.fpkc.$('.bv_experimentName').change();
+            return expect(this.fpkc.model.get('experimentName')).toEqual("test experiment");
+          });
+          it("should update the scientist", function() {
+            this.fpkc.$('.bv_scientist').val("test scientist");
+            this.fpkc.$('.bv_scientist').change();
+            return expect(this.fpkc.model.get('scientist')).toEqual("test scientist");
+          });
+          it("should update the notebook", function() {
+            this.fpkc.$('.bv_notebook').val("test notebook");
+            this.fpkc.$('.bv_notebook').change();
+            return expect(this.fpkc.model.get('notebook')).toEqual("test notebook");
+          });
+          it("should update the inLifeNotebook", function() {
+            this.fpkc.$('.bv_inLifeNotebook').val("test inLifeNotebook");
+            this.fpkc.$('.bv_inLifeNotebook').change();
+            return expect(this.fpkc.model.get('inLifeNotebook')).toEqual("test inLifeNotebook");
+          });
+          it("should update the project", function() {
+            waitsFor(function() {
+              return this.fpkc.$('.bv_project option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.fpkc.$('.bv_project').val("project2");
+              this.fpkc.$('.bv_project').change();
+              return expect(this.fpkc.model.get('project')).toEqual("project2");
+            });
+          });
+          it("should update the bioavailability", function() {
+            this.fpkc.$('.bv_bioavailability').val("test bioavailability");
+            this.fpkc.$('.bv_bioavailability').change();
+            return expect(this.fpkc.model.get('bioavailability')).toEqual("test bioavailability");
+          });
+          return it("should update the aucType", function() {
+            this.fpkc.$('.bv_aucType').val("test aucType");
+            this.fpkc.$('.bv_aucType').change();
+            return expect(this.fpkc.model.get('aucType')).toEqual("test aucType");
+          });
         });
       });
-      return describe("validation testting", function() {
+      return describe("validation testing", function() {
         beforeEach(function() {
           this.fpkc = new FullPKController({
             model: new FullPK(window.FullPKTestJSON.validFullPK),
@@ -95,10 +211,50 @@
           });
           return this.fpkc.render();
         });
-        return it('should show error if protocolName is empty', function() {
+        it('should show error if protocolName is empty', function() {
           this.fpkc.$(".bv_protocolName").val("");
           this.fpkc.$(".bv_protocolName").change();
           return expect(this.fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy();
+        });
+        it('should show error if experimentName is empty', function() {
+          this.fpkc.$(".bv_experimentName").val("");
+          this.fpkc.$(".bv_experimentName").change();
+          return expect(this.fpkc.$(".bv_group_experimentName").hasClass("error")).toBeTruthy();
+        });
+        it('should show error if scientist is empty', function() {
+          this.fpkc.$(".bv_scientist").val("");
+          this.fpkc.$(".bv_scientist").change();
+          return expect(this.fpkc.$(".bv_group_scientist").hasClass("error")).toBeTruthy();
+        });
+        it('should show error if notebook is empty', function() {
+          this.fpkc.$(".bv_notebook").val("");
+          this.fpkc.$(".bv_notebook").change();
+          return expect(this.fpkc.$(".bv_group_notebook").hasClass("error")).toBeTruthy();
+        });
+        it('should show error if inLifeNotebook is empty', function() {
+          this.fpkc.$(".bv_inLifeNotebook").val("");
+          this.fpkc.$(".bv_inLifeNotebook").change();
+          return expect(this.fpkc.$(".bv_group_inLifeNotebook").hasClass("error")).toBeTruthy();
+        });
+        it('should show error if project is unassigned', function() {
+          waitsFor(function() {
+            return this.fpkc.$('.bv_project option').length > 0;
+          }, 1000);
+          return runs(function() {
+            this.fpkc.$(".bv_project").val("unassigned");
+            this.fpkc.$(".bv_project").change();
+            return expect(this.fpkc.$(".bv_group_project").hasClass("error")).toBeTruthy();
+          });
+        });
+        it('should show error if bioavailability is empty', function() {
+          this.fpkc.$(".bv_bioavailability").val("");
+          this.fpkc.$(".bv_bioavailability").change();
+          return expect(this.fpkc.$(".bv_group_bioavailability").hasClass("error")).toBeTruthy();
+        });
+        return it('should show error if aucType is empty', function() {
+          this.fpkc.$(".bv_aucType").val("");
+          this.fpkc.$(".bv_aucType").change();
+          return expect(this.fpkc.$(".bv_group_aucType").hasClass("error")).toBeTruthy();
         });
       });
     });

@@ -319,7 +319,6 @@
       describe('when we add notifications as an array', function() {
         beforeEach(function() {
           var notes;
-
           notes = [
             {
               errorLevel: 'error',
@@ -354,7 +353,6 @@
       return describe('when we clear all errors from errorlist', function() {
         beforeEach(function() {
           var notes;
-
           notes = [
             {
               errorLevel: 'error',
