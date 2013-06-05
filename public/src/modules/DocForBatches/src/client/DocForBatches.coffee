@@ -212,13 +212,14 @@ class window.DocForBatchesController extends Backbone.View
 				console.log(model)
 				@model.set
 					experiment: model
+				@model.updateDocForBatches()
 				@trigger 'amClean'
 				@render()
 			error: (model, error)=>
 				console.log(model.toJSON())
 				console.log('error.responseText')
 			})
-			console.log @model.attributes
+			console.log @model
 
 	resetForm: =>
 		$(@el).empty()

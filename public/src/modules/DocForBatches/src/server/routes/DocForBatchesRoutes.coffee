@@ -64,7 +64,7 @@ fixturesData = require '../public/src/modules/DocForBatches/spec/testFixtures/te
 
 exports.docForBatchesIndex = (request, response) ->
 	scriptsToLoad = requiredScripts.concat applicationScripts
-	global.specRunnerTestmode = true
+	global.specRunnerTestmode = false
 	return response.render 'docForBatchesIndex',
 		title: 'Document Annotation'
 		scripts: scriptsToLoad

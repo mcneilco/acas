@@ -8,6 +8,12 @@ goodExampleData =
 	docForBatches: window.testJSON.docForBatches
 	user: 'jmcneil'
 
+#The required data structure is
+goodExperimentExampleData =
+	docForBatches: window.testJSON.docForBatches
+	experiment: window.testJSON.nexExpForBatch
+	user: 'jmcneil'
+
 #The expected return format for save or update success is:
 returnExampleSuccess =
 	transactionId: 1234
@@ -34,13 +40,13 @@ describe 'DocForBatches Service testing', ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
 
-	describe 'get existing entity from docForBatches', ->
+	describe 'get existing entity from experiment', ->
 		describe 'when run with valid input', ->
 			beforeEach ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/docForBatches/1"
+						url: "api/experiments/1"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -52,12 +58,12 @@ describe 'DocForBatches Service testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
 					console.log @serviceReturn
-					expect(@serviceReturn.id).toEqual 1235
+					expect(@serviceReturn.id).toEqual 270
 
 			it 'should return a fileName', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
-					expect(@serviceReturn.docUpload.currentFileName).toEqual "exampleUploadedFile.txt"
+					expect(@serviceReturn.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].fileValue).toEqual "exampleUploadedFile.txt"
 
 
 	describe 'post new entity to docForBatches', ->
@@ -66,8 +72,9 @@ describe 'DocForBatches Service testing', ->
 				runs ->
 					$.ajax
 						type: 'POST'
-						url: "api/docForBatches"
-						data: goodExampleData
+						#todo:shall we change this?
+						url: "api/experiments"
+						data: goodExperimentExampleData
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -86,7 +93,7 @@ describe 'DocForBatches Service testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
 					expect(@serviceReturn.transactionId).toBeDefined()
-			it 'should return a docForBatchesID', ->
+			it 'should return a experiment id', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
 					expect(@serviceReturn.results.id).toBeDefined()
@@ -96,7 +103,7 @@ describe 'DocForBatches Service testing', ->
 				goodExampleData.docForBatches.batchNameList[0].preferredName = ""
 				$.ajax
 					type: 'POST'
-					url: "api/docForBatches"
+					url: "api/experiments"
 					data: goodExampleData
 					success: (json) =>
 						@serviceReturn = json
