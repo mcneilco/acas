@@ -8,8 +8,7 @@
     __extends(DoseResponseAnalysisController, _super);
 
     function DoseResponseAnalysisController() {
-      this.render = __bind(this.render, this);
-      _ref = DoseResponseAnalysisController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref = DoseResponseAnalysisController.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 

@@ -27,6 +27,7 @@
 
     FullPK.prototype.validate = function(attrs) {
       var errors;
+
       errors = [];
       if (attrs.protocolName === "") {
         errors.push({
@@ -73,7 +74,13 @@
       if (attrs.aucType === "") {
         errors.push({
           attribute: 'aucType',
-          message: "aucType must be provided"
+          message: "AUC Type must be provided"
+        });
+      }
+      if (_.isNaN(attrs.assayDate)) {
+        errors.push({
+          attribute: 'assayDate',
+          message: "Assay date must be set"
         });
       }
       if (errors.length > 0) {
@@ -92,8 +99,7 @@
 
     function FullPKController() {
       this.attributeChanged = __bind(this.attributeChanged, this);
-      this.render = __bind(this.render, this);
-      _ref1 = FullPKController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref1 = FullPKController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -107,7 +113,8 @@
       'change .bv_inLifeNotebook': "attributeChanged",
       'change .bv_project': "attributeChanged",
       'change .bv_bioavailability': "attributeChanged",
-      'change .bv_aucType': "attributeChanged"
+      'change .bv_aucType': "attributeChanged",
+      'change .bv_assayDate': "attributeChanged"
     };
 
     FullPKController.prototype.initialize = function() {
@@ -119,6 +126,7 @@
 
     FullPKController.prototype.render = function() {
       var date;
+
       this.$('.bv_assayDate').datepicker();
       this.$('.bv_assayDate').datepicker("option", "dateFormat", "yy-mm-dd");
       if (this.model.get('assayDate') !== null) {
@@ -142,7 +150,8 @@
         inLifeNotebook: this.$('.bv_inLifeNotebook').val(),
         project: this.$('.bv_project').val(),
         bioavailability: this.$('.bv_bioavailability').val(),
-        aucType: this.$('.bv_aucType').val()
+        aucType: this.$('.bv_aucType').val(),
+        assayDate: new Date(this.$('.bv_assayDate').val().trim()).getTime()
       });
     };
 
@@ -160,6 +169,15 @@
       });
     };
 
+    FullPKController.prototype.disableAllInputs = function() {
+      this.$('input').attr('disabled', 'disabled');
+      return this.$('select').attr('disabled', 'disabled');
+    };
+
+    FullPKController.prototype.enableAllInputs = function() {
+      return this.$('input').removeAttr('disabled');
+    };
+
     return FullPKController;
 
   })(AbstractFormController);
@@ -168,7 +186,10 @@
     __extends(FullPKParserController, _super);
 
     function FullPKParserController() {
-      _ref2 = FullPKParserController.__super__.constructor.apply(this, arguments);
+      this.validateParseFile = __bind(this.validateParseFile, this);
+      this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
+      this.handleFPKFormInvalid = __bind(this.handleFPKFormInvalid, this);
+      this.handleFPKFormValid = __bind(this.handleFPKFormValid, this);      _ref2 = FullPKParserController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
@@ -182,7 +203,49 @@
         model: new FullPK(),
         el: this.$('.bv_additionalValuesForm')
       });
+      this.fpkc.on('valid', this.handleFPKFormValid);
+      this.fpkc.on('invalid', this.handleFPKFormInvalid);
+      this.fpkc.on('notifyError', this.notificationController.addNotification);
+      this.fpkc.on('clearErrors', this.notificationController.clearAllNotificiations);
       return this.fpkc.render();
+    };
+
+    FullPKParserController.prototype.handleFPKFormValid = function() {
+      if (this.parseFileUploaded) {
+        return this.handleFormValid();
+      }
+    };
+
+    FullPKParserController.prototype.handleFPKFormInvalid = function() {
+      return this.handleFormInvalid();
+    };
+
+    FullPKParserController.prototype.handleFormValid = function() {
+      if (this.fpkc.isValid()) {
+        return FullPKParserController.__super__.handleFormValid.call(this);
+      }
+    };
+
+    FullPKParserController.prototype.handleValidationReturnSuccess = function(json) {
+      FullPKParserController.__super__.handleValidationReturnSuccess.call(this, json);
+      return this.fpkc.disableAllInputs();
+    };
+
+    FullPKParserController.prototype.showFileSelectPhase = function() {
+      FullPKParserController.__super__.showFileSelectPhase.call(this);
+      if (this.fpkc != null) {
+        return this.fpkc.enableAllInputs();
+      }
+    };
+
+    FullPKParserController.prototype.validateParseFile = function() {
+      this.fpkc.updateModel();
+      if (!!this.fpkc.isValid()) {
+        this.additionalData = {
+          inputParameters: this.fpkc.model.toJSON()
+        };
+        return FullPKParserController.__super__.validateParseFile.call(this);
+      }
     };
 
     return FullPKParserController;

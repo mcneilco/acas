@@ -10,8 +10,7 @@
     function AbstractFormController() {
       this.handleModelChange = __bind(this.handleModelChange, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
-      this.validationError = __bind(this.validationError, this);
-      _ref = AbstractFormController.__super__.constructor.apply(this, arguments);
+      this.validationError = __bind(this.validationError, this);      _ref = AbstractFormController.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -42,6 +41,7 @@
     AbstractFormController.prototype.validationError = function() {
       var errors,
         _this = this;
+
       errors = this.model.validationError;
       this.clearValidationErrorStyles();
       _.each(errors, function(err) {
@@ -52,12 +52,13 @@
           message: err.message
         });
       });
-      return this.trigger("invalid");
+      return this.trigger('invalid');
     };
 
     AbstractFormController.prototype.clearValidationErrorStyles = function() {
       var errorElms,
         _this = this;
+
       errorElms = this.$('.input_error');
       this.trigger('clearErrors', this.errorOwnerName);
       return _.each(errorElms, function(ee) {
@@ -72,9 +73,9 @@
     AbstractFormController.prototype.handleModelChange = function() {
       this.clearValidationErrorStyles();
       if (this.isValid()) {
-        return this.trigger("valid");
+        return this.trigger('valid');
       } else {
-        return this.trigger("invalid");
+        return this.trigger('invalid');
       }
     };
 
