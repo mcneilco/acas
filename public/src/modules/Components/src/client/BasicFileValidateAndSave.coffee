@@ -43,27 +43,25 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@reportFileController.render()
 			@$('.bv_reportFileWrapper').show()
 
-
 		@showFileSelectPhase()
 
 	render: =>
 		unless @parseFileUploaded
-			@$(".bv_next").attr 'disabled', 'disabled'
+			@handleFormInvalid()
 
 		@
 
 	handleParseFileUploaded: (fileName) =>
 		@parseFileUploaded = true
 		@parseFileNameOnServer = @filePath+fileName
-		@$(".bv_next").removeAttr 'disabled'
-		@$(".bv_save").removeAttr 'disabled'
+		@handleFormValid()
 		@trigger 'amDirty'
 
 	handleParseFileRemoved: =>
 		@parseFileUploaded = false
 		@parseFileNameOnServer = ""
 		@notificationController.clearAllNotificiations()
-		@$(".bv_next").attr 'disabled', 'disabled'
+		@handleFormInvalid()
 
 	handleReportFileUploaded: (fileName) =>
 		@reportFileNameOnServer = @filePath+fileName
@@ -115,6 +113,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		data
 
 	handleValidationReturnSuccess: (json) =>
+		console.log json
 		summaryStr = "Validation Results: "
 		if not json.hasError
 			@filePassedValidation = true
@@ -125,9 +124,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@filePassedValidation = false
 			@parseFileController.lsFileChooser.fileFailedServerValidation()
 			summaryStr += "Failed due to errors "
-			@$(".bv_next").attr 'disabled', 'disabled'
-			@$(".bv_save").attr 'disabled', 'disabled'
-			@$('.bv_notifications').show()
+			@handleFormInvalid()
 		@showFileUploadPhase()
 		@$('.bv_resultStatus').html(summaryStr)
 		@notificationController.addNotifications(@errorOwnerName, json.errorMessages)
@@ -184,3 +181,11 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_completeControlContainer').show()
 		@$('.bv_notifications').show()
 
+	handleFormInvalid: =>
+		@$(".bv_next").attr 'disabled', 'disabled'
+		@$(".bv_save").attr 'disabled', 'disabled'
+		@$('.bv_notifications').show()
+
+	handleFormValid: =>
+		@$(".bv_next").removeAttr 'disabled'
+		@$(".bv_save").removeAttr 'disabled'

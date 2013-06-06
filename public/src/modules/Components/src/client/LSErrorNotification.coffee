@@ -157,13 +157,13 @@ class window.LSNotificationController extends Backbone.View
 		@render()
 		
 		@errorList = new LSNotificatioMessageCollection
-		@errorController = new LSErrorController({el: '.bv_errorNotificationMessages', badgeEl: @$('.bv_errorNotificationCountContainer'), notificationsList: @errorList})
+		@errorController = new LSErrorController({el: @$('.bv_errorNotificationMessages'), badgeEl: @$('.bv_errorNotificationCountContainer'), notificationsList: @errorList})
 		
 		@warningList = new LSNotificatioMessageCollection
-		@warningController = new LSWarningController({el: '.bv_warningNotificationMessages', badgeEl: @$('.bv_warningNotificationCountContainer'), notificationsList: @warningList})
+		@warningController = new LSWarningController({el: @$('.bv_warningNotificationMessages'), badgeEl: @$('.bv_warningNotificationCountContainer'), notificationsList: @warningList})
 		
 		@infoList = new LSNotificatioMessageCollection
-		@infoController = new LSInfoController({el: '.bv_infoNotificationMessages', badgeEl: @$('.bv_infoNotificationCountContainer'), notificationsList: @infoList})
+		@infoController = new LSInfoController({el: @$('.bv_infoNotificationMessages'), badgeEl: @$('.bv_infoNotificationCountContainer'), notificationsList: @infoList})
 		
 	
 	addNotification: (notification) ->
@@ -217,7 +217,7 @@ class window.LSNotificationController extends Backbone.View
 	getInfoCount: ->
 		return @infoController.notificationsList.size()
 
-	clearAllNotificiations: ->
+	clearAllNotificiations: =>
 		@infoList.reset()
 		@warningList.reset()
 		@errorList.reset()
