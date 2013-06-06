@@ -174,6 +174,15 @@ describe 'Full PK Behavior Testing', ->
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
+			it 'should require that assayDate not be ""', ->
+				@fullPK.set
+					assayDate: new Date("").getTime()
+				expect(@fullPK.isValid()).toBeFalsy()
+				filtErrors = _.filter(@fullPK.validationError, (err) ->
+					err.attribute=='assayDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
 	describe 'FullPK Controller', ->
 		describe 'when instantiated', ->
 			beforeEach ->

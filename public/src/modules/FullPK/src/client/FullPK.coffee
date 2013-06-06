@@ -160,3 +160,11 @@ class window.FullPKParserController extends BasicFileValidateAndSaveController
 			@additionalData =
 				inputParameters: @fpkc.model.toJSON()
 			super()
+
+	validateParseFile: =>
+		@fpkc.updateModel()
+		unless !@fpkc.isValid()
+			@additionalData =
+				inputParameters: @fpkc.model.toJSON()
+			super()
+
