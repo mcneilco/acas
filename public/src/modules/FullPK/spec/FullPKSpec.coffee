@@ -102,6 +102,15 @@ describe 'Full PK Behavior Testing', ->
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
+			it 'should require that assayDate not be ""', ->
+				@fullPK.set
+					assayDate: new Date("").getTime()
+				expect(@fullPK.isValid()).toBeFalsy()
+				filtErrors = _.filter(@fullPK.validationError, (err) ->
+					err.attribute=='assayDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
 	describe 'FullPK Controller', ->
 		describe 'when instantiated', ->
 			beforeEach ->
@@ -125,6 +134,16 @@ describe 'Full PK Behavior Testing', ->
 					expect(@fpkc.$('.bv_project option').length).toBeGreaterThan 0
 				it "should default to unassigned", ->
 					expect(@fpkc.$('.bv_project').val()).toEqual "unassigned"
+			describe "disable and enable", ->
+				it "should disable all inputs on request", ->
+					@fpkc.disableAllInputs()
+					expect(@fpkc.$('.bv_scientist').attr("disabled")).toEqual "disabled"
+					expect(@fpkc.$('.bv_project').attr("disabled")).toEqual "disabled"
+				it "should enable all inputs on request", ->
+					@fpkc.disableAllInputs()
+					expect(@fpkc.$('.bv_scientist').attr("disabled")).toEqual "disabled"
+					@fpkc.enableAllInputs()
+					expect(@fpkc.$('.bv_scientist').attr("disabled")).toBeUndefined()
 
 			describe 'update model when fields changed', ->
 				it "should update the protocolName", ->
@@ -164,6 +183,10 @@ describe 'Full PK Behavior Testing', ->
 					@fpkc.$('.bv_aucType').val "test aucType"
 					@fpkc.$('.bv_aucType').change()
 					expect(@fpkc.model.get('aucType')).toEqual "test aucType"
+				it "should update the assayDate", ->
+					@fpkc.$('.bv_assayDate').val "2013-6-6"
+					@fpkc.$('.bv_assayDate').change()
+					expect(@fpkc.model.get('assayDate')).toEqual new Date("2013-6-6").getTime()
 
 		describe "validation testing", ->
 			beforeEach ->
@@ -171,40 +194,45 @@ describe 'Full PK Behavior Testing', ->
 					model: new FullPK window.FullPKTestJSON.validFullPK
 					el: $('#fixture')
 				@fpkc.render()
-			it 'should show error if protocolName is empty', ->
-				@fpkc.$(".bv_protocolName").val ""
-				@fpkc.$(".bv_protocolName").change()
-				expect(@fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy()
-			it 'should show error if experimentName is empty', ->
-				@fpkc.$(".bv_experimentName").val ""
-				@fpkc.$(".bv_experimentName").change()
-				expect(@fpkc.$(".bv_group_experimentName").hasClass("error")).toBeTruthy()
-			it 'should show error if scientist is empty', ->
-				@fpkc.$(".bv_scientist").val ""
-				@fpkc.$(".bv_scientist").change()
-				expect(@fpkc.$(".bv_group_scientist").hasClass("error")).toBeTruthy()
-			it 'should show error if notebook is empty', ->
-				@fpkc.$(".bv_notebook").val ""
-				@fpkc.$(".bv_notebook").change()
-				expect(@fpkc.$(".bv_group_notebook").hasClass("error")).toBeTruthy()
-			it 'should show error if inLifeNotebook is empty', ->
-				@fpkc.$(".bv_inLifeNotebook").val ""
-				@fpkc.$(".bv_inLifeNotebook").change()
-				expect(@fpkc.$(".bv_group_inLifeNotebook").hasClass("error")).toBeTruthy()
-			it 'should show error if project is unassigned', ->
-				waitsFor ->
-					@fpkc.$('.bv_project option').length > 0
-				,
-				1000
-				runs ->
-					@fpkc.$(".bv_project").val "unassigned"
-					@fpkc.$(".bv_project").change()
-					expect(@fpkc.$(".bv_group_project").hasClass("error")).toBeTruthy()
-			it 'should show error if bioavailability is empty', ->
-				@fpkc.$(".bv_bioavailability").val ""
-				@fpkc.$(".bv_bioavailability").change()
-				expect(@fpkc.$(".bv_group_bioavailability").hasClass("error")).toBeTruthy()
-			it 'should show error if aucType is empty', ->
-				@fpkc.$(".bv_aucType").val ""
-				@fpkc.$(".bv_aucType").change()
-				expect(@fpkc.$(".bv_group_aucType").hasClass("error")).toBeTruthy()
+			describe "error notification", ->
+				it 'should show error if protocolName is empty', ->
+					@fpkc.$(".bv_protocolName").val ""
+					@fpkc.$(".bv_protocolName").change()
+					expect(@fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy()
+				it 'should show error if experimentName is empty', ->
+					@fpkc.$(".bv_experimentName").val ""
+					@fpkc.$(".bv_experimentName").change()
+					expect(@fpkc.$(".bv_group_experimentName").hasClass("error")).toBeTruthy()
+				it 'should show error if scientist is empty', ->
+					@fpkc.$(".bv_scientist").val ""
+					@fpkc.$(".bv_scientist").change()
+					expect(@fpkc.$(".bv_group_scientist").hasClass("error")).toBeTruthy()
+				it 'should show error if notebook is empty', ->
+					@fpkc.$(".bv_notebook").val ""
+					@fpkc.$(".bv_notebook").change()
+					expect(@fpkc.$(".bv_group_notebook").hasClass("error")).toBeTruthy()
+				it 'should show error if inLifeNotebook is empty', ->
+					@fpkc.$(".bv_inLifeNotebook").val ""
+					@fpkc.$(".bv_inLifeNotebook").change()
+					expect(@fpkc.$(".bv_group_inLifeNotebook").hasClass("error")).toBeTruthy()
+				it 'should show error if project is unassigned', ->
+					waitsFor ->
+						@fpkc.$('.bv_project option').length > 0
+					,
+					1000
+					runs ->
+						@fpkc.$(".bv_project").val "unassigned"
+						@fpkc.$(".bv_project").change()
+						expect(@fpkc.$(".bv_group_project").hasClass("error")).toBeTruthy()
+				it 'should show error if bioavailability is empty', ->
+					@fpkc.$(".bv_bioavailability").val ""
+					@fpkc.$(".bv_bioavailability").change()
+					expect(@fpkc.$(".bv_group_bioavailability").hasClass("error")).toBeTruthy()
+				it 'should show error if aucType is empty', ->
+					@fpkc.$(".bv_aucType").val ""
+					@fpkc.$(".bv_aucType").change()
+					expect(@fpkc.$(".bv_group_aucType").hasClass("error")).toBeTruthy()
+				it 'should show error if assayDate is empty', ->
+					@fpkc.$(".bv_assayDate").val ""
+					@fpkc.$(".bv_assayDate").change()
+					expect(@fpkc.$(".bv_group_assayDate").hasClass("error")).toBeTruthy()

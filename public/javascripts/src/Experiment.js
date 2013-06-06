@@ -44,6 +44,7 @@
 
     ExperimentState.prototype.initialize = function() {
       var _this = this;
+
       if (this.has('experimentValues')) {
         if (!(this.get('experimentValues') instanceof ExperimentValueList)) {
           this.set({
@@ -58,6 +59,7 @@
 
     ExperimentState.prototype.parse = function(resp) {
       var _this = this;
+
       if (resp.experimentValues != null) {
         if (!(resp.experimentValues instanceof ExperimentValueList)) {
           resp.experimentValues = new ExperimentValueList(resp.experimentValues);
@@ -97,6 +99,7 @@
 
     ExperimentStateList.prototype.getStateValueByTypeAndKind = function(stype, skind, vtype, vkind) {
       var states, value, values;
+
       value = null;
       states = this.getStatesByTypeAndKind(stype, skind);
       if (states.length > 0) {
@@ -117,8 +120,7 @@
 
     function Experiment() {
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
-      this.parse = __bind(this.parse, this);
-      _ref4 = Experiment.__super__.constructor.apply(this, arguments);
+      this.parse = __bind(this.parse, this);      _ref4 = Experiment.__super__.constructor.apply(this, arguments);
       return _ref4;
     }
 
@@ -142,6 +144,7 @@
 
     Experiment.prototype.parse = function(resp) {
       var _this = this;
+
       if (resp.experimentLabels != null) {
         if (!(resp.experimentLabels instanceof LabelList)) {
           resp.experimentLabels = new LabelList(resp.experimentLabels);
@@ -204,6 +207,7 @@
 
     Experiment.prototype.setupCompositeChangeTriggers = function() {
       var _this = this;
+
       this.get('experimentLabels').on('change', function() {
         return _this.trigger('change');
       });
@@ -214,10 +218,12 @@
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
       var estates, pstates;
+
       estates = new ExperimentStateList();
       pstates = protocol.get('protocolStates');
       pstates.each(function(st) {
         var estate, evals, svals;
+
         estate = new ExperimentState(_.clone(st.attributes));
         estate.unset('id');
         estate.unset('lsTransaction');
@@ -226,6 +232,7 @@
         svals = st.get('protocolValues');
         svals.each(function(sv) {
           var evalue;
+
           evalue = new ProtocolValue(sv.attributes);
           evalue.unset('id');
           evalue.unset('lsTransaction');
@@ -247,6 +254,7 @@
 
     Experiment.prototype.validate = function(attrs) {
       var bestName, errors, nameError;
+
       errors = [];
       bestName = attrs.experimentLabels.pickBestName();
       nameError = false;
@@ -297,8 +305,7 @@
       this.handleDescriptionChanged = __bind(this.handleDescriptionChanged, this);
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
       this.handleRecordedByChanged = __bind(this.handleRecordedByChanged, this);
-      this.render = __bind(this.render, this);
-      _ref5 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref5 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
       return _ref5;
     }
 
@@ -323,6 +330,7 @@
 
     ExperimentBaseController.prototype.render = function() {
       var bestName, date;
+
       $(this.el).empty();
       $(this.el).html(this.template());
       if (this.model.get('protocol') !== null) {
@@ -358,11 +366,13 @@
 
     ExperimentBaseController.prototype.getAndShowProtocolName = function() {
       var _this = this;
+
       if (this.model.get('protocol') !== null) {
         if (this.model.get('protocol').isStub()) {
           return this.model.get('protocol').fetch({
             success: function() {
               var newProtName;
+
               newProtName = _this.model.get('protocol').get('protocolLabels').pickBestLabel().get('labelText');
               _this.updateProtocolNameField(newProtName);
               return _this.setUseProtocolParametersDisabledState();
@@ -382,6 +392,7 @@
 
     ExperimentBaseController.prototype.getDescriptionValue = function() {
       var desc, value;
+
       value = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment info", "stringValue", "description");
       desc = "";
       if (value !== null) {
@@ -411,6 +422,7 @@
 
     ExperimentBaseController.prototype.handleNameChanged = function() {
       var newName;
+
       newName = this.$('.bv_experimentName').val().trim();
       return this.model.get('experimentLabels').setBestName(new Label({
         labelKind: "experiment name",
@@ -434,6 +446,7 @@
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
       var code,
         _this = this;
+
       code = this.$('.bv_protocolCode').val();
       if (code === "") {
         this.model.set({

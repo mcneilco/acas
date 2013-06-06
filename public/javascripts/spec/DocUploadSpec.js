@@ -35,6 +35,7 @@
         });
         it('should not accept something besides "file" or "url" for docType', function() {
           var filtErrors;
+
           this.docUpload.set({
             docType: 'fred',
             currentFileName: 'myFile'
@@ -47,6 +48,7 @@
         });
         it('should require currentFileName not "" when docType=file', function() {
           var filtErrors;
+
           this.docUpload.set({
             docType: 'file',
             currentFileName: ''
@@ -59,6 +61,7 @@
         });
         return it('should require url not "" when docType=url', function() {
           var filtErrors;
+
           this.docUpload.set({
             docType: 'url',
             url: ''

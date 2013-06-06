@@ -24,6 +24,7 @@ parseFullPKData <- function(request){
   inputParameters <- request$inputParameters
   parserInput <- list(fileToParse = preprocessPK(inputParameters))
   parserInput$dryRun <- request$dryRun
-  parserInput$testMode <- request$testMode
+  parserInput$testMode <- TRUE
+  #parserInput$testMode <- request$testMode
   return(parseGenericData(parserInput))
 }

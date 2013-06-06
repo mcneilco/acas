@@ -44,7 +44,11 @@ class window.FullPK extends Backbone.Model
 		if attrs.aucType == ""
 			errors.push
 				attribute: 'aucType'
-				message: "aucType must be provided"
+				message: "AUC Type must be provided"
+		if _.isNaN(attrs.assayDate)
+			errors.push
+				attribute: 'assayDate'
+				message: "Assay date must be set"
 
 		if errors.length > 0
 			return errors
@@ -63,6 +67,7 @@ class window.FullPKController extends AbstractFormController
 		'change .bv_project': "attributeChanged"
 		'change .bv_bioavailability': "attributeChanged"
 		'change .bv_aucType': "attributeChanged"
+		'change .bv_assayDate': "attributeChanged"
 
 	initialize: ->
 		@errorOwnerName = 'FullPKController'
@@ -92,6 +97,7 @@ class window.FullPKController extends AbstractFormController
 			project: @$('.bv_project').val()
 			bioavailability: @$('.bv_bioavailability').val()
 			aucType: @$('.bv_aucType').val()
+			assayDate: new Date(@$('.bv_assayDate').val().trim()).getTime()
 
 	setupProjectSelect: ->
 		@projectList = new PickListList()
@@ -103,6 +109,13 @@ class window.FullPKController extends AbstractFormController
 				code: "unassigned"
 				name: "Select Category"
 			selectedCode: "unassigned"
+
+	disableAllInputs: ->
+		@$('input').attr 'disabled', 'disabled'
+		@$('select').attr 'disabled', 'disabled'
+
+	enableAllInputs: ->
+		@$('input').removeAttr 'disabled'
 
 
 class window.FullPKParserController extends BasicFileValidateAndSaveController
@@ -116,6 +129,37 @@ class window.FullPKParserController extends BasicFileValidateAndSaveController
 		@fpkc = new FullPKController
 			model: new FullPK()
 			el: @$('.bv_additionalValuesForm')
+		@fpkc.on 'valid', @handleFPKFormValid
+		@fpkc.on 'invalid', @handleFPKFormInvalid
+		@fpkc.on 'notifyError', @notificationController.addNotification
+		@fpkc.on 'clearErrors', @notificationController.clearAllNotificiations
 		@fpkc.render()
 
+	handleFPKFormValid: =>
+		if @parseFileUploaded
+			@handleFormValid()
 
+	handleFPKFormInvalid: =>
+		@handleFormInvalid()
+
+	handleFormValid: ->
+		if @fpkc.isValid()
+			super()
+
+	handleValidationReturnSuccess: (json) =>
+		super(json)
+		@fpkc.disableAllInputs()
+
+	showFileSelectPhase: ->
+		super()
+		if @fpkc?
+			@fpkc.enableAllInputs()
+
+	validateParseFile: =>
+		@fpkc.updateModel()
+		unless !@fpkc.isValid()
+			@additionalData =
+				inputParameters: @fpkc.model.toJSON()
+			super()
+
+	#TODO fix the date validation and model set
