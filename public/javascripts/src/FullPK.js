@@ -187,6 +187,7 @@
 
     function FullPKParserController() {
       this.validateParseFile = __bind(this.validateParseFile, this);
+      this.validateParseFile = __bind(this.validateParseFile, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.handleFPKFormInvalid = __bind(this.handleFPKFormInvalid, this);
       this.handleFPKFormValid = __bind(this.handleFPKFormValid, this);      _ref2 = FullPKParserController.__super__.constructor.apply(this, arguments);
@@ -235,6 +236,16 @@
       FullPKParserController.__super__.showFileSelectPhase.call(this);
       if (this.fpkc != null) {
         return this.fpkc.enableAllInputs();
+      }
+    };
+
+    FullPKParserController.prototype.validateParseFile = function() {
+      this.fpkc.updateModel();
+      if (!!this.fpkc.isValid()) {
+        this.additionalData = {
+          inputParameters: this.fpkc.model.toJSON()
+        };
+        return FullPKParserController.__super__.validateParseFile.call(this);
       }
     };
 
