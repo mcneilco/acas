@@ -1246,7 +1246,7 @@ validateProject <- function(projectName, configList) {
     return("")
   }
 }
-uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, configList, stateGroups) {
+uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, configList, stateGroups, reportFilePath) {
   # For use in uploading when the results go into subjects rather than analysis groups
 
   require('plyr')
@@ -1275,7 +1275,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   recordedBy <- metaData$Scientist[1]
   
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
-  
+  if(!is.null(reportFilePath)) {
+    reportFileLocation <- moveFileToExperimentFolder(reportFilePath, experiment, recordedBy, lsTransaction,configList$fileServiceType, configList$externalFileService)
+  }
   
   # Analysis group
   analysisGroup <- createAnalysisGroup(experiment=experiment,lsTransaction=lsTransaction,recordedBy=recordedBy)
@@ -1333,6 +1335,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
   
   subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex)
+
   stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
   subjectData$stateID <- stateAndVersion$entityStateId
   subjectData$stateVersion <- stateAndVersion$entityStateVersion
@@ -1350,6 +1353,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
+  subjectDataWithBatchCodeRows <<- subjectDataWithBatchCodeRows
   savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction)
   #
   #####  
@@ -1429,84 +1433,109 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                         stateGroupIndices = treatmentGroupIndices, 
                                                         lsTransaction = lsTransaction)
   
-  ### Container creation ==================================================================
-  containerIndex <- which(sapply(stateGroups, FUN=readElement, "entityKind")=="container")
-  containerValueList <- stateGroups[[containerIndex]]$valueKinds
-  containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex,]
-  
-  containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
-                                                labelTypeAndKind="id_codeName", 
-                                                numberOfLabels=length(unique(containerData$subjectID))),
-                                  use.names=FALSE)
-  
-  containerData$containerCodeName <- containerCodeNameList[as.numeric(factor(containerData$subjectID))]
-  
-  # TODO: type and kind should be in a config somewhere
-  createRawOnlyContainer <- function(containerData) {
-    return(createContainer(
-      containerType="material",
-      containerKind="animal",
-      codeName=containerData$containerCodeName[1],
-      recordedBy=recordedBy,
-      lsTransaction=lsTransaction))
-  }
-  
-  containers <- dlply(.data= containerData, .variables= .(containerCodeName), .fun= createRawOnlyContainer)
-  names(containers) <- NULL
-  
-  savedContainers <- saveAcasEntities(containers, "containers")
-  
-  containerIds <- sapply(savedContainers, getId)
-  
-  # Order is not maintained, but that is okay
-  containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
-  
-  
-  ### Container States ============================================================
-  containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
-  
-  stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
-                                              entityKind = "container", 
+  #### Analysis Group States =====================================================================
+  analysisGroupIndex <- which(sapply(stateGroups, FUN=readElement, "entityKind")=="analysis group")
+  if (length(analysisGroupIndex > 0)) {
+    analysisGroupData <- treatmentGroupDataWithBatchCodeRows
+    analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
+  stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
+                                              entityKind = "analysisgroup", 
                                               stateGroups = stateGroups,
+                                              stateGroupIndices = analysisGroupIndices,
                                               idColumn = "stateID",
                                               recordedBy = recordedBy,
                                               lsTransaction = lsTransaction)
   
-  containerData$stateID <- stateAndVersion$entityStateId
-  containerData$stateVersion <- stateAndVersion$entityStateVersion
+  analysisGroupData$stateID <- stateAndVersion$entityStateId
+  analysisGroupData$stateVersion <- stateAndVersion$entityStateVersion
   
-  containerData$containerStateID <- containerData$stateID
-  
-  ### Container Values =========================================================
-  if (is.null(containerData$stateVersion)) containerData$stateVersion <- 0
-  containerDataWithBatchCodeRows <- rbind.fill(containerData, meltBatchCodes(containerData, batchCodeStateIndices))
-  
-  savedContainerValues <- saveValuesFromLongFormat(entityData = containerDataWithBatchCodeRows, 
-                                                   entityKind = "container", 
-                                                   stateGroups = stateGroups, 
-                                                   lsTransaction = lsTransaction)
-  
-  ### Itx Subject Container =========================================================
-  
-  createRawOnlyItxSubjectContainer <- function(containerData, recordedBy, lsTransaction) {
-    createSubjectContainerInteraction(
-      interactionType = "refers to",
-      interactionKind = "test subject",
-      subject = list(id=containerData$subjectID[1], version = 0),
-      container = list(id=containerData$containerID[1], version = 0),
-      recordedBy=recordedBy,
-      lsTransaction=lsTransaction)
+  analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
+  #### Analysis Group Values =====================================================================
+    savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
+                                                          entityKind = "analysisgroup", 
+                                                          stateGroups = stateGroups, 
+                                                          stateGroupIndices = analysisGroupIndices, 
+                                                          lsTransaction = lsTransaction)
   }
-  
-  subjectContainerInteractions <- dlply(.data = containerData,
-                                        .variables = c("subjectID", "containerID"),
-                                        .fun = createRawOnlyItxSubjectContainer,
-                                        recordedBy=recordedBy, lsTransaction=lsTransaction)
-  
-  names(subjectContainerInteractions) <- NULL
-  
-  savedSubjectContainerInteractions <- saveAcasEntities(entities=subjectContainerInteractions,acasCategory="itxsubjectcontainers")   
-  
+  ### Container creation ==================================================================
+  containerIndex <- which(sapply(stateGroups, FUN=readElement, "entityKind")=="container")
+  if (length(containerIndex > 0)) {
+    containerValueList <- stateGroups[[containerIndex]]$valueKinds
+    containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex,]
+    
+    containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
+                                                  labelTypeAndKind="id_codeName", 
+                                                  numberOfLabels=length(unique(containerData$subjectID))),
+                                    use.names=FALSE)
+    
+    containerData$containerCodeName <- containerCodeNameList[as.numeric(factor(containerData$subjectID))]
+    
+    # TODO: type and kind should be in a config somewhere
+    createRawOnlyContainer <- function(containerData) {
+      return(createContainer(
+        containerType="material",
+        containerKind="animal",
+        codeName=containerData$containerCodeName[1],
+        recordedBy=recordedBy,
+        lsTransaction=lsTransaction))
+    }
+    
+    containers <- dlply(.data= containerData, .variables= .(containerCodeName), .fun= createRawOnlyContainer)
+    names(containers) <- NULL
+    
+    savedContainers <- saveAcasEntities(containers, "containers")
+    
+    containerIds <- sapply(savedContainers, getId)
+    
+    # Order is not maintained, but that is okay
+    containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
+    
+    
+    ### Container States ============================================================
+    containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
+    
+    stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
+                                                entityKind = "container", 
+                                                stateGroups = stateGroups,
+                                                idColumn = "stateID",
+                                                recordedBy = recordedBy,
+                                                lsTransaction = lsTransaction)
+    
+    containerData$stateID <- stateAndVersion$entityStateId
+    containerData$stateVersion <- stateAndVersion$entityStateVersion
+    
+    containerData$containerStateID <- containerData$stateID
+    
+    ### Container Values =========================================================
+    if (is.null(containerData$stateVersion)) containerData$stateVersion <- 0
+    containerDataWithBatchCodeRows <- rbind.fill(containerData, meltBatchCodes(containerData, batchCodeStateIndices))
+    
+    savedContainerValues <- saveValuesFromLongFormat(entityData = containerDataWithBatchCodeRows, 
+                                                     entityKind = "container", 
+                                                     stateGroups = stateGroups, 
+                                                     lsTransaction = lsTransaction)
+    
+    ### Itx Subject Container =========================================================
+    
+    createRawOnlyItxSubjectContainer <- function(containerData, recordedBy, lsTransaction) {
+      createSubjectContainerInteraction(
+        interactionType = "refers to",
+        interactionKind = "test subject",
+        subject = list(id=containerData$subjectID[1], version = 0),
+        container = list(id=containerData$containerID[1], version = 0),
+        recordedBy=recordedBy,
+        lsTransaction=lsTransaction)
+    }
+    
+    subjectContainerInteractions <- dlply(.data = containerData,
+                                          .variables = c("subjectID", "containerID"),
+                                          .fun = createRawOnlyItxSubjectContainer,
+                                          recordedBy=recordedBy, lsTransaction=lsTransaction)
+    
+    names(subjectContainerInteractions) <- NULL
+    
+    savedSubjectContainerInteractions <- saveAcasEntities(entities=subjectContainerInteractions,acasCategory="itxsubjectcontainers")   
+  }
   return(lsTransaction)
 }
 uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
@@ -1781,7 +1810,9 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   return(NULL)
 }
-runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationComments=NULL,dryRun,developmentMode = FALSE,testOutputLocation="./JSONoutput.json",configList, testMode = FALSE) {
+runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serverPath,
+                    lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
+                    configList, testMode = FALSE) {
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   
@@ -1916,7 +1947,7 @@ runMain <- function(pathToGenericDataFormatExcelFile,serverPath,lsTranscationCom
   if(!dryRun & errorFree) {
     if(rawOnlyFormat) {      
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
-                        serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, stateGroups)
+                        serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, stateGroups, reportFilePath)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
@@ -2168,6 +2199,7 @@ parseGenericData <- function(request) {
   pathToGenericDataFormatExcelFile <- request$fileToParse
   dryRun <- request$dryRun
   testMode <- request$testMode
+  reportFilePath <- request$reportFilePath
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
@@ -2192,6 +2224,7 @@ parseGenericData <- function(request) {
   
   # Run the function and save output (value), errors, and warnings
   loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
+                                     reportFilePath = reportFilePath,
                                      serverPath = configList$serverPath,
                                      dryRun = dryRun,
                                      developmentMode = developmentMode,

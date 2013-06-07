@@ -35,7 +35,7 @@ addUnits <- function(df){
 }
 ##pivot the t/c data into short/wide columns
 pivotTimeConc <- function(df){
-  tc <- data.frame(t(df[,c("Time (hr)","Concentration (ng/mL)")]))
+  tc <- data.frame(t(df[,c("Time (hr)","PK_Concentration (ng/mL)")]))
   for (i in 1:ncol(tc)){
     names(tc)[i] <- paste("PK_Concentration ", tc[1,i], "hr(ng/mL)", sep="")
   }
@@ -94,7 +94,8 @@ preprocessPK <- function(parameterList) {
   originalDir <- getwd()
   #perlexe <- "C:\\strawberry\\perl\\bin\\perl.exe"
   perlexe <- "perl"
-  textColumns <- data.frame(c("Animal", "Route", "Formulation", "Gender", "Batch", "AUCType", "food_effect"))
+  textColumns <- data.frame(c("Animal", "Route", "Formulation", "Gender", "Batch", "AUCType", "food_effect", "Species"))
+  doNotRepeat <- c("Corporate Batch ID", "Formulation")
   
   ##Get args()
   ## in1 is the data file
@@ -164,15 +165,27 @@ preprocessPK <- function(parameterList) {
   
   #add the data type row and apply 3 sig figs to numeric data
   finalDF <- rbind(typeRow(finalDF, textColumns), finalDF)
-  for(i in which(finalDF["X.Number",]=="Number")){
-    finalDF[4:nrow(finalDF),i] <- signif(as.numeric(finalDF[4:nrow(finalDF),i]), digits=3)
+  for(i in which(finalDF[1,]=="Number")){
+    finalDF[3:nrow(finalDF),i] <- signif(as.numeric(finalDF[3:nrow(finalDF),i]), digits=3)
   }
   
   #clean-up steps
   row.names(finalDF) <- 1:nrow(finalDF)
-  #finalDF <- rbind(finalDF[1:2,], finalDF[4:nrow(finalDF),])
   finalDF <- data.frame(finalDF, stringsAsFactors=F)
   finalDF[2,grep("Batch", names(finalDF))] <- "Corporate Batch ID"
+  
+  #split the Routes out to their own columns and add the route to the name row
+  finalIVdf <- rbind(finalDF[1:2,], finalDF[grep("IV", finalDF[,"Route"]),])
+  finalIVdf[2,] <- paste("IV - ", finalIVdf[2,], sep="")
+  for (label in doNotRepeat) {
+    finalIVdf[2,grep(paste0("IV - ", label), finalIVdf[2,])] <- label
+  }
+  finalPOdf <- rbind(finalDF[1:2,which(!finalDF[2,] %in% doNotRepeat)], finalDF[grep("PO", finalDF[,"Route"]),which(!finalDF[2,] %in% doNotRepeat)])
+  finalPOdf[2,] <- paste("PO - ", finalPOdf[2,], sep="")
+  finalDF <- cbind(finalIVdf, finalPOdf)
+  
+  #remove columns that contain only <NA>
+  finalDF <- finalDF[,colSums(is.na(finalDF[3:nrow(finalDF),]))<3]
   
   #add the header block to the top of the data.frame
   names(headerBlock) <- names(finalDF)[1:2]
