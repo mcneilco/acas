@@ -9,6 +9,8 @@ class window.DocForBatches extends Backbone.Model
 				id: js.id
 				docUpload: new DocUpload(js.docUpload)
 				batchNameList: new BatchNameList(js.batchNameList)
+		else if  @has('experiment')
+			@updateDocForBatches()
 		else
 			@_fetchStubProtocol()
 			if not @has('docUpload')
@@ -114,36 +116,40 @@ class window.DocForBatches extends Backbone.Model
 
 		exp
 	updateDocForBatches: ->
-		newDocUpload = new DocUpload()
+		newDocUpload = new DocUpload
+			id:1
 		newBatchNameList= new BatchNameList()
-		console.log @get('experiment')
 		@get('experiment').get('analysisGroups').at(0).get('analysisGroupStates').each (analysisGroupState) ->
 			analysisGroupState.get('analysisGroupValues').each (analysisGroupValue) ->
 				valueType= analysisGroupValue.get('valueType')
-				console.log valueType
+				value = analysisGroupValue.get(valueType)
 				switch valueType
 					when "fileValue"
-						if  analysisGroupValue.get('fileValue')!= null
+						if value!= null
 							newDocUpload.set
-								currentFileName: analysisGroupValue.get('fileValue')
+								id: analysisGroupValue.get('id')
+								currentFileName: value
+								docType: "file"
 					when "urlValue"
-						if  analysisGroupValue.get('urlValue')!= null
+						if value!= null
 							newDocUpload.set
-								url: analysisGroupValue.get('urlValue')
+								id: analysisGroupValue.get('id')
+								url: value
+								docType: "url"
 					when "stringValue"
-						if  analysisGroupValue.get('stringValue')!= null
+						if value!= null
 							newDocUpload.set
-								documentKind: analysisGroupValue.get('stringValue')
+								documentKind: value
 					when "codeValue"
-						if  analysisGroupValue.get('codeValue')!= null
+						if value!= null
 							newBatchName= new BatchName
 								id: analysisGroupValue.id
-								preferredName: analysisGroupValue.get('codeValue')
+								preferredName: value
 								comment: analysisGroupValue.get('comments')
 							newBatchNameList.add(newBatchName)
 		@set
-			batchNameList: newBatchNameList
-			docUpload: newDocUpload
+			batchNameList : newBatchNameList
+			docUpload : newDocUpload
 		@
 
 
@@ -204,22 +210,21 @@ class window.DocForBatchesController extends Backbone.View
 
 	save: =>
 		if @model.isValid()
-			exp = @model.asExperiment()
-			exp.save(null,{
-			wait:true,
-			success:(model, response)=>
-				console.log('Successfully saved!')
-				console.log(model)
-				@model.set
-					experiment: model
-				@model.updateDocForBatches()
-				@trigger 'amClean'
-				@render()
-			error: (model, error)=>
-				console.log(model.toJSON())
-				console.log('error.responseText')
-			})
-			console.log @model
+			#console.log @model.attributes
+			$.ajax
+				type: 'POST'
+				url: "/api/docForBatches"
+				data:
+					docForBatches: JSON.stringify(@model)
+					user: window.AppLaunchParams.loginUserName
+				success: (response) =>
+					@model.set
+						id: response.results.id
+					@trigger 'amClean'
+					@render()
+				error: (err) =>
+					@serviceReturn = null
+				dataType: 'json'
 
 	resetForm: =>
 		$(@el).empty()

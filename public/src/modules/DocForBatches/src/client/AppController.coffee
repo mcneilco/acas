@@ -41,11 +41,12 @@ class window.AppController extends Backbone.View
 		@docForBatchesController.render()
 
 	existingDoc: (docId) =>
-		console.log docId
 		$.ajax
 			type: 'GET'
-			url: "/api/docForBatches/"+docId
+#			url: "/api/docForBatches/"+docId
+			url: "/api/experiments/"+docId
 			success: (json) =>
+				console.log "success from getting existing doc"
 				@existingDocReturn(json)
 			error: (err) =>
 				console.log 'got ajax error in get existing doc'
@@ -53,7 +54,19 @@ class window.AppController extends Backbone.View
 			dataType: 'json'
 
 	existingDocReturn: (json) =>
+#		@docForBatchesController = new DocForBatchesController
+#			el: @$('.docForBatches')
+#			model: new DocForBatches( json: json )
+#		@docForBatchesController.render()
+
+		@exp = new Experiment( json )
+		console.log "existing return experiment"
+		console.log @exp
+		@dfb = new DocForBatches
+			experiment: @exp
+		console.log "existing return docForBatches"
+		console.log @dfb
 		@docForBatchesController = new DocForBatchesController
 			el: @$('.docForBatches')
-			model: new DocForBatches( json: json )
+			model: @dfb
 		@docForBatchesController.render()

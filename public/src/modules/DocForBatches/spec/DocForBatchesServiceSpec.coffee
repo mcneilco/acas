@@ -73,7 +73,7 @@ describe 'DocForBatches Service testing', ->
 					$.ajax
 						type: 'POST'
 						#todo:shall we change this?
-						url: "api/experiments"
+						url: "api/docForBatches"
 						data: goodExperimentExampleData
 						success: (json) =>
 							@serviceReturn = json
@@ -103,7 +103,7 @@ describe 'DocForBatches Service testing', ->
 				goodExampleData.docForBatches.batchNameList[0].preferredName = ""
 				$.ajax
 					type: 'POST'
-					url: "api/experiments"
+					url: "api/docForBatches"
 					data: goodExampleData
 					success: (json) =>
 						@serviceReturn = json

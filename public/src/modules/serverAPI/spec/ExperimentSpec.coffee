@@ -88,12 +88,12 @@ describe "Experiment module testing", ->
 					expect(@exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy()
 		describe "when loaded from existing", ->
 			beforeEach ->
-				@exp = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
+				@exp = new Experiment window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup
 			describe "after initial load", ->
 				it "should have a kind", ->
-					expect(@exp.get('kind')).toEqual "primary screen experiment"
+					expect(@exp.get('kind')).toEqual "ACAS doc for batches"
 				it "should have the protocol set ", ->
-					expect(@exp.get('protocol').id).toEqual 269
+					expect(@exp.get('protocol').id).toEqual 2403
 				it "should have the analysisGroups set ", ->
 					expect(@exp.get('analysisGroups').length).toEqual 1
 				it "should have the analysisGroup List", ->
@@ -104,6 +104,7 @@ describe "Experiment module testing", ->
 					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy()
 
 				it "should have the analysisGroupStates stateKind ", ->
+					console.log @exp.get('analysisGroups').at(0).get('analysisGroupStates')
 					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateKind')).toEqual 'Document for Batch'
 				it "should have the analysisGroupStates stateType", ->
 					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateType')).toEqual 'results'
@@ -112,6 +113,10 @@ describe "Experiment module testing", ->
 
 				it "should have the AnalysisGroupValues ", ->
 					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy()
+				it "should have the AnalysisGroupValues array", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').length).toEqual 3
+				it "should have the AnalysisGroupValue ", ->
+					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0) instanceof AnalysisGroupValue).toBeTruthy()
 				it "should have the AnalysisGroupValue valueKind ", ->
 					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual "annotation"
 				it "should have the AnalysisGroupValue valueType", ->
@@ -123,19 +128,13 @@ describe "Experiment module testing", ->
 				it "should have the analysisGroup id ", ->
 					expect(@exp.get('analysisGroups').at(0).id ).toEqual 64782
 				it "should have a code ", ->
-					expect(@exp.get('codeName')).toEqual "EXPT-00000046"
+					expect(@exp.get('codeName')).toEqual "EXPT-00000222"
 				it "should have the shortDescription set", ->
-					expect(@exp.get('shortDescription')).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.shortDescription
+					expect(@exp.get('shortDescription')).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.shortDescription
 				it "should have labels", ->
-					expect(@exp.get('experimentLabels').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.experimentLabels.length
+					expect(@exp.get('experimentLabels').length).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.experimentLabels.length
 				it "should have labels", ->
 					expect(@exp.get('experimentLabels').at(0).get('labelKind')).toEqual "experiment name"
-				it "should have states ", ->
-					expect(@exp.get('experimentStates').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates.length
-				it "should have states with kind ", ->
-					expect(@exp.get('experimentStates').at(0).get('stateKind')).toEqual "experiment analysis parameters"
-				it "states should have values", ->
-					expect(@exp.get('experimentStates').at(0).get('experimentValues').at(0).get('valueKind')).toEqual "data transformation rule"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()

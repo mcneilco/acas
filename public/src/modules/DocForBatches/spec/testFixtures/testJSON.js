@@ -33,7 +33,74 @@
 		docUpload: exports.docUploadWithURL,
 		batchNameList: exports.batchNameList
 	};
-
+	exports.experiment = {
+		"analysisGroups":[{
+			"codeName":"AG-00037508",
+			"id":76499,
+			"ignored":false,
+			"kind":"ACAS doc for batches",
+			"lsTransaction":{
+				"comments":"docForBatches upload",
+				"id":554,
+				"recordedDate":1369960071000,
+				"version":0},
+			"modifiedBy":null,
+			"modifiedDate":null,
+			"recordedBy":"bob",
+			"recordedDate":1369960260000,
+			"version":0}],
+		"codeName":"EXPT-00000277",
+		"experimentLabels":[{
+			"id":35715,
+			"ignored":false,
+			"imageFile":null,
+			"labelKind":"experiment name",
+			"labelText":"EXPT-00000276",
+			"labelType":"name",
+			"labelTypeAndKind":"name_experiment name",
+			"lsTransaction":{
+				"comments":"docForBatches upload",
+				"id":554,
+				"recordedDate":1369960071000,
+				"version":0},
+			"modifiedDate":null,
+			"physicallyLabled":false,
+			"preferred":true,
+			"recordedBy":"bob",
+			"recordedDate":1369960072000,
+			"version":0}],
+		"experimentStates":[],
+		"id":76498,
+		"ignored":false,
+		"kind":"ACAS doc for batches",
+		"lsTransaction":{
+			"comments":"docForBatches upload",
+			"id":554,
+			"recordedDate":1369960071000,
+			"version":0},
+		"modifiedBy":null,
+		"modifiedDate":null,
+		"protocol":{
+			"codeName":"ACASdocForBatches",
+			"id":2403,
+			"ignored":false,
+			"kind":null,
+			"lsTransaction":{
+				"comments":"docForBatches upload",
+				"id":38,
+				"recordedDate":1362677322000,
+				"version":0},
+			"modifiedBy":null,
+			"modifiedDate":null,
+			"recordedBy":"jmcneil",
+			"recordedDate":1362677322000,
+			"shortDescription":"ACAS Doc For Batches",
+			"version":0},
+		"recordedBy":"bob",
+		"recordedDate":null,
+		"shortDescription":"sdf",
+		"version":0
+	}
 
 })((typeof process === 'undefined' || !process.versions)
    ? window.testJSON = window.testJSON || {}
