@@ -47,6 +47,7 @@ class window.AppController extends Backbone.View
 			url: "/api/experiments/"+docId
 			success: (json) =>
 				console.log "success from getting existing doc"
+				console.log json
 				@existingDocReturn(json)
 			error: (err) =>
 				console.log 'got ajax error in get existing doc'

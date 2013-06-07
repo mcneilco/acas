@@ -11,7 +11,6 @@ app.put '/api/protocols', protocolRoutes.putProtocol
 (function() {
   exports.protocolByCodename = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
-
     console.log(req.params.code);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
@@ -26,7 +25,6 @@ app.put '/api/protocols', protocolRoutes.putProtocol
 
   exports.protocolById = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
-
     console.log(req.params.id);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
@@ -42,7 +40,6 @@ app.put '/api/protocols', protocolRoutes.putProtocol
   exports.postProtocol = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
-
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
@@ -72,7 +69,6 @@ app.put '/api/protocols', protocolRoutes.putProtocol
   exports.putProtocol = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
-
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));

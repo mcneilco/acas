@@ -40,7 +40,6 @@ This suite of services provides CRUD operations on Analysis Group Objects
           });
           return it("should return requested value", function() {
             var values;
-
             values = this.ags.getValuesByTypeAndKind("codeValue", "batch code");
             expect(values.length).toEqual(1);
             return expect(values[0].get('codeValue')).toEqual("CMPD_1112");
@@ -93,8 +92,11 @@ This suite of services provides CRUD operations on Analysis Group Objects
           it("should have states with kind ", function() {
             return expect(this.ag.get('analysisGroupStates').at(0).get('stateKind')).toEqual("Document for Batch");
           });
-          return it("states should have values", function() {
+          it("states should have values", function() {
             return expect(this.ag.get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual("annotation");
+          });
+          return it("states should have ignored to be false", function() {
+            return expect(this.ag.get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('ignored')).toBeFalsy();
           });
         });
       });

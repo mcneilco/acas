@@ -37,10 +37,8 @@
       return describe("get data from server", function() {
         return it("should return the curves", function() {
           var _this = this;
-
           runs(function() {
             var _this = this;
-
             this.curveList.setExperimentCode("EXPT-00000018");
             return this.curveList.fetch({
               success: function() {
@@ -150,7 +148,6 @@
         return describe("when new model set", function() {
           return it("should set the iframe src", function() {
             var mdl;
-
             mdl = new Curve(window.curveCuratorTestJSON.curveStubs[0]);
             this.cec.setModel(mdl);
             return expect(this.cec.$('.bv_shinyContainer').attr('src')).toContain("90807_AG-00000026");

@@ -18,7 +18,6 @@
 
     DocForBatches.prototype.initialize = function() {
       var js;
-
       if (this.has('json')) {
         js = this.get('json');
         return this.set({
@@ -26,6 +25,8 @@
           docUpload: new DocUpload(js.docUpload),
           batchNameList: new BatchNameList(js.batchNameList)
         });
+      } else if (this.has('experiment')) {
+        return this.updateDocForBatches();
       } else {
         this._fetchStubProtocol();
         if (!this.has('docUpload')) {
@@ -43,7 +44,6 @@
 
     DocForBatches.prototype.validate = function(attrs) {
       var errors;
-
       errors = [];
       if (!attrs.docUpload.isValid()) {
         errors.push({
@@ -67,7 +67,6 @@
     DocForBatches.prototype._fetchStubProtocol = function() {
       var docForBatchesProtocolCode,
         _this = this;
-
       docForBatchesProtocolCode = "ACASdocForBatches";
       return $.ajax({
         type: 'GET',
@@ -87,22 +86,63 @@
     };
 
     DocForBatches.prototype.asExperiment = function() {
-      var analysisGroup, analysisGroups, eName, exp, recBy, recDate;
-
+      var analysisGroup, analysisGroupState, analysisGroupStates, analysisGroups, eName, exp, recBy, recDate, stateValue_1, stateValue_2, stateValues;
       if (!this.isValid()) {
         return null;
       }
       recBy = window.AppLaunchParams.loginUserName;
       recDate = new Date().getTime();
-      analysisGroup = new AnalysisGroup({
-        id: 123456
-      });
+      analysisGroup = new AnalysisGroup();
       analysisGroups = new AnalysisGroupList(analysisGroup);
       if (this.get('docUpload').get('docType') === "file") {
         eName = this.get('docUpload').get('currentFileName');
+        stateValue_1 = new AnalysisGroupValue({
+          valueType: 'fileValue',
+          valueKind: 'annotation',
+          value: eName,
+          ignored: false
+        });
       } else {
         eName = this.get('docUpload').get('url');
+        stateValue_1 = new AnalysisGroupValue({
+          valueType: 'urlValue',
+          valueKind: 'annotation',
+          value: eName,
+          ignored: false
+        });
       }
+      stateValue_2 = new AnalysisGroupValue({
+        valueType: 'stringValue',
+        valueKind: 'document kind',
+        value: this.get('docUpload').get('documentKind'),
+        ignored: false
+      });
+      stateValues = new AnalysisGroupValueList();
+      stateValues.add(stateValue_1);
+      stateValues.add(stateValue_2);
+      this.get('batchNameList').each(function(batchName) {
+        var stateValue;
+        stateValue = new AnalysisGroupValue({
+          valueType: 'codeValue',
+          valueKind: 'batch code',
+          comments: batchName.get('comment'),
+          value: batchName.get('preferredName'),
+          ignored: false
+        });
+        return stateValues.add(stateValue);
+      });
+      analysisGroupState = new AnalysisGroupState({
+        analysisGroupValues: stateValues,
+        stateKind: 'Document for Batch',
+        stateType: 'results',
+        recordedBy: this.protocol.get('recordedBy')
+      });
+      analysisGroupStates = new AnalysisGroupStateList();
+      analysisGroupStates.add(analysisGroupState);
+      analysisGroup = new AnalysisGroup({
+        analysisGroupStates: analysisGroupStates
+      });
+      analysisGroups = new AnalysisGroupList(analysisGroup);
       exp = new Experiment({
         protocol: this.protocol,
         kind: "ACAS doc for batches",
@@ -120,6 +160,62 @@
       return exp;
     };
 
+    DocForBatches.prototype.updateDocForBatches = function() {
+      var newBatchNameList, newDocUpload;
+      newDocUpload = new DocUpload({
+        id: 1
+      });
+      newBatchNameList = new BatchNameList();
+      this.get('experiment').get('analysisGroups').at(0).get('analysisGroupStates').each(function(analysisGroupState) {
+        return analysisGroupState.get('analysisGroupValues').each(function(analysisGroupValue) {
+          var newBatchName, value, valueType;
+          valueType = analysisGroupValue.get('valueType');
+          value = analysisGroupValue.get(valueType);
+          switch (valueType) {
+            case "fileValue":
+              if (value !== null) {
+                return newDocUpload.set({
+                  id: analysisGroupValue.get('id'),
+                  currentFileName: value,
+                  docType: "file"
+                });
+              }
+              break;
+            case "urlValue":
+              if (value !== null) {
+                return newDocUpload.set({
+                  id: analysisGroupValue.get('id'),
+                  url: value,
+                  docType: "url"
+                });
+              }
+              break;
+            case "stringValue":
+              if (value !== null) {
+                return newDocUpload.set({
+                  documentKind: value
+                });
+              }
+              break;
+            case "codeValue":
+              if (value !== null) {
+                newBatchName = new BatchName({
+                  id: analysisGroupValue.id,
+                  preferredName: value,
+                  comment: analysisGroupValue.get('comments')
+                });
+                return newBatchNameList.add(newBatchName);
+              }
+          }
+        });
+      });
+      this.set({
+        batchNameList: newBatchNameList,
+        docUpload: newDocUpload
+      });
+      return this;
+    };
+
     return DocForBatches;
 
   })(Backbone.Model);
@@ -132,7 +228,8 @@
       this.save = __bind(this.save, this);
       this.subFormIsInvalid = __bind(this.subFormIsInvalid, this);
       this.subFormIsValid = __bind(this.subFormIsValid, this);
-      this.render = __bind(this.render, this);      _ref1 = DocForBatchesController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = DocForBatchesController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -153,7 +250,6 @@
 
     DocForBatchesController.prototype.setupSubControllers = function() {
       var _this = this;
-
       this.docUploadController = new DocUploadController({
         model: this.model.get('docUpload'),
         el: this.$('.bv_docUpload')
@@ -203,7 +299,6 @@
 
     DocForBatchesController.prototype.save = function() {
       var _this = this;
-
       if (this.model.isValid()) {
         return $.ajax({
           type: 'POST',

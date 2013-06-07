@@ -11,7 +11,6 @@ app.get '/api/projects', projectServiceRoutes.getProjects
 
   exports.getProjects = function(req, resp) {
     var projectServiceTestJSON;
-
     if (global.specRunnerTestmode) {
       projectServiceTestJSON = require('../public/javascripts/spec/testFixtures/projectServiceTestJSON.js');
       return resp.end(JSON.stringify(projectServiceTestJSON.projects));
@@ -24,7 +23,6 @@ app.get '/api/projects', projectServiceRoutes.getProjects
   dnsGetProjects = function(resp) {
     var config, request,
       _this = this;
-
     config = require('../public/src/conf/configurationNode.js');
     request = require('request');
     return request({
@@ -47,12 +45,10 @@ app.get '/api/projects', projectServiceRoutes.getProjects
 
   dnsFormatProjectResponse = function(json) {
     var projects, _;
-
     _ = require('underscore');
     projects = [];
     _.each(json, function(proj) {
       var p;
-
       p = proj.DNSCode;
       return projects.push({
         code: p.code,

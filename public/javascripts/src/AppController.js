@@ -9,7 +9,8 @@
 
     function AppRouter() {
       this.existingDoc = __bind(this.existingDoc, this);
-      this.newDoc = __bind(this.newDoc, this);      _ref = AppRouter.__super__.constructor.apply(this, arguments);
+      this.newDoc = __bind(this.newDoc, this);
+      _ref = AppRouter.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -43,7 +44,8 @@
       this.existingDocReturn = __bind(this.existingDocReturn, this);
       this.existingDoc = __bind(this.existingDoc, this);
       this.newDoc = __bind(this.newDoc, this);
-      this.render = __bind(this.render, this);      _ref1 = AppController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = AppController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -75,12 +77,12 @@
 
     AppController.prototype.existingDoc = function(docId) {
       var _this = this;
-
-      console.log(docId);
       return $.ajax({
         type: 'GET',
-        url: "/api/docForBatches/" + docId,
+        url: "/api/experiments/" + docId,
         success: function(json) {
+          console.log("success from getting existing doc");
+          console.log(json);
           return _this.existingDocReturn(json);
         },
         error: function(err) {
@@ -92,11 +94,17 @@
     };
 
     AppController.prototype.existingDocReturn = function(json) {
+      this.exp = new Experiment(json);
+      console.log("existing return experiment");
+      console.log(this.exp);
+      this.dfb = new DocForBatches({
+        experiment: this.exp
+      });
+      console.log("existing return docForBatches");
+      console.log(this.dfb);
       this.docForBatchesController = new DocForBatchesController({
         el: this.$('.docForBatches'),
-        model: new DocForBatches({
-          json: json
-        })
+        model: this.dfb
       });
       return this.docForBatchesController.render();
     };

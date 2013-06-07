@@ -12,6 +12,14 @@
       return _ref;
     }
 
+    AnalysisGroupValue.prototype.defaults = {
+      valueKind: "",
+      valueType: "",
+      value: "",
+      comments: "",
+      ignored: false
+    };
+
     return AnalysisGroupValue;
 
   })(Backbone.Model);
@@ -39,7 +47,10 @@
     }
 
     AnalysisGroupState.prototype.defaults = {
-      analysisGroupValues: new AnalysisGroupValueList()
+      analysisGroupValues: new AnalysisGroupValueList(),
+      recordedBy: '',
+      stateType: 'results',
+      stateKind: 'Document for Batch'
     };
 
     AnalysisGroupState.prototype.initialize = function() {
@@ -80,7 +91,8 @@
     __extends(AnalysisGroup, _super);
 
     function AnalysisGroup() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);      _ref4 = AnalysisGroup.__super__.constructor.apply(this, arguments);
+      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      _ref4 = AnalysisGroup.__super__.constructor.apply(this, arguments);
       return _ref4;
     }
 

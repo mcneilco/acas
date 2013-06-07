@@ -46,7 +46,8 @@
     function CurveSummaryController() {
       this.clearSelected = __bind(this.clearSelected, this);
       this.setSelected = __bind(this.setSelected, this);
-      this.render = __bind(this.render, this);      _ref2 = CurveSummaryController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref2 = CurveSummaryController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
@@ -62,7 +63,6 @@
 
     CurveSummaryController.prototype.render = function() {
       var curveUrl;
-
       this.$el.empty();
       curveUrl = configurationNode.serverConfigurationParams.configuration.rapache + "/curve/render/?legend=false&curveIds=";
       curveUrl += this.model.get('curveid') + "&height=200&width=250&axes=false";
@@ -95,7 +95,8 @@
 
     function CurveSummaryListController() {
       this.selectionUpdated = __bind(this.selectionUpdated, this);
-      this.render = __bind(this.render, this);      _ref3 = CurveSummaryListController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref3 = CurveSummaryListController.__super__.constructor.apply(this, arguments);
       return _ref3;
     }
 
@@ -103,12 +104,10 @@
 
     CurveSummaryListController.prototype.render = function() {
       var _this = this;
-
       this.$el.empty();
       this.$el.html(this.template());
       this.collection.each(function(cs) {
         var csController;
-
         csController = new CurveSummaryController({
           model: cs
         });
@@ -133,7 +132,8 @@
 
     function CurveEditorController() {
       this.shinyLoaded = __bind(this.shinyLoaded, this);
-      this.render = __bind(this.render, this);      _ref4 = CurveEditorController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref4 = CurveEditorController.__super__.constructor.apply(this, arguments);
       return _ref4;
     }
 
@@ -142,7 +142,6 @@
     CurveEditorController.prototype.render = function() {
       var curveUrl,
         _this = this;
-
       this.$el.empty();
       if (this.model != null) {
         if (this.model.get('curveid') !== "") {
@@ -176,7 +175,8 @@
 
     function CurveCuratorController() {
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
-      this.render = __bind(this.render, this);      _ref5 = CurveCuratorController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref5 = CurveCuratorController.__super__.constructor.apply(this, arguments);
       return _ref5;
     }
 
@@ -205,7 +205,6 @@
 
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode) {
       var _this = this;
-
       this.collection.setExperimentCode(exptCode);
       return this.collection.fetch({
         success: function() {

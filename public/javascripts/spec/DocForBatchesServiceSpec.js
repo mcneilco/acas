@@ -4,10 +4,16 @@ This service saves and fetches DocForBatches items
 
 
 (function() {
-  var goodExampleData, returnExampleError, returnExampleSuccess;
+  var goodExampleData, goodExperimentExampleData, returnExampleError, returnExampleSuccess;
 
   goodExampleData = {
     docForBatches: window.testJSON.docForBatches,
+    user: 'jmcneil'
+  };
+
+  goodExperimentExampleData = {
+    docForBatches: window.testJSON.docForBatches,
+    experiment: window.testJSON.nexExpForBatch,
     user: 'jmcneil'
   };
 
@@ -43,15 +49,14 @@ This service saves and fetches DocForBatches items
         return typeof this.serviceReturn !== 'undefined';
       };
     });
-    describe('get existing entity from docForBatches', function() {
+    describe('get existing entity from experiment', function() {
       return describe('when run with valid input', function() {
         beforeEach(function() {
           return runs(function() {
             var _this = this;
-
             return $.ajax({
               type: 'GET',
-              url: "api/docForBatches/1",
+              url: "api/experiments/1",
               success: function(json) {
                 return _this.serviceReturn = json;
               },
@@ -67,13 +72,13 @@ This service saves and fetches DocForBatches items
           waitsFor(this.waitForServiceReturn, 'service did not return', 3000);
           return runs(function() {
             console.log(this.serviceReturn);
-            return expect(this.serviceReturn.id).toEqual(1235);
+            return expect(this.serviceReturn.id).toEqual(270);
           });
         });
         return it('should return a fileName', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 3000);
           return runs(function() {
-            return expect(this.serviceReturn.docUpload.currentFileName).toEqual("exampleUploadedFile.txt");
+            return expect(this.serviceReturn.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].fileValue).toEqual("exampleUploadedFile.txt");
           });
         });
       });
@@ -83,11 +88,10 @@ This service saves and fetches DocForBatches items
         beforeEach(function() {
           return runs(function() {
             var _this = this;
-
             return $.ajax({
               type: 'POST',
               url: "api/docForBatches",
-              data: goodExampleData,
+              data: goodExperimentExampleData,
               success: function(json) {
                 return _this.serviceReturn = json;
               },
@@ -113,7 +117,7 @@ This service saves and fetches DocForBatches items
             return expect(this.serviceReturn.transactionId).toBeDefined();
           });
         });
-        return it('should return a docForBatchesID', function() {
+        return it('should return a experiment id', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 3000);
           return runs(function() {
             return expect(this.serviceReturn.results.id).toBeDefined();
@@ -123,7 +127,6 @@ This service saves and fetches DocForBatches items
       return describe('when run with bad data', function() {
         beforeEach(function() {
           var _this = this;
-
           goodExampleData.docForBatches.batchNameList[0].preferredName = "";
           return $.ajax({
             type: 'POST',

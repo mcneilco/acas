@@ -94,11 +94,78 @@
               return expect(this.exp.get('experimentLabels').pickBestName().get('labelText')).toEqual("exampleUploadedFile.txt");
             });
           });
-          return it("experiment should have analysisGroup in analysisGroupList", function() {
+          it("experiment should have analysisGroup in analysisGroupList", function() {
             return runs(function() {
               return expect(this.exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy();
             });
           });
+          it("experiment should have state in analysisGroup", function() {
+            return runs(function() {
+              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy();
+            });
+          });
+          it("experiment should have state in state list", function() {
+            return runs(function() {
+              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').length).toEqual(1);
+            });
+          });
+          it("experiment should have statevalue list in state", function() {
+            return runs(function() {
+              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy();
+            });
+          });
+          it("experiment should have statevalues", function() {
+            return runs(function() {
+              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').length).toEqual(5);
+            });
+          });
+          it("experiment should have statevalues", function() {
+            return runs(function() {
+              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0) instanceof AnalysisGroupValue).toBeTruthy();
+            });
+          });
+          it("experiment should have statevalues kind", function() {
+            return runs(function() {
+              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual('annotation');
+            });
+          });
+          it("experiment should have statevalues type", function() {
+            return runs(function() {
+              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueType')).toEqual('fileValue');
+            });
+          });
+          return it("state value should not be ignored", function() {
+            return runs(function() {
+              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('ignored')).toBeFalsy();
+            });
+          });
+        });
+      });
+      describe("create a new docForBatches from experiment", function() {
+        beforeEach(function() {
+          this.exp = new Experiment(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup);
+          return this.docForBatches = new DocForBatches({
+            experiment: this.exp
+          });
+        });
+        it("should have a experiment setup", function() {
+          return expect(this.docForBatches.get('experiment') instanceof Experiment).toBeTruthy();
+        });
+        it("should setup a currentFileName from fileValue", function() {
+          console.log(this.docForBatches);
+          return expect(this.docForBatches.get('docUpload').get('currentFileName')).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].fileValue);
+        });
+        it("should not setup a url from urlValue", function() {
+          return expect(this.docForBatches.get('docUpload').get('url')).toEqual('');
+        });
+        it("should setup a documentKind from stringValue", function() {
+          return expect(this.docForBatches.get('docUpload').get('documentKind')).toEqual('experiment');
+        });
+        it("should setup a banchNameList from analysisGroupValue", function() {
+          return expect(this.docForBatches.get('batchNameList').length).toEqual(3);
+        });
+        return it("should setup a banchNameList from analysisGroupValue", function() {
+          return expect(this.docForBatches.get('batchNameList').at(0).get('preferredName')).toEqual('CMPD_1112');
         });
       });
       return describe('New from JSON', function() {

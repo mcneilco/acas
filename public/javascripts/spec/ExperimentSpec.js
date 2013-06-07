@@ -37,7 +37,6 @@
           });
           it("should return requested value", function() {
             var values;
-
             values = this.es.getValuesByTypeAndKind("stringValue", "data transformation rule");
             expect(values.length).toEqual(1);
             return expect(values[0].get('stringValue')).toEqual("(maximum-minimum)/minimum");
@@ -45,7 +44,6 @@
           return it("should trigger change when value changed in state", function() {
             runs(function() {
               var _this = this;
-
               this.stateChanged = false;
               this.es.on('change', function() {
                 return _this.stateChanged = true;
@@ -88,7 +86,6 @@
       describe("Get states by type and kind", function() {
         return it("should return requested state", function() {
           var values;
-
           values = this.esl.getStatesByTypeAndKind("metadata", "experiment analysis parameters");
           expect(values.length).toEqual(1);
           return expect(values[0].get('stateTypeAndKind')).toEqual("metadata_experiment analysis parameters");
@@ -97,7 +94,6 @@
       return describe("Get value by type and kind", function() {
         return it("should return requested value", function() {
           var value;
-
           value = this.esl.getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
           return expect(value.get('stringValue')).toEqual("(maximum-minimum)/minimum");
         });
@@ -136,14 +132,14 @@
       });
       describe("when loaded from existing", function() {
         beforeEach(function() {
-          return this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
+          return this.exp = new Experiment(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup);
         });
         return describe("after initial load", function() {
           it("should have a kind", function() {
-            return expect(this.exp.get('kind')).toEqual("primary screen experiment");
+            return expect(this.exp.get('kind')).toEqual("ACAS doc for batches");
           });
           it("should have the protocol set ", function() {
-            return expect(this.exp.get('protocol').id).toEqual(269);
+            return expect(this.exp.get('protocol').id).toEqual(2403);
           });
           it("should have the analysisGroups set ", function() {
             return expect(this.exp.get('analysisGroups').length).toEqual(1);
@@ -152,32 +148,56 @@
             return expect(this.exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy();
           });
           it("should have the analysisGroup ", function() {
-            console.log(this.exp.get('analysisGroups').at(0) instanceof AnalysisGroup);
             return expect(this.exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy();
+          });
+          it("should have the analysisGroupStates ", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy();
+          });
+          it("should have the analysisGroupStates stateKind ", function() {
+            console.log(this.exp.get('analysisGroups').at(0).get('analysisGroupStates'));
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateKind')).toEqual('Document for Batch');
+          });
+          it("should have the analysisGroupStates stateType", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateType')).toEqual('results');
+          });
+          it("should have the analysisGroupStates recordedBy", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('recordedBy')).toEqual('jmcneil');
+          });
+          it("should have the AnalysisGroupValues ", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy();
+          });
+          it("should have the AnalysisGroupValues array", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').length).toEqual(3);
+          });
+          it("should have the AnalysisGroupValue ", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0) instanceof AnalysisGroupValue).toBeTruthy();
+          });
+          it("should have the AnalysisGroupValue valueKind ", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual("annotation");
+          });
+          it("should have the AnalysisGroupValue valueType", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueType')).toEqual("fileValue");
+          });
+          it("should have the AnalysisGroupValue value", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(1).get('analysisGroupValues').at(0).get('value')).toEqual("");
+          });
+          it("should have the AnalysisGroupValue comment", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('comments')).toEqual("ok");
           });
           it("should have the analysisGroup id ", function() {
             return expect(this.exp.get('analysisGroups').at(0).id).toEqual(64782);
           });
           it("should have a code ", function() {
-            return expect(this.exp.get('codeName')).toEqual("EXPT-00000046");
+            return expect(this.exp.get('codeName')).toEqual("EXPT-00000222");
           });
           it("should have the shortDescription set", function() {
-            return expect(this.exp.get('shortDescription')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.shortDescription);
+            return expect(this.exp.get('shortDescription')).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.shortDescription);
           });
           it("should have labels", function() {
-            return expect(this.exp.get('experimentLabels').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.experimentLabels.length);
+            return expect(this.exp.get('experimentLabels').length).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.experimentLabels.length);
           });
-          it("should have labels", function() {
+          return it("should have labels", function() {
             return expect(this.exp.get('experimentLabels').at(0).get('labelKind')).toEqual("experiment name");
-          });
-          it("should have states ", function() {
-            return expect(this.exp.get('experimentStates').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates.length);
-          });
-          it("should have states with kind ", function() {
-            return expect(this.exp.get('experimentStates').at(0).get('stateKind')).toEqual("experiment analysis parameters");
-          });
-          return it("states should have values", function() {
-            return expect(this.exp.get('experimentStates').at(0).get('experimentValues').at(0).get('valueKind')).toEqual("data transformation rule");
           });
         });
       });
@@ -214,7 +234,6 @@
         it("should trigger change when label changed", function() {
           runs(function() {
             var _this = this;
-
             this.exp = new Experiment();
             this.experimentChanged = false;
             this.exp.get('experimentLabels').setBestName(new Label({
@@ -244,7 +263,6 @@
         return it("should trigger change when value changed in state", function() {
           runs(function() {
             var _this = this;
-
             this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
             this.experimentChanged = false;
             this.exp.on('change', function() {
@@ -271,7 +289,6 @@
         });
         it("should be invalid when name is empty", function() {
           var filtErrors;
-
           this.exp.get('experimentLabels').setBestName(new Label({
             labelKind: "experiment name",
             labelText: "",
@@ -286,7 +303,6 @@
         });
         it("should be invalid when date is empty", function() {
           var filtErrors;
-
           this.exp.set({
             recordedDate: new Date("").getTime()
           });
@@ -298,7 +314,6 @@
         });
         return it("should be invalid when scientist not selected", function() {
           var filtErrors;
-
           this.exp.set({
             recordedBy: ""
           });
@@ -322,7 +337,6 @@
         beforeEach(function() {
           runs(function() {
             var _this = this;
-
             this.saveSucessful = false;
             this.saveComplete = false;
             this.exp = new Experiment({
@@ -369,7 +383,6 @@
       describe("When created with an unsaved experiment that has protocol attributes copied in", function() {
         beforeEach(function() {
           var _this = this;
-
           this.copied = false;
           this.exp = new Experiment();
           this.exp.on("protocol_attributes_copied", function() {
