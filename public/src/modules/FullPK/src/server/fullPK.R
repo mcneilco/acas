@@ -23,7 +23,6 @@ parseFullPKData <- function(request){
   #
   # format is set as "In Vivo Full PK"
   request <- as.list(request)
-  save(request, file="request.Rda")
   inputParameters <- request$inputParameters
   inputParameters$assayDate <- as.Date(inputParameters$assayDate, format="%s")
   inputParameters <- c(experimentMetaData = "", inputParameters)
