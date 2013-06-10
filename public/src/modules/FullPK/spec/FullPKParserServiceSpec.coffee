@@ -1,18 +1,21 @@
 ###
-This service parses data from the generic format and saves it to the database
+This service parses data from the Full PK aloonf format and saves it to the database
+It also takes a series pf parameters that would normally be in a header block
 ###
 #Service call data with good data:
 goodDataRequest =
 	fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve_with_warnings.xls"
 	reportFile: null #if user uploads report, put temp path here
+	inputParameters: window.FullPKTestJSON.validFullPK
 	dryRun: true
 	user: 'jmcneil'
 	testMode: true
 
 #Service call data with bad data:
 badDataRequest =
-	fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls"
+	fileToParse: "fred"
 	reportFile: null #if user uploads report, put temp path here
+	inputParameters:  window.FullPKTestJSON.validFullPK
 	dryRun: true
 	user: 'jmcneil'
 	testMode: true
@@ -47,7 +50,7 @@ returnExampleError =
 	]
 
 # Here is example usage
-describe 'Generic data parser Service testing', ->
+describe 'Full PK Parser Service testing', ->
 	beforeEach ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
@@ -57,7 +60,7 @@ describe 'Generic data parser Service testing', ->
 			runs ->
 				$.ajax
 					type: 'POST'
-					url: "api/genericDataParser"
+					url: "api/fullPKParser"
 					data: goodDataRequest
 					success: (json) =>
 						@serviceReturn = json
@@ -79,7 +82,7 @@ describe 'Generic data parser Service testing', ->
 			runs ->
 				$.ajax
 					type: 'POST'
-					url: "api/genericDataParser"
+					url: "api/fullPKParser"
 					data: badDataRequest
 					success: (json) =>
 						@serviceReturn = json

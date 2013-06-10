@@ -10,14 +10,20 @@ app.get '/api/projects', projectServiceRoutes.getProjects
   var dnsFormatProjectResponse, dnsGetProjects;
 
   exports.getProjects = function(req, resp) {
-    var projectServiceTestJSON;
+    var config, projectServiceTestJSON;
 
+    config = require('../public/src/conf/configurationNode.js');
     if (global.specRunnerTestmode) {
       projectServiceTestJSON = require('../public/javascripts/spec/testFixtures/projectServiceTestJSON.js');
       return resp.end(JSON.stringify(projectServiceTestJSON.projects));
     } else {
       console.log("calling live projects service");
-      return dnsGetProjects(resp);
+      if (config.serverConfigurationParams.configuration.projectsType === "ACAS") {
+        projectServiceTestJSON = require('../public/javascripts/spec/testFixtures/projectServiceTestJSON.js');
+        return resp.end(JSON.stringify(projectServiceTestJSON.projects));
+      } else if (config.serverConfigurationParams.configuration.projectsType === "DNS") {
+        return dnsGetProjects(resp);
+      }
     }
   };
 

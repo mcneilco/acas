@@ -7,6 +7,7 @@
 		exports.serverConfigurationParams.configuration.serverName = "http://localhost";
 		exports.serverConfigurationParams.configuration.portNumber = 3000;
 		exports.serverConfigurationParams.configuration.fileServiceURL = "http://localhost:8888";
+		exports.serverConfigurationParams.configuration.serverRelativeFilePath = "serverOnlyModules/blueimp-file-upload-node/public/files/";
 		exports.serverConfigurationParams.configuration.serverAddress = "ora.labsynch.com";
 		exports.serverConfigurationParams.configuration.driver = "oracle.jdbc.driver.OracleDriver";
 		exports.serverConfigurationParams.configuration.driverLocation = "public/src/modules/GenericDataParser/src/server/ojdbc6.jar";
@@ -32,8 +33,10 @@
 //		exports.serverConfigurationParams.configuration.userAuthenticationServiceURL = "http://imapp01:8080/DNS/persons/v1/Persons/authenticate";
 
 // For Projects
-		exports.serverConfigurationParams.configuration.projectsType = "DNS";
-		exports.serverConfigurationParams.configuration.projectsServiceURL = "http://dsanpimapp01:8080/DNS/core/v1/DNSCode/Project.json";
+		exports.serverConfigurationParams.configuration.projectsType = "ACAS";
+		exports.serverConfigurationParams.configuration.projectsServiceURL = "http://tbd";
+//		exports.serverConfigurationParams.configuration.projectsType = "DNS";
+//		exports.serverConfigurationParams.configuration.projectsServiceURL = "http://dsanpimapp01:8080/DNS/core/v1/DNSCode/Project.json";
 
 // For racas
 		exports.serverConfigurationParams.configuration.appName = "ACAS";

@@ -8,13 +8,17 @@
     __extends(BasicFileValidateAndSaveController, _super);
 
     function BasicFileValidateAndSaveController() {
+      this.handleFormValid = __bind(this.handleFormValid, this);
+      this.handleFormInvalid = __bind(this.handleFormInvalid, this);
       this.loadAnother = __bind(this.loadAnother, this);
       this.backToUpload = __bind(this.backToUpload, this);
-      this.handleParseFileRemoved = __bind(this.handleParseFileRemoved, this);
       this.handleSaveReturnSuccess = __bind(this.handleSaveReturnSuccess, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.parseAndSave = __bind(this.parseAndSave, this);
       this.validateParseFile = __bind(this.validateParseFile, this);
+      this.handleReportFileRemoved = __bind(this.handleReportFileRemoved, this);
+      this.handleReportFileUploaded = __bind(this.handleReportFileUploaded, this);
+      this.handleParseFileRemoved = __bind(this.handleParseFileRemoved, this);
       this.handleParseFileUploaded = __bind(this.handleParseFileUploaded, this);
       this.render = __bind(this.render, this);      _ref = BasicFileValidateAndSaveController.__super__.constructor.apply(this, arguments);
       return _ref;
@@ -30,7 +34,9 @@
 
     BasicFileValidateAndSaveController.prototype.filePassedValidation = false;
 
-    BasicFileValidateAndSaveController.prototype.serverName = SeuratAddOns.configuration.serverName;
+    BasicFileValidateAndSaveController.prototype.reportFileNameOnServer = null;
+
+    BasicFileValidateAndSaveController.prototype.loadReportFile = false;
 
     BasicFileValidateAndSaveController.prototype.filePath = "serverOnlyModules/blueimp-file-upload-node/public/files/";
 
@@ -57,18 +63,30 @@
       this.parseFileController = new LSFileInputController({
         el: this.$('.bv_parseFile'),
         inputTitle: '',
-        url: SeuratAddOns.configuration.fileServiceURL,
+        url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
         fieldIsRequired: false
       });
       this.parseFileController.on('fileInput:uploadComplete', this.handleParseFileUploaded);
       this.parseFileController.on('fileInput:removedFile', this.handleParseFileRemoved);
       this.parseFileController.render();
+      if (this.loadReportFile) {
+        this.reportFileController = new LSFileInputController({
+          el: this.$('.bv_reportFile'),
+          inputTitle: '',
+          url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
+          fieldIsRequired: false
+        });
+        this.reportFileController.on('fileInput:uploadComplete', this.handleReportFileUploaded);
+        this.reportFileController.on('fileInput:removedFile', this.handleReportFileRemoved);
+        this.reportFileController.render();
+        this.$('.bv_reportFileWrapper').show();
+      }
       return this.showFileSelectPhase();
     };
 
     BasicFileValidateAndSaveController.prototype.render = function() {
       if (!this.parseFileUploaded) {
-        this.$(".bv_next").attr('disabled', 'disabled');
+        this.handleFormInvalid();
       }
       return this;
     };
@@ -76,9 +94,24 @@
     BasicFileValidateAndSaveController.prototype.handleParseFileUploaded = function(fileName) {
       this.parseFileUploaded = true;
       this.parseFileNameOnServer = this.filePath + fileName;
-      this.$(".bv_next").removeAttr('disabled');
-      this.$(".bv_save").removeAttr('disabled');
+      this.handleFormValid();
       return this.trigger('amDirty');
+    };
+
+    BasicFileValidateAndSaveController.prototype.handleParseFileRemoved = function() {
+      this.parseFileUploaded = false;
+      this.parseFileNameOnServer = "";
+      this.notificationController.clearAllNotificiations();
+      return this.handleFormInvalid();
+    };
+
+    BasicFileValidateAndSaveController.prototype.handleReportFileUploaded = function(fileName) {
+      this.reportFileNameOnServer = this.filePath + fileName;
+      return this.trigger('amDirty');
+    };
+
+    BasicFileValidateAndSaveController.prototype.handleReportFileRemoved = function() {
+      return this.reportFileNameOnServer = null;
     };
 
     BasicFileValidateAndSaveController.prototype.validateParseFile = function() {
@@ -129,6 +162,7 @@
       }
       data = {
         fileToParse: this.parseFileNameOnServer,
+        reportFile: this.reportFileNameOnServer,
         dryRunMode: dryRun,
         user: user
       };
@@ -139,6 +173,7 @@
     BasicFileValidateAndSaveController.prototype.handleValidationReturnSuccess = function(json) {
       var summaryStr, _ref1;
 
+      console.log(json);
       summaryStr = "Validation Results: ";
       if (!json.hasError) {
         this.filePassedValidation = true;
@@ -151,9 +186,7 @@
         this.filePassedValidation = false;
         this.parseFileController.lsFileChooser.fileFailedServerValidation();
         summaryStr += "Failed due to errors ";
-        this.$(".bv_next").attr('disabled', 'disabled');
-        this.$(".bv_save").attr('disabled', 'disabled');
-        this.$('.bv_notifications').show();
+        this.handleFormInvalid();
       }
       this.showFileUploadPhase();
       this.$('.bv_resultStatus').html(summaryStr);
@@ -179,12 +212,6 @@
       this.$('.bv_resultStatus').html(summaryStr);
       this.$('.bv_saveStatusDropDown').modal("hide");
       return this.trigger('amClean');
-    };
-
-    BasicFileValidateAndSaveController.prototype.handleParseFileRemoved = function() {
-      this.parseFileUploaded = false;
-      this.notificationController.clearAllNotificiations();
-      return this.$(".bv_next").attr('disabled', 'disabled');
     };
 
     BasicFileValidateAndSaveController.prototype.backToUpload = function() {
@@ -228,6 +255,17 @@
       this.$('.bv_saveControlContainer').hide();
       this.$('.bv_completeControlContainer').show();
       return this.$('.bv_notifications').show();
+    };
+
+    BasicFileValidateAndSaveController.prototype.handleFormInvalid = function() {
+      this.$(".bv_next").attr('disabled', 'disabled');
+      this.$(".bv_save").attr('disabled', 'disabled');
+      return this.$('.bv_notifications').show();
+    };
+
+    BasicFileValidateAndSaveController.prototype.handleFormValid = function() {
+      this.$(".bv_next").removeAttr('disabled');
+      return this.$(".bv_save").removeAttr('disabled');
     };
 
     return BasicFileValidateAndSaveController;

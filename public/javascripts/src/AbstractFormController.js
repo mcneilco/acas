@@ -52,7 +52,7 @@
           message: err.message
         });
       });
-      return this.trigger("invalid");
+      return this.trigger('invalid');
     };
 
     AbstractFormController.prototype.clearValidationErrorStyles = function() {
@@ -73,9 +73,9 @@
     AbstractFormController.prototype.handleModelChange = function() {
       this.clearValidationErrorStyles();
       if (this.isValid()) {
-        return this.trigger("valid");
+        return this.trigger('valid');
       } else {
-        return this.trigger("invalid");
+        return this.trigger('invalid');
       }
     };
 

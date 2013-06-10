@@ -40,16 +40,19 @@ requiredScripts = [
 ]
 
 applicationScripts = [
-	'/src/conf/configuration.js'
-	# For serverAPI module
-	'/javascripts/src/Experiment.js'
-	'/javascripts/src/Protocol.js'
+	'/src/conf/configurationNode.js'
 	# For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
+	# For serverAPI module
+	'/javascripts/src/Label.js'
+	'/javascripts/src/AnalysisGroup.js'
+	'/javascripts/src/Experiment.js'
+	'/javascripts/src/Protocol.js'
+	'/javascripts/src/DoseResponseAnalysis.js'
 	#Primary Screen module
 	'/javascripts/src/PrimaryScreenExperiment.js'
 	'/javascripts/src/PrimaryScreenAppController.js'
