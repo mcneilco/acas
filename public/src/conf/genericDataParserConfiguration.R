@@ -1,6 +1,8 @@
 getFormatSettings <- function() {
   formatSettings <- list(
     "DNS In Vivo Behavior" = list(
+      hideAllData = TRUE,
+      extraHeaders = data.frame(),
       stateGroups = list(list(entityKind = "subject",
                               stateType = "metadata", 
                               stateKind = "animal information", 
@@ -25,6 +27,8 @@ getFormatSettings <- function() {
                               includesOthers = FALSE,
                               includesCorpName = FALSE))
     ), "In Vivo Full PK" = list(
+      hideAllData = FALSE,
+      extraHeaders = data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE),
       stateGroups = list(list(entityKind = "analysis group",
                               stateType = "data",
                               stateKind = "calculated data",
@@ -32,7 +36,7 @@ getFormatSettings <- function() {
                                              "PO - HL_Lambda_z", "IV - Tmax", "PO - Tmax", 
                                              "IV - AUClast", "PO - AUClast", "IV - AUCINF_obs", "PO - AUCINF_obs",
                                              "IV - MRTlast", "PO - MRTlast", "IV - Cl_obs", "PO - Cl_obs",
-                                             "IV - Vss_obs", "PO - Vss_obs")
+                                             "IV - Vss_obs", "PO - Vss_obs"),
                               includesOthers = FALSE,
                               includesCorpName = TRUE),
                          list(entityKind = "subject",
@@ -54,7 +58,7 @@ getFormatSettings <- function() {
                                              "PO - HL_Lambda_z", "IV - Tmax", "PO - Tmax", 
                                              "IV - AUClast", "PO - AUClast", "IV - AUCINF_obs", "PO - AUCINF_obs",
                                              "IV - MRTlast", "PO - MRTlast", "IV - Cl_obs", "PO - Cl_obs",
-                                             "IV - Vss_obs", "PO - Vss_obs")
+                                             "IV - Vss_obs", "PO - Vss_obs"),
                               includesOthers = TRUE,
                               includesCorpName = FALSE))
     )

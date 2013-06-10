@@ -20,7 +20,7 @@
 # How to run: 
 #   Before running: 
 #     Set your working directory to the checkout of SeuratAddOns
-#     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
+#     setwd("~/Documents/ACAS/")
 #   To run:
 #     parseGenericData(list(pathToGenericDataFormatExcelFile, dryRun = TRUE, ...))
 #     Example: 
@@ -28,8 +28,6 @@
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", testMode = "true"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", testMode = "true"))
-#       file.copy(from="~/Documents/clients/DNS/Neuro/Example upload 3_13_2013_testVersion.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Example upload 3_13_2013_testVersion.xlsx", dryRunMode = "true", testMode = "true"))
 #       file.copy(from="~/Documents/clients/DNS/Neuro/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", testMode = "true"))
 # To use traceback() for debugging purposes:
@@ -282,7 +280,7 @@ validateNumeric <- function(inputValue) {
   }
   return(suppressWarnings(as.numeric(as.character(inputValue))))
 }
-validateMetaData <- function(metaData, configList) {
+validateMetaData <- function(metaData, configList, formatSettings) {
   # Valides the meta data section
   #
   # Args:
@@ -318,8 +316,12 @@ validateMetaData <- function(metaData, configList) {
   if (!is.null(configList$includeProject) && configList$includeProject == "TRUE") {
     expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
   }
-  if (!is.null(configList$includeInLifeNotebook) && configList$includeInLifeNotebook == "TRUE") {
-    expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE))
+  if (length(formatSettings) > 0) {
+    expectedDataFormat <- rbind(expectedDataFormat, formatSettings[[metaData$Format]]$extraHeaders)
+  }
+  
+  if ("Assay Completion Date" %in% names(metaData)) {
+    names(metaData)[names(metaData) == "Assay Completion Date"] <- "Assay Date"
   }
   
   # Extract the expected headers from the input variable
@@ -374,11 +376,6 @@ validateMetaData <- function(metaData, configList) {
                      paste(additionalColumns,collapse="' ,'"), 
                      "'. Please remove these rows."))
     }
-  }
-  
-  metaDataNames <- names(metaData)
-  if ("Assay Completion Date" %in% metaDataNames) {
-    validatedMetaData$"Assay Date" <- validatedMetaData$"Assay Completion Date"
   }
   
   if (!is.null(metaData$Project)) {
@@ -1169,24 +1166,36 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experimentValues <- list()
   experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
                                                                      valueKind = "notebook",
-                                                                     stringValue = metaData$Notebook[1])
+                                                                     stringValue = metaData$Notebook[1],
+                                                                     lsTransaction= lsTransaction)
+  if (!is.null(metaData$"In Life Notebook")) {
+    experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
+                                                                       valueKind = "notebook",
+                                                                       stringValue = metaData$"In Life Notebook"[1],
+                                                                       lsTransaction= lsTransaction)
+  }
   if (!is.null(metaData$Page)) {
     experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
                                                                        valueKind = "notebook page",
-                                                                       stringValue = metaData$Page[1])
+                                                                       stringValue = metaData$Page[1],
+                                                                       lsTransaction= lsTransaction)
   }
   experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "dateValue",
                                                                      valueKind = "completion date",
-                                                                     dateValue = as.numeric(format(as.Date(metaData$"Assay Date"[1]), "%s"))*1000)
+                                                                     dateValue = as.numeric(format(as.Date(metaData$"Assay Date"[1]), "%s"))*1000,
+                                                                     lsTransaction= lsTransaction)
   experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
                                                                      valueKind = "status",
-                                                                     stringValue = "Approved")
+                                                                     stringValue = "Approved",
+                                                                     lsTransaction= lsTransaction)
   experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
                                                                      valueKind = "analysis status",
-                                                                     stringValue = "running")
+                                                                     stringValue = "running",
+                                                                     lsTransaction= lsTransaction)
   experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "clobValue",
                                                                      valueKind = "analysis result html",
-                                                                     clobValue = "<p>Analysis not yet completed</p>")
+                                                                     clobValue = "<p>Analysis not yet completed</p>",
+                                                                     lsTransaction= lsTransaction)
   
   if (!is.null(metaData$Project)) {
     # TODO: add to config:
@@ -1196,7 +1205,8 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
 
     experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "codeValue",
                                                                        valueKind = "project",
-                                                                       codeValue = metaData$Project[1])
+                                                                       codeValue = metaData$Project[1],
+                                                                       lsTransaction= lsTransaction)
   }
   
   # Create an experiment state for metadata
@@ -1246,18 +1256,17 @@ validateProject <- function(projectName, configList) {
     return("")
   }
 }
-uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, configList, stateGroups, reportFilePath) {
+uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
+                              configList, stateGroups, reportFilePath, hideAllData) {
   # For use in uploading when the results go into subjects rather than analysis groups
-
+  
+  # TODO: stop uploading fake corp batch id as codeValue
+  
+  
   require('plyr')
-  
-  # TODO: will become an input, probably stored in protocol
-  hideAllData <- TRUE
-  
   
   #Change in naming convention
   names(subjectData)[names(subjectData) == "analysisGroupID"] <- "subjectID"
-  
   if(hideAllData) subjectData$Hidden <- TRUE
   
   
@@ -1353,7 +1362,6 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
-  subjectDataWithBatchCodeRows <<- subjectDataWithBatchCodeRows
   savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction)
   #
   #####  
@@ -1362,7 +1370,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   treatmentValueKinds <- stateGroups[[treatmentGroupIndex]]$valueKinds
   listedValueKinds <- do.call(c,lapply(stateGroups, getElement, "valueKinds"))
   otherValueKinds <- setdiff(unique(subjectData$valueKind),listedValueKinds)
-  treatmentDataValueKinds <- c(treatmentValueKinds,otherValueKinds)
+  rawDataValueKinds <- stateGroups[sapply(stateGroups, function(x) x$stateKind)=="raw data"][[1]]$valueKinds
+  treatmentDataValueKinds <- c(treatmentValueKinds, otherValueKinds, rawDataValueKinds)
   excludedSubjects <- subjectData$subjectID[subjectData$valueKind == "Exclude"]
   treatmentDataStart <- subjectData[subjectData$valueKind %in% treatmentDataValueKinds 
                                     & !(subjectData$subjectID %in% excludedSubjects),]
@@ -1386,7 +1395,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     return(data.frame(
       "batchCode" = subjectData$batchCode[1],
       "valueKind" = subjectData$valueKind[1],
-      "vaueUnit" = subjectData$valueUnit[1],
+      "valueUnit" = subjectData$valueUnit[1],
       "Conc" = subjectData$"Conc"[1],
       "Conc Units" = subjectData$"Conc Units"[1],
       "numericValue" = resultValue,
@@ -1399,9 +1408,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       stateID = subjectData$stateID[1],
       stateVersion = subjectData$stateVersion[1],
       valueType = subjectData$valueType[1],
-      numberOfReplicates = nrow(subjectData),
+      numberOfReplicates = sum(!is.na(subjectData$numericValue)),
       uncertaintyType = if(is.numeric(resultValue)) "standard deviation" else NA,
-      uncertainty = sd(subjectData$numericValue),
+      uncertainty = if(sum(!is.na(subjectData$numericValue)) > 2) {sd(subjectData$numericValue, na.rm=TRUE)} else NA,
       stringsAsFactors=FALSE))
   }
   
@@ -1434,27 +1443,28 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                         lsTransaction = lsTransaction)
   
   #### Analysis Group States =====================================================================
-  analysisGroupIndex <- which(sapply(stateGroups, FUN=readElement, "entityKind")=="analysis group")
-  if (length(analysisGroupIndex > 0)) {
+  analysisGroupIndices <- which(sapply(stateGroups, FUN=readElement, "entityKind")=="analysis group")
+  if (length(analysisGroupIndices > 0)) {
     analysisGroupData <- treatmentGroupDataWithBatchCodeRows
     analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
-  stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
-                                              entityKind = "analysisgroup", 
-                                              stateGroups = stateGroups,
-                                              stateGroupIndices = analysisGroupIndices,
-                                              idColumn = "stateID",
-                                              recordedBy = recordedBy,
-                                              lsTransaction = lsTransaction)
-  
-  analysisGroupData$stateID <- stateAndVersion$entityStateId
-  analysisGroupData$stateVersion <- stateAndVersion$entityStateVersion
-  
-  analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
+    analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
+    stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
+                                                entityKind = "analysisgroup", 
+                                                stateGroups = stateGroups,
+                                                stateGroupIndices = analysisGroupIndices,
+                                                idColumn = "stateID",
+                                                recordedBy = recordedBy,
+                                                lsTransaction = lsTransaction)
+    
+    analysisGroupData$stateID <- stateAndVersion$entityStateId
+    analysisGroupData$stateVersion <- stateAndVersion$entityStateVersion
+    
+    analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
   #### Analysis Group Values =====================================================================
     savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
                                                           entityKind = "analysisgroup", 
                                                           stateGroups = stateGroups, 
-                                                          stateGroupIndices = analysisGroupIndices, 
+                                                          stateGroupIndices = analysisGroupIndices,
                                                           lsTransaction = lsTransaction)
   }
   ### Container creation ==================================================================
@@ -1853,16 +1863,16 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
   
-  validatedMetaData <- validateMetaData(metaData, configList)
-  
-  inputFormat <- metaData$Format
-  
   if ("stateGroupsScript" %in% names(configList)) {
     source(configList$stateGroupsScript)
     formatSettings <- getFormatSettings()
   } else {
     formatSettings <- list()
   }
+  
+  validatedMetaData <- validateMetaData(metaData, configList, formatSettings)
+  
+  inputFormat <- metaData$Format
 
   rawOnlyFormat <- inputFormat %in% names(formatSettings)
   if (rawOnlyFormat) {
@@ -1870,6 +1880,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     lockCorpBatchId <- FALSE
     replaceFakeCorpBatchId <- "Vehicle"
     stateGroups <- getStateGroups(formatSettings[[inputFormat]])
+    hideAllData <- formatSettings[[inputFormat]]$hideAllData
   } else {
     lookFor <- "Calculated Results"
     lockCorpBatchId <- TRUE
@@ -1947,7 +1958,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   if(!dryRun & errorFree) {
     if(rawOnlyFormat) {      
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
-                        serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, stateGroups, reportFilePath)
+                        serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
+                        stateGroups, reportFilePath, hideAllData)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
