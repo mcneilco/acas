@@ -166,7 +166,7 @@ preprocessPK <- function(parameterList) {
   #add the data type row and apply 3 sig figs to numeric data
   finalDF <- rbind(typeRow(finalDF, textColumns), finalDF)
   for(i in which(finalDF[1,]=="Number")){
-    finalDF[3:nrow(finalDF),i] <- signif(as.numeric(finalDF[3:nrow(finalDF),i]), digits=3)
+    finalDF[3:nrow(finalDF),i] <- suppressWarnings(signif(as.numeric(finalDF[3:nrow(finalDF),i]), digits=3))
   }
   
   #clean-up steps
@@ -200,6 +200,5 @@ preprocessPK <- function(parameterList) {
   
   #write the final output file
   write.table(finalDF, out1, na="", row.names=F, col.names = F, sep = ",")
-  print("Script completed successfully")
   return(out1)
 }
