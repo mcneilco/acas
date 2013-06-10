@@ -15,7 +15,8 @@
 # Deploy server changes to host3
 # Figure out how to store values either in protocol or in a text file
 # Information to store: lockcorpname, states to create, replaceFakeCorpBatchId
-# Remove points with Exclude from treatment groups
+# Don't blow up when all points are excluded
+# Deal with numbers in the assay date area
 
 # How to run: 
 #   Before running: 
@@ -2206,12 +2207,14 @@ parseGenericData <- function(request) {
   # This is used for outputting the JSON rather than sending it to the server
   developmentMode <- FALSE
   
+  # TODO: collect user and pull through
+  
   # Collect the information from the request
   request <- as.list(request)
   pathToGenericDataFormatExcelFile <- request$fileToParse
   dryRun <- request$dryRun
   testMode <- request$testMode
-  reportFilePath <- request$reportFilePath
+  reportFilePath <- request$reportFile
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)

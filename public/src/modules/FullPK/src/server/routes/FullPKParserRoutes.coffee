@@ -41,7 +41,7 @@ exports.parseFullPKData = (request, response)  ->
 	else
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/FullPK/src/server/fullPKStub.R",
+			"public/src/modules/FullPK/src/server/fullPK.R",
 			"parseFullPKData",
 		(rReturn) ->
 			response.end rReturn

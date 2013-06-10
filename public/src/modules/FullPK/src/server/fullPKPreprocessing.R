@@ -86,7 +86,7 @@ concUnits <- function(str){
 #########################################################################
 #########################################################################
 
-preprocessPK <- function(parameterList) {
+preprocessPK <- function(fileToParse, parameterList) {
   library(plyr)
   library(gdata)
   options(stringsAsFactors=FALSE)
@@ -102,10 +102,10 @@ preprocessPK <- function(parameterList) {
   ## in2 is the header list
   ## out1 is the output file name
   #args <- commandArgs(TRUE)
-  in1 <- parameterList$fileLocation
+  in1 <- fileToParse
   #in1 <- args[1]
   #print(in1)
-  if (is.na(in1)) {
+  if (is.null(in1)) {
     stop("need in1 file argument")
   }
   
@@ -116,7 +116,7 @@ preprocessPK <- function(parameterList) {
 #     stop("need in2 header list argument")
 #   }
   
-  out1 <- paste0(parameterList$fileLocation, "Processed.csv")
+  out1 <- paste0(in1, "Processed.csv")
   #out1 <- args[3]
   #print(out1)
 #   if (is.na(out1)) {
@@ -140,9 +140,9 @@ preprocessPK <- function(parameterList) {
   headerBlock <- cbind(row.names(headerBlock), headerBlock)
   bioavail <- headerBlock[(nrow(headerBlock)-1):(nrow(headerBlock)),]
   headerBlock <- headerBlock[1:(nrow(headerBlock)-2),]
-  headerBlock <- headerBlock[row.names(headerBlock)!="fileLocation",]
   
   #add the bioavailability data
+  row.names(bioavail)[row.names(bioavail) == "aucType"] <- "AUCType"
   rawDF <- data.frame(c(rawDF, t(bioavail)[2,]))
   rawDF[grep("IV", rawDF[,"Route"]),c("bioavailability", "AUCType")] <- NA
   
