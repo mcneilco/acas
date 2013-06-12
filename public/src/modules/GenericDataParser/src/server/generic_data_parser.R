@@ -1257,7 +1257,7 @@ validateProject <- function(projectName, configList) {
   }
 }
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
-                              configList, stateGroups, reportFilePath, hideAllData, reportFileSummary) {
+                              configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   # TODO: stop uploading fake corp batch id as codeValue
@@ -1446,6 +1446,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   analysisGroupIndices <- which(sapply(stateGroups, FUN=readElement, "entityKind")=="analysis group")
   if (length(analysisGroupIndices > 0)) {
     analysisGroupData <- treatmentGroupDataWithBatchCodeRows
+    if (!is.null(curveNames)) {
+      curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, valueKind = curveNames, publicData = TRUE, valueType = "stringValue", stringValue = c("ImageA", "ImageB", "ImageC"))
+      analysisGroupData <- rbind.fill(analysisGroupData, curveRows)
+    }
     analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
     analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
     stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
@@ -1842,10 +1846,13 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
            entityCorpName = batchCode))
     })
   
-  response <- postForm(configList$reportRegistrationURL,
+  tryCatch({response <- postForm(configList$reportRegistrationURL,
                        FILE=fileUpload(filename = reportFilePath),
                        PAYLOAD_TYPE="JSON",
                        PAYLOAD=toJSON(annotationList))
+  }, error = function(e) {
+    stop("There was an error uploading the file for batch annotation")
+  })
 }
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serverPath,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
@@ -1900,7 +1907,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   validatedMetaData <- validateMetaData(metaData, configList, formatSettings)
   
   inputFormat <- metaData$Format
-
+  
   rawOnlyFormat <- inputFormat %in% names(formatSettings)
   if (rawOnlyFormat) {
     lookFor <- "Raw Data"
@@ -1908,6 +1915,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     replaceFakeCorpBatchId <- "Vehicle"
     stateGroups <- getStateGroups(formatSettings[[inputFormat]])
     hideAllData <- formatSettings[[inputFormat]]$hideAllData
+    curveNames <- formatSettings[[inputFormat]]$curveNames
   } else {
     lookFor <- "Calculated Results"
     lockCorpBatchId <- TRUE
@@ -1987,7 +1995,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
-                        stateGroups, reportFilePath, hideAllData, reportFileSummary)
+                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
