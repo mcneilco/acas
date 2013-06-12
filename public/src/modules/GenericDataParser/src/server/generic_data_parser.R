@@ -17,6 +17,7 @@
 # Information to store: lockcorpname, states to create, replaceFakeCorpBatchId
 # Don't blow up when all points are excluded
 # Deal with numbers in the assay date area
+# Error handling for project service
 
 # How to run: 
 #   Before running: 
@@ -1088,8 +1089,6 @@ getExperimentByName <- function(experimentName, protocol, configList) {
   require('rjson')
   
   tryCatch({
-    a <- URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName))
-    save(a, file="test.Rda")
     experimentList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName))))
   }, error = function(e) {
     stop("There was an error checking if the experiment already exists. Please contact your system administrator.")
@@ -1258,11 +1257,10 @@ validateProject <- function(projectName, configList) {
   }
 }
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
-                              configList, stateGroups, reportFilePath, hideAllData) {
+                              configList, stateGroups, reportFilePath, hideAllData, reportFileSummary) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   # TODO: stop uploading fake corp batch id as codeValue
-  
   
   require('plyr')
   
@@ -1285,8 +1283,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   recordedBy <- metaData$Scientist[1]
   
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
-  if(!is.null(reportFilePath)) {
-    reportFileLocation <- moveFileToExperimentFolder(reportFilePath, experiment, recordedBy, lsTransaction,configList$fileServiceType, configList$externalFileService)
+  if(!is.null(reportFilePath) && reportFilePath != "") {
+    batchNameList <- unique(subjectData$"Corporate Batch ID")
+    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList)
   }
   
   # Analysis group
@@ -1551,7 +1550,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
 }
 uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
-                       serverPath,protocol,experiment, fileStartLocation, configList) {
+                       serverPath,protocol,experiment, fileStartLocation, configList, reportFilePath, reportFileSummary) {
   # Uploads all the data to the server
   # 
   # Args:
@@ -1592,6 +1591,10 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
+  if(!is.null(reportFilePath) && reportFilePath != "") {
+    batchNameList <- unique(calculatedResults$"Corporate Batch ID")
+    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList)
+  }
   
   # Each analysisGroupID creates an analysis group
   analysisGroups <- list()
@@ -1821,6 +1824,29 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   return(NULL)
 }
+registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList) {
+  # Registers a report as a batch annotation
+  
+  annotationList <- list(dnsAnnotation = list(name = basename(reportFilePath),
+                         #description = "report file",
+                         #dateExpired = "",
+                         showInline = "false",
+                         createdByLogin = recordedBy
+  ))
+  
+  annotationList$dnsAnnotation$annotationEntities <- lapply(batchNameList, function(batchCode) {
+    list(summary = reportFileSummary,
+         entity = list(
+           entityClass = "BATCH",
+           #entityURL = "",
+           entityCorpName = batchCode))
+    })
+  
+  response <- postForm(configList$reportRegistrationURL,
+                       FILE=fileUpload(filename = reportFilePath),
+                       PAYLOAD_TYPE="JSON",
+                       PAYLOAD=toJSON(annotationList))
+}
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serverPath,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
                     configList, testMode = FALSE) {
@@ -1957,14 +1983,16 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Upload the data if this is not a dry run
   if(!dryRun & errorFree) {
-    if(rawOnlyFormat) {      
+    reportFileSummary <- paste0(validatedMetaData$'Protocol Name', " - ", validatedMetaData$'Experiment Name')
+    if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
-                        stateGroups, reportFilePath, hideAllData)
+                        stateGroups, reportFilePath, hideAllData, reportFileSummary)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
-                 fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList)
+                 fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary)
     }
   }
   
@@ -2212,7 +2240,7 @@ parseGenericData <- function(request) {
   # Collect the information from the request
   request <- as.list(request)
   pathToGenericDataFormatExcelFile <- request$fileToParse
-  dryRun <- request$dryRun
+  dryRun <- request$dryRunMode
   testMode <- request$testMode
   reportFilePath <- request$reportFile
   

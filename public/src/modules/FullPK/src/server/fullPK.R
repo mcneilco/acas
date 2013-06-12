@@ -29,12 +29,14 @@ parseFullPKData <- function(request){
   bioavailabilityIndex <- which(names(inputParameters)=="bioavailability")
   inputParameters <- c(inputParameters[1:bioavailabilityIndex - 1], list("", "rawData"=""), inputParameters[bioavailabilityIndex:length(inputParameters)])
   parserInput <- list(fileToParse = preprocessPK(request$fileToParse, inputParameters))
-  parserInput$dryRun <- request$dryRunMode
+  parserInput$dryRunMode <- request$dryRunMode
   parserInput$reportFile <- request$reportFile
   return(parseGenericData(parserInput))
 }
 
 # Testing code
-#   request<- list(user="smeyer", dryRunMode = "true", "fileLocation"="public/src/modules/FullPK/spec/specFiles/Worksheet.xls", reportFile="serverOnlyModules/blueimp-file-upload-node/public/files/PK_formatted (5).xls")
-#   request$inputParameters <- list("format"="In Vivo Full PK","protocolName"="PK Protocol 1",scientist="Sam","experimentName"="PK experiment 2","notebook"="SAM-000123", "inLifeNotebook"="LIFE-123","assayDate"="1370822400000","project"="UNASSIGNED","bioavailability"="42.3","aucType"="AUC-0")
-# # 
+  request <- list(user="smeyer", dryRunMode = "true", "fileToParse"="public/src/modules/FullPK/spec/specFiles/Worksheet.xls", reportFile="serverOnlyModules/blueimp-file-upload-node/public/files/PK_formatted (5).xls")
+  #request <- list(user="smeyer", dryRunMode = "true", fileToParse="~/Documents/clients/DNS/PK/Input v6.xls", reportFile="serverOnlyModules/blueimp-file-upload-node/public/files/PK_formatted (5).xls")
+  request$inputParameters <- list("format"="In Vivo Full PK","protocolName"="PK Protocol 1",scientist="Sam","experimentName"="PK experiment 4","notebook"="SAM-000123", "inLifeNotebook"="LIFE-123","assayDate"="1370822400000","project"="UNASSIGNED","bioavailability"="42.3","aucType"="AUC-0")
+  parseFullPKData(request)
+# 
