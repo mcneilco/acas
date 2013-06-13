@@ -29,6 +29,7 @@ getFormatSettings <- function() {
     ), "In Vivo Full PK" = list(
       hideAllData = FALSE,
       extraHeaders = data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE),
+      curveNames = c("PO IV pk curve id", "PO pk curve id", "IV pk curve id"),
       stateGroups = list(list(entityKind = "analysis group",
                               stateType = "data",
                               stateKind = "calculated data",
@@ -60,6 +61,35 @@ getFormatSettings <- function() {
                                              "IV - MRTlast", "PO - MRTlast", "IV - Cl_obs", "PO - Cl_obs",
                                              "IV - Vss_obs", "PO - Vss_obs"),
                               includesOthers = TRUE,
+                              includesCorpName = FALSE))
+    ), "CNS PK" = list(
+      hideAllData = FALSE,
+      extraHeaders = data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE),
+      stateGroups = list(list(entityKind = "analysis group",
+                              stateType = "data",
+                              stateKind = "calculated data",
+                              valueKinds = c("PO Dose", "Time", "Plasma Conc.", "CSF Conc.", 
+                                             "Brain Conc.", "B/P Ratio", "Formulation", "Species"),
+                              includesOthers = FALSE,
+                              includesCorpName = TRUE),
+                         list(entityKind = "subject",
+                              stateType = "metadata", 
+                              stateKind = "animal information", 
+                              valueKinds = c("Animal"),
+                              includesOthers = FALSE,
+                              includesCorpName = FALSE),
+                         list(entityKind = "subject",
+                              stateType = "data",
+                              stateKind = "treatment",
+                              valueKinds = c("Formulation", "PO Dose", "Species"),
+                              includesOthers = FALSE,
+                              includesCorpName = TRUE),
+                         list(entityKind = "subject",
+                              stateType = "data",
+                              stateKind = "raw data",
+                              valueKinds = c("Time", "Plasma Conc.", "CSF Conc.", 
+                                             "Brain Conc.", "B/P Ratio"),
+                              includesOthers = FALSE,
                               includesCorpName = FALSE))
     )
   )

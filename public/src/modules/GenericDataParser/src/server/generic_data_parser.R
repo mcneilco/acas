@@ -282,7 +282,7 @@ validateNumeric <- function(inputValue) {
   }
   return(suppressWarnings(as.numeric(as.character(inputValue))))
 }
-validateMetaData <- function(metaData, configList, formatSettings) {
+validateMetaData <- function(metaData, configList, formatSettings = list()) {
   # Valides the meta data section
   #
   # Args:
@@ -1442,8 +1442,17 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   if (length(analysisGroupIndices > 0)) {
     analysisGroupData <- treatmentGroupDataWithBatchCodeRows
     if (!is.null(curveNames)) {
-      curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, valueKind = curveNames, publicData = TRUE, valueType = "stringValue", stringValue = c("ImageA", "ImageB", "ImageC"))
-      analysisGroupData <- rbind.fill(analysisGroupData, curveRows)
+      curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, 
+                              valueKind = curveNames, 
+                              publicData = TRUE, 
+                              valueType = "stringValue", 
+                              stringValue = paste0(1:length(curveNames), "_", analysisGroup$codeName))
+      renderingHintRow <- data.frame(stateGroupIndex = analysisGroupIndices, 
+                                     valueKind = "Rendering Hint", 
+                                     publicData = FALSE, 
+                                     valueType = "stringValue", 
+                                     stringValue = "PK IV PO Single Dose")
+      analysisGroupData <- rbind.fill(analysisGroupData, curveRows, renderingHintRow)
     }
     analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
     analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
