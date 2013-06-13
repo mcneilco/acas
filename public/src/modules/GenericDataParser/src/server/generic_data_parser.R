@@ -13,7 +13,7 @@
 
 #TODO:
 # Deploy server changes to host3
-# Figure out how to store values either in protocol or in a text file
+# Figure out how to store values either in protocol or in a text file in a way that will work for UI as well
 # Information to store: lockcorpname, states to create, replaceFakeCorpBatchId
 # Don't blow up when all points are excluded
 # Deal with numbers in the assay date area
@@ -319,7 +319,7 @@ validateMetaData <- function(metaData, configList, formatSettings) {
     expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
   }
   if (length(formatSettings) > 0) {
-    expectedDataFormat <- rbind(expectedDataFormat, formatSettings[[metaData$Format]]$extraHeaders)
+    expectedDataFormat <- rbind(expectedDataFormat, formatSettings[[as.character(metaData$Format)]]$extraHeaders)
   }
   
   if ("Assay Completion Date" %in% names(metaData)) {
@@ -786,7 +786,6 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
     if(stateGroups[[treatmentGrouping]]$includesCorpName) {
       groupingColumns <- c(groupingColumns,"Corporate Batch ID")
     }
-    
     results$treatmentGroupID <- do.call(paste,results[,groupingColumns])
     results$treatmentGroupID <- as.numeric(factor(results$treatmentGroupID))
   } else {
@@ -1198,10 +1197,6 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                      lsTransaction= lsTransaction)
   
   if (!is.null(metaData$Project)) {
-    # TODO: add to config:
-    #   name of service
-    #   type of service (which code to use)
-    #   if project is required
 
     experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "codeValue",
                                                                        valueKind = "project",
@@ -1906,7 +1901,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   validatedMetaData <- validateMetaData(metaData, configList, formatSettings)
   
-  inputFormat <- metaData$Format
+  inputFormat <- as.character(metaData$Format)
   
   rawOnlyFormat <- inputFormat %in% names(formatSettings)
   if (rawOnlyFormat) {
