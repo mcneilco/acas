@@ -83,9 +83,9 @@
 
 
 # JSON scripts source
-source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
-source("public/src/modules/sharedFunctions.R")
-
+#source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
+#source("public/src/modules/sharedFunctions.R")
+require(racas)
 
 #####
 # Define Functions
@@ -1294,7 +1294,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   savedTreatmentGroups <- saveAcasEntities(treatmentGroups, "treatmentgroups")
   
-  treatmentGroupIds <- sapply(savedTreatmentGroups, getId)
+  treatmentGroupIds <- sapply(savedTreatmentGroups, function(x) x$id)
   
   subjectData$treatmentGroupID <- treatmentGroupIds[match(subjectData$treatmentGroupID,1:length(treatmentGroupIds))]
   
@@ -1316,7 +1316,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   savedSubjects <- saveAcasEntities(subjects, "subjects")
   
-  subjectIds <- sapply(savedSubjects, getId)
+  subjectIds <- sapply(savedSubjects, function(x) x$id)
   
   subjectData$subjectID <- subjectIds[subjectData$subjectID]
   
@@ -1334,11 +1334,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     stateGroupIndex <- stateGroupIndex + 1
   }
   
-  othersGroupIndex <- which(sapply(stateGroups, FUN=readElement, "includesOthers"))
+  othersGroupIndex <- which(sapply(stateGroups, function(x) x$includesOthers))
   subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
   
   subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex)
-
   stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
   subjectData$stateID <- stateAndVersion$entityStateId
   subjectData$stateVersion <- stateAndVersion$entityStateVersion
@@ -1437,7 +1436,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                         lsTransaction = lsTransaction)
   
   #### Analysis Group States =====================================================================
-  analysisGroupIndices <- which(sapply(stateGroups, FUN=readElement, "entityKind")=="analysis group")
+  analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
   if (length(analysisGroupIndices > 0)) {
     analysisGroupData <- treatmentGroupDataWithBatchCodeRows
     if (!is.null(curveNames)) {
@@ -1475,7 +1474,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                           lsTransaction = lsTransaction)
   }
   ### Container creation ==================================================================
-  containerIndex <- which(sapply(stateGroups, FUN=readElement, "entityKind")=="container")
+  containerIndex <- which(sapply(stateGroups, function(x) x$"entityKind")=="container")
   if (length(containerIndex > 0)) {
     containerValueList <- stateGroups[[containerIndex]]$valueKinds
     containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex,]
@@ -1502,7 +1501,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     
     savedContainers <- saveAcasEntities(containers, "containers")
     
-    containerIds <- sapply(savedContainers, getId)
+    containerIds <- sapply(savedContainers, function(x) x$id)
     
     # Order is not maintained, but that is okay
     containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
@@ -2178,13 +2177,13 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     stop("Invalid file service")
   }
 
-  locationState <- experiment$experimentStates[lapply(experiment$experimentStates,readElement,"stateKind")=="report locations"]
+  locationState <- experiment$experimentStates[lapply(experiment$experimentStates, function(x) x$"stateKind")=="report locations"]
   
   # Record the location
   if (length(locationState)> 0) {
     locationState <- locationState[[1]]
     
-    valueKinds <- lapply(locationState$experimentValues,readElement,"valueKind")
+    valueKinds <- lapply(locationState$experimentValues, function(x) x$"valueKind")
     
     valuesToDelete <- locationState$experimentValues[valueKinds %in% c("source location")]
     
@@ -2261,10 +2260,8 @@ parseGenericData <- function(request) {
     testMode <- FALSE
   }
   
-  # Read the config file
-  configList <- readConfigFile("public/src/conf/configurationNode.js")
-  
   # Set the global for the library
+  configList <- racas::applicationSettings
   lsServerURL <<- configList$serverPath
   
   experiment <- NULL
@@ -2278,7 +2275,7 @@ parseGenericData <- function(request) {
   # Run the function and save output (value), errors, and warnings
   loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
                                      reportFilePath = reportFilePath,
-                                     serverPath = configList$serverPath,
+                                     serverPath = lsServerURL,
                                      dryRun = dryRun,
                                      developmentMode = developmentMode,
                                      configList=configList, 
@@ -2300,7 +2297,7 @@ parseGenericData <- function(request) {
   }
   
   # Save warning messages but not the function call, which is only useful while programming
-  loadResult$warningList <- lapply(loadResult$warningList,getWarningMessage)
+  loadResult$warningList <- lapply(loadResult$warningList,function(x) x$message)
   if (length(loadResult$warningList)>0) {
     loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
   }
@@ -2326,7 +2323,7 @@ parseGenericData <- function(request) {
   
   # Create the HTML to display
   if (!is.null(loadResult$value$info)) {
-    htmlSummary <- createHTML(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
+    htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
   } else {
     htmlSummary <- createGenericDataParserHTML(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
   }
