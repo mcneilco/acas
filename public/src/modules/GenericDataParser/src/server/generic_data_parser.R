@@ -27,7 +27,7 @@
 #     parseGenericData(list(pathToGenericDataFormatExcelFile, dryRun = TRUE, ...))
 #     Example: 
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/Mia-Paca.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", testMode = "true"))
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", testMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", testMode = "true"))
 #       file.copy(from="~/Documents/clients/DNS/Neuro/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
@@ -1118,7 +1118,7 @@ getExperimentByName <- function(experimentName, protocol, configList) {
   # Return the experiment
   return(experiment)
 }
-createNewProtocol <- function(metaData, lsTransaction) {
+createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   # creates a protocol with the protocol name and scientist in the metaData
   # 
   # Args:
@@ -1133,7 +1133,7 @@ createNewProtocol <- function(metaData, lsTransaction) {
   # Add a label for the name
   protocolLabels <- list()
   protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
-                                                                    recordedBy=metaData$Scientist[1], 
+                                                                    recordedBy=recordedBy, 
                                                                     labelType="name", 
                                                                     labelKind="protocol name",
                                                                     labelText=metaData$'Protocol Name'[1],
@@ -1142,13 +1142,13 @@ createNewProtocol <- function(metaData, lsTransaction) {
   # Create the protocol
   protocol <- createProtocol(lsTransaction = lsTransaction,
                              shortDescription="protocol created by generic data parser",  
-                             recordedBy=metaData$Scientist[1], 
+                             recordedBy=recordedBy, 
                              protocolLabels=protocolLabels,
                              protocolStates=protocolStates)
   
   protocol <- saveProtocol(protocol)
 }
-createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile) {
+createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy) {
   # creates an experiment using the metaData
   # 
   # Args:
@@ -1207,14 +1207,14 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   # Create an experiment state for metadata
   experimentStates[[length(experimentStates)+1]] <- createExperimentState(experimentValues=experimentValues,
                                                                           lsTransaction = lsTransaction, 
-                                                                          recordedBy=metaData$Scientist[1], 
+                                                                          recordedBy=recordedBy, 
                                                                           stateType="metadata", 
                                                                           stateKind="experiment metadata")
   
   # Create a label for the experiment name
   experimentLabels <- list()
   experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransaction = lsTransaction, 
-                                                                          recordedBy=metaData$Scientist[1], 
+                                                                          recordedBy=recordedBy, 
                                                                           labelType="name", 
                                                                           labelKind="experiment name",
                                                                           labelText=metaData$"Experiment Name"[1],
@@ -1224,7 +1224,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                  protocol = protocol,
                                  kind = "generic loader",
                                  shortDescription="experiment created by generic data parser",  
-                                 recordedBy=metaData$Scientist[1], 
+                                 recordedBy=recordedBy, 
                                  experimentLabels=experimentLabels,
                                  experimentStates=experimentStates)
   
@@ -1252,7 +1252,8 @@ validateProject <- function(projectName, configList) {
   }
 }
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
-                              configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames) {
+                              configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
+                              recordedBy) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   # TODO: stop uploading fake corp batch id as codeValue
@@ -1274,8 +1275,6 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                      labelTypeAndKind="id_codeName",
                                                      numberOfLabels=max(subjectData$treatmentGroupID)),
                                        use.names=FALSE)
-  
-  recordedBy <- metaData$Scientist[1]
   
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
@@ -1558,7 +1557,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
 }
 uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
-                       serverPath,protocol,experiment, fileStartLocation, configList, reportFilePath, reportFileSummary) {
+                       serverPath,protocol,experiment, fileStartLocation, configList, reportFilePath, 
+                       reportFileSummary, recordedBy) {
   # Uploads all the data to the server
   # 
   # Args:
@@ -1575,9 +1575,6 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   #
   #   Returns:
   #     NULL
-  
-  # Gets the user name from the metaData
-  recordedBy <- metaData$Scientist[1]
   
   # Get a list of codes
   analysisGroupCodeNameList <- getAutoLabels(thingTypeAndKind="document_analysis group", 
@@ -1860,7 +1857,7 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
 }
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serverPath,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
-                    configList, testMode = FALSE) {
+                    configList, testMode = FALSE, recordedBy) {
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   
@@ -1973,7 +1970,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   newProtocol <- is.na(protocol[[1]])
   
   if (!dryRun && newProtocol && errorFree) {
-    protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction)
+    protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
   }
   
   experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList)
@@ -1989,7 +1986,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   }
   
   if (!dryRun && errorFree) {
-    experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile)
+    experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy)
     assign(x="experiment", value=experiment, envir=parent.frame())
   }
   
@@ -1999,12 +1996,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
-                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames)
+                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
-                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary)
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy)
     }
   }
   
@@ -2255,6 +2252,7 @@ parseGenericData <- function(request) {
   dryRun <- request$dryRunMode
   testMode <- request$testMode
   reportFilePath <- request$reportFile
+  recordedBy <- request$user
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
@@ -2284,7 +2282,8 @@ parseGenericData <- function(request) {
                                      dryRun = dryRun,
                                      developmentMode = developmentMode,
                                      configList=configList, 
-                                     testMode=testMode))
+                                     testMode=testMode,
+                                     recordedBy=recordedBy))
   
   # If the output has class simpleError or is not a list, save it as an error
   if(class(loadResult$value)[1]=="simpleError") {
