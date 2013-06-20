@@ -33,52 +33,14 @@
 #       file.copy(from="~/Documents/clients/DNS/Neuro/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", testMode = "true", user="smeyer"))
 
-# #configList <-list(serverName="http://localhost",portNumber="3000",serverAddress="host3.labsynch.com",driver="org.postgresql.Driver",
-# driverLocation="public/src/modules/GenericDataParser/src/server/postgresql-9.1-901.jdbc3.jar",
-# databaseLocation="jdbc:postgresql://",databasePort=":5432/compound",username="seurat",password="seurat",
-# serverPath="http://host3.labsynch.com:8080/labseer/",preferredBatchIdService="http://localhost:3000/api/preferredBatchId")
-
 # Other files:
 # "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls"
 # "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve_Example2.xls"
 # "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve2.xls"
 # "public/src/modules/GenericDataParser/spec/specFiles/LindaExampleData.xls"
 
-
-# Store in a text file: format information
-#     lockCorpBatchId <- FALSE
-#     lookFor <- "Raw Data"
-#     replaceFakeCorpBatchId <- "Vehicle"
-#     expectedDataFormat <- data.frame(
-#       headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","Assay Completion Date","Project"),
-#       class = c("Text", "Text", "Text", "Text", "Text", "Date","Text"),
-#       isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,FALSE)
-#     A list of what to find from protocol
-#
-# Store in the protocol: data information
-#         groupingColumns <- c("Corporate Batch ID","Dose (mg/kg)")
-#         optionalGroupingColumns <- c("Condition")
-#         subjectStateGroups <- list(list(stateType = "metadata", 
-#                                         stateKind = "animal information", 
-#                                         valueKinds = c("Species","Strain","Sex","Vendor","Date of Arrival", "Date of Birth", "Animal ID", "Cohort"),
-#                                         includesOthers = FALSE,
-#                                         includesCorpName = FALSE),
-#                                    list(stateType = "data",
-#                                         stateKind = "treatment",
-#                                         valueKinds = c("Condition", "Dose", "Vehicle", "Administration route","Treatment time"),
-#                                         includesOthers = FALSE,
-#                                         includesCorpName = TRUE),
-#                                    list(stateType = "data",
-#                                         stateKind = "raw data",
-#                                         includesOthers = TRUE,
-#                                         includesCorpName = FALSE))
-
 #########################################################################
 
-
-# JSON scripts source
-#source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
-#source("public/src/modules/sharedFunctions.R")
 require(racas)
 
 #####
@@ -694,9 +656,12 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   #TODO Will anyone ever want 'Reported' in the data columns? Probably not
   returnDataFrame$Type <- trim(gsub("Reported","",returnDataFrame$Type))
   returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
-  concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?", "\\3", dataColumns) 
+  concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
   returnDataFrame$Conc <- as.numeric(gsub("[^0-9]", "", concAndUnits))
   returnDataFrame$concUnits <- as.character(gsub("[^a-zA-Z]", "", concAndUnits))
+  timeAndUnits <- gsub("([^\\{]+)(\\{(.*)\\})?.*", "\\3", dataColumns) 
+  returnDataFrame$time <- as.numeric(gsub("[^0-9]", "", timeAndUnits))
+  returnDataFrame$timeUnit <- as.character(gsub("[^a-zA-Z]", "", timeAndUnits))
   
   # Return the validated Meta Data
   return(returnDataFrame)
@@ -804,6 +769,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$Class <- resultTypes$dataClass[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
   longResults$"Result Type" <- resultTypes$Type[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
   longResults$Hidden <- resultTypes$hidden[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+  longResults$time <- resultTypes$time[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+  longResults$timeUnit <- resultTypes$timeUnit[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
   
   # Parse numeric data from the unparsed values
   matchExpression <- "[0-9]+.[0-9]*|[0-9]*.[0-9]+|[0-9]+"
@@ -844,7 +811,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   # Clean up the data frame to look nice (remove extra columns)
   row.names(longResults) <- 1:nrow(longResults)
-  organizedData <- longResults[c("Corporate Batch ID","Result Type","Result Units","Conc","Conc Units","Result Value",
+  organizedData <- longResults[c("Corporate Batch ID","Result Type","Result Units","Conc","Conc Units", "time", "timeUnit", "Result Value",
                                  "Result Desc","Result Operator","analysisGroupID","Result Date","Class",
                                  "resultTypeAndUnit","Hidden", "originalCorporateBatchID", "treatmentGroupID")]
   
@@ -1291,9 +1258,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   treatmentGroupIds <- sapply(savedTreatmentGroups, function(x) x$id)
   
   subjectData$treatmentGroupID <- treatmentGroupIds[match(subjectData$treatmentGroupID,1:length(treatmentGroupIds))]
-  
+  subjectData <<- subjectData
   # Reorganization to match formats
-  names(subjectData) <- c("batchCode","valueKind","valueUnit","concentration","concentrationUnit", "numericValue","stringValue",
+  names(subjectData) <- c("batchCode","valueKind","valueUnit","concentration","concentrationUnit", "time", "timeUnit", "numericValue","stringValue",
                           "valueOperator","subjectID","dateValue","valueType", "resultTypeAndUnit","publicData", 
                           "originalBatchCode", "treatmentGroupID")
   subjectData$publicData <- !subjectData$publicData
@@ -1341,9 +1308,13 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   
   subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
-                                subjectData$concentration, "-", subjectData$concentrationUnit)
+                                subjectData$concentration, "-", subjectData$concentrationUnit, "-",
+                                subjectData$time, "-", subjectData$timeUnit)
   
   subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
+  
+  subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
+  
   stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
   subjectData$stateID <- stateAndVersion$entityStateId
   subjectData$stateVersion <- stateAndVersion$entityStateVersion
@@ -2238,9 +2209,7 @@ parseGenericData <- function(request) {
   
   # This is used for outputting the JSON rather than sending it to the server
   developmentMode <- FALSE
-  
-  # TODO: collect user and pull through
-  
+    
   # Collect the information from the request
   request <- as.list(request)
   pathToGenericDataFormatExcelFile <- request$fileToParse
