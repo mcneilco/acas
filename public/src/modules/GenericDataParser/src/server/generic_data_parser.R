@@ -29,15 +29,9 @@
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/Mia-Paca.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", testMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", testMode = "true"))
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", testMode = "true", user="smeyer"))
 #       file.copy(from="~/Documents/clients/DNS/Neuro/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", testMode = "true"))
-# To use traceback() for debugging purposes:
-#   runMain(pathToGenericDataFormatExcelFile,serverPath,dryRun,developmentMode,testOutputLocation)
-#     runMain(pathToGenericDataFormatExcelFile="serverOnlyModules/blueimp-file-upload-node/public/files/Example upload 3_13_2013_version6.xlsx",serverPath,dryRun=TRUE,developmentMode=TRUE,configList=configList)
-#     runMain(pathToGenericDataFormatExcelFile="serverOnlyModules/blueimp-file-upload-node/public/files/LindaExampleData.xls",serverPath="http://host3.labsynch.com:8080/labseer",dryRun=FALSE,developmentMode=TRUE,configList = list(serverName="http://localhost",portNumber="3000",serverAddress="host3.labsynch.com",driver="org.postgresql.Driver",driverLocation="public/src/modules/GenericDataParser/src/server/postgresql-9.1-901.jdbc3.jar",databaseLocation="jdbc:postgresql://",databasePort=":5432/compound",username="seurat",password="seurat",serverPath="http://host3.labsynch.com:8080/labseer/",preferredBatchIdService="http://localhost:3000/api/preferredBatchId"))
-#     runMain(pathToGenericDataFormatExcelFile="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls",serverPath="http://host3.labsynch.com:8080/labseer",dryRun=FALSE,developmentMode=TRUE,configList = list(serverName="http://localhost",portNumber="3000",serverAddress="host3.labsynch.com",driver="org.postgresql.Driver",driverLocation="public/src/modules/GenericDataParser/src/server/postgresql-9.1-901.jdbc3.jar",databaseLocation="jdbc:postgresql://",databasePort=":5432/compound",username="labseer",password="labseer",serverPath="http://host3.labsynch.com:8080/acas/",preferredBatchIdService="http://localhost:3000/api/preferredBatchId"))
-
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", testMode = "true", user="smeyer"))
 
 # #configList <-list(serverName="http://localhost",portNumber="3000",serverAddress="host3.labsynch.com",driver="org.postgresql.Driver",
 # driverLocation="public/src/modules/GenericDataParser/src/server/postgresql-9.1-901.jdbc3.jar",
@@ -1298,7 +1292,12 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   subjectData$treatmentGroupID <- treatmentGroupIds[match(subjectData$treatmentGroupID,1:length(treatmentGroupIds))]
   
-  
+  # Reorganization to match formats
+  names(subjectData) <- c("batchCode","valueKind","valueUnit","concentration","concentrationUnit", "numericValue","stringValue",
+                          "valueOperator","subjectID","dateValue","valueType", "resultTypeAndUnit","publicData", 
+                          "originalBatchCode", "treatmentGroupID")
+  subjectData$publicData <- !subjectData$publicData
+  subjectData$valueType <- c("numericValue","stringValue","dateValue")[match(subjectData$valueType,c("Number","Text","Date"))]
   
   # Subjects
   subjectData$subjectCodeName <- subjectCodeNameList[subjectData$subjectID]
@@ -1337,20 +1336,19 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   othersGroupIndex <- which(sapply(stateGroups, function(x) x$includesOthers))
   subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
   
-  subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex)
+  names(subjectData)[names(subjectData) == "Conc"] <- "concentration"
+  names(subjectData)[names(subjectData) == "Conc Units"] <- "concentrationUnit"
+  
+  
+  subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
+                                subjectData$concentration, "-", subjectData$concentrationUnit)
+  
+  subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
   stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
   subjectData$stateID <- stateAndVersion$entityStateId
   subjectData$stateVersion <- stateAndVersion$entityStateVersion
   
   ### Subject Values ======================================================================= 
-  
-  # Reorganization to match formats
-  names(subjectData) <- c("batchCode","valueKind","valueUnit","Conc","Conc Units", "numericValue","stringValue",
-                          "valueOperator","subjectID","dateValue","valueType", "resultTypeAndUnit","publicData", 
-                          "originalBatchCode", "treatmentGroupID", "subjectCodeName", "stateGroupIndex", "stateID", "stateVersion")
-  subjectData$publicData <- !subjectData$publicData
-  subjectData$valueType <- c("numericValue","stringValue","dateValue")[match(subjectData$valueType,c("Number","Text","Date"))]
-  
   batchCodeStateIndices <- which(sapply(stateGroups, function(x) return(x$includesCorpName)))
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
@@ -1389,8 +1387,6 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       "batchCode" = subjectData$batchCode[1],
       "valueKind" = subjectData$valueKind[1],
       "valueUnit" = subjectData$valueUnit[1],
-      "Conc" = subjectData$"Conc"[1],
-      "Conc Units" = subjectData$"Conc Units"[1],
       "numericValue" = resultValue,
       "stringValue" = if (length(unique(subjectData$stringValue)) == 1) subjectData$stringValue[1] else NA,
       "valueOperator" = resultOperator,
