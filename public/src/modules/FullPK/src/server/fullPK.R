@@ -31,12 +31,13 @@ parseFullPKData <- function(request){
   parserInput <- list(fileToParse = preprocessPK(request$fileToParse, inputParameters))
   parserInput$dryRunMode <- request$dryRunMode
   parserInput$reportFile <- request$reportFile
+  parserInput$user <- request$user
   return(parseGenericData(parserInput))
 }
 
 # Testing code
-#   request <- list(user="smeyer", dryRunMode = "true", "fileToParse"="public/src/modules/FullPK/spec/specFiles/Worksheet.xls", reportFile="~/Desktop/new.txt")
-#   #request <- list(user="smeyer", dryRunMode = "true", fileToParse="~/Documents/clients/DNS/PK/Input v6.xls", reportFile="serverOnlyModules/blueimp-file-upload-node/public/files/PK_formatted (5).xls")
-#   request$inputParameters <- list("format"="In Vivo Full PK","protocolName"="PK Protocol 1",scientist="Sam","experimentName"="PK experiment 4","notebook"="SAM-000123", "inLifeNotebook"="LIFE-123","assayDate"="1370822400000","project"="UNASSIGNED","bioavailability"="42.3","aucType"="AUC-0")
+#   #request <- list(user="smeyer", dryRunMode = "true", "fileToParse"="public/src/modules/FullPK/spec/specFiles/Worksheet.xls", reportFile="~/Desktop/new.txt")
+#   request <- list(user="smeyer", dryRunMode = "false", fileToParse="~/Documents/clients/DNS/PK/PK514v3.xls", reportFile="serverOnlyModules/blueimp-file-upload-node/public/files/Input v6.xls")
+#   request$inputParameters <- list("format"="In Vivo Full PK","protocolName"="PK Protocol 1",scientist="Sam","experimentName"="PK experiment 8","notebook"="SAM-000123", "inLifeNotebook"="LIFE-123","assayDate"="1370822400000","project"="UNASSIGNED","bioavailability"="42.3","aucType"="AUC-0")
 #   parseFullPKData(request)
-# 
+# # 

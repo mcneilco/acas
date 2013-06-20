@@ -1288,11 +1288,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   ### Subject States ===============================================
   #######  
-  
   stateGroupIndex <- 1
   subjectData$stateGroupIndex <- NA
   for (state in stateGroups) {
-    includedRows <- subjectData$"Result Type" %in% state$valueKinds
+    includedRows <- subjectData$valueKind %in% state$valueKinds
     newRows <- subjectData[includedRows & !is.na(subjectData$stateGroupIndex), ]
     subjectData$stateGroupIndex[includedRows & is.na(subjectData$stateGroupIndex)] <- stateGroupIndex
     if (nrow(newRows)>0) newRows$stateGroupIndex <- stateGroupIndex

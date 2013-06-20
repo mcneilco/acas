@@ -79,7 +79,6 @@ concUnits <- function(str){
   else {return(str)}
 }
 
-
 #########################################################################
 #########################################################################
 ##                          CONTROL                                    ##
@@ -138,6 +137,7 @@ preprocessPK <- function(fileToParse, parameterList) {
   headerBlock <- data.frame(t(data.frame(headerBlock)))
   row.names(headerBlock) <- gsub("value.", "", row.names(headerBlock))
   headerBlock <- cbind(row.names(headerBlock), headerBlock)
+  #bioavailablilty data must be the last 2 rows of the header data
   bioavail <- headerBlock[(nrow(headerBlock)-1):(nrow(headerBlock)),]
   headerBlock <- headerBlock[1:(nrow(headerBlock)-2),]
   
@@ -152,14 +152,13 @@ preprocessPK <- function(fileToParse, parameterList) {
   names(rawDF)[grep("bioavailability", names(rawDF))] <- "Bioavailability (%)"
   names(rawDF)[grep("AUCType", names(rawDF))] <- "AUCType"
   
-  #if this is not a dose escallation study, pivot the time/conc data and remove redundant rows
-  if(length(unique(rawDF[,grep("Route",names(rawDF))]))>1){
-    timeConc <- ddply(rawDF, .(Animal), .fun=pivotTimeConc)
-  }
+  #pivot the time/conc data and remove redundant rows
+  timeConc <- ddply(rawDF, .(Animal), .fun=pivotTimeConc)
   names(timeConc) <- lapply(names(timeConc), concUnits)
   
   #fix the format of the time/conc column names and copy the names into the data matrix
   finalDF <- unique(rawDF[,!names(rawDF) %in% c("Time (hr)","PK_Concentration (ng/mL)","Concentration (ng/mL)")])
+  finalDF <- finalDF[with(finalDF, order(Animal)),]
   finalDF <- cbind(finalDF, timeConc[,2:length(timeConc)])
   finalDF <- namesRow(finalDF)
   
@@ -172,7 +171,8 @@ preprocessPK <- function(fileToParse, parameterList) {
   #clean-up steps
   row.names(finalDF) <- 1:nrow(finalDF)
   finalDF <- data.frame(finalDF, stringsAsFactors=F)
-  finalDF[2,grep("Batch", names(finalDF))] <- "Corporate Batch ID"
+  finalDF[2, grep("Batch", names(finalDF))] <- "Corporate Batch ID"
+  finalDF[2, ] <- gsub("PK_Concentration (.*) \\(", "PK_Concentration \\{\\1\\} \\(",finalDF[2, ])
   
   #split the Routes out to their own columns and add the route to the name row
   finalIVdf <- rbind(finalDF[1:2,], finalDF[grep("IV", finalDF[,"Route"]),])
@@ -182,10 +182,21 @@ preprocessPK <- function(fileToParse, parameterList) {
   }
   finalPOdf <- rbind(finalDF[1:2,which(!finalDF[2,] %in% doNotRepeat)], finalDF[grep("PO", finalDF[,"Route"]),which(!finalDF[2,] %in% doNotRepeat)])
   finalPOdf[2,] <- paste("PO - ", finalPOdf[2,], sep="")
-  finalDF <- cbind(finalIVdf, finalPOdf)
+  
+  #Separate the animals into different rows
+  stretchedFinalPOdf <- rbind.fill(finalPOdf[1:2, ], data.frame(rep(NA, nrow(finalIVdf)-2)), finalPOdf[3:nrow(finalPOdf), ])
+  stretchedFinalIVdf <- rbind.fill(finalIVdf, data.frame(rep(NA, nrow(finalPOdf)-2)))
+  
+  # Combine
+  finalDF <- cbind(stretchedFinalIVdf, stretchedFinalPOdf)
   
   #remove columns that contain only <NA>
-  finalDF <- finalDF[,colSums(is.na(finalDF[3:nrow(finalDF),]))<3]
+  finalDF <- finalDF[, !sapply(as.data.frame(is.na(finalDF[3:nrow(finalDF), ])), all)]
+  
+  #Expand the Corporate Batch ID and Formulation columns
+  finalDF$Batch[is.na(finalDF$Batch)] <- finalDF$Batch[3]
+  finalDF$Formulation[is.na(finalDF$Formulation)] <- finalDF$Formulation[3]
+  finalDF <- data.frame(finalDF$Batch, finalDF[, names(finalDF)!="Batch"])
   
   #add the header block to the top of the data.frame
   names(headerBlock) <- names(finalDF)[1:2]
