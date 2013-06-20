@@ -652,15 +652,15 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   }
   returnDataFrame <- data.frame("DataColumn" = array(dim = length(dataColumns)), "Type" = array(dim = length(dataColumns)), "Units" = array(dim = length(dataColumns)), "Conc" = array(dim = length(dataColumns)), "ConcUnits" = array(dim = length(dataColumns)))
   returnDataFrame$DataColumn <- dataColumns
-  returnDataFrame$Type <- trim(gsub("\\[[^)]*\\]","",gsub("\\([^)]*\\)","",dataColumns)))
+  returnDataFrame$Type <- trim(gsub("\\[[^)]*\\]","",gsub("\\([^)]*\\)","",gsub("\\{[^}]*\\}","",dataColumns))))
   #TODO Will anyone ever want 'Reported' in the data columns? Probably not
   returnDataFrame$Type <- trim(gsub("Reported","",returnDataFrame$Type))
   returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
-  returnDataFrame$Conc <- as.numeric(gsub("[^0-9]", "", concAndUnits))
+  returnDataFrame$Conc <- as.numeric(gsub("[^0-9\\.]", "", concAndUnits))
   returnDataFrame$concUnits <- as.character(gsub("[^a-zA-Z]", "", concAndUnits))
   timeAndUnits <- gsub("([^\\{]+)(\\{(.*)\\})?.*", "\\3", dataColumns) 
-  returnDataFrame$time <- as.numeric(gsub("[^0-9]", "", timeAndUnits))
+  returnDataFrame$time <- as.numeric(gsub("[^0-9\\.]", "", timeAndUnits))
   returnDataFrame$timeUnit <- as.character(gsub("[^a-zA-Z]", "", timeAndUnits))
   
   # Return the validated Meta Data
@@ -1258,7 +1258,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   treatmentGroupIds <- sapply(savedTreatmentGroups, function(x) x$id)
   
   subjectData$treatmentGroupID <- treatmentGroupIds[match(subjectData$treatmentGroupID,1:length(treatmentGroupIds))]
-  subjectData <<- subjectData
+  
   # Reorganization to match formats
   names(subjectData) <- c("batchCode","valueKind","valueUnit","concentration","concentrationUnit", "time", "timeUnit", "numericValue","stringValue",
                           "valueOperator","subjectID","dateValue","valueType", "resultTypeAndUnit","publicData", 
