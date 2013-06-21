@@ -562,6 +562,8 @@ getPreferredId <- function(batchIds, preferredIdService, testMode=FALSE) {
   #   a list of pairs of requested IDs and preferred IDs
   #   on an error, returns NULL
   
+  require('RCurl')
+  
   # Put the batchIds in the correct format
   requestIds <- list()
   if (testMode) {
@@ -1065,7 +1067,7 @@ getExperimentByName <- function(experimentName, protocol, configList) {
     })
     
     #TODO choose the preferred label
-    if(is.na(protocol) || protocolOfExperiment$protocolLabels[[1]]$id != protocol$protocolLabels[[1]]$id) {
+    if(is.na(protocol) || protocolOfExperiment$lsLabels[[1]]$id != protocol$lsLabels[[1]]$id) {
       errorList <<- c(errorList,paste0("Experiment '",experimentName,
                                        "' does not exist in the protocol that you entered, but it does exist in '", protocolOfExperiment$protocolLabels[[1]]$labelText, 
                                        "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
@@ -1095,8 +1097,8 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   protocolLabels <- list()
   protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
                                                                     recordedBy=recordedBy, 
-                                                                    labelType="name", 
-                                                                    labelKind="protocol name",
+                                                                    lsType="name", 
+                                                                    lsKind="protocol name",
                                                                     labelText=metaData$'Protocol Name'[1],
                                                                     preferred=TRUE)
   
@@ -1109,7 +1111,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   
   protocol <- saveProtocol(protocol)
 }
-createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy) {
+createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy, configList) {
   # creates an experiment using the metaData
   # 
   # Args:
@@ -1124,43 +1126,43 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   
   # Store the metaData in experiment values
   experimentValues <- list()
-  experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
-                                                                     valueKind = "notebook",
+  experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
+                                                                     lsKind = "notebook",
                                                                      stringValue = metaData$Notebook[1],
                                                                      lsTransaction= lsTransaction)
   if (!is.null(metaData$"In Life Notebook")) {
-    experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
-                                                                       valueKind = "notebook",
+    experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
+                                                                       lsKind = "notebook",
                                                                        stringValue = metaData$"In Life Notebook"[1],
                                                                        lsTransaction= lsTransaction)
   }
   if (!is.null(metaData$Page)) {
-    experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
-                                                                       valueKind = "notebook page",
+    experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "numericValue",
+                                                                       lsKind = "notebook page",
                                                                        stringValue = metaData$Page[1],
                                                                        lsTransaction= lsTransaction)
   }
-  experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "dateValue",
-                                                                     valueKind = "completion date",
+  experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "dateValue",
+                                                                     lsKind = "completion date",
                                                                      dateValue = as.numeric(format(as.Date(metaData$"Assay Date"[1]), "%s"))*1000,
                                                                      lsTransaction= lsTransaction)
-  experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
-                                                                     valueKind = "status",
+  experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
+                                                                     lsKind = "status",
                                                                      stringValue = "Approved",
                                                                      lsTransaction= lsTransaction)
-  experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "stringValue",
-                                                                     valueKind = "analysis status",
+  experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
+                                                                     lsKind = "analysis status",
                                                                      stringValue = "running",
                                                                      lsTransaction= lsTransaction)
-  experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "clobValue",
-                                                                     valueKind = "analysis result html",
+  experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "clobValue",
+                                                                     lsKind = "analysis result html",
                                                                      clobValue = "<p>Analysis not yet completed</p>",
                                                                      lsTransaction= lsTransaction)
   
   if (!is.null(metaData$Project)) {
 
-    experimentValues[[length(experimentValues)+1]] <- createStateValue(valueType = "codeValue",
-                                                                       valueKind = "project",
+    experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "codeValue",
+                                                                       lsKind = "project",
                                                                        codeValue = metaData$Project[1],
                                                                        lsTransaction= lsTransaction)
   }
@@ -1169,21 +1171,21 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experimentStates[[length(experimentStates)+1]] <- createExperimentState(experimentValues=experimentValues,
                                                                           lsTransaction = lsTransaction, 
                                                                           recordedBy=recordedBy, 
-                                                                          stateType="metadata", 
-                                                                          stateKind="experiment metadata")
+                                                                          lsType="metadata", 
+                                                                          lsKind="experiment metadata")
   
   # Create a label for the experiment name
   experimentLabels <- list()
   experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransaction = lsTransaction, 
                                                                           recordedBy=recordedBy, 
-                                                                          labelType="name", 
-                                                                          labelKind="experiment name",
+                                                                          lsType="name", 
+                                                                          lsKind="experiment name",
                                                                           labelText=metaData$"Experiment Name"[1],
                                                                           preferred=TRUE)
   # Create the experiment
   experiment <- createExperiment(lsTransaction = lsTransaction, 
                                  protocol = protocol,
-                                 kind = "generic loader",
+                                 #lsKind = "generic loader",
                                  shortDescription="experiment created by generic data parser",  
                                  recordedBy=recordedBy, 
                                  experimentLabels=experimentLabels,
@@ -1191,6 +1193,8 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   
   # Save the experiment to the server
   experiment <- saveExperiment(experiment)
+  experiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/", experiment$id))))
+  return(experiment)
 }
 validateProject <- function(projectName, configList) {
   require('RCurl')
@@ -1319,11 +1323,11 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   subjectData$stateVersion <- stateAndVersion$entityStateVersion
   
   ### Subject Values ======================================================================= 
-  batchCodeStateIndices <- which(sapply(stateGroups, function(x) return(x$includesCorpName)))
+  batchCodeStateIndices <- which(sapply(stateGroups, getElement, "includesCorpName"))
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
-  savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction)
+  savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
   #
   #####  
   # Treatment Group states =========================================================================
@@ -1373,10 +1377,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       stringsAsFactors=FALSE))
   }
   
-  treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit"), .fun = createRawOnlyTreatmentGroupData)
+  treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData)
   
   treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
-  
   stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
                                               entityKind = "treatmentgroup", 
                                               stateGroups = stateGroups,
@@ -1399,7 +1402,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                         entityKind = "treatmentgroup", 
                                                         stateGroups = stateGroups, 
                                                         stateGroupIndices = treatmentGroupIndices, 
-                                                        lsTransaction = lsTransaction)
+                                                        lsTransaction = lsTransaction,
+                                                        recordedBy = recordedBy)
   
   #### Analysis Group States =====================================================================
   analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
@@ -1434,10 +1438,11 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
   #### Analysis Group Values =====================================================================
     savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
-                                                          entityKind = "analysisgroup", 
-                                                          stateGroups = stateGroups, 
-                                                          stateGroupIndices = analysisGroupIndices,
-                                                          lsTransaction = lsTransaction)
+                                                         entityKind = "analysisgroup", 
+                                                         stateGroups = stateGroups, 
+                                                         stateGroupIndices = analysisGroupIndices,
+                                                         lsTransaction = lsTransaction,
+                                                         recordedBy = recordedBy)
   }
   ### Container creation ==================================================================
   containerIndex <- which(sapply(stateGroups, function(x) x$"entityKind")=="container")
@@ -1455,8 +1460,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     # TODO: type and kind should be in a config somewhere
     createRawOnlyContainer <- function(containerData) {
       return(createContainer(
-        containerType="material",
-        containerKind="animal",
+        lsType="material",
+        lsKind="animal",
         codeName=containerData$containerCodeName[1],
         recordedBy=recordedBy,
         lsTransaction=lsTransaction))
@@ -1495,14 +1500,15 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     savedContainerValues <- saveValuesFromLongFormat(entityData = containerDataWithBatchCodeRows, 
                                                      entityKind = "container", 
                                                      stateGroups = stateGroups, 
-                                                     lsTransaction = lsTransaction)
+                                                     lsTransaction = lsTransaction,
+                                                     recordedBy = recordedBy)
     
     ### Itx Subject Container =========================================================
     
     createRawOnlyItxSubjectContainer <- function(containerData, recordedBy, lsTransaction) {
       createSubjectContainerInteraction(
-        interactionType = "refers to",
-        interactionKind = "test subject",
+        lsType = "refers to",
+        lsKind = "test subject",
         subject = list(id=containerData$subjectID[1], version = 0),
         container = list(id=containerData$containerID[1], version = 0),
         recordedBy=recordedBy,
@@ -1586,12 +1592,12 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
         # Prepare the date value
         dateValue <- as.numeric(format(as.Date(calculatedResults$"Result Date"[i],origin="1970-01-01"), "%s"))*1000
         # The main value (whether it is a numeric, string, or date) creates one value    
-        analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
-          valueType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {"stringValue"}
+        analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+          lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {"stringValue"}
           else if (calculatedResults$"Class"[i]=="Text") {"stringValue"}  
           else if (calculatedResults$"Class"[i]=="Date") {"dateValue"}
           else {"numericValue"},
-          valueKind = calculatedResults$"Result Type"[i],
+          lsKind = calculatedResults$"Result Type"[i],
           stringValue = if(calculatedResults$"Result Type"[i]==tempIdLabel) {
             paste0(calculatedResults$"Result Value"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
           } else if (!is.na(calculatedResults$"Result Desc"[i])) {
@@ -1607,18 +1613,18 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
       }
       
       # Adds a value for the batchCode (Corporate Batch ID)
-      analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
-        valueType = "codeValue",
-        valueKind = "batch code",
+      analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+        lsType = "codeValue",
+        lsKind = "batch code",
         codeValue = as.character(calculatedResults$"Corporate Batch ID"[analysisGroupID == calculatedResults$analysisGroupID][1]),
         publicData = !calculatedResults$Hidden[i],
         lsTransaction = lsTransaction)
       
       # Adds a value for the concentration if there is one
       if (!is.na(calculatedResults$Conc[i])) {
-        analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
-          valueType = "numericValue",
-          valueKind = "tested concentration",
+        analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+          lsType = "numericValue",
+          lsKind = "tested concentration",
           valueUnit= if(is.na(calculatedResults$"Conc Units"[i])){NULL} else {calculatedResults$"Conc Units"[i]},
           numericValue = calculatedResults$"Conc"[i],
           publicData = !calculatedResults$Hidden[i],
@@ -1627,8 +1633,8 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
       # Creates the state
       analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
                                                                                         recordedBy=recordedBy,
-                                                                                        stateType="data",
-                                                                                        stateKind=metaData$Format[1],
+                                                                                        lsType="data",
+                                                                                        lsKind=metaData$Format[1],
                                                                                         analysisGroupValues=analysisGroupValues)
     }
     # Creates Treatment Groups based on rawResults
@@ -1643,9 +1649,9 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
           treatmentGroupStates <- list()
           treatmentGroupValues <- list()
           for (i in which(treatmentGroupData$treatmentBatch==group & treatmentGroupData$ResultType==yLabel)) {
-            treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue( 
-              valueType= "numericValue", #numericValue or stringValue
-              valueKind= treatmentGroupData$ResultType[i], #the label
+            treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue(recordedBy = recordedBy, 
+              lsType= "numericValue", #numericValue or stringValue
+              lsKind= treatmentGroupData$ResultType[i], #the label
               numericValue= if(is.na(treatmentGroupData$value[i])) {NULL} else as.numeric(as.character(treatmentGroupData$value[i])),
               uncertainty= if(is.na(treatmentGroupData$sd[i])) {NULL} else treatmentGroupData$sd[i],
               uncertaintyType= "standard deviation",
@@ -1656,8 +1662,8 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
             treatmentGroupStates[[length(treatmentGroupStates)+1]] <- createTreatmentGroupState(
               treatmentGroupValues=treatmentGroupValues,
               recordedBy=recordedBy,
-              stateType="data",
-              stateKind="results",
+              lsType="data",
+              lsKind="results",
               comments=NULL,
               lsTransaction=lsTransaction)
             
@@ -1665,25 +1671,25 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
           }
           
           for (i in which(treatmentGroupData$treatmentBatch==group & treatmentGroupData$ResultType==xLabel)) {
-            treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue( 
-              valueType= "numericValue", #numericValue or stringValue
-              valueKind= treatmentGroupData$ResultType[i], #the label
+            treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue(recordedBy = recordedBy, 
+              lsType= "numericValue", #numericValue or stringValue
+              lsKind= treatmentGroupData$ResultType[i], #the label
               numericValue= if(is.na(treatmentGroupData$value[i])) {NULL} else as.numeric(as.character(treatmentGroupData$value[i])),
               valueUnit= if(is.na(treatmentGroupData$"Result Units"[i])) {NULL} else {treatmentGroupData$"Result Units"[i]},
               lsTransaction= lsTransaction)
             
             # Add a value for the batchCode
-            treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue( 
-              valueType= "codeValue",
-              valueKind= "batch code",
+            treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue(recordedBy = recordedBy, 
+              lsType= "codeValue",
+              lsKind= "batch code",
               codeValue= batchID,
               lsTransaction= lsTransaction)
             
             treatmentGroupStates[[length(treatmentGroupStates)+1]] <- createTreatmentGroupState(
               treatmentGroupValues=treatmentGroupValues,
               recordedBy= recordedBy,
-              stateType= "data",
-              stateKind= "test compound treatment",
+              lsType= "data",
+              lsKind= "test compound treatment",
               lsTransaction= lsTransaction)
           }
           
@@ -1700,9 +1706,9 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
             subjectStates <- list()
             subjectValues <- list()
             for (i in which(rawResults$pointID == pointID & rawResults$ResultType %in% c(yLabel,"flag"))) {
-              subjectValues[[length(subjectValues)+1]] <- createStateValue(
-                valueType = if(rawResults$ResultType[i]=="flag") {"stringValue"} else {"numericValue"},
-                valueKind = rawResults$ResultType[i], #the label
+              subjectValues[[length(subjectValues)+1]] <- createStateValue(recordedBy = recordedBy,
+                lsType = if(rawResults$ResultType[i]=="flag") {"stringValue"} else {"numericValue"},
+                lsKind = rawResults$ResultType[i], #the label
                 stringValue = if(rawResults$ResultType[i]=="flag" & !is.na(rawResults$value[i])) {rawResults$value[i]} else {NULL},
                 numericValue=if(rawResults$ResultType[i]!="flag") {as.numeric(as.character(rawResults$value[i]))} else {NULL},
                 valueUnit=if(is.na(rawResults$"Result Units"[i])) {NULL} else {rawResults$"Result Units"[i]},
@@ -1712,32 +1718,32 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
             subjectStates[[length(subjectStates)+1]] <- createSubjectState( 
               lsTransaction=lsTransaction, 
               recordedBy=recordedBy,
-              stateType="data", 
-              stateKind="results",
+              lsType="data", 
+              lsKind="results",
               subjectValues=subjectValues)
             
             subjectValues <- list()
             
             for (i in which(rawResults$pointID == pointID & rawResults$ResultType %in% c(xLabel))) {
-              subjectValues[[length(subjectValues)+1]] <- createStateValue(
-                valueType = "numericValue",
-                valueKind = rawResults$ResultType[i], #the label
+              subjectValues[[length(subjectValues)+1]] <- createStateValue(recordedBy = recordedBy,
+                lsType = "numericValue",
+                lsKind = rawResults$ResultType[i], #the label
                 numericValue=as.numeric(as.character(rawResults$value[i])),
                 valueUnit=if(is.na(rawResults$"Result Units"[i])) {NULL} else {rawResults$"Result Units"[i]},
                 lsTransaction=lsTransaction)
               
               # Add a value for the batchCode
-              subjectValues[[length(subjectValues)+1]] <- createStateValue( 
-                valueType="codeValue",
-                valueKind="batch code",
+              subjectValues[[length(subjectValues)+1]] <- createStateValue(recordedBy = recordedBy, 
+                lsType="codeValue",
+                lsKind="batch code",
                 codeValue=batchID,
                 lsTransaction=lsTransaction)
               
               subjectStates[[length(subjectStates)+1]] <- createSubjectState( 
                 lsTransaction=lsTransaction, 
                 recordedBy=recordedBy,
-                stateType="data", 
-                stateKind="test compound treatment",
+                lsType="data", 
+                lsKind="test compound treatment",
                 subjectValues=subjectValues)
               
               subjectValues <- list()
@@ -1771,7 +1777,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     # Put it all together in Analysis Groups
     analysisGroups[[length(analysisGroups)+1]] <- createAnalysisGroup(
       codeName = analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]],
-      kind=metaData$Format[1],
+      lsKind=metaData$Format[1],
       experiment = experiment,
       recordedBy=recordedBy,
       lsTransaction=lsTransaction,
@@ -1854,12 +1860,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     stop("The input file must have extension .xls, .xlsx, or .csv")
   }
   
-
-  
-  if (nrow(genericDataFileDataFrame) > 3500) {
-    stop("The input excel is too long. Please limit your files to under 3500 lines.")
-  }
-  
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
   
@@ -1925,7 +1925,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # When not on a dry run, creates a transaction for all of these
   if(!dryRun  && errorFree) {
-    lsTransaction <- createLsTransaction(comments = lsTranscationComments)
+    lsTransaction <- createLsTransaction(comments = lsTranscationComments)$id
   } else {
     lsTransaction <- NULL
   }
@@ -1937,7 +1937,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
   }
-  
   experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList)
   
   newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
@@ -1951,7 +1950,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   }
   
   if (!dryRun && errorFree) {
-    experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy)
+    experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, 
+                                      recordedBy, configList)
     assign(x="experiment", value=experiment, envir=parent.frame())
   }
   
@@ -1973,7 +1973,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   if (rawOnlyFormat) {
     summaryInfo <- list(
       format = inputFormat,
-      lsTransactionId = lsTransaction$id,
+      lsTransactionId = lsTransaction,
       info = list(
         "Format" = as.character(validatedMetaData$Format),
         "Protocol" = as.character(validatedMetaData$"Protocol Name"),
@@ -1990,7 +1990,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
       summaryInfo$info$"Page" = as.character(validatedMetaData$Page)
     }
   } else {
-    summaryInfo <- list(lsTransactionId=lsTransaction$id,
+    summaryInfo <- list(lsTransactionId=lsTransaction,
                         format=as.character(validatedMetaData$Format),
                         protocol=as.character(validatedMetaData$"Protocol Name"),
                         experiment=as.character(validatedMetaData$"Experiment Name"),
@@ -2143,34 +2143,34 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     stop("Invalid file service")
   }
 
-  locationState <- experiment$experimentStates[lapply(experiment$experimentStates, function(x) x$"stateKind")=="report locations"]
+  locationState <- experiment$experimentStates[lapply(experiment$experimentStates, function(x) x$"lsKind")=="report locations"]
   
   # Record the location
   if (length(locationState)> 0) {
     locationState <- locationState[[1]]
     
-    valueKinds <- lapply(locationState$experimentValues, function(x) x$"valueKind")
+    lsKinds <- lapply(locationState$experimentValues, function(x) x$"lsKind")
     
-    valuesToDelete <- locationState$experimentValues[valueKinds %in% c("source location")]
+    valuesToDelete <- locationState$experimentValues[lsKinds %in% c("source location")]
     
     lapply(valuesToDelete, deleteExperimentValue)
   } else {
     locationState <- createExperimentState(
       recordedBy=recordedBy,
       experiment = experiment,
-      stateType="metadata",
-      stateKind="raw results locations",
+      lsType="metadata",
+      lsKind="raw results locations",
       lsTransaction=lsTransaction)
     
     locationState <- saveExperimentState(locationState)
   }
   
   tryCatch({
-    locationValue <- createStateValue(
-      valueType = "stringValue",
-      valueKind = "source file",
+    locationValue <- createStateValue(recordedBy = recordedBy,
+      lsType = "stringValue",
+      lsKind = "source file",
       fileValue = serverFileLocation,
-      experimentState = locationState)
+      lsState = locationState)
     
     saveExperimentValues(list(locationValue))
   }, error = function(e) {
@@ -2202,13 +2202,13 @@ parseGenericData <- function(request) {
   require('compiler')
   enableJIT(3)
   options("scipen"=15)
-  
+    
   # Info (now in config file at SeuratAddOns/public/src/conf/configurationNode.js)
   #serverPath <- "http://host3.labsynch.com:8080/labseer"
   
   # This is used for outputting the JSON rather than sending it to the server
   developmentMode <- FALSE
-    
+  
   # Collect the information from the request
   request <- as.list(request)
   pathToGenericDataFormatExcelFile <- request$fileToParse
@@ -2226,7 +2226,7 @@ parseGenericData <- function(request) {
   
   # Set the global for the library
   configList <- racas::applicationSettings
-  lsServerURL <<- configList$serverPath
+  lsServerURL <- configList$serverPath
   
   experiment <- NULL
   
