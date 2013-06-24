@@ -356,23 +356,24 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   #   NULL
   
   # Get a list of any temp id's that are text (not allowed)
-  textTempIds <- grep("\\S",calculatedResults$"Result Desc"[calculatedResults$"Result Type"==tempIdLabel],value=TRUE)
+  #textTempIds <- grep("\\S",calculatedResults$"Result Desc"[calculatedResults$"Result Type"==tempIdLabel],value=TRUE)
   
   # Get a list of the temporary id's in the calculated results
-  tempIdList <- calculatedResults$"Result Value"[calculatedResults$"Result Type"==tempIdLabel]
+  tempIdList <- calculatedResults$"Result Desc"[calculatedResults$"Result Type"==tempIdLabel]
   
   # Find if any of the temporoary id's for the treatment groups do not have a match in the list
   missingTempIds <- setdiff(treatmentGroupData[,tempIdLabel],tempIdList)
   missingTempIds <- missingTempIds[!is.na(missingTempIds)]
   
   # Report any errors
-  if (length(textTempIds)>1) {
-    errorList <<- c(errorList, paste0("In the Calculated Results section, there are ", tempIdLabel, "'s that have text: '", 
-                                      paste(textTempIds, collapse="', '"), "'. Remove text from all temp id's."))
-  } else if (length(textTempIds)>0) {
-    errorList <<- c(errorList, paste0("In the Calculated Results section, there is a ", tempIdLabel, " that has text: '", 
-                                      textTempIds, "'. Remove text from all temp id's."))
-  } else if (length(missingTempIds)>1) {
+#   if (length(textTempIds)>1) {
+#     errorList <<- c(errorList, paste0("In the Calculated Results section, there are ", tempIdLabel, "'s that have text: '", 
+#                                       paste(textTempIds, collapse="', '"), "'. Remove text from all temp id's."))
+#   } else if (length(textTempIds)>0) {
+#     errorList <<- c(errorList, paste0("In the Calculated Results section, there is a ", tempIdLabel, " that has text: '", 
+#                                       textTempIds, "'. Remove text from all temp id's."))
+#   } else if (length(missingTempIds)>1) {
+  if (length(missingTempIds)>1) {
     errorList <<- c(errorList, paste0("In the Raw Results section, there are temp id's that have no match in the Calculated Results section: '", 
                                       paste(missingTempIds, collapse="', '"),
                                       "'. Please ensure that all id's have a matching row in the Calculated Results."))
@@ -394,7 +395,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, preferredIdService, testMode = FALSE, replaceFakeCorpBatchId="") {
+validateCalculatedResults <- function(calculatedResults, preferredIdService, dryRun, serverPath, curveNames, testMode = FALSE, replaceFakeCorpBatchId="") {
   # Valides the calculated results (for now, this only validates the Corporate Batch Ids)
   #
   # Args:
@@ -435,6 +436,52 @@ validateCalculatedResults <- function(calculatedResults, preferredIdService, tes
   
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
   calculatedResults$"Corporate Batch ID"[batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults$"Corporate Batch ID"[batchesToCheck],preferredIdFrame$requestName)]
+  
+  #### ================= Check the value kinds =======================================================
+  currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
+  currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
+  newValueKinds <- setdiff(c(calculatedResults$"Result Type", curveNames), currentValueKinds)
+  if (length(newValueKinds) > 0) {
+    warning(paste0("The following column headers have never been loaded in an experiment before: '", 
+                   paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar experiment before, please use the same",
+                   " headers that were used previously. If this is a new protocol, you can proceed without worry."))
+    if (!dryRun) {
+      # Create the new valueKinds, using the correct valueType
+      # TODO: also check that valueKinds have the correct valueType when being loaded a second time
+      valueTypesList <- fromJSON(getURL(paste0(serverPath, "valuetypes")))
+      valueTypes <- sapply(valueTypesList, getElement, "typeName")
+      valueKindTypes <- calculatedResults$Class[match(newValueKinds, calculatedResults$"Result Type")]
+      valueKindTypes <- c("numericValue", "stringValue", "dateValue")[match(valueKindTypes, c("Number", "Text", "Date"))]
+      
+      # This is for the curveNames, but would catch other added values as well
+      valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
+      
+      newValueTypesList <- valueTypesList[match(valueKindTypes, valueTypes)]
+      newValueKindsUpload <- mapply(function(x, y) list(kindName=x, lsType=y), newValueKinds, newValueTypesList,
+                                    SIMPLIFY = F, USE.NAMES = F)
+      tryCatch({
+        response <- getURL(
+          paste0(serverPath, "valuekinds/jsonArray"),
+          customrequest='POST',
+          httpheader=c('Content-Type'='application/json'),
+          postfields=toJSON(newValueKindsUpload))
+      }, error = function(e) {
+        errorList <<- c(errorList,paste("Error in saving new column headers:", e$message))
+      })
+    }
+    
+#     # Check the value units
+#     currentUnitKindList <- fromJSON(getURL(paste0(serverPath, "unitkinds")))
+#     currentUnitKinds <- sapply(currentUnitKindList, getElement, "kindName")
+#     newUnitKinds <- setdiff(calculatedResults$"Result Units", currentUnitKinds)
+#     
+#     if (length(newUnitKinds) > 0) {
+#       errorList <<- c(errorList, (paste0(
+#         "The following units have never been loaded in an experiment before: '", 
+#         paste(newUnitKinds,collapse="', '"), "'. If you have loaded a similar experiment before, please use the same ",
+#         "units that were used previously. Otherwise, contact your system administrator to have these units added.")))
+#     }
+  }
   
   # Return the validated results
   return(calculatedResults)
@@ -1016,11 +1063,8 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
   
   # If no protocol with the given name exists, warn the user
   if (length(protocolList)==0) {
-    genericDataParserConfig <- readLines("public/src/modules/GenericDataParser/config/genericDataParserConfiguration.txt")
-    protocolCreationSetting <- genericDataParserConfig[grepl("allowProtocolCreationWithFormats",genericDataParserConfig)]
-    allowedCreationFormats <- gsub("(.*)allowProtocolCreationWithFormats: (.*)", "\\2", protocolCreationSetting)
+    allowedCreationFormats <- configList$allowProtocolCreationWithFormats
     allowedCreationFormats <- unlist(strsplit(allowedCreationFormats, ","))
-    if(all(allowedCreationFormats=="null")) allowedCreationFormats <- NULL
     if (formFormat %in% allowedCreationFormats) {
       warning(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
     } else {
@@ -1414,12 +1458,14 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                               valueKind = curveNames, 
                               publicData = TRUE, 
                               valueType = "stringValue", 
-                              stringValue = paste0(1:length(curveNames), "_", analysisGroup$codeName))
+                              stringValue = paste0(1:length(curveNames), "_", analysisGroup$codeName),
+                              stringsAsFactors=FALSE)
       renderingHintRow <- data.frame(stateGroupIndex = analysisGroupIndices, 
                                      valueKind = "Rendering Hint", 
                                      publicData = FALSE, 
                                      valueType = "stringValue", 
-                                     stringValue = "PK IV PO Single Dose")
+                                     stringValue = "PK IV PO Single Dose",
+                                     stringsAsFactors=FALSE)
       analysisGroupData <- rbind.fill(analysisGroupData, curveRows, renderingHintRow)
     }
     analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
@@ -1599,7 +1645,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
           else {"numericValue"},
           lsKind = calculatedResults$"Result Type"[i],
           stringValue = if(calculatedResults$"Result Type"[i]==tempIdLabel) {
-            paste0(calculatedResults$"Result Value"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
+            paste0(calculatedResults$"Result Desc"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
           } else if (!is.na(calculatedResults$"Result Desc"[i])) {
             calculatedResults$"Result Desc"[i]
           } else {NULL},
@@ -1887,6 +1933,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     lockCorpBatchId <- TRUE
     replaceFakeCorpBatchId <- ""
     stateGroups <- NULL
+    curveNames <- NULL
   }
   
   # Grab the Calculated Results Section
@@ -1897,7 +1944,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(calculatedResults, preferredIdService=configList$preferredBatchIdService, 
-                                                 testMode=testMode, replaceFakeCorpBatchId=replaceFakeCorpBatchId)
+                                                 dryRun, serverPath, curveNames, testMode=testMode, 
+                                                 replaceFakeCorpBatchId=replaceFakeCorpBatchId)
   
   # Grab the Raw Results Section
   rawResults <- getSection(genericDataFileDataFrame, "Raw Results", transpose = FALSE)
@@ -1909,7 +1957,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   tempIdLabel <- ""
   if(!is.null(rawResults)) {
     rawResults <- organizeRawResults(rawResults,calculatedResults)
-    
+    # TODO: Should have a validation step to check raw results valueKinds
     xLabel <- rawResults$xLabel
     yLabel <- rawResults$yLabel
     tempIdLabel <-rawResults$tempIdLabel
