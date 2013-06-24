@@ -57,6 +57,10 @@
 		exports.serverConfigurationParams.configuration.projectService = "http://suse.labsynch.com:8080/a/project/service";
 		exports.serverConfigurationParams.configuration.fileServiceType = "blueimp";
 		exports.serverConfigurationParams.configuration.externalFileService = "http://suse.labsynch.com:8080/a/file/service"
+		exports.serverConfigurationParams.configuration.stateGroupsScript = "public/src/conf/genericDataParserConfiguration.R";
+		exports.serverConfigurationParams.configuration.includeProject = "FALSE";
+		exports.serverConfigurationParams.configuration.reportRegistrationURL = "http://suse.labsynch.com:8080/an/annotation/service";
+		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "Generic,Dose Response"
 
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
