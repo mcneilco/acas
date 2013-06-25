@@ -170,17 +170,17 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d") {
         minDaysFromToday <- min(daysFromToday)
         bestMatchingDate <- possibleDatesInExpectedFormat[daysFromToday == minDaysFromToday][1]
         
-        # Add to the warnings that we coerced the date to a "Best Match" TODO: need to make xkcd open in a new tab
+        # Add to the warnings that we coerced the date to a "Best Match"
         warning(paste0("A date is not in the proper format. Found: \"",inputValue,"\" This was interpreted as \"",bestMatchingDate, 
                        "\". Please enter dates in the following format: \"", format(Sys.Date(), expectedFormat),
-                       "\", or click  <a href=\"http://xkcd.com/1179/\">here</a>"))
+                       "\", or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
         returnDate <- bestMatchingDate
       } else {
         # If we couldn't parse the data into any of the formats, then we add this to the erorrs and return no date
         errorList <<- c(errorList,paste0("The loader was unable to change the date '", inputValue, 
                                          "' to the proper format. Please change it to the following format: \"",
                                          format(Sys.Date(), expectedFormat),"\"",
-                                         ," or click  <a href=\"http://xkcd.com/1179/\">here</a>"))
+                                         ," or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
       }
     } else {
       # If the change in the seperators fixed the issue, then we add this to the warnings and return the coerced date
@@ -440,49 +440,11 @@ validateCalculatedResults <- function(calculatedResults, preferredIdService, dry
   #### ================= Check the value kinds =======================================================
   currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
-  newValueKinds <- setdiff(c(calculatedResults$"Result Type", curveNames), currentValueKinds)
-  if (length(newValueKinds) > 0) {
-    warning(paste0("The following column headers have never been loaded in an experiment before: '", 
-                   paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar experiment before, please use the same",
-                   " headers that were used previously. If this is a new protocol, you can proceed without worry."))
-    if (!dryRun) {
-      # Create the new valueKinds, using the correct valueType
-      # TODO: also check that valueKinds have the correct valueType when being loaded a second time
-      valueTypesList <- fromJSON(getURL(paste0(serverPath, "valuetypes")))
-      valueTypes <- sapply(valueTypesList, getElement, "typeName")
-      valueKindTypes <- calculatedResults$Class[match(newValueKinds, calculatedResults$"Result Type")]
-      valueKindTypes <- c("numericValue", "stringValue", "dateValue")[match(valueKindTypes, c("Number", "Text", "Date"))]
-      
-      # This is for the curveNames, but would catch other added values as well
-      valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
-      
-      newValueTypesList <- valueTypesList[match(valueKindTypes, valueTypes)]
-      newValueKindsUpload <- mapply(function(x, y) list(kindName=x, lsType=y), newValueKinds, newValueTypesList,
-                                    SIMPLIFY = F, USE.NAMES = F)
-      tryCatch({
-        response <- getURL(
-          paste0(serverPath, "valuekinds/jsonArray"),
-          customrequest='POST',
-          httpheader=c('Content-Type'='application/json'),
-          postfields=toJSON(newValueKindsUpload))
-      }, error = function(e) {
-        errorList <<- c(errorList,paste("Error in saving new column headers:", e$message))
-      })
-    }
-    
-#     # Check the value units
-#     currentUnitKindList <- fromJSON(getURL(paste0(serverPath, "unitkinds")))
-#     currentUnitKinds <- sapply(currentUnitKindList, getElement, "kindName")
-#     newUnitKinds <- setdiff(calculatedResults$"Result Units", currentUnitKinds)
-#     
-#     if (length(newUnitKinds) > 0) {
-#       errorList <<- c(errorList, (paste0(
-#         "The following units have never been loaded in an experiment before: '", 
-#         paste(newUnitKinds,collapse="', '"), "'. If you have loaded a similar experiment before, please use the same ",
-#         "units that were used previously. Otherwise, contact your system administrator to have these units added.")))
-#     }
-  }
+  matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
   
+  neededValueKinds <- c(calculatedResults$"Result Type", curveNames)
+  
+  validateValueKinds(neededValueKinds, neededValueKindTypes = c(calculatedResults$"Result Type", rep("Text", length(curveNames))), serverPath)
   # Return the validated results
   return(calculatedResults)
 }
@@ -596,6 +558,74 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   
   # Return classRow
   return(classRow)
+}
+validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPath) {
+  # Checks that column headers are valid valueKinds (or creates them if they are new)
+  #
+  # Args:
+  #   neededValueKinds:       A character vector listed column headers
+  #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds
+  #   serverPath:             The path to the acas server
+  #
+  # Returns:
+  #	  NULL
+  
+  newValueKinds <- setdiff(neededValueKinds, currentValueKinds)
+  oldValueKinds <- intersect(neededValueKinds, currentValueKinds)
+  
+  # Check that the value kinds that have been entered before have the correct Datatype (valueType)
+  oldValueKindTypes <- calculatedResults$Class[match(oldValueKinds, calculatedResults$"Result Type")]
+  oldValueKindTypes <- c("numericValue", "stringValue", "dateValue")[match(oldValueKindTypes, c("Number", "Text", "Date"))]
+  currentValueKindTypeFrame <- data.frame(currentValueKinds,  matchingValueTypes, stringsAsFactors=FALSE)
+  oldValueKindTypeFrame <- data.frame(oldValueKinds, oldValueKindTypes, stringsAsFactors=FALSE)
+  
+  comparisonFrame <- merge(oldValueKindTypeFrame, currentValueKindTypeFrame, by.x = "oldValueKinds", by.y = "currentValueKinds")
+  wrongValueTypes <- comparisonFrame$oldValueKindTypes != comparisonFrame$matchingValueTypes
+  
+  if(any(wrongValueTypes)) {
+    problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
+    problemFrame$oldValueKindTypes <- c("Number", "Text", "Date")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue"))]
+    problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue"))]
+    problemFrame <- problemFrame[wrongValueTypes, ]
+    
+    for (row in 1:nrow(problemFrame)) {
+      errorList <<- c(errorList, paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
+                                        "' instead of '", problemFrame$oldValueKindTypes[row], "'. Please enter '", problemFrame$matchingValueKindTypes[row],
+                                        "' in the Datatype row for '", problemFrame$oldValueKinds[row], "'."))
+    }
+  }
+  
+  # Warn about any new valueKinds
+  if (length(newValueKinds) > 0) {
+    warning(paste0("The following column headers have never been loaded in an experiment before: '", 
+                   paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar experiment before, please use the same",
+                   " headers that were used previously. If this is a new protocol, you can proceed without worry."))
+    if (!dryRun) {
+      # Create the new valueKinds, using the correct valueType
+      # TODO: also check that valueKinds have the correct valueType when being loaded a second time
+      valueTypesList <- fromJSON(getURL(paste0(serverPath, "valuetypes")))
+      valueTypes <- sapply(valueTypesList, getElement, "typeName")
+      valueKindTypes <- calculatedResults$Class[match(newValueKinds, calculatedResults$"Result Type")]
+      valueKindTypes <- c("numericValue", "stringValue", "dateValue")[match(valueKindTypes, c("Number", "Text", "Date"))]
+      
+      # This is for the curveNames, but would catch other added values as well
+      valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
+      
+      newValueTypesList <- valueTypesList[match(valueKindTypes, valueTypes)]
+      newValueKindsUpload <- mapply(function(x, y) list(kindName=x, lsType=y), newValueKinds, newValueTypesList,
+                                    SIMPLIFY = F, USE.NAMES = F)
+      tryCatch({
+        response <- getURL(
+          paste0(serverPath, "valuekinds/jsonArray"),
+          customrequest='POST',
+          httpheader=c('Content-Type'='application/json'),
+          postfields=toJSON(newValueKindsUpload))
+      }, error = function(e) {
+        errorList <<- c(errorList,paste("Error in saving new column headers:", e$message))
+      })
+    }
+  }
+  return(NULL)
 }
 getPreferredId <- function(batchIds, preferredIdService, testMode=FALSE) {
   # Gets preferred Ids from a service
