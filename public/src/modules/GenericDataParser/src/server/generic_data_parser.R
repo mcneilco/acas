@@ -1318,7 +1318,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(subjectData$"Corporate Batch ID")
-    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList)
+    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment)
   }
   
   # Analysis group
@@ -1876,7 +1876,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   return(NULL)
 }
-registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList) {
+registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment) {
   # Registers a report as a batch annotation
   
   annotationList <- list(dnsAnnotation = list(name = basename(reportFilePath),
@@ -1901,6 +1901,42 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
   }, error = function(e) {
     stop("There was an error uploading the file for batch annotation")
   })
+  
+  locationState <- experiment$experimentStates[lapply(experiment$experimentStates, function(x) x$"lsKind")=="report locations"]
+  
+  # Record the location
+  if (length(locationState)> 0) {
+    locationState <- locationState[[1]]
+    
+    lsKinds <- lapply(locationState$experimentValues, function(x) x$"lsKind")
+    
+    valuesToDelete <- locationState$experimentValues[lsKinds %in% c("report file")]
+    
+    lapply(valuesToDelete, deleteExperimentValue)
+  } else {
+    locationState <- createExperimentState(
+      recordedBy=recordedBy,
+      experiment = experiment,
+      lsType="metadata",
+      lsKind="report locations",
+      lsTransaction=lsTransaction)
+    
+    locationState <- saveExperimentState(locationState)
+  }
+  
+  tryCatch({
+    locationValue <- createStateValue(recordedBy = recordedBy,
+                                      lsType = "stringValue",
+                                      lsKind = "report file",
+                                      fileValue = serverFileLocation,
+                                      lsState = locationState)
+    
+    saveExperimentValues(list(locationValue))
+  }, error = function(e) {
+    stop("Could not save the summary and result locations")
+  })
+  
+  file.remove(reportFilePath)
 }
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serverPath,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
@@ -2212,11 +2248,17 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   } else if (fileServiceType == "DNS") {
     require("XML")
     
-    response <- postForm(fileService,
-                         FILE=fileUpload(filename = fileStartLocation),
-                         CREATED_BY_LOGIN=recordedBy)
-    parsedXML <- xmlParse(response)
-    serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)
+    tryCatch({
+      response <- postForm(fileService,
+                           FILE=fileUpload(filename = fileStartLocation),
+                           CREATED_BY_LOGIN=recordedBy)
+      parsedXML <- xmlParse(response)
+      serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)
+    }, error = function(e) {
+      stop(paste("There was an error contacting the file service:", e))
+    })
+    
+    file.remove(fileStartLocation)
   } else {
     stop("Invalid file service")
   }
