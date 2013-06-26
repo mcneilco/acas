@@ -441,7 +441,7 @@ validateCalculatedResults <- function(calculatedResults, preferredIdService, dry
   neededValueKinds <- c(calculatedResults$"Result Type", curveNames)
   neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
   
-  validateValueKinds(neededValueKinds, neededValueKindTypes, serverPath)
+  validateValueKinds(neededValueKinds, neededValueKindTypes, serverPath, dryRun)
   # Return the validated results
   return(calculatedResults)
 }
@@ -556,7 +556,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   # Return classRow
   return(classRow)
 }
-validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPath) {
+validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPath, dryRun) {
   # Checks that column headers are valid valueKinds (or creates them if they are new)
   #
   # Args:
@@ -1328,7 +1328,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(subjectData$"Corporate Batch ID")
-    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment)
+    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction)
   }
   
   # Analysis group
@@ -1655,7 +1655,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(calculatedResults$"Corporate Batch ID")
-    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList)
+    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction)
   }
   
   # Each analysisGroupID creates an analysis group
@@ -1886,15 +1886,19 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   return(NULL)
 }
-registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment) {
+registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction) {
   # Registers a report as a batch annotation
   
-  annotationList <- list(dnsAnnotation = list(name = basename(reportFilePath),
-                         #description = "report file",
-                         #dateExpired = "",
-                         showInline = "false",
-                         createdByLogin = recordedBy
-  ))
+  annotationList <- list(
+    dnsAnnotation = list(
+      name = basename(reportFilePath),
+      #description = "report file",
+      #dateExpired = "",
+      owningURL = paste0(configList$serverPath, "experiments/codename/", experiment$codeName),
+      owningAttribute = "ACAS_experiment_annotation_id",
+      showInline = "false",
+      createdByLogin = recordedBy
+    ))
   
   annotationList$dnsAnnotation$annotationEntities <- lapply(batchNameList, function(batchCode) {
     list(summary = reportFileSummary,
@@ -1908,6 +1912,7 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
                        FILE=fileUpload(filename = reportFilePath),
                        PAYLOAD_TYPE="JSON",
                        PAYLOAD=toJSON(annotationList))
+            response <- fromJSON(response)
   }, error = function(e) {
     stop("There was an error uploading the file for batch annotation")
   })
@@ -1917,12 +1922,6 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
   # Record the location
   if (length(locationState)> 0) {
     locationState <- locationState[[1]]
-    
-    lsKinds <- lapply(locationState$lsValues, function(x) x$"lsKind")
-    
-    valuesToDelete <- locationState$lsValues[lsKinds %in% c("annotation id")]
-    
-    lapply(valuesToDelete, deleteExperimentValue)
   } else {
     locationState <- createExperimentState(
       recordedBy=recordedBy,
@@ -1943,7 +1942,7 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
     
     saveExperimentValues(list(locationValue))
   }, error = function(e) {
-    stop("Could not save the summary and result locations")
+    stop("Could not save the annotation location")
   })
   
   file.remove(reportFilePath)
@@ -2070,7 +2069,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Delete any old data under the same experiment name (delete and reload)
   if(!dryRun && !newExperiment && errorFree) {
-    deleteAnnotation(experiment)
+    deleteSourceFile(experiment, configList)
+    deleteAnnotation(experiment, configList)
     deleteExperiment(experiment)
   }
   
@@ -2139,7 +2139,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   return(summaryInfo)
 }
-deleteAnnotation <- function(experiment) {
+deleteAnnotation <- function(experiment, configList) {
   locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="report locations"]
   
   # Record the location
@@ -2150,16 +2150,35 @@ deleteAnnotation <- function(experiment) {
     
     valuesToDelete <- locationState$lsValues[lsKinds %in% c("annotation id")]
     
-    response <- getURL(
-      paste0(configList$reportRegistrationURL, "/delete/", valuesToDelete[[1]]$numericValue),
-      customrequest='DELETE',
-      httpheader=c('Content-Type'='application/json'),
-      postfields=toJSON(experiment))
-    if(!grepl("Deleted Annotation", response)) {
-      stop (paste("The loader was unable to delete the old experiment annotation. Instead, it got this response:", response))
+    if (length(valuesToDelete) > 0) {
+      response <- getURL(
+        paste0(configList$reportRegistrationURL, "/delete/", valuesToDelete[[1]]$numericValue),
+        customrequest='DELETE',
+        httpheader=c('Content-Type'='application/json'),
+        postfields=toJSON(experiment))
+      if(!grepl("Deleted Annotation", response)) {
+        stop (paste("The loader was unable to delete the old experiment annotation. Instead, it got this response:", response))
+      }
     }
+  }
+}
+deleteSourceFile <- function(experiment, configList) {
+  locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
+  if (length(locationState) > 0) {
+    locationState <- locationState[[1]]
     
-    lapply(valuesToDelete, deleteExperimentValue)
+    lsKinds <- lapply(locationState$lsValues, function(x) x$"lsKind")
+    
+    valuesToDelete <- locationState$lsValues[lsKinds %in% c("source file")]
+    
+    if (length(valuesToDelete) > 0) {
+      valueToDelete <- valuesToDelete[[1]]
+#       response <- getURL(
+#         "http://dsandimapp01:8080/DNS/core/v1/DNSFile/delete/FILE79438",
+#         customrequest='DELETE',
+#         httpheader=c('Content-Type'='application/json'),
+#         postfields=toJSON(experiment))
+    }
   }
 }
 createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningList,summaryInfo,dryRun) {
