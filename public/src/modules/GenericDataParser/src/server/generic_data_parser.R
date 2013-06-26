@@ -438,13 +438,10 @@ validateCalculatedResults <- function(calculatedResults, preferredIdService, dry
   calculatedResults$"Corporate Batch ID"[batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults$"Corporate Batch ID"[batchesToCheck],preferredIdFrame$requestName)]
   
   #### ================= Check the value kinds =======================================================
-  currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
-  currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
-  matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
-  
   neededValueKinds <- c(calculatedResults$"Result Type", curveNames)
+  neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
   
-  validateValueKinds(neededValueKinds, neededValueKindTypes = c(calculatedResults$"Result Type", rep("Text", length(curveNames))), serverPath)
+  validateValueKinds(neededValueKinds, neededValueKindTypes, serverPath)
   # Return the validated results
   return(calculatedResults)
 }
@@ -570,11 +567,18 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
   # Returns:
   #	  NULL
   
+  require(rjson)
+  require(RCurl)
+  
+  currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
+  currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
+  matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
+  
   newValueKinds <- setdiff(neededValueKinds, currentValueKinds)
   oldValueKinds <- intersect(neededValueKinds, currentValueKinds)
   
   # Check that the value kinds that have been entered before have the correct Datatype (valueType)
-  oldValueKindTypes <- calculatedResults$Class[match(oldValueKinds, calculatedResults$"Result Type")]
+  oldValueKindTypes <- neededValueKindTypes[match(oldValueKinds, neededValueKinds)]
   oldValueKindTypes <- c("numericValue", "stringValue", "dateValue")[match(oldValueKindTypes, c("Number", "Text", "Date"))]
   currentValueKindTypeFrame <- data.frame(currentValueKinds,  matchingValueTypes, stringsAsFactors=FALSE)
   oldValueKindTypeFrame <- data.frame(oldValueKinds, oldValueKindTypes, stringsAsFactors=FALSE)
@@ -605,7 +609,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
       # TODO: also check that valueKinds have the correct valueType when being loaded a second time
       valueTypesList <- fromJSON(getURL(paste0(serverPath, "valuetypes")))
       valueTypes <- sapply(valueTypesList, getElement, "typeName")
-      valueKindTypes <- calculatedResults$Class[match(newValueKinds, calculatedResults$"Result Type")]
+      valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
       valueKindTypes <- c("numericValue", "stringValue", "dateValue")[match(valueKindTypes, c("Number", "Text", "Date"))]
       
       # This is for the curveNames, but would catch other added values as well
@@ -1087,6 +1091,12 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
   
   require('RCurl')
   require('rjson')
+  require('gdata')
+  
+  forceProtocolCreation <- grepl("CREATETHISPROTOCOL", protocolName)
+  if(forceProtocolCreation) {
+    protocolName <- trim(gsub("CREATETHISPROTOCOL", "", protocolName))
+  }
   
   #TODO check for errors for fromJSON
   protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName))))
@@ -1095,7 +1105,7 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
   if (length(protocolList)==0) {
     allowedCreationFormats <- configList$allowProtocolCreationWithFormats
     allowedCreationFormats <- unlist(strsplit(allowedCreationFormats, ","))
-    if (formFormat %in% allowedCreationFormats) {
+    if (formFormat %in% allowedCreationFormats || forceProtocolCreation) {
       warning(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
     } else {
       errorList <<- c(errorList, paste0("Protocol '", protocolName, "' does not exist. Please enter a protocol name that exists. Contact your system administrator if you would like to create a new protocol."))
