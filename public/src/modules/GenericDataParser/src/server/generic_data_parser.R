@@ -1728,7 +1728,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     
     if(!is.null(rawResults)) {
       # Gets the temp and batch Id's for the current analysis group
-      tempID <- calculatedResults$"Result Value"[calculatedResults$analysisGroupID == analysisGroupID & calculatedResults$"Result Type" == tempIdLabel][1]
+      tempID <- calculatedResults$"Result Desc"[calculatedResults$analysisGroupID == analysisGroupID & calculatedResults$"Result Type" == tempIdLabel][1]
       batchID <- as.character(calculatedResults$"Corporate Batch ID"[calculatedResults$analysisGroupID == analysisGroupID][1])
       if (!is.na(tempID) & tempID!="") {
         for (group in unique(treatmentGroupData$treatmentBatch[treatmentGroupData[,tempIdLabel]==tempID])) {
@@ -2160,6 +2160,7 @@ deleteAnnotation <- function(experiment) {
     }
     
     lapply(valuesToDelete, deleteExperimentValue)
+  }
 }
 createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningList,summaryInfo,dryRun) {
   # Turns the output information into html
