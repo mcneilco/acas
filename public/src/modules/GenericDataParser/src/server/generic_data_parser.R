@@ -1302,7 +1302,7 @@ validateProject <- function(projectName, configList) {
 }
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
-                              recordedBy) {
+                              recordedBy, replaceFakeCorpBatchId) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   # TODO: stop uploading fake corp batch id as codeValue
@@ -1409,7 +1409,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   ### Subject Values ======================================================================= 
   batchCodeStateIndices <- which(sapply(stateGroups, getElement, "includesCorpName"))
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
-  subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
+  subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices, replaceFakeCorpBatchId))
   
   savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
   #
@@ -1912,15 +1912,15 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
     stop("There was an error uploading the file for batch annotation")
   })
   
-  locationState <- experiment$experimentStates[lapply(experiment$experimentStates, function(x) x$"lsKind")=="report locations"]
+  locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="report locations"]
   
   # Record the location
   if (length(locationState)> 0) {
     locationState <- locationState[[1]]
     
-    lsKinds <- lapply(locationState$experimentValues, function(x) x$"lsKind")
+    lsKinds <- lapply(locationState$lsValues, function(x) x$"lsKind")
     
-    valuesToDelete <- locationState$experimentValues[lsKinds %in% c("report file")]
+    valuesToDelete <- locationState$lsValues[lsKinds %in% c("annotation id")]
     
     lapply(valuesToDelete, deleteExperimentValue)
   } else {
@@ -1936,9 +1936,9 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
   
   tryCatch({
     locationValue <- createStateValue(recordedBy = recordedBy,
-                                      lsType = "stringValue",
-                                      lsKind = "report file",
-                                      fileValue = serverFileLocation,
+                                      lsType = "numericValue",
+                                      lsKind = "annotation id",
+                                      numericValue = response$dnsAnnotation$id,
                                       lsState = locationState)
     
     saveExperimentValues(list(locationValue))
@@ -2070,6 +2070,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Delete any old data under the same experiment name (delete and reload)
   if(!dryRun && !newExperiment && errorFree) {
+    deleteAnnotation(experiment)
     deleteExperiment(experiment)
   }
   
@@ -2085,7 +2086,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
-                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy)
+                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, replaceFakeCorpBatchId)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
@@ -2137,6 +2138,28 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   summaryInfo$experimentEntity <- experiment
   
   return(summaryInfo)
+}
+deleteAnnotation <- function(experiment) {
+  locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="report locations"]
+  
+  # Record the location
+  if (length(locationState)> 0) {
+    locationState <- locationState[[1]]
+    
+    lsKinds <- lapply(locationState$lsValues, function(x) x$"lsKind")
+    
+    valuesToDelete <- locationState$lsValues[lsKinds %in% c("annotation id")]
+    
+    response <- getURL(
+      paste0(configList$reportRegistrationURL, "/delete/", valuesToDelete[[1]]$numericValue),
+      customrequest='DELETE',
+      httpheader=c('Content-Type'='application/json'),
+      postfields=toJSON(experiment))
+    if(!grepl("Deleted Annotation", response)) {
+      stop (paste("The loader was unable to delete the old experiment annotation. Instead, it got this response:", response))
+    }
+    
+    lapply(valuesToDelete, deleteExperimentValue)
 }
 createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningList,summaryInfo,dryRun) {
   # Turns the output information into html
@@ -2273,15 +2296,15 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     stop("Invalid file service")
   }
 
-  locationState <- experiment$experimentStates[lapply(experiment$experimentStates, function(x) x$"lsKind")=="report locations"]
+  locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="report locations"]
   
   # Record the location
   if (length(locationState)> 0) {
     locationState <- locationState[[1]]
     
-    lsKinds <- lapply(locationState$experimentValues, function(x) x$"lsKind")
+    lsKinds <- lapply(locationState$lsValues, function(x) x$"lsKind")
     
-    valuesToDelete <- locationState$experimentValues[lsKinds %in% c("source location")]
+    valuesToDelete <- locationState$lsValues[lsKinds %in% c("source location")]
     
     lapply(valuesToDelete, deleteExperimentValue)
   } else {
