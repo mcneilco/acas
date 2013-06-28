@@ -1433,19 +1433,19 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       resultValue <- NA
     } else if (isGreaterThan) {
       resultOperator <- ">"
-      resultValue <- max(subjectData$numericValue)
+      resultValue <- max(subjectData$numericValue, na.rm = TRUE)
     } else if (isLessThan) {
       resultOperator <- "<"
-      resultValue <- min(subjectData$numericValue)
+      resultValue <- min(subjectData$numericValue, na.rm = TRUE)
     } else {
       resultOperator <- NA
-      resultValue <- mean(subjectData$numericValue)
+      resultValue <- mean(subjectData$numericValue, na.rm = TRUE)
     }
     return(data.frame(
       "batchCode" = subjectData$batchCode[1],
       "valueKind" = subjectData$valueKind[1],
       "valueUnit" = subjectData$valueUnit[1],
-      "numericValue" = resultValue,
+      "numericValue" = if(is.nan(resultValue)) NA else resultValue,
       "stringValue" = if (length(unique(subjectData$stringValue)) == 1) subjectData$stringValue[1] else NA,
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
@@ -1456,7 +1456,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       stateVersion = subjectData$stateVersion[1],
       valueType = subjectData$valueType[1],
       numberOfReplicates = sum(!is.na(subjectData$numericValue)),
-      uncertaintyType = if(is.numeric(resultValue)) "standard deviation" else NA,
+      uncertaintyType = if(!is.na(resultValue)) "standard deviation" else NA,
       uncertainty = if(sum(!is.na(subjectData$numericValue)) > 2) {sd(subjectData$numericValue, na.rm=TRUE)} else NA,
       stringsAsFactors=FALSE))
   }
