@@ -1302,7 +1302,7 @@ validateProject <- function(projectName, configList) {
 }
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
-                              recordedBy, replaceFakeCorpBatchId) {
+                              recordedBy, replaceFakeCorpBatchId, annotationType) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   # TODO: stop uploading fake corp batch id as codeValue
@@ -1328,7 +1328,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(subjectData$"Corporate Batch ID")
-    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction)
+    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
   }
   
   # Analysis group
@@ -1615,7 +1615,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
 uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
                        serverPath,protocol,experiment, fileStartLocation, configList, reportFilePath, 
-                       reportFileSummary, recordedBy) {
+                       reportFileSummary, recordedBy, annotationType) {
   # Uploads all the data to the server
   # 
   # Args:
@@ -1655,7 +1655,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(calculatedResults$"Corporate Batch ID")
-    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction)
+    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
   }
   
   # Each analysisGroupID creates an analysis group
@@ -1886,12 +1886,14 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   return(NULL)
 }
-registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction) {
+registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, 
+                               experiment, lsTransaction, annotationType) {
   # Registers a report as a batch annotation
   
   annotationList <- list(
     dnsAnnotation = list(
       name = basename(reportFilePath),
+      contentType = annotationType,
       #description = "report file",
       #dateExpired = "",
       owningURL = paste0(configList$serverPath, "experiments/codename/", experiment$codeName),
@@ -2003,12 +2005,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     stateGroups <- getStateGroups(formatSettings[[inputFormat]])
     hideAllData <- formatSettings[[inputFormat]]$hideAllData
     curveNames <- formatSettings[[inputFormat]]$curveNames
+    annotationType <- formatSettings[[inputFormat]]$annotationType
   } else {
     lookFor <- "Calculated Results"
     lockCorpBatchId <- TRUE
     replaceFakeCorpBatchId <- ""
     stateGroups <- NULL
     curveNames <- NULL
+    annotationType <- "s_unassign"
   }
   
   # Grab the Calculated Results Section
@@ -2086,12 +2090,13 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
-                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, replaceFakeCorpBatchId)
+                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
+                        replaceFakeCorpBatchId, annotationType)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
-                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy)
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType)
     }
   }
   

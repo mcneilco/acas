@@ -1,6 +1,7 @@
 getFormatSettings <- function() {
   formatSettings <- list(
     "DNS In Vivo Behavior" = list(
+      annotationType = "s_behavior",
       hideAllData = TRUE,
       extraHeaders = data.frame(),
       stateGroups = list(list(entityKind = "subject",
@@ -27,6 +28,7 @@ getFormatSettings <- function() {
                               includesOthers = FALSE,
                               includesCorpName = FALSE))
     ), "In Vivo Full PK" = list(
+      annotationType = "s_dmpk",
       hideAllData = FALSE,
       extraHeaders = data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE),
       curveNames = c("PO IV pk curve id", "PO pk curve id", "IV pk curve id"),
@@ -63,6 +65,7 @@ getFormatSettings <- function() {
                               includesOthers = TRUE,
                               includesCorpName = FALSE))
     ), "CNS PK" = list(
+      annotationType = "s_dmpk",
       hideAllData = FALSE,
       extraHeaders = data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE),
       stateGroups = list(list(entityKind = "analysis group",
