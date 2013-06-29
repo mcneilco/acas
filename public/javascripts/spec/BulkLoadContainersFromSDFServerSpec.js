@@ -101,7 +101,7 @@ ALIQUOT_DATE            5-Nov-12
             return self.serviceReturn = json;
           },
           error: function(err) {
-            console.log('got ajax error');
+            alert('got ajax error');
             return self.serviceReturn = null;
           },
           dataType: 'json'
@@ -139,7 +139,6 @@ ALIQUOT_DATE            5-Nov-12
       return it('should not return a dry run transactionId, but retuen error=true, and at least one message', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          console.log(this.serviceReturn);
           expect(this.serviceReturn.transactionId).toBeNull();
           expect(this.serviceReturn.hasError).toBeTruthy();
           expect(this.serviceReturn.errorMessages.length).toBeGreaterThan(0);

@@ -88,7 +88,6 @@
         describe("when displayed with pre-selected value", function() {
           beforeEach(function() {
             runs(function() {
-              console.log(this.pickListList);
               return this.pickListController = new PickListSelectController({
                 el: this.selectFixture,
                 collection: this.pickListList,

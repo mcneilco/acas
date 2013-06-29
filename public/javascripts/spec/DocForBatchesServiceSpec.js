@@ -66,7 +66,6 @@ This service saves and fetches DocForBatches items
         it('should return a valide model', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 3000);
           return runs(function() {
-            console.log(this.serviceReturn);
             return expect(this.serviceReturn.id).toEqual(1235);
           });
         });
@@ -102,7 +101,6 @@ This service saves and fetches DocForBatches items
         it('should return error=false', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 3000);
           return runs(function() {
-            console.log(this.serviceReturn);
             expect(this.serviceReturn.error).toBeFalsy();
             return expect(this.serviceReturn.errorMessages.length).toEqual(0);
           });

@@ -152,7 +152,6 @@
             return expect(this.exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy();
           });
           it("should have the analysisGroup ", function() {
-            console.log(this.exp.get('analysisGroups').at(0) instanceof AnalysisGroup);
             return expect(this.exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy();
           });
           it("should have the analysisGroup id ", function() {
@@ -585,7 +584,6 @@
             });
             return it("should show error in date field", function() {
               return runs(function() {
-                console.log(this.ebc.$('.bv_group_recordedDate'));
                 return expect(this.ebc.$('.bv_group_recordedDate').hasClass('error')).toBeTruthy();
               });
             });

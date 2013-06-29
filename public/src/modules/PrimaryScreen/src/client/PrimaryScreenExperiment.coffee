@@ -32,7 +32,7 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 		@model.save()
 
 	handleExperimentSaved: =>
-		console.log @model
+		#console.log @model
 		@analysisController.render()
 
 	handleProtocolAttributesCopied: =>

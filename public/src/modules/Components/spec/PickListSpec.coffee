@@ -61,7 +61,6 @@ describe "PickList Select Unit Testing", ->
 			describe "when displayed with pre-selected value", ->
 				beforeEach ->
 					runs ->
-						console.log @pickListList
 						@pickListController = new PickListSelectController
 							el: @selectFixture
 							collection: @pickListList

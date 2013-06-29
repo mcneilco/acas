@@ -61,7 +61,6 @@ class window.DocUploadController extends AbstractFormController
 				@.$('.bv_currentDocContainer').hide()
 				$('.bv_urlRadio').attr('checked', true)
 				@$('.bv_url').val(@model.get('url'))
-				console.log('loaded with url')
 
 	render: =>
 		@fileInputController.render()

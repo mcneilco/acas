@@ -8,11 +8,9 @@ class window.AppRouter extends Backbone.Router
 		@appController = options.appController
 
 	newDoc: =>
-		console.log 'new doc'
 		@appController.newDoc()
 
 	existingDoc: (docId) =>
-		console.log 'existign doc'+docId
 		@appController.existingDoc(docId)
 
 
@@ -41,14 +39,12 @@ class window.AppController extends Backbone.View
 		@docForBatchesController.render()
 
 	existingDoc: (docId) =>
-		console.log docId
 		$.ajax
 			type: 'GET'
 			url: "/api/docForBatches/"+docId
 			success: (json) =>
 				@existingDocReturn(json)
 			error: (err) =>
-				console.log 'got ajax error in get existing doc'
 				@serviceReturn = null
 			dataType: 'json'
 

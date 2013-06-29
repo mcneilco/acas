@@ -148,7 +148,6 @@ class window.Experiment extends Backbone.Model
 				message: "Scientist must be set"
 
 #		if attrs.protocol = null
-#			console.log attrs.protocol
 #			errors.push
 #				attribute: 'protocol'
 #				message: "Protocol must be set"
@@ -269,7 +268,7 @@ class window.ExperimentBaseController extends AbstractFormController
 						@model.set protocol: new Protocol(json[0])
 						@getAndShowProtocolName() # this will fetch full protocol
 				error: (err) ->
-					console.log 'got ajax error'
+					alert 'got ajax error from api/protocols/codename/ in Exeriment.coffee'
 				dataType: 'json'
 
 	handleUseProtocolParametersClicked: =>
