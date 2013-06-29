@@ -38,7 +38,7 @@ app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
         return response.end(rReturn);
       });
     } else {
-      return serverUtilityFunctions.runRFunction(request, "public/src/modules/FullPK/src/server/fullPKStub.R", "parseFullPKData", function(rReturn) {
+      return serverUtilityFunctions.runRFunction(request, "public/src/modules/FullPK/src/server/fullPK.R", "parseFullPKData", function(rReturn) {
         return response.end(rReturn);
       });
     }
