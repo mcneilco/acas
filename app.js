@@ -75,6 +75,8 @@
 
   app.post('/api/userAuthentication', loginRoutes.authenticationService);
 
+  app.get('/api/users/:username', loginRoutes.getUsers);
+
   preferredBatchIdRoutes = require('./routes/PreferredBatchIdService.js');
 
   app.post('/api/preferredBatchId', preferredBatchIdRoutes.preferredBatchId);

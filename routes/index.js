@@ -15,6 +15,7 @@
       scripts: scriptsToLoad,
       appParams: {
         loginUserName: req.user.username,
+        loginUser: req.user,
         testMode: false
       }
     });
@@ -34,6 +35,13 @@
       scripts: scriptsToLoad,
       appParams: {
         loginUserName: 'jmcneil',
+        loginUser: {
+          id: 2,
+          username: "jmcneil",
+          email: "jmcneil@example.com",
+          firstName: "John",
+          lastName: "McNeil"
+        },
         testMode: true
       }
     });
@@ -53,6 +61,13 @@
       scripts: scriptsToLoad,
       appParams: {
         loginUserName: 'jmcneil',
+        loginUser: {
+          id: 2,
+          username: "jmcneil",
+          email: "jmcneil@example.com",
+          firstName: "John",
+          lastName: "McNeil"
+        },
         testMode: false,
         liveServiceTest: true
       }

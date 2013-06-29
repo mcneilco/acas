@@ -31,6 +31,7 @@
 		exports.serverConfigurationParams.configuration.userAuthenticationServiceURL = "";
 //		exports.serverConfigurationParams.configuration.userAuthenticationType = "DNS";
 //		exports.serverConfigurationParams.configuration.userAuthenticationServiceURL = "http://imapp01:8080/DNS/persons/v1/Persons/authenticate";
+//		exports.serverConfigurationParams.configuration.userInformationServiceURL = "http://imapp01-d:8080/DNS/persons/v1/Persons/";
 
 // For Projects
 		exports.serverConfigurationParams.configuration.projectsType = "ACAS";

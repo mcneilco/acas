@@ -68,8 +68,8 @@ exports.index = (req, res) ->
 		title: "ACAS Home"
 		scripts: scriptsToLoad
 		appParams:
-#			loginUserName: 'jmcneil' #TODO replace hard-coded username with login and cookies
 			loginUserName: req.user.username
+			loginUser: req.user
 			testMode: false
 
 
@@ -146,6 +146,12 @@ exports.specRunner = (req, res) ->
 		scripts: scriptsToLoad
 		appParams:
 			loginUserName: 'jmcneil'
+			loginUser:
+				id: 2,
+				username: "jmcneil",
+				email: "jmcneil@example.com",
+				firstName: "John",
+				lastName: "McNeil"
 			testMode: true
 	})
 
@@ -176,6 +182,12 @@ exports.liveServiceSpecRunner = (req, res) ->
 	scripts: scriptsToLoad
 	appParams:
 		loginUserName: 'jmcneil'
+		loginUser:
+			id: 2,
+			username: "jmcneil",
+			email: "jmcneil@example.com",
+			firstName: "John",
+			lastName: "McNeil"
 		testMode: false
 		liveServiceTest: true
 	})

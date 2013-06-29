@@ -75,8 +75,7 @@ describe "Experiment module testing", ->
 					expect(@exp.get('experimentLabels') instanceof LabelList).toBeTruthy()
 				it 'Should have an empty state list', ->
 					expect(@exp.get('experimentStates').length).toEqual 0
-					expect(@exp.get('experimentStates') instanceof ExperimentStateList).toBeTruthy()
-				it 'Should have an empty scientist', ->
+`				it 'Should have an empty scientist', ->
 					expect(@exp.get('recordedBy')).toEqual ""
 				it 'Should have an empty recordedDate', ->
 					expect(@exp.get('recordedDate')).toBeNull()
