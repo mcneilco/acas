@@ -59,7 +59,8 @@
     ModuleMenusController.prototype.render = function() {
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
-      this.$('.bv_loginUserName').html(window.AppLaunchParams.loginUserName);
+      this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
+      this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
       return this;
     };
 

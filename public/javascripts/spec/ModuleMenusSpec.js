@@ -42,10 +42,13 @@
         expect($('.bv_modLaunchMenuWrapper')).not.toBeNull();
         return expect($('.bv_mainModuleWrapper')).not.toBeNull();
       });
-      it("should show the username", function() {
-        return expect(this.mmc.$('.bv_loginUserName').html()).toContain('jmcneil');
+      it("should show the user first name", function() {
+        return expect(this.mmc.$('.bv_loginUserFirstName').html()).toContain('John');
       });
-      return it("should shave a logout link", function() {
+      it("should show the user last name", function() {
+        return expect(this.mmc.$('.bv_loginUserLastName').html()).toContain('McNeil');
+      });
+      return it("should show a logout link", function() {
         return expect(this.mmc.$('.bv_logout').attr('href')).toContain('logout');
       });
     });

@@ -46,11 +46,6 @@ app.get '/SpecRunner', routes.specRunner
 app.get '/LiveServiceSpecRunner', routes.liveServiceSpecRunner
 
 # login routes
-#passport.serializeUser (user, done) ->
-#	done null, user.id
-#passport.deserializeUser (id, done) ->
-#	loginRoutes.findById id, (err, user) ->
-#		done err, user
 passport.serializeUser (user, done) ->
 	done null, user.username
 passport.deserializeUser (username, done) ->
@@ -64,6 +59,7 @@ app.post '/login',
 	loginRoutes.loginPost
 app.get '/logout', loginRoutes.logout
 app.post '/api/userAuthentication', loginRoutes.authenticationService
+app.get '/api/users/:username', loginRoutes.getUsers
 
 # serverAPI routes
 preferredBatchIdRoutes = require './routes/PreferredBatchIdService.js'
