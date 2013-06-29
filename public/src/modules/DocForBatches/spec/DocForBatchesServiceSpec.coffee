@@ -51,7 +51,6 @@ describe 'DocForBatches Service testing', ->
 			it 'should return a valide model', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
-					console.log @serviceReturn
 					expect(@serviceReturn.id).toEqual 1235
 
 			it 'should return a fileName', ->
@@ -78,7 +77,6 @@ describe 'DocForBatches Service testing', ->
 			it 'should return error=false', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
-					console.log @serviceReturn
 					expect(@serviceReturn.error).toBeFalsy()
 					expect(@serviceReturn.errorMessages.length).toEqual 0
 

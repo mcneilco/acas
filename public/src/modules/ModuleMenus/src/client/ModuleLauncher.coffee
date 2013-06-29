@@ -107,7 +107,6 @@ class window.ModuleLauncherController extends Backbone.View
 		@model.bind 'deactivationRequested', @handleDeactivation
 #		if @model.get('routes')?
 #			_.each @model.get('routes'), (route) =>
-#				console.log route
 #				window.appRouter.route route.routePath, route.routeCallBackName, @handleRouteRequested
 
 	render: =>
@@ -138,7 +137,7 @@ class window.ModuleLauncherController extends Backbone.View
 		$(@el).hide()
 
 	handleRouteRequested: (params) =>
-		console.log "got route with params: ", params
+		#console.log "got route with params: ", params
 
 class window.ModuleLauncherListController extends Backbone.View
 

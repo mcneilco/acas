@@ -53,7 +53,6 @@
     };
 
     PrimaryScreenExperimentController.prototype.handleExperimentSaved = function() {
-      console.log(this.model);
       return this.analysisController.render();
     };
 

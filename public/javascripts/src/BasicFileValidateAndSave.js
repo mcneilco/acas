@@ -173,7 +173,6 @@
     BasicFileValidateAndSaveController.prototype.handleValidationReturnSuccess = function(json) {
       var summaryStr, _ref1;
 
-      console.log(json);
       summaryStr = "Validation Results: ";
       if (!json.hasError) {
         this.filePassedValidation = true;

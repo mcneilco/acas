@@ -120,7 +120,6 @@ It also takes a series pf parameters that would normally be in a header block
       return it('should not return a dry run transactionId, but return error=true, and at least one message', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 20000);
         return runs(function() {
-          console.log(this.serviceReturn);
           expect(this.serviceReturn.transactionId).toBeNull();
           expect(this.serviceReturn.hasError).toBeTruthy();
           expect(this.serviceReturn.errorMessages.length).toBeGreaterThan(0);

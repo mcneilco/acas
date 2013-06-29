@@ -21,13 +21,9 @@
       return this.appController = options.appController;
     };
 
-    AppRouter.prototype.existingDoc = function(val) {
-      return console.log("got fred: " + val);
-    };
+    AppRouter.prototype.existingDoc = function(val) {};
 
-    AppRouter.prototype.newDoc = function(val) {
-      return console.log("got new doc req");
-    };
+    AppRouter.prototype.newDoc = function(val) {};
 
     return AppRouter;
 

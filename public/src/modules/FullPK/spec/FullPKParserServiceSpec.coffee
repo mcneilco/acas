@@ -93,7 +93,6 @@ describe 'Full PK Parser Service testing', ->
 		it 'should not return a dry run transactionId, but return error=true, and at least one message', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 20000)
 			runs ->
-				console.log @serviceReturn
 				expect(@serviceReturn.transactionId).toBeNull()
 				expect(@serviceReturn.hasError).toBeTruthy()
 				expect(@serviceReturn.errorMessages.length).toBeGreaterThan(0)

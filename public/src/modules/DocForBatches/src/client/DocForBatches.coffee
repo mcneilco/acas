@@ -46,7 +46,7 @@ class window.DocForBatches extends Backbone.Model
 				else
 					@.protocol = new Protocol(json[0])
 			error: (err) ->
-				console.log 'got ajax error'
+				alert 'got ajax error from api/protocols/codename/ in DocForBatches.coffee'
 			dataType: 'json'
 
 	asExperiment: ->
@@ -135,7 +135,6 @@ class window.DocForBatchesController extends Backbone.View
 
 	save: =>
 		if @model.isValid()
-			#console.log @model.attributes
 			$.ajax
 				type: 'POST'
 				url: "/api/docForBatches"

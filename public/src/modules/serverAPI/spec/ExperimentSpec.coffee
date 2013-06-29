@@ -75,7 +75,8 @@ describe "Experiment module testing", ->
 					expect(@exp.get('experimentLabels') instanceof LabelList).toBeTruthy()
 				it 'Should have an empty state list', ->
 					expect(@exp.get('experimentStates').length).toEqual 0
-`				it 'Should have an empty scientist', ->
+					expect(@exp.get('experimentStates') instanceof ExperimentStateList).toBeTruthy()
+				it 'Should have an empty scientist', ->
 					expect(@exp.get('recordedBy')).toEqual ""
 				it 'Should have an empty recordedDate', ->
 					expect(@exp.get('recordedDate')).toBeNull()
@@ -98,7 +99,6 @@ describe "Experiment module testing", ->
 				it "should have the analysisGroup List", ->
 					expect(@exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy()
 				it "should have the analysisGroup ", ->
-					console.log @exp.get('analysisGroups').at(0) instanceof AnalysisGroup
 					expect(@exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy()
 				it "should have the analysisGroup id ", ->
 					expect(@exp.get('analysisGroups').at(0).id ).toEqual 64782
@@ -404,7 +404,6 @@ describe "Experiment module testing", ->
 							@ebc.$('.bv_recordedDate').change()
 					it "should show error in date field", ->
 						runs ->
-							console.log @ebc.$('.bv_group_recordedDate')
 							expect(@ebc.$('.bv_group_recordedDate').hasClass('error')).toBeTruthy()
 				describe "when scientist not selected", ->
 					beforeEach ->
