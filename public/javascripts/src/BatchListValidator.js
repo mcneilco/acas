@@ -168,7 +168,7 @@
 
     BatchNameController.prototype.updateComment = function() {
       return this.model.set({
-        comment: this.$('.bv_comment').val().trim()
+        comment: $.trim(this.$('.bv_comment').val())
       });
     };
 
@@ -301,7 +301,7 @@
       var cleanArray, reqArray, treq;
 
       cleanArray = new Array();
-      if (this.$(".bv_pasteListArea").val().trim() !== "") {
+      if ($.trim(this.$(".bv_pasteListArea").val()) !== "") {
         reqArray = this.$(".bv_pasteListArea").val().split("\n");
         treq = void 0;
         _.each(reqArray, function(bns) {

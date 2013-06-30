@@ -17,7 +17,7 @@ It also takes a series pf parameters that would normally be in a header block
   };
 
   badDataRequest = {
-    fileToParse: "fred",
+    fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls",
     reportFile: null,
     inputParameters: window.FullPKTestJSON.validFullPK,
     dryRun: true,

@@ -89,15 +89,15 @@ class window.FullPKController extends AbstractFormController
 
 	updateModel: ->
 		@model.set
-			protocolName: @$('.bv_protocolName').val()
-			experimentName: @$('.bv_experimentName').val()
-			scientist: @$('.bv_scientist').val()
-			notebook: @$('.bv_notebook').val()
-			inLifeNotebook: @$('.bv_inLifeNotebook').val()
-			project: @$('.bv_project').val()
-			bioavailability: @$('.bv_bioavailability').val()
-			aucType: @$('.bv_aucType').val()
-			assayDate: new Date(@$('.bv_assayDate').val().trim()).getTime()
+			protocolName: @getTrimmedInput('.bv_protocolName')
+			experimentName: @getTrimmedInput('.bv_experimentName')
+			scientist: @getTrimmedInput('.bv_scientist')
+			notebook: @getTrimmedInput('.bv_notebook')
+			inLifeNotebook: @getTrimmedInput('.bv_inLifeNotebook')
+			project: @getTrimmedInput('.bv_project')
+			bioavailability: @getTrimmedInput('.bv_bioavailability')
+			aucType: @getTrimmedInput('.bv_aucType')
+			assayDate: @convertYMDDateToMs(@getTrimmedInput('.bv_assayDate'))
 
 	setupProjectSelect: ->
 		@projectList = new PickListList()
