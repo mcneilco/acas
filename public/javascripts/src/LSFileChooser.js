@@ -113,6 +113,10 @@
       return this.currentNumberOfFiles = 0;
     };
 
+    LSFileChooserController.prototype.events = {
+      'click .bv_cancelFile': 'handleDeleteFileUIChanges'
+    };
+
     LSFileChooserController.prototype.canAcceptAnotherFile = function() {
       return this.currentNumberOfFiles < this.maxNumberOfFiles;
     };
