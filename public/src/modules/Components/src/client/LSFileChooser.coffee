@@ -68,9 +68,9 @@ class window.LSFileChooserController extends Backbone.View
 			@requiresValidation = @options.requiresValidation
 		@currentNumberOfFiles = 0
 
-	#events:
+	events:
 		#'click .bv_deleteFile': 'handleDeleteFileUIChanges'
-		#'click .bv_cancelFile': 'handleDeleteFileUIChanges'
+		'click .bv_cancelFile': 'handleDeleteFileUIChanges'
 	
 	canAcceptAnotherFile: ->
 		return @currentNumberOfFiles < @maxNumberOfFiles
@@ -121,8 +121,7 @@ class window.LSFileChooserController extends Backbone.View
 		@$('.bv_status').addClass('icon-exclamation-sign')
 		#window.notificationController.addError("file is invalid!")
 		@$('.dv_validatingProgressBar').hide("slide")
-	
-		
+
 	render: ->
 		self = @
 		$(@el).html ""
