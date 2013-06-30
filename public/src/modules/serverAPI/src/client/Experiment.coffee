@@ -231,13 +231,13 @@ class window.ExperimentBaseController extends AbstractFormController
 		@handleNameChanged()
 
 	handleShortDescriptionChanged: =>
-		@model.set shortDescription: @$('.bv_shortDescription').val().trim()
+		@model.set shortDescription: @getTrimmedInput('.bv_shortDescription')
 
 	handleDescriptionChanged: =>
-		@model.set description: @$('.bv_description').val().trim()
+		@model.set description:@getTrimmedInput('.bv_description')
 
 	handleNameChanged: =>
-		newName = @$('.bv_experimentName').val().trim()
+		newName = @getTrimmedInput('.bv_experimentName')
 		@model.get('experimentLabels').setBestName new Label
 			labelKind: "experiment name"
 			labelText: newName
@@ -245,7 +245,7 @@ class window.ExperimentBaseController extends AbstractFormController
 			recordedDate: @model.get 'recordedDate'
 
 	handleDateChanged: =>
-		@model.set recordedDate: new Date(@$('.bv_recordedDate').val().trim()).getTime()
+		@model.set recordedDate: @convertYMDDateToMs(@getTrimmedInput('.bv_recordedDate'))
 		@handleNameChanged()
 
 	handleRecordDateIconClicked: =>

@@ -190,27 +190,27 @@
         });
         return describe('update model when fields changed', function() {
           it("should update the protocolName", function() {
-            this.fpkc.$('.bv_protocolName').val("test protocol");
+            this.fpkc.$('.bv_protocolName').val(" test protocol ");
             this.fpkc.$('.bv_protocolName').change();
             return expect(this.fpkc.model.get('protocolName')).toEqual("test protocol");
           });
           it("should update the experimentName", function() {
-            this.fpkc.$('.bv_experimentName').val("test experiment");
+            this.fpkc.$('.bv_experimentName').val(" test experiment ");
             this.fpkc.$('.bv_experimentName').change();
             return expect(this.fpkc.model.get('experimentName')).toEqual("test experiment");
           });
           it("should update the scientist", function() {
-            this.fpkc.$('.bv_scientist').val("test scientist");
+            this.fpkc.$('.bv_scientist').val(" test scientist ");
             this.fpkc.$('.bv_scientist').change();
             return expect(this.fpkc.model.get('scientist')).toEqual("test scientist");
           });
           it("should update the notebook", function() {
-            this.fpkc.$('.bv_notebook').val("test notebook");
+            this.fpkc.$('.bv_notebook').val(" test notebook ");
             this.fpkc.$('.bv_notebook').change();
             return expect(this.fpkc.model.get('notebook')).toEqual("test notebook");
           });
           it("should update the inLifeNotebook", function() {
-            this.fpkc.$('.bv_inLifeNotebook').val("test inLifeNotebook");
+            this.fpkc.$('.bv_inLifeNotebook').val(" test inLifeNotebook ");
             this.fpkc.$('.bv_inLifeNotebook').change();
             return expect(this.fpkc.model.get('inLifeNotebook')).toEqual("test inLifeNotebook");
           });
@@ -225,19 +225,19 @@
             });
           });
           it("should update the bioavailability", function() {
-            this.fpkc.$('.bv_bioavailability').val("test bioavailability");
+            this.fpkc.$('.bv_bioavailability').val(" test bioavailability ");
             this.fpkc.$('.bv_bioavailability').change();
             return expect(this.fpkc.model.get('bioavailability')).toEqual("test bioavailability");
           });
           it("should update the aucType", function() {
-            this.fpkc.$('.bv_aucType').val("test aucType");
+            this.fpkc.$('.bv_aucType').val(" test aucType ");
             this.fpkc.$('.bv_aucType').change();
             return expect(this.fpkc.model.get('aucType')).toEqual("test aucType");
           });
           return it("should update the assayDate", function() {
-            this.fpkc.$('.bv_assayDate').val("2013-6-6");
+            this.fpkc.$('.bv_assayDate').val(" 2013-6-6 ");
             this.fpkc.$('.bv_assayDate').change();
-            return expect(this.fpkc.model.get('assayDate')).toEqual(new Date("2013-6-6").getTime());
+            return expect(this.fpkc.model.get('assayDate')).toEqual(new Date(2013, 5, 6).getTime());
           });
         });
       });

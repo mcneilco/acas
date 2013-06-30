@@ -96,7 +96,7 @@ class window.BatchNameController extends Backbone.View
 
 	updateComment: ->
 		@model.set
-			comment: @$('.bv_comment').val().trim()
+			comment: $.trim(@$('.bv_comment').val())
 
 	clear: ->
 		@model.clear()
@@ -177,7 +177,7 @@ class window.BatchListValidatorController extends Backbone.View
 
 	getCleanRequestedBatchList: ->
 		cleanArray = new Array()
-		unless @$(".bv_pasteListArea").val().trim() == ""
+		unless $.trim(@$(".bv_pasteListArea").val()) == ""
 			reqArray = @$(".bv_pasteListArea").val().split("\n")
 			treq = undefined
 			_.each reqArray, (bns) ->

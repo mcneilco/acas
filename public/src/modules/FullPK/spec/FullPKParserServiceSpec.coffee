@@ -13,7 +13,7 @@ goodDataRequest =
 
 #Service call data with bad data:
 badDataRequest =
-	fileToParse: "fred"
+	fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls"
 	reportFile: null #if user uploads report, put temp path here
 	inputParameters:  window.FullPKTestJSON.validFullPK
 	dryRun: true

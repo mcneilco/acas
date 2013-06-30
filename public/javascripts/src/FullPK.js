@@ -143,15 +143,15 @@
 
     FullPKController.prototype.updateModel = function() {
       return this.model.set({
-        protocolName: this.$('.bv_protocolName').val(),
-        experimentName: this.$('.bv_experimentName').val(),
-        scientist: this.$('.bv_scientist').val(),
-        notebook: this.$('.bv_notebook').val(),
-        inLifeNotebook: this.$('.bv_inLifeNotebook').val(),
-        project: this.$('.bv_project').val(),
-        bioavailability: this.$('.bv_bioavailability').val(),
-        aucType: this.$('.bv_aucType').val(),
-        assayDate: new Date(this.$('.bv_assayDate').val().trim()).getTime()
+        protocolName: this.getTrimmedInput('.bv_protocolName'),
+        experimentName: this.getTrimmedInput('.bv_experimentName'),
+        scientist: this.getTrimmedInput('.bv_scientist'),
+        notebook: this.getTrimmedInput('.bv_notebook'),
+        inLifeNotebook: this.getTrimmedInput('.bv_inLifeNotebook'),
+        project: this.getTrimmedInput('.bv_project'),
+        bioavailability: this.getTrimmedInput('.bv_bioavailability'),
+        aucType: this.getTrimmedInput('.bv_aucType'),
+        assayDate: this.convertYMDDateToMs(this.getTrimmedInput('.bv_assayDate'))
       });
     };
 

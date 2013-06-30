@@ -147,23 +147,23 @@ describe 'Full PK Behavior Testing', ->
 
 			describe 'update model when fields changed', ->
 				it "should update the protocolName", ->
-					@fpkc.$('.bv_protocolName').val "test protocol"
+					@fpkc.$('.bv_protocolName').val " test protocol "
 					@fpkc.$('.bv_protocolName').change()
 					expect(@fpkc.model.get('protocolName')).toEqual "test protocol"
 				it "should update the experimentName", ->
-					@fpkc.$('.bv_experimentName').val "test experiment"
+					@fpkc.$('.bv_experimentName').val " test experiment "
 					@fpkc.$('.bv_experimentName').change()
 					expect(@fpkc.model.get('experimentName')).toEqual "test experiment"
 				it "should update the scientist", ->
-					@fpkc.$('.bv_scientist').val "test scientist"
+					@fpkc.$('.bv_scientist').val " test scientist "
 					@fpkc.$('.bv_scientist').change()
 					expect(@fpkc.model.get('scientist')).toEqual "test scientist"
 				it "should update the notebook", ->
-					@fpkc.$('.bv_notebook').val "test notebook"
+					@fpkc.$('.bv_notebook').val " test notebook "
 					@fpkc.$('.bv_notebook').change()
 					expect(@fpkc.model.get('notebook')).toEqual "test notebook"
 				it "should update the inLifeNotebook", ->
-					@fpkc.$('.bv_inLifeNotebook').val "test inLifeNotebook"
+					@fpkc.$('.bv_inLifeNotebook').val " test inLifeNotebook "
 					@fpkc.$('.bv_inLifeNotebook').change()
 					expect(@fpkc.model.get('inLifeNotebook')).toEqual "test inLifeNotebook"
 				it "should update the project", ->
@@ -176,17 +176,17 @@ describe 'Full PK Behavior Testing', ->
 						@fpkc.$('.bv_project').change()
 						expect(@fpkc.model.get('project')).toEqual "project2"
 				it "should update the bioavailability", ->
-					@fpkc.$('.bv_bioavailability').val "test bioavailability"
+					@fpkc.$('.bv_bioavailability').val " test bioavailability "
 					@fpkc.$('.bv_bioavailability').change()
 					expect(@fpkc.model.get('bioavailability')).toEqual "test bioavailability"
 				it "should update the aucType", ->
-					@fpkc.$('.bv_aucType').val "test aucType"
+					@fpkc.$('.bv_aucType').val " test aucType "
 					@fpkc.$('.bv_aucType').change()
 					expect(@fpkc.model.get('aucType')).toEqual "test aucType"
 				it "should update the assayDate", ->
-					@fpkc.$('.bv_assayDate').val "2013-6-6"
+					@fpkc.$('.bv_assayDate').val " 2013-6-6 "
 					@fpkc.$('.bv_assayDate').change()
-					expect(@fpkc.model.get('assayDate')).toEqual new Date("2013-6-6").getTime()
+					expect(@fpkc.model.get('assayDate')).toEqual new Date(2013, 5, 6).getTime()
 
 		describe "validation testing", ->
 			beforeEach ->
