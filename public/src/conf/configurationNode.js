@@ -9,17 +9,17 @@
 		exports.serverConfigurationParams.configuration.portNumber = 3000;
 		exports.serverConfigurationParams.configuration.fileServiceURL = "http://acas-d:8888";
 		exports.serverConfigurationParams.configuration.serverRelativeFilePath = "serverOnlyModules/blueimp-file-upload-node/public/files/";
-        exports.serverConfigurationParams.configuration.driver = "oracle.jdbc.driver.OracleDriver";
-        exports.serverConfigurationParams.configuration.driverLocation = "public/src/modules/GenericDataParser/src/server/ojdbc6.jar";
-        exports.serverConfigurationParams.configuration.databaseLocation = "jdbc:oracle:thin:@";
-        exports.serverConfigurationParams.configuration.databasePort = ":1521:oradev";
-        exports.serverConfigurationParams.configuration.username = "ACAS";
-        exports.serverConfigurationParams.configuration.password = "2Ydudu8$pD";
-        exports.serverConfigurationParams.configuration.serverPath = "http://acas-d:8080/acas/";
+		exports.serverConfigurationParams.configuration.driver = "oracle.jdbc.driver.OracleDriver";
+		exports.serverConfigurationParams.configuration.driverLocation = "public/src/modules/GenericDataParser/src/server/ojdbc6.jar";
+		exports.serverConfigurationParams.configuration.databaseLocation = "jdbc:oracle:thin:@";
+		exports.serverConfigurationParams.configuration.databasePort = ":1521:oradev";
+		exports.serverConfigurationParams.configuration.username = "ACAS";
+		exports.serverConfigurationParams.configuration.password = "2Ydudu8$pD";
+		exports.serverConfigurationParams.configuration.serverPath = "http://acas-d:8080/acas/";
 // For preferred ID service
-        exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://acas-d:3000/api/preferredBatchId";
-        exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "SingleBatchNameQueryString";
-        exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL = "http://imapp01-d:8080/DNS/core/v1/synonyms/preferred/";
+		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://acas-d:3000/api/preferredBatchId";
+		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "SingleBatchNameQueryString";
+		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL = "http://imapp01-d:8080/DNS/core/v1/synonyms/preferred/";
 
 // For Login
 		exports.serverConfigurationParams.configuration.userAuthenticationType = "DNS";
@@ -31,15 +31,15 @@
 		exports.serverConfigurationParams.configuration.projectsServiceURL = "http://imapp01-d:8080/DNS/codes/v1/Codes/Project.json";
 
 // For racas
-        exports.serverConfigurationParams.configuration.appName = "ACAS";
-        exports.serverConfigurationParams.configuration.db_driver = "Oracle()";
-        exports.serverConfigurationParams.configuration.db_user = "ACAS";
-        exports.serverConfigurationParams.configuration.db_password = "2Ydudu8$pD";
-        exports.serverConfigurationParams.configuration.db_name = "ORADEV";
-        exports.serverConfigurationParams.configuration.db_host = "***REMOVED***";
-        exports.serverConfigurationParams.configuration.db_port = "1521";
-        exports.serverConfigurationParams.configuration.stringsAsFactors = "FALSE";
-        exports.serverConfigurationParams.configuration.db_driver_package = "require(ROracle)";
+		exports.serverConfigurationParams.configuration.appName = "ACAS";
+		exports.serverConfigurationParams.configuration.db_driver = "Oracle()";
+		exports.serverConfigurationParams.configuration.db_user = "ACAS";
+		exports.serverConfigurationParams.configuration.db_password = "2Ydudu8$pD";
+		exports.serverConfigurationParams.configuration.db_name = "ORADEV";
+		exports.serverConfigurationParams.configuration.db_host = "***REMOVED***";
+		exports.serverConfigurationParams.configuration.db_port = "1521";
+		exports.serverConfigurationParams.configuration.stringsAsFactors = "FALSE";
+		exports.serverConfigurationParams.configuration.db_driver_package = "require(ROracle)";
 
 // For R curve curation
 		exports.serverConfigurationParams.configuration.rapache = "http://acas-d/r-services-api";
@@ -56,6 +56,6 @@
 
 
 
-        })((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
+		})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
 
 }).call(this);
