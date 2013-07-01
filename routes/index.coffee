@@ -154,6 +154,7 @@ exports.specRunner = (req, res) ->
 				firstName: "John",
 				lastName: "McNeil"
 			testMode: true
+			liveServiceTest: false
 	})
 
 exports.liveServiceSpecRunner = (req, res) ->
@@ -170,6 +171,7 @@ exports.liveServiceSpecRunner = (req, res) ->
 		# For Components module
 		'javascripts/spec/ProjectsServiceSpec.js'
 		# For serverAPI module
+		'javascripts/spec/ProtocolServiceSpec.js'
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		#For login module
 		'javascripts/spec/dnsAuthenticationServiceSpec.js'

@@ -30,9 +30,9 @@ describe 'Full PK Behavior Testing', ->
 			it "should be valid as initialized", ->
 				expect(@fullPK.isValid()).toBeTruthy()
 
-			it 'should require that protocolName not be ""', ->
+			it 'should require that protocolName not be "unassigned"', ->
 				@fullPK.set
-					protocolName: ""
+					protocolName: "Select Protocol"
 				expect(@fullPK.isValid()).toBeFalsy()
 				filtErrors = _.filter(@fullPK.validationError, (err) ->
 					err.attribute=='protocolName'
@@ -134,6 +134,17 @@ describe 'Full PK Behavior Testing', ->
 					expect(@fpkc.$('.bv_project option').length).toBeGreaterThan 0
 				it "should default to unassigned", ->
 					expect(@fpkc.$('.bv_project').val()).toEqual "unassigned"
+			describe "it should show a picklist for protocols", ->
+				beforeEach ->
+					waitsFor ->
+						@fpkc.$('.bv_protocolName option').length > 0
+					,
+						1000
+					runs ->
+				it "should show protocol options after loading them from server", ->
+					expect(@fpkc.$('.bv_protocolName option').length).toBeGreaterThan 0
+				it "should default to unassigned", ->
+					expect(@fpkc.$('.bv_protocolName').val()).toEqual "unassigned"
 			describe "disable and enable", ->
 				it "should disable all inputs on request", ->
 					@fpkc.disableAllInputs()
@@ -147,9 +158,14 @@ describe 'Full PK Behavior Testing', ->
 
 			describe 'update model when fields changed', ->
 				it "should update the protocolName", ->
-					@fpkc.$('.bv_protocolName').val " test protocol "
-					@fpkc.$('.bv_protocolName').change()
-					expect(@fpkc.model.get('protocolName')).toEqual "test protocol"
+					waitsFor ->
+						@fpkc.$('.bv_protocolName option').length > 0
+					,
+						1000
+					runs ->
+						@fpkc.$('.bv_protocolName').val "PROT-00000009"
+						@fpkc.$('.bv_protocolName').change()
+						expect(@fpkc.model.get('protocolName')).toEqual "Dog IVPO PK"
 				it "should update the experimentName", ->
 					@fpkc.$('.bv_experimentName').val " test experiment "
 					@fpkc.$('.bv_experimentName').change()
@@ -195,10 +211,16 @@ describe 'Full PK Behavior Testing', ->
 					el: $('#fixture')
 				@fpkc.render()
 			describe "error notification", ->
-				it 'should show error if protocolName is empty', ->
-					@fpkc.$(".bv_protocolName").val ""
-					@fpkc.$(".bv_protocolName").change()
-					expect(@fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy()
+				it 'should show error if protocol is unassigned', ->
+					waitsFor ->
+						@fpkc.$('.bv_protocolName option').length > 0
+					,
+						1000
+					runs ->
+						@fpkc.$(".bv_protocolName").val "unassigned"
+						@fpkc.$(".bv_protocolName").change()
+						console.log @fpkc.$(".bv_protocolName").val()
+						expect(@fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy()
 				it 'should show error if experimentName is empty', ->
 					@fpkc.$(".bv_experimentName").val ""
 					@fpkc.$(".bv_experimentName").change()

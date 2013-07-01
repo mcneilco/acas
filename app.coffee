@@ -70,6 +70,9 @@ app.get '/api/protocols/codename/:code', protocolRoutes.protocolByCodename
 app.get '/api/protocols/:id', protocolRoutes.protocolById
 app.post '/api/protocols', protocolRoutes.postProtocol
 app.put '/api/protocols', protocolRoutes.putProtocol
+app.get '/api/protocollabels', protocolRoutes.protocolLabels
+app.get '/api/protocolCodes', protocolRoutes.protocolCodeList
+app.get '/api/protocolCodes/filter/:str', protocolRoutes.protocolCodeList
 experimentRoutes = require './routes/ExperimentServiceRoutes.js'
 app.get '/api/experiments/codename/:code', experimentRoutes.experimentByCodename
 app.get '/api/experiments/:id', experimentRoutes.experimentById

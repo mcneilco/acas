@@ -13,7 +13,7 @@ class window.FullPK extends Backbone.Model
 
 	validate: (attrs) ->
 		errors = []
-		if  attrs.protocolName == ""
+		if  attrs.protocolName == "Select Protocol"
 			errors.push
 				attribute: 'protocolName'
 				message: "Protocol Name must be provided"
@@ -74,6 +74,7 @@ class window.FullPKController extends AbstractFormController
 		$(@el).html @template()
 		@setBindings()
 		@setupProjectSelect()
+		@setupProtocolSelect()
 
 	render: =>
 		@$('.bv_assayDate').datepicker( );
@@ -89,7 +90,7 @@ class window.FullPKController extends AbstractFormController
 
 	updateModel: ->
 		@model.set
-			protocolName: @getTrimmedInput('.bv_protocolName')
+			protocolName: @$('.bv_protocolName').find(":selected").text()
 			experimentName: @getTrimmedInput('.bv_experimentName')
 			scientist: @getTrimmedInput('.bv_scientist')
 			notebook: @getTrimmedInput('.bv_notebook')
@@ -107,7 +108,18 @@ class window.FullPKController extends AbstractFormController
 			collection: @projectList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Category"
+				name: "Select Project"
+			selectedCode: "unassigned"
+
+	setupProtocolSelect: ->
+		@protocolList = new PickListList()
+		@protocolList.url = "api/protocolCodes/filter/PK"
+		@protocolListController = new PickListSelectController
+			el: @$('.bv_protocolName')
+			collection: @protocolList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Protocol"
 			selectedCode: "unassigned"
 
 	disableAllInputs: ->

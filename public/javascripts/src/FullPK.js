@@ -29,7 +29,7 @@
       var errors;
 
       errors = [];
-      if (attrs.protocolName === "") {
+      if (attrs.protocolName === "Select Protocol") {
         errors.push({
           attribute: 'protocolName',
           message: "Protocol Name must be provided"
@@ -121,7 +121,8 @@
       this.errorOwnerName = 'FullPKController';
       $(this.el).html(this.template());
       this.setBindings();
-      return this.setupProjectSelect();
+      this.setupProjectSelect();
+      return this.setupProtocolSelect();
     };
 
     FullPKController.prototype.render = function() {
@@ -143,7 +144,7 @@
 
     FullPKController.prototype.updateModel = function() {
       return this.model.set({
-        protocolName: this.getTrimmedInput('.bv_protocolName'),
+        protocolName: this.$('.bv_protocolName').find(":selected").text(),
         experimentName: this.getTrimmedInput('.bv_experimentName'),
         scientist: this.getTrimmedInput('.bv_scientist'),
         notebook: this.getTrimmedInput('.bv_notebook'),
@@ -163,7 +164,21 @@
         collection: this.projectList,
         insertFirstOption: new PickList({
           code: "unassigned",
-          name: "Select Category"
+          name: "Select Project"
+        }),
+        selectedCode: "unassigned"
+      });
+    };
+
+    FullPKController.prototype.setupProtocolSelect = function() {
+      this.protocolList = new PickListList();
+      this.protocolList.url = "api/protocolCodes/filter/PK";
+      return this.protocolListController = new PickListSelectController({
+        el: this.$('.bv_protocolName'),
+        collection: this.protocolList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Protocol"
         }),
         selectedCode: "unassigned"
       });
