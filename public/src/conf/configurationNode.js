@@ -4,9 +4,9 @@
 
 		exports.serverConfigurationParams = {};
 		exports.serverConfigurationParams.configuration = {};
-		exports.serverConfigurationParams.configuration.serverName = "http://10.0.3.31";
+		exports.serverConfigurationParams.configuration.serverName = "http://localhost";
 		exports.serverConfigurationParams.configuration.portNumber = 3000;
-		exports.serverConfigurationParams.configuration.fileServiceURL = "http://10.0.3.31:8888";
+		exports.serverConfigurationParams.configuration.fileServiceURL = "http://localhost:8888";
 		exports.serverConfigurationParams.configuration.serverRelativeFilePath = "serverOnlyModules/blueimp-file-upload-node/public/files/";
 //		exports.serverConfigurationParams.configuration.serverAddress = "ora.labsynch.com";
 //		exports.serverConfigurationParams.configuration.driver = "oracle.jdbc.driver.OracleDriver";
@@ -31,7 +31,7 @@
         exports.serverConfigurationParams.configuration.serverPath = "http://acas-d:8080/acas/"
 // For preferred ID service
 //        exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://acas-d:3000/api/preferredBatchId"
-        exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://10.0.3.31:3000/api/preferredBatchId"
+        exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://localhost:3000/api/preferredBatchId"
         exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "SingleBatchNameQueryString";
         exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL = "http://imapp01-d:8080/DNS/core/v1/synonyms/preferred/";
 
