@@ -34,11 +34,11 @@
         it("should be valid as initialized", function() {
           return expect(this.fullPK.isValid()).toBeTruthy();
         });
-        it('should require that protocolName not be ""', function() {
+        it('should require that protocolName not be "unassigned"', function() {
           var filtErrors;
 
           this.fullPK.set({
-            protocolName: ""
+            protocolName: "Select Protocol"
           });
           expect(this.fullPK.isValid()).toBeFalsy();
           filtErrors = _.filter(this.fullPK.validationError, function(err) {
@@ -175,6 +175,20 @@
             return expect(this.fpkc.$('.bv_project').val()).toEqual("unassigned");
           });
         });
+        describe("it should show a picklist for protocols", function() {
+          beforeEach(function() {
+            waitsFor(function() {
+              return this.fpkc.$('.bv_protocolName option').length > 0;
+            }, 1000);
+            return runs(function() {});
+          });
+          it("should show protocol options after loading them from server", function() {
+            return expect(this.fpkc.$('.bv_protocolName option').length).toBeGreaterThan(0);
+          });
+          return it("should default to unassigned", function() {
+            return expect(this.fpkc.$('.bv_protocolName').val()).toEqual("unassigned");
+          });
+        });
         describe("disable and enable", function() {
           it("should disable all inputs on request", function() {
             this.fpkc.disableAllInputs();
@@ -190,9 +204,14 @@
         });
         return describe('update model when fields changed', function() {
           it("should update the protocolName", function() {
-            this.fpkc.$('.bv_protocolName').val(" test protocol ");
-            this.fpkc.$('.bv_protocolName').change();
-            return expect(this.fpkc.model.get('protocolName')).toEqual("test protocol");
+            waitsFor(function() {
+              return this.fpkc.$('.bv_protocolName option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.fpkc.$('.bv_protocolName').val("PROT-00000009");
+              this.fpkc.$('.bv_protocolName').change();
+              return expect(this.fpkc.model.get('protocolName')).toEqual("Dog IVPO PK");
+            });
           });
           it("should update the experimentName", function() {
             this.fpkc.$('.bv_experimentName').val(" test experiment ");
@@ -250,10 +269,16 @@
           return this.fpkc.render();
         });
         return describe("error notification", function() {
-          it('should show error if protocolName is empty', function() {
-            this.fpkc.$(".bv_protocolName").val("");
-            this.fpkc.$(".bv_protocolName").change();
-            return expect(this.fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy();
+          it('should show error if protocol is unassigned', function() {
+            waitsFor(function() {
+              return this.fpkc.$('.bv_protocolName option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.fpkc.$(".bv_protocolName").val("unassigned");
+              this.fpkc.$(".bv_protocolName").change();
+              console.log(this.fpkc.$(".bv_protocolName").val());
+              return expect(this.fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy();
+            });
           });
           it('should show error if experimentName is empty', function() {
             this.fpkc.$(".bv_experimentName").val("");

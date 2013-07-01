@@ -93,6 +93,12 @@
 
   app.put('/api/protocols', protocolRoutes.putProtocol);
 
+  app.get('/api/protocollabels', protocolRoutes.protocolLabels);
+
+  app.get('/api/protocolCodes', protocolRoutes.protocolCodeList);
+
+  app.get('/api/protocolCodes/filter/:str', protocolRoutes.protocolCodeList);
+
   experimentRoutes = require('./routes/ExperimentServiceRoutes.js');
 
   app.get('/api/experiments/codename/:code', experimentRoutes.experimentByCodename);

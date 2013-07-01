@@ -42,7 +42,8 @@
           firstName: "John",
           lastName: "McNeil"
         },
-        testMode: true
+        testMode: true,
+        liveServiceTest: false
       }
     });
   };
@@ -53,7 +54,7 @@
 
     global.specRunnerTestmode = false;
     jasmineScripts = ['src/lib/testLibraries/jasmine-jstd-adapter/jasmine/lib/jasmine-core/jasmine.js', 'src/lib/testLibraries/jasmine-jstd-adapter/jasmine/lib/jasmine-core/jasmine-html.js', 'src/lib/testLibraries/jasmine-jquery/lib/jasmine-jquery.js', 'src/lib/testLibraries/sinon.js'];
-    specScripts = ['javascripts/spec/ProjectsServiceSpec.js', 'javascripts/spec/PreferredBatchIdServiceSpec.js', 'javascripts/spec/dnsAuthenticationServiceSpec.js'];
+    specScripts = ['javascripts/spec/ProjectsServiceSpec.js', 'javascripts/spec/ProtocolServiceSpec.js', 'javascripts/spec/PreferredBatchIdServiceSpec.js', 'javascripts/spec/dnsAuthenticationServiceSpec.js'];
     scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts);
     scriptsToLoad = scriptsToLoad.concat(applicationScripts);
     return res.render('LiveServiceSpecRunner', {
