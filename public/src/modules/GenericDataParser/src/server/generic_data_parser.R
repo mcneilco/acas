@@ -27,11 +27,11 @@
 #     parseGenericData(list(pathToGenericDataFormatExcelFile, dryRun = TRUE, ...))
 #     Example: 
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/Mia-Paca.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", testMode = "true", user="smeyer"))
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", testMode = "true", user="smeyer"))
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="~/Documents/clients/DNS/Neuro/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", testMode = "true", user="smeyer"))
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", user="smeyer"))
 
 # Other files:
 # "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls"
@@ -1530,12 +1530,11 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                          lsTransaction = lsTransaction,
                                                          recordedBy = recordedBy)
   }
+  
   ### Container creation ==================================================================
   containerIndex <- which(sapply(stateGroups, function(x) x$"entityKind")=="container")
   if (length(containerIndex > 0)) {
-    containerValueList <- stateGroups[[containerIndex]]$valueKinds
-    containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex,]
-    
+    containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex, ]
     containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
                                                   labelTypeAndKind="id_codeName", 
                                                   numberOfLabels=length(unique(containerData$subjectID))),
@@ -1562,11 +1561,20 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     
     # Order is not maintained, but that is okay
     containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
+        
+    ### Container Labels ============================================================
     
+    saveLabelsFromLongFormat(entityData = containerData, 
+                             entityKind = "container", 
+                             stateGroups = stateGroups,
+                             idColumn = "containerID",
+                             recordedBy = recordedBy,
+                             lsTransaction = lsTransaction,
+                             labelPrefix = experiment$lsLabels[[1]]$labelText)
     
     ### Container States ============================================================
-    containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
     
+    containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
     stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
                                                 entityKind = "container", 
                                                 stateGroups = stateGroups,
