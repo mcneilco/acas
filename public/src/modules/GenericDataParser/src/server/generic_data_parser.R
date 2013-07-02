@@ -232,11 +232,11 @@ validateNumeric <- function(inputValue) {
   # Returns:
   #   A numeric value
   
-  isCoercibleToNumeric <- !is.na(suppressWarnings(as.numeric(as.character(inputValue))))
+  isCoercibleToNumeric <- !is.na(suppressWarnings(as.numeric(gsub(",", "", as.character(inputValue)))))
   if(!isCoercibleToNumeric) {
     errorList <<- c(errorList,paste0("An entry was expected to be a number but was: '", inputValue, "'. Please enter a number instead."))
   }
-  return(suppressWarnings(as.numeric(as.character(inputValue))))
+  return(suppressWarnings(as.numeric(gsub(",", "", as.character(inputValue)))))
 }
 validateMetaData <- function(metaData, configList, formatSettings = list()) {
   # Valides the meta data section
@@ -1098,8 +1098,11 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
     protocolName <- trim(gsub("CREATETHISPROTOCOL", "", protocolName))
   }
   
-  #TODO check for errors for fromJSON
-  protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName))))
+  tryCatch({
+    protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName))))
+  }, error = function(e) {
+    stop("There was an error in accessing the protocol. Please contact your system administrator.")
+  })
   
   # If no protocol with the given name exists, warn the user
   if (length(protocolList)==0) {
@@ -2020,7 +2023,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     replaceFakeCorpBatchId <- ""
     stateGroups <- NULL
     curveNames <- NULL
-    annotationType <- "s_unassign"
+    annotationType <- "s_general"
   }
   
   # Grab the Calculated Results Section
@@ -2125,7 +2128,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
       )
     )
     if(!is.null(validatedMetaData$Page)) {
-      summaryInfo$info$"Page" = as.character(validatedMetaData$Page)
+      summaryInfo$info$"Page" <- as.character(validatedMetaData$Page)
+    }
+    if(!dryRun) {
+      summaryInfo$info$"Experiment Code Name" <- experiment$codeName
     }
   } else {
     summaryInfo <- list(lsTransactionId=lsTransaction,
@@ -2134,7 +2140,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
                         experiment=as.character(validatedMetaData$"Experiment Name"),
                         scientist=as.character(validatedMetaData$Scientist),
                         notebook=as.character(validatedMetaData$Notebook),
-                        page=as.character(validatedMetaData$Page),
                         date=as.character(validatedMetaData$"Assay Date"),
                         newProtocol=newProtocol,
                         newExperiment=newExperiment,
@@ -2146,6 +2151,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if (!is.null(subjectData)) {
       summaryInfo$subjectPoints <- max(subjectData$pointID)
       summaryInfo$subjectFlags <- length(subjectData$value[subjectData$ResultType=="flag" & !is.na(subjectData$value)])
+    }
+    if(!is.null(validatedMetaData$Page)) {
+      summaryInfo$page <- as.character(validatedMetaData$Page)
+    }
+    if(!dryRun) {
+      summaryInfo$experimentCodeName <- experiment$codeName
     }
   }
   summaryInfo$experimentEntity <- experiment
@@ -2225,9 +2236,10 @@ createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningLis
                                <li>Format: <%=summaryInfo$format%> </li>
                                <li><%=if(summaryInfo$newProtocol) {'New '}%> Protocol: <%=summaryInfo$protocol%></li>
                                <li><%=if(summaryInfo$newExperiment) {'New '}%> Experiment: <%=summaryInfo$experiment%></li>
+                               <%=if(!is.null(summaryInfo$experimentCodeName)){paste('<li>Experiment Code Name:', summaryInfo$experimentCodeName,'</li>')}%>
                                <li>Scientist: <%=summaryInfo$scientist%> </li>
                                <li>Notebook: <%=summaryInfo$notebook%> </li>
-                               <li>Page: <%=summaryInfo$page%> </li>
+                               <%=if(!is.null(summaryInfo$page)){paste('<li>Page:', summaryInfo$page,'</li>')}%>
                                <li>Assay Date: <%=summaryInfo$date%> </li>
                                </ul>
                                <p>Calculated Results:</p>
