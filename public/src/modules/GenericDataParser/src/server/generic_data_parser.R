@@ -337,11 +337,12 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   }
   
   if (!is.null(metaData$Project)) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList)
-    
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList) 
+  }
+  if (!is.null(metaData$Scientist)) {
+    validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList) 
   }
   
-  # Return the validated Meta Data
   return(validatedMetaData)
 }
 validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,tempIdLabel) {
@@ -1302,6 +1303,30 @@ validateProject <- function(projectName, configList) {
                                       paste(projectCodes, collapse = "', '"), "'."))
     return("")
   }
+}
+validateScientist <- function(scientistName, configList) {
+  require('RCurl')
+  require('rjson')
+  
+  tryCatch({
+    response <- getURL(paste0(configList$nameValidationService, "/", scientistName))
+    if (response == "") {
+      errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
+      return("")
+    }
+  }, error = function(e) {
+    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+    return("")
+  })
+  
+  tryCatch({
+    username <- fromJSON(response)$username
+  }, error = function(e) {
+    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+    return("")
+  })
+  
+  return(username)
 }
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
