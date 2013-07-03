@@ -17,7 +17,7 @@ class window.LSFileModelCollection extends Backbone.Collection
 
 
 class window.LSFileChooserController extends Backbone.View
-	allowedFileTypes: ['xls']
+	allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx']
 	dropZoneClassId: "fileupload"
 	allowMultipleFiles: false
 	maxNumberOfFiles: 3
@@ -133,7 +133,8 @@ class window.LSFileChooserController extends Backbone.View
 		@$('.fileupload').fileupload('option', {
 			url: self.url,
 			maxFileSize: self.maxFileSize,
-			acceptFileTypes: /(\.|\/)(xls|txt|xlsx|csv|sdf|zip)$/i,
+			#acceptFileTypes: /(\.|\/)(xls|txt|xlsx|csv|sdf|zip)$/i,
+			acceptFileTypes: RegExp('(\\.|\\/)(' + @allowedFileTypes.join('|') + ')$', 'i')
 			autoUpload: self.autoUpload
 			dropZone:  @$('.' + self.dropZoneClassId)
 		})
