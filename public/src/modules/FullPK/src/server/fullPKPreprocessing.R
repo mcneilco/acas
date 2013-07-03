@@ -174,6 +174,13 @@ preprocessPK <- function(fileToParse, parameterList) {
   finalDF[2, grep("Batch", names(finalDF))] <- "Corporate Batch ID"
   finalDF[2, ] <- gsub("PK_Concentration (.*) \\(", "PK_Concentration \\{\\1\\} \\(",finalDF[2, ])
   
+  # Separate unsplit columns
+  #TODO: Route needs discussion with Brian, plus more work below
+  notSplitColumns <- c("Animal", "Dose (mg/kg)", "Day", "Species", "Gender")
+  unsplitColumns <- finalDF[ , finalDF[2, ] %in% notSplitColumns]
+  finalDF <- finalDF[ , !(finalDF[2, ] %in% notSplitColumns)]
+  
+  
   #split the Routes out to their own columns and add the route to the name row
   finalIVdf <- rbind(finalDF[1:2,], finalDF[grep("IV", finalDF[,"Route"]),])
   finalIVdf[2,] <- paste("IV - ", finalIVdf[2,], sep="")
@@ -188,7 +195,7 @@ preprocessPK <- function(fileToParse, parameterList) {
   stretchedFinalIVdf <- rbind.fill(finalIVdf, data.frame(rep(NA, nrow(finalPOdf)-2)))
   
   # Combine
-  finalDF <- cbind(stretchedFinalIVdf, stretchedFinalPOdf)
+  finalDF <- cbind(stretchedFinalIVdf, stretchedFinalPOdf, unsplitColumns)
   
   #remove columns that contain only <NA>
   finalDF <- finalDF[, !sapply(as.data.frame(is.na(finalDF[3:nrow(finalDF), ])), all)]

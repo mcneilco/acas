@@ -52,10 +52,11 @@
 		exports.serverConfigurationParams.configuration.stateGroupsScript = "public/src/conf/genericDataParserConfiguration.R";
 		exports.serverConfigurationParams.configuration.includeProject = "TRUE";
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "http://dsandimapp01:8080/DNS/core/v1/DNSAnnotation";
-		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = ""
+		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "";
+		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas-d:3000/api/users"
 
 
 
-	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
+		})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
 
 }).call(this);

@@ -27,11 +27,11 @@
 #     parseGenericData(list(pathToGenericDataFormatExcelFile, dryRun = TRUE, ...))
 #     Example: 
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/Mia-Paca.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", testMode = "true", user="smeyer"))
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", testMode = "true", user="smeyer"))
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="~/Documents/clients/DNS/Neuro/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", testMode = "true", user="smeyer"))
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", user="smeyer"))
 
 # Other files:
 # "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls"
@@ -232,11 +232,11 @@ validateNumeric <- function(inputValue) {
   # Returns:
   #   A numeric value
   
-  isCoercibleToNumeric <- !is.na(suppressWarnings(as.numeric(as.character(inputValue))))
+  isCoercibleToNumeric <- !is.na(suppressWarnings(as.numeric(gsub(",", "", as.character(inputValue)))))
   if(!isCoercibleToNumeric) {
     errorList <<- c(errorList,paste0("An entry was expected to be a number but was: '", inputValue, "'. Please enter a number instead."))
   }
-  return(suppressWarnings(as.numeric(as.character(inputValue))))
+  return(suppressWarnings(as.numeric(gsub(",", "", as.character(inputValue)))))
 }
 validateMetaData <- function(metaData, configList, formatSettings = list()) {
   # Valides the meta data section
@@ -337,11 +337,12 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   }
   
   if (!is.null(metaData$Project)) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList)
-    
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList) 
+  }
+  if (!is.null(metaData$Scientist)) {
+    validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList) 
   }
   
-  # Return the validated Meta Data
   return(validatedMetaData)
 }
 validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,tempIdLabel) {
@@ -1098,8 +1099,11 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
     protocolName <- trim(gsub("CREATETHISPROTOCOL", "", protocolName))
   }
   
-  #TODO check for errors for fromJSON
-  protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName))))
+  tryCatch({
+    protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName))))
+  }, error = function(e) {
+    stop("There was an error in accessing the protocol. Please contact your system administrator.")
+  })
   
   # If no protocol with the given name exists, warn the user
   if (length(protocolList)==0) {
@@ -1300,9 +1304,33 @@ validateProject <- function(projectName, configList) {
     return("")
   }
 }
+validateScientist <- function(scientistName, configList) {
+  require('RCurl')
+  require('rjson')
+  
+  tryCatch({
+    response <- getURL(paste0(configList$nameValidationService, "/", scientistName))
+    if (response == "") {
+      errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
+      return("")
+    }
+  }, error = function(e) {
+    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+    return("")
+  })
+  
+  tryCatch({
+    username <- fromJSON(response)$username
+  }, error = function(e) {
+    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+    return("")
+  })
+  
+  return(username)
+}
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
-                              recordedBy, replaceFakeCorpBatchId) {
+                              recordedBy, replaceFakeCorpBatchId, annotationType) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   # TODO: stop uploading fake corp batch id as codeValue
@@ -1328,7 +1356,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(subjectData$"Corporate Batch ID")
-    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction)
+    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
   }
   
   # Analysis group
@@ -1433,19 +1461,19 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       resultValue <- NA
     } else if (isGreaterThan) {
       resultOperator <- ">"
-      resultValue <- max(subjectData$numericValue)
+      resultValue <- max(subjectData$numericValue, na.rm = TRUE)
     } else if (isLessThan) {
       resultOperator <- "<"
-      resultValue <- min(subjectData$numericValue)
+      resultValue <- min(subjectData$numericValue, na.rm = TRUE)
     } else {
       resultOperator <- NA
-      resultValue <- mean(subjectData$numericValue)
+      resultValue <- mean(subjectData$numericValue, na.rm = TRUE)
     }
     return(data.frame(
       "batchCode" = subjectData$batchCode[1],
       "valueKind" = subjectData$valueKind[1],
       "valueUnit" = subjectData$valueUnit[1],
-      "numericValue" = resultValue,
+      "numericValue" = if(is.nan(resultValue)) NA else resultValue,
       "stringValue" = if (length(unique(subjectData$stringValue)) == 1) subjectData$stringValue[1] else NA,
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
@@ -1456,7 +1484,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       stateVersion = subjectData$stateVersion[1],
       valueType = subjectData$valueType[1],
       numberOfReplicates = sum(!is.na(subjectData$numericValue)),
-      uncertaintyType = if(is.numeric(resultValue)) "standard deviation" else NA,
+      uncertaintyType = if(!is.na(resultValue)) "standard deviation" else NA,
       uncertainty = if(sum(!is.na(subjectData$numericValue)) > 2) {sd(subjectData$numericValue, na.rm=TRUE)} else NA,
       stringsAsFactors=FALSE))
   }
@@ -1530,12 +1558,11 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                          lsTransaction = lsTransaction,
                                                          recordedBy = recordedBy)
   }
+  
   ### Container creation ==================================================================
   containerIndex <- which(sapply(stateGroups, function(x) x$"entityKind")=="container")
   if (length(containerIndex > 0)) {
-    containerValueList <- stateGroups[[containerIndex]]$valueKinds
-    containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex,]
-    
+    containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex, ]
     containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
                                                   labelTypeAndKind="id_codeName", 
                                                   numberOfLabels=length(unique(containerData$subjectID))),
@@ -1562,11 +1589,20 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     
     # Order is not maintained, but that is okay
     containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
+        
+    ### Container Labels ============================================================
     
+    saveLabelsFromLongFormat(entityData = containerData, 
+                             entityKind = "container", 
+                             stateGroups = stateGroups,
+                             idColumn = "containerID",
+                             recordedBy = recordedBy,
+                             lsTransaction = lsTransaction,
+                             labelPrefix = experiment$lsLabels[[1]]$labelText)
     
     ### Container States ============================================================
-    containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
     
+    containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
     stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
                                                 entityKind = "container", 
                                                 stateGroups = stateGroups,
@@ -1615,7 +1651,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
 uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
                        serverPath,protocol,experiment, fileStartLocation, configList, reportFilePath, 
-                       reportFileSummary, recordedBy) {
+                       reportFileSummary, recordedBy, annotationType) {
   # Uploads all the data to the server
   # 
   # Args:
@@ -1655,7 +1691,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(calculatedResults$"Corporate Batch ID")
-    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction)
+    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
   }
   
   # Each analysisGroupID creates an analysis group
@@ -1886,12 +1922,14 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   return(NULL)
 }
-registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction) {
+registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, 
+                               experiment, lsTransaction, annotationType) {
   # Registers a report as a batch annotation
   
   annotationList <- list(
     dnsAnnotation = list(
       name = basename(reportFilePath),
+      contentType = annotationType,
       #description = "report file",
       #dateExpired = "",
       owningURL = paste0(configList$serverPath, "experiments/codename/", experiment$codeName),
@@ -2003,12 +2041,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     stateGroups <- getStateGroups(formatSettings[[inputFormat]])
     hideAllData <- formatSettings[[inputFormat]]$hideAllData
     curveNames <- formatSettings[[inputFormat]]$curveNames
+    annotationType <- formatSettings[[inputFormat]]$annotationType
   } else {
     lookFor <- "Calculated Results"
     lockCorpBatchId <- TRUE
     replaceFakeCorpBatchId <- ""
     stateGroups <- NULL
     curveNames <- NULL
+    annotationType <- "s_general"
   }
   
   # Grab the Calculated Results Section
@@ -2086,12 +2126,13 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
-                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, replaceFakeCorpBatchId)
+                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
+                        replaceFakeCorpBatchId, annotationType)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
-                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy)
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType)
     }
   }
   
@@ -2112,7 +2153,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
       )
     )
     if(!is.null(validatedMetaData$Page)) {
-      summaryInfo$info$"Page" = as.character(validatedMetaData$Page)
+      summaryInfo$info$"Page" <- as.character(validatedMetaData$Page)
+    }
+    if(!dryRun) {
+      summaryInfo$info$"Experiment Code Name" <- experiment$codeName
     }
   } else {
     summaryInfo <- list(lsTransactionId=lsTransaction,
@@ -2121,7 +2165,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
                         experiment=as.character(validatedMetaData$"Experiment Name"),
                         scientist=as.character(validatedMetaData$Scientist),
                         notebook=as.character(validatedMetaData$Notebook),
-                        page=as.character(validatedMetaData$Page),
                         date=as.character(validatedMetaData$"Assay Date"),
                         newProtocol=newProtocol,
                         newExperiment=newExperiment,
@@ -2133,6 +2176,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if (!is.null(subjectData)) {
       summaryInfo$subjectPoints <- max(subjectData$pointID)
       summaryInfo$subjectFlags <- length(subjectData$value[subjectData$ResultType=="flag" & !is.na(subjectData$value)])
+    }
+    if(!is.null(validatedMetaData$Page)) {
+      summaryInfo$page <- as.character(validatedMetaData$Page)
+    }
+    if(!dryRun) {
+      summaryInfo$experimentCodeName <- experiment$codeName
     }
   }
   summaryInfo$experimentEntity <- experiment
@@ -2212,9 +2261,10 @@ createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningLis
                                <li>Format: <%=summaryInfo$format%> </li>
                                <li><%=if(summaryInfo$newProtocol) {'New '}%> Protocol: <%=summaryInfo$protocol%></li>
                                <li><%=if(summaryInfo$newExperiment) {'New '}%> Experiment: <%=summaryInfo$experiment%></li>
+                               <%=if(!is.null(summaryInfo$experimentCodeName)){paste('<li>Experiment Code Name:', summaryInfo$experimentCodeName,'</li>')}%>
                                <li>Scientist: <%=summaryInfo$scientist%> </li>
                                <li>Notebook: <%=summaryInfo$notebook%> </li>
-                               <li>Page: <%=summaryInfo$page%> </li>
+                               <%=if(!is.null(summaryInfo$page)){paste('<li>Page:', summaryInfo$page,'</li>')}%>
                                <li>Assay Date: <%=summaryInfo$date%> </li>
                                </ul>
                                <p>Calculated Results:</p>
