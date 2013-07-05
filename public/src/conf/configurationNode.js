@@ -17,7 +17,7 @@
 		exports.serverConfigurationParams.configuration.password = "2Ydudu8$pT";
 		exports.serverConfigurationParams.configuration.serverPath = "http://acas-t:8080/acas/";
 // For preferred ID service
-		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://acas-d:3000/api/preferredBatchId";
+		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://acas-t:3000/api/preferredBatchId";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "SingleBatchNameQueryString";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL = "http://imapp01-t:8080/DNS/core/v1/synonyms/preferred/";
 
