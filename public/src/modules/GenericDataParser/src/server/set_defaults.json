@@ -1,0 +1,168 @@
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeName: "default"}
+]' http://acas-t:8080/acas/protocoltypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: "default", lsType:{id:1, version:0}}
+]' http://acas-t:8080/acas/protocolkinds/jsonArray
+
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeName: "default"}
+]' http://acas-t:8080/acas/experimenttypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: "default", lsType:{id:1, version:0}},
+{kindName: "galileo etl", lsType:{id:1, version:0}}
+]' http://acas-t:8080/acas/experimentkinds/jsonArray
+
+
+
+
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeVerb: "first added to second", typeName:"added to"},
+{typeVerb: "first removed from second", typeName:"removed from"},
+{typeVerb: "first operated on second", typeName:"operated on"},
+{typeVerb: "first created by second", typeName:"created by"},
+{typeVerb: "first destroyed by second", typeName:"destroyed by"},
+{typeVerb: "first refers to second", typeName:"refers to"},
+{typeVerb: "first has second as a member", typeName:"has member"},
+{typeVerb: "first was moved to second", typeName:"moved to"},
+{typeVerb: "contents of first were transferred to second", typeName:"transferred to"}
+]' http://acas-t:8080/acas/interactiontypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: "test subject", lsType:{id:6, version:0}}
+]' http://acas-t:8080/acas/interactionkinds/jsonArray
+
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeName: "material"}
+]' http://acas-t:8080/acas/containertypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: "animal", lsType:{id:1, version:0}}
+]' http://acas-t:8080/acas/containerkinds/jsonArray
+
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeName: "metadata"},
+{typeName: "data"}
+]' http://acas-t:8080/acas/statetypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: "raw results locations", lsType:{id:1, version:0}},
+{kindName: "experiment metadata", lsType:{id:1, version:0}},
+{kindName: "Generic", lsType:{id:2, version:0}},
+{kindName: "Dose Response", lsType:{id:2, version:0}},
+{kindName: "results", lsType:{id:2, version:0}},
+{kindName: "test compound treatment", lsType:{id:2, version:0}},
+{kindName: "animal information", lsType:{id:1, version:0}},
+{kindName: "treatment", lsType:{id:2, version:0}},
+{kindName: "raw data", lsType:{id:2, version:0}},
+{kindName: "calculated data", lsType:{id:2, version:0}},
+{kindName: "report locations", lsType:{id:1, version:0}}
+]' http://acas-t:8080/acas/statekinds/jsonArray
+
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeName: "stringValue"},
+{typeName: "fileValue"},
+{typeName: "urlValue"},
+{typeName: "dateValue"},
+{typeName: "clobValue"},
+{typeName: "blobValue"},
+{typeName: "numericValue"},
+{typeName: "codeValue"}
+]' http://acas-t:8080/acas/valuetypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: "batch code", lsType:{id:8, version:0}},
+{kindName: "tested concentration", lsType:{id:7, version:0}},
+{kindName: "source file", lsType:{id:2, version:0}},
+{kindName: "notebook", lsType:{id:1, version:0}},
+{kindName: "notebook page", lsType:{id:7, version:0}},
+{kindName: "completion date", lsType:{id:4, version:0}},
+{kindName: "status", lsType:{id:1, version:0}},
+{kindName: "analysis status", lsType:{id:1, version:0}},
+{kindName: "analysis result html", lsType:{id:5, version:0}},
+{kindName: "project", lsType:{id:8, version:0}},
+{kindName: "time", lsType:{id:7, version:0}},
+{kindName: "Rendering Hint", lsType:{id:1, version:0}},
+{kindName: "curve id", lsType:{id:1, version:0}},
+{kindName: "Dose", lsType:{id:7, version:0}},
+{kindName: "Response", lsType:{id:7, version:0}},
+{kindName: "flag", lsType:{id:1, version:0}},
+{kindName: "annotation id", lsType:{id:7, version:0}}
+]' http://acas-t:8080/acas/valuekinds/jsonArray
+
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeName: "name"}
+]' http://acas-t:8080/acas/labeltypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: "protocol name", lsType:{id:1, version:0}},
+{kindName: "experiment name", lsType:{id:1, version:0}},
+{kindName: "container name", lsType:{id:1, version:0}}
+]' http://acas-t:8080/acas/labelkinds/jsonArray
+
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeName: "comparison"},
+{typeName: "mathematical"},
+{typeName: "boolean"}
+]' http://acas-t:8080/acas/operatortypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: ">", lsType:{id:1, version:0}},
+{kindName: "<", lsType:{id:1, version:0}},
+{kindName: "<=", lsType:{id:1, version:0}},
+{kindName: ">=", lsType:{id:1, version:0}},
+{kindName: "=", lsType:{id:1, version:0}}
+]' http://acas-t:8080/acas/operatorkinds/jsonArray
+
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeName: "PK"},
+{typeName: "time"},
+{typeName: "frequency"},
+{typeName: "concentration"},
+{typeName: "mass"},
+{typeName: "specific volume"},
+{typeName: "percentage"},
+{typeName: "volume"},
+{typeName: "length"},
+{typeName: "density"},
+{typeName: "pressure"},
+{typeName: "energy"},
+{typeName: "power"}
+]' http://acas-t:8080/acas/unittypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: "1/hr", lsType:{id:3, version:0}},
+{kindName: "hr", lsType:{id:2, version:0}},
+{kindName: "ng/mL", lsType:{id:4, version:0}},
+{kindName: "kg*ng/mL/mg", lsType:{id:1, version:0}},
+{kindName: "hr*ng/mL", lsType:{id:1, version:0}},
+{kindName: "%", lsType:{id:7, version:0}},
+{kindName: "hr*hr*ng/mL", lsType:{id:1, version:0}},
+{kindName: "L/kg", lsType:{id:6, version:0}},
+{kindName: "mL/min/kg", lsType:{id:1, version:0}},
+{kindName: "mg/kg", lsType:{id:4, version:0}},
+{kindName: "g", lsType:{id:5, version:0}},
+{kindName: "min", lsType:{id:2, version:0}},
+{kindName: "% Freezing", lsType:{id:7, version:0}}
+]' http://acas-t:8080/acas/unitkinds/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{"digits":8,"groupDigits":false, "labelPrefix":"PROT","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"document_protocol"},
+{"digits":8,"groupDigits":false, "labelPrefix":"EXPT","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"document_experiment"},
+{"digits":8,"groupDigits":false, "labelPrefix":"AG","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"document_analysis group"},
+{"digits":8,"groupDigits":false, "labelPrefix":"TG","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"document_treatment group"},
+{"digits":8,"groupDigits":false, "labelPrefix":"SUBJ","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"document_subject"},
+{"digits":8,"groupDigits":false, "labelPrefix":"CONT","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"material_container"},
+{"digits":8,"groupDigits":false, "labelPrefix":"CITX","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"interaction_containerContainer"},
+{"digits":8,"groupDigits":false, "labelPrefix":"SITX","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"interaction_subjectContainer"}
+]' http://acas-t:8080/acas/labelsequences/jsonArray
