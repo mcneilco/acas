@@ -250,6 +250,11 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   # Returns:
   #  A data frame containing the validated meta data
   
+  # Turn NA into "NA"
+  metaDataNames <- names(metaData)
+  metaData <- as.data.frame(lapply(metaData, function(x) if(is.na(x)) "NA" else x), stringsAsFactors=FALSE)
+  names(metaData) <- metaDataNames
+  
   # Check if extra data was picked up that should not be
   if (length(metaData[[1]])>1) {
     extraData <- c(as.character(metaData[[1]][2:length(metaData[[1]])]),
@@ -1926,6 +1931,9 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
                                experiment, lsTransaction, annotationType) {
   # Registers a report as a batch annotation
   
+  require(RCurl)
+  require(rjson)
+  
   annotationList <- list(
     dnsAnnotation = list(
       name = basename(reportFilePath),
@@ -1976,7 +1984,8 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
                                       lsType = "numericValue",
                                       lsKind = "annotation id",
                                       numericValue = response$dnsAnnotation$id,
-                                      lsState = locationState)
+                                      lsState = locationState,
+                                      lsTransaction = lsTransaction)
     
     saveExperimentValues(list(locationValue))
   }, error = function(e) {
@@ -2200,11 +2209,15 @@ deleteAnnotation <- function(experiment, configList) {
     valuesToDelete <- locationState$lsValues[lsKinds %in% c("annotation id")]
     
     if (length(valuesToDelete) > 0) {
-      response <- getURL(
-        paste0(configList$reportRegistrationURL, "/delete/", valuesToDelete[[1]]$numericValue),
-        customrequest='DELETE',
-        httpheader=c('Content-Type'='application/json'),
-        postfields=toJSON(experiment))
+      tryCatch({
+        response <- getURL(
+          paste0(configList$reportRegistrationURL, "/delete/", valuesToDelete[[1]]$numericValue),
+          customrequest='DELETE',
+          httpheader=c('Content-Type'='application/json'),
+          postfields=toJSON(experiment))
+      }, error = function(e) {
+        stop("There was an error deleting the old experiment annotation. Please contact your system adminstrator.")
+      })
       if(!grepl("Deleted Annotation", response)) {
         stop (paste("The loader was unable to delete the old experiment annotation. Instead, it got this response:", response))
       }
@@ -2212,6 +2225,10 @@ deleteAnnotation <- function(experiment, configList) {
   }
 }
 deleteSourceFile <- function(experiment, configList) {
+
+  require(RCurl)
+  require(rjson)
+  
   locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
   if (length(locationState) > 0) {
     locationState <- locationState[[1]]
@@ -2221,12 +2238,18 @@ deleteSourceFile <- function(experiment, configList) {
     valuesToDelete <- locationState$lsValues[lsKinds %in% c("source file")]
     
     if (length(valuesToDelete) > 0) {
-      valueToDelete <- valuesToDelete[[1]]
-#       response <- getURL(
-#         "http://dsandimapp01:8080/DNS/core/v1/DNSFile/delete/FILE79438",
-#         customrequest='DELETE',
-#         httpheader=c('Content-Type'='application/json'),
-#         postfields=toJSON(experiment))
+      fileToDelete <- valuesToDelete[[1]]$fileValue
+      tryCatch({
+        response <- getURL(
+          paste0(configList$externalFileService, "/deactivate/", fileToDelete),
+                 customrequest='DELETE',
+                 httpheader=c('Content-Type'='application/json'))
+      }, error = function(e) {
+        stop("There was an error deleting the old source file. Please contact your system adminstrator.")
+      })
+      if(!grepl("^Deactivated DNSFile", response)) {
+        warning(paste("The loader was unable to delete the old experiment source file. Instead, it got this response:", response))
+      }
     }
   }
 }
@@ -2389,11 +2412,13 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   }
   
   tryCatch({
-    locationValue <- createStateValue(recordedBy = recordedBy,
+    locationValue <- createStateValue(
+      recordedBy = recordedBy,
       lsType = "stringValue",
       lsKind = "source file",
       fileValue = serverFileLocation,
-      lsState = locationState)
+      lsState = locationState,
+      lsTransaction = lsTransaction)
     
     saveExperimentValues(list(locationValue))
   }, error = function(e) {
@@ -2520,7 +2545,7 @@ parseGenericData <- function(request) {
   detach(errorHandlingBox)
   
   if(!dryRun) {
-    htmlSummary <- saveAnalysisResults(experiment=experiment, hasError, htmlSummary)
+    htmlSummary <- saveAnalysisResults(experiment=experiment, hasError, htmlSummary, loadResult$value$lsTransactionId)
   }
   
   # Return the output structure
