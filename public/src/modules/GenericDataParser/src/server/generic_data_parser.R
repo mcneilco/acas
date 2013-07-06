@@ -861,24 +861,26 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$time <- resultTypes$time[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
   longResults$timeUnit <- resultTypes$timeUnit[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
   
+  longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
+  
   # Parse numeric data from the unparsed values
-  matchExpression <- "[0-9]+.[0-9]*|[0-9]*.[0-9]+|[0-9]+"
-  matches <- gregexpr(matchExpression,longResults$"UnparsedValue")
+  matchExpression <- "[^0-9,\\.<>]"
+  matches <- grepl(matchExpression,longResults$"UnparsedValue")
   longResults$"Result Value" <- longResults$"UnparsedValue"
-  regmatches(longResults$"Result Value",matches, invert = TRUE) <- ""
+  longResults$"Result Value"[matches] <- ""
   
   # Parse string values from the unparsed values
-  longResults$"Result Desc" <-  gsub(matchExpression,"",longResults$"UnparsedValue")
+  longResults$"Result Desc" <- as.character(longResults$"UnparsedValue")
+  longResults$"Result Desc"[!matches] <- ""
   
   # Parse Operators from the unparsed value
   matchExpression <- ">|<"
-  longResults$"Result Operator" <- longResults$"UnparsedValue"
-  matches <- gregexpr(matchExpression,longResults$"UnparsedValue")
+  longResults$"Result Operator" <- longResults$"Result Value"
+  matches <- gregexpr(matchExpression,longResults$"Result Value")
   regmatches(longResults$"Result Operator",matches, invert = TRUE) <- ""
   
   # Turn result values to numeric values
-  # Warnings are supressed because the dates give error values 
-  suppressWarnings(longResults$"Result Value" <-  as.numeric(gsub(matchExpression,"",longResults$"Result Value")))
+  longResults$"Result Value" <-  as.numeric(gsub(",","",gsub(matchExpression,"",longResults$"Result Value")))
   
   # For the results marked as "Text":
   #   Set the Result Desc to the original value
@@ -1568,6 +1570,12 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   containerIndex <- which(sapply(stateGroups, function(x) x$"entityKind")=="container")
   if (length(containerIndex > 0)) {
     containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex, ]
+    
+    # Once experiment deleting works, add this
+    # allContainerData <- linkOldContainers(containerData, stateGroups, experiment$lsLabels[[1]]$labelText)
+    # containerData <- allContainerData$entityData
+    # preexistingContainers <- allContainerData$matchingLabelData
+    
     containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
                                                   labelTypeAndKind="id_codeName", 
                                                   numberOfLabels=length(unique(containerData$subjectID))),
@@ -1631,6 +1639,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                      recordedBy = recordedBy)
     
     ### Itx Subject Container =========================================================
+    
+    # containerData <- rbind.fill(containerData, preexistingContainers)
     
     createRawOnlyItxSubjectContainer <- function(containerData, recordedBy, lsTransaction) {
       createSubjectContainerInteraction(
