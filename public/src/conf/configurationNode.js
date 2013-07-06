@@ -17,7 +17,7 @@
 		exports.serverConfigurationParams.configuration.password = "2Ydudu8$pT";
 		exports.serverConfigurationParams.configuration.serverPath = "http://acas-t:8080/acas/";
 // For preferred ID service
-		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://acas-t:3000/api/preferredBatchId";
+		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://acas-t:48203/api/preferredBatchId";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "SingleBatchNameQueryString";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL = "http://imapp01-t:8080/DNS/core/v1/synonyms/preferred/";
 
@@ -46,14 +46,14 @@
 		exports.serverConfigurationParams.configuration.rshiny = "http://acas-t:3838";
 
 // For generic data parser
-		exports.serverConfigurationParams.configuration.projectService = "http://acas-t:3000/api/projects";
+		exports.serverConfigurationParams.configuration.projectService = "http://acas-t:48203/api/projects";
 		exports.serverConfigurationParams.configuration.fileServiceType = "DNS";
 		exports.serverConfigurationParams.configuration.externalFileService = "http://dsantimapp01:8080/DNS/core/v1/DNSFile";
 		exports.serverConfigurationParams.configuration.stateGroupsScript = "public/src/conf/genericDataParserConfiguration.R";
 		exports.serverConfigurationParams.configuration.includeProject = "TRUE";
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "http://dsantimapp01:8080/DNS/core/v1/DNSAnnotation";
 		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "";
-		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas-t:3000/api/users"
+		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas-t:48203/api/users"
 
 
 
