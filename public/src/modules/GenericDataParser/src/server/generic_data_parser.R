@@ -1107,7 +1107,7 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
   }
   
   tryCatch({
-    protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName))))
+    protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName, "/"))))
   }, error = function(e) {
     stop("There was an error in accessing the protocol. Please contact your system administrator.")
   })
@@ -1146,7 +1146,7 @@ getExperimentByName <- function(experimentName, protocol, configList) {
   require('rjson')
   
   tryCatch({
-    experimentList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName))))
+    experimentList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName, "/"))))
   }, error = function(e) {
     stop("There was an error checking if the experiment already exists. Please contact your system administrator.")
   })
@@ -1162,9 +1162,9 @@ getExperimentByName <- function(experimentName, protocol, configList) {
     })
     
     #TODO choose the preferred label
-    if(is.na(protocol) || protocolOfExperiment$lsLabels[[1]]$id != protocol$lsLabels[[1]]$id) {
+    if (is.na(protocol) || protocolOfExperiment$lsLabels[[1]]$id != protocol$lsLabels[[1]]$id) {
       errorList <<- c(errorList,paste0("Experiment '",experimentName,
-                                       "' does not exist in the protocol that you entered, but it does exist in '", protocolOfExperiment$protocolLabels[[1]]$labelText, 
+                                       "' does not exist in the protocol that you entered, but it does exist in '", protocolOfExperiment$lsLabels[[1]]$labelText, 
                                        "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
     }
     # If the experiment does exist, get it
