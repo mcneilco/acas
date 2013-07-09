@@ -1,0 +1,1 @@
+*/1 * * * * export ACAS_HOME=/opt/node_apps/acas && source /etc/profile && Rscript /opt/node_apps/acas/public/src/modules/API_ANALYSIS_GROUP_RESULTS_UPDATER/src/API_ANALYSIS_GROUP_RESULTS_UPDATE.R
