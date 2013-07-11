@@ -17,6 +17,7 @@
 	"connect-flash": "~0.1.0",
 	"underscore": ">= 0.0.0",
 	"temporary": ">= 0.0.0",
-	"each": ">= 0.0.0"
+	"each": ">= 0.0.0",
+	"asyncblock": "*"
   }
 }

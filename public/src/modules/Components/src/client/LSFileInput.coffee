@@ -17,20 +17,21 @@ class window.LSFileInputController extends Backbone.View
 			'handleFileChooserUploadComplete',
 			'handleFileChooserUploadFailed',
 			'handleFileChooserRemovedFile')
-		if @.options.inputTitle?
+		if @options.inputTitle?
 			@inputTitle = @.options.inputTitle
-		if @.options.fieldIsRequired?
+		if @options.fieldIsRequired?
 			@fieldIsRequired = @.options.fieldIsRequired
-		if @.options.requiresValidation?
+		if @options.requiresValidation?
 			@requiresValidation = @.options.requiresValidation
-		if @.options.maxNumberOfFiles?
+		if @options.maxNumberOfFiles?
 			@maxNumberOfFiles = @.options.maxNumberOfFiles
-		if @.options.url?
+		if @options.url?
 			@url = @.options.url
-		if @.options.defaultMessage?
+		if @options.defaultMessage?
 			@defaultMessage = @.options.defaultMessage
-		if @.options.dragOverMessage?
+		if @options.dragOverMessage?
 			@dragOverMessage = @.options.dragOverMessage
+		console.log @options
 		if @options.allowedFileTypes?
 			@allowedFileTypes = @options.allowedFileTypes
 

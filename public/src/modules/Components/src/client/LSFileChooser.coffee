@@ -17,7 +17,7 @@ class window.LSFileModelCollection extends Backbone.Collection
 
 
 class window.LSFileChooserController extends Backbone.View
-	allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx']
+	allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
 	dropZoneClassId: "fileupload"
 	allowMultipleFiles: false
 	maxNumberOfFiles: 3

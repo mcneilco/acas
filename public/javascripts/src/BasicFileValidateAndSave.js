@@ -76,7 +76,7 @@
           inputTitle: '',
           url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
           fieldIsRequired: false,
-          allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx']
+          allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
         });
         this.reportFileController.on('fileInput:uploadComplete', this.handleReportFileUploaded);
         this.reportFileController.on('fileInput:removedFile', this.handleReportFileRemoved);
