@@ -271,9 +271,9 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   }
   
   expectedDataFormat <- data.frame(
-    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","Page","Assay Date"),
-    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Date"),
-    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)
+    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", "Page","Assay Date"),
+    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE)
   )
   
   if (!is.null(configList$includeProject) && configList$includeProject == "TRUE") {
@@ -2176,6 +2176,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if(!is.null(validatedMetaData$Page)) {
       summaryInfo$info$"Page" <- as.character(validatedMetaData$Page)
     }
+    if(!is.null(validatedMetaData$"In Life Notebook")) {
+      notebookIndex <- which(names(summaryInfo$info) == "Notebook")[1]
+      summaryInfo$info <- c(summaryInfo$info[1:notebookIndex], 
+                            list("In Life Notebook"=validatedMetaData$"In Life Notebook"),
+                            summaryInfo$info[(notebookIndex+1):length(summaryInfo$info)])
+    }
     if(!dryRun) {
       summaryInfo$info$"Experiment Code Name" <- experiment$codeName
     }
@@ -2200,6 +2206,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     }
     if(!is.null(validatedMetaData$Page)) {
       summaryInfo$page <- as.character(validatedMetaData$Page)
+    }
+    if(!is.null(validatedMetaData$"In Life Notebook")) {
+      summaryInfo$inLifeNotebook <- as.character(validatedMetaData$"In Life Notebook")
     }
     if(!dryRun) {
       summaryInfo$experimentCodeName <- experiment$codeName
@@ -2299,6 +2308,7 @@ createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningLis
                                <%=if(!is.null(summaryInfo$experimentCodeName)){paste('<li>Experiment Code Name:', summaryInfo$experimentCodeName,'</li>')}%>
                                <li>Scientist: <%=summaryInfo$scientist%> </li>
                                <li>Notebook: <%=summaryInfo$notebook%> </li>
+                               <%=if(!is.null(summaryInfo$inLifeNotebook)){paste('<li>In Life Notebook:', summaryInfo$inLifeNotebook,'</li>')}%>
                                <%=if(!is.null(summaryInfo$page)){paste('<li>Page:', summaryInfo$page,'</li>')}%>
                                <li>Assay Date: <%=summaryInfo$date%> </li>
                                </ul>
