@@ -271,9 +271,9 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   }
   
   expectedDataFormat <- data.frame(
-    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","Page","Assay Date"),
-    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Date"),
-    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)
+    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", "Page","Assay Date"),
+    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE)
   )
   
   if (!is.null(configList$includeProject) && configList$includeProject == "TRUE") {
@@ -1337,7 +1337,7 @@ validateScientist <- function(scientistName, configList) {
 }
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
-                              recordedBy, replaceFakeCorpBatchId, annotationType) {
+                              recordedBy, replaceFakeCorpBatchId, annotationType, sigFigs) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   # TODO: stop uploading fake corp batch id as codeValue
@@ -1460,7 +1460,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   treatmentDataStart <- subjectData[subjectData$valueKind %in% treatmentDataValueKinds 
                                     & !(subjectData$subjectID %in% excludedSubjects),]
   
-  createRawOnlyTreatmentGroupData <- function(subjectData) {
+  createRawOnlyTreatmentGroupData <- function(subjectData, sigFigs) {
     isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
     isLessThan <- any(subjectData$valueOperator=="<", na.rm=TRUE)
     if(isGreaterThan && isLessThan) {
@@ -1475,6 +1475,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     } else {
       resultOperator <- NA
       resultValue <- mean(subjectData$numericValue, na.rm = TRUE)
+    }
+    if (!is.null(sigFigs)) { 
+      resultValue <- signif(resultValue, sigFigs)
     }
     return(data.frame(
       "batchCode" = subjectData$batchCode[1],
@@ -1496,8 +1499,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       stringsAsFactors=FALSE))
   }
   
-  treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData)
-  
+  treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs)
   treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
   stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
                                               entityKind = "treatmentgroup", 
@@ -1568,79 +1570,81 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   ### Container creation ==================================================================
   containerIndex <- which(sapply(stateGroups, function(x) x$"entityKind")=="container")
-  if (length(containerIndex > 0)) {
+  if (length(containerIndex) > 0) {
     containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex, ]
     
-    # Once experiment deleting works, add this
-    # allContainerData <- linkOldContainers(containerData, stateGroups, experiment$lsLabels[[1]]$labelText)
-    # containerData <- allContainerData$entityData
-    # preexistingContainers <- allContainerData$matchingLabelData
+    # Link old containers
+    allContainerData <- linkOldContainers(containerData, stateGroups, experiment$lsLabels[[1]]$labelText)
+    containerData <- allContainerData$entityData
+    preexistingContainers <- allContainerData$matchingLabelData
     
-    containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
-                                                  labelTypeAndKind="id_codeName", 
-                                                  numberOfLabels=length(unique(containerData$subjectID))),
-                                    use.names=FALSE)
-    
-    containerData$containerCodeName <- containerCodeNameList[as.numeric(factor(containerData$subjectID))]
-    
-    # TODO: type and kind should be in a config somewhere
-    createRawOnlyContainer <- function(containerData) {
-      return(createContainer(
-        lsType="material",
-        lsKind="animal",
-        codeName=containerData$containerCodeName[1],
-        recordedBy=recordedBy,
-        lsTransaction=lsTransaction))
+    if (nrow(containerData) > 0) {
+      containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
+                                                    labelTypeAndKind="id_codeName", 
+                                                    numberOfLabels=length(unique(containerData$subjectID))),
+                                      use.names=FALSE)
+      
+      containerData$containerCodeName <- containerCodeNameList[as.numeric(factor(containerData$subjectID))]
+      
+      # TODO: type and kind should be in a config somewhere
+      createRawOnlyContainer <- function(containerData) {
+        return(createContainer(
+          lsType="material",
+          lsKind="animal",
+          codeName=containerData$containerCodeName[1],
+          recordedBy=recordedBy,
+          lsTransaction=lsTransaction))
+      }
+      
+      containers <- dlply(.data= containerData, .variables= .(containerCodeName), .fun= createRawOnlyContainer)
+      names(containers) <- NULL
+      
+      savedContainers <- saveAcasEntities(containers, "containers")
+      
+      containerIds <- sapply(savedContainers, function(x) x$id)
+      
+      # Order is not maintained, but that is okay
+      containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
+      
+      ### Container Labels ============================================================
+      
+      saveLabelsFromLongFormat(entityData = containerData, 
+                               entityKind = "container", 
+                               stateGroups = stateGroups,
+                               idColumn = "containerID",
+                               recordedBy = recordedBy,
+                               lsTransaction = lsTransaction,
+                               labelPrefix = experiment$lsLabels[[1]]$labelText)
+      
+      ### Container States ============================================================
+      
+      containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
+      stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
+                                                  entityKind = "container", 
+                                                  stateGroups = stateGroups,
+                                                  idColumn = "stateID",
+                                                  recordedBy = recordedBy,
+                                                  lsTransaction = lsTransaction)
+      
+      containerData$stateID <- stateAndVersion$entityStateId
+      containerData$stateVersion <- stateAndVersion$entityStateVersion
+      
+      containerData$containerStateID <- containerData$stateID
+      
+      ### Container Values =========================================================
+      if (is.null(containerData$stateVersion)) containerData$stateVersion <- 0
+      containerDataWithBatchCodeRows <- rbind.fill(containerData, meltBatchCodes(containerData, batchCodeStateIndices))
+      
+      savedContainerValues <- saveValuesFromLongFormat(entityData = containerDataWithBatchCodeRows, 
+                                                       entityKind = "container", 
+                                                       stateGroups = stateGroups, 
+                                                       lsTransaction = lsTransaction,
+                                                       recordedBy = recordedBy)
     }
-    
-    containers <- dlply(.data= containerData, .variables= .(containerCodeName), .fun= createRawOnlyContainer)
-    names(containers) <- NULL
-    
-    savedContainers <- saveAcasEntities(containers, "containers")
-    
-    containerIds <- sapply(savedContainers, function(x) x$id)
-    
-    # Order is not maintained, but that is okay
-    containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
-        
-    ### Container Labels ============================================================
-    
-    saveLabelsFromLongFormat(entityData = containerData, 
-                             entityKind = "container", 
-                             stateGroups = stateGroups,
-                             idColumn = "containerID",
-                             recordedBy = recordedBy,
-                             lsTransaction = lsTransaction,
-                             labelPrefix = experiment$lsLabels[[1]]$labelText)
-    
-    ### Container States ============================================================
-    
-    containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
-    stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
-                                                entityKind = "container", 
-                                                stateGroups = stateGroups,
-                                                idColumn = "stateID",
-                                                recordedBy = recordedBy,
-                                                lsTransaction = lsTransaction)
-    
-    containerData$stateID <- stateAndVersion$entityStateId
-    containerData$stateVersion <- stateAndVersion$entityStateVersion
-    
-    containerData$containerStateID <- containerData$stateID
-    
-    ### Container Values =========================================================
-    if (is.null(containerData$stateVersion)) containerData$stateVersion <- 0
-    containerDataWithBatchCodeRows <- rbind.fill(containerData, meltBatchCodes(containerData, batchCodeStateIndices))
-    
-    savedContainerValues <- saveValuesFromLongFormat(entityData = containerDataWithBatchCodeRows, 
-                                                     entityKind = "container", 
-                                                     stateGroups = stateGroups, 
-                                                     lsTransaction = lsTransaction,
-                                                     recordedBy = recordedBy)
-    
     ### Itx Subject Container =========================================================
     
-    # containerData <- rbind.fill(containerData, preexistingContainers)
+    # Bring back the preexisting containers to create interactions
+    containerData <- rbind.fill(containerData, preexistingContainers)
     
     createRawOnlyItxSubjectContainer <- function(containerData, recordedBy, lsTransaction) {
       createSubjectContainerInteraction(
@@ -2061,12 +2065,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     hideAllData <- formatSettings[[inputFormat]]$hideAllData
     curveNames <- formatSettings[[inputFormat]]$curveNames
     annotationType <- formatSettings[[inputFormat]]$annotationType
+    sigFigs <- formatSettings[[inputFormat]]$sigFigs
   } else {
     lookFor <- "Calculated Results"
     lockCorpBatchId <- TRUE
     replaceFakeCorpBatchId <- ""
     stateGroups <- NULL
     curveNames <- NULL
+    sigFigs <- NULL
     annotationType <- "s_general"
   }
   
@@ -2146,7 +2152,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
                         stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
-                        replaceFakeCorpBatchId, annotationType)
+                        replaceFakeCorpBatchId, annotationType, sigFigs)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
@@ -2174,6 +2180,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if(!is.null(validatedMetaData$Page)) {
       summaryInfo$info$"Page" <- as.character(validatedMetaData$Page)
     }
+    if(!is.null(validatedMetaData$"In Life Notebook")) {
+      notebookIndex <- which(names(summaryInfo$info) == "Notebook")[1]
+      summaryInfo$info <- c(summaryInfo$info[1:notebookIndex], 
+                            list("In Life Notebook"=validatedMetaData$"In Life Notebook"),
+                            summaryInfo$info[(notebookIndex+1):length(summaryInfo$info)])
+    }
     if(!dryRun) {
       summaryInfo$info$"Experiment Code Name" <- experiment$codeName
     }
@@ -2198,6 +2210,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     }
     if(!is.null(validatedMetaData$Page)) {
       summaryInfo$page <- as.character(validatedMetaData$Page)
+    }
+    if(!is.null(validatedMetaData$"In Life Notebook")) {
+      summaryInfo$inLifeNotebook <- as.character(validatedMetaData$"In Life Notebook")
     }
     if(!dryRun) {
       summaryInfo$experimentCodeName <- experiment$codeName
@@ -2297,6 +2312,7 @@ createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningLis
                                <%=if(!is.null(summaryInfo$experimentCodeName)){paste('<li>Experiment Code Name:', summaryInfo$experimentCodeName,'</li>')}%>
                                <li>Scientist: <%=summaryInfo$scientist%> </li>
                                <li>Notebook: <%=summaryInfo$notebook%> </li>
+                               <%=if(!is.null(summaryInfo$inLifeNotebook)){paste('<li>In Life Notebook:', summaryInfo$inLifeNotebook,'</li>')}%>
                                <%=if(!is.null(summaryInfo$page)){paste('<li>Page:', summaryInfo$page,'</li>')}%>
                                <li>Assay Date: <%=summaryInfo$date%> </li>
                                </ul>
