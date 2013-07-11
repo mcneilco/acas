@@ -59,7 +59,6 @@ startApp = ->
 	util = require 'util'
 	LocalStrategy = require('passport-local').Strategy
 
-
 	app = express()
 	app.configure( ->
 		app.set('port', process.env.PORT || config.serverConfigurationParams.configuration.portNumber)
