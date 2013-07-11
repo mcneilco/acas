@@ -4,7 +4,7 @@ asyncblock = require('asyncblock');
 exec = require('child_process').exec;
 asyncblock((flow) ->
 	deployMode = process.env.DNSDeployMode
-	exec("java -jar ./dns-config-client.jar -m "+deployMode+" -c acas -d 2>/dev/null", flow.add())
+	exec("java -jar ../lib/dns-config-client.jar -m "+deployMode+" -c acas -d 2>/dev/null", flow.add())
 	config = flow.wait()
 	config = config.replace(/\\/g, "")
 	configLines = config.split("\n")

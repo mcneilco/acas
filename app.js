@@ -11,7 +11,7 @@
     var config, configLines, configTemplate, deployMode, enableSpecRunner, hostName, jdbcParts, line, lineParts, name, setting, settings, _i, _len;
 
     deployMode = process.env.DNSDeployMode;
-    exec("java -jar ./dns-config-client.jar -m " + deployMode + " -c acas -d 2>/dev/null", flow.add());
+    exec("java -jar ../lib/dns-config-client.jar -m " + deployMode + " -c acas -d 2>/dev/null", flow.add());
     config = flow.wait();
     config = config.replace(/\\/g, "");
     configLines = config.split("\n");
