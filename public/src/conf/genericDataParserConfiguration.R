@@ -38,6 +38,7 @@ getFormatSettings <- function() {
       annotationType = "s_dmpk",
       hideAllData = FALSE,
       extraHeaders = data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE),
+      sigFigs = 3,
       curveNames = c("PO IV pk curve id", "PO pk curve id", "IV pk curve id"),
       stateGroups = list(list(entityKind = "analysis group",
                               stateType = "data",
