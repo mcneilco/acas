@@ -1568,79 +1568,81 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   ### Container creation ==================================================================
   containerIndex <- which(sapply(stateGroups, function(x) x$"entityKind")=="container")
-  if (length(containerIndex > 0)) {
+  if (length(containerIndex) > 0) {
     containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex, ]
     
-    # Once experiment deleting works, add this
-    # allContainerData <- linkOldContainers(containerData, stateGroups, experiment$lsLabels[[1]]$labelText)
-    # containerData <- allContainerData$entityData
-    # preexistingContainers <- allContainerData$matchingLabelData
+    # Link old containers
+    allContainerData <- linkOldContainers(containerData, stateGroups, experiment$lsLabels[[1]]$labelText)
+    containerData <- allContainerData$entityData
+    preexistingContainers <- allContainerData$matchingLabelData
     
-    containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
-                                                  labelTypeAndKind="id_codeName", 
-                                                  numberOfLabels=length(unique(containerData$subjectID))),
-                                    use.names=FALSE)
-    
-    containerData$containerCodeName <- containerCodeNameList[as.numeric(factor(containerData$subjectID))]
-    
-    # TODO: type and kind should be in a config somewhere
-    createRawOnlyContainer <- function(containerData) {
-      return(createContainer(
-        lsType="material",
-        lsKind="animal",
-        codeName=containerData$containerCodeName[1],
-        recordedBy=recordedBy,
-        lsTransaction=lsTransaction))
+    if (nrow(containerData) > 0) {
+      containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
+                                                    labelTypeAndKind="id_codeName", 
+                                                    numberOfLabels=length(unique(containerData$subjectID))),
+                                      use.names=FALSE)
+      
+      containerData$containerCodeName <- containerCodeNameList[as.numeric(factor(containerData$subjectID))]
+      
+      # TODO: type and kind should be in a config somewhere
+      createRawOnlyContainer <- function(containerData) {
+        return(createContainer(
+          lsType="material",
+          lsKind="animal",
+          codeName=containerData$containerCodeName[1],
+          recordedBy=recordedBy,
+          lsTransaction=lsTransaction))
+      }
+      
+      containers <- dlply(.data= containerData, .variables= .(containerCodeName), .fun= createRawOnlyContainer)
+      names(containers) <- NULL
+      
+      savedContainers <- saveAcasEntities(containers, "containers")
+      
+      containerIds <- sapply(savedContainers, function(x) x$id)
+      
+      # Order is not maintained, but that is okay
+      containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
+      
+      ### Container Labels ============================================================
+      
+      saveLabelsFromLongFormat(entityData = containerData, 
+                               entityKind = "container", 
+                               stateGroups = stateGroups,
+                               idColumn = "containerID",
+                               recordedBy = recordedBy,
+                               lsTransaction = lsTransaction,
+                               labelPrefix = experiment$lsLabels[[1]]$labelText)
+      
+      ### Container States ============================================================
+      
+      containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
+      stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
+                                                  entityKind = "container", 
+                                                  stateGroups = stateGroups,
+                                                  idColumn = "stateID",
+                                                  recordedBy = recordedBy,
+                                                  lsTransaction = lsTransaction)
+      
+      containerData$stateID <- stateAndVersion$entityStateId
+      containerData$stateVersion <- stateAndVersion$entityStateVersion
+      
+      containerData$containerStateID <- containerData$stateID
+      
+      ### Container Values =========================================================
+      if (is.null(containerData$stateVersion)) containerData$stateVersion <- 0
+      containerDataWithBatchCodeRows <- rbind.fill(containerData, meltBatchCodes(containerData, batchCodeStateIndices))
+      
+      savedContainerValues <- saveValuesFromLongFormat(entityData = containerDataWithBatchCodeRows, 
+                                                       entityKind = "container", 
+                                                       stateGroups = stateGroups, 
+                                                       lsTransaction = lsTransaction,
+                                                       recordedBy = recordedBy)
     }
-    
-    containers <- dlply(.data= containerData, .variables= .(containerCodeName), .fun= createRawOnlyContainer)
-    names(containers) <- NULL
-    
-    savedContainers <- saveAcasEntities(containers, "containers")
-    
-    containerIds <- sapply(savedContainers, function(x) x$id)
-    
-    # Order is not maintained, but that is okay
-    containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
-        
-    ### Container Labels ============================================================
-    
-    saveLabelsFromLongFormat(entityData = containerData, 
-                             entityKind = "container", 
-                             stateGroups = stateGroups,
-                             idColumn = "containerID",
-                             recordedBy = recordedBy,
-                             lsTransaction = lsTransaction,
-                             labelPrefix = experiment$lsLabels[[1]]$labelText)
-    
-    ### Container States ============================================================
-    
-    containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
-    stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
-                                                entityKind = "container", 
-                                                stateGroups = stateGroups,
-                                                idColumn = "stateID",
-                                                recordedBy = recordedBy,
-                                                lsTransaction = lsTransaction)
-    
-    containerData$stateID <- stateAndVersion$entityStateId
-    containerData$stateVersion <- stateAndVersion$entityStateVersion
-    
-    containerData$containerStateID <- containerData$stateID
-    
-    ### Container Values =========================================================
-    if (is.null(containerData$stateVersion)) containerData$stateVersion <- 0
-    containerDataWithBatchCodeRows <- rbind.fill(containerData, meltBatchCodes(containerData, batchCodeStateIndices))
-    
-    savedContainerValues <- saveValuesFromLongFormat(entityData = containerDataWithBatchCodeRows, 
-                                                     entityKind = "container", 
-                                                     stateGroups = stateGroups, 
-                                                     lsTransaction = lsTransaction,
-                                                     recordedBy = recordedBy)
-    
     ### Itx Subject Container =========================================================
     
-    # containerData <- rbind.fill(containerData, preexistingContainers)
+    # Bring back the preexisting containers to create interactions
+    containerData <- rbind.fill(containerData, preexistingContainers)
     
     createRawOnlyItxSubjectContainer <- function(containerData, recordedBy, lsTransaction) {
       createSubjectContainerInteraction(
