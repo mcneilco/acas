@@ -1841,7 +1841,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
           # xValue is the value of the data in the x column for that treatmentGroup
           xValue <- treatmentGroupData$value[treatmentGroupData$ResultType==xLabel & treatmentGroupData$treatmentBatch==group]
           for(pointID in unique(rawResults$pointID[rawResults$ResultType==xLabel 
-                                                   & rawResults$value==as.numeric(xValue)
+                                                   & as.numeric(as.character(rawResults$value))==as.numeric(xValue)
                                                    & rawResults[,tempIdLabel]==tempID])) {
             
             subjectStates <- list()
@@ -1913,6 +1913,10 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
           treatmentGroupCodeNameNumber <- treatmentGroupCodeNameNumber + 1
         }
       }
+    }
+    
+    if (length(treatmentGroupList) == 0) {
+      treatmentGroupList <- NULL
     }
     
     # Put it all together in Analysis Groups

@@ -82,6 +82,7 @@ getFormatSettings <- function() {
     ), "CNS PK" = list(
       annotationType = "s_dmpk",
       hideAllData = FALSE,
+      sigFigs = 3,
       extraHeaders = data.frame(),
       stateGroups = list(list(entityKind = "analysis group",
                               stateType = "data",
