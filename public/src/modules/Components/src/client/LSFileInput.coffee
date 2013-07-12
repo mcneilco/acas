@@ -31,7 +31,6 @@ class window.LSFileInputController extends Backbone.View
 			@defaultMessage = @.options.defaultMessage
 		if @options.dragOverMessage?
 			@dragOverMessage = @.options.dragOverMessage
-		console.log @options
 		if @options.allowedFileTypes?
 			@allowedFileTypes = @options.allowedFileTypes
 
