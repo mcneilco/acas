@@ -115,7 +115,7 @@ getFormatSettings <- function() {
                               stateKind = "raw data",
                               valueKinds = c("Time", "Plasma Conc.", "CSF Conc.", 
                                              "Brain Conc.", "B/P Ratio"),
-                              includesOthers = FALSE,
+                              includesOthers = TRUE,
                               includesCorpName = FALSE))
     )
   )
