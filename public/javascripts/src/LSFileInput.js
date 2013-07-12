@@ -52,7 +52,6 @@
       if (this.options.dragOverMessage != null) {
         this.dragOverMessage = this.options.dragOverMessage;
       }
-      console.log(this.options);
       if (this.options.allowedFileTypes != null) {
         return this.allowedFileTypes = this.options.allowedFileTypes;
       }
