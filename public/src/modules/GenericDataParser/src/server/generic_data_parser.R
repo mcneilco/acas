@@ -2240,7 +2240,7 @@ deleteAnnotation <- function(experiment, configList) {
     if (length(valuesToDelete) > 0) {
       tryCatch({
         response <- getURL(
-          paste0(configList$reportRegistrationURL, "/delete/", valuesToDelete[[1]]$numericValue),
+          paste0(configList$reportRegistrationURL, "delete/", valuesToDelete[[1]]$numericValue),
           customrequest='DELETE',
           httpheader=c('Content-Type'='application/json'),
           postfields=toJSON(experiment))
@@ -2270,7 +2270,7 @@ deleteSourceFile <- function(experiment, configList) {
       fileToDelete <- valuesToDelete[[1]]$fileValue
       tryCatch({
         response <- getURL(
-          paste0(configList$externalFileService, "/deactivate/", fileToDelete),
+          paste0(configList$externalFileService, "deactivate/", fileToDelete),
                  customrequest='DELETE',
                  httpheader=c('Content-Type'='application/json'))
       }, error = function(e) {
