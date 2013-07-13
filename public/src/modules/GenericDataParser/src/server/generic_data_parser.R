@@ -864,7 +864,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
   
   # Parse numeric data from the unparsed values
-  matchExpression <- "[^0-9,\\.<>]"
+  matchExpression <- ".+\\-|[^0-9,\\.<>\\-]|\\..*\\." # If it has a "-" anywhere other than the beginning, has anything other than th list "0-9,.<>-", or has two decimal places, it is not a number
   matches <- grepl(matchExpression,longResults$"UnparsedValue")
   longResults$"Result Value" <- longResults$"UnparsedValue"
   longResults$"Result Value"[matches] <- ""
