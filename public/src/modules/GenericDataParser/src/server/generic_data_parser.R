@@ -180,7 +180,7 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d") {
         errorList <<- c(errorList,paste0("The loader was unable to change the date '", inputValue, 
                                          "' to the proper format. Please change it to the following format: \"",
                                          format(Sys.Date(), expectedFormat),"\"",
-                                         ," or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
+                                         " or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
       }
     } else {
       # If the change in the seperators fixed the issue, then we add this to the warnings and return the coerced date
