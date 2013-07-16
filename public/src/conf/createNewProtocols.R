@@ -7,7 +7,7 @@ require(RCurl)
 # shortDescription <- "protocol created for galileo etl"
 # protocolsFrame <- data.frame(protocolName = protocolNameList, shortDescription)
 
-protocolNameList <- c("Rat IVPO PK noavg", "Mouse IVPO PK noavg", "Dog IVPO PK noavg", "Rat PO CNS penetration noavg", "Mouse PO CNS penetration noavg", "Ferret PO CNS penetration noavg")
+protocolNameList <- c("Rat IVPO PK noavg", "Mouse IVPO PK noavg", "Dog IVPO PK noavg", "Rat PO CNS penetration noavg", "Mouse PO CNS penetration noavg", "Ferret PO CNS penetration noavg", "ADME_uSol_Kinetic_Solubility")
 shortDescription <- "dmpk protocol"
 extraProtocolsFrame1 <- data.frame(protocolName = protocolNameList, shortDescription)
 
@@ -20,12 +20,16 @@ extraProtocolsFrame2 <- data.frame(protocolName = protocolNameList, shortDescrip
 # extraProtocolsFrame3 <- data.frame(protocolName = protocolNameList, shortDescription)
 
 protocolNameList <- c("CYP 1A2 10uM", "CYP 2C19 10uM", "CYP 2C9 10uM", "CYP 2D6 10uM", "CYP 3A4 10uM")
-shortDescription <- "cyp protocol"
+shortDescription <- "dmpk cyp protocol"
 extraProtocolsFrame4 <- data.frame(protocolName = protocolNameList, shortDescription)
+
+protocolNameList <- c("PAMPA-BBB", "PAMPA-GIT")
+shortDescription <- "dmpk permeability protocol"
+extraProtocolsFrame5 <- data.frame(protocolName = protocolNameList, shortDescription)
 
 #testOnlyProtocol <- data.frame(protocolName = "TEST", shortDescription = "for TEST only, not for production")
 
-rotocolsFrame <- rbind(extraProtocolsFrame1, extraProtocolsFrame2, extraProtocolsFrame4)
+protocolsFrame <- rbind(extraProtocolsFrame1, extraProtocolsFrame2, extraProtocolsFrame4, extraProtocolsFrame5)
 #protocolsFrame <- rbind(protocolsFrame, extraProtocolsFrame1, extraProtocolsFrame2, extraProtocolsFrame3, extraProtocolsFrame4) #testOnlyProtocol)
 
 recordedBy = "smeyer"

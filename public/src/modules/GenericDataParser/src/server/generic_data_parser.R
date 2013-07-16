@@ -2033,6 +2033,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   if (grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
     tryCatch({
       genericDataFileDataFrame <- read.xls(pathToGenericDataFormatExcelFile, header = FALSE, blank.lines.skip = FALSE)
+      if (grepl("\\.xlsx$",pathToGenericDataFormatExcelFile)) {
+        genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&gt;",replacement=">"))
+        genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&lt;",replacement="<"))
+      }
     }, error = function(e) {
       stop("Cannot read input excel file")
     })
