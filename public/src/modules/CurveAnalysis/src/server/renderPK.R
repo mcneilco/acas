@@ -5,7 +5,7 @@ renderCurve <- function(getParams) {
 	} else {
 		yMin <- as.numeric(getParams$ymin)
 	}
-	if(!is.null(getParams$ymin)) {
+	if(!is.null(getParams$yNormMin)) {
 		yMin <- as.numeric(getParams$yNormMin)
 	}
 	if(is.null(getParams$ymax)) {
