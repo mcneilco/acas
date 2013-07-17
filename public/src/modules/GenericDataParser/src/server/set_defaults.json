@@ -80,7 +80,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "batch code", lsType:{id:8, version:0}},
 {kindName: "tested concentration", lsType:{id:7, version:0}},
-{kindName: "source file", lsType:{id:2, version:0}},
+{kindName: "source file", lsType:{id:1, version:0}},
 {kindName: "notebook", lsType:{id:1, version:0}},
 {kindName: "notebook page", lsType:{id:7, version:0}},
 {kindName: "completion date", lsType:{id:4, version:0}},
