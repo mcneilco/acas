@@ -830,7 +830,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   if (rawOnlyFormat) {
     treatmentGrouping <- which(lapply(stateGroups, getElement, "stateKind") == "treatment")
     groupingColumns <- stateGroups[[treatmentGrouping]]$valueKinds
-    groupingColumns <- groupingColumns[groupingColumns %in% names(results)]
+    groupingColumns <- resultTypes$DataColumn[resultTypes$Type %in% groupingColumns]
     if(stateGroups[[treatmentGrouping]]$includesCorpName) {
       groupingColumns <- c(groupingColumns,"Corporate Batch ID")
     }
