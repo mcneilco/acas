@@ -1372,7 +1372,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   savedAnalysisGroup <- saveAnalysisGroup(analysisGroup)
   
   # Treatment Groups
-  treatmentGroups <- lapply(FUN= createTreatmentGroup, X= treatmentGroupCodeNameList,
+  treatmentGroups <- lapply(FUN= createTreatmentGroup, X= treatmentGroupCodeNameList, lsType="default", lsKind="default",
                             recordedBy=recordedBy, lsTransaction=lsTransaction, analysisGroup=savedAnalysisGroup, 
                             subjects=NULL,treatmentGroupStates=NULL)
   
