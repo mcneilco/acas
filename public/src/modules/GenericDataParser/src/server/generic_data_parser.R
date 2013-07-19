@@ -741,8 +741,8 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   }
   returnDataFrame <- data.frame("DataColumn" = array(dim = length(dataColumns)), "Type" = array(dim = length(dataColumns)), "Units" = array(dim = length(dataColumns)), "Conc" = array(dim = length(dataColumns)), "ConcUnits" = array(dim = length(dataColumns)))
   returnDataFrame$DataColumn <- dataColumns
-  returnDataFrame$Type <- trim(gsub("\\[[^)]*\\]","",gsub("\\([^)]*\\)","",gsub("\\{[^}]*\\}","",dataColumns))))
-  #TODO Will anyone ever want 'Reported' in the data columns? Probably not
+  returnDataFrame$Type <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
+  # This removes "Reported" from all columns
   returnDataFrame$Type <- trim(gsub("Reported","",returnDataFrame$Type))
   returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
