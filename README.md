@@ -3,6 +3,14 @@
  
 ## Deploying a customer branch
 
+### Stopping a previous deploy
+
+    cd $ACAS_HOME
+    forever stopall
+    ps -ef | grep node
+    kill -9 othernodeprocess
+    rm acas
+
 ### Downloading ACAS
 Usually done in /opt
 
