@@ -1,58 +1,5 @@
 (function() {
-  var asyncblock, exec, fs, startApp;
-
-  fs = require('fs');
-
-  asyncblock = require('asyncblock');
-
-  exec = require('child_process').exec;
-
-  asyncblock(function(flow) {
-    var config, configLines, configTemplate, deployMode, enableSpecRunner, hostName, jdbcParts, line, lineParts, name, setting, settings, _i, _len;
-
-    deployMode = process.env.DNSDeployMode;
-    exec("java -jar ../lib/dns-config-client.jar -m " + deployMode + " -c acas -d 2>/dev/null", flow.add());
-    config = flow.wait();
-    config = config.replace(/\\/g, "");
-    configLines = config.split("\n");
-    settings = {};
-    for (_i = 0, _len = configLines.length; _i < _len; _i++) {
-      line = configLines[_i];
-      lineParts = line.split("=");
-      if (lineParts[1] !== void 0) {
-        settings[lineParts[0]] = lineParts[1];
-      }
-    }
-    configTemplate = fs.readFileSync("./public/src/conf/configurationNode_Template.js").toString();
-    for (name in settings) {
-      setting = settings[name];
-      configTemplate = configTemplate.replace(RegExp(name, "g"), setting);
-    }
-    jdbcParts = settings["acas.jdbc.url"].split(":");
-    configTemplate = configTemplate.replace(/acas.api.db.location/g, jdbcParts[0] + ":" + jdbcParts[1] + ":" + jdbcParts[2] + ":@");
-    configTemplate = configTemplate.replace(/acas.api.db.host/g, jdbcParts[3].replace("@", ""));
-    configTemplate = configTemplate.replace(/acas.api.db.port/g, jdbcParts[4]);
-    configTemplate = configTemplate.replace(/acas.api.db.name/g, jdbcParts[5]);
-    enableSpecRunner = true;
-    switch (deployMode) {
-      case "Dev":
-        hostName = "acas-d";
-        break;
-      case "Test":
-        hostName = "acas-t";
-        break;
-      case "Stage":
-        hostName = "acas-s";
-        break;
-      case "Prod":
-        hostName = "acas";
-        enableSpecRunner = false;
-    }
-    configTemplate = configTemplate.replace(RegExp("acas.api.hostname", "g"), hostName);
-    configTemplate = configTemplate.replace(/acas.api.enableSpecRunner/g, enableSpecRunner);
-    fs.writeFileSync("./public/src/conf/configurationNode.js", configTemplate);
-    return startApp();
-  });
+  var startApp;
 
   startApp = function() {
     var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
@@ -159,5 +106,7 @@
       return console.log("Express server listening on port " + app.get('port'));
     });
   };
+
+  startApp();
 
 }).call(this);

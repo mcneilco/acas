@@ -1,44 +1,3 @@
-# For DNS only
-fs = require('fs')
-asyncblock = require('asyncblock');
-exec = require('child_process').exec;
-asyncblock((flow) ->
-	deployMode = process.env.DNSDeployMode
-	exec("java -jar ../lib/dns-config-client.jar -m "+deployMode+" -c acas -d 2>/dev/null", flow.add())
-	config = flow.wait()
-	config = config.replace(/\\/g, "")
-	configLines = config.split("\n")
-	settings = {}
-	for line in configLines
-		lineParts = line.split "="
-		unless lineParts[1] is undefined
-			settings[lineParts[0]] = lineParts[1]
-	configTemplate = fs.readFileSync("./public/src/conf/configurationNode_Template.js").toString()
-	for name, setting of settings
-		configTemplate = configTemplate.replace(RegExp(name,"g"), setting)
-	# deal with special cases
-	jdbcParts = settings["acas.jdbc.url"].split ":"
-	configTemplate = configTemplate.replace(/acas.api.db.location/g, jdbcParts[0]+":"+jdbcParts[1]+":"+jdbcParts[2]+":@")
-	configTemplate = configTemplate.replace(/acas.api.db.host/g, jdbcParts[3].replace("@",""))
-	configTemplate = configTemplate.replace(/acas.api.db.port/g, jdbcParts[4])
-	configTemplate = configTemplate.replace(/acas.api.db.name/g, jdbcParts[5])
-
-	# replace server name
-	enableSpecRunner = true
-	switch(deployMode)
-		when "Dev" then hostName = "acas-d"
-		when "Test" then hostName = "acas-t"
-		when "Stage" then hostName = "acas-s"
-		when "Prod"
-			hostName = "acas"
-			enableSpecRunner = false
-	configTemplate = configTemplate.replace(RegExp("acas.api.hostname","g"), hostName)
-	configTemplate = configTemplate.replace(/acas.api.enableSpecRunner/g, enableSpecRunner)
-
-	fs.writeFileSync "./public/src/conf/configurationNode.js", configTemplate
-	startApp()
-)
-# End for DNS only
 
 
 startApp = ->
@@ -171,6 +130,6 @@ startApp = ->
 	)
 
 # if not DNS
-#startApp()
+startApp()
 # end if not DNS
 
