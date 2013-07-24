@@ -248,6 +248,8 @@ describe "Batch List Validator Behavior Testing", ->
 
 				waitsFor ->
 					@blvc.ischeckAndAddBatchesComplete()
+				,
+					500
 
 				runs ->
 					expect(@blvc.$(".batchListContainer .batchList tr").length).toEqual 3
@@ -259,6 +261,8 @@ describe "Batch List Validator Behavior Testing", ->
 				@blvc.$(".bv_addButton").click()
 				waitsFor ->
 					@blvc.ischeckAndAddBatchesComplete()
+				,
+					500
 
 				runs ->
 					expect(@blvc.$(".bv_pasteListArea").val()).toEqual ""
@@ -270,6 +274,8 @@ describe "Batch List Validator Behavior Testing", ->
 				@blvc.$(".bv_addButton").click()
 				waitsFor ->
 					@blvc.ischeckAndAddBatchesComplete()
+				,
+					500
 
 				runs ->
 					expect(@blvc.$(".batchListContainer .batchList tr").length).toEqual 3
@@ -282,6 +288,8 @@ describe "Batch List Validator Behavior Testing", ->
 				@blvc.$(".bv_addButton").click()
 				waitsFor ->
 					@blvc.ischeckAndAddBatchesComplete()
+				,
+					500
 
 				runs ->
 					expect(@blvc.$(".batchListContainer .batchList tr").length).toEqual 3
@@ -294,6 +302,8 @@ describe "Batch List Validator Behavior Testing", ->
 				@blvc.$(".bv_addButton").click()
 				waitsFor ->
 					@blvc.ischeckAndAddBatchesComplete()
+				,
+					500
 
 				runs ->
 					expect(@blvc.$(".batchListContainer .batchList tr").length).toEqual 4
@@ -307,6 +317,8 @@ describe "Batch List Validator Behavior Testing", ->
 				@blvc.$(".bv_addButton").click()
 				waitsFor ->
 					@blvc.ischeckAndAddBatchesComplete()
+				,
+					500
 
 				runs ->
 					expect(@blvc.$(".batchListContainer .batchList tr").length).toEqual 3
@@ -322,6 +334,8 @@ describe "Batch List Validator Behavior Testing", ->
 				expect(@blvc.$(".bv_addButton").attr("disabled")).toEqual "disabled"
 				waitsFor ->
 					@blvc.ischeckAndAddBatchesComplete()
+				,
+					500
 				runs ->
 					expect(@blvc.$(".bv_addButton").attr("disabled")).toBeUndefined()
 
@@ -351,5 +365,7 @@ describe "Batch List Validator Behavior Testing", ->
 						expect(@blvc.$(".validBatchCount").html()).toEqual "2"
 					waitsFor =>
 						@gotTrigger
+					,
+						500
 					runs ->
 						expect(@gotTrigger).toBeTruthy()

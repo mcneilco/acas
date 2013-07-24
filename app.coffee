@@ -40,9 +40,6 @@ asyncblock((flow) ->
 )
 # End for DNS only
 
-# if not DNS
-# startApp()
-# end if not DNS
 
 startApp = ->
 # Regular system startup
@@ -173,4 +170,7 @@ startApp = ->
 		console.log("Express server listening on port " + app.get('port'))
 	)
 
+# if not DNS
+#startApp()
+# end if not DNS
 
