@@ -9,8 +9,17 @@
       mainControllerClassName: "GenericDataParserController"
     }, {
       isHeader: false,
-      menuName: "Load Full PK Experiment",
-      mainControllerClassName: "FullPKParserController"
+      menuName: "Annotate Batches with File",
+      mainControllerClassName: "DocForBatchesController",
+      routes: [
+        {
+          routePath: "annotateBatches",
+          routeCallBackName: "loadNewDoc"
+        }, {
+          routePath: "annotateBatches:docId",
+          routeCallBackName: "loadExistingDoc"
+        }
+      ]
     }
   ];
 

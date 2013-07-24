@@ -50,8 +50,6 @@ applicationScripts = [
 	#'javascripts/src/AppController.js'
 	# For Generic Data Parser module
 	'/javascripts/src/GenericDataParser.js'
-	# For FullPK module
-	'/javascripts/src/FullPK.js'
 	# For BulkLoadContainersFromSDF module
 	'/javascripts/src/BulkLoadContainersFromSDF.js'
 	# For BulkLoadSampleTransfers module
@@ -85,8 +83,6 @@ exports.specRunner = (req, res) ->
 	]
 
 	specScripts = [
-		#For login module
-		'javascripts/spec/dnsAuthenticationServiceSpec.js'
 		# For serverAPI module
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		'javascripts/spec/ProtocolServiceSpec.js'
@@ -125,10 +121,6 @@ exports.specRunner = (req, res) ->
 		# For Generic Data Parser module
 		'javascripts/spec/GenericDataParserSpec.js'
 		'javascripts/spec/GenericDataParserServiceSpec.js'
-		# For Full PK Parser module
-		'javascripts/spec/testFixtures/FullPKTestJSON.js'
-		'javascripts/spec/FullPKSpec.js'
-		'javascripts/spec/FullPKParserServiceSpec.js'
 		# For BulkLoadContainersFromSDF module
 		'javascripts/spec/BulkLoadContainersFromSDFSpec.js'
 		'javascripts/spec/BulkLoadContainersFromSDFServerSpec.js'
@@ -173,8 +165,6 @@ exports.liveServiceSpecRunner = (req, res) ->
 		# For serverAPI module
 		'javascripts/spec/ProtocolServiceSpec.js'
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
-		#For login module
-		'javascripts/spec/dnsAuthenticationServiceSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)

@@ -59,8 +59,8 @@ exports.findByUsername = (username, fn) ->
 			user = users[i]
 			return fn(null, user)  if user.username is username
 			i++
-	else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
-		return dnsGetUser username, fn
+	else
+		console.log "no authorization service configured"
 	fn null, null
 
 exports.loginStrategy = (username, password, done) ->
@@ -78,14 +78,8 @@ exports.loginStrategy = (username, password, done) ->
 						message: "Invalid password"
 					)
 				return done null, user
-			else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
-				dnsAuthCheck username, password, (results) ->
-					if results.indexOf("Success")>=0
-						return done null, user
-					else
-						return done(null, false,
-							message: "Invalid credentials"
-						)
+			else
+				console.log "no authentication service configured"
 
 exports.loginPage = (req, res) ->
 	user = null
@@ -130,54 +124,8 @@ exports.authenticationService = (req, resp) ->
 	else
 		if config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
 			callback("Success")
-		else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
-			dnsAuthCheck req.body.user, req.body.password, callback
-
-dnsAuthCheck = (user, pass, retFun) ->
-	config = require '../public/src/conf/configurationNode.js'
-	request = require 'request'
-	request(
-		method: 'POST'
-		url: config.serverConfigurationParams.configuration.userAuthenticationServiceURL
-		form:
-			username: user
-			password: pass
-		json: true
-	, (error, response, json) =>
-		if !error && response.statusCode == 200
-			console.log JSON.stringify json
-			retFun JSON.stringify json
 		else
-			console.log 'got ajax error trying authenticate a user'
-			console.log error
-			console.log json
-			console.log response
-	)
-
-dnsGetUser = (username, callback) ->
-	config = require '../public/src/conf/configurationNode.js'
-	request = require 'request'
-	request(
-		method: 'GET'
-		url: config.serverConfigurationParams.configuration.userInformationServiceURL+username
-		json: true
-	, (error, response, json) =>
-		if !error && response.statusCode == 200
-			console.log json
-
-			callback null,
-				id: json.DNSPerson.id
-				username: json.DNSPerson.id
-				email: json.DNSPerson.email
-				firstName: json.DNSPerson.firstName
-				lastName: json.DNSPerson.lastName
-		else
-			console.log 'got ajax error trying get project list'
-			console.log error
-			console.log json
-			console.log response
-			callback null, null
-	)
+			console.log "no authentication service configured"
 
 
 exports.getUsers = (req, resp) ->

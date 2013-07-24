@@ -19,7 +19,7 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
 
 (function() {
-  var dnsAuthCheck, dnsGetUser, users;
+  var users;
 
   users = [
     {
@@ -71,8 +71,8 @@ app.get '/api/users/:username', loginRoutes.getUsers
         }
         i++;
       }
-    } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-      return dnsGetUser(username, fn);
+    } else {
+      console.log("no authorization service configured");
     }
     return fn(null, null);
   };
@@ -98,16 +98,8 @@ app.get '/api/users/:username', loginRoutes.getUsers
             });
           }
           return done(null, user);
-        } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-          return dnsAuthCheck(username, password, function(results) {
-            if (results.indexOf("Success") >= 0) {
-              return done(null, user);
-            } else {
-              return done(null, false, {
-                message: "Invalid credentials"
-              });
-            }
-          });
+        } else {
+          return console.log("no authentication service configured");
         }
       });
     });
@@ -169,67 +161,10 @@ app.get '/api/users/:username', loginRoutes.getUsers
     } else {
       if (config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
         return callback("Success");
-      } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-        return dnsAuthCheck(req.body.user, req.body.password, callback);
+      } else {
+        return console.log("no authentication service configured");
       }
     }
-  };
-
-  dnsAuthCheck = function(user, pass, retFun) {
-    var config, request,
-      _this = this;
-
-    config = require('../public/src/conf/configurationNode.js');
-    request = require('request');
-    return request({
-      method: 'POST',
-      url: config.serverConfigurationParams.configuration.userAuthenticationServiceURL,
-      form: {
-        username: user,
-        password: pass
-      },
-      json: true
-    }, function(error, response, json) {
-      if (!error && response.statusCode === 200) {
-        console.log(JSON.stringify(json));
-        return retFun(JSON.stringify(json));
-      } else {
-        console.log('got ajax error trying authenticate a user');
-        console.log(error);
-        console.log(json);
-        return console.log(response);
-      }
-    });
-  };
-
-  dnsGetUser = function(username, callback) {
-    var config, request,
-      _this = this;
-
-    config = require('../public/src/conf/configurationNode.js');
-    request = require('request');
-    return request({
-      method: 'GET',
-      url: config.serverConfigurationParams.configuration.userInformationServiceURL + username,
-      json: true
-    }, function(error, response, json) {
-      if (!error && response.statusCode === 200) {
-        console.log(json);
-        return callback(null, {
-          id: json.DNSPerson.id,
-          username: json.DNSPerson.id,
-          email: json.DNSPerson.email,
-          firstName: json.DNSPerson.firstName,
-          lastName: json.DNSPerson.lastName
-        });
-      } else {
-        console.log('got ajax error trying get project list');
-        console.log(error);
-        console.log(json);
-        console.log(response);
-        return callback(null, null);
-      }
-    });
   };
 
   exports.getUsers = function(req, resp) {

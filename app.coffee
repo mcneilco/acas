@@ -98,10 +98,6 @@ startApp = ->
 	genericDataParserRoutes = require './routes/GenericDataParserRoutes.js'
 	app.post '/api/genericDataParser', genericDataParserRoutes.parseGenericData
 
-	# FullPKParser routes
-	fullPKParserRoutes = require './routes/FullPKParserRoutes.js'
-	app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
-
 	# BulkLoadContainersFromSDF routes
 	bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
 	app.post '/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF
@@ -129,7 +125,5 @@ startApp = ->
 		console.log("Express server listening on port " + app.get('port'))
 	)
 
-# if not DNS
 startApp()
-# end if not DNS
 
