@@ -19,7 +19,7 @@
 		exports.serverConfigurationParams.configuration.enableSpecRunner = true;
 		exports.serverConfigurationParams.configuration.requireLogin = false;
 // For preferred ID service
-		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://localhost:3000/api/preferredBatchId";
+		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://host3.labsynch.com:3000/api/preferredBatchId";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "LabSynchCmpdReg";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL = "http://host3.labsynch.com:8080/cmpdreg/metalots/corpName/";
 
