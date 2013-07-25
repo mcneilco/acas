@@ -66,8 +66,8 @@ exports.index = (req, res) ->
 		title: "ACAS Home"
 		scripts: scriptsToLoad
 		appParams:
-			loginUserName: req.user.username
-			loginUser: req.user
+			loginUserName: if req.user? then req.user.username else ""
+			loginUser: if req.user? then req.user else ""
 			testMode: false
 
 

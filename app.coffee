@@ -9,7 +9,7 @@ startApp = ->
 	http = require('http')
 	path = require('path')
 
-	# Added for loging support
+	# Added for login support
 	flash = require 'connect-flash'
 	passport = require 'passport'
 	util = require 'util'
@@ -43,7 +43,10 @@ startApp = ->
 
 	# main routes
 	routes = require('./routes')
-	app.get '/', loginRoutes.ensureAuthenticated, routes.index
+	if config.serverConfigurationParams.configuration.requireLogin
+		app.get '/', loginRoutes.ensureAuthenticated, routes.index
+	else
+		app.get '/', routes.index
 	if config.serverConfigurationParams.configuration.enableSpecRunner
 		app.get '/SpecRunner', routes.specRunner
 		app.get '/LiveServiceSpecRunner', routes.liveServiceSpecRunner

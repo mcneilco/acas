@@ -40,7 +40,11 @@
       return app.use(express.errorHandler());
     });
     routes = require('./routes');
-    app.get('/', loginRoutes.ensureAuthenticated, routes.index);
+    if (config.serverConfigurationParams.configuration.requireLogin) {
+      app.get('/', loginRoutes.ensureAuthenticated, routes.index);
+    } else {
+      app.get('/', routes.index);
+    }
     if (config.serverConfigurationParams.configuration.enableSpecRunner) {
       app.get('/SpecRunner', routes.specRunner);
       app.get('/LiveServiceSpecRunner', routes.liveServiceSpecRunner);

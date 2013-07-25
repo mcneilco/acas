@@ -14,8 +14,8 @@
       title: "ACAS Home",
       scripts: scriptsToLoad,
       appParams: {
-        loginUserName: req.user.username,
-        loginUser: req.user,
+        loginUserName: req.user != null ? req.user.username : "",
+        loginUser: req.user != null ? req.user : "",
         testMode: false
       }
     });

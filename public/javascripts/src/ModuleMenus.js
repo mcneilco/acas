@@ -55,8 +55,12 @@
     ModuleMenusController.prototype.render = function() {
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
-      this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
-      this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
+      if (window.configurationNode.serverConfigurationParams.configuration.requireLogin) {
+        this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
+        this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
+      } else {
+        this.$('.bv_userInfo').hide();
+      }
       return this;
     };
 
