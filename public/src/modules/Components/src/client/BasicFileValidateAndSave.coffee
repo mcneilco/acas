@@ -4,7 +4,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	parseFileNameOnServer: ""
 	parseFileUploaded: false
 	filePassedValidation: false
-	serverName: SeuratAddOns.configuration.serverName
+	reportFileNameOnServer: null
+	loadReportFile: false
 	filePath: "serverOnlyModules/blueimp-file-upload-node/public/files/"
 	additionalData: {experimentId: 1234, otherparam: "fred"}
 
@@ -25,26 +26,51 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@parseFileController = new LSFileInputController
 			el: @$('.bv_parseFile')
 			inputTitle: ''
-			url: SeuratAddOns.configuration.fileServiceURL
+			url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
 			fieldIsRequired: false
+			allowedFileTypes: ['xls', 'xlsx', 'csv']
 		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
 		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved)
 		@parseFileController.render()
+
+		if @loadReportFile
+			@reportFileController = new LSFileInputController
+				el: @$('.bv_reportFile')
+				inputTitle: ''
+				url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
+				fieldIsRequired: false
+				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)
+			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved)
+			@reportFileController.render()
+			@$('.bv_reportFileWrapper').show()
 
 		@showFileSelectPhase()
 
 	render: =>
 		unless @parseFileUploaded
-			@$(".bv_next").attr 'disabled', 'disabled'
+			@handleFormInvalid()
 
 		@
 
 	handleParseFileUploaded: (fileName) =>
 		@parseFileUploaded = true
 		@parseFileNameOnServer = @filePath+fileName
-		@$(".bv_next").removeAttr 'disabled'
-		@$(".bv_save").removeAttr 'disabled'
+		@handleFormValid()
 		@trigger 'amDirty'
+
+	handleParseFileRemoved: =>
+		@parseFileUploaded = false
+		@parseFileNameOnServer = ""
+		@notificationController.clearAllNotificiations()
+		@handleFormInvalid()
+
+	handleReportFileUploaded: (fileName) =>
+		@reportFileNameOnServer = @filePath+fileName
+		@trigger 'amDirty'
+
+	handleReportFileRemoved: =>
+		@reportFileNameOnServer = null
 
 	validateParseFile: =>
 		if @parseFileUploaded and not @$(".bv_next").attr('disabled')
@@ -81,12 +107,12 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			user = window.AppLaunchParams.loginUserName
 		data =
 			fileToParse: @parseFileNameOnServer
+			reportFile: @reportFileNameOnServer
 			dryRunMode: dryRun
 			user: user
 		$.extend(data,@additionalData)
 
 		data
-
 
 	handleValidationReturnSuccess: (json) =>
 		summaryStr = "Validation Results: "
@@ -99,9 +125,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@filePassedValidation = false
 			@parseFileController.lsFileChooser.fileFailedServerValidation()
 			summaryStr += "Failed due to errors "
-			@$(".bv_next").attr 'disabled', 'disabled'
-			@$(".bv_save").attr 'disabled', 'disabled'
-			@$('.bv_notifications').show()
+			@handleFormInvalid()
 		@showFileUploadPhase()
 		@$('.bv_resultStatus').html(summaryStr)
 		@notificationController.addNotifications(@errorOwnerName, json.errorMessages)
@@ -121,11 +145,6 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_resultStatus').html(summaryStr)
 		@$('.bv_saveStatusDropDown').modal("hide")
 		@trigger 'amClean'
-
-	handleParseFileRemoved: =>
-		@parseFileUploaded = false
-		@notificationController.clearAllNotificiations()
-		@$(".bv_next").attr 'disabled', 'disabled'
 
 	backToUpload: =>
 		@showFileSelectPhase()
@@ -163,3 +182,11 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_completeControlContainer').show()
 		@$('.bv_notifications').show()
 
+	handleFormInvalid: =>
+		@$(".bv_next").attr 'disabled', 'disabled'
+		@$(".bv_save").attr 'disabled', 'disabled'
+		@$('.bv_notifications').show()
+
+	handleFormValid: =>
+		@$(".bv_next").removeAttr 'disabled'
+		@$(".bv_save").removeAttr 'disabled'

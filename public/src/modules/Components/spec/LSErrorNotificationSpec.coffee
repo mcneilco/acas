@@ -140,7 +140,6 @@ describe 'Error Notification System Unit Testing', ->
 
 			xit 'should display the message in an .alert-error div when a notification message is added to the notification list', ->
 				@errorController.notificationsList.add(new LSNotificationMessageModel({message: 'foo'}))
-				console.log @errorController.$('.alert-error').html()
 				(expect $(@errorController.$('.alert-error')[0]).html()).toContain 'foo'
 		
 		
@@ -227,7 +226,6 @@ describe 'Error Notification System Unit Testing', ->
 				@eNotView.addNotification(({owner: 'system', errorLevel: 'info', message: 'testModule info 1'}))
 				
 			it 'should have 3 alert-error divs', ->
-				console.log "@eNotView.getErrorCount(): " + @eNotView.getErrorCount()
 				(expect @eNotView.getInfoCount()).toEqual 1
 				(expect @eNotView.getWarningCount()).toEqual 2
 				(expect @eNotView.getErrorCount()).toEqual 3
@@ -259,7 +257,6 @@ describe 'Error Notification System Unit Testing', ->
 				]
 				@eNotView.addNotifications 'testOwner', notes
 			it 'should have 3 alert-error divs', ->
-				console.log "@eNotView.getErrorCount(): " + @eNotView.getErrorCount()
 				(expect @eNotView.getInfoCount()).toEqual 1
 				(expect @eNotView.getWarningCount()).toEqual 2
 				(expect @eNotView.getErrorCount()).toEqual 3

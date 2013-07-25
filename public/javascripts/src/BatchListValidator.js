@@ -168,7 +168,7 @@
 
     BatchNameController.prototype.updateComment = function() {
       return this.model.set({
-        comment: this.$('.bv_comment').val().trim()
+        comment: $.trim(this.$('.bv_comment').val())
       });
     };
 
@@ -259,7 +259,7 @@
         this.$(".bv_addButton").attr("disabled", true);
         return $.ajax({
           type: "POST",
-          url: SeuratAddOns.configuration.preferredBatchIdService,
+          url: window.configurationNode.serverConfigurationParams.configuration.preferredBatchIdService,
           data: {
             requests: this.currentReqArray,
             testMode: window.AppLaunchParams.testMode
@@ -301,7 +301,7 @@
       var cleanArray, reqArray, treq;
 
       cleanArray = new Array();
-      if (this.$(".bv_pasteListArea").val().trim() !== "") {
+      if ($.trim(this.$(".bv_pasteListArea").val()) !== "") {
         reqArray = this.$(".bv_pasteListArea").val().split("\n");
         treq = void 0;
         _.each(reqArray, function(bns) {

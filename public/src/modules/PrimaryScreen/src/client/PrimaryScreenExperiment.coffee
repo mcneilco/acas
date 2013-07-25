@@ -32,7 +32,7 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 		@model.save()
 
 	handleExperimentSaved: =>
-		console.log @model
+		#console.log @model
 		@analysisController.render()
 
 	handleProtocolAttributesCopied: =>
@@ -80,7 +80,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 
 	handleHitThresholdChanged: =>
 		value = @model.get('experimentStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
-		value.set numericValue: parseFloat(@$('.bv_hitThreshold').val().trim())
+		value.set numericValue: parseFloat($.trim(@$('.bv_hitThreshold').val()))
 
 	handleExperimentSaved: =>
 		if @analysisStatus is "complete"
@@ -94,7 +94,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 	initialize: ->
 		UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(@, arguments)
-		@fileProcessorURL = @serverName + ":"+SeuratAddOns.configuration.portNumber+"/api/primaryAnalysis/runPrimaryAnalysis"
+		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
 		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
 		@$('.bv_moduleTitle').html("Upload Data and Analyze")
 

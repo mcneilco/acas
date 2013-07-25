@@ -23,12 +23,10 @@
     };
 
     AppRouter.prototype.newDoc = function() {
-      console.log('new doc');
       return this.appController.newDoc();
     };
 
     AppRouter.prototype.existingDoc = function(docId) {
-      console.log('existign doc' + docId);
       return this.appController.existingDoc(docId);
     };
 
@@ -76,7 +74,6 @@
     AppController.prototype.existingDoc = function(docId) {
       var _this = this;
 
-      console.log(docId);
       return $.ajax({
         type: 'GET',
         url: "/api/docForBatches/" + docId,
@@ -84,7 +81,6 @@
           return _this.existingDocReturn(json);
         },
         error: function(err) {
-          console.log('got ajax error in get existing doc');
           return _this.serviceReturn = null;
         },
         dataType: 'json'

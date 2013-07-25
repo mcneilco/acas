@@ -17,7 +17,7 @@ class window.LSFileModelCollection extends Backbone.Collection
 
 
 class window.LSFileChooserController extends Backbone.View
-	allowedFileTypes: ['xls']
+	allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
 	dropZoneClassId: "fileupload"
 	allowMultipleFiles: false
 	maxNumberOfFiles: 3
@@ -68,9 +68,9 @@ class window.LSFileChooserController extends Backbone.View
 			@requiresValidation = @options.requiresValidation
 		@currentNumberOfFiles = 0
 
-	#events:
+	events:
 		#'click .bv_deleteFile': 'handleDeleteFileUIChanges'
-		#'click .bv_cancelFile': 'handleDeleteFileUIChanges'
+		'click .bv_cancelFile': 'handleDeleteFileUIChanges'
 	
 	canAcceptAnotherFile: ->
 		return @currentNumberOfFiles < @maxNumberOfFiles
@@ -121,8 +121,7 @@ class window.LSFileChooserController extends Backbone.View
 		@$('.bv_status').addClass('icon-exclamation-sign')
 		#window.notificationController.addError("file is invalid!")
 		@$('.dv_validatingProgressBar').hide("slide")
-	
-		
+
 	render: ->
 		self = @
 		$(@el).html ""
@@ -134,7 +133,8 @@ class window.LSFileChooserController extends Backbone.View
 		@$('.fileupload').fileupload('option', {
 			url: self.url,
 			maxFileSize: self.maxFileSize,
-			acceptFileTypes: /(\.|\/)(xls|txt|xlsx|csv|sdf|zip)$/i,
+			#acceptFileTypes: /(\.|\/)(xls|txt|xlsx|csv|sdf|zip)$/i,
+			acceptFileTypes: RegExp('(\\.|\\/)(' + @allowedFileTypes.join('|') + ')$', 'i')
 			autoUpload: self.autoUpload
 			dropZone:  @$('.' + self.dropZoneClassId)
 		})

@@ -45,7 +45,6 @@ describe "Primary Screen Experiment module testing", ->
 						expect(@psec.model.isValid()).toBeTruthy()
 					it "should update experiment code", ->
 						runs ->
-							console.log "about to save"
 							@psec.$('.bv_save').click()
 						waits(100)
 						runs ->

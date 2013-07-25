@@ -30,7 +30,7 @@ class window.AbstractFormController extends Backbone.View
 		_.each errors, (err) =>
 			@$('.bv_group_'+err.attribute).addClass 'input_error error'
 			@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
-		@trigger "invalid"
+		@trigger 'invalid'
 
 	clearValidationErrorStyles: =>
 		errorElms = @$('.input_error')
@@ -44,6 +44,14 @@ class window.AbstractFormController extends Backbone.View
 	handleModelChange: =>
 		@clearValidationErrorStyles()
 		if @isValid()
-			@trigger "valid"
+			@trigger 'valid'
 		else
-			@trigger "invalid"
+			@trigger 'invalid'
+
+	getTrimmedInput: (selector) ->
+		$.trim(@$(selector).val())
+
+	convertYMDDateToMs: (inStr) ->
+		dateParts = inStr.split('-')
+		new Date(dateParts[0], dateParts[1]-1, dateParts[2]).getTime()
+

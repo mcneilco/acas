@@ -301,6 +301,7 @@
     __extends(LSNotificationController, _super);
 
     function LSNotificationController() {
+      this.clearAllNotificiations = __bind(this.clearAllNotificiations, this);
       this.toggleShowNotificationMessages = __bind(this.toggleShowNotificationMessages, this);      _ref10 = LSNotificationController.__super__.constructor.apply(this, arguments);
       return _ref10;
     }
@@ -331,19 +332,19 @@
       this.render();
       this.errorList = new LSNotificatioMessageCollection;
       this.errorController = new LSErrorController({
-        el: '.bv_errorNotificationMessages',
+        el: this.$('.bv_errorNotificationMessages'),
         badgeEl: this.$('.bv_errorNotificationCountContainer'),
         notificationsList: this.errorList
       });
       this.warningList = new LSNotificatioMessageCollection;
       this.warningController = new LSWarningController({
-        el: '.bv_warningNotificationMessages',
+        el: this.$('.bv_warningNotificationMessages'),
         badgeEl: this.$('.bv_warningNotificationCountContainer'),
         notificationsList: this.warningList
       });
       this.infoList = new LSNotificatioMessageCollection;
       return this.infoController = new LSInfoController({
-        el: '.bv_infoNotificationMessages',
+        el: this.$('.bv_infoNotificationMessages'),
         badgeEl: this.$('.bv_infoNotificationCountContainer'),
         notificationsList: this.infoList
       });

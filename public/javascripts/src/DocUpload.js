@@ -84,7 +84,7 @@
       this.fileInputController = new LSFileInputController({
         el: this.$('.bv_fileInput'),
         inputTitle: '',
-        url: SeuratAddOns.configuration.fileServiceURL,
+        url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
         fieldIsRequired: false,
         requiresValidation: false,
         maxNumberOfFiles: 1
@@ -100,8 +100,7 @@
         } else {
           this.$('.bv_currentDocContainer').hide();
           $('.bv_urlRadio').attr('checked', true);
-          this.$('.bv_url').val(this.model.get('url'));
-          return console.log('loaded with url');
+          return this.$('.bv_url').val(this.model.get('url'));
         }
       }
     };

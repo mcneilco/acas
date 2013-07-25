@@ -9,9 +9,9 @@ class window.AppRouter extends Backbone.Router
 		@appController = options.appController
 
 	existingDoc: (val) ->
-		console.log "got fred: "+val
+		#console.log "got fred: "+val
 	newDoc: (val) ->
-		console.log "got new doc req"
+		#console.log "got new doc req"
 
 
 class window.ModuleMenusController extends Backbone.View
@@ -46,6 +46,7 @@ class window.ModuleMenusController extends Backbone.View
 		# it instantiates new controllers and views but doesn't delete the old controllers
 		@moduleLauncherMenuListController.render()
 		@moduleLauncherListController.render()
-		@$('.bv_loginUserName').html window.AppLaunchParams.loginUserName
+		@$('.bv_loginUserFirstName').html window.AppLaunchParams.loginUser.firstName
+		@$('.bv_loginUserLastName').html window.AppLaunchParams.loginUser.lastName
 
 		@
