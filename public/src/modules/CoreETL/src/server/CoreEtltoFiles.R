@@ -31,12 +31,12 @@ getHeaderLines <- function(expt) {
 	if (length(eDate) != 1) "problem with experiment results, more than one experiment date"
 	dateParts <- strsplit(eDate, " ")
 	hl[[8]] <- paste("Assay Date", dateParts[[1]][[1]], sep=",")
-
+	
 	project <- levels(as.factor(expt$PROJECT))
 	if (length(project) != 1) "problem with experiment results, more than one project"
 	project <- project[[1]]
 	if (project=="General Screen") project = "UNASSIGNED"
-	hl[[9]] <- paste("Project", project, sep=",")
+	hl[[9]] <- paste("Project", project, sep=",")	
 	hl[[10]] <- ","
 	hl[[11]] <- "Calculated Results,"
 	return(hl)
@@ -61,16 +61,19 @@ makeFileName <- function(expt) {
 	eNames <- levels(as.factor(expt$Experiment_Name))
 	if (length(eNames) != 1) "problem with experiment results, more than one experiment name"
 	eName <- gsub("/","-",eNames[[1]])
-	dir.create(paste("coreSELFilesToLoad3/", pName, sep=""))
-	return(paste("coreSELFilesToLoad3/", pName,"/", eName, ".csv", sep=""))
+	dir.create(paste("coreSELFilesToLoad4/", pName, sep=""))
+	return(paste("coreSELFilesToLoad4/", pName,"/", eName, ".csv", sep=""))
 }
 
-makeValueString <- function(exptRow) {
+makeValueString <- function(exptRow, resultType) {
+	if (all(is.na(exptRow$Expt_Result_Value))) type <- "Text"
+	else type <- "Number"
+	columnTypes[resultType] <<- type
 	val <- paste(ifelse(is.na(exptRow$Expt_Result_Operator), "", exptRow$Expt_Result_Operator),
-		ifelse(is.na(exptRow$Expt_Result_Value),
-			ifelse(is.na(exptRow$Expt_Result_Desc), "",exptRow$Expt_Result_Desc),
-			exptRow$Expt_Result_Value),
-		sep="")
+				ifelse(is.na(exptRow$Expt_Result_Value),
+					ifelse(is.na(exptRow$Expt_Result_Desc), "",exptRow$Expt_Result_Desc),
+					exptRow$Expt_Result_Value),
+				sep="")
 	return(val)
 }
 
@@ -85,10 +88,10 @@ aggregateValues <- function(vals) {
 }
 
 pivotExperiment <- function(expt) {
-	expt[ ,value := makeValueString(.SD)]
-	expt[ ,corp_batch_name := paste(Corporate_ID, Lot_Number, sep="::")]
+	expt[ ,value := makeValueString(.SD, Expt_Result_Type), by=Expt_Result_Type]
+	expt[ ,corp_batch_name := Corporate_Batch_ID]
 	castExpt <- cast(expt, corp_batch_name + Expt_Batch_Number ~ Expt_Result_Type + Expt_Result_Units + Expt_Concentration + Expt_Conc_Units,
-		add.missing=TRUE, fill="NA", fun.aggregate=aggregateValues)
+					add.missing=TRUE, fill="NA", fun.aggregate=aggregateValues)
 
 	i <- sapply(castExpt, is.factor)
 	castExpt[i] <- lapply(castExpt[i], as.character)
@@ -101,11 +104,20 @@ pivotExperiment <- function(expt) {
 	return(castExpt)
 }
 
+lookupType <- function(colName) {
+	for (type in names(columnTypes)) {
+		if (regexpr(type, colName, fixed=TRUE)>-1) return(columnTypes[type])
+	}
+	
+	return("error can't get type")
+}
+
+
 getColumnHeaders <- function(castExpt) {
 	headers <- c()
 	dataTypes <- c()
 	for (name in names(castExpt)) {
-	# units and conc are split by _, but those might be in result type as well
+		# units and conc are split by _, but those might be in result type as well
 		if (name!="corp_batch_name") {
 			nameParts <- strsplit(name, "_")
 			nameParts <- nameParts[[1]]
@@ -119,7 +131,7 @@ getColumnHeaders <- function(castExpt) {
 			else nameParts[[len-1]] = paste(" [", concentration, " ",concentrationUnits,"]", sep="" )
 			nameParts[[len]] = ""
 			headers <- c(headers, (paste(nameParts, collapse="")))
-			dataTypes <- c(dataTypes, "Number")
+			dataTypes <- c(dataTypes, lookupType(name))
 		} else {
 			headers <- c(headers, "Corporate Batch ID")
 			dataTypes <- c(dataTypes, "Datatype")
@@ -144,38 +156,38 @@ library("reshape")
 
 protocolsToSearch = readLines("assaylist.txt")
 #protocolsToSearch = I("CRO CYP DR 1A2")
+#protocolsToSearch = c("Bioavailability Assay V1.0")
 for (p in 1:length(protocolsToSearch)) {
 	print(paste("processing protocol:", protocolsToSearch[[p]]))
 	experiments <- queryProtocol(protocolsToSearch[[p]])
 	exptNames <- levels(as.factor(experiments$Experiment_Name))
-
+	
 	first <- TRUE
 	for( exptName in exptNames) {
-	#for now only do first of each to test formats
-		if (TRUE) {
-		#if(exptName=="EZE515") {
-				expt <- data.table(experiments[experiments$Experiment_Name==exptName, ])
-				headBlockLines <- getHeaderLines(expt)
-				castExpt <- pivotExperiment(expt)
-				columnHeaders <- getColumnHeaders(castExpt)
-				headBlockLines <- padHeadColumns(headBlockLines, length(names(castExpt)))
+		#for now only do first of each to test formats
+		if (first) {
+		#if(exptName=="BEX10") {
+			expt <- data.table(experiments[experiments$Experiment_Name==exptName, ])
+			headBlockLines <- getHeaderLines(expt)
+			columnTypes <- list()
+			castExpt <- pivotExperiment(expt)
+			columnHeaders <- getColumnHeaders(castExpt)
+			headBlockLines <- padHeadColumns(headBlockLines, length(names(castExpt)))
 			#TODO can I get query to return without factors so I don't have to conert here?
-				print(paste(" Saving expt:",exptName,"dataRows:",length(castExpt$corp_batch_name)))
-				if (length(castExpt$corp_batch_name)>0) {
-					fName <- makeFileName(expt)
-					outFile <- file(fName, "w")
-					writeLines(headBlockLines, outFile)
-					writeLines(columnHeaders, outFile)
-					close(outFile)
-					write.table(castExpt, file = fName, sep = ",", col.names = FALSE, row.names = FALSE, append = TRUE)
-				#for (l in 1:nrow(castExpt)) {
-					#	writeLines(paste(as.character(castExpt[l,]), collapse=","), outFile)
-				#}
-				}
+			print(paste("Saving expt:",exptName,"dataRows:",length(castExpt$corp_batch_name)))
+			print(paste("input rows:",length(expt$Expt_Batch_Number),"input variable types",length(levels(factor(expt$Expt_Result_Type)))))
+			if (length(castExpt$corp_batch_name)>0) {
+				fName <- makeFileName(expt)
+				outFile <- file(fName, "w")
+				writeLines(headBlockLines, outFile)
+				writeLines(columnHeaders, outFile)
+				close(outFile)
+				write.table(castExpt, file = fName, sep = ",", col.names = FALSE, row.names = FALSE, append = TRUE)
 			}
-			first = FALSE
 		}
+		first = FALSE
 	}
+}
 
 
 #TODO
