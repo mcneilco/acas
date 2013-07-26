@@ -4,10 +4,10 @@
 
 		exports.serverConfigurationParams = {};
 		exports.serverConfigurationParams.configuration = {};
-		exports.serverConfigurationParams.configuration.serverName = "http://host3.labsynch.com";
-		exports.serverConfigurationParams.configuration.serverAddress = "host3.labsynch.com";
+		exports.serverConfigurationParams.configuration.serverName = "http://localhost";
+		exports.serverConfigurationParams.configuration.serverAddress = "localhost";
 		exports.serverConfigurationParams.configuration.portNumber = 3000;
-		exports.serverConfigurationParams.configuration.fileServiceURL = "http://host3.labsynch.com:8888";
+		exports.serverConfigurationParams.configuration.fileServiceURL = "http://localhost:8888";
 		exports.serverConfigurationParams.configuration.serverRelativeFilePath = "serverOnlyModules/blueimp-file-upload-node/public/files/";
 		exports.serverConfigurationParams.configuration.driver = "org.postgresql.Driver";
 		exports.serverConfigurationParams.configuration.driverLocation = "public/src/modules/GenericDataParser/src/server/postgresql-9.1-901.jdbc3.jar";
@@ -19,7 +19,7 @@
 		exports.serverConfigurationParams.configuration.enableSpecRunner = true;
 		exports.serverConfigurationParams.configuration.requireLogin = false;
 // For preferred ID service
-		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://host3.labsynch.com:3000/api/preferredBatchId";
+		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://localhost:3000/api/preferredBatchId";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "LabSynchCmpdReg";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL = "http://host3.labsynch.com:8080/cmpdreg/metalots/corpName/";
 
@@ -55,7 +55,7 @@
 		exports.serverConfigurationParams.configuration.includeProject = "FALSE";
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "";
 		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "TRUE";
-		exports.serverConfigurationParams.configuration.nameValidationService = "http://host3.labsynch.com:3000/api/users"
+		exports.serverConfigurationParams.configuration.nameValidationService = "http://localhost:3000/api/users"
 
 
 
