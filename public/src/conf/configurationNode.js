@@ -54,7 +54,7 @@
 		exports.serverConfigurationParams.configuration.stateGroupsScript = "public/src/conf/genericDataParserConfiguration.R";
 		exports.serverConfigurationParams.configuration.includeProject = "FALSE";
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "";
-		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "TRUE";
+		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "Generic,Dose Response";
 		exports.serverConfigurationParams.configuration.nameValidationService = "http://localhost:3000/api/users"
 
 
