@@ -80,7 +80,7 @@ describe 'Bulk load containers from SDF testing', ->
 				success: (json) ->
 					self.serviceReturn = json
 				error: (err) ->
-					console.log 'got ajax error'
+					alert 'got ajax error'
 					self.serviceReturn = null
 				dataType: 'json'
 
@@ -109,7 +109,6 @@ describe 'Bulk load containers from SDF testing', ->
 		it 'should not return a dry run transactionId, but retuen error=true, and at least one message', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				console.log @serviceReturn
 				expect(@serviceReturn.transactionId).toBeNull()
 				expect(@serviceReturn.hasError).toBeTruthy()
 				expect(@serviceReturn.errorMessages.length).toBeGreaterThan(0)

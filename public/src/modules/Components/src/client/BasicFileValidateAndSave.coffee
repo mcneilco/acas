@@ -28,6 +28,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			inputTitle: ''
 			url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
 			fieldIsRequired: false
+			allowedFileTypes: ['xls', 'xlsx', 'csv']
 		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
 		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved)
 		@parseFileController.render()
@@ -38,6 +39,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 				inputTitle: ''
 				url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
 				fieldIsRequired: false
+				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
 			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)
 			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved)
 			@reportFileController.render()
@@ -113,7 +115,6 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		data
 
 	handleValidationReturnSuccess: (json) =>
-		console.log json
 		summaryStr = "Validation Results: "
 		if not json.hasError
 			@filePassedValidation = true

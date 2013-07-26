@@ -21,7 +21,10 @@ Usually done in /opt
     forever start app.js
     forever start serverOnlyModules/blueimp-file-upload-node/server.js
 
-*Note, do not rename mcneilco-acas-f46a5c67fbd4 because this tell us which checkout of acas is running
+*Note, do not rename mcneilco-acas-f46a5c67fbd4 because this tell us which checkout of acas is running.  The specific commit number that we track
+is the first 7 digits of the trailing hash.  So in the above example, host3.labsynch.com is on commit "f46a5c6".
+These commits are tracked here:
+   http://localhost:1080/mcneilco/TreeView.php?thing_id_395
     
 Configuration file is in acas/public/src/conf/configurationNode.js
 

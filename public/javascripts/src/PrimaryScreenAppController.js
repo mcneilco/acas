@@ -23,12 +23,10 @@
     };
 
     PrimaryScreenAppRouter.prototype.newExperiment = function() {
-      console.log('new expt');
       return this.appController.newExperiment();
     };
 
     PrimaryScreenAppRouter.prototype.existingExperiment = function(expId) {
-      console.log('existign expt' + expId);
       return this.appController.existingExperiment(expId);
     };
 
@@ -54,7 +52,6 @@
       this.router = new PrimaryScreenAppRouter({
         appController: this
       });
-      console.log("starting history");
       return Backbone.history.start({
         pushState: true,
         root: "/primaryScreenExperiment"
@@ -66,7 +63,6 @@
     };
 
     PrimaryScreenAppController.prototype.newExperiment = function() {
-      console.log("got to new experiment route");
       this.primaryScreenExperimentController = new PrimaryScreenExperimentController({
         model: new Experiment(),
         el: $('.bv_primaryScreenExperimentController')
@@ -78,15 +74,12 @@
       var exp,
         _this = this;
 
-      console.log(expId);
       exp = new Experiment({
         id: expId
       });
       return exp.fetch({
         success: function() {
-          console.log("fetched experiment");
           exp.fixCompositeClasses();
-          console.log(exp);
           _this.primaryScreenExperimentController = new PrimaryScreenExperimentController({
             model: exp,
             el: $('.bv_primaryScreenExperimentController')

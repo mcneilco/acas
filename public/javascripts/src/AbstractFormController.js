@@ -79,6 +79,17 @@
       }
     };
 
+    AbstractFormController.prototype.getTrimmedInput = function(selector) {
+      return $.trim(this.$(selector).val());
+    };
+
+    AbstractFormController.prototype.convertYMDDateToMs = function(inStr) {
+      var dateParts;
+
+      dateParts = inStr.split('-');
+      return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getTime();
+    };
+
     return AbstractFormController;
 
   })(Backbone.View);

@@ -50,8 +50,6 @@ applicationScripts = [
 	#'javascripts/src/AppController.js'
 	# For Generic Data Parser module
 	'/javascripts/src/GenericDataParser.js'
-	# For FullPK module
-	'/javascripts/src/FullPK.js'
 	# For BulkLoadContainersFromSDF module
 	'/javascripts/src/BulkLoadContainersFromSDF.js'
 	# For BulkLoadSampleTransfers module
@@ -68,8 +66,8 @@ exports.index = (req, res) ->
 		title: "ACAS Home"
 		scripts: scriptsToLoad
 		appParams:
-#			loginUserName: 'jmcneil' #TODO replace hard-coded username with login and cookies
-			loginUserName: req.user.username
+			loginUserName: if req.user? then req.user.username else ""
+			loginUser: if req.user? then req.user else ""
 			testMode: false
 
 
@@ -85,8 +83,6 @@ exports.specRunner = (req, res) ->
 	]
 
 	specScripts = [
-		#For login module
-		'javascripts/spec/dnsAuthenticationServiceSpec.js'
 		# For serverAPI module
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		'javascripts/spec/ProtocolServiceSpec.js'
@@ -109,6 +105,7 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/ModuleMenusSpec.js'
 		'javascripts/spec/ModuleLauncherSpec.js'
 		# For Components module
+		'javascripts/spec/AbstractFormControllerSpec.js'
 		'javascripts/spec/LSFileInputSpec.js'
 		'javascripts/spec/LSFileChooserSpec.js'
 		'javascripts/spec/LSErrorNotificationSpec.js'
@@ -124,10 +121,6 @@ exports.specRunner = (req, res) ->
 		# For Generic Data Parser module
 		'javascripts/spec/GenericDataParserSpec.js'
 		'javascripts/spec/GenericDataParserServiceSpec.js'
-		# For Full PK Parser module
-		'javascripts/spec/testFixtures/FullPKTestJSON.js'
-		'javascripts/spec/FullPKSpec.js'
-		'javascripts/spec/FullPKParserServiceSpec.js'
 		# For BulkLoadContainersFromSDF module
 		'javascripts/spec/BulkLoadContainersFromSDFSpec.js'
 		'javascripts/spec/BulkLoadContainersFromSDFServerSpec.js'
@@ -146,7 +139,14 @@ exports.specRunner = (req, res) ->
 		scripts: scriptsToLoad
 		appParams:
 			loginUserName: 'jmcneil'
+			loginUser:
+				id: 2,
+				username: "jmcneil",
+				email: "jmcneil@example.com",
+				firstName: "John",
+				lastName: "McNeil"
 			testMode: true
+			liveServiceTest: false
 	})
 
 exports.liveServiceSpecRunner = (req, res) ->
@@ -163,9 +163,8 @@ exports.liveServiceSpecRunner = (req, res) ->
 		# For Components module
 		'javascripts/spec/ProjectsServiceSpec.js'
 		# For serverAPI module
+		'javascripts/spec/ProtocolServiceSpec.js'
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
-		#For login module
-		'javascripts/spec/dnsAuthenticationServiceSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)
@@ -176,6 +175,12 @@ exports.liveServiceSpecRunner = (req, res) ->
 	scripts: scriptsToLoad
 	appParams:
 		loginUserName: 'jmcneil'
+		loginUser:
+			id: 2,
+			username: "jmcneil",
+			email: "jmcneil@example.com",
+			firstName: "John",
+			lastName: "McNeil"
 		testMode: false
 		liveServiceTest: true
 	})

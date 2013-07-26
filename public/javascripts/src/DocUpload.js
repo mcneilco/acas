@@ -100,8 +100,7 @@
         } else {
           this.$('.bv_currentDocContainer').hide();
           $('.bv_urlRadio').attr('checked', true);
-          this.$('.bv_url').val(this.model.get('url'));
-          return console.log('loaded with url');
+          return this.$('.bv_url').val(this.model.get('url'));
         }
       }
     };

@@ -62,19 +62,19 @@ describe 'PreferredBatchId Service testing', ->
 		else if serviceType == "SingleBatchNameQueryString"
 			@requestData =
 				requests: [
-					{requestName: "DNS000000001::1"} #normal
-					{requestName: "DNS000673874::1"} #alias
+					{requestName: "CPD000000001::1"} #normal
+					{requestName: "CPD000673874::1"} #alias
 					{requestName: "none_2222:1"} #none
 				]
 			@expectedResponse =
 				error: false
 				errorMessages: []
 				results: [
-					requestName: "DNS000000001::1"
-					preferredName: "DNS000000001::1"
+					requestName: "CPD000000001::1"
+					preferredName: "CPD000000001::1"
 				,
-					requestName: "DNS000673874::1"
-					preferredName: "DNS000001234::7"
+					requestName: "CPD000673874::1"
+					preferredName: "CPD000001234::7"
 				,
 					requestName: "none_2222:1"
 					preferredName: ""

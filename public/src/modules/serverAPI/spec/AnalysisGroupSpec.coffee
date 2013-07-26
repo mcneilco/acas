@@ -21,7 +21,6 @@ describe 'AnalysisGroup CRUD testing', ->
 				@ags = new AnalysisGroupState window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].analysisGroupStates[0]
 			describe "after initial load", ->
 				it "state should have kind ", ->
-					console.log @ags
 					expect(@ags.get('stateKind')).toEqual "Document for Batch"
 				it "state should have values", ->
 					expect(@ags.get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy()

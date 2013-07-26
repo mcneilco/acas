@@ -24,9 +24,11 @@ describe "Module Menus Controller testing", ->
 		it "Should load the template", ->
 			expect($('.bv_modLaunchMenuWrapper')).not.toBeNull()
 			expect($('.bv_mainModuleWrapper')).not.toBeNull()
-		it "should show the username", ->
-			expect(@mmc.$('.bv_loginUserName').html()).toContain 'jmcneil'
-		it "should shave a logout link", ->
+		it "should show the user first name", ->
+			expect(@mmc.$('.bv_loginUserFirstName').html()).toContain 'John'
+		it "should show the user last name", ->
+			expect(@mmc.$('.bv_loginUserLastName').html()).toContain 'McNeil'
+		it "should show a logout link", ->
 			expect(@mmc.$('.bv_logout').attr('href')).toContain 'logout'
 
 	describe "Sub Controllers load after rendering", ->

@@ -53,7 +53,6 @@
     };
 
     PrimaryScreenExperimentController.prototype.handleExperimentSaved = function() {
-      console.log(this.model);
       return this.analysisController.render();
     };
 
@@ -133,7 +132,7 @@
 
       value = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       return value.set({
-        numericValue: parseFloat(this.$('.bv_hitThreshold').val().trim())
+        numericValue: parseFloat($.trim(this.$('.bv_hitThreshold').val()))
       });
     };
 

@@ -47,3 +47,11 @@ class window.AbstractFormController extends Backbone.View
 			@trigger 'valid'
 		else
 			@trigger 'invalid'
+
+	getTrimmedInput: (selector) ->
+		$.trim(@$(selector).val())
+
+	convertYMDDateToMs: (inStr) ->
+		dateParts = inStr.split('-')
+		new Date(dateParts[0], dateParts[1]-1, dateParts[2]).getTime()
+

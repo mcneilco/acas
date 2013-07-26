@@ -299,7 +299,7 @@
           });
           waitsFor(function() {
             return this.blvc.ischeckAndAddBatchesComplete();
-          });
+          }, 500);
           return runs(function() {
             return expect(this.blvc.$(".batchListContainer .batchList tr").length).toEqual(3);
           });
@@ -310,7 +310,7 @@
           this.blvc.$(".bv_addButton").click();
           waitsFor(function() {
             return this.blvc.ischeckAndAddBatchesComplete();
-          });
+          }, 500);
           return runs(function() {
             return expect(this.blvc.$(".bv_pasteListArea").val()).toEqual("");
           });
@@ -321,7 +321,7 @@
           this.blvc.$(".bv_addButton").click();
           waitsFor(function() {
             return this.blvc.ischeckAndAddBatchesComplete();
-          });
+          }, 500);
           return runs(function() {
             expect(this.blvc.$(".batchListContainer .batchList tr").length).toEqual(3);
             return expect(this.blvc.$(".batchList .batchNameView:eq(1) .bv_preferredName").hasClass("error")).toBeTruthy();
@@ -333,7 +333,7 @@
           this.blvc.$(".bv_addButton").click();
           waitsFor(function() {
             return this.blvc.ischeckAndAddBatchesComplete();
-          });
+          }, 500);
           return runs(function() {
             expect(this.blvc.$(".batchListContainer .batchList tr").length).toEqual(3);
             return expect(this.blvc.$(".batchList .batchNameView:eq(1) .bv_preferredName").hasClass("warning")).toBeTruthy();
@@ -345,7 +345,7 @@
           this.blvc.$(".bv_addButton").click();
           waitsFor(function() {
             return this.blvc.ischeckAndAddBatchesComplete();
-          });
+          }, 500);
           return runs(function() {
             expect(this.blvc.$(".batchListContainer .batchList tr").length).toEqual(4);
             expect(this.blvc.$(".bv_preferredName.error").length).toEqual(1);
@@ -358,7 +358,7 @@
           this.blvc.$(".bv_addButton").click();
           waitsFor(function() {
             return this.blvc.ischeckAndAddBatchesComplete();
-          });
+          }, 500);
           return runs(function() {
             expect(this.blvc.$(".batchListContainer .batchList tr").length).toEqual(3);
             expect(this.blvc.$(".bv_preferredName.warning").length).toEqual(2);
@@ -374,7 +374,7 @@
           expect(this.blvc.$(".bv_addButton").attr("disabled")).toEqual("disabled");
           waitsFor(function() {
             return this.blvc.ischeckAndAddBatchesComplete();
-          });
+          }, 500);
           return runs(function() {
             return expect(this.blvc.$(".bv_addButton").attr("disabled")).toBeUndefined();
           });
@@ -413,7 +413,7 @@
             });
             waitsFor(function() {
               return _this.gotTrigger;
-            });
+            }, 500);
             return runs(function() {
               return expect(this.gotTrigger).toBeTruthy();
             });

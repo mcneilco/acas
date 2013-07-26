@@ -180,7 +180,7 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d") {
         errorList <<- c(errorList,paste0("The loader was unable to change the date '", inputValue, 
                                          "' to the proper format. Please change it to the following format: \"",
                                          format(Sys.Date(), expectedFormat),"\"",
-                                         ," or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
+                                         " or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
       }
     } else {
       # If the change in the seperators fixed the issue, then we add this to the warnings and return the coerced date
@@ -250,6 +250,11 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   # Returns:
   #  A data frame containing the validated meta data
   
+  # Turn NA into "NA"
+  metaDataNames <- names(metaData)
+  metaData <- as.data.frame(lapply(metaData, function(x) if(is.na(x)) "NA" else x), stringsAsFactors=FALSE)
+  names(metaData) <- metaDataNames
+  
   # Check if extra data was picked up that should not be
   if (length(metaData[[1]])>1) {
     extraData <- c(as.character(metaData[[1]][2:length(metaData[[1]])]),
@@ -266,9 +271,9 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   }
   
   expectedDataFormat <- data.frame(
-    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","Page","Assay Date"),
-    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Date"),
-    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE)
+    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", "Page","Assay Date"),
+    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE)
   )
   
   if (!is.null(configList$includeProject) && configList$includeProject == "TRUE") {
@@ -337,11 +342,12 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   }
   
   if (!is.null(metaData$Project)) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList)
-    
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList) 
+  }
+  if (!is.null(metaData$Scientist)) {
+    validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList) 
   }
   
-  # Return the validated Meta Data
   return(validatedMetaData)
 }
 validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,tempIdLabel) {
@@ -735,8 +741,8 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   }
   returnDataFrame <- data.frame("DataColumn" = array(dim = length(dataColumns)), "Type" = array(dim = length(dataColumns)), "Units" = array(dim = length(dataColumns)), "Conc" = array(dim = length(dataColumns)), "ConcUnits" = array(dim = length(dataColumns)))
   returnDataFrame$DataColumn <- dataColumns
-  returnDataFrame$Type <- trim(gsub("\\[[^)]*\\]","",gsub("\\([^)]*\\)","",gsub("\\{[^}]*\\}","",dataColumns))))
-  #TODO Will anyone ever want 'Reported' in the data columns? Probably not
+  returnDataFrame$Type <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
+  # This removes "Reported" from all columns
   returnDataFrame$Type <- trim(gsub("Reported","",returnDataFrame$Type))
   returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
@@ -824,7 +830,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   if (rawOnlyFormat) {
     treatmentGrouping <- which(lapply(stateGroups, getElement, "stateKind") == "treatment")
     groupingColumns <- stateGroups[[treatmentGrouping]]$valueKinds
-    groupingColumns <- groupingColumns[groupingColumns %in% names(results)]
+    groupingColumns <- resultTypes$DataColumn[resultTypes$Type %in% groupingColumns]
     if(stateGroups[[treatmentGrouping]]$includesCorpName) {
       groupingColumns <- c(groupingColumns,"Corporate Batch ID")
     }
@@ -855,24 +861,26 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$time <- resultTypes$time[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
   longResults$timeUnit <- resultTypes$timeUnit[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
   
+  longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
+  
   # Parse numeric data from the unparsed values
-  matchExpression <- "[0-9]+.[0-9]*|[0-9]*.[0-9]+|[0-9]+"
-  matches <- gregexpr(matchExpression,longResults$"UnparsedValue")
+  matchExpression <- ".+\\-|[^0-9,\\.<>\\-]|\\..*\\.|-$" # If it has a "-" anywhere other than the beginning, has anything other than th list "0-9,.<>-", has a "-" at the end, or has two decimal points, it is not a number
+  matches <- grepl(matchExpression,longResults$"UnparsedValue")
   longResults$"Result Value" <- longResults$"UnparsedValue"
-  regmatches(longResults$"Result Value",matches, invert = TRUE) <- ""
+  longResults$"Result Value"[matches] <- ""
   
   # Parse string values from the unparsed values
-  longResults$"Result Desc" <-  gsub(matchExpression,"",longResults$"UnparsedValue")
+  longResults$"Result Desc" <- as.character(longResults$"UnparsedValue")
+  longResults$"Result Desc"[!matches] <- ""
   
   # Parse Operators from the unparsed value
   matchExpression <- ">|<"
-  longResults$"Result Operator" <- longResults$"UnparsedValue"
-  matches <- gregexpr(matchExpression,longResults$"UnparsedValue")
+  longResults$"Result Operator" <- longResults$"Result Value"
+  matches <- gregexpr(matchExpression,longResults$"Result Value")
   regmatches(longResults$"Result Operator",matches, invert = TRUE) <- ""
   
   # Turn result values to numeric values
-  # Warnings are supressed because the dates give error values 
-  suppressWarnings(longResults$"Result Value" <-  as.numeric(gsub(matchExpression,"",longResults$"Result Value")))
+  longResults$"Result Value" <-  as.numeric(gsub(",","",gsub(matchExpression,"",longResults$"Result Value")))
   
   # For the results marked as "Text":
   #   Set the Result Desc to the original value
@@ -1099,7 +1107,7 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
   }
   
   tryCatch({
-    protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName))))
+    protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName, "/"))))
   }, error = function(e) {
     stop("There was an error in accessing the protocol. Please contact your system administrator.")
   })
@@ -1138,7 +1146,7 @@ getExperimentByName <- function(experimentName, protocol, configList) {
   require('rjson')
   
   tryCatch({
-    experimentList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName))))
+    experimentList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName, "/"))))
   }, error = function(e) {
     stop("There was an error checking if the experiment already exists. Please contact your system administrator.")
   })
@@ -1154,9 +1162,9 @@ getExperimentByName <- function(experimentName, protocol, configList) {
     })
     
     #TODO choose the preferred label
-    if(is.na(protocol) || protocolOfExperiment$lsLabels[[1]]$id != protocol$lsLabels[[1]]$id) {
+    if (is.na(protocol) || protocolOfExperiment$lsLabels[[1]]$id != protocol$lsLabels[[1]]$id) {
       errorList <<- c(errorList,paste0("Experiment '",experimentName,
-                                       "' does not exist in the protocol that you entered, but it does exist in '", protocolOfExperiment$protocolLabels[[1]]$labelText, 
+                                       "' does not exist in the protocol that you entered, but it does exist in '", protocolOfExperiment$lsLabels[[1]]$labelText, 
                                        "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
     }
     # If the experiment does exist, get it
@@ -1303,9 +1311,33 @@ validateProject <- function(projectName, configList) {
     return("")
   }
 }
+validateScientist <- function(scientistName, configList) {
+  require('RCurl')
+  require('rjson')
+  
+  tryCatch({
+    response <- getURL(paste0(configList$nameValidationService, "/", scientistName))
+    if (response == "") {
+      errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
+      return("")
+    }
+  }, error = function(e) {
+    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+    return("")
+  })
+  
+  tryCatch({
+    username <- fromJSON(response)$username
+  }, error = function(e) {
+    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+    return("")
+  })
+  
+  return(username)
+}
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
-                              recordedBy, replaceFakeCorpBatchId, annotationType) {
+                              recordedBy, replaceFakeCorpBatchId, annotationType, sigFigs) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   # TODO: stop uploading fake corp batch id as codeValue
@@ -1340,7 +1372,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   savedAnalysisGroup <- saveAnalysisGroup(analysisGroup)
   
   # Treatment Groups
-  treatmentGroups <- lapply(FUN= createTreatmentGroup, X= treatmentGroupCodeNameList,
+  treatmentGroups <- lapply(FUN= createTreatmentGroup, X= treatmentGroupCodeNameList, lsType="default", lsKind="default",
                             recordedBy=recordedBy, lsTransaction=lsTransaction, analysisGroup=savedAnalysisGroup, 
                             subjects=NULL,treatmentGroupStates=NULL)
   
@@ -1428,7 +1460,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   treatmentDataStart <- subjectData[subjectData$valueKind %in% treatmentDataValueKinds 
                                     & !(subjectData$subjectID %in% excludedSubjects),]
   
-  createRawOnlyTreatmentGroupData <- function(subjectData) {
+  createRawOnlyTreatmentGroupData <- function(subjectData, sigFigs) {
     isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
     isLessThan <- any(subjectData$valueOperator=="<", na.rm=TRUE)
     if(isGreaterThan && isLessThan) {
@@ -1443,6 +1475,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     } else {
       resultOperator <- NA
       resultValue <- mean(subjectData$numericValue, na.rm = TRUE)
+    }
+    if (!is.null(sigFigs)) { 
+      resultValue <- signif(resultValue, sigFigs)
     }
     return(data.frame(
       "batchCode" = subjectData$batchCode[1],
@@ -1464,8 +1499,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       stringsAsFactors=FALSE))
   }
   
-  treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData)
-  
+  treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs)
   treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
   stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
                                               entityKind = "treatmentgroup", 
@@ -1536,71 +1570,81 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   ### Container creation ==================================================================
   containerIndex <- which(sapply(stateGroups, function(x) x$"entityKind")=="container")
-  if (length(containerIndex > 0)) {
+  if (length(containerIndex) > 0) {
     containerData <- subjectData[subjectData$stateGroupIndex %in% containerIndex, ]
-    containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
-                                                  labelTypeAndKind="id_codeName", 
-                                                  numberOfLabels=length(unique(containerData$subjectID))),
-                                    use.names=FALSE)
     
-    containerData$containerCodeName <- containerCodeNameList[as.numeric(factor(containerData$subjectID))]
+    # Link old containers
+    allContainerData <- linkOldContainers(containerData, stateGroups, experiment$lsLabels[[1]]$labelText)
+    containerData <- allContainerData$entityData
+    preexistingContainers <- allContainerData$matchingLabelData
     
-    # TODO: type and kind should be in a config somewhere
-    createRawOnlyContainer <- function(containerData) {
-      return(createContainer(
-        lsType="material",
-        lsKind="animal",
-        codeName=containerData$containerCodeName[1],
-        recordedBy=recordedBy,
-        lsTransaction=lsTransaction))
+    if (nrow(containerData) > 0) {
+      containerCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="material_container", 
+                                                    labelTypeAndKind="id_codeName", 
+                                                    numberOfLabels=length(unique(containerData$subjectID))),
+                                      use.names=FALSE)
+      
+      containerData$containerCodeName <- containerCodeNameList[as.numeric(factor(containerData$subjectID))]
+      
+      # TODO: type and kind should be in a config somewhere
+      createRawOnlyContainer <- function(containerData) {
+        return(createContainer(
+          lsType="material",
+          lsKind="animal",
+          codeName=containerData$containerCodeName[1],
+          recordedBy=recordedBy,
+          lsTransaction=lsTransaction))
+      }
+      
+      containers <- dlply(.data= containerData, .variables= .(containerCodeName), .fun= createRawOnlyContainer)
+      names(containers) <- NULL
+      
+      savedContainers <- saveAcasEntities(containers, "containers")
+      
+      containerIds <- sapply(savedContainers, function(x) x$id)
+      
+      # Order is not maintained, but that is okay
+      containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
+      
+      ### Container Labels ============================================================
+      
+      saveLabelsFromLongFormat(entityData = containerData, 
+                               entityKind = "container", 
+                               stateGroups = stateGroups,
+                               idColumn = "containerID",
+                               recordedBy = recordedBy,
+                               lsTransaction = lsTransaction,
+                               labelPrefix = experiment$lsLabels[[1]]$labelText)
+      
+      ### Container States ============================================================
+      
+      containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
+      stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
+                                                  entityKind = "container", 
+                                                  stateGroups = stateGroups,
+                                                  idColumn = "stateID",
+                                                  recordedBy = recordedBy,
+                                                  lsTransaction = lsTransaction)
+      
+      containerData$stateID <- stateAndVersion$entityStateId
+      containerData$stateVersion <- stateAndVersion$entityStateVersion
+      
+      containerData$containerStateID <- containerData$stateID
+      
+      ### Container Values =========================================================
+      if (is.null(containerData$stateVersion)) containerData$stateVersion <- 0
+      containerDataWithBatchCodeRows <- rbind.fill(containerData, meltBatchCodes(containerData, batchCodeStateIndices))
+      
+      savedContainerValues <- saveValuesFromLongFormat(entityData = containerDataWithBatchCodeRows, 
+                                                       entityKind = "container", 
+                                                       stateGroups = stateGroups, 
+                                                       lsTransaction = lsTransaction,
+                                                       recordedBy = recordedBy)
     }
-    
-    containers <- dlply(.data= containerData, .variables= .(containerCodeName), .fun= createRawOnlyContainer)
-    names(containers) <- NULL
-    
-    savedContainers <- saveAcasEntities(containers, "containers")
-    
-    containerIds <- sapply(savedContainers, function(x) x$id)
-    
-    # Order is not maintained, but that is okay
-    containerData$containerID <- containerIds[as.numeric(factor(containerData$subjectID))]
-        
-    ### Container Labels ============================================================
-    
-    saveLabelsFromLongFormat(entityData = containerData, 
-                             entityKind = "container", 
-                             stateGroups = stateGroups,
-                             idColumn = "containerID",
-                             recordedBy = recordedBy,
-                             lsTransaction = lsTransaction,
-                             labelPrefix = experiment$lsLabels[[1]]$labelText)
-    
-    ### Container States ============================================================
-    
-    containerData$stateID <- paste0(containerData$containerID, "-", containerData$stateGroupIndex)
-    stateAndVersion <- saveStatesFromLongFormat(entityData = containerData, 
-                                                entityKind = "container", 
-                                                stateGroups = stateGroups,
-                                                idColumn = "stateID",
-                                                recordedBy = recordedBy,
-                                                lsTransaction = lsTransaction)
-    
-    containerData$stateID <- stateAndVersion$entityStateId
-    containerData$stateVersion <- stateAndVersion$entityStateVersion
-    
-    containerData$containerStateID <- containerData$stateID
-    
-    ### Container Values =========================================================
-    if (is.null(containerData$stateVersion)) containerData$stateVersion <- 0
-    containerDataWithBatchCodeRows <- rbind.fill(containerData, meltBatchCodes(containerData, batchCodeStateIndices))
-    
-    savedContainerValues <- saveValuesFromLongFormat(entityData = containerDataWithBatchCodeRows, 
-                                                     entityKind = "container", 
-                                                     stateGroups = stateGroups, 
-                                                     lsTransaction = lsTransaction,
-                                                     recordedBy = recordedBy)
-    
     ### Itx Subject Container =========================================================
+    
+    # Bring back the preexisting containers to create interactions
+    containerData <- rbind.fill(containerData, preexistingContainers)
     
     createRawOnlyItxSubjectContainer <- function(containerData, recordedBy, lsTransaction) {
       createSubjectContainerInteraction(
@@ -1797,7 +1841,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
           # xValue is the value of the data in the x column for that treatmentGroup
           xValue <- treatmentGroupData$value[treatmentGroupData$ResultType==xLabel & treatmentGroupData$treatmentBatch==group]
           for(pointID in unique(rawResults$pointID[rawResults$ResultType==xLabel 
-                                                   & rawResults$value==as.numeric(xValue)
+                                                   & as.numeric(as.character(rawResults$value))==as.numeric(xValue)
                                                    & rawResults[,tempIdLabel]==tempID])) {
             
             subjectStates <- list()
@@ -1871,6 +1915,10 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
       }
     }
     
+    if (length(treatmentGroupList) == 0) {
+      treatmentGroupList <- NULL
+    }
+    
     # Put it all together in Analysis Groups
     analysisGroups[[length(analysisGroups)+1]] <- createAnalysisGroup(
       codeName = analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]],
@@ -1900,6 +1948,9 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
 registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, 
                                experiment, lsTransaction, annotationType) {
   # Registers a report as a batch annotation
+  
+  require(RCurl)
+  require(rjson)
   
   annotationList <- list(
     dnsAnnotation = list(
@@ -1951,7 +2002,8 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
                                       lsType = "numericValue",
                                       lsKind = "annotation id",
                                       numericValue = response$dnsAnnotation$id,
-                                      lsState = locationState)
+                                      lsState = locationState,
+                                      lsTransaction = lsTransaction)
     
     saveExperimentValues(list(locationValue))
   }, error = function(e) {
@@ -1981,6 +2033,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   if (grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
     tryCatch({
       genericDataFileDataFrame <- read.xls(pathToGenericDataFormatExcelFile, header = FALSE, blank.lines.skip = FALSE)
+      if (grepl("\\.xlsx$",pathToGenericDataFormatExcelFile)) {
+        genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&gt;",replacement=">"))
+        genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&lt;",replacement="<"))
+      }
     }, error = function(e) {
       stop("Cannot read input excel file")
     })
@@ -2017,12 +2073,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     hideAllData <- formatSettings[[inputFormat]]$hideAllData
     curveNames <- formatSettings[[inputFormat]]$curveNames
     annotationType <- formatSettings[[inputFormat]]$annotationType
+    sigFigs <- formatSettings[[inputFormat]]$sigFigs
   } else {
     lookFor <- "Calculated Results"
     lockCorpBatchId <- TRUE
     replaceFakeCorpBatchId <- ""
     stateGroups <- NULL
     curveNames <- NULL
+    sigFigs <- NULL
     annotationType <- "s_general"
   }
   
@@ -2102,7 +2160,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
                         stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
-                        replaceFakeCorpBatchId, annotationType)
+                        replaceFakeCorpBatchId, annotationType, sigFigs)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
@@ -2130,6 +2188,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if(!is.null(validatedMetaData$Page)) {
       summaryInfo$info$"Page" <- as.character(validatedMetaData$Page)
     }
+    if(!is.null(validatedMetaData$"In Life Notebook")) {
+      notebookIndex <- which(names(summaryInfo$info) == "Notebook")[1]
+      summaryInfo$info <- c(summaryInfo$info[1:notebookIndex], 
+                            list("In Life Notebook"=validatedMetaData$"In Life Notebook"),
+                            summaryInfo$info[(notebookIndex+1):length(summaryInfo$info)])
+    }
     if(!dryRun) {
       summaryInfo$info$"Experiment Code Name" <- experiment$codeName
     }
@@ -2155,6 +2219,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     if(!is.null(validatedMetaData$Page)) {
       summaryInfo$page <- as.character(validatedMetaData$Page)
     }
+    if(!is.null(validatedMetaData$"In Life Notebook")) {
+      summaryInfo$inLifeNotebook <- as.character(validatedMetaData$"In Life Notebook")
+    }
     if(!dryRun) {
       summaryInfo$experimentCodeName <- experiment$codeName
     }
@@ -2175,11 +2242,15 @@ deleteAnnotation <- function(experiment, configList) {
     valuesToDelete <- locationState$lsValues[lsKinds %in% c("annotation id")]
     
     if (length(valuesToDelete) > 0) {
-      response <- getURL(
-        paste0(configList$reportRegistrationURL, "/delete/", valuesToDelete[[1]]$numericValue),
-        customrequest='DELETE',
-        httpheader=c('Content-Type'='application/json'),
-        postfields=toJSON(experiment))
+      tryCatch({
+        response <- getURL(
+          paste0(configList$reportRegistrationURL, "delete/", valuesToDelete[[1]]$numericValue),
+          customrequest='DELETE',
+          httpheader=c('Content-Type'='application/json'),
+          postfields=toJSON(experiment))
+      }, error = function(e) {
+        stop("There was an error deleting the old experiment annotation. Please contact your system adminstrator.")
+      })
       if(!grepl("Deleted Annotation", response)) {
         stop (paste("The loader was unable to delete the old experiment annotation. Instead, it got this response:", response))
       }
@@ -2187,6 +2258,10 @@ deleteAnnotation <- function(experiment, configList) {
   }
 }
 deleteSourceFile <- function(experiment, configList) {
+
+  require(RCurl)
+  require(rjson)
+  
   locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
   if (length(locationState) > 0) {
     locationState <- locationState[[1]]
@@ -2196,12 +2271,18 @@ deleteSourceFile <- function(experiment, configList) {
     valuesToDelete <- locationState$lsValues[lsKinds %in% c("source file")]
     
     if (length(valuesToDelete) > 0) {
-      valueToDelete <- valuesToDelete[[1]]
-#       response <- getURL(
-#         "http://dsandimapp01:8080/DNS/core/v1/DNSFile/delete/FILE79438",
-#         customrequest='DELETE',
-#         httpheader=c('Content-Type'='application/json'),
-#         postfields=toJSON(experiment))
+      fileToDelete <- valuesToDelete[[1]]$fileValue
+      tryCatch({
+        response <- getURL(
+          paste0(configList$externalFileService, "deactivate/", fileToDelete),
+                 customrequest='DELETE',
+                 httpheader=c('Content-Type'='application/json'))
+      }, error = function(e) {
+        stop("There was an error deleting the old source file. Please contact your system adminstrator.")
+      })
+      if(!grepl("^Deactivated DNSFile", response)) {
+        warning(paste("The loader was unable to delete the old experiment source file. Instead, it got this response:", response))
+      }
     }
   }
 }
@@ -2239,6 +2320,7 @@ createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningLis
                                <%=if(!is.null(summaryInfo$experimentCodeName)){paste('<li>Experiment Code Name:', summaryInfo$experimentCodeName,'</li>')}%>
                                <li>Scientist: <%=summaryInfo$scientist%> </li>
                                <li>Notebook: <%=summaryInfo$notebook%> </li>
+                               <%=if(!is.null(summaryInfo$inLifeNotebook)){paste('<li>In Life Notebook:', summaryInfo$inLifeNotebook,'</li>')}%>
                                <%=if(!is.null(summaryInfo$page)){paste('<li>Page:', summaryInfo$page,'</li>')}%>
                                <li>Assay Date: <%=summaryInfo$date%> </li>
                                </ul>
@@ -2364,11 +2446,13 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   }
   
   tryCatch({
-    locationValue <- createStateValue(recordedBy = recordedBy,
+    locationValue <- createStateValue(
+      recordedBy = recordedBy,
       lsType = "stringValue",
       lsKind = "source file",
       fileValue = serverFileLocation,
-      lsState = locationState)
+      lsState = locationState,
+      lsTransaction = lsTransaction)
     
     saveExperimentValues(list(locationValue))
   }, error = function(e) {
@@ -2495,7 +2579,7 @@ parseGenericData <- function(request) {
   detach(errorHandlingBox)
   
   if(!dryRun) {
-    htmlSummary <- saveAnalysisResults(experiment=experiment, hasError, htmlSummary)
+    htmlSummary <- saveAnalysisResults(experiment=experiment, hasError, htmlSummary, loadResult$value$lsTransactionId)
   }
   
   # Return the output structure

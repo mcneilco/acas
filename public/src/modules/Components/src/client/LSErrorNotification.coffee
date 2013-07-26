@@ -172,7 +172,6 @@ class window.LSNotificationController extends Backbone.View
 			when "error" then @addError notification.message
 			when "warning" then @addWarning notification.message
 			when "info" then @addInfo notification.message
-			#else console.log "notification.errorLevel: " + notification.get('errorLevel')
 
 	addNotifications: (owner, notes) ->
 		_.each notes, (note) =>

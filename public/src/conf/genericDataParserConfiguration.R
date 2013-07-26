@@ -37,13 +37,14 @@ getFormatSettings <- function() {
     ), "In Vivo Full PK" = list(
       annotationType = "s_dmpk",
       hideAllData = FALSE,
-      extraHeaders = data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE),
+      extraHeaders = data.frame(),
+      sigFigs = 3,
       curveNames = c("PO IV pk curve id", "PO pk curve id", "IV pk curve id"),
       stateGroups = list(list(entityKind = "analysis group",
                               stateType = "data",
                               stateKind = "calculated data",
                               valueKinds = c("PO - Bioavailability", "IV - C0", "PO - Cmax", "IV - HL_Lambda_z", 
-                                             "PO - HL_Lambda_z", "IV - Tmax", "PO - Tmax", 
+                                             "PO - HL_Lambda_z", "PO - Tmax", 
                                              "IV - AUClast", "PO - AUClast", "IV - AUCINF_obs", "PO - AUCINF_obs",
                                              "IV - MRTlast", "PO - MRTlast", "IV - Cl_obs", "PO - Cl_obs",
                                              "IV - Vss_obs", "PO - Vss_obs"),
@@ -81,7 +82,8 @@ getFormatSettings <- function() {
     ), "CNS PK" = list(
       annotationType = "s_dmpk",
       hideAllData = FALSE,
-      extraHeaders = data.frame(headers = "In Life Notebook", class = "Text", isNullable = TRUE),
+      sigFigs = 3,
+      extraHeaders = data.frame(),
       stateGroups = list(list(entityKind = "analysis group",
                               stateType = "data",
                               stateKind = "calculated data",
@@ -113,7 +115,7 @@ getFormatSettings <- function() {
                               stateKind = "raw data",
                               valueKinds = c("Time", "Plasma Conc.", "CSF Conc.", 
                                              "Brain Conc.", "B/P Ratio"),
-                              includesOthers = FALSE,
+                              includesOthers = TRUE,
                               includesCorpName = FALSE))
     )
   )

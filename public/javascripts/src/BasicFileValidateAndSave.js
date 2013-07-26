@@ -64,7 +64,8 @@
         el: this.$('.bv_parseFile'),
         inputTitle: '',
         url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
-        fieldIsRequired: false
+        fieldIsRequired: false,
+        allowedFileTypes: ['xls', 'xlsx', 'csv']
       });
       this.parseFileController.on('fileInput:uploadComplete', this.handleParseFileUploaded);
       this.parseFileController.on('fileInput:removedFile', this.handleParseFileRemoved);
@@ -74,7 +75,8 @@
           el: this.$('.bv_reportFile'),
           inputTitle: '',
           url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
-          fieldIsRequired: false
+          fieldIsRequired: false,
+          allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
         });
         this.reportFileController.on('fileInput:uploadComplete', this.handleReportFileUploaded);
         this.reportFileController.on('fileInput:removedFile', this.handleReportFileRemoved);
@@ -173,7 +175,6 @@
     BasicFileValidateAndSaveController.prototype.handleValidationReturnSuccess = function(json) {
       var summaryStr, _ref1;
 
-      console.log(json);
       summaryStr = "Validation Results: ";
       if (!json.hasError) {
         this.filePassedValidation = true;
