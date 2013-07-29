@@ -253,10 +253,30 @@
             this.fpkc.$('.bv_aucType').change();
             return expect(this.fpkc.model.get('aucType')).toEqual("test aucType");
           });
-          return it("should update the assayDate", function() {
+          it("should update the assayDate", function() {
             this.fpkc.$('.bv_assayDate').val(" 2013-6-6 ");
             this.fpkc.$('.bv_assayDate').change();
             return expect(this.fpkc.model.get('assayDate')).toEqual(new Date(2013, 5, 6).getTime());
+          });
+          return it("should trigger 'amDirty' when field changed", function() {
+            var _this = this;
+
+            runs(function() {
+              var _this = this;
+
+              this.amDirtySet = false;
+              this.fpkc.on('amDirty', function() {
+                return _this.amDirtySet = true;
+              });
+              this.fpkc.$('.bv_notebook').val(" test notebook ");
+              return this.fpkc.$('.bv_notebook').change();
+            });
+            waitsFor(function() {
+              return _this.amDirtySet;
+            }, 500);
+            return runs(function() {
+              return expect(this.amDirtySet).toBeTruthy();
+            });
           });
         });
       });

@@ -203,6 +203,19 @@ describe 'Full PK Behavior Testing', ->
 					@fpkc.$('.bv_assayDate').val " 2013-6-6 "
 					@fpkc.$('.bv_assayDate').change()
 					expect(@fpkc.model.get('assayDate')).toEqual new Date(2013, 5, 6).getTime()
+				it "should trigger 'amDirty' when field changed", ->
+					runs ->
+						@amDirtySet = false
+						@fpkc.on 'amDirty', =>
+							@amDirtySet = true
+						@fpkc.$('.bv_notebook').val " test notebook "
+						@fpkc.$('.bv_notebook').change()
+					waitsFor =>
+						@amDirtySet
+					,
+					500
+					runs ->
+						expect(@amDirtySet).toBeTruthy()
 
 		describe "validation testing", ->
 			beforeEach ->

@@ -99,6 +99,7 @@ class window.FullPKController extends AbstractFormController
 			bioavailability: @getTrimmedInput('.bv_bioavailability')
 			aucType: @getTrimmedInput('.bv_aucType')
 			assayDate: @convertYMDDateToMs(@getTrimmedInput('.bv_assayDate'))
+		@trigger 'amDirty'
 
 	setupProjectSelect: ->
 		@projectList = new PickListList()
@@ -144,6 +145,8 @@ class window.FullPKParserController extends BasicFileValidateAndSaveController
 		@fpkc.on 'invalid', @handleFPKFormInvalid
 		@fpkc.on 'notifyError', @notificationController.addNotification
 		@fpkc.on 'clearErrors', @notificationController.clearAllNotificiations
+		@fpkc.on 'amDirty', =>
+			@trigger 'amDirty'
 		@fpkc.render()
 
 	handleFPKFormValid: =>

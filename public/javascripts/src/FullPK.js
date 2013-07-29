@@ -143,7 +143,7 @@
     };
 
     FullPKController.prototype.updateModel = function() {
-      return this.model.set({
+      this.model.set({
         protocolName: this.$('.bv_protocolName').find(":selected").text(),
         experimentName: this.getTrimmedInput('.bv_experimentName'),
         scientist: this.getTrimmedInput('.bv_scientist'),
@@ -154,6 +154,7 @@
         aucType: this.getTrimmedInput('.bv_aucType'),
         assayDate: this.convertYMDDateToMs(this.getTrimmedInput('.bv_assayDate'))
       });
+      return this.trigger('amDirty');
     };
 
     FullPKController.prototype.setupProjectSelect = function() {
@@ -210,6 +211,8 @@
     }
 
     FullPKParserController.prototype.initialize = function() {
+      var _this = this;
+
       this.fileProcessorURL = "/api/fullPKParser";
       this.errorOwnerName = 'FullPKParser';
       this.loadReportFile = true;
@@ -223,6 +226,9 @@
       this.fpkc.on('invalid', this.handleFPKFormInvalid);
       this.fpkc.on('notifyError', this.notificationController.addNotification);
       this.fpkc.on('clearErrors', this.notificationController.clearAllNotificiations);
+      this.fpkc.on('amDirty', function() {
+        return _this.trigger('amDirty');
+      });
       return this.fpkc.render();
     };
 
