@@ -52,7 +52,7 @@
           message: err.message
         });
       });
-      return this.trigger("invalid");
+      return this.trigger('invalid');
     };
 
     AbstractFormController.prototype.clearValidationErrorStyles = function() {
@@ -72,10 +72,20 @@
     AbstractFormController.prototype.handleModelChange = function() {
       this.clearValidationErrorStyles();
       if (this.isValid()) {
-        return this.trigger("valid");
+        return this.trigger('valid');
       } else {
-        return this.trigger("invalid");
+        return this.trigger('invalid');
       }
+    };
+
+    AbstractFormController.prototype.getTrimmedInput = function(selector) {
+      return $.trim(this.$(selector).val());
+    };
+
+    AbstractFormController.prototype.convertYMDDateToMs = function(inStr) {
+      var dateParts;
+      dateParts = inStr.split('-');
+      return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getTime();
     };
 
     return AbstractFormController;

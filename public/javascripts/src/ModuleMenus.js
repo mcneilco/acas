@@ -21,13 +21,9 @@
       return this.appController = options.appController;
     };
 
-    AppRouter.prototype.existingDoc = function(val) {
-      return console.log("got fred: " + val);
-    };
+    AppRouter.prototype.existingDoc = function(val) {};
 
-    AppRouter.prototype.newDoc = function(val) {
-      return console.log("got new doc req");
-    };
+    AppRouter.prototype.newDoc = function(val) {};
 
     return AppRouter;
 
@@ -60,7 +56,12 @@
     ModuleMenusController.prototype.render = function() {
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
-      this.$('.bv_loginUserName').html(window.AppLaunchParams.loginUserName);
+      if (window.configurationNode.serverConfigurationParams.configuration.requireLogin) {
+        this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
+        this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
+      } else {
+        this.$('.bv_userInfo').hide();
+      }
       return this;
     };
 

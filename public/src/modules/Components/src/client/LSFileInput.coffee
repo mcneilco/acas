@@ -8,6 +8,8 @@ class window.LSFileInputController extends Backbone.View
 	defaultMessage: "Drop a file here to upload it"
 	dragOverMessage: "Drop the file here to upload it"
 	nameOnServer: ""
+	allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg']
+
 	
 	initialize: ->
 		_.bindAll(@,
@@ -15,21 +17,23 @@ class window.LSFileInputController extends Backbone.View
 			'handleFileChooserUploadComplete',
 			'handleFileChooserUploadFailed',
 			'handleFileChooserRemovedFile')
-		if @.options.inputTitle?
+		if @options.inputTitle?
 			@inputTitle = @.options.inputTitle
-		if @.options.fieldIsRequired?
+		if @options.fieldIsRequired?
 			@fieldIsRequired = @.options.fieldIsRequired
-		if @.options.requiresValidation?
+		if @options.requiresValidation?
 			@requiresValidation = @.options.requiresValidation
-		if @.options.maxNumberOfFiles?
+		if @options.maxNumberOfFiles?
 			@maxNumberOfFiles = @.options.maxNumberOfFiles
-		if @.options.url?
+		if @options.url?
 			@url = @.options.url
-		if @.options.defaultMessage?
+		if @options.defaultMessage?
 			@defaultMessage = @.options.defaultMessage
-		if @.options.dragOverMessage?
+		if @options.dragOverMessage?
 			@dragOverMessage = @.options.dragOverMessage
-		
+		if @options.allowedFileTypes?
+			@allowedFileTypes = @options.allowedFileTypes
+
 	handleFileChooserUploadComplete: (nameOnServer) ->
 		#@$('.bv_status').addClass('icon-ok-sign')
 		#@lsFileChooser.filePassedServerValidation()
@@ -56,6 +60,7 @@ class window.LSFileInputController extends Backbone.View
 			url: @url,
 			defaultMessage: @defaultMessage,
 			dragOverMessage: @dragOverMessage
+			allowedFileTypes: @allowedFileTypes
 		});
 		@lsFileChooser.render()
 		@lsFileChooser.on('fileUploader:uploadComplete', @handleFileChooserUploadComplete)

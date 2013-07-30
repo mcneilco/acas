@@ -44,7 +44,7 @@
           return it("should be fetch the hard-wired protocol for docForBatches", function() {
             waitsFor(function() {
               return this.docForBatches.protocol !== null;
-            });
+            }, 500);
             return runs(function() {
               return expect(this.docForBatches.protocol.get('codeName')).toContain("PROT");
             });
@@ -54,7 +54,7 @@
           beforeEach(function() {
             waitsFor(function() {
               return this.docForBatches.protocol !== null;
-            });
+            }, 500);
             return runs(function() {
               return this.exp = this.docForBatches.asExperiment();
             });
@@ -259,7 +259,7 @@
               });
               waitsFor(function() {
                 return this.docForBatchesController.batchListValidator.ischeckAndAddBatchesComplete();
-              });
+              }, 500);
               return runs(function() {
                 this.docForBatchesController.$(".bv_comment").val("my comment");
                 this.docForBatchesController.$(".bv_comment").change();
@@ -289,7 +289,7 @@
               });
               waitsFor(function() {
                 return this.docForBatchesController.batchListValidator.ischeckAndAddBatchesComplete();
-              });
+              }, 500);
               return runs(function() {
                 this.docForBatchesController.$(".bv_comment").val("my comment");
                 this.docForBatchesController.$(".bv_comment").change();
@@ -310,7 +310,7 @@
               });
               return waitsFor(function() {
                 return this.docForBatchesController.batchListValidator.ischeckAndAddBatchesComplete();
-              });
+              }, 500);
             });
             return it('should replace the model with a new empty model and clear inputs', function() {
               return runs(function() {

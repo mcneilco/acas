@@ -28,7 +28,6 @@ This suite of services provides CRUD operations on Analysis Group Objects
         });
         return describe("after initial load", function() {
           it("state should have kind ", function() {
-            console.log(this.ags);
             return expect(this.ags.get('stateKind')).toEqual("Document for Batch");
           });
           it("state should have values", function() {

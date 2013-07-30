@@ -850,7 +850,7 @@
         version: 0
       }
     ];
-    return exports.protocolToSave = [
+    exports.protocolToSave = [
       {
         codeName: "PROT-00000066",
         ignored: false,
@@ -877,6 +877,159 @@
         recordedBy: "jmcneil",
         recordedDate: 1361600860000,
         shortDescription: "protocol to save description goes here",
+        version: 0
+      }
+    ];
+    return exports.protocolLabels = [
+      {
+        id: 67,
+        ignored: false,
+        imageFile: null,
+        labelText: "Rat IVPO PK",
+        lsKind: "protocol name",
+        lsTransaction: 74,
+        lsType: "name",
+        lsTypeAndKind: "name_protocol name",
+        modifiedDate: null,
+        physicallyLabled: false,
+        preferred: true,
+        protocol: {
+          codeName: "PROT-00000007",
+          id: 2585,
+          ignored: false,
+          lsKind: "default",
+          lsTransaction: 74,
+          lsType: "default",
+          lsTypeAndKind: "default_default",
+          modifiedBy: null,
+          modifiedDate: null,
+          recordedBy: "smeyer",
+          recordedDate: 1372303115000,
+          shortDescription: "protocol created by hand",
+          version: 1
+        },
+        recordedBy: "smeyer",
+        recordedDate: 1372303115000,
+        version: 0
+      }, {
+        id: 68,
+        ignored: false,
+        imageFile: null,
+        labelText: "Mouse IVPO PK",
+        lsKind: "protocol name",
+        lsTransaction: 75,
+        lsType: "name",
+        lsTypeAndKind: "name_protocol name",
+        modifiedDate: null,
+        physicallyLabled: false,
+        preferred: true,
+        protocol: {
+          codeName: "PROT-00000008",
+          id: 2586,
+          ignored: false,
+          lsKind: "default",
+          lsTransaction: 75,
+          lsType: "default",
+          lsTypeAndKind: "default_default",
+          modifiedBy: null,
+          modifiedDate: null,
+          recordedBy: "smeyer",
+          recordedDate: 1372303145000,
+          shortDescription: "protocol created by hand",
+          version: 1
+        },
+        recordedBy: "smeyer",
+        recordedDate: 1372303145000,
+        version: 0
+      }, {
+        id: 69,
+        ignored: false,
+        imageFile: null,
+        labelText: "Dog IVPO PK",
+        lsKind: "protocol name",
+        lsTransaction: 76,
+        lsType: "name",
+        lsTypeAndKind: "name_protocol name",
+        modifiedDate: null,
+        physicallyLabled: false,
+        preferred: true,
+        protocol: {
+          codeName: "PROT-00000009",
+          id: 2587,
+          ignored: false,
+          lsKind: "default",
+          lsTransaction: 76,
+          lsType: "default",
+          lsTypeAndKind: "default_default",
+          modifiedBy: null,
+          modifiedDate: null,
+          recordedBy: "smeyer",
+          recordedDate: 1372303156000,
+          shortDescription: "protocol created by hand",
+          version: 1
+        },
+        recordedBy: "smeyer",
+        recordedDate: 1372303156000,
+        version: 0
+      }, {
+        id: 70,
+        ignored: false,
+        imageFile: null,
+        labelText: "Rat PO CNS penetration",
+        lsKind: "protocol name",
+        lsTransaction: 77,
+        lsType: "name",
+        lsTypeAndKind: "name_protocol name",
+        modifiedDate: null,
+        physicallyLabled: false,
+        preferred: true,
+        protocol: {
+          codeName: "PROT-00000010",
+          id: 2588,
+          ignored: false,
+          lsKind: "default",
+          lsTransaction: 77,
+          lsType: "default",
+          lsTypeAndKind: "default_default",
+          modifiedBy: null,
+          modifiedDate: null,
+          recordedBy: "smeyer",
+          recordedDate: 1372303164000,
+          shortDescription: "protocol created by hand",
+          version: 1
+        },
+        recordedBy: "smeyer",
+        recordedDate: 1372303164000,
+        version: 0
+      }, {
+        id: 71,
+        ignored: false,
+        imageFile: null,
+        labelText: "Mouse PO CNS penetration",
+        lsKind: "protocol name",
+        lsTransaction: 78,
+        lsType: "name",
+        lsTypeAndKind: "name_protocol name",
+        modifiedDate: null,
+        physicallyLabled: false,
+        preferred: true,
+        protocol: {
+          codeName: "PROT-00000011",
+          id: 2589,
+          ignored: false,
+          lsKind: "default",
+          lsTransaction: 78,
+          lsType: "default",
+          lsTypeAndKind: "default_default",
+          modifiedBy: null,
+          modifiedDate: null,
+          recordedBy: "smeyer",
+          recordedDate: 1372303173000,
+          shortDescription: "protocol created by hand",
+          version: 1
+        },
+        recordedBy: "smeyer",
+        recordedDate: 1372303173000,
         version: 0
       }
     ];

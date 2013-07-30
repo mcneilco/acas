@@ -61,9 +61,9 @@
         this.requestData = {
           requests: [
             {
-              requestName: "DNS000000001::1"
+              requestName: "CPD000000001::1"
             }, {
-              requestName: "DNS000673874::1"
+              requestName: "CPD000673874::1"
             }, {
               requestName: "none_2222:1"
             }
@@ -74,11 +74,11 @@
           errorMessages: [],
           results: [
             {
-              requestName: "DNS000000001::1",
-              preferredName: "DNS000000001::1"
+              requestName: "CPD000000001::1",
+              preferredName: "CPD000000001::1"
             }, {
-              requestName: "DNS000673874::1",
-              preferredName: "DNS000001234::7"
+              requestName: "CPD000673874::1",
+              preferredName: "CPD000001234::7"
             }, {
               requestName: "none_2222:1",
               preferredName: ""

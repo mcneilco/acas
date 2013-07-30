@@ -79,7 +79,7 @@
           }
         },
         error: function(err) {
-          return console.log('got ajax error');
+          return alert('got ajax error from api/protocols/codename/ in DocForBatches.coffee');
         },
         dataType: 'json'
       });

@@ -44,7 +44,7 @@ class window.DocUploadController extends AbstractFormController
 		@fileInputController = new LSFileInputController
 			el: @$('.bv_fileInput'),
 			inputTitle: ''
-			url: SeuratAddOns.configuration.fileServiceURL
+			url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
 			fieldIsRequired: false
 			requiresValidation: false
 			maxNumberOfFiles: 1
@@ -61,7 +61,6 @@ class window.DocUploadController extends AbstractFormController
 				@.$('.bv_currentDocContainer').hide()
 				$('.bv_urlRadio').attr('checked', true)
 				@$('.bv_url').val(@model.get('url'))
-				console.log('loaded with url')
 
 	render: =>
 		@fileInputController.render()

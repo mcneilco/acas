@@ -19,6 +19,6 @@
         ignored: false
       }
     ];
-  })((typeof process === "undefined" || !process.versions ? window.curveCuratorTestJSON = window.curveCuratorTestJSON || {} : exports));
+  })((typeof process === "undefined" || !process.versions ? window.projectServiceTestJSON = window.projectServiceTestJSON || {} : exports));
 
 }).call(this);

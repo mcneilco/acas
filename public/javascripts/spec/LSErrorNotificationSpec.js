@@ -162,7 +162,6 @@
           this.errorController.notificationsList.add(new LSNotificationMessageModel({
             message: 'foo'
           }));
-          console.log(this.errorController.$('.alert-error').html());
           return (expect($(this.errorController.$('.alert-error')[0]).html())).toContain('foo');
         });
       });
@@ -295,7 +294,6 @@
           });
         });
         it('should have 3 alert-error divs', function() {
-          console.log("@eNotView.getErrorCount(): " + this.eNotView.getErrorCount());
           (expect(this.eNotView.getInfoCount())).toEqual(1);
           (expect(this.eNotView.getWarningCount())).toEqual(2);
           (expect(this.eNotView.getErrorCount())).toEqual(3);
@@ -343,7 +341,6 @@
           return this.eNotView.addNotifications('testOwner', notes);
         });
         return it('should have 3 alert-error divs', function() {
-          console.log("@eNotView.getErrorCount(): " + this.eNotView.getErrorCount());
           (expect(this.eNotView.getInfoCount())).toEqual(1);
           (expect(this.eNotView.getWarningCount())).toEqual(2);
           (expect(this.eNotView.getErrorCount())).toEqual(3);

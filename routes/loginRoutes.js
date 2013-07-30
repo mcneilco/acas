@@ -1,22 +1,48 @@
+/* To install this module add
+  to app.coffee
+# login routes
+passport.serializeUser (user, done) ->
+	done null, user.username
+passport.deserializeUser (username, done) ->
+	loginRoutes.findByUsername username, (err, user) ->
+		done err, user
+passport.use new LocalStrategy loginRoutes.loginStrategy
+
+app.get '/login', loginRoutes.loginPage
+app.post '/login',
+	passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
+	loginRoutes.loginPost
+app.get '/logout', loginRoutes.logout
+app.post '/api/userAuthentication', loginRoutes.authenticationService
+app.get '/api/users/:username', loginRoutes.getUsers
+*/
+
+
 (function() {
-  var dnsAuthCheck, users;
+  var users;
 
   users = [
     {
       id: 1,
       username: "bob",
       password: "secret",
-      email: "bob@example.com"
+      email: "bob@example.com",
+      firstName: "Bob",
+      lastName: "Roberts"
     }, {
       id: 2,
-      username: "joe",
+      username: "jmcneil",
       password: "birthday",
-      email: "joe@example.com"
+      email: "jmcneil@example.com",
+      firstName: "John",
+      lastName: "McNeil"
     }, {
       id: 3,
       username: "ldap-query",
       password: "Est@P7uRi5SyR+",
-      email: "sdfsdfdfsfds"
+      email: "",
+      firstName: "ldap-query",
+      lastName: ""
     }
   ];
 
@@ -33,7 +59,7 @@
   exports.findByUsername = function(username, fn) {
     var config, i, len, user;
     config = require('../public/src/conf/configurationNode.js');
-    if (config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
+    if (global.specRunnerTestmode || config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
       i = 0;
       len = users.length;
       while (i < len) {
@@ -43,13 +69,8 @@
         }
         i++;
       }
-    } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-      return fn(null, {
-        id: null,
-        username: username,
-        pasword: null,
-        email: null
-      });
+    } else {
+      console.log("no authorization service configured");
     }
     return fn(null, null);
   };
@@ -74,16 +95,8 @@
             });
           }
           return done(null, user);
-        } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-          return dnsAuthCheck(username, password, function(results) {
-            if (results.indexOf("Success") >= 0) {
-              return done(null, user);
-            } else {
-              return done(null, false, {
-                message: "Invalid credentials"
-              });
-            }
-          });
+        } else {
+          return console.log("no authentication service configured");
         }
       });
     });
@@ -143,36 +156,23 @@
     } else {
       if (config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
         return callback("Success");
-      } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-        return dnsAuthCheck(req.body.user, req.body.password, callback);
+      } else {
+        return console.log("no authentication service configured");
       }
     }
   };
 
-  dnsAuthCheck = function(user, pass, retFun) {
-    var config, request,
-      _this = this;
-    config = require('../public/src/conf/configurationNode.js');
-    request = require('request');
-    return request({
-      method: 'POST',
-      url: config.serverConfigurationParams.configuration.userAuthenticationServiceURL,
-      form: {
-        username: user,
-        password: pass
-      },
-      json: true
-    }, function(error, response, json) {
-      if (!error && response.statusCode === 200) {
-        console.log(JSON.stringify(json));
-        return retFun(JSON.stringify(json));
+  exports.getUsers = function(req, resp) {
+    var callback;
+    callback = function(err, user) {
+      if (user === null) {
+        return resp.send(204);
       } else {
-        console.log('got ajax error trying authenticate a user');
-        console.log(error);
-        console.log(json);
-        return console.log(response);
+        delete user.password;
+        return resp.json(user);
       }
-    });
+    };
+    return exports.findByUsername(req.params.username, callback);
   };
 
 }).call(this);

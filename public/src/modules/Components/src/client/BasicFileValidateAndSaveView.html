@@ -1,12 +1,19 @@
 <script type="text/template" id="BasicFileValidateAndSaveView">
     <div class='bv_outerContainer container' >
         <div class="bv_moduleTitle row-fluid span7">Generic Data Parser</div>
+        <div class="row-fluid span7 bv_additionalValuesForm"></div>
         <div class="bv_resultStatus row-fluid span7"></div>
         <div class='bv_fileUploadWrapper row-fluid'>
             <div class='well span7'>
-                To upload an Excel file, click the "Browse Files…" button and select a file.
+                To upload the <b>required data file</b>, click the "Browse Files…" button and select a file.
             </div>
             <div class='bv_parseFile'></div>
+            <div class='bv_reportFileWrapper row-fluid' style="display: none;">
+                <div class='well span7'>
+                    To upload an <b>optional report file</b>, click the "Browse Files…" button and select a file.
+                </div>
+                <div class='bv_reportFile'></div>
+            </div>
         </div>
 
         <div class="bv_flowControl row-fluid span7">

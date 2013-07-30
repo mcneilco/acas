@@ -19,13 +19,14 @@ requiredScripts = [
 
 applicationScripts = [
 	'/src/conf/configurationNode.js'
-	'/src/conf/configuration.js'
+	#'/src/conf/configuration.js'
 	# For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
+	'/javascripts/src/PickList.js'
 	# For serverAPI module
 	'/javascripts/src/Label.js'
 	'/javascripts/src/AnalysisGroup.js'
@@ -65,8 +66,8 @@ exports.index = (req, res) ->
 		title: "ACAS Home"
 		scripts: scriptsToLoad
 		appParams:
-#			loginUserName: 'jmcneil' #TODO replace hard-coded username with login and cookies
-			loginUserName: req.user.username
+			loginUserName: if req.user? then req.user.username else ""
+			loginUser: if req.user? then req.user else ""
 			testMode: false
 
 
@@ -82,8 +83,6 @@ exports.specRunner = (req, res) ->
 	]
 
 	specScripts = [
-		#For login module
-		'javascripts/spec/dnsAuthenticationServiceSpec.js'
 		# For serverAPI module
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		'javascripts/spec/ProtocolServiceSpec.js'
@@ -106,12 +105,15 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/ModuleMenusSpec.js'
 		'javascripts/spec/ModuleLauncherSpec.js'
 		# For Components module
+		'javascripts/spec/AbstractFormControllerSpec.js'
 		'javascripts/spec/LSFileInputSpec.js'
 		'javascripts/spec/LSFileChooserSpec.js'
 		'javascripts/spec/LSErrorNotificationSpec.js'
 		'javascripts/spec/ProjectsServiceSpec.js'
-		'src/modules/DocForBatches/spec/testFixtures/testJSON.js'
+		'javascripts/spec/PickListSpec.js'
+		'javascripts/spec/testFixtures/projectServiceTestJSON.js'
 		# For DocForBatchesModule
+		'src/modules/DocForBatches/spec/testFixtures/testJSON.js'
 		'javascripts/spec/BatchListValidatorSpec.js'
 		'javascripts/spec/DocUploadSpec.js'
 		'javascripts/spec/DocForBatchesSpec.js'
@@ -137,7 +139,14 @@ exports.specRunner = (req, res) ->
 		scripts: scriptsToLoad
 		appParams:
 			loginUserName: 'jmcneil'
+			loginUser:
+				id: 2,
+				username: "jmcneil",
+				email: "jmcneil@example.com",
+				firstName: "John",
+				lastName: "McNeil"
 			testMode: true
+			liveServiceTest: false
 	})
 
 exports.liveServiceSpecRunner = (req, res) ->
@@ -154,9 +163,8 @@ exports.liveServiceSpecRunner = (req, res) ->
 		# For Components module
 		'javascripts/spec/ProjectsServiceSpec.js'
 		# For serverAPI module
+		'javascripts/spec/ProtocolServiceSpec.js'
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
-		#For login module
-		'javascripts/spec/dnsAuthenticationServiceSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)
@@ -167,6 +175,12 @@ exports.liveServiceSpecRunner = (req, res) ->
 	scripts: scriptsToLoad
 	appParams:
 		loginUserName: 'jmcneil'
+		loginUser:
+			id: 2,
+			username: "jmcneil",
+			email: "jmcneil@example.com",
+			firstName: "John",
+			lastName: "McNeil"
 		testMode: false
 		liveServiceTest: true
 	})

@@ -8,6 +8,7 @@ This service parses data from the generic format and saves it to the database
 
   goodDataRequest = {
     fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve_with_warnings.xls",
+    reportFile: null,
     dryRun: true,
     user: 'jmcneil',
     testMode: true
@@ -15,6 +16,7 @@ This service parses data from the generic format and saves it to the database
 
   badDataRequest = {
     fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls",
+    reportFile: null,
     dryRun: true,
     user: 'jmcneil',
     testMode: true
@@ -25,6 +27,7 @@ This service parses data from the generic format and saves it to the database
     results: {
       path: "path/to/file",
       fileToParse: "filename.xls",
+      reportFile: null,
       htmlSummary: "HTML from service",
       dryRun: true
     },
@@ -38,6 +41,7 @@ This service parses data from the generic format and saves it to the database
     results: {
       path: "path/to/file",
       fileToParse: "filename.xls",
+      reportFile: null,
       htmlSummary: "Error: There is a problem in this file...",
       dryRun: true
     },
@@ -60,66 +64,61 @@ This service parses data from the generic format and saves it to the database
         return typeof this.serviceReturn !== 'undefined';
       };
     });
-    describe('get existing entity from genericDataParser', function() {
-      return describe('when run with valid input file', function() {
-        beforeEach(function() {
-          return runs(function() {
-            var _this = this;
-            return $.ajax({
-              type: 'POST',
-              url: "api/genericDataParser",
-              data: goodDataRequest,
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
-              dataType: 'json'
-            });
-          });
-        });
-        return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
-          waitsFor(this.waitForServiceReturn, 'service did not return', 10000);
-          return runs(function() {
-            expect(this.serviceReturn.hasError).toBeFalsy();
-            expect(this.serviceReturn.results.dryRun).toBeTruthy();
-            expect(this.serviceReturn.hasWarning).toBeDefined();
-            return expect(this.serviceReturn.results.htmlSummary).toBeDefined();
+    describe('when run with valid input file', function() {
+      beforeEach(function() {
+        return runs(function() {
+          var _this = this;
+          return $.ajax({
+            type: 'POST',
+            url: "api/genericDataParser",
+            data: goodDataRequest,
+            success: function(json) {
+              return _this.serviceReturn = json;
+            },
+            error: function(err) {
+              console.log('got ajax error');
+              return _this.serviceReturn = null;
+            },
+            dataType: 'json'
           });
         });
       });
+      return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
+        waitsFor(this.waitForServiceReturn, 'service did not return', 10000);
+        return runs(function() {
+          expect(this.serviceReturn.hasError).toBeFalsy();
+          expect(this.serviceReturn.results.dryRun).toBeTruthy();
+          expect(this.serviceReturn.hasWarning).toBeDefined();
+          return expect(this.serviceReturn.results.htmlSummary).toBeDefined();
+        });
+      });
     });
-    return describe('get existing entity from genericDataParser', function() {
-      return describe('when run with invalid input file', function() {
-        beforeEach(function() {
-          return runs(function() {
-            var _this = this;
-            return $.ajax({
-              type: 'POST',
-              url: "api/genericDataParser",
-              data: badDataRequest,
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
-              dataType: 'json'
-            });
+    return describe('when run with invalid input file', function() {
+      beforeEach(function() {
+        return runs(function() {
+          var _this = this;
+          return $.ajax({
+            type: 'POST',
+            url: "api/genericDataParser",
+            data: badDataRequest,
+            success: function(json) {
+              return _this.serviceReturn = json;
+            },
+            error: function(err) {
+              console.log('got ajax error');
+              return _this.serviceReturn = null;
+            },
+            dataType: 'json'
           });
         });
-        return it('should not return a dry run transactionId, but retuen error=true, and at least one message', function() {
-          waitsFor(this.waitForServiceReturn, 'service did not return', 20000);
-          return runs(function() {
-            console.log(this.serviceReturn);
-            expect(this.serviceReturn.transactionId).toBeNull();
-            expect(this.serviceReturn.hasError).toBeTruthy();
-            expect(this.serviceReturn.errorMessages.length).toBeGreaterThan(0);
-            return expect(this.serviceReturn.errorMessages[0].errorLevel).toEqual('error');
-          });
+      });
+      return it('should not return a dry run transactionId, but return error=true, and at least one message', function() {
+        waitsFor(this.waitForServiceReturn, 'service did not return', 20000);
+        return runs(function() {
+          expect(this.serviceReturn.transactionId).toBeNull();
+          expect(this.serviceReturn.hasError).toBeTruthy();
+          expect(this.serviceReturn.errorMessages.length).toBeGreaterThan(0);
+          return expect(this.serviceReturn.errorMessages[0].errorLevel).toEqual('error');
         });
       });
     });

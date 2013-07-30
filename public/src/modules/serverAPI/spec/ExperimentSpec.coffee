@@ -314,7 +314,7 @@ describe "Experiment module testing", ->
 				it "should update model when recorded date is changed", ->
 					@ebc.$('.bv_recordedDate').val(" 2013-3-16   ")
 					@ebc.$('.bv_recordedDate').change()
-					expect(@ebc.model.get 'recordedDate').toEqual new Date("2013-3-16").getTime()
+					expect(@ebc.model.get 'recordedDate').toEqual new Date(2013,2,16).getTime()
 		describe "When created from a saved experiment", ->
 			beforeEach ->
 				@exp2 = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -423,7 +423,6 @@ describe "Experiment module testing", ->
 							@ebc.$('.bv_recordedDate').change()
 					it "should show error in date field", ->
 						runs ->
-							console.log @ebc.$('.bv_group_recordedDate')
 							expect(@ebc.$('.bv_group_recordedDate').hasClass('error')).toBeTruthy()
 				describe "when scientist not selected", ->
 					beforeEach ->

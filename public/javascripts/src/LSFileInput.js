@@ -27,6 +27,8 @@
 
     LSFileInputController.prototype.nameOnServer = "";
 
+    LSFileInputController.prototype.allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg'];
+
     LSFileInputController.prototype.initialize = function() {
       _.bindAll(this, 'render', 'handleFileChooserUploadComplete', 'handleFileChooserUploadFailed', 'handleFileChooserRemovedFile');
       if (this.options.inputTitle != null) {
@@ -48,7 +50,10 @@
         this.defaultMessage = this.options.defaultMessage;
       }
       if (this.options.dragOverMessage != null) {
-        return this.dragOverMessage = this.options.dragOverMessage;
+        this.dragOverMessage = this.options.dragOverMessage;
+      }
+      if (this.options.allowedFileTypes != null) {
+        return this.allowedFileTypes = this.options.allowedFileTypes;
       }
     };
 
@@ -81,7 +86,8 @@
         requiresValidation: this.requiresValidation,
         url: this.url,
         defaultMessage: this.defaultMessage,
-        dragOverMessage: this.dragOverMessage
+        dragOverMessage: this.dragOverMessage,
+        allowedFileTypes: this.allowedFileTypes
       });
       this.lsFileChooser.render();
       this.lsFileChooser.on('fileUploader:uploadComplete', this.handleFileChooserUploadComplete);

@@ -440,7 +440,7 @@
           return it("should update model when recorded date is changed", function() {
             this.ebc.$('.bv_recordedDate').val(" 2013-3-16   ");
             this.ebc.$('.bv_recordedDate').change();
-            return expect(this.ebc.model.get('recordedDate')).toEqual(new Date("2013-3-16").getTime());
+            return expect(this.ebc.model.get('recordedDate')).toEqual(new Date(2013, 2, 16).getTime());
           });
         });
       });
@@ -598,7 +598,6 @@
             });
             return it("should show error in date field", function() {
               return runs(function() {
-                console.log(this.ebc.$('.bv_group_recordedDate'));
                 return expect(this.ebc.$('.bv_group_recordedDate').hasClass('error')).toBeTruthy();
               });
             });

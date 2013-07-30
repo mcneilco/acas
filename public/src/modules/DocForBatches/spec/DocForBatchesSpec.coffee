@@ -36,6 +36,8 @@ describe 'Doc For Batches Behavior Testing', ->
 					# it fetches upon initialzation, so we give it a chance to load
 					waitsFor ->
 						@docForBatches.protocol != null
+					,
+						500
 					runs ->
 						expect(@docForBatches.protocol.get('codeName')).toContain "PROT"
 						#NB this is not the correct protocol, it is just what the stubbed protocol form code service returns
@@ -43,6 +45,8 @@ describe 'Doc For Batches Behavior Testing', ->
 				beforeEach ->
 					waitsFor ->
 						@docForBatches.protocol != null
+					,
+						500
 					runs ->
 						@exp = @docForBatches.asExperiment()
 				it "should return an Experimemnt object", ->
@@ -190,6 +194,8 @@ describe 'Doc For Batches Behavior Testing', ->
 							@docForBatchesController.$(".bv_newFileRadio").click()
 						waitsFor ->
 							@docForBatchesController.batchListValidator.ischeckAndAddBatchesComplete()
+						,
+							500
 						runs ->
 							@docForBatchesController.$(".bv_comment").val("my comment")
 							@docForBatchesController.$(".bv_comment").change()
@@ -217,6 +223,8 @@ describe 'Doc For Batches Behavior Testing', ->
 							@docForBatchesController.$(".bv_newFileRadio").click()
 						waitsFor ->
 							@docForBatchesController.batchListValidator.ischeckAndAddBatchesComplete()
+						,
+							500
 						runs ->
 							@docForBatchesController.$(".bv_comment").val("my comment")
 							@docForBatchesController.$(".bv_comment").change()
@@ -233,6 +241,8 @@ describe 'Doc For Batches Behavior Testing', ->
 							@docForBatchesController.$(".bv_url").val("myURL")
 						waitsFor ->
 							@docForBatchesController.batchListValidator.ischeckAndAddBatchesComplete()
+						,
+							500
 					it 'should replace the model with a new empty model and clear inputs', ->
 						runs ->
 							@docForBatchesController.$(".bv_comment").val("my comment")

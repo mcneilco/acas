@@ -51,7 +51,7 @@
       return _ref2;
     }
 
-    LSFileChooserController.prototype.allowedFileTypes = ['xls'];
+    LSFileChooserController.prototype.allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'];
 
     LSFileChooserController.prototype.dropZoneClassId = "fileupload";
 
@@ -110,6 +110,10 @@
         this.requiresValidation = this.options.requiresValidation;
       }
       return this.currentNumberOfFiles = 0;
+    };
+
+    LSFileChooserController.prototype.events = {
+      'click .bv_cancelFile': 'handleDeleteFileUIChanges'
     };
 
     LSFileChooserController.prototype.canAcceptAnotherFile = function() {
@@ -192,7 +196,7 @@
       this.$('.fileupload').fileupload('option', {
         url: self.url,
         maxFileSize: self.maxFileSize,
-        acceptFileTypes: /(\.|\/)(xls|txt|xlsx|csv|sdf|zip)$/i,
+        acceptFileTypes: RegExp('(\\.|\\/)(' + this.allowedFileTypes.join('|') + ')$', 'i'),
         autoUpload: self.autoUpload,
         dropZone: this.$('.' + self.dropZoneClassId)
       });

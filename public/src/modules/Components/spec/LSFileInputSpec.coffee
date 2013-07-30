@@ -12,7 +12,7 @@ describe 'LS File Input Behavior Testing', ->
 				@echoFileController = new LSFileInputController
 						el: '#fixture',
 						inputTitle: 'Test File'
-						url: SeuratAddOns.configuration.fileServiceURL
+						url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
 						fieldIsRequired: true
 				@echoFileController.render()
 

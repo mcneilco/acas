@@ -12,8 +12,8 @@
     }
 
     BulkLoadSampleTransfersController.prototype.initialize = function() {
-      BulkLoadSampleTransfersController.__super__.initialize.apply(this, arguments);
-      this.fileProcessorURL = this.serverName + ":" + SeuratAddOns.configuration.portNumber + "/api/bulkLoadSampleTransfers";
+      BulkLoadSampleTransfersController.__super__.initialize.call(this);
+      this.fileProcessorURL = "/api/bulkLoadSampleTransfers";
       this.errorOwnerName = 'BulkLoadSampleTransfersController';
       return this.$('.bv_moduleTitle').html('Load Sample Transfer Log');
     };

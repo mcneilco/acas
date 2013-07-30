@@ -58,7 +58,6 @@
             });
             return it("should update experiment code", function() {
               runs(function() {
-                console.log("about to save");
                 return this.psec.$('.bv_save').click();
               });
               waits(100);

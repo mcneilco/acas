@@ -399,19 +399,19 @@
 
     ExperimentBaseController.prototype.handleShortDescriptionChanged = function() {
       return this.model.set({
-        shortDescription: this.$('.bv_shortDescription').val().trim()
+        shortDescription: this.getTrimmedInput('.bv_shortDescription')
       });
     };
 
     ExperimentBaseController.prototype.handleDescriptionChanged = function() {
       return this.model.set({
-        description: this.$('.bv_description').val().trim()
+        description: this.getTrimmedInput('.bv_description')
       });
     };
 
     ExperimentBaseController.prototype.handleNameChanged = function() {
       var newName;
-      newName = this.$('.bv_experimentName').val().trim();
+      newName = this.getTrimmedInput('.bv_experimentName');
       return this.model.get('experimentLabels').setBestName(new Label({
         labelKind: "experiment name",
         labelText: newName,
@@ -422,7 +422,7 @@
 
     ExperimentBaseController.prototype.handleDateChanged = function() {
       this.model.set({
-        recordedDate: new Date(this.$('.bv_recordedDate').val().trim()).getTime()
+        recordedDate: this.convertYMDDateToMs(this.getTrimmedInput('.bv_recordedDate'))
       });
       return this.handleNameChanged();
     };
@@ -456,7 +456,7 @@
             }
           },
           error: function(err) {
-            return console.log('got ajax error');
+            return alert('got ajax error from api/protocols/codename/ in Exeriment.coffee');
           },
           dataType: 'json'
         });

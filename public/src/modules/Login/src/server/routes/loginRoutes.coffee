@@ -1,18 +1,46 @@
+### To install this module add
+  to app.coffee
+# login routes
+passport.serializeUser (user, done) ->
+	done null, user.username
+passport.deserializeUser (username, done) ->
+	loginRoutes.findByUsername username, (err, user) ->
+		done err, user
+passport.use new LocalStrategy loginRoutes.loginStrategy
+
+app.get '/login', loginRoutes.loginPage
+app.post '/login',
+	passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
+	loginRoutes.loginPost
+app.get '/logout', loginRoutes.logout
+app.post '/api/userAuthentication', loginRoutes.authenticationService
+app.get '/api/users/:username', loginRoutes.getUsers
+
+###
+
+
+
 users = [
 	id: 1
 	username: "bob"
 	password: "secret"
 	email: "bob@example.com"
+	firstName: "Bob"
+	lastName: "Roberts"
 ,
 	id: 2
-	username: "joe"
+	username: "jmcneil"
 	password: "birthday"
-	email: "joe@example.com"
+	email: "jmcneil@example.com"
+	firstName: "John"
+	lastName: "McNeil"
 ,
 	id: 3
 	username: "ldap-query"
 	password: "Est@P7uRi5SyR+"
-	email: "sdfsdfdfsfds"
+	email: ""
+	firstName: "ldap-query"
+	lastName: ""
 ]
 
 exports.findById = (id, fn) ->
@@ -24,19 +52,15 @@ exports.findById = (id, fn) ->
 
 exports.findByUsername = (username, fn) ->
 	config = require '../public/src/conf/configurationNode.js'
-	if config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
+	if global.specRunnerTestmode or config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
 		i = 0
 		len = users.length
 		while i < len
 			user = users[i]
 			return fn(null, user)  if user.username is username
 			i++
-	else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
-		return fn null,
-			id: null
-			username: username
-			pasword: null
-			email: null
+	else
+		console.log "no authorization service configured"
 	fn null, null
 
 exports.loginStrategy = (username, password, done) ->
@@ -54,14 +78,8 @@ exports.loginStrategy = (username, password, done) ->
 						message: "Invalid password"
 					)
 				return done null, user
-			else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
-				dnsAuthCheck username, password, (results) ->
-					if results.indexOf("Success")>=0
-						return done null, user
-					else
-						return done(null, false,
-							message: "Invalid credentials"
-						)
+			else
+				console.log "no authentication service configured"
 
 exports.loginPage = (req, res) ->
 	user = null
@@ -106,27 +124,16 @@ exports.authenticationService = (req, resp) ->
 	else
 		if config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
 			callback("Success")
-		else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
-			dnsAuthCheck req.body.user, req.body.password, callback
-
-dnsAuthCheck = (user, pass, retFun) ->
-	config = require '../public/src/conf/configurationNode.js'
-	request = require 'request'
-	request(
-		method: 'POST'
-		url: config.serverConfigurationParams.configuration.userAuthenticationServiceURL
-		form:
-			username: user
-			password: pass
-		json: true
-	, (error, response, json) =>
-		if !error && response.statusCode == 200
-			console.log JSON.stringify json
-			retFun JSON.stringify json
 		else
-			console.log 'got ajax error trying authenticate a user'
-			console.log error
-			console.log json
-			console.log response
-	)
+			console.log "no authentication service configured"
 
+
+exports.getUsers = (req, resp) ->
+	callback = (err, user) ->
+		if user == null
+			resp.send(204)
+		else
+			delete user.password
+			resp.json user
+
+	exports.findByUsername req.params.username, callback

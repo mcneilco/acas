@@ -254,9 +254,7 @@
       return $(this.el).hide();
     };
 
-    ModuleLauncherController.prototype.handleRouteRequested = function(params) {
-      return console.log("got route with params: ", params);
-    };
+    ModuleLauncherController.prototype.handleRouteRequested = function(params) {};
 
     return ModuleLauncherController;
 
