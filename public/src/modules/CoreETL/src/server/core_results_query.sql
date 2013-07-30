@@ -1,4 +1,4 @@
-SELECT PARENT.CORP_NAME               AS "Corporate_ID",
+SELECT BATCH.CORP_BATCH_NAME               AS "Corporate_Batch_ID",
   CORE_protocol_tbl.transformed_name  AS "Protocol_Name",
   CORE_experiment_tbl.experiment_name AS "Experiment_Name",
   CORE_experiment_tbl.EXPERIMENT_SCIENTIST AS "Experiment_Scientist",
@@ -11,12 +11,8 @@ SELECT PARENT.CORP_NAME               AS "Corporate_ID",
   CORE_results_all_tbl.text_value     AS "Expt_Result_Desc",
   CORE_experiment_tbl.expt_date       AS "Expt_Date",
   CORE_results_all_tbl.comments       AS "Expt_Result_Comment",
-  CASE
-    WHEN CORE_results_all_tbl.concentration = -1
-    THEN NULL
-    ELSE CORE_results_all_tbl.concentration
-  END                                          AS "Expt_Concentration",
-  CORE_results_all_tbl.conc_unit               AS "Expt_Conc_Units",
+  NULL                                          AS "Expt_Concentration",
+  NULL               AS "Expt_Conc_Units",
   CORE_experiment_tbl.experiment_notebook_page AS "Expt_Nb_Page",
   CORE_experiment_tbl.experiment_notebook      AS "Expt_Notebook",
   CORE_results_all_tbl.id                      AS "Expt_Batch_Number",

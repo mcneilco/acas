@@ -61,12 +61,15 @@ makeFileName <- function(expt) {
 	eNames <- levels(as.factor(expt$Experiment_Name))
 	if (length(eNames) != 1) "problem with experiment results, more than one experiment name"
 	eName <- gsub("/","-",eNames[[1]])
-	dir.create(paste("coreSELFilesToLoad4/", pName, sep=""))
-	return(paste("coreSELFilesToLoad4/", pName,"/", eName, ".csv", sep=""))
+	dir.create(paste("coreSELFilesToLoad5/", pName, sep=""), recursive = TRUE)
+	return(paste("coreSELFilesToLoad5/", pName,"/", eName, ".csv", sep=""))
 }
 
 makeValueString <- function(exptRow, resultType) {
-	if (all(is.na(exptRow$Expt_Result_Value))) type <- "Text"
+	# Sets the global list of values, the first two are just hard coded
+	if (resultType == "Assay Date") type <- "Date"
+	else if (resultType == "Dose") type <- "Number"
+	else if (all(is.na(exptRow$Expt_Result_Value))) type <- "Text"
 	else type <- "Number"
 	columnTypes[resultType] <<- type
 	val <- paste(ifelse(is.na(exptRow$Expt_Result_Operator), "", exptRow$Expt_Result_Operator),
@@ -88,7 +91,6 @@ aggregateValues <- function(vals) {
 }
 
 pivotExperiment <- function(expt) {
-	expt[ ,value := makeValueString(.SD, Expt_Result_Type), by=Expt_Result_Type]
 	expt[ ,corp_batch_name := Corporate_Batch_ID]
 	castExpt <- cast(expt, corp_batch_name + Expt_Batch_Number ~ Expt_Result_Type + Expt_Result_Units + Expt_Concentration + Expt_Conc_Units,
 					add.missing=TRUE, fill="NA", fun.aggregate=aggregateValues)
@@ -153,23 +155,27 @@ library("racas")
 library("data.table")
 library("reshape")
 
+options(stringsAsFactors=FALSE)
 
 protocolsToSearch = readLines("assaylist.txt")
 #protocolsToSearch = I("CRO CYP DR 1A2")
-#protocolsToSearch = c("Bioavailability Assay V1.0")
+#protocolsToSearch = c("GlyT1 SCRN Glycine SPA HEK293 B6")
 for (p in 1:length(protocolsToSearch)) {
 	print(paste("processing protocol:", protocolsToSearch[[p]]))
 	experiments <- queryProtocol(protocolsToSearch[[p]])
 	exptNames <- levels(as.factor(experiments$Experiment_Name))
+	experiments <- as.data.table(experiments)
+	columnTypes <- list()
+	experiments[ ,value := makeValueString(.SD, Expt_Result_Type), by=Expt_Result_Type]
+	experiments[Expt_Result_Type=="Assay Date" , Expt_Result_Desc := as.character(as.Date(Expt_Result_Desc[Expt_Result_Type=="Assay Date"], format="%m/%d/%Y"))]
 	
 	first <- TRUE
 	for( exptName in exptNames) {
 		#for now only do first of each to test formats
 		if (first) {
-		#if(exptName=="BEX10") {
-			expt <- data.table(experiments[experiments$Experiment_Name==exptName, ])
+		#if(exptName=="CLL201") {
+			expt <- experiments[experiments$Experiment_Name==exptName, ]
 			headBlockLines <- getHeaderLines(expt)
-			columnTypes <- list()
 			castExpt <- pivotExperiment(expt)
 			columnHeaders <- getColumnHeaders(castExpt)
 			headBlockLines <- padHeadColumns(headBlockLines, length(names(castExpt)))
