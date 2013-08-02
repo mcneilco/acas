@@ -22,9 +22,9 @@ parseFullPKData <- function(request){
   # format will be "In Vivo Full PK"
   request <- as.list(request)
   inputParameters <- request$inputParameters
-  parserInput <- list(fileToParse = preprocessPK(inputParameters))
-  parserInput$dryRun <- request$dryRun
-  parserInput$testMode <- TRUE
-  #parserInput$testMode <- request$testMode
+  parserInput <- list(fileToParse = preprocessPK(request$fileToParse, inputParameters))
+  parserInput$dryRunMode <- request$dryRunMode
+  parserInput$reportFile <- request$reportFile
+  parserInput$user <- request$user
   return(parseGenericData(parserInput))
 }
