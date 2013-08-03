@@ -16,6 +16,7 @@ getHeaderLines <- function(expt) {
 	if (length(pNames) != 1) "problem with experiment results, more than one protocol name"
 	hl[[3]] <- paste("Protocol Name",pNames[[1]], sep=",")
 	eNames <- levels(as.factor(expt$Experiment_Name))
+	eNames <- gsub("/","-",eNames)
 	if (length(eNames) != 1) "problem with experiment results, more than one experiment name"
 	hl[[4]] <- paste("Experiment Name",eNames[[1]], sep=",")
 	eSci <- levels(as.factor(expt$Experiment_Scientist))
@@ -35,7 +36,9 @@ getHeaderLines <- function(expt) {
 	project <- levels(as.factor(expt$PROJECT))
 	if (length(project) != 1) "problem with experiment results, more than one project"
 	project <- project[[1]]
-	if (project=="General Screen") project = "UNASSIGNED"
+	if (project=="General Screen") project <- "UNASSIGNED"
+	if (project=="General") project <- "UNASSIGNED"
+	if (project=="MAOA") project <- "MAOB"
 	hl[[9]] <- paste("Project", project, sep=",")	
 	hl[[10]] <- ","
 	hl[[11]] <- "Calculated Results,"
@@ -61,8 +64,8 @@ makeFileName <- function(expt) {
 	eNames <- levels(as.factor(expt$Experiment_Name))
 	if (length(eNames) != 1) "problem with experiment results, more than one experiment name"
 	eName <- gsub("/","-",eNames[[1]])
-	dir.create(paste("coreSELFilesToLoad5/", pName, sep=""), recursive = TRUE)
-	return(paste("coreSELFilesToLoad5/", pName,"/", eName, ".csv", sep=""))
+	dir.create(paste("coreSELFilesToLoad6/", pName, sep=""), recursive = TRUE)
+	return(paste("coreSELFilesToLoad6/", pName,"/", eName, ".csv", sep=""))
 }
 
 makeValueString <- function(exptRow, resultType) {
@@ -167,12 +170,12 @@ for (p in 1:length(protocolsToSearch)) {
 	experiments <- as.data.table(experiments)
 	columnTypes <- list()
 	experiments[ ,value := makeValueString(.SD, Expt_Result_Type), by=Expt_Result_Type]
-	experiments[Expt_Result_Type=="Assay Date" , Expt_Result_Desc := as.character(as.Date(Expt_Result_Desc[Expt_Result_Type=="Assay Date"], format="%m/%d/%Y"))]
+	experiments[Expt_Result_Type=="Assay Date" , value := as.character(as.Date(Expt_Result_Desc[Expt_Result_Type=="Assay Date"], format="%m/%d/%Y"))]
 	
 	first <- TRUE
 	for( exptName in exptNames) {
 		#for now only do first of each to test formats
-		if (first) {
+		#if (first) {
 		#if(exptName=="CLL201") {
 			expt <- experiments[experiments$Experiment_Name==exptName, ]
 			headBlockLines <- getHeaderLines(expt)
@@ -190,8 +193,8 @@ for (p in 1:length(protocolsToSearch)) {
 				close(outFile)
 				write.table(castExpt, file = fName, sep = ",", col.names = FALSE, row.names = FALSE, append = TRUE)
 			}
-		}
-		first = FALSE
+		#}
+		#first = FALSE
 	}
 }
 
