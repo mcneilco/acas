@@ -132,7 +132,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       for (_i = 0, _len = labels.length; _i < _len; _i++) {
         label = labels[_i];
         if (shouldFilter) {
-          match = label.labelText.indexOf(filterString) > -1;
+          match = label.labelText.toUpperCase().indexOf(filterString.toUpperCase()) > -1;
         } else {
           match = true;
         }

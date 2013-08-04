@@ -212,28 +212,56 @@ See ProtocolServiceTestJSON.coffee for examples
         });
       });
       return describe('when protocol code list service called with filtering option', function() {
-        beforeEach(function() {
-          return runs(function() {
-            var _this = this;
+        describe("With matching case", function() {
+          beforeEach(function() {
+            return runs(function() {
+              var _this = this;
 
-            return $.ajax({
-              type: 'GET',
-              url: "api/protocolCodes/filter/PK",
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
-              dataType: 'json'
+              return $.ajax({
+                type: 'GET',
+                url: "api/protocolCodes/filter/PK",
+                success: function(json) {
+                  return _this.serviceReturn = json;
+                },
+                error: function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                },
+                dataType: 'json'
+              });
+            });
+          });
+          return it('should only return names with PK', function() {
+            waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+            return runs(function() {
+              return expect(this.serviceReturn[this.serviceReturn.length - 1].name).toContain("PK");
             });
           });
         });
-        return it('should only return names with PK', function() {
-          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
-          return runs(function() {
-            return expect(this.serviceReturn[this.serviceReturn.length - 1].name).toContain("PK");
+        return describe("With non-matching case", function() {
+          beforeEach(function() {
+            return runs(function() {
+              var _this = this;
+
+              return $.ajax({
+                type: 'GET',
+                url: "api/protocolCodes/filter/pk",
+                success: function(json) {
+                  return _this.serviceReturn = json;
+                },
+                error: function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                },
+                dataType: 'json'
+              });
+            });
+          });
+          return it('should only return names with PK', function() {
+            waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+            return runs(function() {
+              return expect(this.serviceReturn[this.serviceReturn.length - 1].name).toContain("PK");
+            });
           });
         });
       });

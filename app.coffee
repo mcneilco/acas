@@ -164,6 +164,10 @@ startApp = ->
 	microSolRoutes = require './routes/MicroSolRoutes.js'
 	app.post '/api/microSolParser', microSolRoutes.parseMicroSolData
 
+	# PampaParser routes
+	pampaRoutes = require './routes/PampaRoutes.js'
+	app.post '/api/pampaParser', pampaRoutes.parsePampaData
+
 	# BulkLoadContainersFromSDF routes
 	bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
 	app.post '/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF

@@ -1061,6 +1061,36 @@
         recordedBy: "smeyer",
         recordedDate: 1372303115000,
         version: 0
+      }, {
+        id: 73,
+        ignored: false,
+        imageFile: null,
+        labelText: "BBB-PAMPA",
+        lsKind: "protocol name",
+        lsTransaction: 78,
+        lsType: "name",
+        lsTypeAndKind: "name_protocol name",
+        modifiedDate: null,
+        physicallyLabled: false,
+        preferred: true,
+        protocol: {
+          codeName: "PROT-00000013",
+          id: 2590,
+          ignored: false,
+          lsKind: "default",
+          lsTransaction: 78,
+          lsType: "default",
+          lsTypeAndKind: "default_default",
+          modifiedBy: null,
+          modifiedDate: null,
+          recordedBy: "smeyer",
+          recordedDate: 1372303173000,
+          shortDescription: "protocol created by hand",
+          version: 1
+        },
+        recordedBy: "smeyer",
+        recordedDate: 1372303115000,
+        version: 0
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.protocolServiceTestJSON = window.protocolServiceTestJSON || {} : exports));

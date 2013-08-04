@@ -54,6 +54,8 @@ applicationScripts = [
 	'/javascripts/src/FullPK.js'
 	# For MicroSol module
 	'/javascripts/src/MicroSol.js'
+	# For Pampa module
+	'/javascripts/src/Pampa.js'
 	# For BulkLoadContainersFromSDF module
 	'/javascripts/src/BulkLoadContainersFromSDF.js'
 	# For BulkLoadSampleTransfers module
@@ -135,6 +137,10 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/testFixtures/MicroSolTestJSON.js'
 		'javascripts/spec/MicroSolSpec.js'
 		'javascripts/spec/MicroSolServiceSpec.js'
+		# For Pampa Parser module
+		'javascripts/spec/testFixtures/PampaTestJSON.js'
+		'javascripts/spec/PampaSpec.js'
+		'javascripts/spec/PampaServiceSpec.js'
 		# For BulkLoadContainersFromSDF module
 		'javascripts/spec/BulkLoadContainersFromSDFSpec.js'
 		'javascripts/spec/BulkLoadContainersFromSDFServerSpec.js'
