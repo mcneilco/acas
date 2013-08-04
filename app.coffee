@@ -143,6 +143,10 @@ startApp = ->
 	fullPKParserRoutes = require './routes/FullPKParserRoutes.js'
 	app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
 
+	# MicroSolParser routes
+	microSolRoutes = require './routes/MicroSolRoutes.js'
+	app.post '/api/microSolParser', microSolRoutes.parseMicroSolData
+
 	# BulkLoadContainersFromSDF routes
 	bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
 	app.post '/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF

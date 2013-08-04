@@ -191,7 +191,8 @@
     };
 
     FullPKController.prototype.enableAllInputs = function() {
-      return this.$('input').removeAttr('disabled');
+      this.$('input').removeAttr('disabled');
+      return this.$('select').removeAttr('disabled');
     };
 
     return FullPKController;

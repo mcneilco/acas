@@ -11,6 +11,10 @@
       isHeader: false,
       menuName: "Load Full PK Experiment",
       mainControllerClassName: "FullPKParserController"
+    }, {
+      isHeader: false,
+      menuName: "Load Micro Solubility Experiment",
+      mainControllerClassName: "MicroSolParserController"
     }
   ];
 

@@ -55,7 +55,7 @@
   });
 
   startApp = function() {
-    var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
+    var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, microSolRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
 
     config = require('./public/src/conf/configurationNode.js');
     express = require('express');
@@ -142,6 +142,8 @@
     app.post('/api/genericDataParser', genericDataParserRoutes.parseGenericData);
     fullPKParserRoutes = require('./routes/FullPKParserRoutes.js');
     app.post('/api/fullPKParser', fullPKParserRoutes.parseFullPKData);
+    microSolRoutes = require('./routes/MicroSolRoutes.js');
+    app.post('/api/microSolParser', microSolRoutes.parseMicroSolData);
     bulkLoadContainersFromSDFRoutes = require('./routes/BulkLoadContainersFromSDFRoutes.js');
     app.post('/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF);
     bulkLoadSampleTransfersRoutes = require('./routes/BulkLoadSampleTransfersRoutes.js');

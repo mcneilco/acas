@@ -129,6 +129,7 @@ class window.FullPKController extends AbstractFormController
 
 	enableAllInputs: ->
 		@$('input').removeAttr 'disabled'
+		@$('select').removeAttr 'disabled'
 
 class window.FullPKParserController extends BasicFileValidateAndSaveController
 

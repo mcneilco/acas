@@ -1,4 +1,4 @@
-describe 'Full PK Behavior Testing', ->
+describe 'MicroSol Behavior Testing', ->
 
 	beforeEach ->
 		@.fixture = $.clone($('#fixture').get(0))
@@ -7,115 +7,64 @@ describe 'Full PK Behavior Testing', ->
 		$('#fixture').remove()
 		$('body').append $(this.fixture)
 
-	describe 'FullPK Model', ->
+	describe 'MicroSol Model', ->
 		describe 'when instantiated', ->
 			beforeEach ->
-				@fullPK = new FullPK()
+				@microSol = new MicroSol()
 			describe "defaults tests", ->
 				it  'should have defaults', ->
-					expect(@fullPK.get 'format').toEqual "In Vivo Full PK"
-					expect(@fullPK.get 'protocolName').toEqual ""
-					expect(@fullPK.get 'experimentName').toEqual ""
-					expect(@fullPK.get 'scientist').toEqual ""
-					expect(@fullPK.get 'notebook').toEqual ""
-					expect(@fullPK.get 'inLifeNotebook').toEqual ""
-					expect(@fullPK.get 'assayDate').toEqual null
-					expect(@fullPK.get 'project').toEqual ""
-					expect(@fullPK.get 'bioavailability').toEqual ""
-					expect(@fullPK.get 'aucType').toEqual ""
+					expect(@microSol.get 'protocolName').toEqual ""
+					expect(@microSol.get 'scientist').toEqual ""
+					expect(@microSol.get 'notebook').toEqual ""
+					expect(@microSol.get 'project').toEqual ""
 		describe "validation tests", ->
 			beforeEach ->
-				@fullPK = new FullPK window.FullPKTestJSON.validFullPK
+				@microSol = new MicroSol window.MicroSolTestJSON.validMicroSol
 
 			it "should be valid as initialized", ->
-				expect(@fullPK.isValid()).toBeTruthy()
+				expect(@microSol.isValid()).toBeTruthy()
 
 			it 'should require that protocolName not be "unassigned"', ->
-				@fullPK.set
+				@microSol.set
 					protocolName: "Select Protocol"
-				expect(@fullPK.isValid()).toBeFalsy()
-				filtErrors = _.filter(@fullPK.validationError, (err) ->
+				expect(@microSol.isValid()).toBeFalsy()
+				filtErrors = _.filter(@microSol.validationError, (err) ->
 					err.attribute=='protocolName'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it 'should require that experimentName not be ""', ->
-				@fullPK.set
-					experimentName: ""
-				expect(@fullPK.isValid()).toBeFalsy()
-				filtErrors = _.filter(@fullPK.validationError, (err) ->
-					err.attribute=='experimentName'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
 			it 'should require that scientist not be ""', ->
-				@fullPK.set
+				@microSol.set
 					scientist: ""
-				expect(@fullPK.isValid()).toBeFalsy()
-				filtErrors = _.filter(@fullPK.validationError, (err) ->
+				expect(@microSol.isValid()).toBeFalsy()
+				filtErrors = _.filter(@microSol.validationError, (err) ->
 					err.attribute=='scientist'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
 			it 'should require that notebook not be ""', ->
-				@fullPK.set
+				@microSol.set
 					notebook: ""
-				expect(@fullPK.isValid()).toBeFalsy()
-				filtErrors = _.filter(@fullPK.validationError, (err) ->
+				expect(@microSol.isValid()).toBeFalsy()
+				filtErrors = _.filter(@microSol.validationError, (err) ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
-			it 'should require that inLifeNotebook not be ""', ->
-				@fullPK.set
-					inLifeNotebook: ""
-				expect(@fullPK.isValid()).toBeFalsy()
-				filtErrors = _.filter(@fullPK.validationError, (err) ->
-					err.attribute=='inLifeNotebook'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-
 			it 'should require that project not be "unassigned"', ->
-				@fullPK.set
+				@microSol.set
 					project: "unassigned"
-				expect(@fullPK.isValid()).toBeFalsy()
-				filtErrors = _.filter(@fullPK.validationError, (err) ->
+				expect(@microSol.isValid()).toBeFalsy()
+				filtErrors = _.filter(@microSol.validationError, (err) ->
 					err.attribute=='project'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
-			it 'should require that bioavailability not be ""', ->
-				@fullPK.set
-					bioavailability: ""
-				expect(@fullPK.isValid()).toBeFalsy()
-				filtErrors = _.filter(@fullPK.validationError, (err) ->
-					err.attribute=='bioavailability'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-
-			it 'should require that aucType not be ""', ->
-				@fullPK.set
-					aucType: ""
-				expect(@fullPK.isValid()).toBeFalsy()
-				filtErrors = _.filter(@fullPK.validationError, (err) ->
-					err.attribute=='aucType'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-
-			it 'should require that assayDate not be ""', ->
-				@fullPK.set
-					assayDate: new Date("").getTime()
-				expect(@fullPK.isValid()).toBeFalsy()
-				filtErrors = _.filter(@fullPK.validationError, (err) ->
-					err.attribute=='assayDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-
-
-	describe 'FullPK Controller', ->
+	describe 'MicroSol Controller', ->
 		describe 'when instantiated', ->
 			beforeEach ->
-				@fpkc = new FullPKController
-					model: new FullPK()
+				@fpkc = new MicroSolController
+					model: new MicroSol()
 					el: $('#fixture')
 				@fpkc.render()
 			describe "basic existance tests", ->
@@ -168,13 +117,9 @@ describe 'Full PK Behavior Testing', ->
 					,
 						1000
 					runs ->
-						@fpkc.$('.bv_protocolName').val "PROT-00000009"
+						@fpkc.$('.bv_protocolName').val "PROT-00000012"
 						@fpkc.$('.bv_protocolName').change()
-						expect(@fpkc.model.get('protocolName')).toEqual "Dog IVPO PK"
-				it "should update the experimentName", ->
-					@fpkc.$('.bv_experimentName').val " test experiment "
-					@fpkc.$('.bv_experimentName').change()
-					expect(@fpkc.model.get('experimentName')).toEqual "test experiment"
+						expect(@fpkc.model.get('protocolName')).toEqual "ADME uSol Kinetic Solubility"
 				it "should update the scientist", ->
 					@fpkc.$('.bv_scientist').val " test scientist "
 					@fpkc.$('.bv_scientist').change()
@@ -183,10 +128,6 @@ describe 'Full PK Behavior Testing', ->
 					@fpkc.$('.bv_notebook').val " test notebook "
 					@fpkc.$('.bv_notebook').change()
 					expect(@fpkc.model.get('notebook')).toEqual "test notebook"
-				it "should update the inLifeNotebook", ->
-					@fpkc.$('.bv_inLifeNotebook').val " test inLifeNotebook "
-					@fpkc.$('.bv_inLifeNotebook').change()
-					expect(@fpkc.model.get('inLifeNotebook')).toEqual "test inLifeNotebook"
 				it "should update the project", ->
 					waitsFor ->
 						@fpkc.$('.bv_project option').length > 0
@@ -196,18 +137,6 @@ describe 'Full PK Behavior Testing', ->
 						@fpkc.$('.bv_project').val "project2"
 						@fpkc.$('.bv_project').change()
 						expect(@fpkc.model.get('project')).toEqual "project2"
-				it "should update the bioavailability", ->
-					@fpkc.$('.bv_bioavailability').val " test bioavailability "
-					@fpkc.$('.bv_bioavailability').change()
-					expect(@fpkc.model.get('bioavailability')).toEqual "test bioavailability"
-				it "should update the aucType", ->
-					@fpkc.$('.bv_aucType').val " test aucType "
-					@fpkc.$('.bv_aucType').change()
-					expect(@fpkc.model.get('aucType')).toEqual "test aucType"
-				it "should update the assayDate", ->
-					@fpkc.$('.bv_assayDate').val " 2013-6-6 "
-					@fpkc.$('.bv_assayDate').change()
-					expect(@fpkc.model.get('assayDate')).toEqual new Date(2013, 5, 6).getTime()
 				it "should trigger 'amDirty' when field changed", ->
 					runs ->
 						@amDirtySet = false
@@ -224,8 +153,8 @@ describe 'Full PK Behavior Testing', ->
 
 		describe "validation testing", ->
 			beforeEach ->
-				@fpkc = new FullPKController
-					model: new FullPK window.FullPKTestJSON.validFullPK
+				@fpkc = new MicroSolController
+					model: new MicroSol window.MicroSolTestJSON.validMicroSol
 					el: $('#fixture')
 				@fpkc.render()
 			describe "error notification", ->
@@ -239,10 +168,6 @@ describe 'Full PK Behavior Testing', ->
 						@fpkc.$(".bv_protocolName").change()
 						console.log @fpkc.$(".bv_protocolName").val()
 						expect(@fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy()
-				it 'should show error if experimentName is empty', ->
-					@fpkc.$(".bv_experimentName").val ""
-					@fpkc.$(".bv_experimentName").change()
-					expect(@fpkc.$(".bv_group_experimentName").hasClass("error")).toBeTruthy()
 				it 'should show error if scientist is empty', ->
 					@fpkc.$(".bv_scientist").val ""
 					@fpkc.$(".bv_scientist").change()
@@ -251,10 +176,6 @@ describe 'Full PK Behavior Testing', ->
 					@fpkc.$(".bv_notebook").val ""
 					@fpkc.$(".bv_notebook").change()
 					expect(@fpkc.$(".bv_group_notebook").hasClass("error")).toBeTruthy()
-				it 'should show error if inLifeNotebook is empty', ->
-					@fpkc.$(".bv_inLifeNotebook").val ""
-					@fpkc.$(".bv_inLifeNotebook").change()
-					expect(@fpkc.$(".bv_group_inLifeNotebook").hasClass("error")).toBeTruthy()
 				it 'should show error if project is unassigned', ->
 					waitsFor ->
 						@fpkc.$('.bv_project option').length > 0
@@ -264,15 +185,3 @@ describe 'Full PK Behavior Testing', ->
 						@fpkc.$(".bv_project").val "unassigned"
 						@fpkc.$(".bv_project").change()
 						expect(@fpkc.$(".bv_group_project").hasClass("error")).toBeTruthy()
-				it 'should show error if bioavailability is empty', ->
-					@fpkc.$(".bv_bioavailability").val ""
-					@fpkc.$(".bv_bioavailability").change()
-					expect(@fpkc.$(".bv_group_bioavailability").hasClass("error")).toBeTruthy()
-				it 'should show error if aucType is empty', ->
-					@fpkc.$(".bv_aucType").val ""
-					@fpkc.$(".bv_aucType").change()
-					expect(@fpkc.$(".bv_group_aucType").hasClass("error")).toBeTruthy()
-				it 'should show error if assayDate is empty', ->
-					@fpkc.$(".bv_assayDate").val ""
-					@fpkc.$(".bv_assayDate").change()
-					expect(@fpkc.$(".bv_group_assayDate").hasClass("error")).toBeTruthy()
