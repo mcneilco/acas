@@ -55,7 +55,7 @@
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "http://imapp01-d:8080/DNS/core/v1/DNSAnnotation/";
 		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "";
 		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas-d:48203/api/users"
-
+		exports.serverConfigurationParams.configuration.loggingService = "http://imapp01-d:8080/DNS/usage/v1/DNSUsageLogging/process"
 
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));

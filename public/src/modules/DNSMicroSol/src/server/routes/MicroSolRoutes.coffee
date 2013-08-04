@@ -37,12 +37,14 @@ exports.parseMicroSolData = (request, response)  ->
 			response.end rReturn
 		)
 	else
+		logDnsUsage "MicroSol parser service about to call R", "dryRunMode="+request.body.dryRunMode, request.body.user
 		serverUtilityFunctions.runRFunction(
 			request,
 			"public/src/modules/DNSMicroSol/src/server/MicroSol.R",
 			"parseMicroSolData",
 		(rReturn) ->
 			response.end rReturn
+			logDnsUsage "microSol parser service returned", "dryRunMode="+request.body.dryRunMode, request.body.user
 		)
 
 

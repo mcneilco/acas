@@ -38,8 +38,10 @@ app.post '/api/microSolParser', microSolRoutes.parseMicroSolData
         return response.end(rReturn);
       });
     } else {
+      logDnsUsage("MicroSol parser service about to call R", "dryRunMode=" + request.body.dryRunMode, request.body.user);
       return serverUtilityFunctions.runRFunction(request, "public/src/modules/DNSMicroSol/src/server/MicroSol.R", "parseMicroSolData", function(rReturn) {
-        return response.end(rReturn);
+        response.end(rReturn);
+        return logDnsUsage("microSol parser service returned", "dryRunMode=" + request.body.dryRunMode, request.body.user);
       });
     }
   };
