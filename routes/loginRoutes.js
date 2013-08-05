@@ -208,7 +208,7 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
     config = require('../public/src/conf/configurationNode.js');
     request = require('request');
-    return request({
+    request({
       method: 'GET',
       url: config.serverConfigurationParams.configuration.userInformationServiceURL + username,
       json: true
@@ -223,13 +223,14 @@ app.get '/api/users/:username', loginRoutes.getUsers
           lastName: json.DNSPerson.lastName
         });
       } else {
-        console.log('got ajax error trying get project list');
+        console.log('got ajax error trying get user information');
         console.log(error);
         console.log(json);
         console.log(response);
         return callback(null, null);
       }
     });
+    return logDnsUsage("User logged in", "", username);
   };
 
   exports.getUsers = function(req, resp) {

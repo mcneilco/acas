@@ -28,12 +28,14 @@ exports.parseGenericData = (request, response)  ->
 				response.end rReturn
 		)
 	else
+		logDnsUsage "Generic data parser service about to call R", "dryRunMode="+request.body.dryRunMode, request.body.user
 		serverUtilityFunctions.runRFunction(
 			request,
 			"public/src/modules/GenericDataParser/src/server/generic_data_parser.R",
 			"parseGenericData",
 			(rReturn) ->
 				response.end rReturn
+				logDnsUsage "Generic data parser service returned", "dryRunMode="+request.body.dryRunMode, request.body.user
 		)
 
 

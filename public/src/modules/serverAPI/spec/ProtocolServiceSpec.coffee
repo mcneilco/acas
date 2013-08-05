@@ -149,19 +149,37 @@ describe 'Protocol CRUD testing', ->
 					expect(@serviceReturn[@serviceReturn.length-1].name).toNotContain "PK"
 
 		describe 'when protocol code list service called with filtering option', ->
-			beforeEach ->
-				runs ->
-					$.ajax
-						type: 'GET'
-						url: "api/protocolCodes/filter/PK"
-						success: (json) =>
-							@serviceReturn = json
-						error: (err) =>
-							console.log 'got ajax error'
-							@serviceReturn = null
-						dataType: 'json'
+			describe "With matching case", ->
+				beforeEach ->
+					runs ->
+						$.ajax
+							type: 'GET'
+							url: "api/protocolCodes/filter/PK"
+							success: (json) =>
+								@serviceReturn = json
+							error: (err) =>
+								console.log 'got ajax error'
+								@serviceReturn = null
+							dataType: 'json'
 
-			it 'should only return names with PK', ->
-				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-				runs ->
-					expect(@serviceReturn[@serviceReturn.length-1].name).toContain "PK"
+				it 'should only return names with PK', ->
+					waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+					runs ->
+						expect(@serviceReturn[@serviceReturn.length-1].name).toContain "PK"
+			describe "With non-matching case", ->
+				beforeEach ->
+					runs ->
+						$.ajax
+							type: 'GET'
+							url: "api/protocolCodes/filter/pk"
+							success: (json) =>
+								@serviceReturn = json
+							error: (err) =>
+								console.log 'got ajax error'
+								@serviceReturn = null
+							dataType: 'json'
+
+				it 'should only return names with PK', ->
+					waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+					runs ->
+						expect(@serviceReturn[@serviceReturn.length-1].name).toContain "PK"

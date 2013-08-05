@@ -1,6 +1,28 @@
 (function() {
   var asyncblock, exec, fs, startApp;
 
+  global.logDnsUsage = function(action, data, username) {
+    var config, form, req, request,
+      _this = this;
+
+    config = require('./public/src/conf/configurationNode.js');
+    request = require('request');
+    req = request.post(config.serverConfigurationParams.configuration.loggingService, function(error, response) {
+      if (!error && response.statusCode === 200) {
+        return console.log("logged: " + action + " with data: " + data + " and user: " + username);
+      } else {
+        console.log("got error trying log action: " + action + " with data: " + data);
+        console.log(error);
+        return console.log(response);
+      }
+    });
+    form = req.form();
+    form.append('application', 'acas');
+    form.append('action', action);
+    form.append('application_data', data);
+    return form.append('user_login', username);
+  };
+
   fs = require('fs');
 
   asyncblock = require('asyncblock');
@@ -55,7 +77,7 @@
   });
 
   startApp = function() {
-    var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
+    var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, microSolRoutes, pampaRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
 
     config = require('./public/src/conf/configurationNode.js');
     express = require('express');
@@ -142,6 +164,10 @@
     app.post('/api/genericDataParser', genericDataParserRoutes.parseGenericData);
     fullPKParserRoutes = require('./routes/FullPKParserRoutes.js');
     app.post('/api/fullPKParser', fullPKParserRoutes.parseFullPKData);
+    microSolRoutes = require('./routes/MicroSolRoutes.js');
+    app.post('/api/microSolParser', microSolRoutes.parseMicroSolData);
+    pampaRoutes = require('./routes/PampaRoutes.js');
+    app.post('/api/pampaParser', pampaRoutes.parsePampaData);
     bulkLoadContainersFromSDFRoutes = require('./routes/BulkLoadContainersFromSDFRoutes.js');
     app.post('/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF);
     bulkLoadSampleTransfersRoutes = require('./routes/BulkLoadSampleTransfersRoutes.js');
@@ -155,9 +181,10 @@
     app.get('/api/curves/stub/:exptCode', curveCuratorRoutes.getCurveStubs);
     serverUtilityFunctions = require('./routes/ServerUtilityFunctions.js');
     app.post('/api/runRFunctionTest', serverUtilityFunctions.runRFunctionTest);
-    return http.createServer(app).listen(app.get('port'), function() {
+    http.createServer(app).listen(app.get('port'), function() {
       return console.log("Express server listening on port " + app.get('port'));
     });
+    return logDnsUsage("ACAS Node server started", "started", "");
   };
 
 }).call(this);

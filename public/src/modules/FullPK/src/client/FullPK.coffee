@@ -55,7 +55,7 @@ class window.FullPK extends Backbone.Model
 		else
 			return null
 
-class window.FullPKController extends AbstractFormController
+class window.FullPKController extends AbstractParserFormController
 	template: _.template($("#FullPKView").html())
 
 	events:
@@ -71,22 +71,18 @@ class window.FullPKController extends AbstractFormController
 
 	initialize: ->
 		@errorOwnerName = 'FullPKController'
-		$(@el).html @template()
-		@setBindings()
+		super()
 		@setupProjectSelect()
-		@setupProtocolSelect()
+		@setupProtocolSelect("pk")
 
 	render: =>
+		super()
 		@$('.bv_assayDate').datepicker( );
 		@$('.bv_assayDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.get('assayDate') != null
 			date = new Date(@model.get('assayDate'))
 			@$('.bv_assayDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
 		@
-
-	attributeChanged: =>
-		@trigger 'amDirty'
-		@updateModel()
 
 	updateModel: ->
 		@model.set
@@ -100,35 +96,6 @@ class window.FullPKController extends AbstractFormController
 			aucType: @getTrimmedInput('.bv_aucType')
 			assayDate: @convertYMDDateToMs(@getTrimmedInput('.bv_assayDate'))
 		@trigger 'amDirty'
-
-	setupProjectSelect: ->
-		@projectList = new PickListList()
-		@projectList.url = "/api/projects"
-		@projectListController = new PickListSelectController
-			el: @$('.bv_project')
-			collection: @projectList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Project"
-			selectedCode: "unassigned"
-
-	setupProtocolSelect: ->
-		@protocolList = new PickListList()
-		@protocolList.url = "api/protocolCodes/filter/PK"
-		@protocolListController = new PickListSelectController
-			el: @$('.bv_protocolName')
-			collection: @protocolList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Protocol"
-			selectedCode: "unassigned"
-
-	disableAllInputs: ->
-		@$('input').attr 'disabled', 'disabled'
-		@$('select').attr 'disabled', 'disabled'
-
-	enableAllInputs: ->
-		@$('input').removeAttr 'disabled'
 
 class window.FullPKParserController extends BasicFileValidateAndSaveController
 

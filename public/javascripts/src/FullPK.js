@@ -98,7 +98,6 @@
     __extends(FullPKController, _super);
 
     function FullPKController() {
-      this.attributeChanged = __bind(this.attributeChanged, this);
       this.render = __bind(this.render, this);      _ref1 = FullPKController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
@@ -119,15 +118,15 @@
 
     FullPKController.prototype.initialize = function() {
       this.errorOwnerName = 'FullPKController';
-      $(this.el).html(this.template());
-      this.setBindings();
+      FullPKController.__super__.initialize.call(this);
       this.setupProjectSelect();
-      return this.setupProtocolSelect();
+      return this.setupProtocolSelect("pk");
     };
 
     FullPKController.prototype.render = function() {
       var date;
 
+      FullPKController.__super__.render.call(this);
       this.$('.bv_assayDate').datepicker();
       this.$('.bv_assayDate').datepicker("option", "dateFormat", "yy-mm-dd");
       if (this.model.get('assayDate') !== null) {
@@ -135,11 +134,6 @@
         this.$('.bv_assayDate').val(date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate());
       }
       return this;
-    };
-
-    FullPKController.prototype.attributeChanged = function() {
-      this.trigger('amDirty');
-      return this.updateModel();
     };
 
     FullPKController.prototype.updateModel = function() {
@@ -157,46 +151,9 @@
       return this.trigger('amDirty');
     };
 
-    FullPKController.prototype.setupProjectSelect = function() {
-      this.projectList = new PickListList();
-      this.projectList.url = "/api/projects";
-      return this.projectListController = new PickListSelectController({
-        el: this.$('.bv_project'),
-        collection: this.projectList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Project"
-        }),
-        selectedCode: "unassigned"
-      });
-    };
-
-    FullPKController.prototype.setupProtocolSelect = function() {
-      this.protocolList = new PickListList();
-      this.protocolList.url = "api/protocolCodes/filter/PK";
-      return this.protocolListController = new PickListSelectController({
-        el: this.$('.bv_protocolName'),
-        collection: this.protocolList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Protocol"
-        }),
-        selectedCode: "unassigned"
-      });
-    };
-
-    FullPKController.prototype.disableAllInputs = function() {
-      this.$('input').attr('disabled', 'disabled');
-      return this.$('select').attr('disabled', 'disabled');
-    };
-
-    FullPKController.prototype.enableAllInputs = function() {
-      return this.$('input').removeAttr('disabled');
-    };
-
     return FullPKController;
 
-  })(AbstractFormController);
+  })(AbstractParserFormController);
 
   window.FullPKParserController = (function(_super) {
     __extends(FullPKParserController, _super);

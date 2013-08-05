@@ -172,12 +172,14 @@ dnsGetUser = (username, callback) ->
 				firstName: json.DNSPerson.firstName
 				lastName: json.DNSPerson.lastName
 		else
-			console.log 'got ajax error trying get project list'
+			console.log 'got ajax error trying get user information'
 			console.log error
 			console.log json
 			console.log response
 			callback null, null
 	)
+	logDnsUsage "User logged in", "", username
+
 
 
 exports.getUsers = (req, resp) ->

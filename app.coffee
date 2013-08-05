@@ -1,4 +1,21 @@
 # For DNS only
+
+global.logDnsUsage = (action, data, username) ->
+	config = require './public/src/conf/configurationNode.js'
+	request = require 'request'
+	req = request.post config.serverConfigurationParams.configuration.loggingService , (error, response) =>
+			if !error && response.statusCode == 200
+				console.log "logged: "+action+" with data: "+data+" and user: "+username
+			else
+				console.log "got error trying log action: "+action+" with data: "+data
+				console.log error
+				console.log response
+	form = req.form()
+	form.append('application', 'acas')
+	form.append('action', action)
+	form.append('application_data', data)
+	form.append('user_login', username)
+
 fs = require('fs')
 asyncblock = require('asyncblock');
 exec = require('child_process').exec;
@@ -143,6 +160,14 @@ startApp = ->
 	fullPKParserRoutes = require './routes/FullPKParserRoutes.js'
 	app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
 
+	# MicroSolParser routes
+	microSolRoutes = require './routes/MicroSolRoutes.js'
+	app.post '/api/microSolParser', microSolRoutes.parseMicroSolData
+
+	# PampaParser routes
+	pampaRoutes = require './routes/PampaRoutes.js'
+	app.post '/api/pampaParser', pampaRoutes.parsePampaData
+
 	# BulkLoadContainersFromSDF routes
 	bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
 	app.post '/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF
@@ -169,6 +194,8 @@ startApp = ->
 	http.createServer(app).listen(app.get('port'), ->
 		console.log("Express server listening on port " + app.get('port'))
 	)
+	logDnsUsage("ACAS Node server started", "started", "")
+
 
 # if not DNS
 #startApp()

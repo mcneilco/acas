@@ -193,13 +193,18 @@
           it("should disable all inputs on request", function() {
             this.fpkc.disableAllInputs();
             expect(this.fpkc.$('.bv_scientist').attr("disabled")).toEqual("disabled");
-            return expect(this.fpkc.$('.bv_project').attr("disabled")).toEqual("disabled");
+            expect(this.fpkc.$('.bv_project').attr("disabled")).toEqual("disabled");
+            return expect(this.fpkc.$('.bv_protocolName').attr("disabled")).toEqual("disabled");
           });
           return it("should enable all inputs on request", function() {
             this.fpkc.disableAllInputs();
             expect(this.fpkc.$('.bv_scientist').attr("disabled")).toEqual("disabled");
+            expect(this.fpkc.$('.bv_project').attr("disabled")).toEqual("disabled");
+            expect(this.fpkc.$('.bv_protocolName').attr("disabled")).toEqual("disabled");
             this.fpkc.enableAllInputs();
-            return expect(this.fpkc.$('.bv_scientist').attr("disabled")).toBeUndefined();
+            expect(this.fpkc.$('.bv_scientist').attr("disabled")).toBeUndefined();
+            expect(this.fpkc.$('.bv_project').attr("disabled")).toBeUndefined();
+            return expect(this.fpkc.$('.bv_protocolName').attr("disabled")).toBeUndefined();
           });
         });
         return describe('update model when fields changed', function() {

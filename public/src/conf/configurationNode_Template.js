@@ -55,7 +55,7 @@
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "acas.api.reportRegistrationServiceURL";
 		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "";
 		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas.api.hostname:acas.node.port/api/users"
-
+		exports.serverConfigurationParams.configuration.loggingService = "acas.api.usageLoggingServiceURL"
 
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));

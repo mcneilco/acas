@@ -150,11 +150,16 @@ describe 'Full PK Behavior Testing', ->
 					@fpkc.disableAllInputs()
 					expect(@fpkc.$('.bv_scientist').attr("disabled")).toEqual "disabled"
 					expect(@fpkc.$('.bv_project').attr("disabled")).toEqual "disabled"
+					expect(@fpkc.$('.bv_protocolName').attr("disabled")).toEqual "disabled"
 				it "should enable all inputs on request", ->
 					@fpkc.disableAllInputs()
 					expect(@fpkc.$('.bv_scientist').attr("disabled")).toEqual "disabled"
+					expect(@fpkc.$('.bv_project').attr("disabled")).toEqual "disabled"
+					expect(@fpkc.$('.bv_protocolName').attr("disabled")).toEqual "disabled"
 					@fpkc.enableAllInputs()
 					expect(@fpkc.$('.bv_scientist').attr("disabled")).toBeUndefined()
+					expect(@fpkc.$('.bv_project').attr("disabled")).toBeUndefined()
+					expect(@fpkc.$('.bv_protocolName').attr("disabled")).toBeUndefined()
 
 			describe 'update model when fields changed', ->
 				it "should update the protocolName", ->

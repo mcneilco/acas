@@ -25,6 +25,7 @@ applicationScripts = [
 	'/javascripts/src/LSFileChooser.js'
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
+	'/javascripts/src/AbstractParserFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
 	'/javascripts/src/PickList.js'
 	# For serverAPI module
@@ -52,6 +53,10 @@ applicationScripts = [
 	'/javascripts/src/GenericDataParser.js'
 	# For FullPK module
 	'/javascripts/src/FullPK.js'
+	# For MicroSol module
+	'/javascripts/src/MicroSol.js'
+	# For Pampa module
+	'/javascripts/src/Pampa.js'
 	# For BulkLoadContainersFromSDF module
 	'/javascripts/src/BulkLoadContainersFromSDF.js'
 	# For BulkLoadSampleTransfers module
@@ -62,7 +67,7 @@ applicationScripts = [
 
 exports.index = (req, res) ->
 	#"use strict"
-	global.specRunnerTestmode = false
+	global.specRunnerTestmode = true
 	scriptsToLoad = requiredScripts.concat(applicationScripts)
 	return res.render 'index',
 		title: "ACAS Home"
@@ -129,6 +134,14 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/testFixtures/FullPKTestJSON.js'
 		'javascripts/spec/FullPKSpec.js'
 		'javascripts/spec/FullPKParserServiceSpec.js'
+		# For MicroSol Parser module
+		'javascripts/spec/testFixtures/MicroSolTestJSON.js'
+		'javascripts/spec/MicroSolSpec.js'
+		'javascripts/spec/MicroSolServiceSpec.js'
+		# For Pampa Parser module
+		'javascripts/spec/testFixtures/PampaTestJSON.js'
+		'javascripts/spec/PampaSpec.js'
+		'javascripts/spec/PampaServiceSpec.js'
 		# For BulkLoadContainersFromSDF module
 		'javascripts/spec/BulkLoadContainersFromSDFSpec.js'
 		'javascripts/spec/BulkLoadContainersFromSDFServerSpec.js'

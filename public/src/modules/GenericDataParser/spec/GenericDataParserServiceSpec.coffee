@@ -5,7 +5,7 @@ This service parses data from the generic format and saves it to the database
 goodDataRequest =
 	fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve_with_warnings.xls"
 	reportFile: null #if user uploads report, put temp path here
-	dryRun: true
+	dryRunMode: true
 	user: 'jmcneil'
 	testMode: true
 
@@ -13,7 +13,7 @@ goodDataRequest =
 badDataRequest =
 	fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls"
 	reportFile: null #if user uploads report, put temp path here
-	dryRun: true
+	dryRunMode: true
 	user: 'jmcneil'
 	testMode: true
 
@@ -25,7 +25,7 @@ returnExampleSuccess =
 		fileToParse: "filename.xls"
 		reportFile: null #if user uploads report, put temp path here
 		htmlSummary: "HTML from service"
-		dryRun: true
+		dryRunMode: true
 	hasError: false
 	hasWarning: true
 	errorMessages: []
@@ -38,7 +38,7 @@ returnExampleError =
 		fileToParse: "filename.xls"
 		reportFile: null #if user uploads report, put temp path here
 		htmlSummary: "Error: There is a problem in this file..."
-		dryRun: true
+		dryRunMode: true
 	hasError: true
 	hasWarning: true
 	errorMessages: [
