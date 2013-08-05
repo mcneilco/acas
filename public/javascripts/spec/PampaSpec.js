@@ -91,8 +91,11 @@
           it('should exist', function() {
             return expect(this.fpkc).toBeDefined();
           });
-          return it('should load a template', function() {
+          it('should load a template', function() {
             return expect(this.fpkc.$('.bv_protocolName').length).toEqual(1);
+          });
+          return it("should hide the summary table", function() {
+            return expect(this.fpkc.$('.bv_csvPreviewContainer')).not.toBeVisible();
           });
         });
         describe("it should show a picklist for projects", function() {
@@ -119,7 +122,7 @@
           it("should show protocol options after loading them from server", function() {
             return expect(this.fpkc.$('.bv_protocolName option').length).toBeGreaterThan(0);
           });
-          return it("should default to unassigned", function() {
+          return it("should default protocol to unassigned", function() {
             return expect(this.fpkc.$('.bv_protocolName').val()).toEqual("unassigned");
           });
         });
@@ -139,6 +142,27 @@
             expect(this.fpkc.$('.bv_scientist').attr("disabled")).toBeUndefined();
             expect(this.fpkc.$('.bv_project').attr("disabled")).toBeUndefined();
             return expect(this.fpkc.$('.bv_protocolName').attr("disabled")).toBeUndefined();
+          });
+        });
+        describe("show preview table from dry run on request", function() {
+          beforeEach(function() {
+            return this.fpkc.showCSVPreview(window.PampaTestJSON.csvDataToLoad);
+          });
+          it("should show the summary table", function() {
+            return expect(this.fpkc.$('.bv_csvPreviewContainer')).toBeVisible();
+          });
+          it("should show a header row with column names", function() {
+            return expect(this.fpkc.$('.csvPreviewTHead th :eq(0)').html()).toEqual("Corporate Batch ID");
+          });
+          it("should show 2 data rows", function() {
+            return expect(this.fpkc.$('.csvPreviewTBody tr').length).toEqual(2);
+          });
+          it("should show the right value in the first row of the first cell", function() {
+            return expect(this.fpkc.$('.csvPreviewTBody tr :eq(0) td :eq(0)').html()).toEqual("DNS123456789::12");
+          });
+          return it("should hide preview when controls enabled", function() {
+            this.fpkc.enableAllInputs();
+            return expect(this.fpkc.$('.bv_csvPreviewContainer')).not.toBeVisible();
           });
         });
         return describe('update model when fields changed', function() {
@@ -210,7 +234,6 @@
             return runs(function() {
               this.fpkc.$(".bv_protocolName").val("unassigned");
               this.fpkc.$(".bv_protocolName").change();
-              console.log(this.fpkc.$(".bv_protocolName").val());
               return expect(this.fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy();
             });
           });

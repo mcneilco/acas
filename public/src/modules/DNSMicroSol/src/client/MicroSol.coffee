@@ -29,7 +29,7 @@ class window.MicroSol extends Backbone.Model
 		else
 			return null
 
-class window.MicroSolController extends AbstractFormController
+class window.MicroSolController extends AbstractParserFormController
 	template: _.template($("#MicroSolView").html())
 
 	events:
@@ -40,17 +40,13 @@ class window.MicroSolController extends AbstractFormController
 
 	initialize: ->
 		@errorOwnerName = 'MicroSolController'
-		$(@el).html @template()
-		@setBindings()
+		super()
 		@setupProjectSelect()
-		@setupProtocolSelect()
+		@setupProtocolSelect("uSol")
 
 	render: =>
+		super()
 		@
-
-	attributeChanged: =>
-		@trigger 'amDirty'
-		@updateModel()
 
 	updateModel: ->
 		@model.set
@@ -59,37 +55,6 @@ class window.MicroSolController extends AbstractFormController
 			notebook: @getTrimmedInput('.bv_notebook')
 			project: @getTrimmedInput('.bv_project')
 		@trigger 'amDirty'
-
-	setupProjectSelect: ->
-		@projectList = new PickListList()
-		@projectList.url = "/api/projects"
-		@projectListController = new PickListSelectController
-			el: @$('.bv_project')
-			collection: @projectList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Project"
-			selectedCode: "unassigned"
-
-	setupProtocolSelect: ->
-		@protocolList = new PickListList()
-#		@protocolList.url = "api/protocolCodes"
-		@protocolList.url = "api/protocolCodes/filter/uSol"
-		@protocolListController = new PickListSelectController
-			el: @$('.bv_protocolName')
-			collection: @protocolList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Protocol"
-			selectedCode: "unassigned"
-
-	disableAllInputs: ->
-		@$('input').attr 'disabled', 'disabled'
-		@$('select').attr 'disabled', 'disabled'
-
-	enableAllInputs: ->
-		@$('input').removeAttr 'disabled'
-		@$('select').removeAttr 'disabled'
 
 class window.MicroSolParserController extends BasicFileValidateAndSaveController
 
@@ -124,6 +89,7 @@ class window.MicroSolParserController extends BasicFileValidateAndSaveController
 	handleValidationReturnSuccess: (json) =>
 		super(json)
 		@msc.disableAllInputs()
+		@msc.showCSVPreview json.results.csvDataPreview
 
 	showFileSelectPhase: ->
 		super()

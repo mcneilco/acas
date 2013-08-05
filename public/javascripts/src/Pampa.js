@@ -62,7 +62,6 @@
     __extends(PampaController, _super);
 
     function PampaController() {
-      this.attributeChanged = __bind(this.attributeChanged, this);
       this.render = __bind(this.render, this);      _ref1 = PampaController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
@@ -78,19 +77,14 @@
 
     PampaController.prototype.initialize = function() {
       this.errorOwnerName = 'PampaController';
-      $(this.el).html(this.template());
-      this.setBindings();
+      PampaController.__super__.initialize.call(this);
       this.setupProjectSelect();
-      return this.setupProtocolSelect();
+      return this.setupProtocolSelect("pampa");
     };
 
     PampaController.prototype.render = function() {
+      PampaController.__super__.render.call(this);
       return this;
-    };
-
-    PampaController.prototype.attributeChanged = function() {
-      this.trigger('amDirty');
-      return this.updateModel();
     };
 
     PampaController.prototype.updateModel = function() {
@@ -103,47 +97,9 @@
       return this.trigger('amDirty');
     };
 
-    PampaController.prototype.setupProjectSelect = function() {
-      this.projectList = new PickListList();
-      this.projectList.url = "/api/projects";
-      return this.projectListController = new PickListSelectController({
-        el: this.$('.bv_project'),
-        collection: this.projectList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Project"
-        }),
-        selectedCode: "unassigned"
-      });
-    };
-
-    PampaController.prototype.setupProtocolSelect = function() {
-      this.protocolList = new PickListList();
-      this.protocolList.url = "api/protocolCodes/filter/pampa";
-      return this.protocolListController = new PickListSelectController({
-        el: this.$('.bv_protocolName'),
-        collection: this.protocolList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Protocol"
-        }),
-        selectedCode: "unassigned"
-      });
-    };
-
-    PampaController.prototype.disableAllInputs = function() {
-      this.$('input').attr('disabled', 'disabled');
-      return this.$('select').attr('disabled', 'disabled');
-    };
-
-    PampaController.prototype.enableAllInputs = function() {
-      this.$('input').removeAttr('disabled');
-      return this.$('select').removeAttr('disabled');
-    };
-
     return PampaController;
 
-  })(AbstractFormController);
+  })(AbstractParserFormController);
 
   window.PampaParserController = (function(_super) {
     __extends(PampaParserController, _super);
@@ -197,7 +153,8 @@
 
     PampaParserController.prototype.handleValidationReturnSuccess = function(json) {
       PampaParserController.__super__.handleValidationReturnSuccess.call(this, json);
-      return this.msc.disableAllInputs();
+      this.msc.disableAllInputs();
+      return this.msc.showCSVPreview(json.results.csvDataPreview);
     };
 
     PampaParserController.prototype.showFileSelectPhase = function() {

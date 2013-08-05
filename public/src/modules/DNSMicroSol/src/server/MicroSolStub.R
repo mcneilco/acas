@@ -20,6 +20,6 @@ parseMicroSolData <- function(request){
   parserInput$reportFile <- ""
   parserInput$user <- request$user
   results <- parseGenericData(parserInput)
-  results$results$csvDataToLoad <- "Corporate Batch ID,solubility (ug/mL),Assay Comment (-)\nDNS123456789::12,11.4,good\nDNS123456790::01,6.9,ok\n"
+  results$results$csvDataPreview <- "Corporate Batch ID,solubility (ug/mL),Assay Comment (-)\nDNS123456789::12,11.4,good\nDNS123456790::01,6.9,ok\n"
   return(results)
 }

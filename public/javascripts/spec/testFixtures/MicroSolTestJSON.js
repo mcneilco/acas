@@ -1,11 +1,12 @@
 (function() {
   (function(exports) {
-    return exports.validMicroSol = {
+    exports.validMicroSol = {
       protocolName: "uSol Protocol 1",
       scientist: "jmcneil",
       notebook: "dnsNB1",
       project: "proj1"
     };
+    return exports.csvDataToLoad = "Corporate Batch ID,solubility (ug/mL),Assay Comment (-)\nDNS123456789::12,11.4,good\nDNS123456790::01,6.9,ok\n";
   })((typeof process === "undefined" || !process.versions ? window.MicroSolTestJSON = window.MicroSolTestJSON || {} : exports));
 
 }).call(this);

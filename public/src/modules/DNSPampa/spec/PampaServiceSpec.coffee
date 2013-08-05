@@ -26,7 +26,7 @@ returnExampleSuccess =
 		path: "path/to/file"
 		fileToParse: "filename.xls"
 		htmlSummary: "HTML from service"
-		csvDataToLoad: "Corporate Batch ID,solubility (ug/mL),Assay Comment (-)\nDNS123456789::12,11.4,good\nDNS123456790::01,6.9,ok\n"
+		csvDataPreview: "Corporate Batch ID,solubility (ug/mL),Assay Comment (-)\nDNS123456789::12,11.4,good\nDNS123456790::01,6.9,ok\n"
 		dryRun: true
 	hasError: false
 	hasWarning: true
@@ -40,7 +40,7 @@ returnExampleError =
 		fileToParse: "filename.xls"
 		reportFile: null #if user uploads report, put temp path here
 		htmlSummary: "Error: There is a problem in this file..."
-		csvDataToLoad: ""
+		csvDataPreview: ""
 		dryRun: true
 	hasError: true
 	hasWarning: true
@@ -76,7 +76,7 @@ describe 'Pampa Parser Service testing', ->
 				expect(@serviceReturn.results.dryRun).toBeTruthy()
 				expect(@serviceReturn.hasWarning).toBeDefined()
 				expect(@serviceReturn.results.htmlSummary).toBeDefined()
-				expect(@serviceReturn.results.csvDataToLoad).toBeDefined()
+				expect(@serviceReturn.results.csvDataPreview).toBeDefined()
 
 	describe 'when run with invalid input file', ->
 		beforeEach ->

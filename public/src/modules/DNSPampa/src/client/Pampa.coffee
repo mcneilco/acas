@@ -29,7 +29,7 @@ class window.Pampa extends Backbone.Model
 		else
 			return null
 
-class window.PampaController extends AbstractFormController
+class window.PampaController extends AbstractParserFormController
 	template: _.template($("#PampaView").html())
 
 	events:
@@ -40,17 +40,13 @@ class window.PampaController extends AbstractFormController
 
 	initialize: ->
 		@errorOwnerName = 'PampaController'
-		$(@el).html @template()
-		@setBindings()
+		super()
 		@setupProjectSelect()
-		@setupProtocolSelect()
+		@setupProtocolSelect("pampa")
 
 	render: =>
+		super()
 		@
-
-	attributeChanged: =>
-		@trigger 'amDirty'
-		@updateModel()
 
 	updateModel: ->
 		@model.set
@@ -60,36 +56,7 @@ class window.PampaController extends AbstractFormController
 			project: @getTrimmedInput('.bv_project')
 		@trigger 'amDirty'
 
-	setupProjectSelect: ->
-		@projectList = new PickListList()
-		@projectList.url = "/api/projects"
-		@projectListController = new PickListSelectController
-			el: @$('.bv_project')
-			collection: @projectList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Project"
-			selectedCode: "unassigned"
 
-	setupProtocolSelect: ->
-		@protocolList = new PickListList()
-#		@protocolList.url = "api/protocolCodes"
-		@protocolList.url = "api/protocolCodes/filter/pampa"
-		@protocolListController = new PickListSelectController
-			el: @$('.bv_protocolName')
-			collection: @protocolList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Protocol"
-			selectedCode: "unassigned"
-
-	disableAllInputs: ->
-		@$('input').attr 'disabled', 'disabled'
-		@$('select').attr 'disabled', 'disabled'
-
-	enableAllInputs: ->
-		@$('input').removeAttr 'disabled'
-		@$('select').removeAttr 'disabled'
 
 class window.PampaParserController extends BasicFileValidateAndSaveController
 
@@ -124,6 +91,7 @@ class window.PampaParserController extends BasicFileValidateAndSaveController
 	handleValidationReturnSuccess: (json) =>
 		super(json)
 		@msc.disableAllInputs()
+		@msc.showCSVPreview json.results.csvDataPreview
 
 	showFileSelectPhase: ->
 		super()

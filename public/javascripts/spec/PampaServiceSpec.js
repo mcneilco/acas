@@ -30,7 +30,7 @@ It returns the usual error and warning info, but also a CSV preview of the data 
       path: "path/to/file",
       fileToParse: "filename.xls",
       htmlSummary: "HTML from service",
-      csvDataToLoad: "Corporate Batch ID,solubility (ug/mL),Assay Comment (-)\nDNS123456789::12,11.4,good\nDNS123456790::01,6.9,ok\n",
+      csvDataPreview: "Corporate Batch ID,solubility (ug/mL),Assay Comment (-)\nDNS123456789::12,11.4,good\nDNS123456790::01,6.9,ok\n",
       dryRun: true
     },
     hasError: false,
@@ -45,7 +45,7 @@ It returns the usual error and warning info, but also a CSV preview of the data 
       fileToParse: "filename.xls",
       reportFile: null,
       htmlSummary: "Error: There is a problem in this file...",
-      csvDataToLoad: "",
+      csvDataPreview: "",
       dryRun: true
     },
     hasError: true,
@@ -94,7 +94,7 @@ It returns the usual error and warning info, but also a CSV preview of the data 
           expect(this.serviceReturn.results.dryRun).toBeTruthy();
           expect(this.serviceReturn.hasWarning).toBeDefined();
           expect(this.serviceReturn.results.htmlSummary).toBeDefined();
-          return expect(this.serviceReturn.results.csvDataToLoad).toBeDefined();
+          return expect(this.serviceReturn.results.csvDataPreview).toBeDefined();
         });
       });
     });

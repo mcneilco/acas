@@ -25,6 +25,7 @@ applicationScripts = [
 	'/javascripts/src/LSFileChooser.js'
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
+	'/javascripts/src/AbstractParserFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
 	'/javascripts/src/PickList.js'
 	# For serverAPI module
@@ -66,7 +67,7 @@ applicationScripts = [
 
 exports.index = (req, res) ->
 	#"use strict"
-	global.specRunnerTestmode = false
+	global.specRunnerTestmode = true
 	scriptsToLoad = requiredScripts.concat(applicationScripts)
 	return res.render 'index',
 		title: "ACAS Home"

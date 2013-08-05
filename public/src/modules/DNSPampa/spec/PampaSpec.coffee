@@ -72,6 +72,8 @@ describe 'Pampa Behavior Testing', ->
 					expect(@fpkc).toBeDefined()
 				it 'should load a template', ->
 					expect(@fpkc.$('.bv_protocolName').length).toEqual 1
+				it "should hide the summary table", ->
+					expect(@fpkc.$('.bv_csvPreviewContainer')).not.toBeVisible()
 			describe "it should show a picklist for projects", ->
 				beforeEach ->
 					waitsFor ->
@@ -92,7 +94,7 @@ describe 'Pampa Behavior Testing', ->
 					runs ->
 				it "should show protocol options after loading them from server", ->
 					expect(@fpkc.$('.bv_protocolName option').length).toBeGreaterThan 0
-				it "should default to unassigned", ->
+				it "should default protocol to unassigned", ->
 					expect(@fpkc.$('.bv_protocolName').val()).toEqual "unassigned"
 			describe "disable and enable", ->
 				it "should disable all inputs on request", ->
@@ -109,6 +111,20 @@ describe 'Pampa Behavior Testing', ->
 					expect(@fpkc.$('.bv_scientist').attr("disabled")).toBeUndefined()
 					expect(@fpkc.$('.bv_project').attr("disabled")).toBeUndefined()
 					expect(@fpkc.$('.bv_protocolName').attr("disabled")).toBeUndefined()
+			describe "show preview table from dry run on request", ->
+				beforeEach ->
+					@fpkc.showCSVPreview window.PampaTestJSON.csvDataToLoad
+				it "should show the summary table", ->
+					expect(@fpkc.$('.bv_csvPreviewContainer')).toBeVisible()
+				it "should show a header row with column names", ->
+					expect(@fpkc.$('.csvPreviewTHead th :eq(0)').html()).toEqual "Corporate Batch ID"
+				it "should show 2 data rows", ->
+					expect(@fpkc.$('.csvPreviewTBody tr').length).toEqual 2
+				it "should show the right value in the first row of the first cell", ->
+					expect(@fpkc.$('.csvPreviewTBody tr :eq(0) td :eq(0)').html()).toEqual "DNS123456789::12"
+				it "should hide preview when controls enabled", ->
+					@fpkc.enableAllInputs()
+					expect(@fpkc.$('.bv_csvPreviewContainer')).not.toBeVisible()
 
 			describe 'update model when fields changed', ->
 				it "should update the protocolName", ->
@@ -166,7 +182,6 @@ describe 'Pampa Behavior Testing', ->
 					runs ->
 						@fpkc.$(".bv_protocolName").val "unassigned"
 						@fpkc.$(".bv_protocolName").change()
-						console.log @fpkc.$(".bv_protocolName").val()
 						expect(@fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy()
 				it 'should show error if scientist is empty', ->
 					@fpkc.$(".bv_scientist").val ""

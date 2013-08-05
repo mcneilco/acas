@@ -62,7 +62,6 @@
     __extends(MicroSolController, _super);
 
     function MicroSolController() {
-      this.attributeChanged = __bind(this.attributeChanged, this);
       this.render = __bind(this.render, this);      _ref1 = MicroSolController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
@@ -78,19 +77,14 @@
 
     MicroSolController.prototype.initialize = function() {
       this.errorOwnerName = 'MicroSolController';
-      $(this.el).html(this.template());
-      this.setBindings();
+      MicroSolController.__super__.initialize.call(this);
       this.setupProjectSelect();
-      return this.setupProtocolSelect();
+      return this.setupProtocolSelect("uSol");
     };
 
     MicroSolController.prototype.render = function() {
+      MicroSolController.__super__.render.call(this);
       return this;
-    };
-
-    MicroSolController.prototype.attributeChanged = function() {
-      this.trigger('amDirty');
-      return this.updateModel();
     };
 
     MicroSolController.prototype.updateModel = function() {
@@ -103,47 +97,9 @@
       return this.trigger('amDirty');
     };
 
-    MicroSolController.prototype.setupProjectSelect = function() {
-      this.projectList = new PickListList();
-      this.projectList.url = "/api/projects";
-      return this.projectListController = new PickListSelectController({
-        el: this.$('.bv_project'),
-        collection: this.projectList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Project"
-        }),
-        selectedCode: "unassigned"
-      });
-    };
-
-    MicroSolController.prototype.setupProtocolSelect = function() {
-      this.protocolList = new PickListList();
-      this.protocolList.url = "api/protocolCodes/filter/uSol";
-      return this.protocolListController = new PickListSelectController({
-        el: this.$('.bv_protocolName'),
-        collection: this.protocolList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Protocol"
-        }),
-        selectedCode: "unassigned"
-      });
-    };
-
-    MicroSolController.prototype.disableAllInputs = function() {
-      this.$('input').attr('disabled', 'disabled');
-      return this.$('select').attr('disabled', 'disabled');
-    };
-
-    MicroSolController.prototype.enableAllInputs = function() {
-      this.$('input').removeAttr('disabled');
-      return this.$('select').removeAttr('disabled');
-    };
-
     return MicroSolController;
 
-  })(AbstractFormController);
+  })(AbstractParserFormController);
 
   window.MicroSolParserController = (function(_super) {
     __extends(MicroSolParserController, _super);
@@ -197,7 +153,8 @@
 
     MicroSolParserController.prototype.handleValidationReturnSuccess = function(json) {
       MicroSolParserController.__super__.handleValidationReturnSuccess.call(this, json);
-      return this.msc.disableAllInputs();
+      this.msc.disableAllInputs();
+      return this.msc.showCSVPreview(json.results.csvDataPreview);
     };
 
     MicroSolParserController.prototype.showFileSelectPhase = function() {
