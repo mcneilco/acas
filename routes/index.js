@@ -8,7 +8,7 @@
   exports.index = function(req, res) {
     var scriptsToLoad;
 
-    global.specRunnerTestmode = true;
+    global.specRunnerTestmode = false;
     scriptsToLoad = requiredScripts.concat(applicationScripts);
     return res.render('index', {
       title: "ACAS Home",
