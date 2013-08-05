@@ -577,6 +577,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
   require(RCurl)
   
   currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
+  if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
   
@@ -1312,11 +1313,12 @@ validateProject <- function(projectName, configList) {
   }
 }
 validateScientist <- function(scientistName, configList) {
+  require('utils')
   require('RCurl')
   require('rjson')
   
   tryCatch({
-    response <- getURL(paste0(configList$nameValidationService, "/", scientistName))
+    response <- getURL(URLencode(paste0(configList$nameValidationService, "/", scientistName)))
     if (response == "") {
       errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
       return("")
