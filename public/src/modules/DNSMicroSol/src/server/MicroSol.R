@@ -42,7 +42,8 @@ parseMicroSolData <- function(request){
 	   ),
 	   hasError= TRUE,
 	   hasWarning= FALSE,
-	   errorMessages= preProcessorCall$preProcessorResponse)
+	   errorMessages= list(list(errorLevel="error", message=preProcessorCall$preProcessorResponse))
+	   )
     return(response)
   }
 }
