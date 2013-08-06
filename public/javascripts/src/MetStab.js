@@ -170,8 +170,7 @@
 
     MetStabParserController.prototype.handleValidationReturnSuccess = function(json) {
       MetStabParserController.__super__.handleValidationReturnSuccess.call(this, json);
-      this.msc.disableAllInputs();
-      return this.msc.showCSVPreview(json.results.csvDataPreview);
+      return this.msc.disableAllInputs();
     };
 
     MetStabParserController.prototype.showFileSelectPhase = function() {

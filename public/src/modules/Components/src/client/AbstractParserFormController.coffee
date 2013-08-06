@@ -5,7 +5,6 @@ class window.AbstractParserFormController extends AbstractFormController
 		@setBindings()
 
 	render: =>
-		@$('.bv_csvPreviewContainer').hide()
 		@
 
 	attributeChanged: =>
@@ -44,20 +43,4 @@ class window.AbstractParserFormController extends AbstractFormController
 		@$('select').removeAttr 'disabled'
 		@$('.bv_csvPreviewContainer').hide()
 
-	showCSVPreview: (csv) ->
-		@$('.csvPreviewTHead').empty()
-		@$('.csvPreviewTBody').empty()
-
-		csvRows = csv.split('\n')
-		headCells = csvRows[0].split(',')
-		@$('.csvPreviewTHead').append "<tr></tr>"
-		for val in  headCells
-			@$('.csvPreviewTHead tr').append "<th>"+val+"</th>"
-		for r in [1..csvRows.length-2]
-			@$('.csvPreviewTBody').append "<tr></tr>"
-			rowCells = csvRows[r].split(',')
-			for val in rowCells
-				@$('.csvPreviewTBody tr:last').append "<td>"+val+"</td>"
-
-		@$('.bv_csvPreviewContainer').show()
 

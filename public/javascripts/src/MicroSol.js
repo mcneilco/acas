@@ -153,8 +153,7 @@
 
     MicroSolParserController.prototype.handleValidationReturnSuccess = function(json) {
       MicroSolParserController.__super__.handleValidationReturnSuccess.call(this, json);
-      this.msc.disableAllInputs();
-      return this.msc.showCSVPreview(json.results.csvDataPreview);
+      return this.msc.disableAllInputs();
     };
 
     MicroSolParserController.prototype.showFileSelectPhase = function() {

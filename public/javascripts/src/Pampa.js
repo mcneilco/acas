@@ -153,8 +153,7 @@
 
     PampaParserController.prototype.handleValidationReturnSuccess = function(json) {
       PampaParserController.__super__.handleValidationReturnSuccess.call(this, json);
-      this.msc.disableAllInputs();
-      return this.msc.showCSVPreview(json.results.csvDataPreview);
+      return this.msc.disableAllInputs();
     };
 
     PampaParserController.prototype.showFileSelectPhase = function() {

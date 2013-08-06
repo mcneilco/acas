@@ -19,7 +19,6 @@
     };
 
     AbstractParserFormController.prototype.render = function() {
-      this.$('.bv_csvPreviewContainer').hide();
       return this;
     };
 
@@ -65,29 +64,6 @@
       this.$('input').removeAttr('disabled');
       this.$('select').removeAttr('disabled');
       return this.$('.bv_csvPreviewContainer').hide();
-    };
-
-    AbstractParserFormController.prototype.showCSVPreview = function(csv) {
-      var csvRows, headCells, r, rowCells, val, _i, _j, _k, _len, _len1, _ref1;
-
-      this.$('.csvPreviewTHead').empty();
-      this.$('.csvPreviewTBody').empty();
-      csvRows = csv.split('\n');
-      headCells = csvRows[0].split(',');
-      this.$('.csvPreviewTHead').append("<tr></tr>");
-      for (_i = 0, _len = headCells.length; _i < _len; _i++) {
-        val = headCells[_i];
-        this.$('.csvPreviewTHead tr').append("<th>" + val + "</th>");
-      }
-      for (r = _j = 1, _ref1 = csvRows.length - 2; 1 <= _ref1 ? _j <= _ref1 : _j >= _ref1; r = 1 <= _ref1 ? ++_j : --_j) {
-        this.$('.csvPreviewTBody').append("<tr></tr>");
-        rowCells = csvRows[r].split(',');
-        for (_k = 0, _len1 = rowCells.length; _k < _len1; _k++) {
-          val = rowCells[_k];
-          this.$('.csvPreviewTBody tr:last').append("<td>" + val + "</td>");
-        }
-      }
-      return this.$('.bv_csvPreviewContainer').show();
     };
 
     return AbstractParserFormController;
