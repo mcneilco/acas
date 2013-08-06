@@ -20,8 +20,8 @@ fs = require('fs')
 asyncblock = require('asyncblock');
 exec = require('child_process').exec;
 asyncblock((flow) ->
-	deployMode = process.env.DNSDeployMode
-	exec("java -jar ../lib/dns-config-client.jar -m "+deployMode+" -c acas -d 2>/dev/null", flow.add())
+	global.deployMode = process.env.DNSDeployMode
+	exec("java -jar ../lib/dns-config-client.jar -m "+global.deployMode+" -c acas -d 2>/dev/null", flow.add())
 	config = flow.wait()
 	config = config.replace(/\\/g, "")
 	configLines = config.split("\n")
@@ -42,7 +42,7 @@ asyncblock((flow) ->
 
 	# replace server name
 	enableSpecRunner = true
-	switch(deployMode)
+	switch(global.deployMode)
 		when "Dev" then hostName = "acas-d"
 		when "Test" then hostName = "acas-t"
 		when "Stage" then hostName = "acas-s"
@@ -201,7 +201,8 @@ startApp = ->
 	logDnsUsage("ACAS Node server started", "started", "")
 
 
-# if not DNS
-#startApp()
-# end if not DNS
-
+### if not DNS
+global.deployMode = "Dev"
+startApp()
+ end if not DNS
+###

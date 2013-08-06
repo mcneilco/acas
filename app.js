@@ -30,10 +30,10 @@
   exec = require('child_process').exec;
 
   asyncblock(function(flow) {
-    var config, configLines, configTemplate, deployMode, enableSpecRunner, hostName, jdbcParts, line, lineParts, name, setting, settings, _i, _len;
+    var config, configLines, configTemplate, enableSpecRunner, hostName, jdbcParts, line, lineParts, name, setting, settings, _i, _len;
 
-    deployMode = process.env.DNSDeployMode;
-    exec("java -jar ../lib/dns-config-client.jar -m " + deployMode + " -c acas -d 2>/dev/null", flow.add());
+    global.deployMode = process.env.DNSDeployMode;
+    exec("java -jar ../lib/dns-config-client.jar -m " + global.deployMode + " -c acas -d 2>/dev/null", flow.add());
     config = flow.wait();
     config = config.replace(/\\/g, "");
     configLines = config.split("\n");
@@ -56,7 +56,7 @@
     configTemplate = configTemplate.replace(/acas.api.db.port/g, jdbcParts[4]);
     configTemplate = configTemplate.replace(/acas.api.db.name/g, jdbcParts[5]);
     enableSpecRunner = true;
-    switch (deployMode) {
+    switch (global.deployMode) {
       case "Dev":
         hostName = "acas-d";
         break;
@@ -188,5 +188,12 @@
     });
     return logDnsUsage("ACAS Node server started", "started", "");
   };
+
+  /* if not DNS
+  global.deployMode = "Dev"
+  startApp()
+   end if not DNS
+  */
+
 
 }).call(this);

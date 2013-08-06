@@ -36,3 +36,18 @@ describe "Module Menus Controller testing", ->
 			expect(@mmc.$('.bv_modLaunchMenuWrapper li').length).toEqual 4
 		it "Should create and make divs for all the non header ModuleLauncherControllers", ->
 			expect(@mmc.$('.bv_mainModuleWrapper div.bv_moduleContent').length).toEqual 3
+
+	describe "Deploy mode display", ->
+		beforeEach ->
+			@mmc = new ModuleMenusController
+				el: $('#fixture')
+				menuListJSON: @testMenuItems # should be in a global config file
+		it "should show the deploy mode if set", ->
+			window.AppLaunchParams.deployMode = "Stage"
+			@mmc.render()
+			expect(@mmc.$('.bv_deployMode h1').html()).toEqual "STAGE"
+		it "should not show the deploy mode if set to Prod", ->
+			window.AppLaunchParams.deployMode = "Prod"
+			@mmc.render()
+			expect(@mmc.$('.bv_deployMode h1').html()).toEqual ""
+

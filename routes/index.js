@@ -16,7 +16,8 @@
       appParams: {
         loginUserName: req.user.username,
         loginUser: req.user,
-        testMode: false
+        testMode: false,
+        deployMode: global.deployMode
       }
     });
   };
@@ -43,7 +44,8 @@
           lastName: "McNeil"
         },
         testMode: true,
-        liveServiceTest: false
+        liveServiceTest: false,
+        deployMode: global.deployMode
       }
     });
   };

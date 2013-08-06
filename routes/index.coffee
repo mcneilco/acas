@@ -78,6 +78,8 @@ exports.index = (req, res) ->
 			loginUserName: req.user.username
 			loginUser: req.user
 			testMode: false
+			deployMode: global.deployMode
+#			deployMode: "Test"
 
 
 exports.specRunner = (req, res) ->
@@ -174,6 +176,7 @@ exports.specRunner = (req, res) ->
 				lastName: "McNeil"
 			testMode: true
 			liveServiceTest: false
+			deployMode: global.deployMode
 	})
 
 exports.liveServiceSpecRunner = (req, res) ->

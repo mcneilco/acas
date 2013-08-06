@@ -57,6 +57,11 @@
       this.moduleLauncherListController.render();
       this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
       this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
+      if (window.AppLaunchParams.deployMode != null) {
+        if (window.AppLaunchParams.deployMode.toUpperCase() !== "PROD") {
+          this.$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase());
+        }
+      }
       return this;
     };
 
