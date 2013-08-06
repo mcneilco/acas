@@ -15,7 +15,7 @@ parseMicroSolData <- function(request){
   inputParameters <- request$inputParameters
   preProcessorCall <- tryCatch({
     require(dmpk)
-	outputFileName <- tempfile(pattern = basename(request$fileToParse), fileext = ".csv")
+	outputFileName <- paste0(request$fileToParse, "Processed.csv")
     response <- pionToSEL(inputFilePath = request$fileToParse, outputFilePath = outputFileName, exptMetaData = inputParameters, logDir = racas::applicationSettings$logDir)
     list(completedSuccessfully = TRUE, preProcessorResponse = response)
   }, error = function(err) {
