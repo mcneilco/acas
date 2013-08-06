@@ -1736,14 +1736,23 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
         dateValue <- as.numeric(format(as.Date(calculatedResults$"Result Date"[i],origin="1970-01-01"), "%s"))*1000
         # The main value (whether it is a numeric, string, or date) creates one value    
         analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-          lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {"stringValue"}
-          else if (calculatedResults$"Class"[i]=="Text") {"stringValue"}  
-          else if (calculatedResults$"Class"[i]=="Date") {"dateValue"}
+          lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {
+            "stringValue"
+          } else if (calculatedResults$"Class"[i]=="Text") {
+            if(nchar(calculatedResults$"Result Desc"[i]) > 255)) {
+              "clobValue" 
+            } else {
+              "stringValue"
+            }
+          } else if (calculatedResults$"Class"[i]=="Date") {"dateValue"}
           else {"numericValue"},
           lsKind = calculatedResults$"Result Type"[i],
           stringValue = if(calculatedResults$"Result Type"[i]==tempIdLabel) {
             paste0(calculatedResults$"Result Desc"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
-          } else if (!is.na(calculatedResults$"Result Desc"[i])) {
+          } else if (!is.na(calculatedResults$"Result Desc"[i]) && calculatedResults$"Result Desc"[i]) <= 255) {
+            calculatedResults$"Result Desc"[i]
+          } else {NULL},
+          clobValue = if (!is.na(calculatedResults$"Result Desc"[i]) && calculatedResults$"Result Desc"[i]) <= 255) {
             calculatedResults$"Result Desc"[i]
           } else {NULL},
           dateValue = if(is.na(dateValue)) {NULL} else {dateValue},
@@ -1953,6 +1962,9 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
   
   require(RCurl)
   require(rjson)
+  
+#  annotateBatches(batchCodeList=batchNameList, reportFileSummary, recordedBy,
+#                              experiment, lsTransaction, reportFilePath = reportFilePath)
   
   annotationList <- list(
     dnsAnnotation = list(
