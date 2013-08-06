@@ -19,6 +19,10 @@
       isHeader: false,
       menuName: "Load PAMPA Experiment",
       mainControllerClassName: "PampaParserController"
+    }, {
+      isHeader: false,
+      menuName: "Load Met. Stab. Experiment",
+      mainControllerClassName: "MetStabParserController"
     }
   ];
 

@@ -1,0 +1,48 @@
+<script type="text/template" id="MetStabView">
+
+    <form class="form-horizontal pull-left">
+        <div class="control-group bv_group_protocolName">
+            <label class="control-label">Protocol Name*</label>
+            <div class="controls">
+                <select class="span12 bv_protocolName">
+                </select>
+            </div>
+        </div>
+        <div class="control-group bv_group_scientist">
+            <label class="control-label">Scientist*</label>
+            <div class="controls">
+                <input class="input-xlarge bv_scientist" type="text" placeholder="username">
+            </div>
+        </div>
+        <div class="control-group bv_group_notebook">
+            <label class="control-label">Notebook*</label>
+            <div class="controls">
+                <input class="input-xlarge bv_notebook" type="text" placeholder="ELN-000123">
+            </div>
+        </div>
+        <div class="control-group bv_group_assayDate">
+            <label class="control-label">Assay Date*</label>
+            <div class="controls">
+                <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                    <input class="bv_assayDate" size="16" type="text" value="" placeholder="yyyy-mm-dd" style="width:245px;">
+                    <span class="add-on"><i class="icon-th"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="control-group bv_group_project">
+            <label class="control-label">Project*</label>
+            <div class="controls">
+                <select class="span12 bv_project">
+                </select>
+            </div>
+        </div>
+        <div class="bv_csvPreviewContainer">
+            <h4>Data Preview:</h4>
+            <table class="table table-striped table-bordered table-condensed">
+                <thead class="csvPreviewTHead"></thead>
+                <tbody class="csvPreviewTBody"></tbody>
+            </table>
+        </div>
+    </form>
+
+</script>

@@ -168,6 +168,10 @@ startApp = ->
 	pampaRoutes = require './routes/PampaRoutes.js'
 	app.post '/api/pampaParser', pampaRoutes.parsePampaData
 
+	# MetStabParser routes
+	metStabRoutes = require './routes/MetStabRoutes.js'
+	app.post '/api/metStabParser', metStabRoutes.parseMetStabData
+
 	# BulkLoadContainersFromSDF routes
 	bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
 	app.post '/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF

@@ -57,6 +57,8 @@ applicationScripts = [
 	'/javascripts/src/MicroSol.js'
 	# For Pampa module
 	'/javascripts/src/Pampa.js'
+	# For MetStab module
+	'/javascripts/src/MetStab.js'
 	# For BulkLoadContainersFromSDF module
 	'/javascripts/src/BulkLoadContainersFromSDF.js'
 	# For BulkLoadSampleTransfers module
@@ -142,6 +144,10 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/testFixtures/PampaTestJSON.js'
 		'javascripts/spec/PampaSpec.js'
 		'javascripts/spec/PampaServiceSpec.js'
+		# For MetStab Parser module
+		'javascripts/spec/testFixtures/MetStabTestJSON.js'
+		'javascripts/spec/MetStabSpec.js'
+		'javascripts/spec/MetStabServiceSpec.js'
 		# For BulkLoadContainersFromSDF module
 		'javascripts/spec/BulkLoadContainersFromSDFSpec.js'
 		'javascripts/spec/BulkLoadContainersFromSDFServerSpec.js'
