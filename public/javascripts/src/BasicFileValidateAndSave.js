@@ -195,7 +195,10 @@
       if (((_ref1 = json.results) != null ? _ref1.htmlSummary : void 0) != null) {
         this.$('.bv_htmlSummary').html(json.results.htmlSummary);
       }
-      return this.$('.bv_validateStatusDropDown').modal("hide");
+      this.$('.bv_validateStatusDropDown').modal("hide");
+      if (json.results.csvDataPreview != null) {
+        return this.showCSVPreview(json.results.csvDataPreview);
+      }
     };
 
     BasicFileValidateAndSaveController.prototype.handleSaveReturnSuccess = function(json) {
@@ -212,6 +215,9 @@
       this.showFileUploadCompletePhase();
       this.$('.bv_resultStatus').html(summaryStr);
       this.$('.bv_saveStatusDropDown').modal("hide");
+      if (json.results.csvDataPreview != null) {
+        this.showCSVPreview(json.results.csvDataPreview);
+      }
       return this.trigger('amClean');
     };
 
@@ -237,7 +243,8 @@
       this.$('.bv_nextControlContainer').show();
       this.$('.bv_saveControlContainer').hide();
       this.$('.bv_completeControlContainer').hide();
-      return this.$('.bv_notifications').hide();
+      this.$('.bv_notifications').hide();
+      return this.$('.bv_csvPreviewContainer').hide();
     };
 
     BasicFileValidateAndSaveController.prototype.showFileUploadPhase = function() {
@@ -251,6 +258,7 @@
 
     BasicFileValidateAndSaveController.prototype.showFileUploadCompletePhase = function() {
       this.$('.bv_htmlSummary').show();
+      this.$('.bv_csvPreviewContainer').hide();
       this.$('.bv_fileUploadWrapper').hide();
       this.$('.bv_nextControlContainer').hide();
       this.$('.bv_saveControlContainer').hide();
@@ -267,6 +275,33 @@
     BasicFileValidateAndSaveController.prototype.handleFormValid = function() {
       this.$(".bv_next").removeAttr('disabled');
       return this.$(".bv_save").removeAttr('disabled');
+    };
+
+    BasicFileValidateAndSaveController.prototype.showCSVPreview = function(csv) {
+      var csvRows, headCells, r, rowCells, val, _i, _j, _k, _len, _len1, _ref1;
+
+      this.$('.csvPreviewTHead').empty();
+      this.$('.csvPreviewTBody').empty();
+      csvRows = csv.split('\n');
+      if (csvRows.length > 1) {
+        headCells = csvRows[0].split(',');
+        if (headCells.length > 1) {
+          this.$('.csvPreviewTHead').append("<tr></tr>");
+          for (_i = 0, _len = headCells.length; _i < _len; _i++) {
+            val = headCells[_i];
+            this.$('.csvPreviewTHead tr').append("<th>" + val + "</th>");
+          }
+          for (r = _j = 1, _ref1 = csvRows.length - 2; 1 <= _ref1 ? _j <= _ref1 : _j >= _ref1; r = 1 <= _ref1 ? ++_j : --_j) {
+            this.$('.csvPreviewTBody').append("<tr></tr>");
+            rowCells = csvRows[r].split(',');
+            for (_k = 0, _len1 = rowCells.length; _k < _len1; _k++) {
+              val = rowCells[_k];
+              this.$('.csvPreviewTBody tr:last').append("<td>" + val + "</td>");
+            }
+          }
+          return this.$('.bv_csvPreviewContainer').show();
+        }
+      }
     };
 
     return BasicFileValidateAndSaveController;

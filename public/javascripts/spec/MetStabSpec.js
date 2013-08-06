@@ -1,5 +1,5 @@
 (function() {
-  describe('Pampa Behavior Testing', function() {
+  describe('MetStab Behavior Testing', function() {
     beforeEach(function() {
       return this.fixture = $.clone($('#fixture').get(0));
     });
@@ -7,35 +7,36 @@
       $('#fixture').remove();
       return $('body').append($(this.fixture));
     });
-    describe('Pampa Model', function() {
+    describe('MetStab Model', function() {
       describe('when instantiated', function() {
         beforeEach(function() {
-          return this.pampa = new Pampa();
+          return this.metStab = new MetStab();
         });
         return describe("defaults tests", function() {
           return it('should have defaults', function() {
-            expect(this.pampa.get('protocolName')).toEqual("");
-            expect(this.pampa.get('scientist')).toEqual("");
-            expect(this.pampa.get('notebook')).toEqual("");
-            return expect(this.pampa.get('project')).toEqual("");
+            expect(this.metStab.get('protocolName')).toEqual("");
+            expect(this.metStab.get('scientist')).toEqual("");
+            expect(this.metStab.get('notebook')).toEqual("");
+            expect(this.metStab.get('project')).toEqual("");
+            return expect(this.metStab.get('assayDate')).toEqual(null);
           });
         });
       });
       return describe("validation tests", function() {
         beforeEach(function() {
-          return this.pampa = new Pampa(window.PampaTestJSON.validPampa);
+          return this.metStab = new MetStab(window.MetStabTestJSON.validMetStab);
         });
         it("should be valid as initialized", function() {
-          return expect(this.pampa.isValid()).toBeTruthy();
+          return expect(this.metStab.isValid()).toBeTruthy();
         });
         it('should require that protocolName not be "unassigned"', function() {
           var filtErrors;
 
-          this.pampa.set({
+          this.metStab.set({
             protocolName: "Select Protocol"
           });
-          expect(this.pampa.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.pampa.validationError, function(err) {
+          expect(this.metStab.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.metStab.validationError, function(err) {
             return err.attribute === 'protocolName';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
@@ -43,11 +44,11 @@
         it('should require that scientist not be ""', function() {
           var filtErrors;
 
-          this.pampa.set({
+          this.metStab.set({
             scientist: ""
           });
-          expect(this.pampa.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.pampa.validationError, function(err) {
+          expect(this.metStab.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.metStab.validationError, function(err) {
             return err.attribute === 'scientist';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
@@ -55,34 +56,46 @@
         it('should require that notebook not be ""', function() {
           var filtErrors;
 
-          this.pampa.set({
+          this.metStab.set({
             notebook: ""
           });
-          expect(this.pampa.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.pampa.validationError, function(err) {
+          expect(this.metStab.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.metStab.validationError, function(err) {
             return err.attribute === 'notebook';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        return it('should require that project not be "unassigned"', function() {
+        it('should require that project not be "unassigned"', function() {
           var filtErrors;
 
-          this.pampa.set({
+          this.metStab.set({
             project: "unassigned"
           });
-          expect(this.pampa.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.pampa.validationError, function(err) {
+          expect(this.metStab.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.metStab.validationError, function(err) {
             return err.attribute === 'project';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it('should require that assayDate not be ""', function() {
+          var filtErrors;
+
+          this.metStab.set({
+            assayDate: new Date("").getTime()
+          });
+          expect(this.metStab.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.metStab.validationError, function(err) {
+            return err.attribute === 'assayDate';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
       });
     });
-    return describe('Pampa Controller', function() {
+    return describe('MetStab Controller', function() {
       describe('when instantiated', function() {
         beforeEach(function() {
-          this.fpkc = new PampaController({
-            model: new Pampa(),
+          this.fpkc = new MetStabController({
+            model: new MetStab(),
             el: $('#fixture')
           });
           return this.fpkc.render();
@@ -147,9 +160,9 @@
               return this.fpkc.$('.bv_protocolName option').length > 0;
             }, 1000);
             return runs(function() {
-              this.fpkc.$('.bv_protocolName').val("PROT-00000013");
+              this.fpkc.$('.bv_protocolName').val("PROT-00000014");
               this.fpkc.$('.bv_protocolName').change();
-              return expect(this.fpkc.model.get('protocolName')).toEqual("BBB-PAMPA");
+              return expect(this.fpkc.model.get('protocolName')).toEqual("ADME_Human Liver Microsome Stability");
             });
           });
           it("should update the scientist", function() {
@@ -161,6 +174,11 @@
             this.fpkc.$('.bv_notebook').val(" test notebook ");
             this.fpkc.$('.bv_notebook').change();
             return expect(this.fpkc.model.get('notebook')).toEqual("test notebook");
+          });
+          it("should update the assayDate", function() {
+            this.fpkc.$('.bv_assayDate').val(" 2013-6-6 ");
+            this.fpkc.$('.bv_assayDate').change();
+            return expect(this.fpkc.model.get('assayDate')).toEqual(new Date(2013, 5, 6).getTime());
           });
           it("should update the project", function() {
             waitsFor(function() {
@@ -196,8 +214,8 @@
       });
       return describe("validation testing", function() {
         beforeEach(function() {
-          this.fpkc = new PampaController({
-            model: new Pampa(window.PampaTestJSON.validPampa),
+          this.fpkc = new MetStabController({
+            model: new MetStab(window.MetStabTestJSON.validMetStab),
             el: $('#fixture')
           });
           return this.fpkc.render();
@@ -223,7 +241,7 @@
             this.fpkc.$(".bv_notebook").change();
             return expect(this.fpkc.$(".bv_group_notebook").hasClass("error")).toBeTruthy();
           });
-          return it('should show error if project is unassigned', function() {
+          it('should show error if project is unassigned', function() {
             waitsFor(function() {
               return this.fpkc.$('.bv_project option').length > 0;
             }, 1000);
@@ -232,6 +250,11 @@
               this.fpkc.$(".bv_project").change();
               return expect(this.fpkc.$(".bv_group_project").hasClass("error")).toBeTruthy();
             });
+          });
+          return it('should show error if assayDate is empty', function() {
+            this.fpkc.$(".bv_assayDate").val("");
+            this.fpkc.$(".bv_assayDate").change();
+            return expect(this.fpkc.$(".bv_group_assayDate").hasClass("error")).toBeTruthy();
           });
         });
       });

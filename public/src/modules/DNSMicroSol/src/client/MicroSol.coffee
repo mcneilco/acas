@@ -89,7 +89,6 @@ class window.MicroSolParserController extends BasicFileValidateAndSaveController
 	handleValidationReturnSuccess: (json) =>
 		super(json)
 		@msc.disableAllInputs()
-		@msc.showCSVPreview json.results.csvDataPreview
 
 	showFileSelectPhase: ->
 		super()

@@ -1,4 +1,4 @@
-describe 'MicroSol Behavior Testing', ->
+describe 'MetStab Behavior Testing', ->
 
 	beforeEach ->
 		@.fixture = $.clone($('#fixture').get(0))
@@ -7,64 +7,74 @@ describe 'MicroSol Behavior Testing', ->
 		$('#fixture').remove()
 		$('body').append $(this.fixture)
 
-	describe 'MicroSol Model', ->
+	describe 'MetStab Model', ->
 		describe 'when instantiated', ->
 			beforeEach ->
-				@microSol = new MicroSol()
+				@metStab = new MetStab()
 			describe "defaults tests", ->
 				it  'should have defaults', ->
-					expect(@microSol.get 'protocolName').toEqual ""
-					expect(@microSol.get 'scientist').toEqual ""
-					expect(@microSol.get 'notebook').toEqual ""
-					expect(@microSol.get 'project').toEqual ""
+					expect(@metStab.get 'protocolName').toEqual ""
+					expect(@metStab.get 'scientist').toEqual ""
+					expect(@metStab.get 'notebook').toEqual ""
+					expect(@metStab.get 'project').toEqual ""
+					expect(@metStab.get 'assayDate').toEqual null
 		describe "validation tests", ->
 			beforeEach ->
-				@microSol = new MicroSol window.MicroSolTestJSON.validMicroSol
+				@metStab = new MetStab window.MetStabTestJSON.validMetStab
 
 			it "should be valid as initialized", ->
-				expect(@microSol.isValid()).toBeTruthy()
+				expect(@metStab.isValid()).toBeTruthy()
 
 			it 'should require that protocolName not be "unassigned"', ->
-				@microSol.set
+				@metStab.set
 					protocolName: "Select Protocol"
-				expect(@microSol.isValid()).toBeFalsy()
-				filtErrors = _.filter(@microSol.validationError, (err) ->
+				expect(@metStab.isValid()).toBeFalsy()
+				filtErrors = _.filter(@metStab.validationError, (err) ->
 					err.attribute=='protocolName'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
 			it 'should require that scientist not be ""', ->
-				@microSol.set
+				@metStab.set
 					scientist: ""
-				expect(@microSol.isValid()).toBeFalsy()
-				filtErrors = _.filter(@microSol.validationError, (err) ->
+				expect(@metStab.isValid()).toBeFalsy()
+				filtErrors = _.filter(@metStab.validationError, (err) ->
 					err.attribute=='scientist'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
 			it 'should require that notebook not be ""', ->
-				@microSol.set
+				@metStab.set
 					notebook: ""
-				expect(@microSol.isValid()).toBeFalsy()
-				filtErrors = _.filter(@microSol.validationError, (err) ->
+				expect(@metStab.isValid()).toBeFalsy()
+				filtErrors = _.filter(@metStab.validationError, (err) ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
 			it 'should require that project not be "unassigned"', ->
-				@microSol.set
+				@metStab.set
 					project: "unassigned"
-				expect(@microSol.isValid()).toBeFalsy()
-				filtErrors = _.filter(@microSol.validationError, (err) ->
+				expect(@metStab.isValid()).toBeFalsy()
+				filtErrors = _.filter(@metStab.validationError, (err) ->
 					err.attribute=='project'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
-	describe 'MicroSol Controller', ->
+			it 'should require that assayDate not be ""', ->
+				@metStab.set
+					assayDate: new Date("").getTime()
+				expect(@metStab.isValid()).toBeFalsy()
+				filtErrors = _.filter(@metStab.validationError, (err) ->
+					err.attribute=='assayDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
+	describe 'MetStab Controller', ->
 		describe 'when instantiated', ->
 			beforeEach ->
-				@fpkc = new MicroSolController
-					model: new MicroSol()
+				@fpkc = new MetStabController
+					model: new MetStab()
 					el: $('#fixture')
 				@fpkc.render()
 			describe "basic existance tests", ->
@@ -92,7 +102,7 @@ describe 'MicroSol Behavior Testing', ->
 					runs ->
 				it "should show protocol options after loading them from server", ->
 					expect(@fpkc.$('.bv_protocolName option').length).toBeGreaterThan 0
-				it "should default to unassigned", ->
+				it "should default protocol to unassigned", ->
 					expect(@fpkc.$('.bv_protocolName').val()).toEqual "unassigned"
 			describe "disable and enable", ->
 				it "should disable all inputs on request", ->
@@ -117,9 +127,9 @@ describe 'MicroSol Behavior Testing', ->
 					,
 						1000
 					runs ->
-						@fpkc.$('.bv_protocolName').val "PROT-00000012"
+						@fpkc.$('.bv_protocolName').val "PROT-00000014"
 						@fpkc.$('.bv_protocolName').change()
-						expect(@fpkc.model.get('protocolName')).toEqual "ADME uSol Kinetic Solubility"
+						expect(@fpkc.model.get('protocolName')).toEqual "ADME_Human Liver Microsome Stability"
 				it "should update the scientist", ->
 					@fpkc.$('.bv_scientist').val " test scientist "
 					@fpkc.$('.bv_scientist').change()
@@ -128,6 +138,10 @@ describe 'MicroSol Behavior Testing', ->
 					@fpkc.$('.bv_notebook').val " test notebook "
 					@fpkc.$('.bv_notebook').change()
 					expect(@fpkc.model.get('notebook')).toEqual "test notebook"
+				it "should update the assayDate", ->
+					@fpkc.$('.bv_assayDate').val " 2013-6-6 "
+					@fpkc.$('.bv_assayDate').change()
+					expect(@fpkc.model.get('assayDate')).toEqual new Date(2013, 5, 6).getTime()
 				it "should update the project", ->
 					waitsFor ->
 						@fpkc.$('.bv_project option').length > 0
@@ -153,8 +167,8 @@ describe 'MicroSol Behavior Testing', ->
 
 		describe "validation testing", ->
 			beforeEach ->
-				@fpkc = new MicroSolController
-					model: new MicroSol window.MicroSolTestJSON.validMicroSol
+				@fpkc = new MetStabController
+					model: new MetStab window.MetStabTestJSON.validMetStab
 					el: $('#fixture')
 				@fpkc.render()
 			describe "error notification", ->
@@ -166,7 +180,6 @@ describe 'MicroSol Behavior Testing', ->
 					runs ->
 						@fpkc.$(".bv_protocolName").val "unassigned"
 						@fpkc.$(".bv_protocolName").change()
-						console.log @fpkc.$(".bv_protocolName").val()
 						expect(@fpkc.$(".bv_group_protocolName").hasClass("error")).toBeTruthy()
 				it 'should show error if scientist is empty', ->
 					@fpkc.$(".bv_scientist").val ""
@@ -185,3 +198,7 @@ describe 'MicroSol Behavior Testing', ->
 						@fpkc.$(".bv_project").val "unassigned"
 						@fpkc.$(".bv_project").change()
 						expect(@fpkc.$(".bv_group_project").hasClass("error")).toBeTruthy()
+				it 'should show error if assayDate is empty', ->
+					@fpkc.$(".bv_assayDate").val ""
+					@fpkc.$(".bv_assayDate").change()
+					expect(@fpkc.$(".bv_group_assayDate").hasClass("error")).toBeTruthy()

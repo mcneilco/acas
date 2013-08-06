@@ -1,9 +1,10 @@
-class window.Pampa extends Backbone.Model
+class window.MetStab extends Backbone.Model
 	defaults:
 		protocolName: ""
 		scientist: ""
 		notebook: ""
 		project: ""
+		assayDate: null
 
 	validate: (attrs) ->
 		errors = []
@@ -23,29 +24,39 @@ class window.Pampa extends Backbone.Model
 			errors.push
 				attribute: 'project'
 				message: "Project must be provided"
+		if _.isNaN(attrs.assayDate)
+			errors.push
+				attribute: 'assayDate'
+				message: "Assay date must be set"
 
 		if errors.length > 0
 			return errors
 		else
 			return null
 
-class window.PampaController extends AbstractParserFormController
-	template: _.template($("#PampaView").html())
+class window.MetStabController extends AbstractParserFormController
+	template: _.template($("#MetStabView").html())
 
 	events:
 		'change .bv_protocolName': "attributeChanged"
 		'change .bv_scientist': "attributeChanged"
 		'change .bv_notebook': "attributeChanged"
 		'change .bv_project': "attributeChanged"
+		'change .bv_assayDate': "attributeChanged"
 
 	initialize: ->
-		@errorOwnerName = 'PampaController'
+		@errorOwnerName = 'MetStabController'
 		super()
 		@setupProjectSelect()
-		@setupProtocolSelect("pampa")
+		@setupProtocolSelect("Microsome Stability")
 
 	render: =>
 		super()
+		@$('.bv_assayDate').datepicker( );
+		@$('.bv_assayDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+		if @model.get('assayDate') != null
+			date = new Date(@model.get('assayDate'))
+			@$('.bv_assayDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
 		@
 
 	updateModel: ->
@@ -54,20 +65,21 @@ class window.PampaController extends AbstractParserFormController
 			scientist: @getTrimmedInput('.bv_scientist')
 			notebook: @getTrimmedInput('.bv_notebook')
 			project: @getTrimmedInput('.bv_project')
+			assayDate: @convertYMDDateToMs(@getTrimmedInput('.bv_assayDate'))
 		@trigger 'amDirty'
 
 
 
-class window.PampaParserController extends BasicFileValidateAndSaveController
+class window.MetStabParserController extends BasicFileValidateAndSaveController
 
 	initialize: ->
-		@fileProcessorURL = "/api/pampaParser"
-		@errorOwnerName = 'PampaParserController'
+		@fileProcessorURL = "/api/metStabParser"
+		@errorOwnerName = 'MetStabParserController'
 		@loadReportFile = false
 		super()
-		@$('.bv_moduleTitle').html('Pampa Experiment Loader')
-		@msc = new PampaController
-			model: new Pampa()
+		@$('.bv_moduleTitle').html('MetStab Experiment Loader')
+		@msc = new MetStabController
+			model: new MetStab()
 			el: @$('.bv_additionalValuesForm')
 		@msc.on 'valid', @handleMSFormValid
 		@msc.on 'invalid', @handleMSFormInvalid

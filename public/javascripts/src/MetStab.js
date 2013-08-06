@@ -4,22 +4,23 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.Pampa = (function(_super) {
-    __extends(Pampa, _super);
+  window.MetStab = (function(_super) {
+    __extends(MetStab, _super);
 
-    function Pampa() {
-      _ref = Pampa.__super__.constructor.apply(this, arguments);
+    function MetStab() {
+      _ref = MetStab.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
-    Pampa.prototype.defaults = {
+    MetStab.prototype.defaults = {
       protocolName: "",
       scientist: "",
       notebook: "",
-      project: ""
+      project: "",
+      assayDate: null
     };
 
-    Pampa.prototype.validate = function(attrs) {
+    MetStab.prototype.validate = function(attrs) {
       var errors;
 
       errors = [];
@@ -47,6 +48,12 @@
           message: "Project must be provided"
         });
       }
+      if (_.isNaN(attrs.assayDate)) {
+        errors.push({
+          attribute: 'assayDate',
+          message: "Assay date must be set"
+        });
+      }
       if (errors.length > 0) {
         return errors;
       } else {
@@ -54,75 +61,85 @@
       }
     };
 
-    return Pampa;
+    return MetStab;
 
   })(Backbone.Model);
 
-  window.PampaController = (function(_super) {
-    __extends(PampaController, _super);
+  window.MetStabController = (function(_super) {
+    __extends(MetStabController, _super);
 
-    function PampaController() {
-      this.render = __bind(this.render, this);      _ref1 = PampaController.__super__.constructor.apply(this, arguments);
+    function MetStabController() {
+      this.render = __bind(this.render, this);      _ref1 = MetStabController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
-    PampaController.prototype.template = _.template($("#PampaView").html());
+    MetStabController.prototype.template = _.template($("#MetStabView").html());
 
-    PampaController.prototype.events = {
+    MetStabController.prototype.events = {
       'change .bv_protocolName': "attributeChanged",
       'change .bv_scientist': "attributeChanged",
       'change .bv_notebook': "attributeChanged",
-      'change .bv_project': "attributeChanged"
+      'change .bv_project': "attributeChanged",
+      'change .bv_assayDate': "attributeChanged"
     };
 
-    PampaController.prototype.initialize = function() {
-      this.errorOwnerName = 'PampaController';
-      PampaController.__super__.initialize.call(this);
+    MetStabController.prototype.initialize = function() {
+      this.errorOwnerName = 'MetStabController';
+      MetStabController.__super__.initialize.call(this);
       this.setupProjectSelect();
-      return this.setupProtocolSelect("pampa");
+      return this.setupProtocolSelect("Microsome Stability");
     };
 
-    PampaController.prototype.render = function() {
-      PampaController.__super__.render.call(this);
+    MetStabController.prototype.render = function() {
+      var date;
+
+      MetStabController.__super__.render.call(this);
+      this.$('.bv_assayDate').datepicker();
+      this.$('.bv_assayDate').datepicker("option", "dateFormat", "yy-mm-dd");
+      if (this.model.get('assayDate') !== null) {
+        date = new Date(this.model.get('assayDate'));
+        this.$('.bv_assayDate').val(date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate());
+      }
       return this;
     };
 
-    PampaController.prototype.updateModel = function() {
+    MetStabController.prototype.updateModel = function() {
       this.model.set({
         protocolName: this.$('.bv_protocolName').find(":selected").text(),
         scientist: this.getTrimmedInput('.bv_scientist'),
         notebook: this.getTrimmedInput('.bv_notebook'),
-        project: this.getTrimmedInput('.bv_project')
+        project: this.getTrimmedInput('.bv_project'),
+        assayDate: this.convertYMDDateToMs(this.getTrimmedInput('.bv_assayDate'))
       });
       return this.trigger('amDirty');
     };
 
-    return PampaController;
+    return MetStabController;
 
   })(AbstractParserFormController);
 
-  window.PampaParserController = (function(_super) {
-    __extends(PampaParserController, _super);
+  window.MetStabParserController = (function(_super) {
+    __extends(MetStabParserController, _super);
 
-    function PampaParserController() {
+    function MetStabParserController() {
       this.validateParseFile = __bind(this.validateParseFile, this);
       this.validateParseFile = __bind(this.validateParseFile, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
-      this.handleMSFormValid = __bind(this.handleMSFormValid, this);      _ref2 = PampaParserController.__super__.constructor.apply(this, arguments);
+      this.handleMSFormValid = __bind(this.handleMSFormValid, this);      _ref2 = MetStabParserController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
-    PampaParserController.prototype.initialize = function() {
+    MetStabParserController.prototype.initialize = function() {
       var _this = this;
 
-      this.fileProcessorURL = "/api/pampaParser";
-      this.errorOwnerName = 'PampaParserController';
+      this.fileProcessorURL = "/api/metStabParser";
+      this.errorOwnerName = 'MetStabParserController';
       this.loadReportFile = false;
-      PampaParserController.__super__.initialize.call(this);
-      this.$('.bv_moduleTitle').html('Pampa Experiment Loader');
-      this.msc = new PampaController({
-        model: new Pampa(),
+      MetStabParserController.__super__.initialize.call(this);
+      this.$('.bv_moduleTitle').html('MetStab Experiment Loader');
+      this.msc = new MetStabController({
+        model: new MetStab(),
         el: this.$('.bv_additionalValuesForm')
       });
       this.msc.on('valid', this.handleMSFormValid);
@@ -135,55 +152,55 @@
       return this.msc.render();
     };
 
-    PampaParserController.prototype.handleMSFormValid = function() {
+    MetStabParserController.prototype.handleMSFormValid = function() {
       if (this.parseFileUploaded) {
         return this.handleFormValid();
       }
     };
 
-    PampaParserController.prototype.handleMSFormInvalid = function() {
+    MetStabParserController.prototype.handleMSFormInvalid = function() {
       return this.handleFormInvalid();
     };
 
-    PampaParserController.prototype.handleFormValid = function() {
+    MetStabParserController.prototype.handleFormValid = function() {
       if (this.msc.isValid()) {
-        return PampaParserController.__super__.handleFormValid.call(this);
+        return MetStabParserController.__super__.handleFormValid.call(this);
       }
     };
 
-    PampaParserController.prototype.handleValidationReturnSuccess = function(json) {
-      PampaParserController.__super__.handleValidationReturnSuccess.call(this, json);
+    MetStabParserController.prototype.handleValidationReturnSuccess = function(json) {
+      MetStabParserController.__super__.handleValidationReturnSuccess.call(this, json);
       return this.msc.disableAllInputs();
     };
 
-    PampaParserController.prototype.showFileSelectPhase = function() {
-      PampaParserController.__super__.showFileSelectPhase.call(this);
+    MetStabParserController.prototype.showFileSelectPhase = function() {
+      MetStabParserController.__super__.showFileSelectPhase.call(this);
       if (this.msc != null) {
         return this.msc.enableAllInputs();
       }
     };
 
-    PampaParserController.prototype.validateParseFile = function() {
+    MetStabParserController.prototype.validateParseFile = function() {
       this.msc.updateModel();
       if (!!this.msc.isValid()) {
         this.additionalData = {
           inputParameters: this.msc.model.toJSON()
         };
-        return PampaParserController.__super__.validateParseFile.call(this);
+        return MetStabParserController.__super__.validateParseFile.call(this);
       }
     };
 
-    PampaParserController.prototype.validateParseFile = function() {
+    MetStabParserController.prototype.validateParseFile = function() {
       this.msc.updateModel();
       if (!!this.msc.isValid()) {
         this.additionalData = {
           inputParameters: this.msc.model.toJSON()
         };
-        return PampaParserController.__super__.validateParseFile.call(this);
+        return MetStabParserController.__super__.validateParseFile.call(this);
       }
     };
 
-    return PampaParserController;
+    return MetStabParserController;
 
   })(BasicFileValidateAndSaveController);
 

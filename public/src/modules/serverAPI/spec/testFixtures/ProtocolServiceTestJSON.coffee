@@ -1067,6 +1067,35 @@
 		recordedBy: "smeyer"
 		recordedDate: 1372303115000
 		version: 0
+	,
+		id: 74
+		ignored: false
+		imageFile: null
+		labelText: "ADME_Human Liver Microsome Stability"
+		lsKind: "protocol name"
+		lsTransaction: 78
+		lsType: "name"
+		lsTypeAndKind: "name_protocol name"
+		modifiedDate: null
+		physicallyLabled: false
+		preferred: true
+		protocol:
+			codeName: "PROT-00000014"
+			id: 2590
+			ignored: false
+			lsKind: "default"
+			lsTransaction: 78
+			lsType: "default"
+			lsTypeAndKind: "default_default"
+			modifiedBy: null
+			modifiedDate: null
+			recordedBy: "smeyer"
+			recordedDate: 1372303173000
+			shortDescription: "protocol created by hand"
+			version: 1
+		recordedBy: "smeyer"
+		recordedDate: 1372303115000
+		version: 0
 	]
 ) (if (typeof process is "undefined" or not process.versions) then window.protocolServiceTestJSON = window.protocolServiceTestJSON or {} else exports)
 
