@@ -2410,8 +2410,9 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     
     tryCatch({
       response <- postForm(fileService,
-                           FILE=fileUpload(filename = fileStartLocation),
-                           CREATED_BY_LOGIN=recordedBy)
+                           FILE = fileUpload(filename = fileStartLocation),
+                           DESCRIPTION = paste0(racas::applicationSettings$serverPath, "experiments/codename/", experiment$codeName),
+                           CREATED_BY_LOGIN = recordedBy)
       parsedXML <- xmlParse(response)
       serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)
     }, error = function(e) {
@@ -2423,17 +2424,11 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     stop("Invalid file service")
   }
 
-  locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="report locations"]
+  locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
   
   # Record the location
   if (length(locationState)> 0) {
     locationState <- locationState[[1]]
-    
-    lsKinds <- lapply(locationState$lsValues, function(x) x$"lsKind")
-    
-    valuesToDelete <- locationState$lsValues[lsKinds %in% c("source location")]
-    
-    lapply(valuesToDelete, deleteExperimentValue)
   } else {
     locationState <- createExperimentState(
       recordedBy=recordedBy,
@@ -2442,7 +2437,11 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
       lsKind="raw results locations",
       lsTransaction=lsTransaction)
     
+    tryCatch({
     locationState <- saveExperimentState(locationState)
+    }, error = function(e) {
+      stop("Internal Error: Could not save the source file state")
+    })
   }
   
   tryCatch({
@@ -2456,7 +2455,7 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     
     saveExperimentValues(list(locationValue))
   }, error = function(e) {
-    stop("Could not save the summary and result locations")
+    stop("Internal Error: Could not save the source file location")
   })
   
   return(serverFileLocation)
@@ -2588,6 +2587,7 @@ parseGenericData <- function(request) {
     transactionId = loadResult$value$lsTransactionId,
     results= list(
       path= getwd(),
+      experimentCode= experiment$codeName,
       fileToParse= pathToGenericDataFormatExcelFile,
       dryRun= dryRun,
       htmlSummary= htmlSummary

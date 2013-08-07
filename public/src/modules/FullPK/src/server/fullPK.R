@@ -22,6 +22,10 @@ parseFullPKData <- function(request){
   #		aucType
   #
   # format is set as "In Vivo Full PK"
+  require(racas)
+  require(RCurl)
+  require(rjson)
+  
   request <- as.list(request)
   inputParameters <- request$inputParameters
   inputParameters$assayDate <- as.Date(inputParameters$assayDate, format="%s")
@@ -32,7 +36,13 @@ parseFullPKData <- function(request){
   parserInput$dryRunMode <- request$dryRunMode
   parserInput$reportFile <- request$reportFile
   parserInput$user <- request$user
-  return(parseGenericData(parserInput))
+  response <- parseGenericData(parserInput)
+  if (!interpretJSONBoolean(request$dryRunMode)) {
+    experiment <- fromJSON(getURL(paste0(racas::applicationSettings$serverPath, "experiments/codename/", response$results$experimentCode)))[[1]]
+    moveFileToExperimentFolder(request$fileToParse, experiment, request$user, response$transactionId, 
+                               racas::applicationSettings$fileServiceType, racas::applicationSettings$externalFileService)
+  }
+  return(response)
 }
 
 # Testing code
