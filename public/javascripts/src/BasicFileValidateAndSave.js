@@ -215,9 +215,6 @@
       this.showFileUploadCompletePhase();
       this.$('.bv_resultStatus').html(summaryStr);
       this.$('.bv_saveStatusDropDown').modal("hide");
-      if (json.results.csvDataPreview != null) {
-        this.showCSVPreview(json.results.csvDataPreview);
-      }
       return this.trigger('amClean');
     };
 

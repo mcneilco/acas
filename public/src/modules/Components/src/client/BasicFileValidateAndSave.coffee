@@ -146,8 +146,6 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@showFileUploadCompletePhase()
 		@$('.bv_resultStatus').html(summaryStr)
 		@$('.bv_saveStatusDropDown').modal("hide")
-		if json.results.csvDataPreview?
-			@showCSVPreview json.results.csvDataPreview
 		@trigger 'amClean'
 
 	backToUpload: =>
