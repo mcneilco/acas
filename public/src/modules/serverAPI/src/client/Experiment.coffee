@@ -32,7 +32,7 @@ class window.ExperimentStateList extends Backbone.Collection
 
 	getStatesByTypeAndKind: (type, kind) ->
 		@filter (state) ->
-			(not state.get('ignored')) and (state.get('stateType')==type) and (state.get('stateKind')==kind)
+			(not state.get('ignored')) and (state.get('lsType')==type) and (state.get('lsKind')==kind)
 
 	getStateValueByTypeAndKind: (stype, skind, vtype, vkind) ->
 		value = null
@@ -103,14 +103,14 @@ class window.Experiment extends Backbone.Model
 
 	copyProtocolAttributes: (protocol) ->
 		estates = new ExperimentStateList()
-		pstates = protocol.get('protocolStates')
+		pstates = protocol.get('lsStates')
 		pstates.each (st) ->
 			estate = new ExperimentState(_.clone(st.attributes))
 			estate.unset 'id'
 			estate.unset 'lsTransaction'
-			estate.unset 'protocolValues'
+			estate.unset 'lsValues'
 			evals = new ExperimentValueList()
-			svals = st.get('protocolValues')
+			svals = st.get('lsValues')
 			svals.each (sv) ->
 				evalue = new ProtocolValue(sv.attributes)
 				evalue.unset 'id'
@@ -119,7 +119,7 @@ class window.Experiment extends Backbone.Model
 			estate.set experimentValues: evals
 			estates.add(estate)
 		@set
-			kind: protocol.get('kind')
+			kind: protocol.get('lsKind')
 			protocol: protocol
 			shortDescription: protocol.get('shortDescription')
 			experimentStates: estates
@@ -178,6 +178,7 @@ class window.ExperimentBaseController extends AbstractFormController
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
+		@setupProtocolSelect()
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
 		@$('.bv_shortDescription').html @model.get('shortDescription')
@@ -198,6 +199,17 @@ class window.ExperimentBaseController extends AbstractFormController
 
 		@
 
+	setupProtocolSelect: ->
+		@protocolList = new PickListList()
+		@protocolList.url = "api/protocolCodes/filter/FLIPR"
+		@protocolListController = new PickListSelectController
+			el: @$('.bv_protocolCode')
+			collection: @protocolList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Protocol"
+			selectedCode: "unassigned"
+
 	setUseProtocolParametersDisabledState: ->
 		if (not @model.isNew()) or (@model.get('protocol') == null) or (@$('.bv_protocolCode').val() == "")
 			@$('.bv_useProtocolParameters').attr("disabled", "disabled")
@@ -208,11 +220,12 @@ class window.ExperimentBaseController extends AbstractFormController
 		if @model.get('protocol') != null
 			if @model.get('protocol').isStub()
 				@model.get('protocol').fetch success: =>
-					newProtName = @model.get('protocol').get('protocolLabels').pickBestLabel().get('labelText')
+					newProtName = @model.get('protocol').get('lsLabels').pickBestLabel().get('labelText')
 					@updateProtocolNameField(newProtName)
 					@setUseProtocolParametersDisabledState()
 			else
-				@updateProtocolNameField(@model.get('protocol').get('protocolLabels').pickBestLabel().get('labelText'))
+				@updateProtocolNameField(@model.get('protocol').get('lsLabels').pickBestLabel().get('labelText'))
+				@setUseProtocolParametersDisabledState()
 		else
 			@updateProtocolNameField "no protocol selected yet"
 

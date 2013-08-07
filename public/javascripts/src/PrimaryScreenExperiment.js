@@ -104,6 +104,8 @@
 
     PrimaryScreenAnalysisController.prototype.getHitThreshold = function() {
       var desc, value;
+      console.log("hold");
+      console.log(this.model.get('experimentStates'));
       value = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       desc = "";
       if (value !== null) {

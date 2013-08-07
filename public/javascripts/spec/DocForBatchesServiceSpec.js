@@ -71,7 +71,7 @@ This service saves and fetches DocForBatches items
         it('should return a valide model', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 3000);
           return runs(function() {
-            return expect(this.serviceReturn.id).toEqual(1235);
+            return expect(this.serviceReturn.id).toEqual(270);
           });
         });
         return it('should return a fileName', function() {

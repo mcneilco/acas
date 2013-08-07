@@ -37,7 +37,7 @@ describe "Primary Screen Experiment module testing", ->
 						@psec.$('.bv_experimentName').change()
 						@psec.$('.bv_recordedDate').val(" 2013-3-16   ")
 						@psec.$('.bv_recordedDate').change()
-						@psec.$('.bv_protocolCode').val("PROT-00000033")
+						@psec.$('.bv_protocolCode').val("PROT-00000001")
 						@psec.$('.bv_protocolCode').change()
 
 				describe "expect save to work", ->
@@ -68,6 +68,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psac.$('.bv_fileUploadWrapper').length).toNotEqual 0
 			describe "should populate fields", ->
 				it "should show the threshold", ->
+					console.log @psac.$('.bv_hitThreshold')
 					expect(@psac.$('.bv_hitThreshold').val()).toEqual '0.7'
 			describe "parameter editing", ->
 				it "should update the model with when the threshold is changed", ->

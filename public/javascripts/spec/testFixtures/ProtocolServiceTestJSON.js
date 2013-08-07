@@ -1,92 +1,38 @@
 (function() {
   (function(exports) {
     exports.fullSavedProtocol = {
-      codeName: "PROT-00000033",
-      experiments: [
-        {
-          codeName: "EXPT-00000029",
-          id: 14327,
-          ignored: false,
-          kind: "primary analysis",
-          lsTransaction: {
-            comments: "primary analysis experiment transactions",
-            id: 90,
-            recordedDate: 1363391007000,
-            version: 0
-          },
-          modifiedBy: null,
-          modifiedDate: null,
-          recordedBy: "smeyer",
-          recordedDate: null,
-          shortDescription: "primary analysis",
-          version: 0
-        }, {
-          codeName: "EXPT-00000028",
-          id: 14326,
-          ignored: false,
-          kind: "primary analysis",
-          lsTransaction: {
-            comments: "primary analysis experiment transactions",
-            id: 89,
-            recordedDate: 1363390078000,
-            version: 0
-          },
-          modifiedBy: null,
-          modifiedDate: null,
-          recordedBy: "smeyer",
-          recordedDate: null,
-          shortDescription: "primary analysis",
-          version: 0
-        }
-      ],
-      id: 14325,
+      codeName: "PROT-00000001",
+      id: 1,
       ignored: false,
-      kind: "primary analysis",
-      lsTransaction: {
-        comments: "primary analysis protocol transactions",
-        id: 87,
-        recordedDate: 1363388477000,
-        version: 0
-      },
-      modifiedBy: null,
-      modifiedDate: null,
-      protocolLabels: [
+      lsKind: "default",
+      lsLabels: [
         {
-          id: 4719,
+          id: 1,
           ignored: false,
           imageFile: null,
-          labelKind: "protocol name",
           labelText: "FLIPR target A biochemical",
-          labelType: "name",
-          labelTypeAndKind: "name_protocol name",
-          lsTransaction: {
-            comments: "primary analysis protocol transactions",
-            id: 87,
-            recordedDate: 1363388477000,
-            version: 0
-          },
+          lsKind: "protocol name",
+          lsTransaction: 1,
+          lsType: "name",
+          lsTypeAndKind: "name_protocol name",
           modifiedDate: null,
           physicallyLabled: false,
           preferred: true,
           recordedBy: "userName",
-          recordedDate: 1363388477000,
+          recordedDate: 1375141504000,
           version: 0
         }
       ],
-      protocolStates: [
+      lsStates: [
         {
           comments: null,
-          id: 22761,
+          id: 2,
           ignored: false,
-          lsTransaction: {
-            comments: "primary analysis protocol transactions",
-            id: 87,
-            recordedDate: 1363388477000,
-            version: 0
-          },
-          modifiedBy: null,
-          modifiedDate: null,
-          protocolValues: [
+          lsKind: "experiment controls",
+          lsTransaction: 1,
+          lsType: "metadata",
+          lsTypeAndKind: "metadata_experiment controls",
+          lsValues: [
             {
               clobValue: null,
               codeValue: null,
@@ -173,291 +119,34 @@
               version: 0
             }
           ],
+          modifiedBy: null,
+          modifiedDate: null,
           recordedBy: "userName",
-          recordedDate: 1363388477000,
-          stateKind: "protocol controls",
-          stateType: "metadata",
-          stateTypeAndKind: "metadata_protocol controls",
+          recordedDate: 1375141474000,
           version: 0
         }, {
           comments: null,
-          id: 22762,
+          id: 3,
           ignored: false,
-          lsTransaction: {
-            comments: "primary analysis protocol transactions",
-            id: 87,
-            recordedDate: 1363388477000,
-            version: 0
-          },
+          lsKind: "experiment metadata",
+          lsTransaction: 1,
+          lsType: "metadata",
+          lsTypeAndKind: "metadata_experiment metadata",
+          lsValues: [],
           modifiedBy: null,
           modifiedDate: null,
-          protocolValues: [
-            {
-              clobValue: null,
-              codeValue: null,
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80474,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: null,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: "active",
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "protocol status",
-              valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_protocol status",
-              valueUnit: null,
-              version: 0
-            }, {
-              clobValue: null,
-              codeValue: null,
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80473,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: null,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: "biochemical",
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "assay format",
-              valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_assay format",
-              valueUnit: null,
-              version: 0
-            }, {
-              clobValue: null,
-              codeValue: null,
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80475,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: null,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: "NB 1234-123",
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "notebook",
-              valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_notebook",
-              valueUnit: null,
-              version: 0
-            }, {
-              clobValue: null,
-              codeValue: null,
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 90475,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: null,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: "My eloquent protocol descroption",
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "description",
-              valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_notebook",
-              valueUnit: null,
-              version: 0
-            }, {
-              clobValue: null,
-              codeValue: null,
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80472,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: null,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: "target A",
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "target",
-              valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_target",
-              valueUnit: null,
-              version: 0
-            }
-          ],
           recordedBy: "userName",
-          recordedDate: 1363388477000,
-          stateKind: "protocol metadata",
-          stateType: "metadata",
-          stateTypeAndKind: "metadata_protocol metadata",
+          recordedDate: 1375141460000,
           version: 0
         }, {
           comments: null,
-          id: 22764,
+          id: 4,
           ignored: false,
-          lsTransaction: {
-            comments: "primary analysis protocol transactions",
-            id: 87,
-            recordedDate: 1363388477000,
-            version: 0
-          },
-          modifiedBy: null,
-          modifiedDate: null,
-          protocolValues: [
-            {
-              clobValue: null,
-              codeValue: null,
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80487,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: null,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: "vehicle control",
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "control type",
-              valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_control type",
-              valueUnit: null,
-              version: 0
-            }, {
-              clobValue: null,
-              codeValue: null,
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80486,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: 0.0,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: null,
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "tested concentration",
-              valueOperator: null,
-              valueType: "numericValue",
-              valueTypeAndKind: "numericValue_tested concentration",
-              valueUnit: "uM",
-              version: 0
-            }, {
-              clobValue: null,
-              codeValue: "CMPD0000001-1",
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80485,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: null,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: null,
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "batch code",
-              valueOperator: null,
-              valueType: "codeValue",
-              valueTypeAndKind: "codeValue_batch code",
-              valueUnit: null,
-              version: 0
-            }
-          ],
-          recordedBy: "userName",
-          recordedDate: 1363388477000,
-          stateKind: "protocol controls",
-          stateType: "metadata",
-          stateTypeAndKind: "metadata_protocol controls",
-          version: 0
-        }, {
-          comments: null,
-          id: 22763,
-          ignored: false,
-          lsTransaction: {
-            comments: "primary analysis protocol transactions",
-            id: 87,
-            recordedDate: 1363388477000,
-            version: 0
-          },
-          modifiedBy: null,
-          modifiedDate: null,
-          protocolValues: [
+          lsKind: "experiment analysis parameters",
+          lsTransaction: 1,
+          lsType: "metadata",
+          lsTypeAndKind: "metadata_experiment analysis parameters",
+          lsValues: [
             {
               clobValue: null,
               codeValue: null,
@@ -712,127 +401,54 @@
               version: 0
             }
           ],
+          modifiedBy: null,
+          modifiedDate: null,
           recordedBy: "userName",
-          recordedDate: 1363388477000,
-          stateKind: "experiment analysis parameters",
-          stateType: "metadata",
-          stateTypeAndKind: "metadata_protocol analysis parameters",
+          recordedDate: 1375141485000,
           version: 0
         }, {
           comments: null,
-          id: 22760,
+          id: 1,
           ignored: false,
-          lsTransaction: {
-            comments: "primary analysis protocol transactions",
-            id: 87,
-            recordedDate: 1363388477000,
-            version: 0
-          },
+          lsKind: "experiment controls",
+          lsTransaction: 1,
+          lsType: "metadata",
+          lsTypeAndKind: "metadata_experiment controls",
+          lsValues: [],
           modifiedBy: null,
           modifiedDate: null,
-          protocolValues: [
-            {
-              clobValue: null,
-              codeValue: "CRA-000399:1",
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80466,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: null,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: null,
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "batch code",
-              valueOperator: null,
-              valueType: "codeValue",
-              valueTypeAndKind: "codeValue_batch code",
-              valueUnit: null,
-              version: 0
-            }, {
-              clobValue: null,
-              codeValue: null,
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80467,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: 10.0,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: null,
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "tested concentration",
-              valueOperator: null,
-              valueType: "numericValue",
-              valueTypeAndKind: "numericValue_tested concentration",
-              valueUnit: "uM",
-              version: 0
-            }, {
-              clobValue: null,
-              codeValue: null,
-              comments: null,
-              dateValue: null,
-              fileValue: null,
-              id: 80468,
-              ignored: false,
-              lsTransaction: {
-                comments: "primary analysis protocol transactions",
-                id: 87,
-                recordedDate: 1363388477000,
-                version: 0
-              },
-              modifiedDate: null,
-              numericValue: null,
-              publicData: true,
-              recordedDate: 1363388477000,
-              sigFigs: null,
-              stringValue: "positive control",
-              uncertainty: null,
-              urlValue: null,
-              valueKind: "control type",
-              valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_control type",
-              valueUnit: null,
-              version: 0
-            }
-          ],
           recordedBy: "userName",
-          recordedDate: 1363388477000,
-          stateKind: "protocol controls",
-          stateType: "metadata",
-          stateTypeAndKind: "metadata_protocol controls",
+          recordedDate: 1375141470000,
+          version: 0
+        }, {
+          comments: null,
+          id: 5,
+          ignored: false,
+          lsKind: "experiment controls",
+          lsTransaction: 1,
+          lsType: "metadata",
+          lsTypeAndKind: "metadata_experiment controls",
+          lsValues: [],
+          modifiedBy: null,
+          modifiedDate: null,
+          recordedBy: "userName",
+          recordedDate: 1375141466000,
           version: 0
         }
       ],
-      recordedBy: "jmcneil",
-      recordedDate: 1363388477000,
+      lsTransaction: 1,
+      lsType: "default",
+      lsTypeAndKind: "default_default",
+      modifiedBy: null,
+      modifiedDate: null,
+      recordedBy: "username",
+      recordedDate: 1375141508000,
       shortDescription: "primary analysis",
       version: 1
     };
     exports.stubSavedProtocol = [
       {
-        codeName: "PROT-00000033",
+        codeName: "PROT-00000001",
         id: 14325,
         ignored: false,
         kind: null,
@@ -855,7 +471,7 @@
         codeName: "PROT-00000066",
         ignored: false,
         kind: null,
-        protocolLabels: [
+        lsLabels: [
           {
             ignored: false,
             imageFile: null,
@@ -871,7 +487,7 @@
             version: 0
           }
         ],
-        protocolStates: [],
+        lslStates: [],
         modifiedBy: null,
         modifiedDate: null,
         recordedBy: "jmcneil",
@@ -880,7 +496,7 @@
         version: 0
       }
     ];
-    return exports.protocolLabels = [
+    return exports.lsLabels = [
       {
         id: 67,
         ignored: false,

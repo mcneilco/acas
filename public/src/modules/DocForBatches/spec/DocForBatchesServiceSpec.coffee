@@ -58,7 +58,7 @@ describe 'DocForBatches Service testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
 
-					expect(@serviceReturn.id).toEqual 1235
+					expect(@serviceReturn.id).toEqual 270
 
 
 			it 'should return a fileName', ->

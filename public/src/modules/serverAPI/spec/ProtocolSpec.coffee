@@ -11,25 +11,25 @@ describe "Protocol module testing", ->
 			beforeEach ->
 				@ps = new ProtocolState()
 			it "should have protocol value list", ->
-				expect(@ps.get('protocolValues') instanceof ProtocolValueList).toBeTruthy()
+				expect(@ps.get('lsValues') instanceof ProtocolValueList).toBeTruthy()
 		describe "When loaded from existing", ->
 			beforeEach ->
-				@ps = new ProtocolState window.protocolServiceTestJSON.fullSavedProtocol.protocolStates[0]
+				@ps = new ProtocolState window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0]
 			describe "after initial load", ->
 				it "Class should exist", ->
 					expect(@ps).toBeDefined()
 				it "state should have kind ", ->
-					expect(@ps.get('stateKind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.protocolStates[0].stateKind
+					expect(@ps.get('lsKind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsKind
 				it "state should have values", ->
-					expect(@ps.get('protocolValues').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.protocolStates[0].protocolValues.length
+					expect(@ps.get('lsValues').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length
 				it "state should have populated value", ->
-					expect(@ps.get('protocolValues').at(0).get('valueKind')).toEqual "control type"
+					expect(@ps.get('lsValues').at(0).get('valueKind')).toEqual "control type"
 				it "should trigger change when value changed in state", ->
 					runs ->
 						@stateChanged = false
 						@ps.on 'change', =>
 							@stateChanged = true
-						@ps.get('protocolValues').at(0).set(valueKind: 'newkind')
+						@ps.get('lsValues').at(0).set(valueKind: 'newkind')
 					waitsFor ->
 						@stateChanged
 					, 500
@@ -39,18 +39,18 @@ describe "Protocol module testing", ->
 
 	describe "Protocol State List model testing", ->
 		beforeEach ->
-			@psl = new ProtocolStateList window.protocolServiceTestJSON.fullSavedProtocol.protocolStates
+			@psl = new ProtocolStateList window.protocolServiceTestJSON.fullSavedProtocol.lsStates
 		describe "after initial load", ->
 			it "Class should exist", ->
 				expect(@psl).toBeDefined()
 			it "should have states ", ->
-				expect(@psl.length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.protocolStates.length
+				expect(@psl.length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 			it "first state should have kind ", ->
-				expect(@psl.at(0).get('stateKind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.protocolStates[0].stateKind
+				expect(@psl.at(0).get('lsKind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsKind
 			it "states should have values", ->
-				expect(@psl.at(0).get('protocolValues').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.protocolStates[0].protocolValues.length
+				expect(@psl.at(0).get('lsValues').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length
 			it "first state should have populated value", ->
-				expect(@psl.at(0).get('protocolValues').at(0).get('valueKind')).toEqual "control type"
+				expect(@psl.at(0).get('lsValues').at(0).get('valueKind')).toEqual "control type"
 
 	describe "Protocol model testing", ->
 		describe "When loaded from new", ->
@@ -58,9 +58,9 @@ describe "Protocol module testing", ->
 				@prot = new Protocol()
 			describe "Defaults", ->
 				it 'Should have an empty label list', ->
-					expect(@prot.get('protocolLabels').length).toEqual 0
+					expect(@prot.get('lsLabels').length).toEqual 0
 				it 'Should have an empty state list', ->
-					expect(@prot.get('protocolStates').length).toEqual 0
+					expect(@prot.get('lsStates').length).toEqual 0
 				it 'Should have an empty scientist', ->
 					expect(@prot.get('recordedBy')).toEqual ""
 				it 'Should have an empty short description', ->
@@ -70,21 +70,21 @@ describe "Protocol module testing", ->
 				@prot = new Protocol window.protocolServiceTestJSON.fullSavedProtocol
 			describe "after initial load", ->
 				it "should have a kind", ->
-					expect(@prot.get('kind')).toEqual "primary analysis"
+					expect(@prot.get('lsKind')).toEqual "default"
 				it "should have a code ", ->
-					expect(@prot.get('codeName')).toEqual "PROT-00000033"
+					expect(@prot.get('codeName')).toEqual "PROT-00000001"
 				it "should have the shortDescription set", ->
 					expect(@prot.get('shortDescription')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.shortDescription
 				it "should have labels", ->
-					expect(@prot.get('protocolLabels').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.protocolLabels.length
+					expect(@prot.get('lsLabels').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsLabels.length
 				it "should have labels", ->
-					expect(@prot.get('protocolLabels').at(0).get('labelKind')).toEqual "protocol name"
+					expect(@prot.get('lsLabels').at(0).get('lsKind')).toEqual "protocol name"
 				it "should have states ", ->
-					expect(@prot.get('protocolStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.protocolStates.length
+					expect(@prot.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 				it "should have states with kind ", ->
-					expect(@prot.get('protocolStates').at(0).get('stateKind')).toEqual "protocol controls"
+					expect(@prot.get('lsStates').at(0).get('lsKind')).toEqual "experiment controls"
 				it "states should have values", ->
-					expect(@prot.get('protocolStates').at(0).get('protocolValues').at(0).get('valueKind')).toEqual "control type"
+					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('valueKind')).toEqual "control type"
 		describe "when loaded from stub", ->
 			beforeEach ->
 				@prot = new Protocol window.protocolServiceTestJSON.stubSavedProtocol[0]
@@ -100,12 +100,12 @@ describe "Protocol module testing", ->
 					waitsFor ->
 						@fetchReturned
 					runs ->
-						expect(@prot.has('protocolLabels')).toBeTruthy()
+						expect(@prot.has('lsLabels')).toBeTruthy()
 				it "should have raw labels converted to LabelList when fetched", ->
 					waitsFor ->
 						@fetchReturned
 					runs ->
-						expect(@prot.get('protocolLabels') instanceof LabelList).toBeTruthy()
+						expect(@prot.get('lsLabels') instanceof LabelList).toBeTruthy()
 		describe "model composite component conversion", ->
 			beforeEach ->
 				runs ->
@@ -127,18 +127,18 @@ describe "Protocol module testing", ->
 					expect(@saveSucessful).toBeTruthy()
 			it "should convert labels array to label list", ->
 				runs ->
-					expect(@prot.get('protocolLabels')  instanceof LabelList).toBeTruthy()
-					expect(@prot.get('protocolLabels').length).toBeGreaterThan 0
+					expect(@prot.get('lsLabels')  instanceof LabelList).toBeTruthy()
+					expect(@prot.get('lsLabels').length).toBeGreaterThan 0
 			it "should convert state array to state list", ->
 				runs ->
-					expect(@prot.get('protocolStates')  instanceof ProtocolStateList).toBeTruthy()
-					expect(@prot.get('protocolStates').length).toBeGreaterThan 0
+					expect(@prot.get('lsStates')  instanceof ProtocolStateList).toBeTruthy()
+					expect(@prot.get('lsStates').length).toBeGreaterThan 0
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
 					@prot = new Protocol()
 					@protocolChanged = false
-					@prot.get('protocolLabels').setBestName new Label
+					@prot.get('lsLabels').setBestName new Label
 						labelKind: "protocol name"
 						labelText: "test label"
 						recordedBy: @prot.get 'recordedBy'
@@ -146,7 +146,7 @@ describe "Protocol module testing", ->
 					@prot.on 'change', =>
 						@protocolChanged = true
 					@protocolChanged = false
-					@prot.get('protocolLabels').setBestName new Label
+					@prot.get('lsLabels').setBestName new Label
 						labelKind: "protocol name"
 						labelText: "new label"
 						recordedBy: @prot.get 'recordedBy'
@@ -162,7 +162,7 @@ describe "Protocol module testing", ->
 					@protocolChanged = false
 					@prot.on 'change', =>
 						@protocolChanged = true
-					@prot.get('protocolStates').at(0).get('protocolValues').at(0).set(valueKind: 'fred')
+					@prot.get('lsStates').at(0).get('lsValues').at(0).set(lsKind: 'fred')
 				waitsFor ->
 					@protocolChanged
 				, 500

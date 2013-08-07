@@ -260,7 +260,7 @@ experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransa
 
 ## get the protocols
 fullProtocollist <- fromJSON(getURL(paste(lsServerURL, "protocols/",sep="")))
-testProtocolCodeName <- "PROT-00000033"
+testProtocolCodeName <- "PROT-00000001"
 protocolObjectArray <- fromJSON(getURL(paste(lsServerURL, "protocols/codename/", testProtocolCodeName,sep="")))
 fullProtocolObject <- fromJSON(getURL(paste(lsServerURL, "protocols/", protocolObjectArray[[1]]$id,sep="")))
 

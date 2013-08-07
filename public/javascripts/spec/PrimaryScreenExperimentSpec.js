@@ -48,7 +48,7 @@
               this.psec.$('.bv_experimentName').change();
               this.psec.$('.bv_recordedDate').val(" 2013-3-16   ");
               this.psec.$('.bv_recordedDate').change();
-              this.psec.$('.bv_protocolCode').val("PROT-00000033");
+              this.psec.$('.bv_protocolCode').val("PROT-00000001");
               return this.psec.$('.bv_protocolCode').change();
             });
           });
@@ -93,6 +93,7 @@
         });
         describe("should populate fields", function() {
           return it("should show the threshold", function() {
+            console.log(this.psac.$('.bv_hitThreshold'));
             return expect(this.psac.$('.bv_hitThreshold').val()).toEqual('0.7');
           });
         });

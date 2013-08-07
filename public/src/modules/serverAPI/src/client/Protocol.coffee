@@ -5,20 +5,20 @@ class window.ProtocolValueList extends Backbone.Collection
 
 class window.ProtocolState extends Backbone.Model
 	defaults:
-		protocolValues: new ProtocolValueList()
+		lsValues: new ProtocolValueList()
 
 	initialize: ->
-		if @has('protocolValues')
-			if @get('protocolValues') not instanceof ProtocolValueList
-				@set protocolValues: new ProtocolValueList(@get('protocolValues'))
-		@get('protocolValues').on 'change', =>
+		if @has('lsValues')
+			if @get('lsValues') not instanceof ProtocolValueList
+				@set lsValues: new ProtocolValueList(@get('lsValues'))
+		@get('lsValues').on 'change', =>
 			@trigger 'change'
 
 	parse: (resp) ->
-		if resp.protocolValues?
-			if resp.protocolValues not instanceof ProtocolValueList
-				resp.protocolValues = new ProtocolValueList(resp.protocolValues)
-				resp.protocolValues.on 'change', =>
+		if resp.lsValues?
+			if resp.lsValues not instanceof ProtocolValueList
+				resp.lsValues = new ProtocolValueList(resp.lsValues)
+				resp.lsValues.on 'change', =>
 					@trigger 'change'
 		resp
 
@@ -32,39 +32,39 @@ class window.Protocol extends Backbone.Model
 		kind: ""
 		recordedBy: ""
 		shortDescription: ""
-		protocolLabels: new LabelList()
-		protocolStates: new ProtocolStateList()
+		lsLabels: new LabelList()
+		lsStates: new ProtocolStateList()
 
 	initialize: ->
 		@fixCompositeClasses()
 		@setupCompositeChangeTriggers()
 
 	parse: (resp) =>
-		if resp.protocolLabels?
-			if resp.protocolLabels not instanceof LabelList
-				resp.protocolLabels = new LabelList(resp.protocolLabels)
-				resp.protocolLabels.on 'change', =>
+		if resp.lsLabels?
+			if resp.lsLabels not instanceof LabelList
+				resp.lsLabels = new LabelList(resp.lsLabels)
+				resp.lsLabels.on 'change', =>
 					@trigger 'change'
-		if resp.protocolStates?
-			if resp.protocolStates not instanceof ProtocolStateList
-				resp.protocolStates = new ProtocolStateList(resp.protocolStates)
-				resp.protocolStates.on 'change', =>
+		if resp.lsStates?
+			if resp.lsStates not instanceof ProtocolStateList
+				resp.lsStates = new ProtocolStateList(resp.lsStates)
+				resp.lsStates.on 'change', =>
 					@trigger 'change'
 		resp
 
 	fixCompositeClasses: ->
-		if @has('protocolLabels')
-			if @get('protocolLabels') not instanceof LabelList
-				@set protocolLabels: new LabelList(@get('protocolLabels'))
-		if @has('protocolStates')
-			if @get('protocolStates') not instanceof ProtocolStateList
-				@set protocolStates: new ProtocolStateList(@get('protocolStates'))
+		if @has('lsLabels')
+			if @get('lsLabels') not instanceof LabelList
+				@set lsLabels: new LabelList(@get('lsLabels'))
+		if @has('lsStates')
+			if @get('lsStates') not instanceof ProtocolStateList
+				@set lsStates: new ProtocolStateList(@get('lsStates'))
 
 	setupCompositeChangeTriggers: ->
-		@get('protocolLabels').on 'change', =>
+		@get('lsLabels').on 'change', =>
 			@trigger 'change'
-		@get('protocolStates').on 'change', =>
+		@get('lsStates').on 'change', =>
 			@trigger 'change'
 
 	isStub: ->
-		return @get('protocolLabels').length == 0 #protocol stubs won't have this
+		return @get('lsLabels').length == 0 #protocol stubs won't have this

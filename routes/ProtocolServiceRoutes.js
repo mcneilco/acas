@@ -98,11 +98,11 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
     }
   };
 
-  exports.protocolLabels = function(req, resp) {
+  exports.lsLabels = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(protocolServiceTestJSON.protocolLabels));
+      return resp.end(JSON.stringify(protocolServiceTestJSON.lsLabels));
     } else {
       config = require('../public/src/conf/configurationNode.js');
       baseurl = config.serverConfigurationParams.configuration.serverPath + "protocollabels";
@@ -141,7 +141,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
     };
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      labels = protocolServiceTestJSON.protocolLabels;
+      labels = protocolServiceTestJSON.lsLabels;
       return resp.json(translateToCodes(labels));
     } else {
       config = require('../public/src/conf/configurationNode.js');

@@ -61,6 +61,8 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@controlStates = @model.get('experimentStates').getStatesByTypeAndKind("metadata", "experiment controls")
 
 	getHitThreshold: ->
+		console.log "hold"
+		console.log @model.get('experimentStates')
 		value = @model.get('experimentStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
 		desc = ""
 		if value != null

@@ -26,6 +26,7 @@ describe "Experiment module testing", ->
 				it "state should have populated value", ->
 					expect(@es.get('experimentValues').at(0).get('valueKind')).toEqual "data transformation rule"
 				it "should return requested value", ->
+					console.log @es
 					values = @es.getValuesByTypeAndKind("stringValue", "data transformation rule")
 					expect(values.length).toEqual 1
 					expect(values[0].get('stringValue')).toEqual "(maximum-minimum)/minimum"
@@ -143,9 +144,9 @@ describe "Experiment module testing", ->
 				it "Class should exist", ->
 					expect(@exp).toBeDefined()
 				it "should have same kind as protocol", ->
-					expect(@exp.get('kind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.kind
+					expect(@exp.get('kind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsKind
 				it "should have the protocol set ", ->
-					expect(@exp.get('protocol').get('codeName')).toEqual "PROT-00000033"
+					expect(@exp.get('protocol').get('codeName')).toEqual "PROT-00000001"
 				it "should have the shortDescription set to the protocols short description", ->
 					expect(@exp.get('shortDescription')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.shortDescription
 				it "should have the description set to the protocols description", ->
@@ -153,7 +154,7 @@ describe "Experiment module testing", ->
 				it "should not have the labels copied", ->
 					expect(@exp.get('experimentLabels').length).toEqual 0
 				it "should have the states copied", ->
-					expect(@exp.get('experimentStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.protocolStates.length
+					expect(@exp.get('experimentStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -284,7 +285,8 @@ describe "Experiment module testing", ->
 					expect(@copied).toBeTruthy()
 			describe "populated fields", ->
 				it "should show the protocol code", ->
-					expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000033"
+					console.log @ebc.$('.bv_protocolCode')
+					expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
 				it "should show the protocol name", ->
 					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
 				it "should fill the short description field", ->
@@ -323,7 +325,7 @@ describe "Experiment module testing", ->
 					el: $('#fixture')
 				@ebc.render()
 			it "should show the protocol code", ->
-				expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000033"
+				expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
 			it "should show the protocol name", ->
 				waits(200) # needs to fill out stub protocol
 				runs ->
@@ -361,13 +363,13 @@ describe "Experiment module testing", ->
 			describe "when user picks protocol ", ->
 				beforeEach ->
 					runs ->
-						@ebc.$('.bv_protocolCode').val("PROT-00000033")
+						@ebc.$('.bv_protocolCode').val("PROT-00000001")
 						@ebc.$('.bv_protocolCode').change()
 				describe "When user picks protocol", ->
 					it "should update model", ->
 						waits(200) # needs to fetch stub protocol
 						runs ->
-							expect(@ebc.model.get('protocol').get('codeName')).toEqual "PROT-00000033"
+							expect(@ebc.model.get('protocol').get('codeName')).toEqual "PROT-00000001"
 					it "should enable use protocol params", ->
 						waits(200) # needs to fill out stub protocol
 						runs ->
@@ -394,7 +396,7 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_recordedDate').change()
 						@ebc.$('.bv_shortDescription').val(" New short description   ")
 						@ebc.$('.bv_shortDescription').change()
-						@ebc.$('.bv_protocolCode').val("PROT-00000033")
+						@ebc.$('.bv_protocolCode').val("PROT-00000001")
 						@ebc.$('.bv_protocolCode').change()
 						@ebc.$('.bv_experimentName').val(" Updated experiment name   ")
 						@ebc.$('.bv_experimentName').change()

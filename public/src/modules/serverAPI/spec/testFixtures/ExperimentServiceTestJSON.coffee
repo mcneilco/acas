@@ -333,8 +333,8 @@
 				modifiedDate: null
 				recordedBy: "jmcneil"
 				recordedDate: 1367455532000
-				stateKind: "Document for Batch"
-				stateType: "results"
+				lsKind: "Document for Batch"
+				lsType: "results"
 				stateTypeAndKind: "results_Document for Batch"
 				version: 0
 			,
@@ -427,8 +427,8 @@
 				modifiedDate: null
 				recordedBy: "jmcneil"
 				recordedDate: 1367455532000
-				stateKind: "Document for Batch"
-				stateType: "results"
+				lsKind: "Document for Batch"
+				lsType: "results"
 				stateTypeAndKind: "results_Document for Batch"
 				version: 0
 			,
@@ -521,8 +521,8 @@
 				modifiedDate: null
 				recordedBy: "jmcneil"
 				recordedDate: 1367455532000
-				stateKind: "Document for Batch"
-				stateType: "results"
+				lsKind: "Document for Batch"
+				lsType: "results"
 				stateTypeAndKind: "results_Document for Batch"
 				version: 0
 			]
@@ -798,8 +798,8 @@
 			modifiedDate: null
 			recordedBy: "userName"
 			recordedDate: 1362435677000
-			stateKind: "experiment analysis parameters"
-			stateType: "metadata"
+			lsKind: "experiment analysis parameters"
+			lsType: "metadata"
 			stateTypeAndKind: "metadata_experiment analysis parameters"
 			version: 0
 		,
@@ -901,8 +901,8 @@
 			modifiedDate: null
 			recordedBy: "userName"
 			recordedDate: 1362435677000
-			stateKind: "experiment controls"
-			stateType: "metadata"
+			lsKind: "experiment controls"
+			lsType: "metadata"
 			stateTypeAndKind: "metadata_experiment controls"
 			version: 0
 		,
@@ -1004,8 +1004,8 @@
 			modifiedDate: null
 			recordedBy: "userName"
 			recordedDate: 1362435677000
-			stateKind: "experiment controls"
-			stateType: "metadata"
+			lsKind: "experiment controls"
+			lsType: "metadata"
 			stateTypeAndKind: "metadata_experiment controls"
 			version: 0
 		,
@@ -1107,8 +1107,8 @@
 			modifiedDate: null
 			recordedBy: "userName"
 			recordedDate: 1362435677000
-			stateKind: "experiment controls"
-			stateType: "metadata"
+			lsKind: "experiment controls"
+			lsType: "metadata"
 			stateTypeAndKind: "metadata_experiment controls"
 			version: 0
 		,
@@ -1266,8 +1266,8 @@
 			modifiedDate: null
 			recordedBy: "userName"
 			recordedDate: 1362435677000
-			stateKind: "experiment info"
-			stateType: "metadata"
+			lsKind: "experiment info"
+			lsType: "metadata"
 			stateTypeAndKind: "metadata_experiment info"
 			version: 0
 		]
@@ -1283,7 +1283,7 @@
 		modifiedBy: null
 		modifiedDate: null
 		protocol:
-			codeName: "PROT-00000033"
+			codeName: "PROT-00000001"
 			id: 269
 			ignored: false
 			kind: null
@@ -1454,8 +1454,8 @@
 				modifiedDate: null
 				recordedBy: "jmcneil"
 				recordedDate: 1367455532000
-				stateKind: "Document for Batch"
-				stateType: "results"
+				lsKind: "Document for Batch"
+				lsType: "results"
 				stateTypeAndKind: "results_Document for Batch"
 				version: 0
 			,
@@ -1548,8 +1548,8 @@
 				modifiedDate: null
 				recordedBy: "jmcneil"
 				recordedDate: 1367455532000
-				stateKind: "Document for Batch"
-				stateType: "results"
+				lsKind: "Document for Batch"
+				lsType: "results"
 				stateTypeAndKind: "results_Document for Batch"
 				version: 0
 			,
@@ -1642,8 +1642,8 @@
 				modifiedDate: null
 				recordedBy: "jmcneil"
 				recordedDate: 1367455532000
-				stateKind: "Document for Batch"
-				stateType: "results"
+				lsKind: "Document for Batch"
+				lsType: "results"
 				stateTypeAndKind: "results_Document for Batch"
 				version: 0
 			]

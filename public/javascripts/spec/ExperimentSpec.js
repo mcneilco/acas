@@ -37,6 +37,7 @@
           });
           it("should return requested value", function() {
             var values;
+            console.log(this.es);
             values = this.es.getValuesByTypeAndKind("stringValue", "data transformation rule");
             expect(values.length).toEqual(1);
             return expect(values[0].get('stringValue')).toEqual("(maximum-minimum)/minimum");
@@ -211,10 +212,10 @@
             return expect(this.exp).toBeDefined();
           });
           it("should have same kind as protocol", function() {
-            return expect(this.exp.get('kind')).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.kind);
+            return expect(this.exp.get('kind')).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsKind);
           });
           it("should have the protocol set ", function() {
-            return expect(this.exp.get('protocol').get('codeName')).toEqual("PROT-00000033");
+            return expect(this.exp.get('protocol').get('codeName')).toEqual("PROT-00000001");
           });
           it("should have the shortDescription set to the protocols short description", function() {
             return expect(this.exp.get('shortDescription')).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.shortDescription);
@@ -226,7 +227,7 @@
             return expect(this.exp.get('experimentLabels').length).toEqual(0);
           });
           return it("should have the states copied", function() {
-            return expect(this.exp.get('experimentStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.protocolStates.length);
+            return expect(this.exp.get('experimentStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
           });
         });
       });
@@ -411,7 +412,8 @@
         });
         describe("populated fields", function() {
           it("should show the protocol code", function() {
-            return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000033");
+            console.log(this.ebc.$('.bv_protocolCode'));
+            return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
           });
           it("should show the protocol name", function() {
             return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
@@ -454,7 +456,7 @@
           return this.ebc.render();
         });
         it("should show the protocol code", function() {
-          return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000033");
+          return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
         });
         it("should show the protocol name", function() {
           waits(200);
@@ -507,7 +509,7 @@
         describe("when user picks protocol ", function() {
           beforeEach(function() {
             return runs(function() {
-              this.ebc.$('.bv_protocolCode').val("PROT-00000033");
+              this.ebc.$('.bv_protocolCode').val("PROT-00000001");
               return this.ebc.$('.bv_protocolCode').change();
             });
           });
@@ -515,7 +517,7 @@
             it("should update model", function() {
               waits(200);
               return runs(function() {
-                return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000033");
+                return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000001");
               });
             });
             it("should enable use protocol params", function() {
@@ -555,7 +557,7 @@
               this.ebc.$('.bv_recordedDate').change();
               this.ebc.$('.bv_shortDescription').val(" New short description   ");
               this.ebc.$('.bv_shortDescription').change();
-              this.ebc.$('.bv_protocolCode').val("PROT-00000033");
+              this.ebc.$('.bv_protocolCode').val("PROT-00000001");
               this.ebc.$('.bv_protocolCode').change();
               this.ebc.$('.bv_experimentName').val(" Updated experiment name   ");
               return this.ebc.$('.bv_experimentName').change();

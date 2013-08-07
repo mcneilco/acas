@@ -91,7 +91,7 @@
 
     ExperimentStateList.prototype.getStatesByTypeAndKind = function(type, kind) {
       return this.filter(function(state) {
-        return (!state.get('ignored')) && (state.get('stateType') === type) && (state.get('stateKind') === kind);
+        return (!state.get('ignored')) && (state.get('lsType') === type) && (state.get('lsKind') === kind);
       });
     };
 
@@ -215,15 +215,15 @@
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
       var estates, pstates;
       estates = new ExperimentStateList();
-      pstates = protocol.get('protocolStates');
+      pstates = protocol.get('lsStates');
       pstates.each(function(st) {
         var estate, evals, svals;
         estate = new ExperimentState(_.clone(st.attributes));
         estate.unset('id');
         estate.unset('lsTransaction');
-        estate.unset('protocolValues');
+        estate.unset('lsValues');
         evals = new ExperimentValueList();
-        svals = st.get('protocolValues');
+        svals = st.get('lsValues');
         svals.each(function(sv) {
           var evalue;
           evalue = new ProtocolValue(sv.attributes);
@@ -237,7 +237,7 @@
         return estates.add(estate);
       });
       this.set({
-        kind: protocol.get('kind'),
+        kind: protocol.get('lsKind'),
         protocol: protocol,
         shortDescription: protocol.get('shortDescription'),
         experimentStates: estates
@@ -325,6 +325,7 @@
       var bestName, date;
       $(this.el).empty();
       $(this.el).html(this.template());
+      this.setupProtocolSelect();
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
@@ -348,6 +349,20 @@
       return this;
     };
 
+    ExperimentBaseController.prototype.setupProtocolSelect = function() {
+      this.protocolList = new PickListList();
+      this.protocolList.url = "api/protocolCodes/filter/FLIPR";
+      return this.protocolListController = new PickListSelectController({
+        el: this.$('.bv_protocolCode'),
+        collection: this.protocolList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Protocol"
+        }),
+        selectedCode: "unassigned"
+      });
+    };
+
     ExperimentBaseController.prototype.setUseProtocolParametersDisabledState = function() {
       if ((!this.model.isNew()) || (this.model.get('protocol') === null) || (this.$('.bv_protocolCode').val() === "")) {
         return this.$('.bv_useProtocolParameters').attr("disabled", "disabled");
@@ -363,13 +378,14 @@
           return this.model.get('protocol').fetch({
             success: function() {
               var newProtName;
-              newProtName = _this.model.get('protocol').get('protocolLabels').pickBestLabel().get('labelText');
+              newProtName = _this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText');
               _this.updateProtocolNameField(newProtName);
               return _this.setUseProtocolParametersDisabledState();
             }
           });
         } else {
-          return this.updateProtocolNameField(this.model.get('protocol').get('protocolLabels').pickBestLabel().get('labelText'));
+          this.updateProtocolNameField(this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText'));
+          return this.setUseProtocolParametersDisabledState();
         }
       } else {
         return this.updateProtocolNameField("no protocol selected yet");

@@ -49,7 +49,7 @@ describe 'Protocol CRUD testing', ->
 			if not window.AppLaunchParams.liveServiceTest
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
-					expect(@serviceReturn.codeName).toEqual "PROT-00000033"
+					expect(@serviceReturn.codeName).toEqual "PROT-00000001"
 
 	describe 'when saving new protocol', ->
 		beforeEach ->
@@ -105,7 +105,7 @@ describe 'Protocol CRUD testing', ->
 							@serviceReturn = null
 						dataType: 'json'
 
-			it 'should return an array of protocolLabels', ->
+			it 'should return an array of lsLabels', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn.length).toBeGreaterThan 0

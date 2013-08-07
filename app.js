@@ -73,7 +73,7 @@
     app.get('/api/protocols/:id', protocolRoutes.protocolById);
     app.post('/api/protocols', protocolRoutes.postProtocol);
     app.put('/api/protocols', protocolRoutes.putProtocol);
-    app.get('/api/protocollabels', protocolRoutes.protocolLabels);
+    app.get('/api/protocollabels', protocolRoutes.lsLabels);
     app.get('/api/protocolCodes', protocolRoutes.protocolCodeList);
     app.get('/api/protocolCodes/filter/:str', protocolRoutes.protocolCodeList);
     experimentRoutes = require('./routes/ExperimentServiceRoutes.js');

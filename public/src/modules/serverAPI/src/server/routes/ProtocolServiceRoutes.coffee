@@ -84,10 +84,10 @@ exports.putProtocol = (req, resp) ->
 				console.log response
 		)
 
-exports.protocolLabels = (req, resp) ->
+exports.lsLabels = (req, resp) ->
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-		resp.end JSON.stringify protocolServiceTestJSON.protocolLabels
+		resp.end JSON.stringify protocolServiceTestJSON.lsLabels
 	else
 		config = require '../public/src/conf/configurationNode.js'
 		baseurl = config.serverConfigurationParams.configuration.serverPath+"protocollabels"
@@ -115,7 +115,7 @@ exports.protocolCodeList = (req, resp) ->
 
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-		labels = protocolServiceTestJSON.protocolLabels
+		labels = protocolServiceTestJSON.lsLabels
 		resp.json translateToCodes(labels)
 
 	else
