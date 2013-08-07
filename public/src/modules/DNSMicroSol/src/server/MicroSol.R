@@ -27,7 +27,7 @@ parseMicroSolData <- function(request){
     parserInput$user <- request$user
     parserResponse <- parseGenericData(parserInput)
     if (!interpretJSONBoolean(request$dryRunMode)) {
-    	experiment <- fromJSON(getURL(paste0(racas::applicationSettings$serverPath, "experiments/codename/", response$results$experimentCode)))[[1]]
+    	experiment <- fromJSON(getURL(paste0(racas::applicationSettings$serverPath, "experiments/codename/", parserResponse$results$experimentCode)))[[1]]
     	moveFileToExperimentFolder(request$fileToParse, experiment, request$user, response$transactionId, 
                                racas::applicationSettings$fileServiceType, racas::applicationSettings$externalFileService)
   	}
