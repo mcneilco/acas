@@ -577,6 +577,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
   require(RCurl)
   
   currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
+  if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
   
@@ -1312,11 +1313,12 @@ validateProject <- function(projectName, configList) {
   }
 }
 validateScientist <- function(scientistName, configList) {
+  require('utils')
   require('RCurl')
   require('rjson')
   
   tryCatch({
-    response <- getURL(paste0(configList$nameValidationService, "/", scientistName))
+    response <- getURL(URLencode(paste0(configList$nameValidationService, "/", scientistName)))
     if (response == "") {
       errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
       return("")
@@ -1734,14 +1736,23 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
         dateValue <- as.numeric(format(as.Date(calculatedResults$"Result Date"[i],origin="1970-01-01"), "%s"))*1000
         # The main value (whether it is a numeric, string, or date) creates one value    
         analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-          lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {"stringValue"}
-          else if (calculatedResults$"Class"[i]=="Text") {"stringValue"}  
-          else if (calculatedResults$"Class"[i]=="Date") {"dateValue"}
+          lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {
+            "stringValue"
+          } else if (calculatedResults$"Class"[i]=="Text") {
+            if(nchar(calculatedResults$"Result Desc"[i]) > 255) {
+              "clobValue" 
+            } else {
+              "stringValue"
+            }
+          } else if (calculatedResults$"Class"[i]=="Date") {"dateValue"}
           else {"numericValue"},
           lsKind = calculatedResults$"Result Type"[i],
           stringValue = if(calculatedResults$"Result Type"[i]==tempIdLabel) {
             paste0(calculatedResults$"Result Desc"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
-          } else if (!is.na(calculatedResults$"Result Desc"[i])) {
+          } else if (!is.na(calculatedResults$"Result Desc"[i]) && nchar(calculatedResults$"Result Desc"[i]) <= 255) {
+            calculatedResults$"Result Desc"[i]
+          } else {NULL},
+          clobValue = if (!is.na(calculatedResults$"Result Desc"[i]) && nchar(calculatedResults$"Result Desc"[i]) > 255) {
             calculatedResults$"Result Desc"[i]
           } else {NULL},
           dateValue = if(is.na(dateValue)) {NULL} else {dateValue},
