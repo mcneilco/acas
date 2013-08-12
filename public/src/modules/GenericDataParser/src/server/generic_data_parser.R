@@ -250,6 +250,8 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   # Returns:
   #  A data frame containing the validated meta data
   
+  require('gdata')
+  
   # Turn NA into "NA"
   metaDataNames <- names(metaData)
   metaData <- as.data.frame(lapply(metaData, function(x) if(is.na(x)) "NA" else x), stringsAsFactors=FALSE)
@@ -348,7 +350,14 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList) 
   }
   
-  return(validatedMetaData)
+  if(grepl("CREATETHISEXPERIMENT$", validatedMetaData$"Experiment Name")) {
+    validatedMetaData$"Experiment Name" <- trim(gsub("CREATETHISEXPERIMENT$", "", validatedMetaData$"Experiment Name"))
+    duplicateExperimentNamesAllowed <- TRUE
+  } else {
+    duplicateExperimentNamesAllowed <- FALSE
+  }
+  
+  return(list(validatedMetaData=validatedMetaData, duplicateExperimentNamesAllowed=duplicateExperimentNamesAllowed))
 }
 validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,tempIdLabel) {
   # Valides the treatment group data (for now, this only validates the temp id's)
@@ -482,7 +491,7 @@ getHiddenColumns <- function(classRow) {
   }
   return(hiddenColumns)
 }
-validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId = TRUE) {
+validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId = TRUE, clobColumns=c()) {
   # Checks that datatypes entered in the Datatype row of the calculated results are valid
   #
   # Args:
@@ -506,8 +515,10 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   # Remove the hidden/shown info
   classRow <- trim(gsub("\\(.*)","",classRow))
   
+  classRow[clobColumns] <- "Clob"
+  
   # Check if the datatypes are entered correctly
-  badClasses <- setdiff(classRow[1:length(classRow)>1],c("Text","Number","Date",""))
+  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob",""))
   
   # Let the user know about empty datatypes
   emptyClasses <- which(classRow=="" | classRow==" ")
@@ -542,6 +553,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
       classRow[i][grep(pattern = "float", classRow[i], ignore.case = TRUE)] <- "Number"
       classRow[i][grep(pattern = "double", classRow[i], ignore.case = TRUE)] <- "Number"
       classRow[i][grep(pattern = "date", classRow[i], ignore.case = TRUE)] <- "Date"
+      classRow[i][grep(pattern = "clob", classRow[i], ignore.case = TRUE)] <- "Clob"
       if (classRow[i] != oldClassRow[i]) {
         warning(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
                        "' as a datatype and interpreted it as '", classRow[i], 
@@ -550,7 +562,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
     }
     
     # Those that can't be interpreted throw errors
-    unhandledClasses <- setdiff(classRow[1:length(classRow)>1],c("Text","Number","Date",""))
+    unhandledClasses <- setdiff(classRow[1:length(classRow)>1],c("Text","Number","Date","Clob",""))
     if (length(unhandledClasses)>0) {
       errorList <<- c(errorList,paste0("The loader found classes in the Datatype row that it does not understand: '",
                                        paste(unhandledClasses,collapse = "', '"),
@@ -586,7 +598,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
   
   # Check that the value kinds that have been entered before have the correct Datatype (valueType)
   oldValueKindTypes <- neededValueKindTypes[match(oldValueKinds, neededValueKinds)]
-  oldValueKindTypes <- c("numericValue", "stringValue", "dateValue")[match(oldValueKindTypes, c("Number", "Text", "Date"))]
+  oldValueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(oldValueKindTypes, c("Number", "Text", "Date", "Clob"))]
   currentValueKindTypeFrame <- data.frame(currentValueKinds,  matchingValueTypes, stringsAsFactors=FALSE)
   oldValueKindTypeFrame <- data.frame(oldValueKinds, oldValueKindTypes, stringsAsFactors=FALSE)
   
@@ -595,8 +607,8 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
   
   if(any(wrongValueTypes)) {
     problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
-    problemFrame$oldValueKindTypes <- c("Number", "Text", "Date")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue"))]
-    problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue"))]
+    problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
+    problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
     problemFrame <- problemFrame[wrongValueTypes, ]
     
     for (row in 1:nrow(problemFrame)) {
@@ -617,7 +629,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
       valueTypesList <- fromJSON(getURL(paste0(serverPath, "valuetypes")))
       valueTypes <- sapply(valueTypesList, getElement, "typeName")
       valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
-      valueKindTypes <- c("numericValue", "stringValue", "dateValue")[match(valueKindTypes, c("Number", "Text", "Date"))]
+      valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob"))]
       
       # This is for the curveNames, but would catch other added values as well
       valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
@@ -776,8 +788,12 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   # Check the Datatype row and get information from it
   hiddenColumns <- getHiddenColumns(as.character(unlist(calculatedResults[1,])))
-  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])),as.character(unlist(calculatedResults[2,])),lockCorpBatchId)
   
+  clobColumns <- which(sapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255)))
+  if(any(clobColumns)) {
+    warning("One of your entries had more than 255 characters, so it will be saved as a 'Clob'. In the future, you should use this for your column header.")
+  }
+  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])),as.character(unlist(calculatedResults[2,])), lockCorpBatchId, clobColumns)
   # Remove Datatype Row
   calculatedResults <- calculatedResults[1:nrow(calculatedResults)>1,]
   
@@ -874,6 +890,10 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$"Result Desc" <- as.character(longResults$"UnparsedValue")
   longResults$"Result Desc"[!matches] <- ""
   
+  longResults$clobValue <- longResults$"Result Desc"
+  longResults$clobValue[!longResults$Class=="Clob"] <- NA
+  longResults$"Result Desc"[longResults$Class=="Clob"] <- ""
+  
   # Parse Operators from the unparsed value
   matchExpression <- ">|<"
   longResults$"Result Operator" <- longResults$"Result Value"
@@ -886,7 +906,6 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   # For the results marked as "Text":
   #   Set the Result Desc to the original value
   #   Clear the other categories
-  longResults$"Result Desc"[which(longResults$Class=="Text")] <- as.character(longResults$UnparsedValue[which(longResults$Class=="Text")])
   longResults$"Result Value"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text"))
   longResults$"Result Operator"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text"))
   
@@ -904,7 +923,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   # Clean up the data frame to look nice (remove extra columns)
   row.names(longResults) <- 1:nrow(longResults)
   organizedData <- longResults[c("Corporate Batch ID","Result Type","Result Units","Conc","Conc Units", "time", "timeUnit", "Result Value",
-                                 "Result Desc","Result Operator","analysisGroupID","Result Date","Class",
+                                 "Result Desc","Result Operator","analysisGroupID","Result Date","clobValue","Class",
                                  "resultTypeAndUnit","Hidden", "originalCorporateBatchID", "treatmentGroupID")]
   
   # Turn empty string into NA
@@ -914,7 +933,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   organizedData <-organizedData[!(is.na(organizedData$"Result Value") 
                                   & is.na(organizedData$"Result Desc") 
                                   & is.na(organizedData$"Result Operator")
-                                  & is.na(organizedData$"Result Date")),]
+                                  & is.na(organizedData$"Result Date")
+                                  & is.na(organizedData$clobValue)), ]
   
   # Order
   organizedData <- organizedData[do.call(order,organizedData[c("Corporate Batch ID","Result Type")]),]
@@ -1131,7 +1151,7 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
   return(protocol)
   
 }
-getExperimentByName <- function(experimentName, protocol, configList) {
+getExperimentByName <- function(experimentName, protocol, configList, duplicateNamesAllowed = FALSE) {
   # Gets the experiment entered as an input, warns if it does exist, and throws an error if it is in the wrong protocol
   # 
   # Args:
@@ -1139,6 +1159,7 @@ getExperimentByName <- function(experimentName, protocol, configList) {
   #   protocol:               A list that is a protocol
   #   lsTransaction:          A list that is a lsTransaction tag
   #   recordedBy:             A string that is the scientist name
+  #   duplicatedNamesAllowed: A boolean marking if experiment names can be repeated in multiple protocols
   #
   # Returns:
   #  A list that is an experiment
@@ -1152,11 +1173,16 @@ getExperimentByName <- function(experimentName, protocol, configList) {
     stop("There was an error checking if the experiment already exists. Please contact your system administrator.")
   })
   
-  # If no experiment with the given name exists, warn the user
+  # Warn the user if the experiment already exists (the else block)
   if (length(experimentList)==0) {
     experiment <- NA
   } else {
     tryCatch({
+      protocolIds <- sapply(experimentList, function(x) x$protocol$id)
+      correctExperiments <- experimentList[protocolIds == protocol$id]
+      if(length(correctExperiments) > 0) {
+        experimentList <- correctExperiments
+      }
       protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/", experimentList[[1]]$protocol$id))))
     }, error = function(e) {
       stop("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
@@ -1164,15 +1190,19 @@ getExperimentByName <- function(experimentName, protocol, configList) {
     
     #TODO choose the preferred label
     if (is.na(protocol) || protocolOfExperiment$lsLabels[[1]]$id != protocol$lsLabels[[1]]$id) {
-      errorList <<- c(errorList,paste0("Experiment '",experimentName,
-                                       "' does not exist in the protocol that you entered, but it does exist in '", protocolOfExperiment$lsLabels[[1]]$labelText, 
-                                       "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
+      if (duplicateNamesAllowed) {
+        experiment <- NA
+      } else {
+        errorList <<- c(errorList,paste0("Experiment '",experimentName,
+                                         "' does not exist in the protocol that you entered, but it does exist in '", protocolOfExperiment$lsLabels[[1]]$labelText, 
+                                         "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
+        experiment <- experimentList[[1]]
+      }
+    } else {
+      warning(paste0("Experiment '",experimentName,"' already exists, so the loader will delete its current data and replace it with your new upload.",
+                     " If you do not intend to delete and reload data, enter a new experiment name."))
+      experiment <- experimentList[[1]]
     }
-    # If the experiment does exist, get it
-    # TODO: put tryCatch block in case server is not set up for codename yet
-    experiment <- experimentList[[1]]
-    warning(paste0("Experiment '",experimentName,"' already exists, so the loader will delete its current data and replace it with your new upload.",
-                   " If you do not intend to delete and reload data, enter a new experiment name."))
   }
   # Return the experiment
   return(experiment)
@@ -1276,7 +1306,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                           recordedBy=recordedBy, 
                                                                           lsType="name", 
                                                                           lsKind="experiment name",
-                                                                          labelText=metaData$"Experiment Name"[1],
+                                                                          labelText=experimentName <- trim(gsub("CREATETHISEXPERIMENT$", "", metaData$"Experiment Name"[1])),
                                                                           preferred=TRUE)
   # Create the experiment
   experiment <- createExperiment(lsTransaction = lsTransaction, 
@@ -1736,25 +1766,16 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
         dateValue <- as.numeric(format(as.Date(calculatedResults$"Result Date"[i],origin="1970-01-01"), "%s"))*1000
         # The main value (whether it is a numeric, string, or date) creates one value    
         analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-          lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {
-            "stringValue"
-          } else if (calculatedResults$"Class"[i]=="Text") {
-            if(nchar(calculatedResults$"Result Desc"[i]) > 255) {
-              "clobValue" 
-            } else {
-              "stringValue"
-            }
-          } else if (calculatedResults$"Class"[i]=="Date") {"dateValue"}
-          else {"numericValue"},
+          lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {"stringValue"
+            } else if (calculatedResults$"Class"[i]=="Text") {"stringValue"
+            } else if (calculatedResults$"Class"[i]=="Date") {"dateValue"
+            } else if (calculatedResults$"Class"[i]=="Clob") {"clobValue"
+            } else {"numericValue"},
           lsKind = calculatedResults$"Result Type"[i],
           stringValue = if(calculatedResults$"Result Type"[i]==tempIdLabel) {
             paste0(calculatedResults$"Result Desc"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
-          } else if (!is.na(calculatedResults$"Result Desc"[i]) && nchar(calculatedResults$"Result Desc"[i]) <= 255) {
-            calculatedResults$"Result Desc"[i]
-          } else {NULL},
-          clobValue = if (!is.na(calculatedResults$"Result Desc"[i]) && nchar(calculatedResults$"Result Desc"[i]) > 255) {
-            calculatedResults$"Result Desc"[i]
-          } else {NULL},
+          } else if (!is.na(calculatedResults$"Result Desc"[i])) {calculatedResults$"Result Desc"[i]} else {NULL},
+          clobValue = if (!is.na(calculatedResults$clobValue[i])) {calculatedResults$clobValue[i]} else {NULL},
           dateValue = if(is.na(dateValue)) {NULL} else {dateValue},
           valueOperator = if(is.na(calculatedResults$"Result Operator"[i])) {NULL} else {calculatedResults$"Result Operator"[i]},
           numericValue = if(is.na(calculatedResults$"Result Value"[i]) | calculatedResults$"Result Type"[i]==tempIdLabel) {NULL} 
@@ -2071,9 +2092,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     formatSettings <- list()
   }
   
-  validatedMetaData <- validateMetaData(metaData, configList, formatSettings)
+  validatedMetaDataList <- validateMetaData(metaData, configList, formatSettings)
+  validatedMetaData <- validatedMetaDataList$validatedMetaData
+  duplicateExperimentNamesAllowed <- validatedMetaDataList$duplicateExperimentNamesAllowed
   
-  inputFormat <- as.character(metaData$Format)
+  inputFormat <- as.character(validatedMetaData$Format)
   
   rawOnlyFormat <- inputFormat %in% names(formatSettings)
   if (rawOnlyFormat) {
@@ -2144,7 +2167,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
   }
-  experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList)
+  experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
   
   newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
   
