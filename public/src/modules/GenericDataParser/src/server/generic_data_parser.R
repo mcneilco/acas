@@ -1395,7 +1395,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(subjectData$"Corporate Batch ID")
-    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
+    addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
   }
   
   # Analysis group
@@ -1742,7 +1742,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(calculatedResults$"Corporate Batch ID")
-    registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
+    addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
   }
   
   # Each analysisGroupID creates an analysis group
@@ -2307,16 +2307,14 @@ deleteSourceFile <- function(experiment, configList) {
     if (length(valuesToDelete) > 0) {
       fileToDelete <- valuesToDelete[[1]]$fileValue
       tryCatch({
-        response <- getURL(
-          paste0(configList$externalFileService, "deactivate/", fileToDelete),
-                 customrequest='DELETE',
-                 httpheader=c('Content-Type'='application/json'))
+        if (fileServiceType == "blueimp") {
+          file.remove(fileToDelete)
+        } else {
+          stop("Build a way to delete using the current file service")
+        }
       }, error = function(e) {
-        stop("There was an error deleting the old source file. Please contact your system adminstrator.")
+        warning("There was an error deleting the old source file. Please contact your system adminstrator.")
       })
-      if(!grepl("^Deactivated DNSFile", response)) {
-        warning(paste("The loader was unable to delete the old experiment source file. Instead, it got this response:", response))
-      }
     }
   }
 }
@@ -2429,7 +2427,7 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   experimentCodeName <- experiment$codeName
   
   if (fileServiceType == "blueimp") {
-    experimentFolderLocation <- file.path(dirname(fileStartLocation),"experiments")
+    experimentFolderLocation <- file.path(dirname(fileStartLocation), "experiments")
     dir.create(experimentFolderLocation, showWarnings = FALSE)
     
     fullFolderLocation <- file.path(experimentFolderLocation, experimentCodeName)
@@ -2439,23 +2437,8 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     file.rename(from=fileStartLocation, to=file.path(fullFolderLocation, fileName))
     
     serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
-  } else if (fileServiceType == "DNS") {
-    require("XML")
-    
-    tryCatch({
-      response <- postForm(fileService,
-                           FILE = fileUpload(filename = fileStartLocation),
-                           DESCRIPTION = paste0(racas::applicationSettings$serverPath, "experiments/codename/", experiment$codeName),
-                           CREATED_BY_LOGIN = recordedBy)
-      parsedXML <- xmlParse(response)
-      serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)
-    }, error = function(e) {
-      stop(paste("There was an error contacting the file service:", e))
-    })
-    
-    file.remove(fileStartLocation)
   } else {
-    stop("Invalid file service")
+    stop("Invalid file service type")
   }
 
   locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
