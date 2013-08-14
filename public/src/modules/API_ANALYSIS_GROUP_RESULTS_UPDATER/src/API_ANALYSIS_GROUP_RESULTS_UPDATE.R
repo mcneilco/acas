@@ -1,6 +1,7 @@
 #API_ANALYSIS_GROUP_RESULTS_UPDATER.R
 require(racas)
 require(logging)
+require(sendmailR)
 
 logReset()
 basicConfig(level='FINEST')
@@ -21,8 +22,20 @@ updaterApplicationSettings <- data.frame(
 
 #Send mail
 from <- sprintf("<API_ANALYSIS_GROUP_RESULTS_UPDATER@%s>", Sys.info()[4])
-#to <- c("Brian-McNeilCo<brian@mcneilco.com>")
-to <- c()
+
+#Get DeployMode (used to determine email settings)
+dnsDeployMode <- Sys.getenv("DNSDeployMode")
+if(dnsDeployMode == "") {
+	dnsDeployMode <- "Local"
+	logger$info('DNSDeployMode was not found. Using \'Local\' settings')
+}
+logger$info(paste0("DNSDeployMode set to \'",dnsDeployMode,"\'"))
+
+if(dnsDeployMode != "Prod") {
+	toEmails <- c("bbolt")
+} else {
+	toEmails <- c("DL_INFORMATICS_SUPPORT")
+}
 
 tryCatch({
 	logger$info('API_ANALYSIS_GROUP_RESULTS Updater Initiated')
@@ -174,20 +187,33 @@ tryCatch({
 		commited <- dbCommit(conn)
 		logger$info("API_ANALYSIS_GROUP_RESULTS successfully updated and committed")
 	}
-	disconnected <- dbDisconnect(conn)
 },
 error = function(ex) {
-	logger$error(ex);
-	body <- paste("  Here is the error: ",ex)
-	subject <- "Error performing API_ANALYSIS_GROUP_RESULTS Update"
-	send <- sendmail(from, to, subject, body)
+	logger$error(ex)
+	if(dnsDeployMode!= "Local") {
+		body <- paste("  Here is the error: ",ex$message)
+		subject <- "Error performing API_ANALYSIS_GROUP_RESULTS Update"
+		if(dnsDeployMode != "Prod") {
+			subject <- paste0(dnsDeployMode,": ", subject)
+		}
+		for(t in toEmails) {
+			to <- paste0("<",t,"@dartneuroscience.com>")
+			tryCatch({
+			  mailInfo <- sendmail(from, to, subject, body,
+								   control=list(smtpServer="SMTP.DART.CORP")) 
+			  if(mailInfo$code == "221") {
+				logger$info(paste("  Email sent to:",t,"\n"))
+			  } else {
+				logger$info(mailInfo$msg)
+			  }
+			}, error = function(e) {
+			  logger$error("caught error sending email")
+			  logger$error(e$message)
+			})
+		}
+	}
+}, 
+finally = {
 	disconnected <- dbDisconnect(conn)
-})
-
-subject <- "Successful API_ANALYSIS_GROUP_RESULTS Update"
-body <- list("Updated API_ANALYSIS_GROUP_RESULTS Successfully")
-for(t in to) {
-	send <- sendmail(from, t, subject, body)
-	cat(paste("  Email sent to:",t," "))
 }
-logger$info("Finished API_ANALYSIS_GROUP_RESULTS Successfully")
+)
