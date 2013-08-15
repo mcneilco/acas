@@ -1178,9 +1178,11 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
   } else {
     tryCatch({
       protocolIds <- sapply(experimentList, function(x) x$protocol$id)
-      correctExperiments <- experimentList[protocolIds == protocol$id]
-      if(length(correctExperiments) > 0) {
-        experimentList <- correctExperiments
+      if(!is.na(protocol[[1]])) {
+        correctExperiments <- experimentList[protocolIds == protocol$id]
+        if(length(correctExperiments) > 0) {
+          experimentList <- correctExperiments
+        }
       }
       protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/", experimentList[[1]]$protocol$id))))
     }, error = function(e) {
