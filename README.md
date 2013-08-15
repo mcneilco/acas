@@ -9,6 +9,7 @@
     forever stopall
     ps -ef | grep node
     kill -9 othernodeprocess
+    cd ..
     rm acas
 
 ### Downloading ACAS
