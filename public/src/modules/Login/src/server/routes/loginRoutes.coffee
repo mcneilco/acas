@@ -178,7 +178,7 @@ dnsGetUser = (username, callback) ->
 			console.log response
 			callback null, null
 	)
-	logDnsUsage "User logged in", "", username
+	logDnsUsage "User logged in", "NA", username
 
 
 
