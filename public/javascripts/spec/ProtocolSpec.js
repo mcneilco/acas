@@ -33,7 +33,7 @@
             return expect(this.ps.get('lsValues').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length);
           });
           it("state should have populated value", function() {
-            return expect(this.ps.get('lsValues').at(0).get('valueKind')).toEqual("control type");
+            return expect(this.ps.get('lsValues').at(0).get('lsKind')).toEqual("control type");
           });
           return it("should trigger change when value changed in state", function() {
             runs(function() {
@@ -43,7 +43,7 @@
                 return _this.stateChanged = true;
               });
               return this.ps.get('lsValues').at(0).set({
-                valueKind: 'newkind'
+                lsKind: 'newkind'
               });
             });
             waitsFor(function() {
@@ -74,7 +74,7 @@
           return expect(this.psl.at(0).get('lsValues').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length);
         });
         return it("first state should have populated value", function() {
-          return expect(this.psl.at(0).get('lsValues').at(0).get('valueKind')).toEqual("control type");
+          return expect(this.psl.at(0).get('lsValues').at(0).get('lsKind')).toEqual("control type");
         });
       });
     });
@@ -125,7 +125,7 @@
             return expect(this.prot.get('lsStates').at(0).get('lsKind')).toEqual("experiment controls");
           });
           return it("states should have values", function() {
-            return expect(this.prot.get('lsStates').at(0).get('lsValues').at(0).get('valueKind')).toEqual("control type");
+            return expect(this.prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual("control type");
           });
         });
       });

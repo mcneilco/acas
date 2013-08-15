@@ -58,12 +58,13 @@ describe 'DocForBatches Service testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
 
-					expect(@serviceReturn.id).toEqual 270
+					expect(@serviceReturn.id).toEqual 17
 
 
 			it 'should return a fileName', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
+					console.log @serviceReturn
 					expect(@serviceReturn.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].fileValue).toEqual "exampleUploadedFile.txt"
 
 

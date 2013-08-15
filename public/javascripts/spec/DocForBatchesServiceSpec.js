@@ -71,12 +71,13 @@ This service saves and fetches DocForBatches items
         it('should return a valide model', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 3000);
           return runs(function() {
-            return expect(this.serviceReturn.id).toEqual(270);
+            return expect(this.serviceReturn.id).toEqual(17);
           });
         });
         return it('should return a fileName', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 3000);
           return runs(function() {
+            console.log(this.serviceReturn);
             return expect(this.serviceReturn.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].fileValue).toEqual("exampleUploadedFile.txt");
           });
         });

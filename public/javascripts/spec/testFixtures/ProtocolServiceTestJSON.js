@@ -55,10 +55,10 @@
               stringValue: "negative control",
               uncertainty: null,
               urlValue: null,
-              valueKind: "control type",
+              lsKind: "control type",
               valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_control type",
+              lsType: "stringValue",
+              lsTypeAndKind: "stringValue_control type",
               valueUnit: null,
               version: 0
             }, {
@@ -83,10 +83,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              valueKind: "tested concentration",
+              lsKind: "tested concentration",
               valueOperator: null,
-              valueType: "numericValue",
-              valueTypeAndKind: "numericValue_tested concentration",
+              lsType: "numericValue",
+              lsTypeAndKind: "numericValue_tested concentration",
               valueUnit: "uM",
               version: 0
             }, {
@@ -111,10 +111,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              valueKind: "batch code",
+              lsKind: "batch code",
               valueOperator: null,
-              valueType: "codeValue",
-              valueTypeAndKind: "codeValue_batch code",
+              lsType: "codeValue",
+              lsTypeAndKind: "codeValue_batch code",
               valueUnit: null,
               version: 0
             }
@@ -169,10 +169,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              valueKind: "curve max",
+              lsKind: "curve max",
               valueOperator: null,
-              valueType: "numericValue",
-              valueTypeAndKind: "numericValue_curve max",
+              lsType: "numericValue",
+              lsTypeAndKind: "numericValue_curve max",
               valueUnit: null,
               version: 0
             }, {
@@ -197,10 +197,10 @@
               stringValue: "(maximum-minimum)/minimum",
               uncertainty: null,
               urlValue: null,
-              valueKind: "data transformation rule",
+              lsKind: "data transformation rule",
               valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_data transformation rule",
+              lsType: "stringValue",
+              lsTypeAndKind: "stringValue_data transformation rule",
               valueUnit: null,
               version: 0
             }, {
@@ -225,10 +225,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              valueKind: "active SD threshold",
+              lsKind: "active SD threshold",
               valueOperator: null,
-              valueType: "numericValue",
-              valueTypeAndKind: "numericValue_active SD threshold",
+              lsType: "numericValue",
+              lsTypeAndKind: "numericValue_active SD threshold",
               valueUnit: null,
               version: 0
             }, {
@@ -253,10 +253,10 @@
               stringValue: "FLIPR Min Max",
               uncertainty: null,
               urlValue: null,
-              valueKind: "data source",
+              lsKind: "data source",
               valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_data source",
+              lsType: "stringValue",
+              lsTypeAndKind: "stringValue_data source",
               valueUnit: null,
               version: 0
             }, {
@@ -281,10 +281,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              valueKind: "curve min",
+              lsKind: "curve min",
               valueOperator: null,
-              valueType: "numericValue",
-              valueTypeAndKind: "numericValue_curve min",
+              lsType: "numericValue",
+              lsTypeAndKind: "numericValue_curve min",
               valueUnit: null,
               version: 0
             }, {
@@ -309,10 +309,10 @@
               stringValue: "none",
               uncertainty: null,
               urlValue: null,
-              valueKind: "normalization rule",
+              lsKind: "normalization rule",
               valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_normalization rule",
+              lsType: "stringValue",
+              lsTypeAndKind: "stringValue_normalization rule",
               valueUnit: null,
               version: 0
             }, {
@@ -337,10 +337,10 @@
               stringValue: "no",
               uncertainty: null,
               urlValue: null,
-              valueKind: "replicate aggregation",
+              lsKind: "replicate aggregation",
               valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_replicate aggregation",
+              lsType: "stringValue",
+              lsTypeAndKind: "stringValue_replicate aggregation",
               valueUnit: null,
               version: 0
             }, {
@@ -365,10 +365,10 @@
               stringValue: "Molecular Dynamics FLIPR",
               uncertainty: null,
               urlValue: null,
-              valueKind: "reader instrument",
+              lsKind: "reader instrument",
               valueOperator: null,
-              valueType: "stringValue",
-              valueTypeAndKind: "stringValue_reader instrument",
+              lsType: "stringValue",
+              lsTypeAndKind: "stringValue_reader instrument",
               valueUnit: null,
               version: 0
             }, {
@@ -393,10 +393,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              valueKind: "active efficacy threshold",
+              lsKind: "active efficacy threshold",
               valueOperator: null,
-              valueType: "numericValue",
-              valueTypeAndKind: "numericValue_active efficacy threshold",
+              lsType: "numericValue",
+              lsTypeAndKind: "numericValue_active efficacy threshold",
               valueUnit: null,
               version: 0
             }

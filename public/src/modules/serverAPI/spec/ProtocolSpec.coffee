@@ -23,13 +23,13 @@ describe "Protocol module testing", ->
 				it "state should have values", ->
 					expect(@ps.get('lsValues').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length
 				it "state should have populated value", ->
-					expect(@ps.get('lsValues').at(0).get('valueKind')).toEqual "control type"
+					expect(@ps.get('lsValues').at(0).get('lsKind')).toEqual "control type"
 				it "should trigger change when value changed in state", ->
 					runs ->
 						@stateChanged = false
 						@ps.on 'change', =>
 							@stateChanged = true
-						@ps.get('lsValues').at(0).set(valueKind: 'newkind')
+						@ps.get('lsValues').at(0).set(lsKind: 'newkind')
 					waitsFor ->
 						@stateChanged
 					, 500
@@ -50,7 +50,7 @@ describe "Protocol module testing", ->
 			it "states should have values", ->
 				expect(@psl.at(0).get('lsValues').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length
 			it "first state should have populated value", ->
-				expect(@psl.at(0).get('lsValues').at(0).get('valueKind')).toEqual "control type"
+				expect(@psl.at(0).get('lsValues').at(0).get('lsKind')).toEqual "control type"
 
 	describe "Protocol model testing", ->
 		describe "When loaded from new", ->
@@ -84,7 +84,7 @@ describe "Protocol module testing", ->
 				it "should have states with kind ", ->
 					expect(@prot.get('lsStates').at(0).get('lsKind')).toEqual "experiment controls"
 				it "states should have values", ->
-					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('valueKind')).toEqual "control type"
+					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "control type"
 		describe "when loaded from stub", ->
 			beforeEach ->
 				@prot = new Protocol window.protocolServiceTestJSON.stubSavedProtocol[0]
