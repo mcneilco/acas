@@ -2178,7 +2178,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
                         calcDataRows=max(calculatedResults$analysisGroupID),
                         calcDataColumns=length(unique(calculatedResults$resultTypeAndUnit)),
                         calcCorpBatchID=length(unique(calculatedResults$"Corporate Batch ID")),
-                        calcCurves=length(unique(calculatedResults$"Result Value"[calculatedResults$"Result Type"==tempIdLabel]))
+                        calcCurves=length(unique(calculatedResults$"Result Desc"[calculatedResults$"Result Type"==tempIdLabel]))
     )
     if (!is.null(subjectData)) {
       summaryInfo$subjectPoints <- max(subjectData$pointID)
