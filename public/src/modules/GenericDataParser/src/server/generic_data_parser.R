@@ -1179,9 +1179,11 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
   } else {
     tryCatch({
       protocolIds <- sapply(experimentList, function(x) x$protocol$id)
-      correctExperiments <- experimentList[protocolIds == protocol$id]
-      if(length(correctExperiments) > 0) {
-        experimentList <- correctExperiments
+      if(!is.na(protocol[[1]])) {
+        correctExperiments <- experimentList[protocolIds == protocol$id]
+        if(length(correctExperiments) > 0) {
+          experimentList <- correctExperiments
+        }
       }
       protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/", experimentList[[1]]$protocol$id))))
     }, error = function(e) {
@@ -1873,7 +1875,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
           # xValue is the value of the data in the x column for that treatmentGroup
           xValue <- treatmentGroupData$value[treatmentGroupData$ResultType==xLabel & treatmentGroupData$treatmentBatch==group]
           for(pointID in unique(rawResults$pointID[rawResults$ResultType==xLabel 
-                                                   & as.numeric(as.character(rawResults$value))==as.numeric(xValue)
+                                                   & suppressWarnings(as.numeric(as.character(rawResults$value))==as.numeric(xValue))
                                                    & rawResults[,tempIdLabel]==tempID])) {
             
             subjectStates <- list()
