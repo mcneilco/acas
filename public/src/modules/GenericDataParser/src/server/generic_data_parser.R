@@ -1756,60 +1756,79 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
       
       # Get the rows, but NA's are a special case
       if(is.na(concentration)) {
-        selectedRows <- analysisGroupID == calculatedResults$analysisGroupID & is.na(calculatedResults$Conc)
+        selectedRowsConc <- analysisGroupID == calculatedResults$analysisGroupID & is.na(calculatedResults$Conc)
       } else {
-        selectedRows <- analysisGroupID == calculatedResults$analysisGroupID & concentration == calculatedResults$Conc
+        selectedRowsConc <- analysisGroupID == calculatedResults$analysisGroupID & concentration == calculatedResults$Conc
       }
       
-      analysisGroupValues <- list()
-      for (i in which(selectedRows)) {
-        # Prepare the date value
-        dateValue <- as.numeric(format(as.Date(calculatedResults$"Result Date"[i],origin="1970-01-01"), "%s"))*1000
-        # The main value (whether it is a numeric, string, or date) creates one value    
+      for (time in unique(calculatedResults$time[selectedRowsConc])) {
+        if(is.na(concentration)) {
+          selectedRows <- selectedRowsConc & is.na(calculatedResults$time)
+        } else {
+          selectedRows <- selectedRowsConc & time == calculatedResults$time
+        }
+        analysisGroupValues <- list()
+        for (i in which(selectedRows)) {
+          # Prepare the date value
+          dateValue <- as.numeric(format(as.Date(calculatedResults$"Result Date"[i],origin="1970-01-01"), "%s"))*1000
+          # The main value (whether it is a numeric, string, or date) creates one value    
+          analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+                                                                                   lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {"stringValue"
+                                                                                   } else if (calculatedResults$"Class"[i]=="Text") {"stringValue"
+                                                                                   } else if (calculatedResults$"Class"[i]=="Date") {"dateValue"
+                                                                                   } else if (calculatedResults$"Class"[i]=="Clob") {"clobValue"
+                                                                                   } else {"numericValue"},
+                                                                                   lsKind = calculatedResults$"Result Type"[i],
+                                                                                   stringValue = if(calculatedResults$"Result Type"[i]==tempIdLabel) {
+                                                                                     paste0(calculatedResults$"Result Desc"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
+                                                                                   } else if (!is.na(calculatedResults$"Result Desc"[i])) {calculatedResults$"Result Desc"[i]} else {NULL},
+                                                                                   clobValue = if (!is.na(calculatedResults$clobValue[i])) {calculatedResults$clobValue[i]} else {NULL},
+                                                                                   dateValue = if(is.na(dateValue)) {NULL} else {dateValue},
+                                                                                   valueOperator = if(is.na(calculatedResults$"Result Operator"[i])) {NULL} else {calculatedResults$"Result Operator"[i]},
+                                                                                   numericValue = if(is.na(calculatedResults$"Result Value"[i]) | calculatedResults$"Result Type"[i]==tempIdLabel) {NULL} 
+                                                                                   else {calculatedResults$"Result Value"[i]},
+                                                                                   valueUnit = if(is.na(calculatedResults$"Result Units"[i])) {NULL} else {calculatedResults$"Result Units"[i]},
+                                                                                   publicData = !calculatedResults$Hidden[i],
+                                                                                   lsTransaction = lsTransaction)
+        }
+        
+        # Adds a value for the batchCode (Corporate Batch ID)
         analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-          lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {"stringValue"
-            } else if (calculatedResults$"Class"[i]=="Text") {"stringValue"
-            } else if (calculatedResults$"Class"[i]=="Date") {"dateValue"
-            } else if (calculatedResults$"Class"[i]=="Clob") {"clobValue"
-            } else {"numericValue"},
-          lsKind = calculatedResults$"Result Type"[i],
-          stringValue = if(calculatedResults$"Result Type"[i]==tempIdLabel) {
-            paste0(calculatedResults$"Result Desc"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
-          } else if (!is.na(calculatedResults$"Result Desc"[i])) {calculatedResults$"Result Desc"[i]} else {NULL},
-          clobValue = if (!is.na(calculatedResults$clobValue[i])) {calculatedResults$clobValue[i]} else {NULL},
-          dateValue = if(is.na(dateValue)) {NULL} else {dateValue},
-          valueOperator = if(is.na(calculatedResults$"Result Operator"[i])) {NULL} else {calculatedResults$"Result Operator"[i]},
-          numericValue = if(is.na(calculatedResults$"Result Value"[i]) | calculatedResults$"Result Type"[i]==tempIdLabel) {NULL} 
-          else {calculatedResults$"Result Value"[i]},
-          valueUnit = if(is.na(calculatedResults$"Result Units"[i])) {NULL} else {calculatedResults$"Result Units"[i]},
-          publicData = !calculatedResults$Hidden[i],
-          lsTransaction = lsTransaction)
+                                                                                 lsType = "codeValue",
+                                                                                 lsKind = "batch code",
+                                                                                 codeValue = as.character(calculatedResults$"Corporate Batch ID"[analysisGroupID == calculatedResults$analysisGroupID][1]),
+                                                                                 publicData = !calculatedResults$Hidden[i],
+                                                                                 lsTransaction = lsTransaction)
+        
+        # Adds a value for the concentration if there is one
+        if (!is.na(calculatedResults$Conc[i])) {
+          analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+                                                                                   lsType = "numericValue",
+                                                                                   lsKind = "tested concentration",
+                                                                                   valueUnit= if(is.na(calculatedResults$"Conc Units"[i])){NULL} else {calculatedResults$"Conc Units"[i]},
+                                                                                   numericValue = calculatedResults$"Conc"[i],
+                                                                                   publicData = !calculatedResults$Hidden[i],
+                                                                                   lsTransaction = lsTransaction)
+        }
+        
+        # Adds a value for the time if there is one
+        if (!is.na(calculatedResults$time[i])) {
+          analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
+            recordedBy = recordedBy,
+            lsType = "numericValue",
+            lsKind = "time",
+            valueUnit= if(is.na(calculatedResults$"timeUnit"[i])){NULL} else {calculatedResults$"timeUnit"[i]},
+            numericValue = calculatedResults$"time"[i],
+            publicData = !calculatedResults$Hidden[i],
+            lsTransaction = lsTransaction)
+        }
+        # Creates the state
+        analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
+                                                                                          recordedBy=recordedBy,
+                                                                                          lsType="data",
+                                                                                          lsKind=metaData$Format[1],
+                                                                                          analysisGroupValues=analysisGroupValues)
       }
-      
-      # Adds a value for the batchCode (Corporate Batch ID)
-      analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-        lsType = "codeValue",
-        lsKind = "batch code",
-        codeValue = as.character(calculatedResults$"Corporate Batch ID"[analysisGroupID == calculatedResults$analysisGroupID][1]),
-        publicData = !calculatedResults$Hidden[i],
-        lsTransaction = lsTransaction)
-      
-      # Adds a value for the concentration if there is one
-      if (!is.na(calculatedResults$Conc[i])) {
-        analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-          lsType = "numericValue",
-          lsKind = "tested concentration",
-          valueUnit= if(is.na(calculatedResults$"Conc Units"[i])){NULL} else {calculatedResults$"Conc Units"[i]},
-          numericValue = calculatedResults$"Conc"[i],
-          publicData = !calculatedResults$Hidden[i],
-          lsTransaction = lsTransaction)
-      }
-      # Creates the state
-      analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
-                                                                                        recordedBy=recordedBy,
-                                                                                        lsType="data",
-                                                                                        lsKind=metaData$Format[1],
-                                                                                        analysisGroupValues=analysisGroupValues)
     }
     # Creates Treatment Groups based on rawResults
     treatmentGroupList <- list()
