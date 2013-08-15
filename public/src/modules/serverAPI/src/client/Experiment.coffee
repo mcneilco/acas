@@ -179,7 +179,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		console.log @model
 		$(@el).empty()
 		$(@el).html @template()
-		#@setupProtocolSelect()
+		@setupProtocolSelect()
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
 		@$('.bv_shortDescription').html @model.get('shortDescription')

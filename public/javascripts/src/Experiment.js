@@ -326,6 +326,7 @@
       console.log(this.model);
       $(this.el).empty();
       $(this.el).html(this.template());
+      this.setupProtocolSelect();
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
