@@ -230,7 +230,7 @@ app.get '/api/users/:username', loginRoutes.getUsers
         return callback(null, null);
       }
     });
-    return logDnsUsage("User logged in", "", username);
+    return logDnsUsage("User logged in", "NA", username);
   };
 
   exports.getUsers = function(req, resp) {
