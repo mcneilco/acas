@@ -6,26 +6,26 @@ class window.ExperimentValueList extends Backbone.Collection
 
 class window.ExperimentState extends Backbone.Model
 	defaults:
-		experimentValues: new ExperimentValueList()
+		lsValues: new ExperimentValueList()
 
 	initialize: ->
-		if @has('experimentValues')
-			if @get('experimentValues') not instanceof ExperimentValueList
-				@set experimentValues: new ExperimentValueList(@get('experimentValues'))
-		@get('experimentValues').on 'change', =>
+		if @has('lsValues')
+			if @get('lsValues') not instanceof ExperimentValueList
+				@set lsValues: new ExperimentValueList(@get('lsValues'))
+		@get('lsValues').on 'change', =>
 			@trigger 'change'
 
 	parse: (resp) ->
-		if resp.experimentValues?
-			if resp.experimentValues not instanceof ExperimentValueList
-				resp.experimentValues = new ExperimentValueList(resp.experimentValues)
-				resp.experimentValues.on 'change', =>
+		if resp.lsValues?
+			if resp.lsValues not instanceof ExperimentValueList
+				resp.lsValues = new ExperimentValueList(resp.lsValues)
+				resp.lsValues.on 'change', =>
 					@trigger 'change'
 		resp
 
 	getValuesByTypeAndKind: (type, kind) ->
-		@get('experimentValues').filter (value) ->
-			(not value.get('ignored')) and (value.get('valueType')==type) and (value.get('valueKind')==kind)
+		@get('lsValues').filter (value) ->
+			(not value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
 
 class window.ExperimentStateList extends Backbone.Collection
 	model: ExperimentState
@@ -53,8 +53,8 @@ class window.Experiment extends Backbone.Model
 		recordedBy: ""
 		recordedDate: null
 		shortDescription: ""
-		experimentLabels: new LabelList()
-		experimentStates: new ExperimentStateList()
+		lsLabels: new LabelList()
+		lsStates: new ExperimentStateList()
 		protocol: null
 		analysisGroups: new AnalysisGroupList()
 
@@ -63,15 +63,15 @@ class window.Experiment extends Backbone.Model
 		@setupCompositeChangeTriggers()
 
 	parse: (resp) =>
-		if resp.experimentLabels?
-			if resp.experimentLabels not instanceof LabelList
-				resp.experimentLabels = new LabelList(resp.experimentLabels)
-				resp.experimentLabels.on 'change', =>
+		if resp.lsLabels?
+			if resp.lsLabels not instanceof LabelList
+				resp.lsLabels = new LabelList(resp.lsLabels)
+				resp.lsLabels.on 'change', =>
 					@trigger 'change'
-		if resp.experimentStates?
-			if resp.experimentStates not instanceof ExperimentStateList
-				resp.experimentStates = new ExperimentStateList(resp.experimentStates)
-				resp.experimentStates.on 'change', =>
+		if resp.lsStates?
+			if resp.lsStates not instanceof ExperimentStateList
+				resp.lsStates = new ExperimentStateList(resp.lsStates)
+				resp.lsStates.on 'change', =>
 					@trigger 'change'
 		if resp.analysisGroups?
 			if resp.analysisGroups not instanceof AnalysisGroupList
@@ -82,12 +82,12 @@ class window.Experiment extends Backbone.Model
 		resp
 
 	fixCompositeClasses: =>
-		if @has('experimentLabels')
-			if @get('experimentLabels') not instanceof LabelList
-				@set experimentLabels: new LabelList(@get('experimentLabels'))
-		if @has('experimentStates')
-			if @get('experimentStates') not instanceof ExperimentStateList
-				@set experimentStates: new ExperimentStateList(@get('experimentStates'))
+		if @has('lsLabels')
+			if @get('lsLabels') not instanceof LabelList
+				@set lsLabels: new LabelList(@get('lsLabels'))
+		if @has('lsStates')
+			if @get('lsStates') not instanceof ExperimentStateList
+				@set lsStates: new ExperimentStateList(@get('lsStates'))
 		if @has('analysisGroups')
 			if @get('analysisGroups') not instanceof AnalysisGroupList
 				@set analysisGroups: new AnalysisGroupList(@get('analysisGroups'))
@@ -96,9 +96,9 @@ class window.Experiment extends Backbone.Model
 				@set protocol: new Protocol(@get('protocol'))
 
 	setupCompositeChangeTriggers: ->
-		@get('experimentLabels').on 'change', =>
+		@get('lsLabels').on 'change', =>
 			@trigger 'change'
-		@get('experimentStates').on 'change', =>
+		@get('lsStates').on 'change', =>
 			@trigger 'change'
 
 	copyProtocolAttributes: (protocol) ->
@@ -116,19 +116,19 @@ class window.Experiment extends Backbone.Model
 				evalue.unset 'id'
 				evalue.unset 'lsTransaction'
 				evals.add(evalue)
-			estate.set experimentValues: evals
+			estate.set lsValues: evals
 			estates.add(estate)
 		@set
 			kind: protocol.get('lsKind')
 			protocol: protocol
 			shortDescription: protocol.get('shortDescription')
-			experimentStates: estates
+			lsStates: estates
 		@trigger "protocol_attributes_copied"
 		return
 
 	validate: (attrs) ->
 		errors = []
-		bestName = attrs.experimentLabels.pickBestName()
+		bestName = attrs.lsLabels.pickBestName()
 		nameError = false
 		if bestName?
 			nameError = true
@@ -176,14 +176,15 @@ class window.ExperimentBaseController extends AbstractFormController
 		@setBindings()
 
 	render: =>
+		console.log @model
 		$(@el).empty()
 		$(@el).html @template()
-		@setupProtocolSelect()
+		#@setupProtocolSelect()
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
 		@$('.bv_shortDescription').html @model.get('shortDescription')
 		@$('.bv_description').html @model.get('description')
-		bestName = @model.get('experimentLabels').pickBestName()
+		bestName = @model.get('lsLabels').pickBestName()
 		if bestName?
 			@$('.bv_experimentName').val bestName.get('labelText')
 		@$('.bv_recordedBy').val(@model.get('recordedBy'))
@@ -233,7 +234,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@$('.bv_protocolName').html(protocolName)
 
 	getDescriptionValue: ->
-		value = @model.get('experimentStates').getStateValueByTypeAndKind "metadata", "experiment info", "stringValue", "description"
+		value = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment info", "stringValue", "description"
 		desc = ""
 		if value != null
 			desc = value.get('stringValue')
@@ -251,7 +252,7 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	handleNameChanged: =>
 		newName = @getTrimmedInput('.bv_experimentName')
-		@model.get('experimentLabels').setBestName new Label
+		@model.get('lsLabels').setBestName new Label
 			labelKind: "experiment name"
 			labelText: newName
 			recordedBy: @model.get 'recordedBy'

@@ -69,7 +69,7 @@ describe 'Doc For Batches Behavior Testing', ->
 						expect(@exp.get('shortDescription')).toEqual "test description"
 				it "experiment should have label equal to file name or URL", ->
 					runs ->
-						expect(@exp.get('experimentLabels').pickBestName().get('labelText')).toEqual "exampleUploadedFile.txt"
+						expect(@exp.get('lsLabels').pickBestName().get('labelText')).toEqual "exampleUploadedFile.txt"
 				it "experiment should have analysisGroup in analysisGroupList", ->
 					runs ->
 						expect(@exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy()

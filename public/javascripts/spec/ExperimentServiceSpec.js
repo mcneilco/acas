@@ -57,7 +57,7 @@ This suite of services provides CRUD operations on Experiment Objects
       return it('should return a full experiment', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn.codeName).toEqual("EXPT-00000046");
+          return expect(this.serviceReturn.codeName).toEqual("EXPT-00000001");
         });
       });
     });

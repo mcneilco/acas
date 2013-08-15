@@ -45,7 +45,7 @@ describe 'Experiment CRUD testing', ->
 		it 'should return a full experiment', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn.codeName).toEqual "EXPT-00000046"
+				expect(@serviceReturn.codeName).toEqual "EXPT-00000001"
 
 	describe 'when saving new experiment', ->
 		beforeEach ->

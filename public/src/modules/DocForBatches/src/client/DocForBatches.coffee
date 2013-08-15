@@ -107,7 +107,7 @@ class window.DocForBatches extends Backbone.Model
 			recordedDate: recDate
 			shortDescription: @get('docUpload').get('description')
 			analysisGroups:analysisGroups
-		exp.get('experimentLabels').setBestName new Label
+		exp.get('lsLabels').setBestName new Label
 			labelKind: "experiment name"
 			labelText: eName
 			recordedBy: recBy

@@ -99,14 +99,12 @@
     };
 
     PrimaryScreenAnalysisController.prototype.getControlStates = function() {
-      return this.controlStates = this.model.get('experimentStates').getStatesByTypeAndKind("metadata", "experiment controls");
+      return this.controlStates = this.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment controls");
     };
 
     PrimaryScreenAnalysisController.prototype.getHitThreshold = function() {
       var desc, value;
-      console.log("hold");
-      console.log(this.model.get('experimentStates'));
-      value = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
+      value = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       desc = "";
       if (value !== null) {
         desc = value.get('numericValue');
@@ -116,14 +114,14 @@
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
       var analysisStatus, resultValue;
-      analysisStatus = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
+      analysisStatus = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
       if (analysisStatus !== null) {
         this.analysisStatus = analysisStatus.get('stringValue');
         this.$('.bv_analysisStatus').html(this.analysisStatus);
       } else {
         this.analysisStatus = "not started";
       }
-      resultValue = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
+      resultValue = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
       if (resultValue !== null) {
         return this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
       }
@@ -131,7 +129,7 @@
 
     PrimaryScreenAnalysisController.prototype.handleHitThresholdChanged = function() {
       var value;
-      value = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
+      value = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       return value.set({
         numericValue: parseFloat($.trim(this.$('.bv_hitThreshold').val()))
       });

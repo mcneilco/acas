@@ -91,7 +91,7 @@
           });
           it("experiment should have label equal to file name or URL", function() {
             return runs(function() {
-              return expect(this.exp.get('experimentLabels').pickBestName().get('labelText')).toEqual("exampleUploadedFile.txt");
+              return expect(this.exp.get('lsLabels').pickBestName().get('labelText')).toEqual("exampleUploadedFile.txt");
             });
           });
           it("experiment should have analysisGroup in analysisGroupList", function() {

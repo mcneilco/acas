@@ -18,29 +18,29 @@
           return expect(this.es).toBeDefined();
         });
         return it("should have defaults", function() {
-          return expect(this.es.get('experimentValues') instanceof Backbone.Collection).toBeTruthy();
+          return expect(this.es.get('lsValues') instanceof Backbone.Collection).toBeTruthy();
         });
       });
       return describe("When loaded from state json", function() {
         beforeEach(function() {
-          return this.es = new ExperimentState(window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0]);
+          return this.es = new ExperimentState(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0]);
         });
         return describe("after initial load", function() {
           it("state should have kind ", function() {
-            return expect(this.es.get('stateKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0].stateKind);
+            return expect(this.es.get('lsKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind);
           });
           it("state should have values", function() {
-            return expect(this.es.get('experimentValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0].experimentValues.length);
+            return expect(this.es.get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
           });
           it("state should have populated value", function() {
-            return expect(this.es.get('experimentValues').at(0).get('valueKind')).toEqual("data transformation rule");
+            return expect(this.es.get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
           });
           it("should return requested value", function() {
             var values;
             console.log(this.es);
-            values = this.es.getValuesByTypeAndKind("stringValue", "data transformation rule");
+            values = this.es.getValuesByTypeAndKind("stringValue", "notebook");
             expect(values.length).toEqual(1);
-            return expect(values[0].get('stringValue')).toEqual("(maximum-minimum)/minimum");
+            return expect(values[0].get('stringValue')).toEqual("911");
           });
           return it("should trigger change when value changed in state", function() {
             runs(function() {
@@ -49,7 +49,7 @@
               this.es.on('change', function() {
                 return _this.stateChanged = true;
               });
-              return this.es.get('experimentValues').at(0).set({
+              return this.es.get('lsValues').at(0).set({
                 valueKind: 'newkind'
               });
             });
@@ -65,38 +65,38 @@
     });
     describe("Experiment State List model testing", function() {
       beforeEach(function() {
-        return this.esl = new ExperimentStateList(window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates);
+        return this.esl = new ExperimentStateList(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates);
       });
       describe("after initial load", function() {
         it("Class should exist", function() {
           return expect(this.esl).toBeDefined();
         });
         it("should have states ", function() {
-          return expect(this.esl.length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates.length);
+          return expect(this.esl.length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates.length);
         });
         it("first state should have kind ", function() {
-          return expect(this.esl.at(0).get('stateKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0].stateKind);
+          return expect(this.esl.at(0).get('lsKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind);
         });
         it("states should have values", function() {
-          return expect(this.esl.at(0).get('experimentValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0].experimentValues.length);
+          return expect(this.esl.at(0).get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
         });
         return it("first state should have populated value", function() {
-          return expect(this.esl.at(0).get('experimentValues').at(0).get('valueKind')).toEqual("data transformation rule");
+          return expect(this.esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
         });
       });
       describe("Get states by type and kind", function() {
         return it("should return requested state", function() {
           var values;
-          values = this.esl.getStatesByTypeAndKind("metadata", "experiment analysis parameters");
+          values = this.esl.getStatesByTypeAndKind("metadata", "experiment metadata");
           expect(values.length).toEqual(1);
-          return expect(values[0].get('stateTypeAndKind')).toEqual("metadata_experiment analysis parameters");
+          return expect(values[0].get('lsTypeAndKind')).toEqual("metadata_experiment metadata");
         });
       });
       return describe("Get value by type and kind", function() {
         return it("should return requested value", function() {
           var value;
-          value = this.esl.getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
-          return expect(value.get('stringValue')).toEqual("(maximum-minimum)/minimum");
+          value = this.esl.getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
+          return expect(value.get('stringValue')).toEqual("911");
         });
       });
     });
@@ -107,12 +107,12 @@
         });
         return describe("Defaults", function() {
           it('Should have an empty label list', function() {
-            expect(this.exp.get('experimentLabels').length).toEqual(0);
-            return expect(this.exp.get('experimentLabels') instanceof LabelList).toBeTruthy();
+            expect(this.exp.get('lsLabels').length).toEqual(0);
+            return expect(this.exp.get('lsLabels') instanceof LabelList).toBeTruthy();
           });
           it('Should have an empty state list', function() {
-            expect(this.exp.get('experimentStates').length).toEqual(0);
-            return expect(this.exp.get('experimentStates') instanceof ExperimentStateList).toBeTruthy();
+            expect(this.exp.get('lsStates').length).toEqual(0);
+            return expect(this.exp.get('lsStates') instanceof ExperimentStateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
             return expect(this.exp.get('recordedBy')).toEqual("");
@@ -195,10 +195,11 @@
             return expect(this.exp.get('shortDescription')).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.shortDescription);
           });
           it("should have labels", function() {
-            return expect(this.exp.get('experimentLabels').length).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.experimentLabels.length);
+            return expect(this.exp.get('lsLabels').length).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.lsLabels.length);
           });
           return it("should have labels", function() {
-            return expect(this.exp.get('experimentLabels').at(0).get('labelKind')).toEqual("experiment name");
+            console.log(this.exp);
+            return expect(this.exp.get('lsLabels').at(0).get('labelKind')).toEqual("experiment name");
           });
         });
       });
@@ -224,10 +225,11 @@
             return expect(this.exp.get('description')).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.description);
           });
           it("should not have the labels copied", function() {
-            return expect(this.exp.get('experimentLabels').length).toEqual(0);
+            return expect(this.exp.get('lsLabels').length).toEqual(0);
           });
           return it("should have the states copied", function() {
-            return expect(this.exp.get('experimentStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
+            console.log(this.exp);
+            return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
           });
         });
       });
@@ -237,7 +239,7 @@
             var _this = this;
             this.exp = new Experiment();
             this.experimentChanged = false;
-            this.exp.get('experimentLabels').setBestName(new Label({
+            this.exp.get('lsLabels').setBestName(new Label({
               labelKind: "experiment name",
               labelText: "test label",
               recordedBy: this.exp.get('recordedBy'),
@@ -247,7 +249,7 @@
               return _this.experimentChanged = true;
             });
             this.experimentChanged = false;
-            return this.exp.get('experimentLabels').setBestName(new Label({
+            return this.exp.get('lsLabels').setBestName(new Label({
               labelKind: "experiment name",
               labelText: "new label",
               recordedBy: this.exp.get('recordedBy'),
@@ -269,8 +271,8 @@
             this.exp.on('change', function() {
               return _this.experimentChanged = true;
             });
-            return this.exp.get('experimentStates').at(0).get('experimentValues').at(0).set({
-              valueKind: 'fred'
+            return this.exp.get('lsStates').at(0).get('lsValues').at(0).set({
+              lsKind: 'fred'
             });
           });
           waitsFor(function() {
@@ -290,7 +292,7 @@
         });
         it("should be invalid when name is empty", function() {
           var filtErrors;
-          this.exp.get('experimentLabels').setBestName(new Label({
+          this.exp.get('lsLabels').setBestName(new Label({
             labelKind: "experiment name",
             labelText: "",
             recordedBy: this.exp.get('recordedBy'),
@@ -363,14 +365,14 @@
         });
         it("should convert labels array to label list", function() {
           return runs(function() {
-            expect(this.exp.get('experimentLabels') instanceof LabelList).toBeTruthy();
-            return expect(this.exp.get('experimentLabels').length).toBeGreaterThan(0);
+            expect(this.exp.get('lsLabels') instanceof LabelList).toBeTruthy();
+            return expect(this.exp.get('lsLabels').length).toBeGreaterThan(0);
           });
         });
         it("should convert state array to state list", function() {
           return runs(function() {
-            expect(this.exp.get('experimentStates') instanceof ExperimentStateList).toBeTruthy();
-            return expect(this.exp.get('experimentStates').length).toBeGreaterThan(0);
+            expect(this.exp.get('lsStates') instanceof ExperimentStateList).toBeTruthy();
+            return expect(this.exp.get('lsStates').length).toBeGreaterThan(0);
           });
         });
         return it("should convert protocol has to Protocol", function() {
@@ -412,7 +414,6 @@
         });
         describe("populated fields", function() {
           it("should show the protocol code", function() {
-            console.log(this.ebc.$('.bv_protocolCode'));
             return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
           });
           it("should show the protocol name", function() {
@@ -437,7 +438,7 @@
           it("should update model when name is changed", function() {
             this.ebc.$('.bv_experimentName').val(" Updated experiment name   ");
             this.ebc.$('.bv_experimentName').change();
-            return expect(this.ebc.model.get('experimentLabels').pickBestLabel().get('labelText')).toEqual("Updated experiment name");
+            return expect(this.ebc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated experiment name");
           });
           return it("should update model when recorded date is changed", function() {
             this.ebc.$('.bv_recordedDate').val(" 2013-3-16   ");
@@ -468,22 +469,23 @@
           return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual("disabled");
         });
         it("should fill the short description field", function() {
-          return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("experiment short description goes here");
+          return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("experiment created by generic data parser");
         });
         it("should fill the long description field", function() {
-          return expect(this.ebc.$('.bv_description').html()).toEqual("My eloquent description");
+          return expect(this.ebc.$('.bv_description').html()).toEqual("");
         });
         xit("should fill the name field", function() {
           return expect(this.ebc.$('.bv_experimentName').val()).toEqual("FLIPR target A biochemical");
         });
         it("should fill the date field", function() {
-          return expect(this.ebc.$('.bv_recordedDate').val()).toEqual("2013-2-4");
+          return expect(this.ebc.$('.bv_recordedDate').val()).toEqual("2013-7-7");
         });
         it("should fill the user field", function() {
-          return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("jmcneil");
+          console.log(this.ebc);
+          return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("smeyer");
         });
         return it("should fill the code field", function() {
-          return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000046");
+          return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
         });
       });
       return describe("When created from a new experiment", function() {

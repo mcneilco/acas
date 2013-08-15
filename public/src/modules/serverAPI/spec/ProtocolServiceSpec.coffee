@@ -17,7 +17,7 @@ describe 'Protocol CRUD testing', ->
 			self = @
 			$.ajax
 				type: 'GET'
-				url: "api/protocols/codename/PROT-00000002"
+				url: "api/protocols/codename/PROT-00000001"
 				success: (json) ->
 					self.serviceReturn = json
 				error: (err) ->

@@ -20,7 +20,7 @@ See ProtocolServiceTestJSON.coffee for examples
         self = this;
         return $.ajax({
           type: 'GET',
-          url: "api/protocols/codename/PROT-00000002",
+          url: "api/protocols/codename/PROT-00000001",
           success: function(json) {
             return self.serviceReturn = json;
           },

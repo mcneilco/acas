@@ -48,7 +48,7 @@ describe "Primary Screen Experiment module testing", ->
 							@psec.$('.bv_save').click()
 						waits(100)
 						runs ->
-							expect(@psec.$('.bv_experimentCode').html()).toEqual "EXPT-00000046"
+							expect(@psec.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
 
 	describe "Primary Screen Analysis Controller testing", ->
 		describe "basic plumbing checks with experiment copied from template", ->
@@ -61,20 +61,19 @@ describe "Primary Screen Experiment module testing", ->
 				@psac.render()
 			describe "Basic loading", ->
 				it "Class should exist", ->
-					expect(@psac).toBeDefined()
+					expect(@psac).toBeDefined
 				it "Should load the template", ->
 					expect(@psac.$('.bv_positiveControlBatch').length).toNotEqual 0
 				it "Should load a data loader", ->
 					expect(@psac.$('.bv_fileUploadWrapper').length).toNotEqual 0
 			describe "should populate fields", ->
 				it "should show the threshold", ->
-					console.log @psac.$('.bv_hitThreshold')
 					expect(@psac.$('.bv_hitThreshold').val()).toEqual '0.7'
 			describe "parameter editing", ->
 				it "should update the model with when the threshold is changed", ->
 					@psac.$('.bv_hitThreshold').val('0.8')
 					@psac.$('.bv_hitThreshold').change()
-					value = @psac.model.get('experimentStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
+					value = @psac.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
 					expect(value.get('numericValue')).toEqual 0.8
 
 	describe "Upload and Run Primary Analysis Controller testing", ->

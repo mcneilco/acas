@@ -14,28 +14,28 @@ describe "Experiment module testing", ->
 			it "Class should exist", ->
 				expect(@es).toBeDefined()
 			it "should have defaults", ->
-				expect(@es.get('experimentValues') instanceof Backbone.Collection).toBeTruthy()
+				expect(@es.get('lsValues') instanceof Backbone.Collection).toBeTruthy()
 		describe "When loaded from state json", ->
 			beforeEach ->
-				@es = new ExperimentState window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0]
+				@es = new ExperimentState window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0]
 			describe "after initial load", ->
 				it "state should have kind ", ->
-					expect(@es.get('stateKind')).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0].stateKind
+						expect(@es.get('lsKind')).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind
 				it "state should have values", ->
-					expect(@es.get('experimentValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0].experimentValues.length
+					expect(@es.get('lsValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length
 				it "state should have populated value", ->
-					expect(@es.get('experimentValues').at(0).get('valueKind')).toEqual "data transformation rule"
+					expect(@es.get('lsValues').at(0).get('lsKind')).toEqual "notebook page"
 				it "should return requested value", ->
 					console.log @es
-					values = @es.getValuesByTypeAndKind("stringValue", "data transformation rule")
+					values = @es.getValuesByTypeAndKind("stringValue", "notebook")
 					expect(values.length).toEqual 1
-					expect(values[0].get('stringValue')).toEqual "(maximum-minimum)/minimum"
+					expect(values[0].get('stringValue')).toEqual "911"
 				it "should trigger change when value changed in state", ->
 					runs ->
 						@stateChanged = false
 						@es.on 'change', =>
 							@stateChanged = true
-						@es.get('experimentValues').at(0).set(valueKind: 'newkind')
+						@es.get('lsValues').at(0).set(valueKind: 'newkind')
 					waitsFor ->
 						@stateChanged
 					, 500
@@ -44,27 +44,27 @@ describe "Experiment module testing", ->
 
 	describe "Experiment State List model testing", ->
 		beforeEach ->
-			@esl = new ExperimentStateList window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates
+			@esl = new ExperimentStateList window.experimentServiceTestJSON.fullExperimentFromServer.lsStates
 		describe "after initial load", ->
 			it "Class should exist", ->
 				expect(@esl).toBeDefined()
 			it "should have states ", ->
-				expect(@esl.length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates.length
+				expect(@esl.length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates.length
 			it "first state should have kind ", ->
-				expect(@esl.at(0).get('stateKind')).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0].stateKind
+				expect(@esl.at(0).get('lsKind')).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind
 			it "states should have values", ->
-				expect(@esl.at(0).get('experimentValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.experimentStates[0].experimentValues.length
+				expect(@esl.at(0).get('lsValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length
 			it "first state should have populated value", ->
-				expect(@esl.at(0).get('experimentValues').at(0).get('valueKind')).toEqual "data transformation rule"
+				expect(@esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual "notebook page"
 		describe "Get states by type and kind", ->
 			it "should return requested state", ->
-				values = @esl.getStatesByTypeAndKind "metadata", "experiment analysis parameters"
+				values = @esl.getStatesByTypeAndKind "metadata", "experiment metadata"
 				expect(values.length).toEqual 1
-				expect(values[0].get('stateTypeAndKind')).toEqual "metadata_experiment analysis parameters"
+				expect(values[0].get('lsTypeAndKind')).toEqual "metadata_experiment metadata"
 		describe "Get value by type and kind", ->
 			it "should return requested value", ->
-				value = @esl.getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "data transformation rule"
-				expect(value.get('stringValue')).toEqual "(maximum-minimum)/minimum"
+				value = @esl.getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
+				expect(value.get('stringValue')).toEqual "911"
 
 	describe "Experiment model testing", ->
 		describe "When loaded from new", ->
@@ -72,11 +72,11 @@ describe "Experiment module testing", ->
 				@exp = new Experiment()
 			describe "Defaults", ->
 				it 'Should have an empty label list', ->
-					expect(@exp.get('experimentLabels').length).toEqual 0
-					expect(@exp.get('experimentLabels') instanceof LabelList).toBeTruthy()
+					expect(@exp.get('lsLabels').length).toEqual 0
+					expect(@exp.get('lsLabels') instanceof LabelList).toBeTruthy()
 				it 'Should have an empty state list', ->
-					expect(@exp.get('experimentStates').length).toEqual 0
-					expect(@exp.get('experimentStates') instanceof ExperimentStateList).toBeTruthy()
+					expect(@exp.get('lsStates').length).toEqual 0
+					expect(@exp.get('lsStates') instanceof ExperimentStateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
 					expect(@exp.get('recordedBy')).toEqual ""
 				it 'Should have an empty recordedDate', ->
@@ -133,9 +133,10 @@ describe "Experiment module testing", ->
 				it "should have the shortDescription set", ->
 					expect(@exp.get('shortDescription')).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.shortDescription
 				it "should have labels", ->
-					expect(@exp.get('experimentLabels').length).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.experimentLabels.length
+					expect(@exp.get('lsLabels').length).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.lsLabels.length
 				it "should have labels", ->
-					expect(@exp.get('experimentLabels').at(0).get('labelKind')).toEqual "experiment name"
+					console.log @exp
+					expect(@exp.get('lsLabels').at(0).get('labelKind')).toEqual "experiment name"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -152,15 +153,16 @@ describe "Experiment module testing", ->
 				it "should have the description set to the protocols description", ->
 					expect(@exp.get('description')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.description
 				it "should not have the labels copied", ->
-					expect(@exp.get('experimentLabels').length).toEqual 0
+					expect(@exp.get('lsLabels').length).toEqual 0
 				it "should have the states copied", ->
-					expect(@exp.get('experimentStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
+					console.log @exp
+					expect(@exp.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
 					@exp = new Experiment()
 					@experimentChanged = false
-					@exp.get('experimentLabels').setBestName new Label
+					@exp.get('lsLabels').setBestName new Label
 						labelKind: "experiment name"
 						labelText: "test label"
 						recordedBy: @exp.get 'recordedBy'
@@ -168,7 +170,7 @@ describe "Experiment module testing", ->
 					@exp.on 'change', =>
 						@experimentChanged = true
 					@experimentChanged = false
-					@exp.get('experimentLabels').setBestName new Label
+					@exp.get('lsLabels').setBestName new Label
 						labelKind: "experiment name"
 						labelText: "new label"
 						recordedBy: @exp.get 'recordedBy'
@@ -184,7 +186,7 @@ describe "Experiment module testing", ->
 					@experimentChanged = false
 					@exp.on 'change', =>
 						@experimentChanged = true
-					@exp.get('experimentStates').at(0).get('experimentValues').at(0).set(valueKind: 'fred')
+					@exp.get('lsStates').at(0).get('lsValues').at(0).set(lsKind: 'fred')
 				waitsFor ->
 					@experimentChanged
 				, 500
@@ -196,7 +198,7 @@ describe "Experiment module testing", ->
 			it "should be valid when loaded from saved", ->
 				expect(@exp.isValid()).toBeTruthy()
 			it "should be invalid when name is empty", ->
-				@exp.get('experimentLabels').setBestName new Label
+				@exp.get('lsLabels').setBestName new Label
 					labelKind: "experiment name"
 					labelText: ""
 					recordedBy: @exp.get 'recordedBy'
@@ -248,12 +250,12 @@ describe "Experiment module testing", ->
 					expect(@saveSucessful).toBeTruthy()
 			it "should convert labels array to label list", ->
 				runs ->
-					expect(@exp.get('experimentLabels')  instanceof LabelList).toBeTruthy()
-					expect(@exp.get('experimentLabels').length).toBeGreaterThan 0
+					expect(@exp.get('lsLabels')  instanceof LabelList).toBeTruthy()
+					expect(@exp.get('lsLabels').length).toBeGreaterThan 0
 			it "should convert state array to state list", ->
 				runs ->
-					expect(@exp.get('experimentStates')  instanceof ExperimentStateList).toBeTruthy()
-					expect(@exp.get('experimentStates').length).toBeGreaterThan 0
+					expect(@exp.get('lsStates')  instanceof ExperimentStateList).toBeTruthy()
+					expect(@exp.get('lsStates').length).toBeGreaterThan 0
 			it "should convert protocol has to Protocol", ->
 				runs ->
 					expect(@exp.get('protocol')  instanceof Protocol).toBeTruthy()
@@ -285,7 +287,6 @@ describe "Experiment module testing", ->
 					expect(@copied).toBeTruthy()
 			describe "populated fields", ->
 				it "should show the protocol code", ->
-					console.log @ebc.$('.bv_protocolCode')
 					expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
 				it "should show the protocol name", ->
 					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
@@ -312,7 +313,7 @@ describe "Experiment module testing", ->
 				it "should update model when name is changed", ->
 					@ebc.$('.bv_experimentName').val(" Updated experiment name   ")
 					@ebc.$('.bv_experimentName').change()
-					expect(@ebc.model.get('experimentLabels').pickBestLabel().get('labelText')).toEqual "Updated experiment name"
+					expect(@ebc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated experiment name"
 				it "should update model when recorded date is changed", ->
 					@ebc.$('.bv_recordedDate').val(" 2013-3-16   ")
 					@ebc.$('.bv_recordedDate').change()
@@ -333,19 +334,20 @@ describe "Experiment module testing", ->
 			it "should have use protocol parameters disabled", ->
 				expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual "disabled"
 			it "should fill the short description field", ->
-				expect(@ebc.$('.bv_shortDescription').html()).toEqual "experiment short description goes here"
+				expect(@ebc.$('.bv_shortDescription').html()).toEqual "experiment created by generic data parser"
 			it "should fill the long description field", ->
-				expect(@ebc.$('.bv_description').html()).toEqual "My eloquent description"
+				expect(@ebc.$('.bv_description').html()).toEqual ""
 			#TODO this test breaks because of the weird behavior where new a Model from a json hash
 			# then setting model attribites changes the hash
 			xit "should fill the name field", ->
 				expect(@ebc.$('.bv_experimentName').val()).toEqual "FLIPR target A biochemical"
 			it "should fill the date field", ->
-				expect(@ebc.$('.bv_recordedDate').val()).toEqual "2013-2-4"
+				expect(@ebc.$('.bv_recordedDate').val()).toEqual "2013-7-7"
 			it "should fill the user field", ->
-				expect(@ebc.$('.bv_recordedBy').val()).toEqual "jmcneil"
+				console.log @ebc
+				expect(@ebc.$('.bv_recordedBy').val()).toEqual "smeyer"
 			it "should fill the code field", ->
-				expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000046"
+				expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
 		describe "When created from a new experiment", ->
 			beforeEach ->
 				@exp0 = new Experiment()

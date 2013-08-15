@@ -62,7 +62,7 @@
               });
               waits(100);
               return runs(function() {
-                return expect(this.psec.$('.bv_experimentCode').html()).toEqual("EXPT-00000046");
+                return expect(this.psec.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
               });
             });
           });
@@ -82,7 +82,7 @@
         });
         describe("Basic loading", function() {
           it("Class should exist", function() {
-            return expect(this.psac).toBeDefined();
+            return expect(this.psac).toBeDefined;
           });
           it("Should load the template", function() {
             return expect(this.psac.$('.bv_positiveControlBatch').length).toNotEqual(0);
@@ -93,7 +93,6 @@
         });
         describe("should populate fields", function() {
           return it("should show the threshold", function() {
-            console.log(this.psac.$('.bv_hitThreshold'));
             return expect(this.psac.$('.bv_hitThreshold').val()).toEqual('0.7');
           });
         });
@@ -102,7 +101,7 @@
             var value;
             this.psac.$('.bv_hitThreshold').val('0.8');
             this.psac.$('.bv_hitThreshold').change();
-            value = this.psac.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
+            value = this.psac.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
             return expect(value.get('numericValue')).toEqual(0.8);
           });
         });

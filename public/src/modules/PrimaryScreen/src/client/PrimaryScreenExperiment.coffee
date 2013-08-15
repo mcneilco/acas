@@ -58,30 +58,28 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@
 
 	getControlStates: ->
-		@controlStates = @model.get('experimentStates').getStatesByTypeAndKind("metadata", "experiment controls")
+		@controlStates = @model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment controls")
 
 	getHitThreshold: ->
-		console.log "hold"
-		console.log @model.get('experimentStates')
-		value = @model.get('experimentStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
+		value = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
 		desc = ""
 		if value != null
 			desc = value.get('numericValue')
 		desc
 
 	showExistingResults: ->
-		analysisStatus = @model.get('experimentStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+		analysisStatus = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
 		if analysisStatus != null
 			@analysisStatus = analysisStatus.get('stringValue')
 			@$('.bv_analysisStatus').html(@analysisStatus)
 		else
 			@analysisStatus = "not started"
-		resultValue = @model.get('experimentStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
+		resultValue = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
 		if resultValue != null
 			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
 
 	handleHitThresholdChanged: =>
-		value = @model.get('experimentStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
+		value = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
 		value.set numericValue: parseFloat($.trim(@$('.bv_hitThreshold').val()))
 
 	handleExperimentSaved: =>

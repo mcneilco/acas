@@ -39,29 +39,29 @@
     }
 
     ExperimentState.prototype.defaults = {
-      experimentValues: new ExperimentValueList()
+      lsValues: new ExperimentValueList()
     };
 
     ExperimentState.prototype.initialize = function() {
       var _this = this;
-      if (this.has('experimentValues')) {
-        if (!(this.get('experimentValues') instanceof ExperimentValueList)) {
+      if (this.has('lsValues')) {
+        if (!(this.get('lsValues') instanceof ExperimentValueList)) {
           this.set({
-            experimentValues: new ExperimentValueList(this.get('experimentValues'))
+            lsValues: new ExperimentValueList(this.get('lsValues'))
           });
         }
       }
-      return this.get('experimentValues').on('change', function() {
+      return this.get('lsValues').on('change', function() {
         return _this.trigger('change');
       });
     };
 
     ExperimentState.prototype.parse = function(resp) {
       var _this = this;
-      if (resp.experimentValues != null) {
-        if (!(resp.experimentValues instanceof ExperimentValueList)) {
-          resp.experimentValues = new ExperimentValueList(resp.experimentValues);
-          resp.experimentValues.on('change', function() {
+      if (resp.lsValues != null) {
+        if (!(resp.lsValues instanceof ExperimentValueList)) {
+          resp.lsValues = new ExperimentValueList(resp.lsValues);
+          resp.lsValues.on('change', function() {
             return _this.trigger('change');
           });
         }
@@ -70,8 +70,8 @@
     };
 
     ExperimentState.prototype.getValuesByTypeAndKind = function(type, kind) {
-      return this.get('experimentValues').filter(function(value) {
-        return (!value.get('ignored')) && (value.get('valueType') === type) && (value.get('valueKind') === kind);
+      return this.get('lsValues').filter(function(value) {
+        return (!value.get('ignored')) && (value.get('lsType') === type) && (value.get('lsKind') === kind);
       });
     };
 
@@ -129,8 +129,8 @@
       recordedBy: "",
       recordedDate: null,
       shortDescription: "",
-      experimentLabels: new LabelList(),
-      experimentStates: new ExperimentStateList(),
+      lsLabels: new LabelList(),
+      lsStates: new ExperimentStateList(),
       protocol: null,
       analysisGroups: new AnalysisGroupList()
     };
@@ -142,18 +142,18 @@
 
     Experiment.prototype.parse = function(resp) {
       var _this = this;
-      if (resp.experimentLabels != null) {
-        if (!(resp.experimentLabels instanceof LabelList)) {
-          resp.experimentLabels = new LabelList(resp.experimentLabels);
-          resp.experimentLabels.on('change', function() {
+      if (resp.lsLabels != null) {
+        if (!(resp.lsLabels instanceof LabelList)) {
+          resp.lsLabels = new LabelList(resp.lsLabels);
+          resp.lsLabels.on('change', function() {
             return _this.trigger('change');
           });
         }
       }
-      if (resp.experimentStates != null) {
-        if (!(resp.experimentStates instanceof ExperimentStateList)) {
-          resp.experimentStates = new ExperimentStateList(resp.experimentStates);
-          resp.experimentStates.on('change', function() {
+      if (resp.lsStates != null) {
+        if (!(resp.lsStates instanceof ExperimentStateList)) {
+          resp.lsStates = new ExperimentStateList(resp.lsStates);
+          resp.lsStates.on('change', function() {
             return _this.trigger('change');
           });
         }
@@ -172,17 +172,17 @@
     };
 
     Experiment.prototype.fixCompositeClasses = function() {
-      if (this.has('experimentLabels')) {
-        if (!(this.get('experimentLabels') instanceof LabelList)) {
+      if (this.has('lsLabels')) {
+        if (!(this.get('lsLabels') instanceof LabelList)) {
           this.set({
-            experimentLabels: new LabelList(this.get('experimentLabels'))
+            lsLabels: new LabelList(this.get('lsLabels'))
           });
         }
       }
-      if (this.has('experimentStates')) {
-        if (!(this.get('experimentStates') instanceof ExperimentStateList)) {
+      if (this.has('lsStates')) {
+        if (!(this.get('lsStates') instanceof ExperimentStateList)) {
           this.set({
-            experimentStates: new ExperimentStateList(this.get('experimentStates'))
+            lsStates: new ExperimentStateList(this.get('lsStates'))
           });
         }
       }
@@ -204,10 +204,10 @@
 
     Experiment.prototype.setupCompositeChangeTriggers = function() {
       var _this = this;
-      this.get('experimentLabels').on('change', function() {
+      this.get('lsLabels').on('change', function() {
         return _this.trigger('change');
       });
-      return this.get('experimentStates').on('change', function() {
+      return this.get('lsStates').on('change', function() {
         return _this.trigger('change');
       });
     };
@@ -232,7 +232,7 @@
           return evals.add(evalue);
         });
         estate.set({
-          experimentValues: evals
+          lsValues: evals
         });
         return estates.add(estate);
       });
@@ -240,7 +240,7 @@
         kind: protocol.get('lsKind'),
         protocol: protocol,
         shortDescription: protocol.get('shortDescription'),
-        experimentStates: estates
+        lsStates: estates
       });
       this.trigger("protocol_attributes_copied");
     };
@@ -248,7 +248,7 @@
     Experiment.prototype.validate = function(attrs) {
       var bestName, errors, nameError;
       errors = [];
-      bestName = attrs.experimentLabels.pickBestName();
+      bestName = attrs.lsLabels.pickBestName();
       nameError = false;
       if (bestName != null) {
         nameError = true;
@@ -323,15 +323,15 @@
 
     ExperimentBaseController.prototype.render = function() {
       var bestName, date;
+      console.log(this.model);
       $(this.el).empty();
       $(this.el).html(this.template());
-      this.setupProtocolSelect();
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
       this.$('.bv_shortDescription').html(this.model.get('shortDescription'));
       this.$('.bv_description').html(this.model.get('description'));
-      bestName = this.model.get('experimentLabels').pickBestName();
+      bestName = this.model.get('lsLabels').pickBestName();
       if (bestName != null) {
         this.$('.bv_experimentName').val(bestName.get('labelText'));
       }
@@ -398,7 +398,7 @@
 
     ExperimentBaseController.prototype.getDescriptionValue = function() {
       var desc, value;
-      value = this.model.get('experimentStates').getStateValueByTypeAndKind("metadata", "experiment info", "stringValue", "description");
+      value = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment info", "stringValue", "description");
       desc = "";
       if (value !== null) {
         desc = value.get('stringValue');
@@ -428,7 +428,7 @@
     ExperimentBaseController.prototype.handleNameChanged = function() {
       var newName;
       newName = this.getTrimmedInput('.bv_experimentName');
-      return this.model.get('experimentLabels').setBestName(new Label({
+      return this.model.get('lsLabels').setBestName(new Label({
         labelKind: "experiment name",
         labelText: newName,
         recordedBy: this.model.get('recordedBy'),
