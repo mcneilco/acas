@@ -1128,7 +1128,7 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
   }
   
   tryCatch({
-    protocolList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/protocolname/", protocolName, "/"))))
+    protocolList <- fromJSON(getURL(paste0(configList$serverPath, "protocols?FindByProtocolName&protocolName=", URLencode(protocolName, reserved = TRUE))))
   }, error = function(e) {
     stop("There was an error in accessing the protocol. Please contact your system administrator.")
   })
@@ -1168,7 +1168,7 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
   require('rjson')
   
   tryCatch({
-    experimentList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName, "/"))))
+    experimentList <- fromJSON(getURL(paste0(configList$serverPath, "experiments?FindByExperimentName&experimentName=", URLencode(experimentName, reserved=TRUE))))
   }, error = function(e) {
     stop("There was an error checking if the experiment already exists. Please contact your system administrator.")
   })
