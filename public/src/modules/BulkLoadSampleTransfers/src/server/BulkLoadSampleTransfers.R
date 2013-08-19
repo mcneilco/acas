@@ -359,10 +359,7 @@ bulkLoadSampleTransfers <- function(request) {
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
-    
-  # Set the global for the JSON library
-  lsServerURL <<- racas::applicationSettings$serverPath
-  
+   
   # Run the main function with error handling
   loadResult <- tryCatch.W.E(runMain(fileName,dryRun,recordedBy,configList))
   
