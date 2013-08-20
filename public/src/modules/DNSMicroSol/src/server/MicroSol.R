@@ -53,9 +53,3 @@ parseMicroSolData <- function(request){
     return(response)
   }
 }
-
-# Testing codepaste0("There was an error in the custom pre-processor:", preProcessorResponse$response)
-#request <- list(user="bbolt", dryRunMode = "true", "fileToParse"="inst/docs/2013yyy_usol_xxxxx.csv")
-#request$inputParameters <- list("protocolName"="ADME_uSol_Kinetic_Solubility",scientist="bbolt","notebook"="BB-000123","project"="UNASSIGNED")
-#response <- parseMicroSolData(request)
-## 
