@@ -37,6 +37,7 @@
           });
           it("should return requested value", function() {
             var values;
+
             console.log(this.es);
             values = this.es.getValuesByTypeAndKind("stringValue", "notebook");
             expect(values.length).toEqual(1);
@@ -45,6 +46,7 @@
           return it("should trigger change when value changed in state", function() {
             runs(function() {
               var _this = this;
+
               this.stateChanged = false;
               this.es.on('change', function() {
                 return _this.stateChanged = true;
@@ -87,6 +89,7 @@
       describe("Get states by type and kind", function() {
         return it("should return requested state", function() {
           var values;
+
           values = this.esl.getStatesByTypeAndKind("metadata", "experiment metadata");
           expect(values.length).toEqual(1);
           return expect(values[0].get('lsTypeAndKind')).toEqual("metadata_experiment metadata");
@@ -95,6 +98,7 @@
       return describe("Get value by type and kind", function() {
         return it("should return requested value", function() {
           var value;
+
           value = this.esl.getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
           return expect(value.get('stringValue')).toEqual("911");
         });
@@ -237,6 +241,7 @@
         it("should trigger change when label changed", function() {
           runs(function() {
             var _this = this;
+
             this.exp = new Experiment();
             this.experimentChanged = false;
             this.exp.get('lsLabels').setBestName(new Label({
@@ -266,6 +271,7 @@
         return it("should trigger change when value changed in state", function() {
           runs(function() {
             var _this = this;
+
             this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
             this.experimentChanged = false;
             this.exp.on('change', function() {
@@ -292,6 +298,7 @@
         });
         it("should be invalid when name is empty", function() {
           var filtErrors;
+
           this.exp.get('lsLabels').setBestName(new Label({
             labelKind: "experiment name",
             labelText: "",
@@ -306,6 +313,7 @@
         });
         it("should be invalid when date is empty", function() {
           var filtErrors;
+
           this.exp.set({
             recordedDate: new Date("").getTime()
           });
@@ -317,6 +325,7 @@
         });
         return it("should be invalid when scientist not selected", function() {
           var filtErrors;
+
           this.exp.set({
             recordedBy: ""
           });
@@ -340,6 +349,7 @@
         beforeEach(function() {
           runs(function() {
             var _this = this;
+
             this.saveSucessful = false;
             this.saveComplete = false;
             this.exp = new Experiment({
@@ -386,6 +396,7 @@
       describe("When created with an unsaved experiment that has protocol attributes copied in", function() {
         beforeEach(function() {
           var _this = this;
+
           this.copied = false;
           this.exp = new Experiment();
           this.exp.on("protocol_attributes_copied", function() {

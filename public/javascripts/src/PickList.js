@@ -50,8 +50,7 @@
     __extends(PickListOptionController, _super);
 
     function PickListOptionController() {
-      this.render = __bind(this.render, this);
-      _ref2 = PickListOptionController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref2 = PickListOptionController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
@@ -74,8 +73,7 @@
     function PickListSelectController() {
       this.addOne = __bind(this.addOne, this);
       this.render = __bind(this.render, this);
-      this.handleListReset = __bind(this.handleListReset, this);
-      _ref3 = PickListSelectController.__super__.constructor.apply(this, arguments);
+      this.handleListReset = __bind(this.handleListReset, this);      _ref3 = PickListSelectController.__super__.constructor.apply(this, arguments);
       return _ref3;
     }
 
@@ -111,6 +109,7 @@
     PickListSelectController.prototype.render = function() {
       var self,
         _this = this;
+
       $(this.el).empty();
       self = this;
       this.collection.each(function(enm) {

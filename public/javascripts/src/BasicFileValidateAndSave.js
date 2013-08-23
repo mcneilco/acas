@@ -20,8 +20,7 @@
       this.handleReportFileUploaded = __bind(this.handleReportFileUploaded, this);
       this.handleParseFileRemoved = __bind(this.handleParseFileRemoved, this);
       this.handleParseFileUploaded = __bind(this.handleParseFileUploaded, this);
-      this.render = __bind(this.render, this);
-      _ref = BasicFileValidateAndSaveController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref = BasicFileValidateAndSaveController.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -119,6 +118,7 @@
 
     BasicFileValidateAndSaveController.prototype.validateParseFile = function() {
       var _this = this;
+
       if (this.parseFileUploaded && !this.$(".bv_next").attr('disabled')) {
         this.notificationController.clearAllNotificiations();
         this.$('.bv_validateStatusDropDown').modal({
@@ -157,6 +157,7 @@
 
     BasicFileValidateAndSaveController.prototype.prepareDataToPost = function(dryRun) {
       var data, user;
+
       user = this.userName;
       if (user == null) {
         user = window.AppLaunchParams.loginUserName;
@@ -173,6 +174,7 @@
 
     BasicFileValidateAndSaveController.prototype.handleValidationReturnSuccess = function(json) {
       var summaryStr, _ref1;
+
       summaryStr = "Validation Results: ";
       if (!json.hasError) {
         this.filePassedValidation = true;
@@ -198,6 +200,7 @@
 
     BasicFileValidateAndSaveController.prototype.handleSaveReturnSuccess = function(json) {
       var summaryStr;
+
       summaryStr = "Upload Results: ";
       if (!json.hasError) {
         summaryStr += "Success ";
@@ -218,6 +221,7 @@
 
     BasicFileValidateAndSaveController.prototype.loadAnother = function() {
       var fn;
+
       this.showFileSelectPhase();
       fn = function() {
         return this.$('.bv_deleteFile').click();

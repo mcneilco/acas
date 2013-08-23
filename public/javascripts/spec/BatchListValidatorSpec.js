@@ -47,6 +47,7 @@
         });
         it("should tell if two are the same", function() {
           var bn1, bn2, bn3, bn4, bn5;
+
           bn1 = new BatchName({
             requestName: "reqName1",
             preferredName: "reqName1"
@@ -73,6 +74,7 @@
         });
         it("should return isValid true when it is valid", function() {
           var bn1;
+
           bn1 = new BatchName({
             requestName: "reqName1",
             preferredName: "reqName1",
@@ -82,6 +84,7 @@
         });
         return it("should return isValid false when preferredName missing", function() {
           var bn1;
+
           bn1 = new BatchName({
             requestName: "reqName1",
             preferredName: "",
@@ -396,8 +399,10 @@
         return describe("when invalid batches added but there are valid bathes in list, should trigger invalid", function() {
           return it("should trigger activation request", function() {
             var _this = this;
+
             runs(function() {
               var _this = this;
+
               expect(this.blvc.$(".validBatchCount").html()).toEqual("3");
               this.blvc.bind('invalid', function() {
                 return _this.gotTrigger = true;
