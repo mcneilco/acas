@@ -1273,6 +1273,11 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                      lsKind = "completion date",
                                                                      dateValue = as.numeric(format(as.Date(metaData$"Assay Date"[1]), "%s"))*1000,
                                                                      lsTransaction= lsTransaction)
+  experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,
+                                                                     lsType = "stringValue",
+                                                                     lsKind = "scientist",
+                                                                     stringValue = metaData$Scientist,
+                                                                     lsTransaction= lsTransaction)
   experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
                                                                      lsKind = "status",
                                                                      stringValue = "Approved",
