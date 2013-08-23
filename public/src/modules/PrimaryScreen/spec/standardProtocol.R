@@ -3,7 +3,8 @@
 #     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
 #source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
 require(racas)
-
+require(RCurl)
+lsServerURL <- racas::applicationSettings$serverPath
 
 ## example of creating a protocol with discrete parts 
 
