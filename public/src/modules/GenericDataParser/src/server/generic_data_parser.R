@@ -1992,7 +1992,7 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
       contentType = annotationType,
       #description = "report file",
       #dateExpired = "",
-      owningURL = paste0(configList$serverPath, "experiments/codename/", experiment$codeName),
+      owningUrl = paste0(configList$serverPath, "experiments/codename/", experiment$codeName),
       owningAttribute = "ACAS_experiment_annotation_id",
       showInline = "false",
       createdByLogin = recordedBy
@@ -2447,7 +2447,7 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     tryCatch({
       response <- postForm(fileService,
                            FILE = fileUpload(filename = fileStartLocation),
-                           DESCRIPTION = paste0(racas::applicationSettings$serverPath, "experiments/codename/", experiment$codeName),
+                           OWNING_URL = paste0(racas::applicationSettings$serverPath, "experiments/codename/", experiment$codeName),
                            CREATED_BY_LOGIN = recordedBy)
       parsedXML <- xmlParse(response)
       serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)
