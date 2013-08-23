@@ -16,6 +16,7 @@ app.post '/api/genericDataParser', genericDataParserRoutes.parseGenericData
 (function() {
   exports.parseGenericData = function(request, response) {
     var serverUtilityFunctions;
+
     request.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {

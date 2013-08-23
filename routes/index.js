@@ -7,6 +7,7 @@
 
   exports.index = function(req, res) {
     var scriptsToLoad;
+
     global.specRunnerTestmode = false;
     scriptsToLoad = requiredScripts.concat(applicationScripts);
     return res.render('index', {
@@ -23,6 +24,7 @@
   exports.specRunner = function(req, res) {
     "use strict";
     var jasmineScripts, scriptsToLoad, specScripts;
+
     global.specRunnerTestmode = true;
     jasmineScripts = ['src/lib/testLibraries/jasmine-jstd-adapter/jasmine/lib/jasmine-core/jasmine.js', 'src/lib/testLibraries/jasmine-jstd-adapter/jasmine/lib/jasmine-core/jasmine-html.js', 'src/lib/testLibraries/jasmine-jquery/lib/jasmine-jquery.js', 'src/lib/testLibraries/sinon.js'];
     specScripts = ['javascripts/spec/PreferredBatchIdServiceSpec.js', 'javascripts/spec/ProtocolServiceSpec.js', 'javascripts/spec/ExperimentServiceSpec.js', 'javascripts/spec/LabelSpec.js', 'javascripts/spec/ExperimentSpec.js', 'javascripts/spec/ProtocolSpec.js', 'javascripts/spec/AnalysisGroupSpec.js', 'javascripts/spec/testFixtures/ExperimentServiceTestJSON.js', 'javascripts/spec/testFixtures/ProtocolServiceTestJSON.js', 'javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js', 'javascripts/spec/PrimaryScreenExperimentSpec.js', 'javascripts/spec/DoseResponseAnalysisSpec.js', 'javascripts/spec/CurveCuratorServiceSpec.js', 'javascripts/spec/CurveCuratorSpec.js', 'javascripts/spec/testFixtures/curveCuratorTestFixtures.js', 'javascripts/spec/ModuleMenusSpec.js', 'javascripts/spec/ModuleLauncherSpec.js', 'javascripts/spec/AbstractFormControllerSpec.js', 'javascripts/spec/LSFileInputSpec.js', 'javascripts/spec/LSFileChooserSpec.js', 'javascripts/spec/LSErrorNotificationSpec.js', 'javascripts/spec/ProjectsServiceSpec.js', 'javascripts/spec/PickListSpec.js', 'javascripts/spec/testFixtures/projectServiceTestJSON.js', 'src/modules/DocForBatches/spec/testFixtures/testJSON.js', 'javascripts/spec/BatchListValidatorSpec.js', 'javascripts/spec/DocUploadSpec.js', 'javascripts/spec/DocForBatchesSpec.js', 'javascripts/spec/DocForBatchesServiceSpec.js', 'javascripts/spec/GenericDataParserSpec.js', 'javascripts/spec/GenericDataParserServiceSpec.js', 'javascripts/spec/BulkLoadContainersFromSDFSpec.js', 'javascripts/spec/BulkLoadContainersFromSDFServerSpec.js', 'javascripts/spec/BulkloadSampleTransfersSpec.js', 'javascripts/spec/BulkloadSampleTransfersServerSpec.js', 'javascripts/spec/ServerUtilityFunctionsSpec.js'];
@@ -49,6 +51,7 @@
   exports.liveServiceSpecRunner = function(req, res) {
     "use strict";
     var jasmineScripts, scriptsToLoad, specScripts;
+
     global.specRunnerTestmode = false;
     jasmineScripts = ['src/lib/testLibraries/jasmine-jstd-adapter/jasmine/lib/jasmine-core/jasmine.js', 'src/lib/testLibraries/jasmine-jstd-adapter/jasmine/lib/jasmine-core/jasmine-html.js', 'src/lib/testLibraries/jasmine-jquery/lib/jasmine-jquery.js', 'src/lib/testLibraries/sinon.js'];
     specScripts = ['javascripts/spec/ProjectsServiceSpec.js', 'javascripts/spec/ProtocolServiceSpec.js', 'javascripts/spec/PreferredBatchIdServiceSpec.js'];

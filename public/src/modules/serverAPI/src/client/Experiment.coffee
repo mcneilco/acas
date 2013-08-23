@@ -49,7 +49,8 @@ class window.ExperimentStateList extends Backbone.Collection
 class window.Experiment extends Backbone.Model
 	urlRoot: "/api/experiments"
 	defaults:
-		kind: ""
+		lsType: "default"
+		lsKind: "default"
 		recordedBy: ""
 		recordedDate: null
 		shortDescription: ""
@@ -174,12 +175,11 @@ class window.ExperimentBaseController extends AbstractFormController
 		@model.on 'sync', @render
 		@errorOwnerName = 'ExperimentBaseController'
 		@setBindings()
-
-	render: =>
-		console.log @model
 		$(@el).empty()
 		$(@el).html @template()
 		@setupProtocolSelect()
+
+	render: =>
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
 		@$('.bv_shortDescription').html @model.get('shortDescription')
@@ -201,6 +201,10 @@ class window.ExperimentBaseController extends AbstractFormController
 		@
 
 	setupProtocolSelect: ->
+		if @model.get('protocol') != null
+			protocolCode = @model.get('protocol').get('codeName')
+		else
+			protocolCode = "unassigned"
 		@protocolList = new PickListList()
 		@protocolList.url = "api/protocolCodes/filter/FLIPR"
 		@protocolListController = new PickListSelectController
@@ -209,7 +213,7 @@ class window.ExperimentBaseController extends AbstractFormController
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select Protocol"
-			selectedCode: "unassigned"
+			selectedCode: protocolCode
 
 	setUseProtocolParametersDisabledState: ->
 		if (not @model.isNew()) or (@model.get('protocol') == null) or (@$('.bv_protocolCode').val() == "")

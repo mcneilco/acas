@@ -44,6 +44,7 @@
 
     ExperimentState.prototype.initialize = function() {
       var _this = this;
+
       if (this.has('lsValues')) {
         if (!(this.get('lsValues') instanceof ExperimentValueList)) {
           this.set({
@@ -58,6 +59,7 @@
 
     ExperimentState.prototype.parse = function(resp) {
       var _this = this;
+
       if (resp.lsValues != null) {
         if (!(resp.lsValues instanceof ExperimentValueList)) {
           resp.lsValues = new ExperimentValueList(resp.lsValues);
@@ -97,6 +99,7 @@
 
     ExperimentStateList.prototype.getStateValueByTypeAndKind = function(stype, skind, vtype, vkind) {
       var states, value, values;
+
       value = null;
       states = this.getStatesByTypeAndKind(stype, skind);
       if (states.length > 0) {
@@ -117,15 +120,15 @@
 
     function Experiment() {
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
-      this.parse = __bind(this.parse, this);
-      _ref4 = Experiment.__super__.constructor.apply(this, arguments);
+      this.parse = __bind(this.parse, this);      _ref4 = Experiment.__super__.constructor.apply(this, arguments);
       return _ref4;
     }
 
     Experiment.prototype.urlRoot = "/api/experiments";
 
     Experiment.prototype.defaults = {
-      kind: "",
+      lsType: "default",
+      lsKind: "default",
       recordedBy: "",
       recordedDate: null,
       shortDescription: "",
@@ -142,6 +145,7 @@
 
     Experiment.prototype.parse = function(resp) {
       var _this = this;
+
       if (resp.lsLabels != null) {
         if (!(resp.lsLabels instanceof LabelList)) {
           resp.lsLabels = new LabelList(resp.lsLabels);
@@ -204,6 +208,7 @@
 
     Experiment.prototype.setupCompositeChangeTriggers = function() {
       var _this = this;
+
       this.get('lsLabels').on('change', function() {
         return _this.trigger('change');
       });
@@ -214,10 +219,12 @@
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
       var estates, pstates;
+
       estates = new ExperimentStateList();
       pstates = protocol.get('lsStates');
       pstates.each(function(st) {
         var estate, evals, svals;
+
         estate = new ExperimentState(_.clone(st.attributes));
         estate.unset('id');
         estate.unset('lsTransaction');
@@ -226,6 +233,7 @@
         svals = st.get('lsValues');
         svals.each(function(sv) {
           var evalue;
+
           evalue = new ProtocolValue(sv.attributes);
           evalue.unset('id');
           evalue.unset('lsTransaction');
@@ -247,6 +255,7 @@
 
     Experiment.prototype.validate = function(attrs) {
       var bestName, errors, nameError;
+
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = false;
@@ -297,8 +306,7 @@
       this.handleDescriptionChanged = __bind(this.handleDescriptionChanged, this);
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
       this.handleRecordedByChanged = __bind(this.handleRecordedByChanged, this);
-      this.render = __bind(this.render, this);
-      _ref5 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref5 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
       return _ref5;
     }
 
@@ -318,15 +326,15 @@
     ExperimentBaseController.prototype.initialize = function() {
       this.model.on('sync', this.render);
       this.errorOwnerName = 'ExperimentBaseController';
-      return this.setBindings();
+      this.setBindings();
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      return this.setupProtocolSelect();
     };
 
     ExperimentBaseController.prototype.render = function() {
       var bestName, date;
-      console.log(this.model);
-      $(this.el).empty();
-      $(this.el).html(this.template());
-      this.setupProtocolSelect();
+
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
@@ -351,6 +359,13 @@
     };
 
     ExperimentBaseController.prototype.setupProtocolSelect = function() {
+      var protocolCode;
+
+      if (this.model.get('protocol') !== null) {
+        protocolCode = this.model.get('protocol').get('codeName');
+      } else {
+        protocolCode = "unassigned";
+      }
       this.protocolList = new PickListList();
       this.protocolList.url = "api/protocolCodes/filter/FLIPR";
       return this.protocolListController = new PickListSelectController({
@@ -360,7 +375,7 @@
           code: "unassigned",
           name: "Select Protocol"
         }),
-        selectedCode: "unassigned"
+        selectedCode: protocolCode
       });
     };
 
@@ -374,11 +389,13 @@
 
     ExperimentBaseController.prototype.getAndShowProtocolName = function() {
       var _this = this;
+
       if (this.model.get('protocol') !== null) {
         if (this.model.get('protocol').isStub()) {
           return this.model.get('protocol').fetch({
             success: function() {
               var newProtName;
+
               newProtName = _this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText');
               _this.updateProtocolNameField(newProtName);
               return _this.setUseProtocolParametersDisabledState();
@@ -399,6 +416,7 @@
 
     ExperimentBaseController.prototype.getDescriptionValue = function() {
       var desc, value;
+
       value = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment info", "stringValue", "description");
       desc = "";
       if (value !== null) {
@@ -428,6 +446,7 @@
 
     ExperimentBaseController.prototype.handleNameChanged = function() {
       var newName;
+
       newName = this.getTrimmedInput('.bv_experimentName');
       return this.model.get('lsLabels').setBestName(new Label({
         labelKind: "experiment name",
@@ -451,6 +470,7 @@
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
       var code,
         _this = this;
+
       code = this.$('.bv_protocolCode').val();
       if (code === "") {
         this.model.set({

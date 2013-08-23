@@ -91,8 +91,7 @@
     __extends(AnalysisGroup, _super);
 
     function AnalysisGroup() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
-      _ref4 = AnalysisGroup.__super__.constructor.apply(this, arguments);
+      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);      _ref4 = AnalysisGroup.__super__.constructor.apply(this, arguments);
       return _ref4;
     }
 

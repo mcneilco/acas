@@ -91,6 +91,7 @@ ALIQUOT_DATE            5-Nov-12
     describe('when run with good input file', function() {
       beforeEach(function() {
         var self;
+
         self = this;
         return $.ajax({
           type: 'POST',
@@ -119,6 +120,7 @@ ALIQUOT_DATE            5-Nov-12
     return describe('when run with flawed input file', function() {
       beforeEach(function() {
         var self;
+
         self = this;
         return $.ajax({
           type: 'POST',

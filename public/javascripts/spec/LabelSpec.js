@@ -18,8 +18,8 @@
           return expect(this.el).toBeDefined();
         });
         return it("should have defaults", function() {
-          expect(this.el.get('labelType')).toEqual('name');
-          expect(this.el.get('labelKind')).toEqual('');
+          expect(this.el.get('lsType')).toEqual('name');
+          expect(this.el.get('lsKind')).toEqual('');
           expect(this.el.get('labelText')).toEqual('');
           expect(this.el.get('ignored')).toEqual(false);
           expect(this.el.get('preferred')).toEqual(false);
@@ -71,6 +71,7 @@
         return describe("setBestName functionality", function() {
           return it("should update existing unsaved label when best name changed", function() {
             var oldBestId;
+
             oldBestId = this.ell.pickBestLabel().id;
             this.ell.setBestName(new Label({
               labelText: "new best name",

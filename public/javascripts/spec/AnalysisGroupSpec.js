@@ -39,6 +39,7 @@ This suite of services provides CRUD operations on Analysis Group Objects
           });
           return it("should return requested value", function() {
             var values;
+
             values = this.ags.getValuesByTypeAndKind("codeValue", "batch code");
             expect(values.length).toEqual(1);
             return expect(values[0].get('codeValue')).toEqual("CMPD_1112");

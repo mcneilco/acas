@@ -26,7 +26,6 @@ describe "Experiment module testing", ->
 				it "state should have populated value", ->
 					expect(@es.get('lsValues').at(0).get('lsKind')).toEqual "notebook page"
 				it "should return requested value", ->
-					console.log @es
 					values = @es.getValuesByTypeAndKind("stringValue", "notebook")
 					expect(values.length).toEqual 1
 					expect(values[0].get('stringValue')).toEqual "911"
@@ -71,6 +70,9 @@ describe "Experiment module testing", ->
 			beforeEach ->
 				@exp = new Experiment()
 			describe "Defaults", ->
+				it 'Should have default type and kind', ->
+					expect(@exp.get('lsType')).toEqual "default"
+					expect(@exp.get('lsKind')).toEqual "default"
 				it 'Should have an empty label list', ->
 					expect(@exp.get('lsLabels').length).toEqual 0
 					expect(@exp.get('lsLabels') instanceof LabelList).toBeTruthy()
@@ -105,7 +107,6 @@ describe "Experiment module testing", ->
 					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy()
 
 				it "should have the analysisGroupStates stateKind ", ->
-					console.log @exp.get('analysisGroups').at(0).get('analysisGroupStates')
 					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateKind')).toEqual 'Document for Batch'
 				it "should have the analysisGroupStates stateType", ->
 					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateType')).toEqual 'results'
@@ -135,8 +136,7 @@ describe "Experiment module testing", ->
 				it "should have labels", ->
 					expect(@exp.get('lsLabels').length).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.lsLabels.length
 				it "should have labels", ->
-					console.log @exp
-					expect(@exp.get('lsLabels').at(0).get('labelKind')).toEqual "experiment name"
+					expect(@exp.get('lsLabels').at(0).get('lsKind')).toEqual "experiment name"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -155,7 +155,6 @@ describe "Experiment module testing", ->
 				it "should not have the labels copied", ->
 					expect(@exp.get('lsLabels').length).toEqual 0
 				it "should have the states copied", ->
-					console.log @exp
 					expect(@exp.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
@@ -287,7 +286,14 @@ describe "Experiment module testing", ->
 					expect(@copied).toBeTruthy()
 			describe "populated fields", ->
 				it "should show the protocol code", ->
-					expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
+					console.log @exp.get('protocol')
+					waitsFor ->
+						console.log @ebc.$('.bv_protocolCode option').length
+						@ebc.$('.bv_protocolCode option').length > 0
+					, 1000
+					runs ->
+						console.log "testing"
+						expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
 				it "should show the protocol name", ->
 					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
 				it "should fill the short description field", ->
@@ -344,7 +350,6 @@ describe "Experiment module testing", ->
 			it "should fill the date field", ->
 				expect(@ebc.$('.bv_recordedDate').val()).toEqual "2013-7-7"
 			it "should fill the user field", ->
-				console.log @ebc
 				expect(@ebc.$('.bv_recordedBy').val()).toEqual "smeyer"
 			it "should fill the code field", ->
 				expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"

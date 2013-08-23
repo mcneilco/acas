@@ -1,7 +1,7 @@
 class window.Label extends Backbone.Model
 	defaults:
-		labelType: "name"
-		labelKind: ''
+		lsType: "name"
+		lsKind: ''
 		labelText: ''
 		ignored: false
 		preferred: false
@@ -19,7 +19,7 @@ class window.LabelList extends Backbone.Collection
 
 	getNames: ->
 		_.filter @getCurrent(), (lab) ->
-			lab.get('labelType') == "name"
+			lab.get('lsType') == "name"
 
 	getPreferred: ->
 		_.filter @getCurrent(), (lab) ->
@@ -46,7 +46,7 @@ class window.LabelList extends Backbone.Collection
 
 	pickBestName: ->
 		preferredNames = _.filter @getCurrent(), (lab) ->
-			lab.get('preferred') && (lab.get('labelType') == "name")
+			lab.get('preferred') && (lab.get('lsType') == "name")
 		bestLabel = _.max preferredNames, (lab) ->
 			rd = lab.get 'recordedDate'
 			(if (rd is "") then rd else -1)
@@ -54,7 +54,7 @@ class window.LabelList extends Backbone.Collection
 
 	setBestName: (label) ->
 		label.set
-			labelType: 'name'
+			lsType: 'name'
 			preferred: true
 			ignored: false
 		currentName = @pickBestName()

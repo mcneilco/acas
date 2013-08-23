@@ -12,8 +12,8 @@
     }
 
     Label.prototype.defaults = {
-      labelType: "name",
-      labelKind: '',
+      lsType: "name",
+      lsKind: '',
       labelText: '',
       ignored: false,
       preferred: false,
@@ -45,7 +45,7 @@
 
     LabelList.prototype.getNames = function() {
       return _.filter(this.getCurrent(), function(lab) {
-        return lab.get('labelType') === "name";
+        return lab.get('lsType') === "name";
       });
     };
 
@@ -57,10 +57,12 @@
 
     LabelList.prototype.pickBestLabel = function() {
       var bestLabel, current, names, preferred;
+
       preferred = this.getPreferred();
       if (preferred.length > 0) {
         bestLabel = _.max(preferred, function(lab) {
           var rd;
+
           rd = lab.get('recordedDate');
           if (rd === "") {
             return rd;
@@ -73,6 +75,7 @@
         if (names.length > 0) {
           bestLabel = _.max(names, function(lab) {
             var rd;
+
             rd = lab.get('recordedDate');
             if (rd === "") {
               return rd;
@@ -84,6 +87,7 @@
           current = this.getCurrent();
           bestLabel = _.max(current, function(lab) {
             var rd;
+
             rd = lab.get('recordedDate');
             if (rd === "") {
               return rd;
@@ -98,11 +102,13 @@
 
     LabelList.prototype.pickBestName = function() {
       var bestLabel, preferredNames;
+
       preferredNames = _.filter(this.getCurrent(), function(lab) {
-        return lab.get('preferred') && (lab.get('labelType') === "name");
+        return lab.get('preferred') && (lab.get('lsType') === "name");
       });
       bestLabel = _.max(preferredNames, function(lab) {
         var rd;
+
         rd = lab.get('recordedDate');
         if (rd === "") {
           return rd;
@@ -115,8 +121,9 @@
 
     LabelList.prototype.setBestName = function(label) {
       var currentName;
+
       label.set({
-        labelType: 'name',
+        lsType: 'name',
         preferred: true,
         ignored: false
       });

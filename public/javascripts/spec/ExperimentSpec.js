@@ -37,7 +37,7 @@
           });
           it("should return requested value", function() {
             var values;
-            console.log(this.es);
+
             values = this.es.getValuesByTypeAndKind("stringValue", "notebook");
             expect(values.length).toEqual(1);
             return expect(values[0].get('stringValue')).toEqual("911");
@@ -45,6 +45,7 @@
           return it("should trigger change when value changed in state", function() {
             runs(function() {
               var _this = this;
+
               this.stateChanged = false;
               this.es.on('change', function() {
                 return _this.stateChanged = true;
@@ -87,6 +88,7 @@
       describe("Get states by type and kind", function() {
         return it("should return requested state", function() {
           var values;
+
           values = this.esl.getStatesByTypeAndKind("metadata", "experiment metadata");
           expect(values.length).toEqual(1);
           return expect(values[0].get('lsTypeAndKind')).toEqual("metadata_experiment metadata");
@@ -95,6 +97,7 @@
       return describe("Get value by type and kind", function() {
         return it("should return requested value", function() {
           var value;
+
           value = this.esl.getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
           return expect(value.get('stringValue')).toEqual("911");
         });
@@ -106,6 +109,10 @@
           return this.exp = new Experiment();
         });
         return describe("Defaults", function() {
+          it('Should have default type and kind', function() {
+            expect(this.exp.get('lsType')).toEqual("default");
+            return expect(this.exp.get('lsKind')).toEqual("default");
+          });
           it('Should have an empty label list', function() {
             expect(this.exp.get('lsLabels').length).toEqual(0);
             return expect(this.exp.get('lsLabels') instanceof LabelList).toBeTruthy();
@@ -155,7 +162,6 @@
             return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy();
           });
           it("should have the analysisGroupStates stateKind ", function() {
-            console.log(this.exp.get('analysisGroups').at(0).get('analysisGroupStates'));
             return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateKind')).toEqual('Document for Batch');
           });
           it("should have the analysisGroupStates stateType", function() {
@@ -198,8 +204,7 @@
             return expect(this.exp.get('lsLabels').length).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.lsLabels.length);
           });
           return it("should have labels", function() {
-            console.log(this.exp);
-            return expect(this.exp.get('lsLabels').at(0).get('labelKind')).toEqual("experiment name");
+            return expect(this.exp.get('lsLabels').at(0).get('lsKind')).toEqual("experiment name");
           });
         });
       });
@@ -228,7 +233,6 @@
             return expect(this.exp.get('lsLabels').length).toEqual(0);
           });
           return it("should have the states copied", function() {
-            console.log(this.exp);
             return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
           });
         });
@@ -237,6 +241,7 @@
         it("should trigger change when label changed", function() {
           runs(function() {
             var _this = this;
+
             this.exp = new Experiment();
             this.experimentChanged = false;
             this.exp.get('lsLabels').setBestName(new Label({
@@ -266,6 +271,7 @@
         return it("should trigger change when value changed in state", function() {
           runs(function() {
             var _this = this;
+
             this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
             this.experimentChanged = false;
             this.exp.on('change', function() {
@@ -292,6 +298,7 @@
         });
         it("should be invalid when name is empty", function() {
           var filtErrors;
+
           this.exp.get('lsLabels').setBestName(new Label({
             labelKind: "experiment name",
             labelText: "",
@@ -306,6 +313,7 @@
         });
         it("should be invalid when date is empty", function() {
           var filtErrors;
+
           this.exp.set({
             recordedDate: new Date("").getTime()
           });
@@ -317,6 +325,7 @@
         });
         return it("should be invalid when scientist not selected", function() {
           var filtErrors;
+
           this.exp.set({
             recordedBy: ""
           });
@@ -340,6 +349,7 @@
         beforeEach(function() {
           runs(function() {
             var _this = this;
+
             this.saveSucessful = false;
             this.saveComplete = false;
             this.exp = new Experiment({
@@ -386,6 +396,7 @@
       describe("When created with an unsaved experiment that has protocol attributes copied in", function() {
         beforeEach(function() {
           var _this = this;
+
           this.copied = false;
           this.exp = new Experiment();
           this.exp.on("protocol_attributes_copied", function() {
@@ -414,7 +425,15 @@
         });
         describe("populated fields", function() {
           it("should show the protocol code", function() {
-            return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
+            console.log(this.exp.get('protocol'));
+            waitsFor(function() {
+              console.log(this.ebc.$('.bv_protocolCode option').length);
+              return this.ebc.$('.bv_protocolCode option').length > 0;
+            }, 1000);
+            return runs(function() {
+              console.log("testing");
+              return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
+            });
           });
           it("should show the protocol name", function() {
             return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
@@ -481,7 +500,6 @@
           return expect(this.ebc.$('.bv_recordedDate').val()).toEqual("2013-7-7");
         });
         it("should fill the user field", function() {
-          console.log(this.ebc);
           return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("smeyer");
         });
         return it("should fill the code field", function() {

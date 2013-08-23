@@ -13,8 +13,8 @@ describe "Label module testing", ->
 			it "Class should exist", ->
 				expect(@el).toBeDefined()
 			it "should have defaults", ->
-				expect(@el.get 'labelType').toEqual 'name'
-				expect(@el.get 'labelKind').toEqual ''
+				expect(@el.get 'lsType').toEqual 'name'
+				expect(@el.get 'lsKind').toEqual ''
 				expect(@el.get 'labelText').toEqual ''
 				expect(@el.get 'ignored').toEqual(false)
 				expect(@el.get 'preferred').toEqual(false)
