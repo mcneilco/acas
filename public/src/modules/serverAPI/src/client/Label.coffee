@@ -70,3 +70,50 @@ class window.LabelList extends Backbone.Collection
 		else
 			@add label
 
+class window.Value extends Backbone.Model
+
+class window.ValueList extends Backbone.Collection
+	model: Value
+
+class window.State extends Backbone.Model
+	defaults:
+		lsValues: new ValueList()
+
+	initialize: ->
+		if @has('lsValues')
+			if @get('lsValues') not instanceof ValueList
+				@set lsValues: new ValueList(@get('lsValues'))
+		@get('lsValues').on 'change', =>
+			@trigger 'change'
+
+	parse: (resp) ->
+		if resp.lsValues?
+			if resp.lsValues not instanceof ValueList
+				resp.lsValues = new ValueList(resp.lsValues)
+				resp.lsValues.on 'change', =>
+					@trigger 'change'
+		resp
+
+	getValuesByTypeAndKind: (type, kind) ->
+		@get('lsValues').filter (value) ->
+			(not value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
+
+class window.StateList extends Backbone.Collection
+	model: State
+
+	getStatesByTypeAndKind: (type, kind) ->
+		@filter (state) ->
+			(not state.get('ignored')) and (state.get('lsType')==type) and (state.get('lsKind')==kind)
+
+	getStateValueByTypeAndKind: (stype, skind, vtype, vkind) ->
+		value = null
+		states = @getStatesByTypeAndKind stype, skind
+		if states.length > 0
+			#TODO get most recent state and value if more than 1 or throw error
+			values = states[0].getValuesByTypeAndKind(vtype, vkind)
+			if values.length > 0
+				value = values[0]
+		value
+
+
+

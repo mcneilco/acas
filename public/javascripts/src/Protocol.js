@@ -1,100 +1,15 @@
 (function() {
-  var _ref, _ref1, _ref2, _ref3, _ref4,
+  var _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-  window.ProtocolValue = (function(_super) {
-    __extends(ProtocolValue, _super);
-
-    function ProtocolValue() {
-      _ref = ProtocolValue.__super__.constructor.apply(this, arguments);
-      return _ref;
-    }
-
-    return ProtocolValue;
-
-  })(Backbone.Model);
-
-  window.ProtocolValueList = (function(_super) {
-    __extends(ProtocolValueList, _super);
-
-    function ProtocolValueList() {
-      _ref1 = ProtocolValueList.__super__.constructor.apply(this, arguments);
-      return _ref1;
-    }
-
-    ProtocolValueList.prototype.model = ProtocolValue;
-
-    return ProtocolValueList;
-
-  })(Backbone.Collection);
-
-  window.ProtocolState = (function(_super) {
-    __extends(ProtocolState, _super);
-
-    function ProtocolState() {
-      _ref2 = ProtocolState.__super__.constructor.apply(this, arguments);
-      return _ref2;
-    }
-
-    ProtocolState.prototype.defaults = {
-      lsValues: new ProtocolValueList()
-    };
-
-    ProtocolState.prototype.initialize = function() {
-      var _this = this;
-
-      if (this.has('lsValues')) {
-        if (!(this.get('lsValues') instanceof ProtocolValueList)) {
-          this.set({
-            lsValues: new ProtocolValueList(this.get('lsValues'))
-          });
-        }
-      }
-      return this.get('lsValues').on('change', function() {
-        return _this.trigger('change');
-      });
-    };
-
-    ProtocolState.prototype.parse = function(resp) {
-      var _this = this;
-
-      if (resp.lsValues != null) {
-        if (!(resp.lsValues instanceof ProtocolValueList)) {
-          resp.lsValues = new ProtocolValueList(resp.lsValues);
-          resp.lsValues.on('change', function() {
-            return _this.trigger('change');
-          });
-        }
-      }
-      return resp;
-    };
-
-    return ProtocolState;
-
-  })(Backbone.Model);
-
-  window.ProtocolStateList = (function(_super) {
-    __extends(ProtocolStateList, _super);
-
-    function ProtocolStateList() {
-      _ref3 = ProtocolStateList.__super__.constructor.apply(this, arguments);
-      return _ref3;
-    }
-
-    ProtocolStateList.prototype.model = ProtocolState;
-
-    return ProtocolStateList;
-
-  })(Backbone.Collection);
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.Protocol = (function(_super) {
     __extends(Protocol, _super);
 
     function Protocol() {
-      this.parse = __bind(this.parse, this);      _ref4 = Protocol.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      this.parse = __bind(this.parse, this);      _ref = Protocol.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     Protocol.prototype.urlRoot = "/api/protocols";
@@ -104,7 +19,7 @@
       recordedBy: "",
       shortDescription: "",
       lsLabels: new LabelList(),
-      lsStates: new ProtocolStateList()
+      lsStates: new StateList()
     };
 
     Protocol.prototype.initialize = function() {
@@ -124,8 +39,8 @@
         }
       }
       if (resp.lsStates != null) {
-        if (!(resp.lsStates instanceof ProtocolStateList)) {
-          resp.lsStates = new ProtocolStateList(resp.lsStates);
+        if (!(resp.lsStates instanceof StateList)) {
+          resp.lsStates = new StateList(resp.lsStates);
           resp.lsStates.on('change', function() {
             return _this.trigger('change');
           });
@@ -143,9 +58,9 @@
         }
       }
       if (this.has('lsStates')) {
-        if (!(this.get('lsStates') instanceof ProtocolStateList)) {
+        if (!(this.get('lsStates') instanceof StateList)) {
           return this.set({
-            lsStates: new ProtocolStateList(this.get('lsStates'))
+            lsStates: new StateList(this.get('lsStates'))
           });
         }
       }

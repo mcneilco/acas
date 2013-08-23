@@ -1,30 +1,3 @@
-class window.ProtocolValue extends Backbone.Model
-
-class window.ProtocolValueList extends Backbone.Collection
-	model: ProtocolValue
-
-class window.ProtocolState extends Backbone.Model
-	defaults:
-		lsValues: new ProtocolValueList()
-
-	initialize: ->
-		if @has('lsValues')
-			if @get('lsValues') not instanceof ProtocolValueList
-				@set lsValues: new ProtocolValueList(@get('lsValues'))
-		@get('lsValues').on 'change', =>
-			@trigger 'change'
-
-	parse: (resp) ->
-		if resp.lsValues?
-			if resp.lsValues not instanceof ProtocolValueList
-				resp.lsValues = new ProtocolValueList(resp.lsValues)
-				resp.lsValues.on 'change', =>
-					@trigger 'change'
-		resp
-
-class window.ProtocolStateList extends Backbone.Collection
-	model: ProtocolState
-
 class window.Protocol extends Backbone.Model
 	urlRoot: "/api/protocols"
 
@@ -33,7 +6,7 @@ class window.Protocol extends Backbone.Model
 		recordedBy: ""
 		shortDescription: ""
 		lsLabels: new LabelList()
-		lsStates: new ProtocolStateList()
+		lsStates: new StateList()
 
 	initialize: ->
 		@fixCompositeClasses()
@@ -46,8 +19,8 @@ class window.Protocol extends Backbone.Model
 				resp.lsLabels.on 'change', =>
 					@trigger 'change'
 		if resp.lsStates?
-			if resp.lsStates not instanceof ProtocolStateList
-				resp.lsStates = new ProtocolStateList(resp.lsStates)
+			if resp.lsStates not instanceof StateList
+				resp.lsStates = new StateList(resp.lsStates)
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
 		resp
@@ -57,8 +30,8 @@ class window.Protocol extends Backbone.Model
 			if @get('lsLabels') not instanceof LabelList
 				@set lsLabels: new LabelList(@get('lsLabels'))
 		if @has('lsStates')
-			if @get('lsStates') not instanceof ProtocolStateList
-				@set lsStates: new ProtocolStateList(@get('lsStates'))
+			if @get('lsStates') not instanceof StateList
+				@set lsStates: new StateList(@get('lsStates'))
 
 	setupCompositeChangeTriggers: ->
 		@get('lsLabels').on 'change', =>

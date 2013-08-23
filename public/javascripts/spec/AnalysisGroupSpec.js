@@ -10,43 +10,6 @@ This suite of services provides CRUD operations on Analysis Group Objects
         return typeof this.serviceReturn !== 'undefined';
       };
     });
-    describe("AnalysisGroupState model testing", function() {
-      describe("when created empty", function() {
-        beforeEach(function() {
-          return this.ags = new AnalysisGroupState();
-        });
-        it("Class should exist", function() {
-          return expect(this.ags).toBeDefined();
-        });
-        return it("should have defaults", function() {
-          return expect(this.ags.get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy();
-        });
-      });
-      return describe("When loaded from state json", function() {
-        beforeEach(function() {
-          return this.ags = new AnalysisGroupState(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].analysisGroupStates[0]);
-        });
-        return describe("after initial load", function() {
-          it("state should have kind ", function() {
-            return expect(this.ags.get('stateKind')).toEqual("Document for Batch");
-          });
-          it("state should have values", function() {
-            expect(this.ags.get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy();
-            return expect(this.ags.get('analysisGroupValues').length).toEqual(3);
-          });
-          it("state should have populated value", function() {
-            return expect(this.ags.get('analysisGroupValues').at(0).get('valueKind')).toEqual("annotation");
-          });
-          return it("should return requested value", function() {
-            var values;
-
-            values = this.ags.getValuesByTypeAndKind("codeValue", "batch code");
-            expect(values.length).toEqual(1);
-            return expect(values[0].get('codeValue')).toEqual("CMPD_1112");
-          });
-        });
-      });
-    });
     return describe("AnalysisGroup model testing", function() {
       describe("when created empty", function() {
         beforeEach(function() {
@@ -54,12 +17,12 @@ This suite of services provides CRUD operations on Analysis Group Objects
         });
         return describe("defaults", function() {
           it('Should have an empty label list', function() {
-            expect(this.ag.get('analysisGroupLabels').length).toEqual(0);
-            return expect(this.ag.get('analysisGroupLabels') instanceof LabelList).toBeTruthy();
+            expect(this.ag.get('lsLabels').length).toEqual(0);
+            return expect(this.ag.get('lsLabels') instanceof LabelList).toBeTruthy();
           });
           it('Should have an empty state list', function() {
-            expect(this.ag.get('analysisGroupStates').length).toEqual(0);
-            return expect(this.ag.get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy();
+            expect(this.ag.get('lsStates').length).toEqual(0);
+            return expect(this.ag.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
             return expect(this.ag.get('recordedBy')).toEqual("");
@@ -84,19 +47,19 @@ This suite of services provides CRUD operations on Analysis Group Objects
             return expect(this.ag.get('codeName')).toEqual("AG-00037424");
           });
           it("should have labels", function() {
-            return expect(this.ag.get('analysisGroupLabels').length).toEqual(0);
+            return expect(this.ag.get('lsLabels').length).toEqual(0);
           });
           it("should have states ", function() {
-            return expect(this.ag.get('analysisGroupStates').length).toEqual(3);
+            return expect(this.ag.get('lsStates').length).toEqual(3);
           });
           it("should have states with kind ", function() {
-            return expect(this.ag.get('analysisGroupStates').at(0).get('stateKind')).toEqual("Document for Batch");
+            return expect(this.ag.get('lsStates').at(0).get('lsKind')).toEqual("Document for Batch");
           });
           it("states should have values", function() {
-            return expect(this.ag.get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual("annotation");
+            return expect(this.ag.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual("annotation");
           });
           return it("states should have ignored to be false", function() {
-            return expect(this.ag.get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('ignored')).toBeFalsy();
+            return expect(this.ag.get('lsStates').at(0).get('lsValues').at(0).get('ignored')).toBeFalsy();
           });
         });
       });

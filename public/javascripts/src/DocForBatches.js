@@ -89,7 +89,7 @@
     };
 
     DocForBatches.prototype.asExperiment = function() {
-      var analysisGroup, analysisGroupState, analysisGroupStates, analysisGroups, eName, exp, recBy, recDate, stateValue_1, stateValue_2, stateValues;
+      var analysisGroup, analysisGroupState, analysisGroups, eName, exp, lsStates, lsValues, recBy, recDate, stateValue_1, stateValue_2;
 
       if (!this.isValid()) {
         return null;
@@ -100,52 +100,52 @@
       analysisGroups = new AnalysisGroupList(analysisGroup);
       if (this.get('docUpload').get('docType') === "file") {
         eName = this.get('docUpload').get('currentFileName');
-        stateValue_1 = new AnalysisGroupValue({
-          valueType: 'fileValue',
-          valueKind: 'annotation',
+        stateValue_1 = new Value({
+          lsType: 'fileValue',
+          lsKind: 'annotation',
           value: eName,
           ignored: false
         });
       } else {
         eName = this.get('docUpload').get('url');
-        stateValue_1 = new AnalysisGroupValue({
-          valueType: 'urlValue',
-          valueKind: 'annotation',
+        stateValue_1 = new Value({
+          lsType: 'urlValue',
+          lsKind: 'annotation',
           value: eName,
           ignored: false
         });
       }
-      stateValue_2 = new AnalysisGroupValue({
-        valueType: 'stringValue',
-        valueKind: 'document kind',
+      stateValue_2 = new Value({
+        lsType: 'stringValue',
+        lsKind: 'document kind',
         value: this.get('docUpload').get('documentKind'),
         ignored: false
       });
-      stateValues = new AnalysisGroupValueList();
-      stateValues.add(stateValue_1);
-      stateValues.add(stateValue_2);
+      lsValues = new ValueList();
+      lsValues.add(stateValue_1);
+      lsValues.add(stateValue_2);
       this.get('batchNameList').each(function(batchName) {
         var stateValue;
 
-        stateValue = new AnalysisGroupValue({
-          valueType: 'codeValue',
-          valueKind: 'batch code',
+        stateValue = new Value({
+          lsType: 'codeValue',
+          lsKind: 'batch code',
           comments: batchName.get('comment'),
           value: batchName.get('preferredName'),
           ignored: false
         });
-        return stateValues.add(stateValue);
+        return lsValues.add(stateValue);
       });
-      analysisGroupState = new AnalysisGroupState({
-        analysisGroupValues: stateValues,
-        stateKind: 'Document for Batch',
-        stateType: 'results',
+      analysisGroupState = new State({
+        lsValues: lsValues,
+        lsKind: 'Document for Batch',
+        lsType: 'results',
         recordedBy: this.protocol.get('recordedBy')
       });
-      analysisGroupStates = new AnalysisGroupStateList();
-      analysisGroupStates.add(analysisGroupState);
+      lsStates = new StateList();
+      lsStates.add(analysisGroupState);
       analysisGroup = new AnalysisGroup({
-        analysisGroupStates: analysisGroupStates
+        lsStates: lsStates
       });
       analysisGroups = new AnalysisGroupList(analysisGroup);
       exp = new Experiment({
@@ -157,7 +157,7 @@
         analysisGroups: analysisGroups
       });
       exp.get('lsLabels').setBestName(new Label({
-        labelKind: "experiment name",
+        lsKind: "experiment name",
         labelText: eName,
         recordedBy: recBy,
         recordedDate: recDate
@@ -172,13 +172,13 @@
         id: 1
       });
       newBatchNameList = new BatchNameList();
-      this.get('experiment').get('analysisGroups').at(0).get('analysisGroupStates').each(function(analysisGroupState) {
-        return analysisGroupState.get('analysisGroupValues').each(function(analysisGroupValue) {
-          var newBatchName, value, valueType;
+      this.get('experiment').get('analysisGroups').at(0).get('lsStates').each(function(analysisGroupState) {
+        return analysisGroupState.get('lsValues').each(function(analysisGroupValue) {
+          var lsType, newBatchName, value;
 
-          valueType = analysisGroupValue.get('valueType');
-          value = analysisGroupValue.get(valueType);
-          switch (valueType) {
+          lsType = analysisGroupValue.get('lsType');
+          value = analysisGroupValue.get(lsType);
+          switch (lsType) {
             case "fileValue":
               if (value !== null) {
                 return newDocUpload.set({

@@ -6,52 +6,6 @@ afterEach ->
 	$("body").append $(@fixture)
 
 describe "Protocol module testing", ->
-	describe "Protocol State model testing", ->
-		describe "Wehn new", ->
-			beforeEach ->
-				@ps = new ProtocolState()
-			it "should have protocol value list", ->
-				expect(@ps.get('lsValues') instanceof ProtocolValueList).toBeTruthy()
-		describe "When loaded from existing", ->
-			beforeEach ->
-				@ps = new ProtocolState window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0]
-			describe "after initial load", ->
-				it "Class should exist", ->
-					expect(@ps).toBeDefined()
-				it "state should have kind ", ->
-					expect(@ps.get('lsKind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsKind
-				it "state should have values", ->
-					expect(@ps.get('lsValues').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length
-				it "state should have populated value", ->
-					expect(@ps.get('lsValues').at(0).get('lsKind')).toEqual "control type"
-				it "should trigger change when value changed in state", ->
-					runs ->
-						@stateChanged = false
-						@ps.on 'change', =>
-							@stateChanged = true
-						@ps.get('lsValues').at(0).set(lsKind: 'newkind')
-					waitsFor ->
-						@stateChanged
-					, 500
-					runs ->
-						expect(@stateChanged).toBeTruthy()
-
-
-	describe "Protocol State List model testing", ->
-		beforeEach ->
-			@psl = new ProtocolStateList window.protocolServiceTestJSON.fullSavedProtocol.lsStates
-		describe "after initial load", ->
-			it "Class should exist", ->
-				expect(@psl).toBeDefined()
-			it "should have states ", ->
-				expect(@psl.length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
-			it "first state should have kind ", ->
-				expect(@psl.at(0).get('lsKind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsKind
-			it "states should have values", ->
-				expect(@psl.at(0).get('lsValues').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length
-			it "first state should have populated value", ->
-				expect(@psl.at(0).get('lsValues').at(0).get('lsKind')).toEqual "control type"
-
 	describe "Protocol model testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
@@ -131,7 +85,7 @@ describe "Protocol module testing", ->
 					expect(@prot.get('lsLabels').length).toBeGreaterThan 0
 			it "should convert state array to state list", ->
 				runs ->
-					expect(@prot.get('lsStates')  instanceof ProtocolStateList).toBeTruthy()
+					expect(@prot.get('lsStates')  instanceof StateList).toBeTruthy()
 					expect(@prot.get('lsStates').length).toBeGreaterThan 0
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->

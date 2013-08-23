@@ -8,6 +8,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	loadReportFile: false
 	filePath: "serverOnlyModules/blueimp-file-upload-node/public/files/"
 	additionalData: {experimentId: 1234, otherparam: "fred"}
+	allowedFileTypes = ['xls', 'xlsx', 'csv']
 
 	template: _.template($("#BasicFileValidateAndSaveView").html())
 
@@ -28,7 +29,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			inputTitle: ''
 			url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
 			fieldIsRequired: false
-			allowedFileTypes: ['xls', 'xlsx', 'csv']
+			allowedFileTypes: @allowedFileTypes
 		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
 		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved)
 		@parseFileController.render()

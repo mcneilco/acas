@@ -1,51 +1,3 @@
-
-class window.ExperimentValue extends Backbone.Model
-
-class window.ExperimentValueList extends Backbone.Collection
-	model: ExperimentValue
-
-class window.ExperimentState extends Backbone.Model
-	defaults:
-		lsValues: new ExperimentValueList()
-
-	initialize: ->
-		if @has('lsValues')
-			if @get('lsValues') not instanceof ExperimentValueList
-				@set lsValues: new ExperimentValueList(@get('lsValues'))
-		@get('lsValues').on 'change', =>
-			@trigger 'change'
-
-	parse: (resp) ->
-		if resp.lsValues?
-			if resp.lsValues not instanceof ExperimentValueList
-				resp.lsValues = new ExperimentValueList(resp.lsValues)
-				resp.lsValues.on 'change', =>
-					@trigger 'change'
-		resp
-
-	getValuesByTypeAndKind: (type, kind) ->
-		@get('lsValues').filter (value) ->
-			(not value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
-
-class window.ExperimentStateList extends Backbone.Collection
-	model: ExperimentState
-
-	getStatesByTypeAndKind: (type, kind) ->
-		@filter (state) ->
-			(not state.get('ignored')) and (state.get('lsType')==type) and (state.get('lsKind')==kind)
-
-	getStateValueByTypeAndKind: (stype, skind, vtype, vkind) ->
-		value = null
-		states = @getStatesByTypeAndKind stype, skind
-		if states.length > 0
-			#TODO get most recent state and value if more than 1 or throw error
-			values = states[0].getValuesByTypeAndKind(vtype, vkind)
-			if values.length > 0
-				value = values[0]
-		value
-
-
-
 class window.Experiment extends Backbone.Model
 	urlRoot: "/api/experiments"
 	defaults:
@@ -55,7 +7,7 @@ class window.Experiment extends Backbone.Model
 		recordedDate: null
 		shortDescription: ""
 		lsLabels: new LabelList()
-		lsStates: new ExperimentStateList()
+		lsStates: new StateList()
 		protocol: null
 		analysisGroups: new AnalysisGroupList()
 
@@ -70,8 +22,8 @@ class window.Experiment extends Backbone.Model
 				resp.lsLabels.on 'change', =>
 					@trigger 'change'
 		if resp.lsStates?
-			if resp.lsStates not instanceof ExperimentStateList
-				resp.lsStates = new ExperimentStateList(resp.lsStates)
+			if resp.lsStates not instanceof StateList
+				resp.lsStates = new StateList(resp.lsStates)
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
 		if resp.analysisGroups?
@@ -87,8 +39,8 @@ class window.Experiment extends Backbone.Model
 			if @get('lsLabels') not instanceof LabelList
 				@set lsLabels: new LabelList(@get('lsLabels'))
 		if @has('lsStates')
-			if @get('lsStates') not instanceof ExperimentStateList
-				@set lsStates: new ExperimentStateList(@get('lsStates'))
+			if @get('lsStates') not instanceof StateList
+				@set lsStates: new StateList(@get('lsStates'))
 		if @has('analysisGroups')
 			if @get('analysisGroups') not instanceof AnalysisGroupList
 				@set analysisGroups: new AnalysisGroupList(@get('analysisGroups'))
@@ -103,17 +55,17 @@ class window.Experiment extends Backbone.Model
 			@trigger 'change'
 
 	copyProtocolAttributes: (protocol) ->
-		estates = new ExperimentStateList()
+		estates = new StateList()
 		pstates = protocol.get('lsStates')
 		pstates.each (st) ->
-			estate = new ExperimentState(_.clone(st.attributes))
+			estate = new State(_.clone(st.attributes))
 			estate.unset 'id'
 			estate.unset 'lsTransaction'
 			estate.unset 'lsValues'
-			evals = new ExperimentValueList()
+			evals = new ValueList()
 			svals = st.get('lsValues')
 			svals.each (sv) ->
-				evalue = new ProtocolValue(sv.attributes)
+				evalue = new Value(sv.attributes)
 				evalue.unset 'id'
 				evalue.unset 'lsTransaction'
 				evals.add(evalue)

@@ -75,28 +75,28 @@ describe 'Doc For Batches Behavior Testing', ->
 						expect(@exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy()
 				it "experiment should have state in analysisGroup", ->
 					runs ->
-						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy()
+						expect(@exp.get('analysisGroups').at(0).get('lsStates') instanceof StateList).toBeTruthy()
 				it "experiment should have state in state list", ->
 					runs ->
-						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').length).toEqual 1
+						expect(@exp.get('analysisGroups').at(0).get('lsStates').length).toEqual 1
 				it "experiment should have statevalue list in state", ->
 					runs ->
-						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy()
+						expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues') instanceof ValueList).toBeTruthy()
 				it "experiment should have statevalues", ->
 					runs ->
-						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').length).toEqual 5
+						expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').length).toEqual 5
 				it "experiment should have statevalues", ->
 					runs ->
-						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0) instanceof AnalysisGroupValue).toBeTruthy()
+						expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0) instanceof Value).toBeTruthy()
 				it "experiment should have statevalues kind", ->
 					runs ->
-						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual 'annotation'
+						expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual 'annotation'
 				it "experiment should have statevalues type", ->
 					runs ->
-						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueType')).toEqual 'fileValue'
+						expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('lsType')).toEqual 'fileValue'
 				it "state value should not be ignored", ->
 					runs ->
-						expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('ignored')).toBeFalsy()
+						expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('ignored')).toBeFalsy()
 
 
 		describe "create a new docForBatches from experiment", ->
@@ -109,12 +109,12 @@ describe 'Doc For Batches Behavior Testing', ->
 				expect(@docForBatches.get('experiment') instanceof Experiment).toBeTruthy()
 			it "should setup a currentFileName from fileValue", ->
 				console.log @docForBatches
-				expect(@docForBatches.get('docUpload').get('currentFileName')).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].fileValue
+				expect(@docForBatches.get('docUpload').get('currentFileName')).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].lsStates[0].lsValues[0].fileValue
 			it "should not setup a url from urlValue", ->
-				#window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].urlValue
+				#window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].lsStates[0].lsValues[0].urlValue
 				expect(@docForBatches.get('docUpload').get('url')).toEqual ''
 			it "should setup a documentKind from stringValue", ->
-				#window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].analysisGroupStates[2].analysisGroupValues[1].stringValue
+				#window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].lsStates[2].lsValues[1].stringValue
 				expect(@docForBatches.get('docUpload').get('documentKind')).toEqual 'experiment'
 			it "should setup a banchNameList from analysisGroupValue", ->
 				expect(@docForBatches.get('batchNameList').length).toEqual 3

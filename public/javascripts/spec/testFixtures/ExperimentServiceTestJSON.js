@@ -1277,10 +1277,10 @@
       version: 0,
       analysisGroups: [
         {
-          analysisGroupLabels: [],
-          analysisGroupStates: [
+          lsLabels: [],
+          lsStates: [
             {
-              analysisGroupValues: [
+              lsValues: [
                 {
                   clobValue: null,
                   codeValue: null,
@@ -1300,10 +1300,10 @@
                   uncertainty: null,
                   uncertaintyType: null,
                   urlValue: null,
-                  valueKind: "annotation",
+                  lsKind: "annotation",
                   valueOperator: null,
-                  valueType: "fileValue",
-                  valueTypeAndKind: "fileValue_annotation",
+                  lsType: "fileValue",
+                  lsTypeAndKind: "fileValue_annotation",
                   valueUnit: null,
                   version: 0
                 }, {
@@ -1325,10 +1325,10 @@
                   uncertainty: null,
                   uncertaintyType: null,
                   urlValue: null,
-                  valueKind: "batch code",
+                  lsKind: "batch code",
                   valueOperator: null,
-                  valueType: "codeValue",
-                  valueTypeAndKind: "codeValue_batch code",
+                  lsType: "codeValue",
+                  lsTypeAndKind: "codeValue_batch code",
                   valueUnit: null,
                   version: 0
                 }, {
@@ -1350,10 +1350,10 @@
                   uncertainty: null,
                   uncertaintyType: null,
                   urlValue: null,
-                  valueKind: "document kind",
+                  lsKind: "document kind",
                   valueOperator: null,
-                  valueType: "stringValue",
-                  valueTypeAndKind: "stringValue_document kind",
+                  lsType: "stringValue",
+                  lsTypeAndKind: "stringValue_document kind",
                   valueUnit: null,
                   version: 0
                 }
@@ -1376,7 +1376,7 @@
               stateTypeAndKind: "results_Document for Batch",
               version: 0
             }, {
-              analysisGroupValues: [
+              lsValues: [
                 {
                   clobValue: null,
                   codeValue: null,
@@ -1396,10 +1396,10 @@
                   uncertainty: null,
                   uncertaintyType: null,
                   urlValue: null,
-                  valueKind: "document kind",
+                  lsKind: "document kind",
                   valueOperator: null,
-                  valueType: "stringValue",
-                  valueTypeAndKind: "stringValue_document kind",
+                  lsType: "stringValue",
+                  lsTypeAndKind: "stringValue_document kind",
                   valueUnit: null,
                   version: 0
                 }, {
@@ -1421,10 +1421,10 @@
                   uncertainty: null,
                   uncertaintyType: null,
                   urlValue: null,
-                  valueKind: "annotation",
+                  lsKind: "annotation",
                   valueOperator: null,
-                  valueType: "fileValue",
-                  valueTypeAndKind: "fileValue_annotation",
+                  lsType: "fileValue",
+                  lsTypeAndKind: "fileValue_annotation",
                   valueUnit: null,
                   version: 0
                 }, {
@@ -1446,10 +1446,10 @@
                   uncertainty: null,
                   uncertaintyType: null,
                   urlValue: null,
-                  valueKind: "batch code",
+                  lsKind: "batch code",
                   valueOperator: null,
-                  valueType: "codeValue",
-                  valueTypeAndKind: "codeValue_batch code",
+                  lsType: "codeValue",
+                  lsTypeAndKind: "codeValue_batch code",
                   valueUnit: null,
                   version: 0
                 }
@@ -1472,7 +1472,7 @@
               stateTypeAndKind: "results_Document for Batch",
               version: 0
             }, {
-              analysisGroupValues: [
+              lsValues: [
                 {
                   clobValue: null,
                   codeValue: "CMPD_1113",
@@ -1492,10 +1492,10 @@
                   uncertainty: null,
                   uncertaintyType: null,
                   urlValue: null,
-                  valueKind: "batch code",
+                  lsKind: "batch code",
                   valueOperator: null,
-                  valueType: "codeValue",
-                  valueTypeAndKind: "codeValue_batch code",
+                  lsType: "codeValue",
+                  lsTypeAndKind: "codeValue_batch code",
                   valueUnit: null,
                   version: 0
                 }, {
@@ -1517,10 +1517,10 @@
                   uncertainty: null,
                   uncertaintyType: null,
                   urlValue: null,
-                  valueKind: "document kind",
+                  lsKind: "document kind",
                   valueOperator: null,
-                  valueType: "stringValue",
-                  valueTypeAndKind: "stringValue_document kind",
+                  lsType: "stringValue",
+                  lsTypeAndKind: "stringValue_document kind",
                   valueUnit: null,
                   version: 0
                 }, {
@@ -1542,10 +1542,10 @@
                   uncertainty: null,
                   uncertaintyType: null,
                   urlValue: null,
-                  valueKind: "annotation",
+                  lsKind: "annotation",
                   valueOperator: null,
-                  valueType: "fileValue",
-                  valueTypeAndKind: "fileValue_annotation",
+                  lsType: "fileValue",
+                  lsTypeAndKind: "fileValue_annotation",
                   valueUnit: null,
                   version: 0
                 }

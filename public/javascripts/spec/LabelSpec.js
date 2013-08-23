@@ -30,7 +30,7 @@
         });
       });
     });
-    return describe("Label List testing", function() {
+    describe("Label List testing", function() {
       describe("label list features when loaded from existing list", function() {
         beforeEach(function() {
           return this.ell = new LabelList(window.experimentServiceTestJSON.experimentLabels);
@@ -115,6 +115,100 @@
             expect(this.ell.pickBestLabel().get('recordedBy')).toEqual("fmcneil");
             return expect(this.ell.pickBestLabel().get('recordedDate')).toEqual(3362435677000);
           });
+        });
+      });
+    });
+    describe("State model testing", function() {
+      describe("when created empty", function() {
+        beforeEach(function() {
+          return this.es = new State();
+        });
+        it("Class should exist", function() {
+          return expect(this.es).toBeDefined();
+        });
+        return it("should have defaults", function() {
+          return expect(this.es.get('lsValues') instanceof Backbone.Collection).toBeTruthy();
+        });
+      });
+      return describe("When loaded from state json", function() {
+        beforeEach(function() {
+          return this.es = new State(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0]);
+        });
+        return describe("after initial load", function() {
+          it("state should have kind ", function() {
+            return expect(this.es.get('lsKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind);
+          });
+          it("state should have values", function() {
+            return expect(this.es.get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
+          });
+          it("state should have populated value", function() {
+            return expect(this.es.get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
+          });
+          it("should return requested value", function() {
+            var values;
+
+            values = this.es.getValuesByTypeAndKind("stringValue", "notebook");
+            expect(values.length).toEqual(1);
+            return expect(values[0].get('stringValue')).toEqual("911");
+          });
+          return it("should trigger change when value changed in state", function() {
+            runs(function() {
+              var _this = this;
+
+              this.stateChanged = false;
+              this.es.on('change', function() {
+                return _this.stateChanged = true;
+              });
+              return this.es.get('lsValues').at(0).set({
+                valueKind: 'newkind'
+              });
+            });
+            waitsFor(function() {
+              return this.stateChanged;
+            }, 500);
+            return runs(function() {
+              return expect(this.stateChanged).toBeTruthy();
+            });
+          });
+        });
+      });
+    });
+    return describe("State List model testing", function() {
+      beforeEach(function() {
+        return this.esl = new StateList(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates);
+      });
+      describe("after initial load", function() {
+        it("Class should exist", function() {
+          return expect(this.esl).toBeDefined();
+        });
+        it("should have states ", function() {
+          return expect(this.esl.length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates.length);
+        });
+        it("first state should have kind ", function() {
+          return expect(this.esl.at(0).get('lsKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind);
+        });
+        it("states should have values", function() {
+          return expect(this.esl.at(0).get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
+        });
+        return it("first state should have populated value", function() {
+          return expect(this.esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
+        });
+      });
+      describe("Get states by type and kind", function() {
+        return it("should return requested state", function() {
+          var values;
+
+          values = this.esl.getStatesByTypeAndKind("metadata", "experiment metadata");
+          expect(values.length).toEqual(1);
+          return expect(values[0].get('lsTypeAndKind')).toEqual("metadata_experiment metadata");
+        });
+      });
+      return describe("Get value by type and kind", function() {
+        return it("should return requested value", function() {
+          var value;
+
+          value = this.esl.getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
+          return expect(value.get('stringValue')).toEqual("911");
         });
       });
     });

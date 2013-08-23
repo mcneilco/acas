@@ -101,42 +101,42 @@
           });
           it("experiment should have state in analysisGroup", function() {
             return runs(function() {
-              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy();
+              return expect(this.exp.get('analysisGroups').at(0).get('lsStates') instanceof StateList).toBeTruthy();
             });
           });
           it("experiment should have state in state list", function() {
             return runs(function() {
-              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').length).toEqual(1);
+              return expect(this.exp.get('analysisGroups').at(0).get('lsStates').length).toEqual(1);
             });
           });
           it("experiment should have statevalue list in state", function() {
             return runs(function() {
-              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy();
+              return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues') instanceof ValueList).toBeTruthy();
             });
           });
           it("experiment should have statevalues", function() {
             return runs(function() {
-              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').length).toEqual(5);
+              return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').length).toEqual(5);
             });
           });
           it("experiment should have statevalues", function() {
             return runs(function() {
-              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0) instanceof AnalysisGroupValue).toBeTruthy();
+              return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0) instanceof Value).toBeTruthy();
             });
           });
           it("experiment should have statevalues kind", function() {
             return runs(function() {
-              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual('annotation');
+              return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual('annotation');
             });
           });
           it("experiment should have statevalues type", function() {
             return runs(function() {
-              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueType')).toEqual('fileValue');
+              return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('lsType')).toEqual('fileValue');
             });
           });
           return it("state value should not be ignored", function() {
             return runs(function() {
-              return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('ignored')).toBeFalsy();
+              return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('ignored')).toBeFalsy();
             });
           });
         });
@@ -153,7 +153,7 @@
         });
         it("should setup a currentFileName from fileValue", function() {
           console.log(this.docForBatches);
-          return expect(this.docForBatches.get('docUpload').get('currentFileName')).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].fileValue);
+          return expect(this.docForBatches.get('docUpload').get('currentFileName')).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].lsStates[0].lsValues[0].fileValue);
         });
         it("should not setup a url from urlValue", function() {
           return expect(this.docForBatches.get('docUpload').get('url')).toEqual('');
