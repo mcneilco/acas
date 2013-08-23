@@ -60,45 +60,45 @@ class window.DocForBatches extends Backbone.Model
 		analysisGroups = new AnalysisGroupList(analysisGroup)
 		if @get('docUpload').get('docType') == "file"
 			eName = @get('docUpload').get('currentFileName')
-			stateValue_1 = new AnalysisGroupValue
-				valueType: 'fileValue'
-				valueKind: 'annotation'
+			stateValue_1 = new Value
+				lsType: 'fileValue'
+				lsKind: 'annotation'
 				value: eName
 				ignored: false
 		else
 			eName = @get('docUpload').get('url')
-			stateValue_1 = new AnalysisGroupValue
-				valueType: 'urlValue'
-				valueKind: 'annotation'
+			stateValue_1 = new Value
+				lsType: 'urlValue'
+				lsKind: 'annotation'
 				value: eName
 				ignored: false
-		stateValue_2 = new AnalysisGroupValue
-			valueType: 'stringValue'
-			valueKind: 'document kind'
+		stateValue_2 = new Value
+			lsType: 'stringValue'
+			lsKind: 'document kind'
 			value: @get('docUpload').get('documentKind')
 			ignored: false
-		stateValues = new AnalysisGroupValueList()
-		stateValues.add(stateValue_1)
-		stateValues.add(stateValue_2)
+		lsValues = new ValueList()
+		lsValues.add(stateValue_1)
+		lsValues.add(stateValue_2)
 		#  _.each myArray, (elem) ->
 		@get('batchNameList').each (batchName) ->
-			stateValue = new AnalysisGroupValue
-				valueType: 'codeValue'
-				valueKind: 'batch code'
+			stateValue = new Value
+				lsType: 'codeValue'
+				lsKind: 'batch code'
 				comments: batchName.get('comment')
 				value: batchName.get('preferredName')
 				ignored: false
-			stateValues.add(stateValue)
+			lsValues.add(stateValue)
 
-		analysisGroupState = new AnalysisGroupState
-			analysisGroupValues:stateValues
-			stateKind: 'Document for Batch'
-			stateType: 'results'
+		analysisGroupState = new State
+			lsValues:lsValues
+			lsKind: 'Document for Batch'
+			lsType: 'results'
 			recordedBy: @.protocol.get('recordedBy')
-		analysisGroupStates = new AnalysisGroupStateList()
-		analysisGroupStates.add(analysisGroupState)
+		lsStates = new StateList()
+		lsStates.add(analysisGroupState)
 		analysisGroup = new AnalysisGroup
-			analysisGroupStates : analysisGroupStates
+			lsStates : lsStates
 		analysisGroups = new AnalysisGroupList(analysisGroup)
 		exp = new Experiment
 			protocol: @protocol
@@ -108,7 +108,7 @@ class window.DocForBatches extends Backbone.Model
 			shortDescription: @get('docUpload').get('description')
 			analysisGroups:analysisGroups
 		exp.get('lsLabels').setBestName new Label
-			labelKind: "experiment name"
+			lsKind: "experiment name"
 			labelText: eName
 			recordedBy: recBy
 			recordedDate: recDate
@@ -119,11 +119,11 @@ class window.DocForBatches extends Backbone.Model
 		newDocUpload = new DocUpload
 			id:1
 		newBatchNameList= new BatchNameList()
-		@get('experiment').get('analysisGroups').at(0).get('analysisGroupStates').each (analysisGroupState) ->
-			analysisGroupState.get('analysisGroupValues').each (analysisGroupValue) ->
-				valueType= analysisGroupValue.get('valueType')
-				value = analysisGroupValue.get(valueType)
-				switch valueType
+		@get('experiment').get('analysisGroups').at(0).get('lsStates').each (analysisGroupState) ->
+			analysisGroupState.get('lsValues').each (analysisGroupValue) ->
+				lsType= analysisGroupValue.get('lsType')
+				value = analysisGroupValue.get(lsType)
+				switch lsType
 					when "fileValue"
 						if value!= null
 							newDocUpload.set

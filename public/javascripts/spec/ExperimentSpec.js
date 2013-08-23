@@ -9,114 +9,23 @@
   });
 
   describe("Experiment module testing", function() {
-    describe("Experiment State model testing", function() {
-      describe("when created empty", function() {
-        beforeEach(function() {
-          return this.es = new ExperimentState();
-        });
-        it("Class should exist", function() {
-          return expect(this.es).toBeDefined();
-        });
-        return it("should have defaults", function() {
-          return expect(this.es.get('lsValues') instanceof Backbone.Collection).toBeTruthy();
-        });
-      });
-      return describe("When loaded from state json", function() {
-        beforeEach(function() {
-          return this.es = new ExperimentState(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0]);
-        });
-        return describe("after initial load", function() {
-          it("state should have kind ", function() {
-            return expect(this.es.get('lsKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind);
-          });
-          it("state should have values", function() {
-            return expect(this.es.get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
-          });
-          it("state should have populated value", function() {
-            return expect(this.es.get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
-          });
-          it("should return requested value", function() {
-            var values;
-
-            console.log(this.es);
-            values = this.es.getValuesByTypeAndKind("stringValue", "notebook");
-            expect(values.length).toEqual(1);
-            return expect(values[0].get('stringValue')).toEqual("911");
-          });
-          return it("should trigger change when value changed in state", function() {
-            runs(function() {
-              var _this = this;
-
-              this.stateChanged = false;
-              this.es.on('change', function() {
-                return _this.stateChanged = true;
-              });
-              return this.es.get('lsValues').at(0).set({
-                valueKind: 'newkind'
-              });
-            });
-            waitsFor(function() {
-              return this.stateChanged;
-            }, 500);
-            return runs(function() {
-              return expect(this.stateChanged).toBeTruthy();
-            });
-          });
-        });
-      });
-    });
-    describe("Experiment State List model testing", function() {
-      beforeEach(function() {
-        return this.esl = new ExperimentStateList(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates);
-      });
-      describe("after initial load", function() {
-        it("Class should exist", function() {
-          return expect(this.esl).toBeDefined();
-        });
-        it("should have states ", function() {
-          return expect(this.esl.length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates.length);
-        });
-        it("first state should have kind ", function() {
-          return expect(this.esl.at(0).get('lsKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind);
-        });
-        it("states should have values", function() {
-          return expect(this.esl.at(0).get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
-        });
-        return it("first state should have populated value", function() {
-          return expect(this.esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
-        });
-      });
-      describe("Get states by type and kind", function() {
-        return it("should return requested state", function() {
-          var values;
-
-          values = this.esl.getStatesByTypeAndKind("metadata", "experiment metadata");
-          expect(values.length).toEqual(1);
-          return expect(values[0].get('lsTypeAndKind')).toEqual("metadata_experiment metadata");
-        });
-      });
-      return describe("Get value by type and kind", function() {
-        return it("should return requested value", function() {
-          var value;
-
-          value = this.esl.getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
-          return expect(value.get('stringValue')).toEqual("911");
-        });
-      });
-    });
     describe("Experiment model testing", function() {
       describe("When loaded from new", function() {
         beforeEach(function() {
           return this.exp = new Experiment();
         });
         return describe("Defaults", function() {
+          it('Should have default type and kind', function() {
+            expect(this.exp.get('lsType')).toEqual("default");
+            return expect(this.exp.get('lsKind')).toEqual("default");
+          });
           it('Should have an empty label list', function() {
             expect(this.exp.get('lsLabels').length).toEqual(0);
             return expect(this.exp.get('lsLabels') instanceof LabelList).toBeTruthy();
           });
           it('Should have an empty state list', function() {
             expect(this.exp.get('lsStates').length).toEqual(0);
-            return expect(this.exp.get('lsStates') instanceof ExperimentStateList).toBeTruthy();
+            return expect(this.exp.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
             return expect(this.exp.get('recordedBy')).toEqual("");
@@ -155,39 +64,38 @@
           it("should have the analysisGroup ", function() {
             return expect(this.exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy();
           });
-          it("should have the analysisGroupStates ", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy();
+          it("should have the states ", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates') instanceof StateList).toBeTruthy();
           });
-          it("should have the analysisGroupStates stateKind ", function() {
-            console.log(this.exp.get('analysisGroups').at(0).get('analysisGroupStates'));
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateKind')).toEqual('Document for Batch');
+          it("should have the states lsKind ", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsKind')).toEqual('Document for Batch');
           });
-          it("should have the analysisGroupStates stateType", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateType')).toEqual('results');
+          it("should have the states lsType", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsType')).toEqual('results');
           });
-          it("should have the analysisGroupStates recordedBy", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('recordedBy')).toEqual('jmcneil');
+          it("should have the states recordedBy", function() {
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('recordedBy')).toEqual('jmcneil');
           });
           it("should have the AnalysisGroupValues ", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy();
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues') instanceof ValueList).toBeTruthy();
           });
           it("should have the AnalysisGroupValues array", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').length).toEqual(3);
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').length).toEqual(3);
           });
           it("should have the AnalysisGroupValue ", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0) instanceof AnalysisGroupValue).toBeTruthy();
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0) instanceof Value).toBeTruthy();
           });
           it("should have the AnalysisGroupValue valueKind ", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual("annotation");
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual("annotation");
           });
           it("should have the AnalysisGroupValue valueType", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueType')).toEqual("fileValue");
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('lsType')).toEqual("fileValue");
           });
           it("should have the AnalysisGroupValue value", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(1).get('analysisGroupValues').at(0).get('value')).toEqual("");
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('fileValue')).toEqual("exampleUploadedFile.txt");
           });
           it("should have the AnalysisGroupValue comment", function() {
-            return expect(this.exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('comments')).toEqual("ok");
+            return expect(this.exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('comments')).toEqual("ok");
           });
           it("should have the analysisGroup id ", function() {
             return expect(this.exp.get('analysisGroups').at(0).id).toEqual(64782);
@@ -202,8 +110,7 @@
             return expect(this.exp.get('lsLabels').length).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.lsLabels.length);
           });
           return it("should have labels", function() {
-            console.log(this.exp);
-            return expect(this.exp.get('lsLabels').at(0).get('labelKind')).toEqual("experiment name");
+            return expect(this.exp.get('lsLabels').at(0).get('lsKind')).toEqual("experiment name");
           });
         });
       });
@@ -232,7 +139,6 @@
             return expect(this.exp.get('lsLabels').length).toEqual(0);
           });
           return it("should have the states copied", function() {
-            console.log(this.exp);
             return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
           });
         });
@@ -381,7 +287,7 @@
         });
         it("should convert state array to state list", function() {
           return runs(function() {
-            expect(this.exp.get('lsStates') instanceof ExperimentStateList).toBeTruthy();
+            expect(this.exp.get('lsStates') instanceof StateList).toBeTruthy();
             return expect(this.exp.get('lsStates').length).toBeGreaterThan(0);
           });
         });
@@ -425,7 +331,15 @@
         });
         describe("populated fields", function() {
           it("should show the protocol code", function() {
-            return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
+            console.log(this.exp.get('protocol'));
+            waitsFor(function() {
+              console.log(this.ebc.$('.bv_protocolCode option').length);
+              return this.ebc.$('.bv_protocolCode option').length > 0;
+            }, 1000);
+            return runs(function() {
+              console.log("testing");
+              return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
+            });
           });
           it("should show the protocol name", function() {
             return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
@@ -492,7 +406,6 @@
           return expect(this.ebc.$('.bv_recordedDate').val()).toEqual("2013-7-7");
         });
         it("should fill the user field", function() {
-          console.log(this.ebc);
           return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("smeyer");
         });
         return it("should fill the code field", function() {

@@ -164,6 +164,8 @@
       UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(this, arguments);
       this.fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis";
       this.errorOwnerName = 'UploadAndRunPrimaryAnalsysisController';
+      this.allowedFileTypes = ['zip'];
+      UploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
       return this.$('.bv_moduleTitle').html("Upload Data and Analyze");
     };
 

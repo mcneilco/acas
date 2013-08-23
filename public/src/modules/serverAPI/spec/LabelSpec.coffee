@@ -13,8 +13,8 @@ describe "Label module testing", ->
 			it "Class should exist", ->
 				expect(@el).toBeDefined()
 			it "should have defaults", ->
-				expect(@el.get 'labelType').toEqual 'name'
-				expect(@el.get 'labelKind').toEqual ''
+				expect(@el.get 'lsType').toEqual 'name'
+				expect(@el.get 'lsKind').toEqual ''
 				expect(@el.get 'labelText').toEqual ''
 				expect(@el.get 'ignored').toEqual(false)
 				expect(@el.get 'preferred').toEqual(false)
@@ -83,3 +83,61 @@ describe "Label module testing", ->
 					expect(@ell.pickBestLabel().get('labelText')).toEqual "new best name"
 					expect(@ell.pickBestLabel().get('recordedBy')).toEqual "fmcneil"
 					expect(@ell.pickBestLabel().get('recordedDate')).toEqual 3362435677000
+
+	describe "State model testing", ->
+		describe "when created empty", ->
+			beforeEach ->
+				@es = new State()
+			it "Class should exist", ->
+				expect(@es).toBeDefined()
+			it "should have defaults", ->
+				expect(@es.get('lsValues') instanceof Backbone.Collection).toBeTruthy()
+		describe "When loaded from state json", ->
+			beforeEach ->
+				@es = new State window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0]
+			describe "after initial load", ->
+				it "state should have kind ", ->
+					expect(@es.get('lsKind')).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind
+				it "state should have values", ->
+					expect(@es.get('lsValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length
+				it "state should have populated value", ->
+					expect(@es.get('lsValues').at(0).get('lsKind')).toEqual "notebook page"
+				it "should return requested value", ->
+					values = @es.getValuesByTypeAndKind("stringValue", "notebook")
+					expect(values.length).toEqual 1
+					expect(values[0].get('stringValue')).toEqual "911"
+				it "should trigger change when value changed in state", ->
+					runs ->
+						@stateChanged = false
+						@es.on 'change', =>
+							@stateChanged = true
+						@es.get('lsValues').at(0).set(valueKind: 'newkind')
+					waitsFor ->
+						@stateChanged
+					, 500
+					runs ->
+						expect(@stateChanged).toBeTruthy()
+
+	describe "State List model testing", ->
+		beforeEach ->
+			@esl = new StateList window.experimentServiceTestJSON.fullExperimentFromServer.lsStates
+		describe "after initial load", ->
+			it "Class should exist", ->
+				expect(@esl).toBeDefined()
+			it "should have states ", ->
+				expect(@esl.length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates.length
+			it "first state should have kind ", ->
+				expect(@esl.at(0).get('lsKind')).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind
+			it "states should have values", ->
+				expect(@esl.at(0).get('lsValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length
+			it "first state should have populated value", ->
+				expect(@esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual "notebook page"
+		describe "Get states by type and kind", ->
+			it "should return requested state", ->
+				values = @esl.getStatesByTypeAndKind "metadata", "experiment metadata"
+				expect(values.length).toEqual 1
+				expect(values[0].get('lsTypeAndKind')).toEqual "metadata_experiment metadata"
+		describe "Get value by type and kind", ->
+			it "should return requested value", ->
+				value = @esl.getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
+				expect(value.get('stringValue')).toEqual "911"

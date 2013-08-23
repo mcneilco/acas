@@ -1,5 +1,5 @@
 (function() {
-  var _ref, _ref1,
+  var _ref, _ref1, _ref2, _ref3, _ref4, _ref5,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -12,8 +12,8 @@
     }
 
     Label.prototype.defaults = {
-      labelType: "name",
-      labelKind: '',
+      lsType: "name",
+      lsKind: '',
       labelText: '',
       ignored: false,
       preferred: false,
@@ -45,7 +45,7 @@
 
     LabelList.prototype.getNames = function() {
       return _.filter(this.getCurrent(), function(lab) {
-        return lab.get('labelType') === "name";
+        return lab.get('lsType') === "name";
       });
     };
 
@@ -104,7 +104,7 @@
       var bestLabel, preferredNames;
 
       preferredNames = _.filter(this.getCurrent(), function(lab) {
-        return lab.get('preferred') && (lab.get('labelType') === "name");
+        return lab.get('preferred') && (lab.get('lsType') === "name");
       });
       bestLabel = _.max(preferredNames, function(lab) {
         var rd;
@@ -123,7 +123,7 @@
       var currentName;
 
       label.set({
-        labelType: 'name',
+        lsType: 'name',
         preferred: true,
         ignored: false
       });
@@ -147,6 +147,117 @@
     };
 
     return LabelList;
+
+  })(Backbone.Collection);
+
+  window.Value = (function(_super) {
+    __extends(Value, _super);
+
+    function Value() {
+      _ref2 = Value.__super__.constructor.apply(this, arguments);
+      return _ref2;
+    }
+
+    return Value;
+
+  })(Backbone.Model);
+
+  window.ValueList = (function(_super) {
+    __extends(ValueList, _super);
+
+    function ValueList() {
+      _ref3 = ValueList.__super__.constructor.apply(this, arguments);
+      return _ref3;
+    }
+
+    ValueList.prototype.model = Value;
+
+    return ValueList;
+
+  })(Backbone.Collection);
+
+  window.State = (function(_super) {
+    __extends(State, _super);
+
+    function State() {
+      _ref4 = State.__super__.constructor.apply(this, arguments);
+      return _ref4;
+    }
+
+    State.prototype.defaults = {
+      lsValues: new ValueList()
+    };
+
+    State.prototype.initialize = function() {
+      var _this = this;
+
+      if (this.has('lsValues')) {
+        if (!(this.get('lsValues') instanceof ValueList)) {
+          this.set({
+            lsValues: new ValueList(this.get('lsValues'))
+          });
+        }
+      }
+      return this.get('lsValues').on('change', function() {
+        return _this.trigger('change');
+      });
+    };
+
+    State.prototype.parse = function(resp) {
+      var _this = this;
+
+      if (resp.lsValues != null) {
+        if (!(resp.lsValues instanceof ValueList)) {
+          resp.lsValues = new ValueList(resp.lsValues);
+          resp.lsValues.on('change', function() {
+            return _this.trigger('change');
+          });
+        }
+      }
+      return resp;
+    };
+
+    State.prototype.getValuesByTypeAndKind = function(type, kind) {
+      return this.get('lsValues').filter(function(value) {
+        return (!value.get('ignored')) && (value.get('lsType') === type) && (value.get('lsKind') === kind);
+      });
+    };
+
+    return State;
+
+  })(Backbone.Model);
+
+  window.StateList = (function(_super) {
+    __extends(StateList, _super);
+
+    function StateList() {
+      _ref5 = StateList.__super__.constructor.apply(this, arguments);
+      return _ref5;
+    }
+
+    StateList.prototype.model = State;
+
+    StateList.prototype.getStatesByTypeAndKind = function(type, kind) {
+      return this.filter(function(state) {
+        return (!state.get('ignored')) && (state.get('lsType') === type) && (state.get('lsKind') === kind);
+      });
+    };
+
+    StateList.prototype.getStateValueByTypeAndKind = function(stype, skind, vtype, vkind) {
+      var states, value, values;
+
+      value = null;
+      states = this.getStatesByTypeAndKind(stype, skind);
+      if (states.length > 0) {
+        values = states[0].getValuesByTypeAndKind(vtype, vkind);
+        if (values.length > 0) {
+          value = values[0];
+        }
+      }
+      return value;
+    };
+
+    return StateList;
 
   })(Backbone.Collection);
 

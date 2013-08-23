@@ -3,10 +3,10 @@
 		id: 43
 		ignored: false
 		imageFile: null
-		labelKind: "experiment name"
+		lsKind: "experiment name"
 		labelText: "FLIPR target A biochemical"
-		labelType: "name"
-		labelTypeAndKind: "name_experiment name"
+		lsType: "name"
+		lsTypeAndKind: "name_experiment name"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 47
@@ -22,10 +22,10 @@
 		id: 42
 		ignored: true
 		imageFile: null
-		labelKind: "experiment name"
+		lsKind: "experiment name"
 		labelText: "FLIPR target A biochemical old"
-		labelType: "name"
-		labelTypeAndKind: "name_experiment name"
+		lsType: "name"
+		lsTypeAndKind: "name_experiment name"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 48
@@ -41,10 +41,10 @@
 		id: 45
 		ignored: false
 		imageFile: null
-		labelKind: "experiment full name"
+		lsKind: "experiment full name"
 		labelText: "FLIPR target A biochemical with additional name awesomness"
-		labelType: "name"
-		labelTypeAndKind: "name_experiment full name"
+		lsType: "name"
+		lsTypeAndKind: "name_experiment full name"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 49
@@ -60,10 +60,10 @@
 		id: 49
 		ignored: false
 		imageFile: null
-		labelKind: ""
+		lsKind: ""
 		labelText: "AAABBD13343434"
-		labelType: "barcode"
-		labelTypeAndKind: "barcode_"
+		lsType: "barcode"
+		lsTypeAndKind: "barcode_"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 50
@@ -81,10 +81,10 @@
 		id: 43
 		ignored: false
 		imageFile: null
-		labelKind: "experiment name"
+		lsKind: "experiment name"
 		labelText: "FLIPR target A biochemical"
-		labelType: "name"
-		labelTypeAndKind: "name_experiment name"
+		lsType: "name"
+		lsTypeAndKind: "name_experiment name"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 47
@@ -100,10 +100,10 @@
 		id: 42
 		ignored: true
 		imageFile: null
-		labelKind: "experiment name"
+		lsKind: "experiment name"
 		labelText: "FLIPR target A biochemical old"
-		labelType: "name"
-		labelTypeAndKind: "name_experiment name"
+		lsType: "name"
+		lsTypeAndKind: "name_experiment name"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 48
@@ -119,10 +119,10 @@
 		id: 45
 		ignored: false
 		imageFile: null
-		labelKind: "experiment full name"
+		lsKind: "experiment full name"
 		labelText: "FLIPR target A biochemical with additional name awesomness"
-		labelType: "name"
-		labelTypeAndKind: "name_experiment full name"
+		lsType: "name"
+		lsTypeAndKind: "name_experiment full name"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 49
@@ -138,10 +138,10 @@
 		id: 49
 		ignored: false
 		imageFile: null
-		labelKind: ""
+		lsKind: ""
 		labelText: "AAABBD13343434"
-		labelType: "barcode"
-		labelTypeAndKind: "barcode_"
+		lsType: "barcode"
+		lsTypeAndKind: "barcode_"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 50
@@ -159,10 +159,10 @@
 		id: 45
 		ignored: false
 		imageFile: null
-		labelKind: "experiment full name"
+		lsKind: "experiment full name"
 		labelText: "FLIPR target A biochemical with additional name awesomness"
-		labelType: "barcode"
-		labelTypeAndKind: "name_experiment full name"
+		lsType: "barcode"
+		lsTypeAndKind: "name_experiment full name"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 49
@@ -178,10 +178,10 @@
 		id: 49
 		ignored: false
 		imageFile: null
-		labelKind: ""
+		lsKind: ""
 		labelText: "AAABBD13343434"
-		labelType: "barcode"
-		labelTypeAndKind: "barcode_"
+		lsType: "barcode"
+		lsTypeAndKind: "barcode_"
 		lsTransaction:
 			comments: "experiment 502 transactions"
 			id: 50
@@ -225,10 +225,10 @@
 		lsLabels: [
 			ignored: false
 			imageFile: null
-			labelKind: "experiment name"
+			lsKind: "experiment name"
 			labelText: "FLIPR target A biochemical"
-			labelType: "name"
-			labelTypeAndKind: "name_experiment name"
+			lsType: "name"
+			lsTypeAndKind: "name_experiment name"
 			modifiedDate: null
 			physicallyLabled: false
 			preferred: true
@@ -1182,10 +1182,10 @@
 			id: 31876
 			ignored: false
 			imageFile: null
-			labelKind: "experiment name"
+			lsKind: "experiment name"
 			labelText: "EXPT-00000221"
-			labelType: "name"
-			labelTypeAndKind: "name_experiment name"
+			lsType: "name"
+			lsTypeAndKind: "name_experiment name"
 			lsTransaction:
 				comments: "docForBatches upload"
 				id: 423
@@ -1234,9 +1234,9 @@
 		shortDescription: "test description"
 		version: 0
 		analysisGroups: [
-			analysisGroupLabels: []
-			analysisGroupStates: [
-				analysisGroupValues: [
+			lsLabels: []
+			lsStates: [
+				lsValues: [
 					clobValue: null
 					codeValue: null
 					comments: "ok"
@@ -1255,10 +1255,10 @@
 					uncertainty: null
 					uncertaintyType: null
 					urlValue: null
-					valueKind: "annotation"
+					lsKind: "annotation"
 					valueOperator: null
-					valueType: "fileValue"
-					valueTypeAndKind: "fileValue_annotation"
+					lsType: "fileValue"
+					lsTypeAndKind: "fileValue_annotation"
 					valueUnit: null
 					version: 0
 				,
@@ -1280,10 +1280,10 @@
 					uncertainty: null
 					uncertaintyType: null
 					urlValue: null
-					valueKind: "batch code"
+					lsKind: "batch code"
 					valueOperator: null
-					valueType: "codeValue"
-					valueTypeAndKind: "codeValue_batch code"
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_batch code"
 					valueUnit: null
 					version: 0
 				,
@@ -1305,10 +1305,10 @@
 					uncertainty: null
 					uncertaintyType: null
 					urlValue: null
-					valueKind: "document kind"
+					lsKind: "document kind"
 					valueOperator: null
-					valueType: "stringValue"
-					valueTypeAndKind: "stringValue_document kind"
+					lsType: "stringValue"
+					lsTypeAndKind: "stringValue_document kind"
 					valueUnit: null
 					version: 0
 				]
@@ -1330,7 +1330,7 @@
 				stateTypeAndKind: "results_Document for Batch"
 				version: 0
 			,
-				analysisGroupValues: [
+				lsValues: [
 					clobValue: null
 					codeValue: null
 					comments: null
@@ -1349,10 +1349,10 @@
 					uncertainty: null
 					uncertaintyType: null
 					urlValue: null
-					valueKind: "document kind"
+					lsKind: "document kind"
 					valueOperator: null
-					valueType: "stringValue"
-					valueTypeAndKind: "stringValue_document kind"
+					lsType: "stringValue"
+					lsTypeAndKind: "stringValue_document kind"
 					valueUnit: null
 					version: 0
 				,
@@ -1374,10 +1374,10 @@
 					uncertainty: null
 					uncertaintyType: null
 					urlValue: null
-					valueKind: "annotation"
+					lsKind: "annotation"
 					valueOperator: null
-					valueType: "fileValue"
-					valueTypeAndKind: "fileValue_annotation"
+					lsType: "fileValue"
+					lsTypeAndKind: "fileValue_annotation"
 					valueUnit: null
 					version: 0
 				,
@@ -1399,10 +1399,10 @@
 					uncertainty: null
 					uncertaintyType: null
 					urlValue: null
-					valueKind: "batch code"
+					lsKind: "batch code"
 					valueOperator: null
-					valueType: "codeValue"
-					valueTypeAndKind: "codeValue_batch code"
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_batch code"
 					valueUnit: null
 					version: 0
 				]
@@ -1424,7 +1424,7 @@
 				stateTypeAndKind: "results_Document for Batch"
 				version: 0
 			,
-				analysisGroupValues: [
+				lsValues: [
 					clobValue: null
 					codeValue: "CMPD_1113"
 					comments: null
@@ -1443,10 +1443,10 @@
 					uncertainty: null
 					uncertaintyType: null
 					urlValue: null
-					valueKind: "batch code"
+					lsKind: "batch code"
 					valueOperator: null
-					valueType: "codeValue"
-					valueTypeAndKind: "codeValue_batch code"
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_batch code"
 					valueUnit: null
 					version: 0
 				,
@@ -1468,10 +1468,10 @@
 					uncertainty: null
 					uncertaintyType: null
 					urlValue: null
-					valueKind: "document kind"
+					lsKind: "document kind"
 					valueOperator: null
-					valueType: "stringValue"
-					valueTypeAndKind: "stringValue_document kind"
+					lsType: "stringValue"
+					lsTypeAndKind: "stringValue_document kind"
 					valueUnit: null
 					version: 0
 				,
@@ -1493,10 +1493,10 @@
 					uncertainty: null
 					uncertaintyType: null
 					urlValue: null
-					valueKind: "annotation"
+					lsKind: "annotation"
 					valueOperator: null
-					valueType: "fileValue"
-					valueTypeAndKind: "fileValue_annotation"
+					lsType: "fileValue"
+					lsTypeAndKind: "fileValue_annotation"
 					valueUnit: null
 					version: 0
 				]

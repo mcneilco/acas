@@ -6,77 +6,20 @@ afterEach ->
 	$("body").append $(@fixture)
 
 describe "Experiment module testing", ->
-
-	describe "Experiment State model testing", ->
-		describe "when created empty", ->
-			beforeEach ->
-				@es = new ExperimentState()
-			it "Class should exist", ->
-				expect(@es).toBeDefined()
-			it "should have defaults", ->
-				expect(@es.get('lsValues') instanceof Backbone.Collection).toBeTruthy()
-		describe "When loaded from state json", ->
-			beforeEach ->
-				@es = new ExperimentState window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0]
-			describe "after initial load", ->
-				it "state should have kind ", ->
-						expect(@es.get('lsKind')).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind
-				it "state should have values", ->
-					expect(@es.get('lsValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length
-				it "state should have populated value", ->
-					expect(@es.get('lsValues').at(0).get('lsKind')).toEqual "notebook page"
-				it "should return requested value", ->
-					console.log @es
-					values = @es.getValuesByTypeAndKind("stringValue", "notebook")
-					expect(values.length).toEqual 1
-					expect(values[0].get('stringValue')).toEqual "911"
-				it "should trigger change when value changed in state", ->
-					runs ->
-						@stateChanged = false
-						@es.on 'change', =>
-							@stateChanged = true
-						@es.get('lsValues').at(0).set(valueKind: 'newkind')
-					waitsFor ->
-						@stateChanged
-					, 500
-					runs ->
-						expect(@stateChanged).toBeTruthy()
-
-	describe "Experiment State List model testing", ->
-		beforeEach ->
-			@esl = new ExperimentStateList window.experimentServiceTestJSON.fullExperimentFromServer.lsStates
-		describe "after initial load", ->
-			it "Class should exist", ->
-				expect(@esl).toBeDefined()
-			it "should have states ", ->
-				expect(@esl.length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates.length
-			it "first state should have kind ", ->
-				expect(@esl.at(0).get('lsKind')).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind
-			it "states should have values", ->
-				expect(@esl.at(0).get('lsValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length
-			it "first state should have populated value", ->
-				expect(@esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual "notebook page"
-		describe "Get states by type and kind", ->
-			it "should return requested state", ->
-				values = @esl.getStatesByTypeAndKind "metadata", "experiment metadata"
-				expect(values.length).toEqual 1
-				expect(values[0].get('lsTypeAndKind')).toEqual "metadata_experiment metadata"
-		describe "Get value by type and kind", ->
-			it "should return requested value", ->
-				value = @esl.getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
-				expect(value.get('stringValue')).toEqual "911"
-
 	describe "Experiment model testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
 				@exp = new Experiment()
 			describe "Defaults", ->
+				it 'Should have default type and kind', ->
+					expect(@exp.get('lsType')).toEqual "default"
+					expect(@exp.get('lsKind')).toEqual "default"
 				it 'Should have an empty label list', ->
 					expect(@exp.get('lsLabels').length).toEqual 0
 					expect(@exp.get('lsLabels') instanceof LabelList).toBeTruthy()
 				it 'Should have an empty state list', ->
 					expect(@exp.get('lsStates').length).toEqual 0
-					expect(@exp.get('lsStates') instanceof ExperimentStateList).toBeTruthy()
+					expect(@exp.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
 					expect(@exp.get('recordedBy')).toEqual ""
 				it 'Should have an empty recordedDate', ->
@@ -101,31 +44,30 @@ describe "Experiment module testing", ->
 					expect(@exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy()
 				it "should have the analysisGroup ", ->
 					expect(@exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy()
-				it "should have the analysisGroupStates ", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates') instanceof AnalysisGroupStateList).toBeTruthy()
+				it "should have the states ", ->
+					expect(@exp.get('analysisGroups').at(0).get('lsStates') instanceof StateList).toBeTruthy()
 
-				it "should have the analysisGroupStates stateKind ", ->
-					console.log @exp.get('analysisGroups').at(0).get('analysisGroupStates')
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateKind')).toEqual 'Document for Batch'
-				it "should have the analysisGroupStates stateType", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('stateType')).toEqual 'results'
-				it "should have the analysisGroupStates recordedBy", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('recordedBy')).toEqual 'jmcneil'
+				it "should have the states lsKind ", ->
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsKind')).toEqual 'Document for Batch'
+				it "should have the states lsType", ->
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsType')).toEqual 'results'
+				it "should have the states recordedBy", ->
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('recordedBy')).toEqual 'jmcneil'
 
 				it "should have the AnalysisGroupValues ", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues') instanceof AnalysisGroupValueList).toBeTruthy()
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues') instanceof ValueList).toBeTruthy()
 				it "should have the AnalysisGroupValues array", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').length).toEqual 3
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').length).toEqual 3
 				it "should have the AnalysisGroupValue ", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0) instanceof AnalysisGroupValue).toBeTruthy()
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0) instanceof Value).toBeTruthy()
 				it "should have the AnalysisGroupValue valueKind ", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueKind')).toEqual "annotation"
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "annotation"
 				it "should have the AnalysisGroupValue valueType", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('valueType')).toEqual "fileValue"
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('lsType')).toEqual "fileValue"
 				it "should have the AnalysisGroupValue value", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(1).get('analysisGroupValues').at(0).get('value')).toEqual ""
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('fileValue')).toEqual "exampleUploadedFile.txt"
 				it "should have the AnalysisGroupValue comment", ->
-					expect(@exp.get('analysisGroups').at(0).get('analysisGroupStates').at(0).get('analysisGroupValues').at(0).get('comments')).toEqual "ok"
+					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues').at(0).get('comments')).toEqual "ok"
 				it "should have the analysisGroup id ", ->
 					expect(@exp.get('analysisGroups').at(0).id ).toEqual 64782
 				it "should have a code ", ->
@@ -135,8 +77,7 @@ describe "Experiment module testing", ->
 				it "should have labels", ->
 					expect(@exp.get('lsLabels').length).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.lsLabels.length
 				it "should have labels", ->
-					console.log @exp
-					expect(@exp.get('lsLabels').at(0).get('labelKind')).toEqual "experiment name"
+					expect(@exp.get('lsLabels').at(0).get('lsKind')).toEqual "experiment name"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -155,7 +96,6 @@ describe "Experiment module testing", ->
 				it "should not have the labels copied", ->
 					expect(@exp.get('lsLabels').length).toEqual 0
 				it "should have the states copied", ->
-					console.log @exp
 					expect(@exp.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
@@ -254,7 +194,7 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsLabels').length).toBeGreaterThan 0
 			it "should convert state array to state list", ->
 				runs ->
-					expect(@exp.get('lsStates')  instanceof ExperimentStateList).toBeTruthy()
+					expect(@exp.get('lsStates')  instanceof StateList).toBeTruthy()
 					expect(@exp.get('lsStates').length).toBeGreaterThan 0
 			it "should convert protocol has to Protocol", ->
 				runs ->
@@ -287,7 +227,14 @@ describe "Experiment module testing", ->
 					expect(@copied).toBeTruthy()
 			describe "populated fields", ->
 				it "should show the protocol code", ->
-					expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
+					console.log @exp.get('protocol')
+					waitsFor ->
+						console.log @ebc.$('.bv_protocolCode option').length
+						@ebc.$('.bv_protocolCode option').length > 0
+					, 1000
+					runs ->
+						console.log "testing"
+						expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
 				it "should show the protocol name", ->
 					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
 				it "should fill the short description field", ->
@@ -344,7 +291,6 @@ describe "Experiment module testing", ->
 			it "should fill the date field", ->
 				expect(@ebc.$('.bv_recordedDate').val()).toEqual "2013-7-7"
 			it "should fill the user field", ->
-				console.log @ebc
 				expect(@ebc.$('.bv_recordedBy').val()).toEqual "smeyer"
 			it "should fill the code field", ->
 				expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"

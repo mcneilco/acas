@@ -3,6 +3,7 @@
 
   exports.preferredBatchId = function(req, resp) {
     var config, each, request, requests, _;
+
     _ = require("underscore");
     each = require("each");
     request = require('request');
@@ -11,6 +12,7 @@
     return each(requests).parallel(1).on("item", function(batchName, next) {
       var baseurl,
         _this = this;
+
       if (global.specRunnerTestmode) {
         console.log("running fake batch check");
         checkBatch_TestMode(batchName);
@@ -62,6 +64,7 @@
       });
     }).on("end", function() {
       var answer;
+
       answer = {
         error: false,
         errorMessages: [],
@@ -74,6 +77,7 @@
 
   checkBatch_TestMode = function(batchName) {
     var idComps, pref, respId;
+
     idComps = batchName.requestName.split("_");
     pref = idComps[0];
     respId = "";

@@ -54,10 +54,10 @@
 			"id":35715,
 			"ignored":false,
 			"imageFile":null,
-			"labelKind":"experiment name",
+			"lsKind":"experiment name",
 			"labelText":"EXPT-00000276",
-			"labelType":"name",
-			"labelTypeAndKind":"name_experiment name",
+			"lsType":"name",
+			"lsTypeAndKind":"name_experiment name",
 			"lsTransaction":{
 				"comments":"docForBatches upload",
 				"id":554,

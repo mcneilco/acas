@@ -96,6 +96,8 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(@, arguments)
 		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
 		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
+		@allowedFileTypes = ['zip']
+		super()
 		@$('.bv_moduleTitle').html("Upload Data and Analyze")
 
 	setUser: (user) ->
@@ -105,4 +107,3 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@additionalData =
 			primaryAnalysisExperimentId: expId
 			testMode: false
-

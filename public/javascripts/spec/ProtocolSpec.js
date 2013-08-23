@@ -9,76 +9,6 @@
   });
 
   describe("Protocol module testing", function() {
-    describe("Protocol State model testing", function() {
-      describe("Wehn new", function() {
-        beforeEach(function() {
-          return this.ps = new ProtocolState();
-        });
-        return it("should have protocol value list", function() {
-          return expect(this.ps.get('lsValues') instanceof ProtocolValueList).toBeTruthy();
-        });
-      });
-      return describe("When loaded from existing", function() {
-        beforeEach(function() {
-          return this.ps = new ProtocolState(window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0]);
-        });
-        return describe("after initial load", function() {
-          it("Class should exist", function() {
-            return expect(this.ps).toBeDefined();
-          });
-          it("state should have kind ", function() {
-            return expect(this.ps.get('lsKind')).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsKind);
-          });
-          it("state should have values", function() {
-            return expect(this.ps.get('lsValues').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length);
-          });
-          it("state should have populated value", function() {
-            return expect(this.ps.get('lsValues').at(0).get('lsKind')).toEqual("control type");
-          });
-          return it("should trigger change when value changed in state", function() {
-            runs(function() {
-              var _this = this;
-
-              this.stateChanged = false;
-              this.ps.on('change', function() {
-                return _this.stateChanged = true;
-              });
-              return this.ps.get('lsValues').at(0).set({
-                lsKind: 'newkind'
-              });
-            });
-            waitsFor(function() {
-              return this.stateChanged;
-            }, 500);
-            return runs(function() {
-              return expect(this.stateChanged).toBeTruthy();
-            });
-          });
-        });
-      });
-    });
-    describe("Protocol State List model testing", function() {
-      beforeEach(function() {
-        return this.psl = new ProtocolStateList(window.protocolServiceTestJSON.fullSavedProtocol.lsStates);
-      });
-      return describe("after initial load", function() {
-        it("Class should exist", function() {
-          return expect(this.psl).toBeDefined();
-        });
-        it("should have states ", function() {
-          return expect(this.psl.length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
-        });
-        it("first state should have kind ", function() {
-          return expect(this.psl.at(0).get('lsKind')).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsKind);
-        });
-        it("states should have values", function() {
-          return expect(this.psl.at(0).get('lsValues').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates[0].lsValues.length);
-        });
-        return it("first state should have populated value", function() {
-          return expect(this.psl.at(0).get('lsValues').at(0).get('lsKind')).toEqual("control type");
-        });
-      });
-    });
     return describe("Protocol model testing", function() {
       describe("When loaded from new", function() {
         beforeEach(function() {
@@ -205,7 +135,7 @@
         });
         return it("should convert state array to state list", function() {
           return runs(function() {
-            expect(this.prot.get('lsStates') instanceof ProtocolStateList).toBeTruthy();
+            expect(this.prot.get('lsStates') instanceof StateList).toBeTruthy();
             return expect(this.prot.get('lsStates').length).toBeGreaterThan(0);
           });
         });

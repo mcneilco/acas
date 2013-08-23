@@ -1,138 +1,28 @@
 (function() {
-  var _ref, _ref1, _ref2, _ref3, _ref4, _ref5,
+  var _ref, _ref1,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-  window.ExperimentValue = (function(_super) {
-    __extends(ExperimentValue, _super);
-
-    function ExperimentValue() {
-      _ref = ExperimentValue.__super__.constructor.apply(this, arguments);
-      return _ref;
-    }
-
-    return ExperimentValue;
-
-  })(Backbone.Model);
-
-  window.ExperimentValueList = (function(_super) {
-    __extends(ExperimentValueList, _super);
-
-    function ExperimentValueList() {
-      _ref1 = ExperimentValueList.__super__.constructor.apply(this, arguments);
-      return _ref1;
-    }
-
-    ExperimentValueList.prototype.model = ExperimentValue;
-
-    return ExperimentValueList;
-
-  })(Backbone.Collection);
-
-  window.ExperimentState = (function(_super) {
-    __extends(ExperimentState, _super);
-
-    function ExperimentState() {
-      _ref2 = ExperimentState.__super__.constructor.apply(this, arguments);
-      return _ref2;
-    }
-
-    ExperimentState.prototype.defaults = {
-      lsValues: new ExperimentValueList()
-    };
-
-    ExperimentState.prototype.initialize = function() {
-      var _this = this;
-
-      if (this.has('lsValues')) {
-        if (!(this.get('lsValues') instanceof ExperimentValueList)) {
-          this.set({
-            lsValues: new ExperimentValueList(this.get('lsValues'))
-          });
-        }
-      }
-      return this.get('lsValues').on('change', function() {
-        return _this.trigger('change');
-      });
-    };
-
-    ExperimentState.prototype.parse = function(resp) {
-      var _this = this;
-
-      if (resp.lsValues != null) {
-        if (!(resp.lsValues instanceof ExperimentValueList)) {
-          resp.lsValues = new ExperimentValueList(resp.lsValues);
-          resp.lsValues.on('change', function() {
-            return _this.trigger('change');
-          });
-        }
-      }
-      return resp;
-    };
-
-    ExperimentState.prototype.getValuesByTypeAndKind = function(type, kind) {
-      return this.get('lsValues').filter(function(value) {
-        return (!value.get('ignored')) && (value.get('lsType') === type) && (value.get('lsKind') === kind);
-      });
-    };
-
-    return ExperimentState;
-
-  })(Backbone.Model);
-
-  window.ExperimentStateList = (function(_super) {
-    __extends(ExperimentStateList, _super);
-
-    function ExperimentStateList() {
-      _ref3 = ExperimentStateList.__super__.constructor.apply(this, arguments);
-      return _ref3;
-    }
-
-    ExperimentStateList.prototype.model = ExperimentState;
-
-    ExperimentStateList.prototype.getStatesByTypeAndKind = function(type, kind) {
-      return this.filter(function(state) {
-        return (!state.get('ignored')) && (state.get('lsType') === type) && (state.get('lsKind') === kind);
-      });
-    };
-
-    ExperimentStateList.prototype.getStateValueByTypeAndKind = function(stype, skind, vtype, vkind) {
-      var states, value, values;
-
-      value = null;
-      states = this.getStatesByTypeAndKind(stype, skind);
-      if (states.length > 0) {
-        values = states[0].getValuesByTypeAndKind(vtype, vkind);
-        if (values.length > 0) {
-          value = values[0];
-        }
-      }
-      return value;
-    };
-
-    return ExperimentStateList;
-
-  })(Backbone.Collection);
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.Experiment = (function(_super) {
     __extends(Experiment, _super);
 
     function Experiment() {
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
-      this.parse = __bind(this.parse, this);      _ref4 = Experiment.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      this.parse = __bind(this.parse, this);      _ref = Experiment.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     Experiment.prototype.urlRoot = "/api/experiments";
 
     Experiment.prototype.defaults = {
-      kind: "",
+      lsType: "default",
+      lsKind: "default",
       recordedBy: "",
       recordedDate: null,
       shortDescription: "",
       lsLabels: new LabelList(),
-      lsStates: new ExperimentStateList(),
+      lsStates: new StateList(),
       protocol: null,
       analysisGroups: new AnalysisGroupList()
     };
@@ -154,8 +44,8 @@
         }
       }
       if (resp.lsStates != null) {
-        if (!(resp.lsStates instanceof ExperimentStateList)) {
-          resp.lsStates = new ExperimentStateList(resp.lsStates);
+        if (!(resp.lsStates instanceof StateList)) {
+          resp.lsStates = new StateList(resp.lsStates);
           resp.lsStates.on('change', function() {
             return _this.trigger('change');
           });
@@ -183,9 +73,9 @@
         }
       }
       if (this.has('lsStates')) {
-        if (!(this.get('lsStates') instanceof ExperimentStateList)) {
+        if (!(this.get('lsStates') instanceof StateList)) {
           this.set({
-            lsStates: new ExperimentStateList(this.get('lsStates'))
+            lsStates: new StateList(this.get('lsStates'))
           });
         }
       }
@@ -219,21 +109,21 @@
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
       var estates, pstates;
 
-      estates = new ExperimentStateList();
+      estates = new StateList();
       pstates = protocol.get('lsStates');
       pstates.each(function(st) {
         var estate, evals, svals;
 
-        estate = new ExperimentState(_.clone(st.attributes));
+        estate = new State(_.clone(st.attributes));
         estate.unset('id');
         estate.unset('lsTransaction');
         estate.unset('lsValues');
-        evals = new ExperimentValueList();
+        evals = new ValueList();
         svals = st.get('lsValues');
         svals.each(function(sv) {
           var evalue;
 
-          evalue = new ProtocolValue(sv.attributes);
+          evalue = new Value(sv.attributes);
           evalue.unset('id');
           evalue.unset('lsTransaction');
           return evals.add(evalue);
@@ -305,8 +195,8 @@
       this.handleDescriptionChanged = __bind(this.handleDescriptionChanged, this);
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
       this.handleRecordedByChanged = __bind(this.handleRecordedByChanged, this);
-      this.render = __bind(this.render, this);      _ref5 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
-      return _ref5;
+      this.render = __bind(this.render, this);      _ref1 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     ExperimentBaseController.prototype.template = _.template($("#ExperimentBaseView").html());
@@ -325,16 +215,15 @@
     ExperimentBaseController.prototype.initialize = function() {
       this.model.on('sync', this.render);
       this.errorOwnerName = 'ExperimentBaseController';
-      return this.setBindings();
+      this.setBindings();
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      return this.setupProtocolSelect();
     };
 
     ExperimentBaseController.prototype.render = function() {
       var bestName, date;
 
-      console.log(this.model);
-      $(this.el).empty();
-      $(this.el).html(this.template());
-      this.setupProtocolSelect();
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
@@ -359,6 +248,13 @@
     };
 
     ExperimentBaseController.prototype.setupProtocolSelect = function() {
+      var protocolCode;
+
+      if (this.model.get('protocol') !== null) {
+        protocolCode = this.model.get('protocol').get('codeName');
+      } else {
+        protocolCode = "unassigned";
+      }
       this.protocolList = new PickListList();
       this.protocolList.url = "api/protocolCodes/filter/FLIPR";
       return this.protocolListController = new PickListSelectController({
@@ -368,7 +264,7 @@
           code: "unassigned",
           name: "Select Protocol"
         }),
-        selectedCode: "unassigned"
+        selectedCode: protocolCode
       });
     };
 
