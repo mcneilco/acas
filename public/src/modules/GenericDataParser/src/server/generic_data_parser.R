@@ -1765,12 +1765,11 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
       } else {
         selectedRowsConc <- analysisGroupID == calculatedResults$analysisGroupID & concentration == calculatedResults$Conc
       }
-      
-      for (time in unique(calculatedResults$time[selectedRowsConc])) {
-        if(is.na(concentration)) {
+      for (timePoint in unique(calculatedResults$time[selectedRowsConc])) {
+        if(is.na(timePoint)) {
           selectedRows <- selectedRowsConc & is.na(calculatedResults$time)
         } else {
-          selectedRows <- selectedRowsConc & time == calculatedResults$time
+          selectedRows <- selectedRowsConc & timePoint == calculatedResults$time
         }
         analysisGroupValues <- list()
         for (i in which(selectedRows)) {
@@ -1806,7 +1805,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
                                                                                  lsTransaction = lsTransaction)
         
         # Adds a value for the concentration if there is one
-        if (!is.na(calculatedResults$Conc[i])) {
+        if (!is.na(concentration)) {
           analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
                                                                                    lsType = "numericValue",
                                                                                    lsKind = "tested concentration",
@@ -1817,7 +1816,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
         }
         
         # Adds a value for the time if there is one
-        if (!is.na(calculatedResults$time[i])) {
+        if (!is.na(timePoint)) {
           analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
             recordedBy = recordedBy,
             lsType = "numericValue",
@@ -2421,7 +2420,7 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   tryCatch({
     locationValue <- createStateValue(
       recordedBy = recordedBy,
-      lsType = "stringValue",
+      lsType = "fileValue",
       lsKind = "source file",
       fileValue = serverFileLocation,
       lsState = locationState,
