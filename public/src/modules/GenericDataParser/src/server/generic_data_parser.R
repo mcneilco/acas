@@ -2162,9 +2162,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   }
   
   if (!is.null(configList$resultViewerProtocolPrefix)) {
-    viewerLinkText <- paste0(configList$resultViewerProtocolPrefix, validatedMetaData$"Protocol Name", 
-                         configList$resultViewerExperimentPrefix, validatedMetaData$"Experiment Name")
-    viewerLink <- paste0("<a href=", URLencode(viewerLinkText, reserved=TRUE), " target=\"_blank\">", viewerLinkText, "</a>")
+    viewerLinkText <- paste0(configList$resultViewerProtocolPrefix, URLencode(validatedMetaData$"Protocol Name", reserved=TRUE), 
+                         configList$resultViewerExperimentPrefix, URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
+    viewerLink <- paste0("<a href=", viewerLinkText, " target=\"_blank\">", viewerLinkText, "</a>")
   } else {
     viewerLink <- NULL
   }
