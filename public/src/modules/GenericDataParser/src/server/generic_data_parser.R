@@ -1422,10 +1422,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   
   # Reorganization to match formats
   names(subjectData) <- c("batchCode","valueKind","valueUnit","concentration","concentrationUnit", "time", "timeUnit", "numericValue","stringValue",
-                          "valueOperator","subjectID","dateValue","valueType", "resultTypeAndUnit","publicData", 
+                          "valueOperator","subjectID","dateValue","clobValue","valueType", "resultTypeAndUnit","publicData", 
                           "originalBatchCode", "treatmentGroupID")
   subjectData$publicData <- !subjectData$publicData
-  subjectData$valueType <- c("numericValue","stringValue","dateValue")[match(subjectData$valueType,c("Number","Text","Date"))]
+  subjectData$valueType <- c("numericValue","stringValue","dateValue", "clobValue")[match(subjectData$valueType,c("Number","Text","Date", "Clob"))]
   
   # Subjects
   subjectData$subjectCodeName <- subjectCodeNameList[subjectData$subjectID]
