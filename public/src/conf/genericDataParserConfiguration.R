@@ -1,6 +1,30 @@
 getFormatSettings <- function() {
   formatSettings <- list(
-    "Example" = list(
+    "Custom Example" = list(
+      annotationType = "",
+      hideAllData = FALSE,
+      extraHeaders = data.frame(),
+      sigFigs = 3,
+      stateGroups = list(list(entityKind = "analysis group",
+                              stateType = "data",
+                              stateKind = "calculated data",
+                              valueKinds = c("Dose", "Weight", "Force"),
+                              includesOthers = FALSE,
+                              includesCorpName = TRUE),
+                         list(entityKind = "subject",
+                              stateType = "data",
+                              stateKind = "treatment",
+                              valueKinds = c("Dose"),
+                              includesOthers = FALSE,
+                              includesCorpName = TRUE),
+                         list(entityKind = "subject",
+                              stateType = "data",
+                              stateKind = "raw data",
+                              valueKinds = c("Weight", "Force", "Favorite Color", "Mouse Name"),
+                              includesOthers = TRUE,
+                              includesCorpName = FALSE))
+    ),
+    "Example2" = list(
       annotationType = "s_general",
       hideAllData = FALSE,
       extraHeaders = data.frame(),

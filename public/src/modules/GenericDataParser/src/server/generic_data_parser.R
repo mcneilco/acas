@@ -2008,6 +2008,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   # lsTransactionComments input is currently unused
   
   require('gdata')
+  require('RCurl')
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
   
@@ -2160,6 +2161,13 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     }
   }
   
+  if (!is.null(configList$resultViewerProtocolPrefix)) {
+    viewerLinkText <- paste0(configList$resultViewerProtocolPrefix, validatedMetaData$"Protocol Name", 
+                         configList$resultViewerExperimentPrefix, validatedMetaData$"Experiment Name")
+    viewerLink <- paste0("<a href=", URLencode(viewerLinkText, reserved=TRUE), " target=\"_blank\">", viewerLinkText, "</a>")
+  } else {
+    viewerLink <- NULL
+  }
   if (rawOnlyFormat) {
     summaryInfo <- list(
       format = inputFormat,
@@ -2187,6 +2195,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     }
     if(!dryRun) {
       summaryInfo$info$"Experiment Code Name" <- experiment$codeName
+      if (!is.null(viewerLink)) {       
+        summaryInfo$info$"Result Link (there may be a delay before data is available)" <- viewerLink
+      }
     }
   } else {
     summaryInfo <- list(lsTransactionId=lsTransaction,
@@ -2215,6 +2226,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     }
     if(!dryRun) {
       summaryInfo$experimentCodeName <- experiment$codeName
+      if (!is.null(viewerLink)) {       
+        summaryInfo$"resultLink" <- viewerLink
+      }
     }
   }
   summaryInfo$experimentEntity <- experiment
@@ -2311,6 +2325,7 @@ createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningLis
                                <%=if(!is.null(summaryInfo$inLifeNotebook)){paste('<li>In Life Notebook:', summaryInfo$inLifeNotebook,'</li>')}%>
                                <%=if(!is.null(summaryInfo$page)){paste('<li>Page:', summaryInfo$page,'</li>')}%>
                                <li>Assay Date: <%=summaryInfo$date%> </li>
+                                <%=if(!is.null(summaryInfo$resultLink)){paste('<li>Result Link (there may be a delay before data is available):', summaryInfo$resultLink,'</li>')}%>
                                </ul>
                                <p>Calculated Results:</p>
                                <ul>
