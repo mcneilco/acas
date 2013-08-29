@@ -17,7 +17,12 @@ app.post '/api/microSolParser', microSolRoutes.parseMicroSolData
 		'javascripts/spec/MicroSolSpec.js'
 		'javascripts/spec/MicroSolServiceSpec.js'
 
-5) add these lines to layout.jade
+5) Add these lines to routes/index.coffee under liveServiceSpecRunner specScripts = [
+  		#For DNSMicroSol module
+		'javascripts/spec/testFixtures/MicroSolTestJSON.js'
+		'javascripts/spec/MicroSolServiceSpec.js'
+
+6) add these lines to layout.jade
   // for microSol module
   include ../public/src/modules/DNSMicroSol/src/client/MicroSolView.html
 ###

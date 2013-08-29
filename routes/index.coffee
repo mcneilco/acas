@@ -197,6 +197,9 @@ exports.liveServiceSpecRunner = (req, res) ->
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		#For login module
 		'javascripts/spec/dnsAuthenticationServiceSpec.js'
+		#For DNSMicroSol module
+		'javascripts/spec/testFixtures/MicroSolTestJSON.js'
+		'javascripts/spec/MicroSolServiceSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)
