@@ -2,15 +2,16 @@ source("public/src/modules/GenericDataParser/src/server/generic_data_parser.R")
 
 parsePampaData <- function(request){
   # Needs a list:
-  # dryRun
+  # dryRunMode
   # testMode
+  # fileToParse
+  # user
   # inputParameters:
   #   format
   #             protocolName
   #             scientist
   #             notebook
   #             project
-  #             fileLocation
   request <- as.list(request)
   inputParameters <- request$inputParameters
   preProcessorCall <- tryCatch({
