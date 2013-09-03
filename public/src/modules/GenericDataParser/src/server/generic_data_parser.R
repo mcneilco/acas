@@ -1798,42 +1798,44 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
                                                                                    lsTransaction = lsTransaction)
         }
         
-        # Adds a value for the batchCode (Corporate Batch ID)
-        analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                                                                                 lsType = "codeValue",
-                                                                                 lsKind = "batch code",
-                                                                                 codeValue = as.character(calculatedResults$"Corporate Batch ID"[analysisGroupID == calculatedResults$analysisGroupID][1]),
-                                                                                 publicData = !calculatedResults$Hidden[i],
-                                                                                 lsTransaction = lsTransaction)
-        
-        # Adds a value for the concentration if there is one
-        if (!is.na(concentration)) {
+        if(!is.null(i)) {
+          # Adds a value for the batchCode (Corporate Batch ID)
           analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                                                                                   lsType = "numericValue",
-                                                                                   lsKind = "tested concentration",
-                                                                                   valueUnit= if(is.na(calculatedResults$"Conc Units"[i])){NULL} else {calculatedResults$"Conc Units"[i]},
-                                                                                   numericValue = calculatedResults$"Conc"[i],
+                                                                                   lsType = "codeValue",
+                                                                                   lsKind = "batch code",
+                                                                                   codeValue = as.character(calculatedResults$"Corporate Batch ID"[analysisGroupID == calculatedResults$analysisGroupID][1]),
                                                                                    publicData = !calculatedResults$Hidden[i],
                                                                                    lsTransaction = lsTransaction)
+          
+          # Adds a value for the concentration if there is one
+          if (!is.na(concentration)) {
+            analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+                                                                                     lsType = "numericValue",
+                                                                                     lsKind = "tested concentration",
+                                                                                     valueUnit= if(is.na(calculatedResults$"Conc Units"[i])){NULL} else {calculatedResults$"Conc Units"[i]},
+                                                                                     numericValue = calculatedResults$"Conc"[i],
+                                                                                     publicData = !calculatedResults$Hidden[i],
+                                                                                     lsTransaction = lsTransaction)
+          }
+          
+          # Adds a value for the time if there is one
+          if (!is.na(timePoint)) {
+            analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
+              recordedBy = recordedBy,
+              lsType = "numericValue",
+              lsKind = "time",
+              valueUnit= if(is.na(calculatedResults$"timeUnit"[i])){NULL} else {calculatedResults$"timeUnit"[i]},
+              numericValue = calculatedResults$"time"[i],
+              publicData = !calculatedResults$Hidden[i],
+              lsTransaction = lsTransaction)
+          }
+          # Creates the state
+          analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
+                                                                                            recordedBy=recordedBy,
+                                                                                            lsType="data",
+                                                                                            lsKind=metaData$Format[1],
+                                                                                            analysisGroupValues=analysisGroupValues)
         }
-        
-        # Adds a value for the time if there is one
-        if (!is.na(timePoint)) {
-          analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
-            recordedBy = recordedBy,
-            lsType = "numericValue",
-            lsKind = "time",
-            valueUnit= if(is.na(calculatedResults$"timeUnit"[i])){NULL} else {calculatedResults$"timeUnit"[i]},
-            numericValue = calculatedResults$"time"[i],
-            publicData = !calculatedResults$Hidden[i],
-            lsTransaction = lsTransaction)
-        }
-        # Creates the state
-        analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
-                                                                                          recordedBy=recordedBy,
-                                                                                          lsType="data",
-                                                                                          lsKind=metaData$Format[1],
-                                                                                          analysisGroupValues=analysisGroupValues)
       }
     }
     # Creates Treatment Groups based on rawResults
