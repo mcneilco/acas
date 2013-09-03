@@ -102,6 +102,8 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
     foundData <- as.data.frame(t(foundData))
   }
   
+  foundData <- as.data.frame(lapply(foundData, trim), optional=TRUE)
+  
   return(foundData)
 }
 validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d") {
