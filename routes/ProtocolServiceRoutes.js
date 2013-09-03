@@ -136,7 +136,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
         } else {
           match = true;
         }
-        if (!label.ignored && label.lsType === "name" && match) {
+        if (!label.ignored && !label.protocol.ignored && label.lsType === "name" && match) {
           protCodes.push({
             code: label.protocol.codeName,
             name: label.labelText,

@@ -1121,6 +1121,36 @@
         recordedBy: "smeyer",
         recordedDate: 1372303115000,
         version: 0
+      }, {
+        id: 75,
+        ignored: false,
+        imageFile: null,
+        labelText: "Ignore this protocol",
+        lsKind: "protocol name",
+        lsTransaction: 78,
+        lsType: "name",
+        lsTypeAndKind: "name_protocol name",
+        modifiedDate: null,
+        physicallyLabled: false,
+        preferred: true,
+        protocol: {
+          codeName: "PROT-00000015",
+          id: 2590,
+          ignored: true,
+          lsKind: "default",
+          lsTransaction: 78,
+          lsType: "default",
+          lsTypeAndKind: "default_default",
+          modifiedBy: null,
+          modifiedDate: null,
+          recordedBy: "smeyer",
+          recordedDate: 1372303173000,
+          shortDescription: "protocol created by hand",
+          version: 1
+        },
+        recordedBy: "smeyer",
+        recordedDate: 1372303115000,
+        version: 0
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.protocolServiceTestJSON = window.protocolServiceTestJSON || {} : exports));

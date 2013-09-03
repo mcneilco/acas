@@ -147,7 +147,13 @@ describe 'Protocol CRUD testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn[@serviceReturn.length-1].name).toNotContain "PK"
-
+			it 'should not return protocols where protocol itself is set to ignore', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					console.log @serviceReturn
+					matches = _.filter @serviceReturn, (label) ->
+						label.name == "Ignore this protocol"
+					expect(matches.length).toEqual 0
 		describe 'when protocol code list service called with filtering option', ->
 			describe "With matching case", ->
 				beforeEach ->

@@ -106,7 +106,7 @@ exports.protocolCodeList = (req, resp) ->
 				match = label.labelText.toUpperCase().indexOf(filterString.toUpperCase()) > -1
 			else
 				match = true
-			if !label.ignored and label.lsType=="name" and match
+			if !label.ignored and !label.protocol.ignored and label.lsType=="name" and match
 				protCodes.push
 					code: label.protocol.codeName
 					name: label.labelText

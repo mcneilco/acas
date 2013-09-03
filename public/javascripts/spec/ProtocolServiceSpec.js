@@ -204,10 +204,22 @@ See ProtocolServiceTestJSON.coffee for examples
             return expect(this.serviceReturn[0].ignored).toBeDefined();
           });
         });
-        return it('should return some names without PK', function() {
+        it('should return some names without PK', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
             return expect(this.serviceReturn[this.serviceReturn.length - 1].name).toNotContain("PK");
+          });
+        });
+        return it('should not return protocols where protocol itself is set to ignore', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            var matches;
+
+            console.log(this.serviceReturn);
+            matches = _.filter(this.serviceReturn, function(label) {
+              return label.name === "Ignore this protocol";
+            });
+            return expect(matches.length).toEqual(0);
           });
         });
       });
