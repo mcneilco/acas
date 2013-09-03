@@ -106,7 +106,7 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   
   return(foundData)
 }
-validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d") {
+validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryFormat = "%m/%d/%Y") {
   # Validates and/or coerces a given string to a specified date format
   #
   # Args:
@@ -154,6 +154,12 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d") {
   
   # Check if can be coerced to the expected format
   if(!isInFormat(expectedFormat, inputValue )) {
+    
+    # Let the secondary format pass through
+    if(isInFormat(secondaryFormat, inputValue)) {
+      return(coerceToDate(secondaryFormat, inputValue))
+    }
+    
     #First try substituting out the seperators in the inputValue for those in the expected format
     expectedSeperator <- ifelse(grepl("-",expectedFormat),"-", "/")
     inputValueWExpectedSeperator <- gsub("-|/",expectedSeperator,inputValue)
