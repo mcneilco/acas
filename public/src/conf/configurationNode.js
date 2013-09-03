@@ -41,7 +41,7 @@
 		exports.serverConfigurationParams.configuration.db_port = "1521";
 		exports.serverConfigurationParams.configuration.stringsAsFactors = "FALSE";
 		exports.serverConfigurationParams.configuration.db_driver_package = "require(ROracle)";
-		exports.serverConfigurationParams.configuration.logDir = "/opt/node_apps/log";
+		exports.serverConfigurationParams.configuration.logDir = "/Users/jam/Projects/runicLIMS/bitbucket/log";
 // For R curve curation
 		exports.serverConfigurationParams.configuration.rapache = "http://acas-d/r-services-api";
 		exports.serverConfigurationParams.configuration.rshiny = "http://acas-d:3838";

@@ -41,7 +41,7 @@
 		exports.serverConfigurationParams.configuration.db_port = "acas.api.db.port";
 		exports.serverConfigurationParams.configuration.stringsAsFactors = "FALSE";
 		exports.serverConfigurationParams.configuration.db_driver_package = "require(ROracle)";
-		exports.serverConfigurationParams.configuration.logDir = "/opt/node_apps/log";
+		exports.serverConfigurationParams.configuration.logDir = "acas.env.logDir";
 // For R curve curation
 		exports.serverConfigurationParams.configuration.rapache = "http://acas.api.hostname/r-services-api";
 		exports.serverConfigurationParams.configuration.rshiny = "http://acas.api.hostname:3838";

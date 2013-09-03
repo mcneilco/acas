@@ -51,6 +51,7 @@ asyncblock((flow) ->
 			enableSpecRunner = false
 	configTemplate = configTemplate.replace(RegExp("acas.api.hostname","g"), hostName)
 	configTemplate = configTemplate.replace(/acas.api.enableSpecRunner/g, enableSpecRunner)
+	configTemplate = configTemplate.replace(/acas.env.logDir/g, process.env.DNSLogDirectory)
 
 	fs.writeFileSync "./public/src/conf/configurationNode.js", configTemplate
 	startApp()
