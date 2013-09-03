@@ -129,6 +129,8 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/BulkloadSampleTransfersServerSpec.js'
 		#For ServerUtility testing module
 		'javascripts/spec/ServerUtilityFunctionsSpec.js'
+		#For Login module
+		'javascripts/spec/AuthenticationServiceSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)

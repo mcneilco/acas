@@ -15,6 +15,10 @@ app.post '/login',
 app.get '/logout', loginRoutes.logout
 app.post '/api/userAuthentication', loginRoutes.authenticationService
 app.get '/api/users/:username', loginRoutes.getUsers
+
+  to index.coffee under specScripts:
+		#For Login module
+		'javascripts/spec/AuthenticationServiceSpec.js'
 */
 
 
@@ -74,7 +78,13 @@ app.get '/api/users/:username', loginRoutes.getUsers
     } else {
       console.log("no authorization service configured");
     }
-    return fn(null, null);
+    if (config.serverConfigurationParams.configuration.userAuthenticationType !== "Demo") {
+      return fn(null, null);
+    } else {
+      return fn(null, {
+        username: username
+      });
+    }
   };
 
   exports.loginStrategy = function(username, password, done) {
