@@ -13,7 +13,7 @@
     rm acas
 
 ### Downloading ACAS
-Usually done in /opt
+Usually done in /opt/node_apps
 
     curl --digest --user gitusername:gitpassword https://bitbucket.org/mcneilco/acas/get/host3.labsynch.com.tar.gz | tar xvz
     ln -s mcneilco-acas-f46a5c67fbd4 acas
