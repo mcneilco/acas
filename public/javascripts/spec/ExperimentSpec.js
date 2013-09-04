@@ -301,19 +301,21 @@
     return describe("ExperimentBaseController testing", function() {
       describe("When created with an unsaved experiment that has protocol attributes copied in", function() {
         beforeEach(function() {
-          var _this = this;
+          return runs(function() {
+            var _this = this;
 
-          this.copied = false;
-          this.exp = new Experiment();
-          this.exp.on("protocol_attributes_copied", function() {
-            return _this.copied = true;
+            this.copied = false;
+            this.exp = new Experiment();
+            this.exp.on("protocol_attributes_copied", function() {
+              return _this.copied = true;
+            });
+            this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
+            this.ebc = new ExperimentBaseController({
+              model: this.exp,
+              el: $('#fixture')
+            });
+            return this.ebc.render();
           });
-          this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
-          this.ebc = new ExperimentBaseController({
-            model: this.exp,
-            el: $('#fixture')
-          });
-          return this.ebc.render();
         });
         describe("Basic loading", function() {
           it("Class should exist", function() {
@@ -326,18 +328,18 @@
             waitsFor(function() {
               return this.copied;
             }, 500);
-            return expect(this.copied).toBeTruthy();
+            return runs(function() {
+              return expect(this.copied).toBeTruthy();
+            });
           });
         });
         describe("populated fields", function() {
           it("should show the protocol code", function() {
-            console.log(this.exp.get('protocol'));
             waitsFor(function() {
-              console.log(this.ebc.$('.bv_protocolCode option').length);
               return this.ebc.$('.bv_protocolCode option').length > 0;
             }, 1000);
             return runs(function() {
-              console.log("testing");
+              console.log(this.ebc.$('.bv_protocolCode').val());
               return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
             });
           });
@@ -382,7 +384,12 @@
           return this.ebc.render();
         });
         it("should show the protocol code", function() {
-          return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
+          waitsFor(function() {
+            return this.ebc.$('.bv_protocolCode option').length > 0;
+          }, 1000);
+          return runs(function() {
+            return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
+          });
         });
         it("should show the protocol name", function() {
           waits(200);
@@ -423,7 +430,12 @@
         });
         describe("basic startup conditions", function() {
           it("should have protocol code not set", function() {
-            return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("");
+            waitsFor(function() {
+              return this.ebc.$('.bv_protocolCode option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("unassigned");
+            });
           });
           it("should have use protocol parameters disabled", function() {
             return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual("disabled");

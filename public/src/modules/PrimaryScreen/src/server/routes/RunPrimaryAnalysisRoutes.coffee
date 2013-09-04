@@ -47,6 +47,7 @@ applicationScripts = [
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
+	'/javascripts/src/PickList.js'
 	# For serverAPI module
 	'/javascripts/src/Label.js'
 	'/javascripts/src/AnalysisGroup.js'

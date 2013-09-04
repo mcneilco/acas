@@ -79,7 +79,7 @@ This service saves and fetches DocForBatches items
           waitsFor(this.waitForServiceReturn, 'service did not return', 3000);
           return runs(function() {
             console.log(this.serviceReturn);
-            return expect(this.serviceReturn.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].fileValue).toEqual("exampleUploadedFile.txt");
+            return expect(this.serviceReturn.analysisGroups[0].lsStates[0].lsValues[0].fileValue).toEqual("exampleUploadedFile.txt");
           });
         });
       });

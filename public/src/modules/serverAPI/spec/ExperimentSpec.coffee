@@ -206,15 +206,16 @@ describe "Experiment module testing", ->
 		# experiment attributes like primary screen analysis or dose response fitting.
 		describe "When created with an unsaved experiment that has protocol attributes copied in", ->
 			beforeEach ->
-				@copied = false
-				@exp = new Experiment()
-				@exp.on "protocol_attributes_copied", =>
-					@copied = true
-				@exp.copyProtocolAttributes new Protocol(window.protocolServiceTestJSON.fullSavedProtocol)
-				@ebc = new ExperimentBaseController
-					model: @exp
-					el: $('#fixture')
-				@ebc.render()
+				runs ->
+					@copied = false
+					@exp = new Experiment()
+					@exp.on "protocol_attributes_copied", =>
+						@copied = true
+					@exp.copyProtocolAttributes new Protocol(window.protocolServiceTestJSON.fullSavedProtocol)
+					@ebc = new ExperimentBaseController
+						model: @exp
+						el: $('#fixture')
+					@ebc.render()
 			describe "Basic loading", ->
 				it "Class should exist", ->
 					expect(@ebc).toBeDefined()
@@ -224,16 +225,15 @@ describe "Experiment module testing", ->
 					waitsFor ->
 						@copied
 					, 500
-					expect(@copied).toBeTruthy()
+					runs ->
+						expect(@copied).toBeTruthy()
 			describe "populated fields", ->
 				it "should show the protocol code", ->
-					console.log @exp.get('protocol')
 					waitsFor ->
-						console.log @ebc.$('.bv_protocolCode option').length
 						@ebc.$('.bv_protocolCode option').length > 0
 					, 1000
 					runs ->
-						console.log "testing"
+						console.log @ebc.$('.bv_protocolCode').val()
 						expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
 				it "should show the protocol name", ->
 					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
@@ -273,7 +273,11 @@ describe "Experiment module testing", ->
 					el: $('#fixture')
 				@ebc.render()
 			it "should show the protocol code", ->
-				expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
+				waitsFor ->
+					@ebc.$('.bv_protocolCode option').length > 0
+				, 1000
+				runs ->
+					expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
 			it "should show the protocol name", ->
 				waits(200) # needs to fill out stub protocol
 				runs ->
@@ -303,7 +307,11 @@ describe "Experiment module testing", ->
 				@ebc.render()
 			describe "basic startup conditions", ->
 				it "should have protocol code not set", ->
-					expect(@ebc.$('.bv_protocolCode').val()).toEqual ""
+					waitsFor ->
+						@ebc.$('.bv_protocolCode option').length > 0
+					, 1000
+					runs ->
+						expect(@ebc.$('.bv_protocolCode').val()).toEqual "unassigned"
 				it "should have use protocol parameters disabled", ->
 					expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual "disabled"
 				it "should fill the date field", ->

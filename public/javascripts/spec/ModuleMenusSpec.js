@@ -43,10 +43,14 @@
         return expect($('.bv_mainModuleWrapper')).not.toBeNull();
       });
       it("should show the user first name", function() {
-        return expect(this.mmc.$('.bv_loginUserFirstName').html()).toContain('John');
+        if (window.configurationNode.serverConfigurationParams.configuration.requireLogin) {
+          return expect(this.mmc.$('.bv_loginUserFirstName').html()).toContain('John');
+        }
       });
       it("should show the user last name", function() {
-        return expect(this.mmc.$('.bv_loginUserLastName').html()).toContain('McNeil');
+        if (window.configurationNode.serverConfigurationParams.configuration.requireLogin) {
+          return expect(this.mmc.$('.bv_loginUserLastName').html()).toContain('McNeil');
+        }
       });
       return it("should show a logout link", function() {
         return expect(this.mmc.$('.bv_logout').attr('href')).toContain('logout');

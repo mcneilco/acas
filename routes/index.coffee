@@ -83,6 +83,14 @@ exports.specRunner = (req, res) ->
 	]
 
 	specScripts = [
+		# For Components module
+		'javascripts/spec/AbstractFormControllerSpec.js'
+		'javascripts/spec/LSFileInputSpec.js'
+		'javascripts/spec/LSFileChooserSpec.js'
+		'javascripts/spec/LSErrorNotificationSpec.js'
+		'javascripts/spec/ProjectsServiceSpec.js'
+		'javascripts/spec/PickListSpec.js'
+		'javascripts/spec/testFixtures/projectServiceTestJSON.js'
 		# For serverAPI module
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		'javascripts/spec/ProtocolServiceSpec.js'
@@ -104,14 +112,6 @@ exports.specRunner = (req, res) ->
 		# For ModuleMenus module
 		'javascripts/spec/ModuleMenusSpec.js'
 		'javascripts/spec/ModuleLauncherSpec.js'
-		# For Components module
-		'javascripts/spec/AbstractFormControllerSpec.js'
-		'javascripts/spec/LSFileInputSpec.js'
-		'javascripts/spec/LSFileChooserSpec.js'
-		'javascripts/spec/LSErrorNotificationSpec.js'
-		'javascripts/spec/ProjectsServiceSpec.js'
-		'javascripts/spec/PickListSpec.js'
-		'javascripts/spec/testFixtures/projectServiceTestJSON.js'
 		# For DocForBatchesModule
 		'src/modules/DocForBatches/spec/testFixtures/testJSON.js'
 		'javascripts/spec/BatchListValidatorSpec.js'

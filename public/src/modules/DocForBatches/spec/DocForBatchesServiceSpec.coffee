@@ -57,7 +57,6 @@ describe 'DocForBatches Service testing', ->
 			it 'should return a valide model', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
-
 					expect(@serviceReturn.id).toEqual 17
 
 
@@ -65,7 +64,7 @@ describe 'DocForBatches Service testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 3000)
 				runs ->
 					console.log @serviceReturn
-					expect(@serviceReturn.analysisGroups[0].analysisGroupStates[0].analysisGroupValues[0].fileValue).toEqual "exampleUploadedFile.txt"
+					expect(@serviceReturn.analysisGroups[0].lsStates[0].lsValues[0].fileValue).toEqual "exampleUploadedFile.txt"
 
 
 	describe 'post new entity to docForBatches', ->

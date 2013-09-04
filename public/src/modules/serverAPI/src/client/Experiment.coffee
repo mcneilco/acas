@@ -158,7 +158,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		else
 			protocolCode = "unassigned"
 		@protocolList = new PickListList()
-		@protocolList.url = "api/protocolCodes/filter/FLIPR"
+		@protocolList.url = "/api/protocolCodes/filter/FLIPR"
 		@protocolListController = new PickListSelectController
 			el: @$('.bv_protocolCode')
 			collection: @protocolList
@@ -230,7 +230,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		else
 			$.ajax
 				type: 'GET'
-				url: "api/protocols/codename/"+code
+				url: "/api/protocols/codename/"+code
 				success: (json) =>
 					if json.length == 0
 						@updateProtocolNameField("could not find selected protocol in database")

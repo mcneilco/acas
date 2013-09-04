@@ -256,7 +256,7 @@
         protocolCode = "unassigned";
       }
       this.protocolList = new PickListList();
-      this.protocolList.url = "api/protocolCodes/filter/FLIPR";
+      this.protocolList.url = "/api/protocolCodes/filter/FLIPR";
       return this.protocolListController = new PickListSelectController({
         el: this.$('.bv_protocolCode'),
         collection: this.protocolList,
@@ -370,7 +370,7 @@
       } else {
         return $.ajax({
           type: 'GET',
-          url: "api/protocols/codename/" + code,
+          url: "/api/protocols/codename/" + code,
           success: function(json) {
             if (json.length === 0) {
               return _this.updateProtocolNameField("could not find selected protocol in database");
