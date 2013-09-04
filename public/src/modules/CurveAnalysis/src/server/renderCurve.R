@@ -285,8 +285,8 @@ renderCurve <- function(getParams) {
 	setContentType("image/png")
 	setHeader(header="Cache-Control",value="max-age=1000000000000"); 
 	setHeader(header="Expires",value="Thu, 31 Dec 2099 24:24:24 GMT");
-	t <- paste0(tempfile(),".",format)
-	PlotCurve(curveData = data$points,params = data$parameters, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showLegend=legend, axes = axes)
+	t <- tempfile()
+	PlotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "hill"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = TRUE, labelAxes = TRUE, showLegend=legend, axes = axes)
 	sendBin(readBin(t,'raw',n=file.info(t)$size))
 	unlink(t) 
 	DONE
