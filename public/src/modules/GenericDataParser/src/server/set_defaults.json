@@ -166,3 +166,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {"digits":8,"groupDigits":false, "labelPrefix":"CITX","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"interaction_containerContainer"},
 {"digits":8,"groupDigits":false, "labelPrefix":"SITX","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"interaction_subjectContainer"}
 ]' http://"$HOSTNAME":8080/acas/labelsequences/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{propName:"BatchDocumentsURL", propValue: "http://'$HOSTNAME':8888/files/"},
+{propName:"server_address", propValue:"'$HOSTNAME'"}
+]' http://"$HOSTNAME":8080/acas/applicationsettings/jsonArray
