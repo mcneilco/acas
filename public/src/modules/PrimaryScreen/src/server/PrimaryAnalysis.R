@@ -40,8 +40,6 @@
 # user  system elapsed 
 # 7.904   0.250  45.444 
 
-source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
-source("public/src/modules/sharedFunctions.R")
 
 makeDataFrameOfWellsGrid <- function(allData, barcode, valueName) {
   # Takes data and forms it into a data frame
@@ -485,7 +483,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
     stateGroupIndex <- stateGroupIndex + 1
   }
   
-  othersGroupIndex <- which(sapply(stateGroups, FUN=readElement, "includesOthers"))
+  othersGroupIndex <- which(sapply(stateGroups, FUN=getElement, "includesOthers"))
   subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
   
   subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex)
@@ -962,12 +960,12 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
   # Returns:
   #   NULL
   
-  locationState <- experiment$experimentStates[lapply(experiment$experimentStates,readElement,"stateKind")=="report locations"]
+  locationState <- experiment$experimentStates[lapply(experiment$experimentStates,getElement,"stateKind")=="report locations"]
   
   if (length(locationState)> 0) {
     locationState <- locationState[[1]]
      
-    valueKinds <- lapply(locationState$experimentValues,readElement,"valueKind")
+    valueKinds <- lapply(locationState$experimentValues,getElement,"valueKind")
     
     valuesToDelete <- locationState$experimentValues[valueKinds %in% c("raw r results location","summary location","data results location")]
     
@@ -1020,11 +1018,11 @@ getExperimentParameters <- function(experiment) {
   # Returns:
   #   a list with efficacyThreshold, transformation, positiveControl, negativeControl
   
-  experimentState <- experiment$experimentStates[lapply(experiment$experimentStates,readElement,"stateKind")=="experiment analysis parameters"][[1]]
-  transformationValue <- experimentState$experimentValues[lapply(experimentState$experimentValues,readElement,"valueKind")=="data transformation rule"][[1]]
+  experimentState <- experiment$experimentStates[lapply(experiment$experimentStates,getElement,"stateKind")=="experiment analysis parameters"][[1]]
+  transformationValue <- experimentState$experimentValues[lapply(experimentState$experimentValues,getElement,"valueKind")=="data transformation rule"][[1]]
   transformation <- transformationValue$stringValue
   
-  effThresholdValue <- experimentState$experimentValues[lapply(experimentState$experimentValues,readElement,"valueKind")=="active efficacy threshold"][[1]]
+  effThresholdValue <- experimentState$experimentValues[lapply(experimentState$experimentValues,getElement,"valueKind")=="active efficacy threshold"][[1]]
   effThreshold <- effThresholdValue$numericValue
   
 #   getValueType <- function(value) {
@@ -1037,7 +1035,7 @@ getExperimentParameters <- function(experiment) {
 #     return(stringValue)
 #   }
   
-  controlStates <- experiment$experimentStates[lapply(experiment$experimentStates,readElement,"stateKind")=="experiment controls"]
+  controlStates <- experiment$experimentStates[lapply(experiment$experimentStates,getElement,"stateKind")=="experiment controls"]
   
   # TODO: probably just turn all the states into a data frame, get rid of this madness
   for (state in controlStates) {
@@ -1074,6 +1072,8 @@ getExperimentById <- function(experimentId, configList) {
   # Returns:
   #   a list that is an experiment
   
+  require('RCurl')
+  
   experiment <- NULL
   tryCatch({
     experiment <- getURL(paste0(configList$serverPath,"experiments/", experimentId))
@@ -1092,7 +1092,7 @@ setAnalysisStatus <- function(status, metadataState) {
   # Returns:
   #   NULL
   
-  valueKinds <- lapply(metadataState$experimentValues,readElement,"valueKind")
+  valueKinds <- lapply(metadataState$experimentValues,getElement,"valueKind")
   
   valuesToDelete <- metadataState$experimentValues[valueKinds == "analysis status"]
   
@@ -1136,7 +1136,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   
   experiment <- getExperimentById(experimentId, configList)
   
-  metadataState <- experiment$experimentStates[lapply(experiment$experimentStates,readElement,"stateKind")=="experiment metadata"][[1]]
+  metadataState <- experiment$experimentStates[lapply(experiment$experimentStates,getElement,"stateKind")=="experiment metadata"][[1]]
   
   if(!dryRun) {
     setAnalysisStatus(status="running", metadataState)
@@ -1285,6 +1285,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
 }
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
+  
+  require(racas)
+  
   request <- as.list(request)
   
   experimentId <- request$primaryAnalysisExperimentId
@@ -1298,10 +1301,7 @@ runPrimaryAnalysis <- function(request) {
   #testMode <- interpretJSONBoolean(testMode)
   
   # Read the config file
-  configList <- readConfigFile("public/src/conf/configurationNode.js")
-  
-  # Set the global for the library
-  lsServerURL <<- configList$serverPath
+  configList <- racas::applicationSettings
   
   # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
   errorHandlingBox <- list(errorList = list())

@@ -59,8 +59,10 @@
 		exports.serverConfigurationParams.configuration.stateGroupsScript = "public/src/conf/genericDataParserConfiguration.R";
 		exports.serverConfigurationParams.configuration.includeProject = "FALSE";
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "";
-		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "Generic,Dose Response";
-		exports.serverConfigurationParams.configuration.nameValidationService = "http://localhost:3000/api/users"
+		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "Generic,Dose Response,Custom Example";
+		exports.serverConfigurationParams.configuration.nameValidationService = "http://localhost:3000/api/users";
+		exports.serverConfigurationParams.configuration.resultViewerProtocolPrefix = "http://host3.labsynch.com:9080/seurat/runseurat?cmd=newjob&AssayName=";
+		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "&AssayProtocol="
 
 
 
