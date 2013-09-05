@@ -26,8 +26,7 @@
 # For Dose Response, there is a read plate name but no barcode...
 # What to do when two runs are done on the same barcode?
 
-# setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
-# runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=27099))
+# runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # configList <- readConfigFile("public/src/conf/configuration.js")
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, configList,experimentId=27099)
 # newest experimentID: 75191
@@ -168,7 +167,7 @@ computeSDScore <- function(mainData) {
 
   return ((mainData$transformed - mean(mainData$transformed))/sd(mainData$transformed))
 }
-createWellTable <- function(barcodeList, configList) {
+createWellTable <- function(barcodeList, configList, testMode) {
   # Creates a table of wells and corporate batch id's
   #
   # Args:
@@ -179,10 +178,23 @@ createWellTable <- function(barcodeList, configList) {
   
   barcodeQuery <- paste(barcodeList,collapse="','")
   
-  wellTable <- query(paste0(
-    "SELECT *
+  if (testMode) {
+    fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
+    fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
+    fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
+    fakeAPI$BARCODE <- gsub("BF00007390","TL00098003",fakeAPI$BARCODE)
+    fakeAPI$BARCODE <- gsub("BF00007395","TL00098004",fakeAPI$BARCODE)
+    wellTable <- fakeAPI[fakeAPI$BARCODE %in% barcodeList, ]
+    wellTable$BATCH_CODE <- gsub("CRA-024169-1", "CRA-000399-1", wellTable$BATCH_CODE)
+    wellTable$BATCH_CODE <- gsub("CRA-024184-1", "CRA-000396-1", wellTable$BATCH_CODE)
+    wellTable$BATCH_CODE <- gsub("CRA-024074-1", "CRA-000399-1", wellTable$BATCH_CODE)
+    wellTable$BATCH_CODE <- gsub("CRA-024087-1", "CRA-000396-1", wellTable$BATCH_CODE)
+  } else {
+    wellTable <- query(paste0(
+      "SELECT *
     FROM api_container_contents
     WHERE barcode IN ('", barcodeQuery, "')"),configList)
+  }
   
   return(wellTable)
 }
@@ -475,7 +487,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   stateGroupIndex <- 1
   subjectData$stateGroupIndex <- NA
   for (state in stateGroups) {
-    includedRows <- subjectData$"Result Type" %in% state$valueKinds
+    includedRows <- subjectData$"Result Type" %in% state$lsKinds
     newRows <- subjectData[includedRows & !is.na(subjectData$stateGroupIndex), ]
     subjectData$stateGroupIndex[includedRows & is.na(subjectData$stateGroupIndex)] <- stateGroupIndex
     if (nrow(newRows)>0) newRows$stateGroupIndex <- stateGroupIndex
@@ -960,22 +972,22 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
   # Returns:
   #   NULL
   
-  locationState <- experiment$experimentStates[lapply(experiment$experimentStates,getElement,"stateKind")=="report locations"]
+  locationState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="report locations"]
   
   if (length(locationState)> 0) {
     locationState <- locationState[[1]]
      
-    valueKinds <- lapply(locationState$experimentValues,getElement,"valueKind")
+    valueKinds <- lapply(locationState$lsValues,getElement,"lsKind")
     
-    valuesToDelete <- locationState$experimentValues[valueKinds %in% c("raw r results location","summary location","data results location")]
+    valuesToDelete <- locationState$lsValues[valueKinds %in% c("raw r results location","summary location","data results location")]
     
     lapply(valuesToDelete, deleteExperimentValue)
   } else {
     locationState <- createExperimentState(
       recordedBy=recordedBy,
       experiment = experiment,
-      stateType="metadata",
-      stateKind="report locations",
+      lsKind="metadata",
+      lsKind="report locations",
       lsTransaction=lsTransaction)
     
     locationState <- saveExperimentState(locationState)
@@ -984,20 +996,20 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
   tryCatch({
     
     rawLocationValue <- createStateValue(
-      valueType = "fileValue",
-      valueKind = "raw r results location",
+      lsType = "fileValue",
+      lsKind = "raw r results location",
       fileValue = rawResultsLocation,
       experimentState = locationState)
     
     resultsLocationValue <- createStateValue(
-      valueType = "fileValue",
-      valueKind = "data results location",
+      lsType = "fileValue",
+      lsKind = "data results location",
       fileValue = resultsLocation,
       experimentState = locationState)
     
     pdfLocationValue <- createStateValue(
-      valueType = "stringValue",
-      valueKind = "summary location",
+      lsType = "stringValue",
+      lsKind = "summary location",
       fileValue = pdfLocation,
       experimentState = locationState)
     
@@ -1018,11 +1030,11 @@ getExperimentParameters <- function(experiment) {
   # Returns:
   #   a list with efficacyThreshold, transformation, positiveControl, negativeControl
   
-  experimentState <- experiment$experimentStates[lapply(experiment$experimentStates,getElement,"stateKind")=="experiment analysis parameters"][[1]]
-  transformationValue <- experimentState$experimentValues[lapply(experimentState$experimentValues,getElement,"valueKind")=="data transformation rule"][[1]]
+  experimentState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment analysis parameters"][[1]]
+  transformationValue <- experimentState$lsValues[lapply(experimentState$lsValues,getElement,"lsKind")=="data transformation rule"][[1]]
   transformation <- transformationValue$stringValue
   
-  effThresholdValue <- experimentState$experimentValues[lapply(experimentState$experimentValues,getElement,"valueKind")=="active efficacy threshold"][[1]]
+  effThresholdValue <- experimentState$lsValues[lapply(experimentState$lsValues,getElement,"lsKind")=="active efficacy threshold"][[1]]
   effThreshold <- effThresholdValue$numericValue
   
 #   getValueType <- function(value) {
@@ -1034,21 +1046,20 @@ getExperimentParameters <- function(experiment) {
 #     stringValue <- controlState$experimentValues[valueTypes=="stringValue"]$stringValue
 #     return(stringValue)
 #   }
-  
-  controlStates <- experiment$experimentStates[lapply(experiment$experimentStates,getElement,"stateKind")=="experiment controls"]
+  controlStates <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment controls"]
   
   # TODO: probably just turn all the states into a data frame, get rid of this madness
   for (state in controlStates) {
-    for (value in state$experimentValues) {
+    for (value in state$lsValues) {
       if (!is.null(value$stringValue)) {
         if (value$stringValue == "positive control") {
-          for (value in state$experimentValues) {
+          for (value in state$lsValues) {
             if (!is.null(value$codeValue)) {
               positiveControl <- value$codeValue
             }
           }
         } else if (value$stringValue == "negative control") {
-          for (value in state$experimentValues) {
+          for (value in state$lsValues) {
             if (!is.null(value$codeValue)) {
               negativeControl <- value$codeValue
             }
@@ -1092,16 +1103,16 @@ setAnalysisStatus <- function(status, metadataState) {
   # Returns:
   #   NULL
   
-  valueKinds <- lapply(metadataState$experimentValues,getElement,"valueKind")
+  valueKinds <- lapply(metadataState$lsValues,getElement,"lsKind")
   
-  valuesToDelete <- metadataState$experimentValues[valueKinds == "analysis status"]
+  valuesToDelete <- metadataState$lsValues[valueKinds == "analysis status"]
   
   tryCatch({
     lapply(valuesToDelete, deleteExperimentValue)
     
     statusValue <- createStateValue(
-      valueType = "stringValue",
-      valueKind = "analysis status",
+      lsType = "stringValue",
+      lsKind = "analysis status",
       stringValue = status,
       experimentState = metadataState)
     
@@ -1136,7 +1147,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   
   experiment <- getExperimentById(experimentId, configList)
   
-  metadataState <- experiment$experimentStates[lapply(experiment$experimentStates,getElement,"stateKind")=="experiment metadata"][[1]]
+  metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
   
   if(!dryRun) {
     setAnalysisStatus(status="running", metadataState)
@@ -1171,7 +1182,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   resultTable <- as.data.table(do.call("rbind",resultList))
   barcodeList <- levels(resultTable$barcode)
     
-  wellTable <- createWellTable(barcodeList, configList)
+  wellTable <- createWellTable(barcodeList, configList, testMode)
   
   batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
@@ -1295,7 +1306,7 @@ runPrimaryAnalysis <- function(request) {
   dryRun <- request$dryRunMode
   user <- request$user
   #testMode <- request$testMode
-  testMode <- FALSE
+  testMode <- TRUE
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   #testMode <- interpretJSONBoolean(testMode)
@@ -1326,7 +1337,7 @@ runPrimaryAnalysis <- function(request) {
   }
   
   # Save warning messages but not the function call, which is only useful while programming
-  loadResult$warningList <- lapply(loadResult$warningList,getWarningMessage)
+  loadResult$warningList <- lapply(loadResult$warningList, getElement, "message")
   if (length(loadResult$warningList)>0) {
     loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
   }
@@ -1351,7 +1362,7 @@ runPrimaryAnalysis <- function(request) {
   #   
   
   # Create the HTML to display
-  htmlSummary <- createHTML(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
+  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
   
   # Detach the box for error handling
   detach(errorHandlingBox)
