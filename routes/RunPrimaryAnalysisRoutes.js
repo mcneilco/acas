@@ -56,7 +56,7 @@ app.post '/api/primaryAnalysis/runPrimaryAnalysis', runPrimaryAnalysisRoutes.run
         return response.end(rReturn);
       });
     } else {
-      return serverUtilityFunctions.runRFunction(request, "public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R", "runPrimaryAnalysis", function(rReturn) {
+      return serverUtilityFunctions.runRFunction(request, "public/src/modules/PrimaryScreen/src/server/PrimaryAnalysisStub.R", "runPrimaryAnalysis", function(rReturn) {
         return response.end(rReturn);
       });
     }

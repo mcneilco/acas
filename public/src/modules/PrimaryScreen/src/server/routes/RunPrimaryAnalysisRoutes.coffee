@@ -89,7 +89,7 @@ exports.runPrimaryAnalysis = (request, response)  ->
 	else
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R",
+			"public/src/modules/PrimaryScreen/src/server/PrimaryAnalysisStub.R",
 			"runPrimaryAnalysis",
 			(rReturn) ->
 				response.end rReturn

@@ -406,5 +406,5 @@ describe "Experiment module testing", ->
 
 
 
-#TODO  make scientist and date render from and update recorded** if new expt and updated** if existing
+#TODO make scientist and date render from and update recorded** if new expt and updated** if existing
 #TODO add notebook field
