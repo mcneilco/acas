@@ -3,11 +3,16 @@
 
 Sys.setenv("ACAS_HOME"="/opt/node_apps/acas/")
 home <- Sys.getenv("ACAS_HOME")
-foldersLocation <- "~/coreetl/coreSELFilesToLoad6"
+foldersLocation <- "~/coreetl/coreSELFilesToLoad9"
 outputFile <- "~/coreETLoutput.txt"
-dryRunMode <- "true"
+dryRunMode <- "false"
 user <- "smeyer"
 require(racas)
+currentProtocols <- query("select label_text from api_protocol")[[1]]
+protocolsToSearch <- readLines("assaylist.txt")
+if (!all(protocolsToSearch %in%  currentProtocols)) {
+	stop("You forgot to load the protocols first.")
+}
 
 source(paste0(home,"public/src/modules/GenericDataParser/src/server/generic_data_parser.R"))
 

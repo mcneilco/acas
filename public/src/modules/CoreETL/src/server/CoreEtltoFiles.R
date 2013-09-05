@@ -16,9 +16,8 @@ getHeaderLines <- function(expt) {
 	if (length(pNames) != 1) "problem with experiment results, more than one protocol name"
 	hl[[3]] <- paste("Protocol Name",pNames[[1]], sep=",")
 	eNames <- levels(as.factor(expt$Experiment_Name))
-	eNames <- gsub("/","-",eNames)
 	if (length(eNames) != 1) "problem with experiment results, more than one experiment name"
-	hl[[4]] <- paste("Experiment Name",eNames[[1]], sep=",")
+	hl[[4]] <- paste("Experiment Name,",eNames[[1]],"CREATETHISEXPERIMENT", sep="")
 	eSci <- levels(as.factor(expt$Experiment_Scientist))
 	if (length(eSci) != 1) "problem with experiment results, more than one scientist"
 	hl[[5]] <- paste("Scientist",convertScientistName(eSci[[1]]), sep=",")
@@ -64,14 +63,19 @@ makeFileName <- function(expt) {
 	eNames <- levels(as.factor(expt$Experiment_Name))
 	if (length(eNames) != 1) "problem with experiment results, more than one experiment name"
 	eName <- gsub("/","-",eNames[[1]])
-	dir.create(paste("coreSELFilesToLoad6/", pName, sep=""), recursive = TRUE)
-	return(paste("coreSELFilesToLoad6/", pName,"/", eName, ".csv", sep=""))
+	dir.create(paste("coreSELFilesToLoad9/", pName, sep=""), recursive = TRUE)
+	return(paste("coreSELFilesToLoad9/", pName,"/", eName, ".csv", sep=""))
 }
 
 makeValueString <- function(exptRow, resultType) {
 	# Sets the global list of values, the first two are just hard coded
 	if (resultType == "Assay Date") type <- "Date"
 	else if (resultType == "Dose") type <- "Number"
+	else if (resultType == "Synopsis") type <- "Clob"
+	else if (resultType == "IC50") type <- "Number"
+	else if (resultType == "Observations") type <- "Text"
+	else if (resultType == "Fasted") type <- "Text"
+	else if (resultType == "Vehicle") type <- "Text"
 	else if (all(is.na(exptRow$Expt_Result_Value))) type <- "Text"
 	else type <- "Number"
 	columnTypes[resultType] <<- type
@@ -130,7 +134,7 @@ getColumnHeaders <- function(castExpt) {
 			units <- nameParts[[len-2]]
 			concentration <- nameParts[[len-1]]
 			concentrationUnits <- nameParts[[len]]
-			if (units=="NA" | units=="") nameParts[[len-2]] = ""
+			if (units=="NA" | units=="") nameParts[[len-2]] = "()"
 			else nameParts[[len-2]] = paste(" (", units, ")", sep="" )
 			if (concentration=="NA") nameParts[[len-1]] = ""
 			else nameParts[[len-1]] = paste(" [", concentration, " ",concentrationUnits,"]", sep="" )
@@ -158,11 +162,12 @@ library("racas")
 library("data.table")
 library("reshape")
 
+options(scipen=99)
 options(stringsAsFactors=FALSE)
 
 protocolsToSearch = readLines("assaylist.txt")
 #protocolsToSearch = I("CRO CYP DR 1A2")
-#protocolsToSearch = c("GlyT1 SCRN Glycine SPA HEK293 B6")
+#protocolsToSearch = c("GC SCRN Soluble Guanylyl Cyclase Agonist")
 for (p in 1:length(protocolsToSearch)) {
 	print(paste("processing protocol:", protocolsToSearch[[p]]))
 	experiments <- queryProtocol(protocolsToSearch[[p]])
