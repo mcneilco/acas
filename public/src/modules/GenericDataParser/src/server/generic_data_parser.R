@@ -75,12 +75,16 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   # Get the indexes of columns in the section, using the longest of either of the first two rows
   sectionHeaderRow <- genericDataFileDataFrame[startSection + 1,]
   secondRow <- genericDataFileDataFrame[startSection + 2,]
-  sectionHeaderColumns <- grep(pattern="\\S", sapply(sectionHeaderRow,as.character))
-  secondHeaderColumns <- grep(pattern="\\S", sapply(secondRow,as.character))
-  if (length(sectionHeaderColumns)==0 && length(secondHeaderColumns)==0) {
+  sectionHeaderColumns <- grepl(pattern="\\S", sapply(sectionHeaderRow,as.character))
+  secondHeaderColumns <- grepl(pattern="\\S", sapply(secondRow,as.character))
+  if (all(!c(sectionHeaderColumns, secondHeaderColumns))) {
     stop(paste0("There must be at least two rows filled in after '", lookFor, "'."))
   }
-  dataColumnIndexes <- 1:max(sectionHeaderColumns, secondHeaderColumns)
+  if (any(!c(secondHeaderColumns, sectionHeaderColumns))) {
+    dataColumnIndexes <- 1:(min(which(!secondHeaderColumns & !sectionHeaderColumns))-1)
+  } else {
+    dataColumnIndexes <- 1:length(sectionHeaderRow)
+  }
   
   # Get the last line matching the section
   sectionColumn <- genericDataFileDataFrame[,names(startSection)]
