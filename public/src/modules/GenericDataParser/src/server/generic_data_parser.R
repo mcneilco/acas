@@ -1344,7 +1344,11 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
 validateProject <- function(projectName, configList) {
   require('RCurl')
   require('rjson')
+  tryCatch({
   projectList <- getURL(configList$projectService)
+  }, error = function(e) {
+    stop("The project service did not respond correctly, contact your system administrator")
+  })
   tryCatch({
     projectList <- fromJSON(projectList)
   }, error = function(e) {
