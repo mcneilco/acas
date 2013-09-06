@@ -888,6 +888,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
   
   # Parse numeric data from the unparsed values
+  # TODO: just use as.numeric with suppressed warnings after removing commas in the middle and operators at the beginning to decide if it is a number
   matchExpression <- ".+\\-|[^0-9,\\.<>\\-]|\\..*\\.|-$" # If it has a "-" anywhere other than the beginning, has anything other than th list "0-9,.<>-", has a "-" at the end, or has two decimal points, it is not a number
   matches <- grepl(matchExpression,longResults$"UnparsedValue")
   longResults$"Result Value" <- longResults$"UnparsedValue"
@@ -2077,6 +2078,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     annotationType <- formatSettings[[inputFormat]]$annotationType
     sigFigs <- formatSettings[[inputFormat]]$sigFigs
   } else {
+    # TODO: generate the list dynamically
+    if(!(inputFormat %in% c("Generic", "Dose Response"))) {
+      stop("The Format must be 'Generic', 'Dose Response', or some custom format that you have been given.")
+    }
     lookFor <- "Calculated Results"
     lockCorpBatchId <- TRUE
     replaceFakeCorpBatchId <- ""
