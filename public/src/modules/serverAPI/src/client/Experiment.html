@@ -19,13 +19,15 @@
     </form>
 
 
-    <form class="form-inline pull-right">
-        <label class="control-label" style="padding-right:15px;">*Scientist and Date</label>
-        <select class="bv_recordedBy bv_group_recordedBy" style="width:267px;">
-            <option value="">Scientist</option>
-            <option value="jmcneil">John McNeil</option>
-            <option value="smeyer">smeyer</option>
-        </select>
+    <form class="form-horizontal">
+        <div class="control-group bv_group_recordedBy">
+            <label class="control-label" style="padding-right:15px;">*Scientist and Date</label>
+            <select class="bv_recordedBy " style="width:267px;">
+                <option value="">Scientist</option>
+                <option value="jmcneil">John McNeil</option>
+                <option value="smeyer">smeyer</option>
+            </select>
+        </div>
         <div class="input-append date bv_group_recordedDate" id="dp3" data-date="" data-date format="yy-mm-dd">
             <input class="span7 bv_recordedDate" type="text" value="" placeholder="yyyy-mm-dd">
             <span class="add-on bv_recordDateIcon"><i class="icon-th"></i></span>
@@ -35,8 +37,8 @@
 
 
     <form class="form-horizontal">
-        <div class="control-group">
-            <label class="control-label">*Protocol Code</label>
+        <div class="control-group bv_group_protocol">
+            <label class="control-label ">*Protocol Code</label>
             <div class="controls">
                 <select class="bv_protocolCode bv_group_protocol" style="width:417px;">
                 </select>

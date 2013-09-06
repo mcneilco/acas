@@ -172,11 +172,21 @@
           message: "Scientist must be set"
         });
       }
+      if (attrs.protocol === null) {
+        errors.push({
+          attribute: 'protocol',
+          message: "Protocol must be set"
+        });
+      }
       if (errors.length > 0) {
         return errors;
       } else {
         return null;
       }
+    };
+
+    Experiment.prototype.getDescription = function() {
+      return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "description");
     };
 
     return Experiment;
@@ -243,7 +253,7 @@
         date = new Date(this.model.get('recordedDate'));
         this.$('.bv_recordedDate').val(date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate());
       }
-      this.$('.bv_description').html(this.getDescriptionValue());
+      this.$('.bv_description').html(this.model.getDescription().get('stringValue'));
       return this;
     };
 
@@ -303,17 +313,6 @@
       return this.$('.bv_protocolName').html(protocolName);
     };
 
-    ExperimentBaseController.prototype.getDescriptionValue = function() {
-      var desc, value;
-
-      value = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment info", "stringValue", "description");
-      desc = "";
-      if (value !== null) {
-        desc = value.get('stringValue');
-      }
-      return desc;
-    };
-
     ExperimentBaseController.prototype.handleRecordedByChanged = function() {
       this.model.set({
         recordedBy: this.$('.bv_recordedBy').val()
@@ -328,8 +327,9 @@
     };
 
     ExperimentBaseController.prototype.handleDescriptionChanged = function() {
-      return this.model.set({
-        description: this.getTrimmedInput('.bv_description')
+      return this.model.getDescription().set({
+        stringValue: $.trim(this.$('.bv_description').val()),
+        recordedBy: this.model.get('recordedBy')
       });
     };
 
@@ -361,7 +361,7 @@
         _this = this;
 
       code = this.$('.bv_protocolCode').val();
-      if (code === "") {
+      if (code === "" || code === "unassigned") {
         this.model.set({
           'protocol': null
         });

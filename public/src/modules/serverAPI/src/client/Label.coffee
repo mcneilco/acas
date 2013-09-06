@@ -115,5 +115,25 @@ class window.StateList extends Backbone.Collection
 				value = values[0]
 		value
 
+	getOrCreateStateByTypeAndKind: (sType, sKind) ->
+		mStates = @getStatesByTypeAndKind sType, sKind
+		mState = mStates[0] #TODO should do something smart if there are more than one
+		unless mState?
+			mState = new State
+				lsType: sType
+				lsKind: sKind
+			@.add mState
+		return mState
+
+	getOrCreateValueByTypeAndKind: (sType, sKind, vType, vKind) ->
+		metaState = @getOrCreateStateByTypeAndKind sType, sKind
+		descVals = metaState.getValuesByTypeAndKind vType, vKind
+		descVal = descVals[0] #TODO should do something smart if there are more than one
+		unless descVal?
+			descVal = new Value
+				lsType: vType
+				lsKind: vKind
+			metaState.get('lsValues').add descVal
+		return descVal
 
 

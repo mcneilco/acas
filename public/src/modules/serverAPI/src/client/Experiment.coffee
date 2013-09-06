@@ -99,16 +99,18 @@ class window.Experiment extends Backbone.Model
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
-
-#		if attrs.protocol = null
-#			errors.push
-#				attribute: 'protocol'
-#				message: "Protocol must be set"
+		if attrs.protocol == null
+			errors.push
+				attribute: 'protocol'
+				message: "Protocol must be set"
 
 		if errors.length > 0
 			return errors
 		else
 			return null
+
+	getDescription: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "description"
 
 class window.ExperimentBaseController extends AbstractFormController
 	template: _.template($("#ExperimentBaseView").html())
@@ -148,7 +150,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		if @model.get('recordedDate') != null
 			date = new Date(@model.get('recordedDate'))
 			@$('.bv_recordedDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
-		@$('.bv_description').html(@getDescriptionValue())
+		@$('.bv_description').html(@model.getDescription().get('stringValue'))
 
 		@
 
@@ -189,13 +191,6 @@ class window.ExperimentBaseController extends AbstractFormController
 	updateProtocolNameField: (protocolName) ->
 		@$('.bv_protocolName').html(protocolName)
 
-	getDescriptionValue: ->
-		value = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment info", "stringValue", "description"
-		desc = ""
-		if value != null
-			desc = value.get('stringValue')
-		desc
-
 	handleRecordedByChanged: =>
 		@model.set recordedBy: @$('.bv_recordedBy').val()
 		@handleNameChanged()
@@ -204,7 +199,9 @@ class window.ExperimentBaseController extends AbstractFormController
 		@model.set shortDescription: @getTrimmedInput('.bv_shortDescription')
 
 	handleDescriptionChanged: =>
-		@model.set description:@getTrimmedInput('.bv_description')
+		@model.getDescription().set
+			stringValue: $.trim(@$('.bv_description').val())
+			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
 		newName = @getTrimmedInput('.bv_experimentName')
@@ -223,7 +220,7 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	handleProtocolCodeChanged: =>
 		code = @$('.bv_protocolCode').val()
-		if code == ""
+		if code == "" || code == "unassigned"
 			@model.set 'protocol': null
 			@getAndShowProtocolName()
 			@setUseProtocolParametersDisabledState()

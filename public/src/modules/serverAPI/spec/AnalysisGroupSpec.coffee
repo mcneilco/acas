@@ -27,7 +27,7 @@ describe 'AnalysisGroup CRUD testing', ->
 					expect(@ag.get('kind')).toEqual ""
 		describe "when loaded from existing", ->
 			beforeEach ->
-				@ag = new AnalysisGroup window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0]
+				@ag = new AnalysisGroup window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups.analysisGroups[0]
 			describe "after initial load", ->
 				it "should have a kind", ->
 					expect(@ag.get('kind')).toEqual "ACAS doc for batches"

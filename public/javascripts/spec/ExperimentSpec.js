@@ -14,7 +14,7 @@
         beforeEach(function() {
           return this.exp = new Experiment();
         });
-        return describe("Defaults", function() {
+        describe("Defaults", function() {
           it('Should have default type and kind', function() {
             expect(this.exp.get('lsType')).toEqual("default");
             return expect(this.exp.get('lsKind')).toEqual("default");
@@ -43,10 +43,15 @@
             return expect(this.exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy();
           });
         });
+        return describe("required states and values", function() {
+          return it('Should have a description value', function() {
+            return expect(this.exp.getDescription() instanceof Value).toBeTruthy();
+          });
+        });
       });
       describe("when loaded from existing", function() {
         beforeEach(function() {
-          return this.exp = new Experiment(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup);
+          return this.exp = new Experiment(window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups);
         });
         return describe("after initial load", function() {
           it("should have a kind", function() {
@@ -104,13 +109,16 @@
             return expect(this.exp.get('codeName')).toEqual("EXPT-00000222");
           });
           it("should have the shortDescription set", function() {
-            return expect(this.exp.get('shortDescription')).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.shortDescription);
+            return expect(this.exp.get('shortDescription')).toEqual(window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups.shortDescription);
           });
           it("should have labels", function() {
-            return expect(this.exp.get('lsLabels').length).toEqual(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.lsLabels.length);
+            return expect(this.exp.get('lsLabels').length).toEqual(window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups.lsLabels.length);
           });
-          return it("should have labels", function() {
+          it("should have labels", function() {
             return expect(this.exp.get('lsLabels').at(0).get('lsKind')).toEqual("experiment name");
+          });
+          return it('Should have a description value', function() {
+            return expect(this.exp.getDescription().get('stringValue')).toEqual("long description goes here");
           });
         });
       });
@@ -138,8 +146,11 @@
           it("should not have the labels copied", function() {
             return expect(this.exp.get('lsLabels').length).toEqual(0);
           });
-          return it("should have the states copied", function() {
+          it("should have the states copied", function() {
             return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
+          });
+          return it('Should have a description value', function() {
+            return expect(this.exp.getDescription().get('stringValue')).toEqual("long description goes here");
           });
         });
       });
@@ -229,7 +240,7 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        return it("should be invalid when scientist not selected", function() {
+        it("should be invalid when scientist not selected", function() {
           var filtErrors;
 
           this.exp.set({
@@ -240,17 +251,19 @@
             return err.attribute === 'recordedBy';
           });
         });
-      });
-      /* hello		expect(filtErrors.length).toBeGreaterThan 0
-      			it "should be invalid when protocol not selected", ->
-      				@exp.set protocol: null
-      				expect(@exp.isValid()).toBeFalsy()
-      				filtErrors = _.filter(@exp.validationError, (err) ->
-      					err.attribute=='protocol'
-      				)
-      				expect(filtErrors.length).toBeGreaterThan 0
-      */
+        return it("should be invalid when protocol not selected", function() {
+          var filtErrors;
 
+          this.exp.set({
+            protocol: null
+          });
+          expect(this.exp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.exp.validationError, function(err) {
+            return err.attribute === 'protocol';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+      });
       return describe("model composite component conversion", function() {
         beforeEach(function() {
           runs(function() {
@@ -339,7 +352,6 @@
               return this.ebc.$('.bv_protocolCode option').length > 0;
             }, 1000);
             return runs(function() {
-              console.log(this.ebc.$('.bv_protocolCode').val());
               return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
             });
           });
@@ -361,6 +373,18 @@
             this.ebc.$('.bv_shortDescription').val(" New short description   ");
             this.ebc.$('.bv_shortDescription').change();
             return expect(this.ebc.model.get('shortDescription')).toEqual("New short description");
+          });
+          it("should update model when description is changed", function() {
+            var desc, states, values;
+
+            this.ebc.$('.bv_description').val(" New long description   ");
+            this.ebc.$('.bv_description').change();
+            states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
+            expect(states.length).toEqual(1);
+            values = states[0].getValuesByTypeAndKind("stringValue", "description");
+            desc = values[0].get('stringValue');
+            expect(desc).toEqual("New long description");
+            return expect(this.ebc.model.getDescription().get('stringValue')).toEqual("New long description");
           });
           it("should update model when name is changed", function() {
             this.ebc.$('.bv_experimentName').val(" Updated experiment name   ");
@@ -404,7 +428,7 @@
           return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("experiment created by generic data parser");
         });
         it("should fill the long description field", function() {
-          return expect(this.ebc.$('.bv_description').html()).toEqual("");
+          return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
         });
         xit("should fill the name field", function() {
           return expect(this.ebc.$('.bv_experimentName').val()).toEqual("FLIPR target A biochemical");
@@ -542,7 +566,7 @@
               });
             });
           });
-          return describe("when scientist not selected", function() {
+          describe("when scientist not selected", function() {
             beforeEach(function() {
               return runs(function() {
                 this.ebc.$('.bv_recordedBy').val("");
@@ -555,19 +579,20 @@
               });
             });
           });
+          return describe("when protocol not selected", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.ebc.$('.bv_protocolCode').val("unassigned");
+                return this.ebc.$('.bv_protocolCode').change();
+              });
+            });
+            return it("should show error on protocol dropdown", function() {
+              return runs(function() {
+                return expect(this.ebc.$('.bv_group_protocol').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
         });
-        /*
-        					describe "when protocol not selected", -> #this is not working properly - Fiona
-        					beforeEach ->
-        						runs ->
-        							@ebc.$('.bv_protocolCode').val(null)
-        							@ebc.$('.bv_protocolCode').change()
-        							console.log @ebc.model.isValid()
-        					it "should show error on protocol dropdown", ->
-        						runs ->
-        							expect(@ebc.$('.bv_group_protocol').hasClass('error')).toBeTruthy()
-        */
-
       });
     });
   });

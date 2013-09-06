@@ -102,14 +102,14 @@ describe 'Doc For Batches Behavior Testing', ->
 		describe "create a new docForBatches from experiment", ->
 			beforeEach ->
 				#experiment: newExperiment window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup
-				@exp =new Experiment window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup
+				@exp =new Experiment window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups
 				@docForBatches = new DocForBatches
 					experiment: @exp
 			it "should have a experiment setup", ->
 				expect(@docForBatches.get('experiment') instanceof Experiment).toBeTruthy()
 			it "should setup a currentFileName from fileValue", ->
 				console.log @docForBatches
-				expect(@docForBatches.get('docUpload').get('currentFileName')).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].lsStates[0].lsValues[0].fileValue
+				expect(@docForBatches.get('docUpload').get('currentFileName')).toEqual window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups.analysisGroups[0].lsStates[0].lsValues[0].fileValue
 			it "should not setup a url from urlValue", ->
 				#window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0].lsStates[0].lsValues[0].urlValue
 				expect(@docForBatches.get('docUpload').get('url')).toEqual ''

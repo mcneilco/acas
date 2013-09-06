@@ -118,16 +118,36 @@
         });
       });
     });
+    describe("Value model testing", function() {
+      beforeEach(function() {
+        return this.val = new Value();
+      });
+      return it("Class should exist", function() {
+        return expect(this.val).toBeDefined();
+      });
+    });
+    describe("Value list testing", function() {
+      beforeEach(function() {
+        return this.vl = new ValueList();
+      });
+      return describe("basic existance tests", function() {
+        return it("Class should exist", function() {
+          return expect(this.vl).toBeDefined();
+        });
+      });
+    });
     describe("State model testing", function() {
       describe("when created empty", function() {
         beforeEach(function() {
           return this.es = new State();
         });
-        it("Class should exist", function() {
-          return expect(this.es).toBeDefined();
-        });
-        return it("should have defaults", function() {
-          return expect(this.es.get('lsValues') instanceof Backbone.Collection).toBeTruthy();
+        return describe("basic existance tests", function() {
+          it("Class should exist", function() {
+            return expect(this.es).toBeDefined();
+          });
+          return it("should have defaults", function() {
+            return expect(this.es.get('lsValues') instanceof Backbone.Collection).toBeTruthy();
+          });
         });
       });
       return describe("When loaded from state json", function() {
@@ -174,41 +194,76 @@
       });
     });
     return describe("State List model testing", function() {
-      beforeEach(function() {
-        return this.esl = new StateList(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates);
-      });
-      describe("after initial load", function() {
-        it("Class should exist", function() {
-          return expect(this.esl).toBeDefined();
+      describe("when loaded from existing", function() {
+        beforeEach(function() {
+          return this.esl = new StateList(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates);
         });
-        it("should have states ", function() {
-          return expect(this.esl.length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates.length);
+        describe("after initial load with test data", function() {
+          it("Class should exist", function() {
+            return expect(this.esl).toBeDefined();
+          });
+          it("should have states ", function() {
+            return expect(this.esl.length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates.length);
+          });
+          it("first state should have kind ", function() {
+            return expect(this.esl.at(0).get('lsKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind);
+          });
+          it("states should have values", function() {
+            return expect(this.esl.at(0).get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
+          });
+          return it("first state should have populated value", function() {
+            return expect(this.esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
+          });
         });
-        it("first state should have kind ", function() {
-          return expect(this.esl.at(0).get('lsKind')).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsKind);
-        });
-        it("states should have values", function() {
-          return expect(this.esl.at(0).get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
-        });
-        return it("first state should have populated value", function() {
-          return expect(this.esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
-        });
-      });
-      describe("Get states by type and kind", function() {
-        return it("should return requested state", function() {
-          var values;
+        describe("Get states by type and kind", function() {
+          return it("should return requested state", function() {
+            var values;
 
-          values = this.esl.getStatesByTypeAndKind("metadata", "experiment metadata");
-          expect(values.length).toEqual(1);
-          return expect(values[0].get('lsTypeAndKind')).toEqual("metadata_experiment metadata");
+            values = this.esl.getStatesByTypeAndKind("metadata", "experiment metadata");
+            expect(values.length).toEqual(1);
+            return expect(values[0].get('lsTypeAndKind')).toEqual("metadata_experiment metadata");
+          });
+        });
+        describe("Get value by type and kind", function() {
+          return it("should return requested value", function() {
+            var value;
+
+            value = this.esl.getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
+            return expect(value.get('stringValue')).toEqual("911");
+          });
+        });
+        return describe("get or create a state or value", function() {
+          it("should return an existing state", function() {
+            var st;
+
+            st = this.esl.getOrCreateStateByTypeAndKind("metadata", "experiment metadata");
+            return expect(st.get('lsType')).toEqual("metadata");
+          });
+          return it("return an existing value", function() {
+            var val;
+
+            val = this.esl.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
+            return expect(val.get('stringValue')).toEqual("911");
+          });
         });
       });
-      return describe("Get value by type and kind", function() {
-        return it("should return requested value", function() {
-          var value;
-
-          value = this.esl.getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
-          return expect(value.get('stringValue')).toEqual("911");
+      return describe("when created empty", function() {
+        beforeEach(function() {
+          return this.esl = new StateList();
+        });
+        return describe("get or create a state or value", function() {
+          it("should create a new state if a specific one is requested that doesn't exist", function() {
+            expect(this.esl.getStatesByTypeAndKind("stateType", "stateKind").length).toEqual(0);
+            this.esl.getOrCreateStateByTypeAndKind("stateType", "stateKind");
+            return expect(this.esl.getStatesByTypeAndKind("stateType", "stateKind").length).toEqual(1);
+          });
+          return it("should create a new state and value if a specific value is requested that doesn't exist", function() {
+            expect(this.esl.getStatesByTypeAndKind("stateType", "stateKind").length).toEqual(0);
+            expect(this.esl.getStateValueByTypeAndKind("stateType", "stateKind", "valType", "valKind")).toBeNull;
+            this.esl.getOrCreateValueByTypeAndKind("stateType", "stateKind", "valType", "valKind");
+            expect(this.esl.getStatesByTypeAndKind("stateType", "stateKind").length).toEqual(1);
+            return expect(this.esl.getStateValueByTypeAndKind("stateType", "stateKind", "valType", "valKind").get('lsKind')).toEqual("valKind");
+          });
         });
       });
     });

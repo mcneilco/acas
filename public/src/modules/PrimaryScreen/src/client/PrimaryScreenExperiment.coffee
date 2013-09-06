@@ -28,6 +28,7 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 
 	handleSaveClicked: =>
 		#TODO add validation code and keep this button disabled until saving is a good idea
+		#console.log @model.getDescription()
 		#console.log JSON.stringify @model
 		@model.save()
 

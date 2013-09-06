@@ -132,7 +132,37 @@
           lsTransaction: 1,
           lsType: "metadata",
           lsTypeAndKind: "metadata_experiment metadata",
-          lsValues: [],
+          lsValues: [
+            {
+              clobValue: null,
+              codeValue: null,
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 804699999,
+              ignored: false,
+              lsTransaction: {
+                comments: "primary analysis protocol transactions",
+                id: 87,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: null,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: null,
+              stringValue: "long description goes here",
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "description",
+              valueOperator: null,
+              lsType: "stringValue",
+              lsTypeAndKind: "stringValue_description",
+              valueUnit: null,
+              version: 0
+            }
+          ],
           modifiedBy: null,
           modifiedDate: null,
           recordedBy: "userName",

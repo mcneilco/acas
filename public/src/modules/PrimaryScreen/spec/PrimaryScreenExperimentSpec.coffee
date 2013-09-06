@@ -26,6 +26,9 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual 0
 			describe "saving to server", ->
 				beforeEach ->
+					waitsFor ->
+						@psec.$('.bv_protocolCode option').length > 0
+					, 1000
 					runs ->
 						@psec.$('.bv_recordedBy').val("jmcneil")
 						@psec.$('.bv_recordedBy').change()
@@ -39,10 +42,16 @@ describe "Primary Screen Experiment module testing", ->
 						@psec.$('.bv_recordedDate').change()
 						@psec.$('.bv_protocolCode').val("PROT-00000001")
 						@psec.$('.bv_protocolCode').change()
+					waits(200)
+					runs ->
+						@psec.$('.bv_useProtocolParameters').click()
+					waits(200)
 
 				describe "expect save to work", ->
 					it "model should be valid and ready to save", ->
-						expect(@psec.model.isValid()).toBeTruthy()
+						runs ->
+							expect(@psec.model.isValid()).toBeTruthy()
+							console.log @psec.model.validationError
 					it "should update experiment code", ->
 						runs ->
 							@psec.$('.bv_save').click()

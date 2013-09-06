@@ -30,9 +30,13 @@ describe "Experiment module testing", ->
 					expect(@exp.get('protocol')).toBeNull()
 				it 'Should have an empty analysisGroups', ->
 					expect(@exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy()
+			describe "required states and values", ->
+				it 'Should have a description value', ->
+					expect(@exp.getDescription() instanceof Value).toBeTruthy()
+
 		describe "when loaded from existing", ->
 			beforeEach ->
-				@exp = new Experiment window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup
+				@exp = new Experiment window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups
 			describe "after initial load", ->
 				it "should have a kind", ->
 					expect(@exp.get('kind')).toEqual "ACAS doc for batches"
@@ -73,11 +77,13 @@ describe "Experiment module testing", ->
 				it "should have a code ", ->
 					expect(@exp.get('codeName')).toEqual "EXPT-00000222"
 				it "should have the shortDescription set", ->
-					expect(@exp.get('shortDescription')).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.shortDescription
+					expect(@exp.get('shortDescription')).toEqual window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups.shortDescription
 				it "should have labels", ->
-					expect(@exp.get('lsLabels').length).toEqual window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.lsLabels.length
+					expect(@exp.get('lsLabels').length).toEqual window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups.lsLabels.length
 				it "should have labels", ->
 					expect(@exp.get('lsLabels').at(0).get('lsKind')).toEqual "experiment name"
+				it 'Should have a description value', ->
+					expect(@exp.getDescription().get('stringValue')).toEqual "long description goes here"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -97,6 +103,8 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsLabels').length).toEqual 0
 				it "should have the states copied", ->
 					expect(@exp.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
+				it 'Should have a description value', ->
+					expect(@exp.getDescription().get('stringValue')).toEqual "long description goes here"
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -161,14 +169,13 @@ describe "Experiment module testing", ->
 				filtErrors = _.filter(@exp.validationError, (err) ->
 					err.attribute=='recordedBy'
 				)
-		### hello		expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when protocol not selected", ->
 				@exp.set protocol: null
 				expect(@exp.isValid()).toBeFalsy()
 				filtErrors = _.filter(@exp.validationError, (err) ->
 					err.attribute=='protocol'
 				)
-				expect(filtErrors.length).toBeGreaterThan 0 ###
+				expect(filtErrors.length).toBeGreaterThan 0
 
 		describe "model composite component conversion", ->
 			beforeEach ->
@@ -233,7 +240,6 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_protocolCode option').length > 0
 					, 1000
 					runs ->
-						console.log @ebc.$('.bv_protocolCode').val()
 						expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
 				it "should show the protocol name", ->
 					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
@@ -249,14 +255,15 @@ describe "Experiment module testing", ->
 					@ebc.$('.bv_shortDescription').val(" New short description   ")
 					@ebc.$('.bv_shortDescription').change()
 					expect(@ebc.model.get 'shortDescription').toEqual "New short description"
-				#					it "should update model when description is changed", ->
-				#						@ebc.$('.bv_description').val(" New long description   ")
-				#						@ebc.$('.bv_description').change()
-				#						states = @ebc.model.get('experimentStates').getStatesByTypeAndKind "metadata", "experiment info"
-				#						expect(states.length).toEqual 1
-				#						values = states[0].getValuesByTypeAndKind("stringValue", "description")
-				#						desc = values[0].get('stringValue')
-				#						expect(desc).toEqual "New long description"
+				it "should update model when description is changed", ->
+					@ebc.$('.bv_description').val(" New long description   ")
+					@ebc.$('.bv_description').change()
+					states = @ebc.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
+					expect(states.length).toEqual 1
+					values = states[0].getValuesByTypeAndKind("stringValue", "description")
+					desc = values[0].get('stringValue')
+					expect(desc).toEqual "New long description"
+					expect(@ebc.model.getDescription().get('stringValue')).toEqual "New long description"
 				it "should update model when name is changed", ->
 					@ebc.$('.bv_experimentName').val(" Updated experiment name   ")
 					@ebc.$('.bv_experimentName').change()
@@ -287,7 +294,7 @@ describe "Experiment module testing", ->
 			it "should fill the short description field", ->
 				expect(@ebc.$('.bv_shortDescription').html()).toEqual "experiment created by generic data parser"
 			it "should fill the long description field", ->
-				expect(@ebc.$('.bv_description').html()).toEqual ""
+				expect(@ebc.$('.bv_description').html()).toEqual "long description goes here"
 			#TODO this test breaks because of the weird behavior where new a Model from a json hash
 			# then setting model attribites changes the hash
 			xit "should fill the name field", ->
@@ -390,17 +397,14 @@ describe "Experiment module testing", ->
 					it "should show error on scientist dropdown", ->
 						runs ->
 							expect(@ebc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
-			###
-					describe "when protocol not selected", -> #this is not working properly - Fiona
+				describe "when protocol not selected", ->
 					beforeEach ->
 						runs ->
-							@ebc.$('.bv_protocolCode').val(null)
+							@ebc.$('.bv_protocolCode').val("unassigned")
 							@ebc.$('.bv_protocolCode').change()
-							console.log @ebc.model.isValid()
 					it "should show error on protocol dropdown", ->
 						runs ->
 							expect(@ebc.$('.bv_group_protocol').hasClass('error')).toBeTruthy()
-###
 
 
 
@@ -408,3 +412,7 @@ describe "Experiment module testing", ->
 
 #TODO make scientist and date render from and update recorded** if new expt and updated** if existing
 #TODO add notebook field
+#TODO fix styling or DOM grouping to force protocol, scientist and date fields to show red when they have error style
+#TODO fix all recordedBy in states, values and lables before initial save,
+# or when that field is updated
+#TODO save user input date in state, not recordedDate

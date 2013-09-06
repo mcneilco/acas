@@ -37,7 +37,7 @@ This suite of services provides CRUD operations on Analysis Group Objects
       });
       return describe("when loaded from existing", function() {
         beforeEach(function() {
-          return this.ag = new AnalysisGroup(window.experimentServiceTestJSON.savedExperimentWithTreatmentGroup.analysisGroups[0]);
+          return this.ag = new AnalysisGroup(window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups.analysisGroups[0]);
         });
         return describe("after initial load", function() {
           it("should have a kind", function() {

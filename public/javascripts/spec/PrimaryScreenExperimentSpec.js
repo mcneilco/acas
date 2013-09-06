@@ -37,7 +37,10 @@
         });
         return describe("saving to server", function() {
           beforeEach(function() {
-            return runs(function() {
+            waitsFor(function() {
+              return this.psec.$('.bv_protocolCode option').length > 0;
+            }, 1000);
+            runs(function() {
               this.psec.$('.bv_recordedBy').val("jmcneil");
               this.psec.$('.bv_recordedBy').change();
               this.psec.$('.bv_shortDescription').val(" New short description   ");
@@ -51,10 +54,18 @@
               this.psec.$('.bv_protocolCode').val("PROT-00000001");
               return this.psec.$('.bv_protocolCode').change();
             });
+            waits(200);
+            runs(function() {
+              return this.psec.$('.bv_useProtocolParameters').click();
+            });
+            return waits(200);
           });
           return describe("expect save to work", function() {
             it("model should be valid and ready to save", function() {
-              return expect(this.psec.model.isValid()).toBeTruthy();
+              return runs(function() {
+                expect(this.psec.model.isValid()).toBeTruthy();
+                return console.log(this.psec.model.validationError);
+              });
             });
             return it("should update experiment code", function() {
               runs(function() {

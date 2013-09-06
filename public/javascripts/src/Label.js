@@ -257,6 +257,37 @@
       return value;
     };
 
+    StateList.prototype.getOrCreateStateByTypeAndKind = function(sType, sKind) {
+      var mState, mStates;
+
+      mStates = this.getStatesByTypeAndKind(sType, sKind);
+      mState = mStates[0];
+      if (mState == null) {
+        mState = new State({
+          lsType: sType,
+          lsKind: sKind
+        });
+        this.add(mState);
+      }
+      return mState;
+    };
+
+    StateList.prototype.getOrCreateValueByTypeAndKind = function(sType, sKind, vType, vKind) {
+      var descVal, descVals, metaState;
+
+      metaState = this.getOrCreateStateByTypeAndKind(sType, sKind);
+      descVals = metaState.getValuesByTypeAndKind(vType, vKind);
+      descVal = descVals[0];
+      if (descVal == null) {
+        descVal = new Value({
+          lsType: vType,
+          lsKind: vKind
+        });
+        metaState.get('lsValues').add(descVal);
+      }
+      return descVal;
+    };
+
     return StateList;
 
   })(Backbone.Collection);

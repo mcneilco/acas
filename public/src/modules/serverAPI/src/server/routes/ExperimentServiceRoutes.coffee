@@ -16,6 +16,11 @@ exports.experimentByCodename = (request, response) ->
 	if request.query.testMode
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		response.end JSON.stringify experimentServiceTestJSON.stubSavedExperiment
+	else
+		config = require '../public/src/conf/configurationNode.js'
+		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments/codename/"+request.params.code
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, response)
 
 exports.experimentById = (req, resp) ->
 	console.log req.params.id
@@ -36,6 +41,7 @@ exports.postExperiment = (req, resp) ->
 		config = require '../public/src/conf/configurationNode.js'
 		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments"
 		request = require 'request'
+		console.log req.body
 		request(
 				method: 'POST'
 				url: baseurl
