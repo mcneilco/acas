@@ -38,11 +38,15 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{typeName: "material"}
+{typeName: "material"},
+{typeName: "plate"},
+{typeName: "well"}
 ]' http://"$HOSTNAME":8080/acas/containertypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{kindName: "animal", lsType:{id:1, version:0}}
+{kindName: "animal", lsType:{id:1, version:0}},
+{kindName: "384 well compound plate", lsType:{id:2, version:0}},
+{kindName: "plate well", lsType:{id:3, version:0}}
 ]' http://"$HOSTNAME":8080/acas/containerkinds/jsonArray
 
 
