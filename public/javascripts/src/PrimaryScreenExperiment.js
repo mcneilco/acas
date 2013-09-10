@@ -101,14 +101,10 @@
     };
 
     PrimaryScreenAnalysisController.prototype.getHitThreshold = function() {
-      var desc, value;
+      var value;
 
-      value = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
-      desc = "";
-      if (value !== null) {
-        desc = value.get('numericValue');
-      }
-      return desc;
+      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
+      return value.get('numericValue');
     };
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
@@ -130,7 +126,7 @@
     PrimaryScreenAnalysisController.prototype.handleHitThresholdChanged = function() {
       var value;
 
-      value = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
+      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       return value.set({
         numericValue: parseFloat($.trim(this.$('.bv_hitThreshold').val()))
       });

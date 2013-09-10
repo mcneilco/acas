@@ -96,7 +96,7 @@ This suite of services provides CRUD operations on Experiment Objects
         self = this;
         return $.ajax({
           type: 'PUT',
-          url: "api/experiments",
+          url: "api/experiments/1234",
           data: window.experimentServiceTestJSON.fullExperimentFromServer,
           success: function(json) {
             return self.serviceReturn = json;

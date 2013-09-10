@@ -81,7 +81,7 @@
     app.get('/api/experiments/codename/:code', experimentRoutes.experimentByCodename);
     app.get('/api/experiments/:id', experimentRoutes.experimentById);
     app.post('/api/experiments', experimentRoutes.postExperiment);
-    app.put('/api/experiments', experimentRoutes.putExperiment);
+    app.put('/api/experiments/:id', experimentRoutes.putExperiment);
     projectServiceRoutes = require('./routes/ProjectServiceRoutes.js');
     app.get('/api/projects', projectServiceRoutes.getProjects);
     docForBatchesRoutes = require('./routes/DocForBatchesRoutes.js');

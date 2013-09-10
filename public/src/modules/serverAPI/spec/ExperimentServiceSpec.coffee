@@ -71,7 +71,7 @@ describe 'Experiment CRUD testing', ->
 			self = @
 			$.ajax
 				type: 'PUT'
-				url: "api/experiments"
+				url: "api/experiments/1234"
 				data: window.experimentServiceTestJSON.fullExperimentFromServer
 				success: (json) ->
 					self.serviceReturn = json

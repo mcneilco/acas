@@ -65,7 +65,7 @@ exports.putExperiment = (req, resp) ->
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
 		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments"
+		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments/"+req.params.id
 		request = require 'request'
 		request(
 			method: 'PUT'

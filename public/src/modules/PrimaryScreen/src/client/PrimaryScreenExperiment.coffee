@@ -62,11 +62,8 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@controlStates = @model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment controls")
 
 	getHitThreshold: ->
-		value = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
-		desc = ""
-		if value != null
-			desc = value.get('numericValue')
-		desc
+		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
+		value.get('numericValue')
 
 	showExistingResults: ->
 		analysisStatus = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
@@ -80,7 +77,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
 
 	handleHitThresholdChanged: =>
-		value = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
+		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
 		value.set numericValue: parseFloat($.trim(@$('.bv_hitThreshold').val()))
 
 	handleExperimentSaved: =>

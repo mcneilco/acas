@@ -62,6 +62,7 @@ applicationScripts = [
 
 exports.primaryScreenExperimentIndex = (request, response) ->
 	scriptsToLoad = requiredScripts.concat applicationScripts
+	global.specRunnerTestmode = false
 
 	return response.render 'PrimaryScreenExperiment',
 	                       title: 'Primary Screen Experiment'
