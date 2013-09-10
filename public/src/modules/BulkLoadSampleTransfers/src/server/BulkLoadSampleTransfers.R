@@ -104,7 +104,7 @@ runMain <- function(fileName,dryRun,recordedBy,configList) {
   }
 
   ### Save new plates (but not contents)
-  lsTransaction <- createLsTransaction(comments="Sample Transfer load")
+  lsTransaction <- createLsTransaction(comments="Sample Transfer load")$id
   
   wellTranslation <- saveNewWells(newBarcodeList, logFile, lsTransaction, recordedBy, configList)
   IdsToReplace <- containerTable$WELL_ID < 0
@@ -161,7 +161,7 @@ runMain <- function(fileName,dryRun,recordedBy,configList) {
   interactionList <- mlply(interactions, .fun = createLocalContainerContainerItx)
   names(interactionList) <- NULL
   savedInteractions <- saveAcasEntities(interactionList, "itxcontainercontainers")
-  interactions$interactionId <- sapply(savedInteractions, function(x) x$id)
+  interactions$interactionId <- sapply(savedInteractions, getElement, "id")
   interactions$stateID <- 1:nrow(interactions)
   
   dateRows <- data.frame(valueType = "dateValue", valueKind = "date transferred", dateValue = interactions$dateTransferred, interactionID = interactions$interactionId, stringsAsFactors=FALSE)
@@ -382,7 +382,7 @@ bulkLoadSampleTransfers <- function(request) {
   hasError <- length(errorList) > 0
   hasWarning <- length(loadResult$warningList) > 0
   
-  htmlSummary <- createHTML(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
+  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
   
   errorMessages <- list()
   

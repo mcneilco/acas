@@ -22,6 +22,7 @@
 #   Example:
 #     bulkLoadContainersFromSDF(request=list(fileToParse="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf", dryRun= "true",user="smeyer"))
 #     runMain(fileName="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf", dryRun= TRUE,recordedBy="smeyer")
+#     runMain(fileName="/Users/smeyer/Documents/clients/nextval/Shipment_8242_Update_cutoff.sdf", dryRun= F,recordedBy="smeyer")
 
 # Random notes on container and interaction creation:
 # yellowContainer <- createContainer(kind = "No, yellow!")
@@ -157,7 +158,7 @@ createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy)
       labelText = barcode,
       recordedBy = recordedBy,
       lsType = "barcode",
-      lsKind = "plate",
+      lsKind = "plate barcode",
       lsTransaction = lsTransaction)),
     containerStates = list(createContainerState(
       lsType="constants",
@@ -266,6 +267,8 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
 
 bulkLoadContainersFromSDF <- function(request) {
   
+  require('racas')
+  
   # Collect the information from the request
   request <- as.list(request)
   fileName <- request$fileToParse
@@ -276,9 +279,6 @@ bulkLoadContainersFromSDF <- function(request) {
   dryRun <- interpretJSONBoolean(dryRun)
   
   configList <- readConfigFile("public/src/conf/configurationNode.js")
-  
-  # Set the global for the JSON library
-  lsServerURL <<- configList$serverPath
   
   # Run the main function with error handling
   loadResult <- tryCatch.W.E(runMain(fileName,dryRun,recordedBy,configList))
@@ -302,7 +302,7 @@ bulkLoadContainersFromSDF <- function(request) {
   hasError <- length(errorList) > 0
   hasWarning <- length(loadResult$warningList) > 0
   
-  htmlSummary <- createHTML(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
+  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
   
   errorMessages <- list()
   
