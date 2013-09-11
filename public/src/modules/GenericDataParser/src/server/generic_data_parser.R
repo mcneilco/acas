@@ -800,11 +800,14 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   # Check the Datatype row and get information from it
   hiddenColumns <- getHiddenColumns(as.character(unlist(calculatedResults[1,])))
   
-  clobColumns <- which(sapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255)))
-  if(any(clobColumns)) {
+  clobColumns <- vapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255), c(TRUE))
+
+  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])),as.character(unlist(calculatedResults[2,])), lockCorpBatchId, clobColumns)
+  
+  if(any(clobColumns & !(classRow=="Clob"))) {
     warning("One of your entries had more than 255 characters, so it will be saved as a 'Clob'. In the future, you should use this for your column header.")
   }
-  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])),as.character(unlist(calculatedResults[2,])), lockCorpBatchId, clobColumns)
+  
   # Remove Datatype Row
   calculatedResults <- calculatedResults[1:nrow(calculatedResults)>1,]
   
