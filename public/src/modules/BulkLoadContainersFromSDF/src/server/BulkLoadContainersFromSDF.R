@@ -39,7 +39,7 @@
 # 7:33 AM   - loaded 4500 records from file
 # Stopped for transport
 
-runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
+runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   require('rcdk')
   require('plyr')
   
@@ -105,17 +105,17 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
                                       numberOfLabels=length(barcodes))
     plates <- mapply(barcodes, plateCodeNameList, FUN = createPlateWithBarcode, MoreArgs = list(lsTransaction=lsTransaction, recordedBy=recordedBy), USE.NAMES=FALSE)
     plateList <- apply(plates,MARGIN=2,as.list)
-    plateList <<- plateList
+    
     savedPlates <- saveContainers(plateList)
     
-    plateIds <- data.frame(barcode=barcodes, plateId=sapply(savedPlates,getId))
+    plateIds <- data.frame(barcode=barcodes, plateId=sapply(savedPlates,getElement, "id"))
     
     propertyTable$plateId <- plateIds$plateId[match(propertyTable$ALIQUOT_PLATE_BARCODE,plateIds$barcode)]
     
     # Save wells
     propertyTable$wellCodeName <- unlist(getAutoLabels(thingTypeAndKind="material_container",
                                                        labelTypeAndKind="id_codeName", 
-                                                       numberOfLabels=length(moleculeList)), 
+                                                       numberOfLabels=nrow(propertyTable)), 
                                          use.names = FALSE)
     
 
@@ -127,7 +127,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
     
     savedWells <- saveContainers(wellList)
     
-    propertyTable$wellId <- sapply(savedWells, getId)
+    propertyTable$wellId <- sapply(savedWells, getElement, "id")
     
     # Save interactions
     propertyTable$interactionCodeName <- unlist(getAutoLabels(thingTypeAndKind="interaction_containerContainer",
@@ -143,7 +143,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
     
     savedContainerContainerInteractions <- saveContainerContainerInteractions(interactions)
     
-    summaryInfo$lsTransactionId <- lsTransaction$id
+    summaryInfo$lsTransactionId <- lsTransaction
   }
   return(summaryInfo)
 }
@@ -255,8 +255,8 @@ createWellFromSDFtable <- function(propertyTable, lsTransaction, recordedBy) {
 }
 createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsTransaction, recordedBy) {
   return(createContainerContainerInteraction(
-    interactionType= "has member",
-    interactionKind= "plate well",
+    lsType= "has member",
+    lsKind= "plate well",
     codeName= interactionCodeName,
     recordedBy= recordedBy,
     lsTransaction= lsTransaction,
@@ -278,10 +278,8 @@ bulkLoadContainersFromSDF <- function(request) {
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   
-  configList <- readConfigFile("public/src/conf/configurationNode.js")
-  
   # Run the main function with error handling
-  loadResult <- tryCatch.W.E(runMain(fileName,dryRun,recordedBy,configList))
+  loadResult <- tryCatch.W.E(runMain(fileName,dryRun,recordedBy))
   
   # If the output has class simpleError, save it as an error
   errorList <- list()
