@@ -217,3 +217,4 @@ finally = {
 	disconnected <- dbDisconnect(conn)
 }
 )
+
