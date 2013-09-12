@@ -103,7 +103,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "Dose", lsType:{id:7, version:0}},
 {kindName: "Response", lsType:{id:7, version:0}},
 {kindName: "flag", lsType:{id:1, version:0}},
-{kindName: "annotation id", lsType:{id:7, version:0}},
+{kindName: "annotation file", lsType:{id:2, version:0}},
 {kindName: "rows", lsType:{id:7, version:0}},
 {kindName: "columns", lsType:{id:7, version:0}},
 {kindName: "wells", lsType:{id:7, version:0}},

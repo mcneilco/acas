@@ -1,15 +1,12 @@
-#source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
-#source("public/src/modules/sharedFunctions.R")
+# Registers sample transfers from one well to another
 
-# Sys.setenv(ACAS_HOME = "~/Documents/clients/Wellspring/SeuratAddOns/")
-# setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
-# bulkLoadSampleTransfers(request=list(fileToParse="/Users/smeyer/Documents/clients/Wellspring/SeuratAddOns/public/src/modules/BulkLoadSampleTransfers/spec/specFiles/FLIPROutputLogSmall.csv", dryRun=TRUE, user = "smeyer"))
+# bulkLoadSampleTransfers(request=list(fileToParse="public/src/modules/BulkLoadSampleTransfers/spec/specFiles/FLIPROutputLogSmall.csv", dryRun=TRUE, user = "smeyer"))
 
 #containerTable <- fullContainerTable
 #containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME_UNIT), ]
 #containerTable <- containerTable[containerTable$WELL_ID %in% c(logFile$Source.Id, logFile$Destination.Id), ]
 #containerTable$VOLUME[containerTable$WELL_NAME == "A01"] <- Inf
-runMain <- function(fileName,dryRun,recordedBy,configList) {
+runMain <- function(fileName, dryRun, testMode, recordedBy) {
   require(plyr)
   
   logFile <- read.csv(fileName, stringsAsFactors = FALSE)
@@ -20,10 +17,10 @@ runMain <- function(fileName,dryRun,recordedBy,configList) {
   
   if (dryRun) return(summaryInfo)
   
-  containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)))
+  containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)), testMode)
   
   # TODO: this makes it look pretty, remove later
-  containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME_UNIT), ]
+  containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME) & !is.na(containerTable$VOLUME_UNIT), ]
   
   containerTable$numericValue[containerTable$VOLUME_STRING == "infinite"] <- Inf
   
@@ -106,7 +103,7 @@ runMain <- function(fileName,dryRun,recordedBy,configList) {
   ### Save new plates (but not contents)
   lsTransaction <- createLsTransaction(comments="Sample Transfer load")$id
   
-  wellTranslation <- saveNewWells(newBarcodeList, logFile, lsTransaction, recordedBy, configList)
+  wellTranslation <- saveNewWells(newBarcodeList, logFile, lsTransaction, recordedBy)
   IdsToReplace <- containerTable$WELL_ID < 0
   containerTable$WELL_ID[IdsToReplace]  <- wellTranslation$newWellId[match(containerTable$WELL_ID, wellTranslation$oldWellId)][IdsToReplace]
   interactions$firstContainer  <- wellTranslation$newWellId[match(interactions$firstContainer, wellTranslation$oldWellId)]
@@ -201,7 +198,7 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
     secondContainer= list(id=wellId, version=0)
   ))
 }
-saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, configList) {
+saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy) {
   # Saves new wells and their interactions with plates
   
   savedNewPlates <- registerNewPlates(newBarcodeList, lsTransaction=lsTransaction, recordedBy=recordedBy)
@@ -315,11 +312,16 @@ createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy)
     ))
   ))
 }
-getCompoundPlateInfo <- function(barcodeList) {
+getCompoundPlateInfo <- function(barcodeList, testMode = FALSE) {
   barcodeQuery <- paste(barcodeList,collapse="','")
   
   # TODO: need to add current state
-  wellTable <- query(paste0("SELECT * FROM api_container_contents WHERE barcode IN ('", barcodeQuery, "')"))
+  if (testMode) {
+    fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
+    wellTable <- fakeAPI
+  } else {
+    wellTable <- query(paste0("SELECT * FROM api_container_contents WHERE barcode IN ('", barcodeQuery, "')"))
+  }
   wellTable <- wellTable[wellTable$BARCODE %in% barcodeList, ]
   
   return(wellTable)
@@ -359,9 +361,9 @@ bulkLoadSampleTransfers <- function(request) {
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
-   
+  testMode <- TRUE
   # Run the main function with error handling
-  loadResult <- tryCatch.W.E(runMain(fileName,dryRun,recordedBy,configList))
+  loadResult <- tryCatch.W.E(runMain(fileName,dryRun, testMode, recordedBy))
   
   # If the output has class simpleError, save it as an error
   errorList <- list()
