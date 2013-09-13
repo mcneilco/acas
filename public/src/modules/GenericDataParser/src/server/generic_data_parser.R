@@ -1254,7 +1254,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   
   protocol <- saveProtocol(protocol)
 }
-createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy, configList) {
+createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy, configList, replacedExperimentCodes) {
   # creates an experiment using the metaData
   # 
   # Args:
@@ -1314,7 +1314,14 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                        codeValue = metaData$Project[1],
                                                                        lsTransaction= lsTransaction)
   }
-  
+  if (!is.null(replacedExperimentCodes)) {
+    for (experimentCode in replacedExperimentCodes) {
+      experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "codeValue",
+                                                                         lsKind = "previous experiment code",
+                                                                         codeValue = experimentCode,
+                                                                         lsTransaction= lsTransaction)
+    }
+  }
   # Create an experiment state for metadata
   experimentStates[[length(experimentStates)+1]] <- createExperimentState(experimentValues=experimentValues,
                                                                           lsTransaction = lsTransaction, 
@@ -2160,14 +2167,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Delete any old data under the same experiment name (delete and reload)
   if(!dryRun && !newExperiment && errorFree) {
-    deleteSourceFile(experiment, configList)
-    deleteLinkFile(experiment)
+    deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
     deleteExperiment(experiment)
+  } else {
+    deletedExperimentCodes <- NULL
   }
   
   if (!dryRun && errorFree) {
     experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, 
-                                      recordedBy, configList)
+                                      recordedBy, configList, deletedExperimentCodes)
     assign(x="experiment", value=experiment, envir=parent.frame())
   }
   
@@ -2289,6 +2297,7 @@ deleteAnnotation <- function(experiment, configList) {
   }
 }
 deleteSourceFile <- function(experiment, configList) {
+  # Not used right now
 
   require(RCurl)
   require(rjson)
@@ -2483,6 +2492,12 @@ getStateGroups <- function(formatSettings) {
     stop(paste("The format", inputFormat, "is missing stateGroup settings in the configuration file. Contact your system administrator."))
   })
   return(stateGroups)
+}
+getPreviousExperimentCodes <- function(experiment) {
+  metadataState <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]
+  previousCodeValues <- getValuesByTypeAndKind(metadataState, "codeValue_previous experiment code")
+  previousExperimentCodes <- lapply(previousCodeValues, getElement, "codeValue")
+  return(previousExperimentCodes)
 }
 parseGenericData <- function(request) {
   # Highest level function
