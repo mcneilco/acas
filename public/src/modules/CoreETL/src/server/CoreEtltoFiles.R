@@ -63,8 +63,8 @@ makeFileName <- function(expt) {
 	eNames <- levels(as.factor(expt$Experiment_Name))
 	if (length(eNames) != 1) "problem with experiment results, more than one experiment name"
 	eName <- gsub("/","-",eNames[[1]])
-	dir.create(paste("coreSELFilesToLoad9/", pName, sep=""), recursive = TRUE)
-	return(paste("coreSELFilesToLoad9/", pName,"/", eName, ".csv", sep=""))
+	dir.create(paste("coreSELFilesToLoad13/", pName, sep=""), recursive = TRUE, showWarnings=FALSE)
+	return(paste("coreSELFilesToLoad13/", pName,"/", eName, ".csv", sep=""))
 }
 
 makeValueString <- function(exptRow, resultType) {
@@ -140,7 +140,7 @@ getColumnHeaders <- function(castExpt) {
 			else nameParts[[len-1]] = paste(" [", concentration, " ",concentrationUnits,"]", sep="" )
 			nameParts[[len]] = ""
 			headers <- c(headers, (paste(nameParts, collapse="")))
-			dataTypes <- c(dataTypes, lookupType(name))
+			dataTypes <- c(dataTypes, lookupType(nameParts[[1]]))
 		} else {
 			headers <- c(headers, "Corporate Batch ID")
 			dataTypes <- c(dataTypes, "Datatype")
@@ -167,7 +167,7 @@ options(stringsAsFactors=FALSE)
 
 protocolsToSearch = readLines("assaylist.txt")
 #protocolsToSearch = I("CRO CYP DR 1A2")
-#protocolsToSearch = c("GC SCRN Soluble Guanylyl Cyclase Agonist")
+#protocolsToSearch = c("CRO LOG D ASSAY")
 for (p in 1:length(protocolsToSearch)) {
 	print(paste("processing protocol:", protocolsToSearch[[p]]))
 	experiments <- queryProtocol(protocolsToSearch[[p]])

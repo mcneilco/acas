@@ -3,8 +3,8 @@
 
 Sys.setenv("ACAS_HOME"="/opt/node_apps/acas/")
 home <- Sys.getenv("ACAS_HOME")
-foldersLocation <- "~/coreetl/coreSELFilesToLoad9"
-outputFile <- "~/coreETLoutput.txt"
+foldersLocation <- "~/coreetl/coreSELFilesToLoad13"
+outputFile <- "~/coreetl/coreETLoutput.txt"
 dryRunMode <- "false"
 user <- "smeyer"
 require(racas)
