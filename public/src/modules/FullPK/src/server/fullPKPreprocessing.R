@@ -177,7 +177,10 @@ preprocessPK <- function(fileToParse, parameterList) {
   # Separate unsplit columns
   #TODO: Route needs discussion with Brian, plus more work below
   notSplitColumns <- c("Animal", "Dose (mg/kg)", "Day", "Species", "Gender")
-  unsplitColumns <- finalDF[ , finalDF[2, ] %in% notSplitColumns]
+  unsplitColumnHeaders <- finalDF[1:2, finalDF[2, ] %in% notSplitColumns]
+  unsplitColumnsIV <- finalDF[grep("IV", finalDF[,"Route"]), finalDF[2, ] %in% notSplitColumns]
+  unsplitColumnsPO <- finalDF[grep("PO", finalDF[,"Route"]), finalDF[2, ] %in% notSplitColumns]
+  unsplitColumns <- rbind(unsplitColumnHeaders, unsplitColumnsIV, unsplitColumnsPO)
   finalDF <- finalDF[ , !(finalDF[2, ] %in% notSplitColumns)]
   
   
