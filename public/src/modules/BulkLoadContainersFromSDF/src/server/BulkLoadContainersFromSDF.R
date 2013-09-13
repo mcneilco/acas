@@ -96,10 +96,17 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       }
     }
     
+    propertyTable$ALIQUOT_CONC <- as.numeric(propertyTable$ALIQUOT_CONC)
+    propertyTable$ALIQUOT_VOLUME <- as.numeric(propertyTable$ALIQUOT_VOLUME)
+    
+    if (any(is.na(c(propertyTable$ALIQUOT_CONC, propertyTable$ALIQUOT_VOLUME)))) {
+      stop("Some of the concentrations or volumes are not numbers")
+    }
+    
     # Save plate
     lsTransaction <- createLsTransaction(comments="Bulk load from .sdf file")$id
     
-    barcodes <- levels(propertyTable$ALIQUOT_PLATE_BARCODE)
+    barcodes <- unique(propertyTable$ALIQUOT_PLATE_BARCODE)
     plateCodeNameList <- getAutoLabels(thingTypeAndKind="material_container",
                                       labelTypeAndKind="id_codeName", 
                                       numberOfLabels=length(barcodes))
@@ -217,14 +224,16 @@ createWellFromSDFtable <- function(propertyTable, lsTransaction, recordedBy) {
           createStateValue(
             lsType= "numericValue",
             lsKind= "concentration",
-            numericValue= propertyTable$"ALIQUOT_CONC",
+            stringValue= if (propertyTable$"ALIQUOT_CONC"==Inf) {"infinite"} else {NULL},
+            numericValue= if (propertyTable$"ALIQUOT_CONC"==Inf) {NULL} else {propertyTable$"ALIQUOT_CONC"},
             valueUnit= propertyTable$"ALIQUOT_CONC_UNIT",
             lsTransaction= lsTransaction,
             recordedBy= recordedBy),
           createStateValue(
             lsType= "numericValue",
             lsKind= "volume",
-            numericValue= propertyTable$"ALIQUOT_VOLUME",
+            stringValue= if (propertyTable$"ALIQUOT_VOLUME"==Inf) {"infinite"} else {NULL},
+            numericValue= if (propertyTable$"ALIQUOT_VOLUME"==Inf) {NULL} else {propertyTable$"ALIQUOT_CONC"},
             valueUnit= propertyTable$"ALIQUOT_VOLUME_UNIT",
             lsTransaction= lsTransaction,
             recordedBy= recordedBy),
@@ -266,8 +275,8 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
 }
 
 bulkLoadContainersFromSDF <- function(request) {
-  
   require('racas')
+  options(stringsAsFactors = FALSE)
   
   # Collect the information from the request
   request <- as.list(request)
@@ -290,7 +299,7 @@ bulkLoadContainersFromSDF <- function(request) {
   }
   
   # Save warning messages (but not the function call, as it is only useful while programming)
-  loadResult$warningList <- lapply(loadResult$warningList,getWarningMessage)
+  loadResult$warningList <- lapply(loadResult$warningList, getElement, "message")
   if (length(loadResult$warningList)>0) {
     loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
   }

@@ -1,6 +1,6 @@
 # Registers sample transfers from one well to another
 
-# bulkLoadSampleTransfers(request=list(fileToParse="public/src/modules/BulkLoadSampleTransfers/spec/specFiles/FLIPROutputLogSmall.csv", dryRun=TRUE, user = "smeyer"))
+# bulkLoadSampleTransfers(request=list(fileToParse="public/src/modules/BulkLoadSampleTransfers/spec/specfiles/IFF Primary Screen Transfer Log 2013_4_18_edited_barcodes.csv", dryRun=TRUE, user = "smeyer"))
 
 #containerTable <- fullContainerTable
 #containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME_UNIT), ]
