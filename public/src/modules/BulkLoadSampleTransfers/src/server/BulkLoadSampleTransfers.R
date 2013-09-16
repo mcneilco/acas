@@ -8,6 +8,7 @@
 #containerTable$VOLUME[containerTable$WELL_NAME == "A01"] <- Inf
 runMain <- function(fileName, dryRun, testMode, recordedBy) {
   require(plyr)
+  require(RCurl)
   
   logFile <- read.csv(fileName, stringsAsFactors = FALSE)
   
@@ -19,10 +20,10 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   
   containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)), testMode)
   
-  # TODO: this makes it look pretty, remove later
-  containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME) & !is.na(containerTable$VOLUME_UNIT), ]
+  # TODO: this makes it look pretty, remove later (removed because it did not get Inf)
+  #containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME) & !is.na(containerTable$VOLUME_UNIT), ]
   
-  containerTable$numericValue[containerTable$VOLUME_STRING == "infinite"] <- Inf
+  containerTable$VOLUME[containerTable$VOLUME_STRING == "infinite"] <- Inf
   
   newBarcodeList <- unique(logFile$Destination.Barcode[!(logFile$Destination.Barcode %in% containerTable$BARCODE)])
   
@@ -43,6 +44,14 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   logFile$Source.Id[is.na(logFile$Source.Id)] <- logFile$Destination.Id[match(logFile$FakeSourceId, logFile$FakeDestinationId)][is.na(logFile$Source.Id)]
   
   containerTable <- containerTable[containerTable$WELL_ID %in% c(logFile$Source.Id, logFile$Destination.Id), ]
+  
+  if (testMode) {
+    logFile <- logFile[!is.na(logFile$Source.Id), ]
+  } else {
+    if(any(is.na(logFile$Source.Id))) {
+      stop("Not all source plates have been registered")
+    }
+  }
   
   interactions <- data.frame()
   for (i in 1:nrow(logFile)) {
@@ -229,9 +238,9 @@ saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy) {
     createLocalContainer <- function(plateId, labelText, containerId, wellCodeName, ..., lsTransaction, recordedBy) {
       createContainer(
         codeName=wellCodeName, lsTransaction=lsTransaction, recordedBy=recordedBy, 
-        containerType= "well", containerKind= "plate well",
+        lsType= "well", lsKind= "plate well",
         containerLabels=list(createContainerLabel(
-          labelType="name", labelKind="well name", labelText=labelText, recordedBy=recordedBy, lsTransaction=lsTransaction)))
+          lsType="name", lsKind="well name", labelText=labelText, recordedBy=recordedBy, lsTransaction=lsTransaction)))
     }
     wellList <- mlply(.data= newWells, .fun = createLocalContainer,
                       lsTransaction=lsTransaction, recordedBy=recordedBy)
@@ -277,35 +286,35 @@ registerNewPlates <- function(barcodes, lsTransaction, recordedBy) {
 createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy) {
   return(createContainer(
     codeName = codeName[[1]],
-    containerType = "plate", 
-    containerKind = "384 well compound plate", 
+    lsType = "plate", 
+    lsKind = "384 well compound plate", 
     recordedBy = recordedBy,
     lsTransaction = lsTransaction,
     containerLabels = list(createContainerLabel(
       labelText = barcode,
       recordedBy = recordedBy,
-      labelType = "barcode",
-      labelKind = "plate",
+      lsType = "barcode",
+      lsKind = "plate",
       lsTransaction = lsTransaction)),
     containerStates = list(createContainerState(
-      stateType="constants",
-      stateKind="plate format",
+      lsType="constants",
+      lsKind="plate format",
       recordedBy=recordedBy,
       lsTransaction=lsTransaction,
       containerValues= list(
         createStateValue(
-          valueType="numericValue",
-          valueKind="rows",
+          lsType="numericValue",
+          lsKind="rows",
           numericValue=16,
           lsTransaction=lsTransaction),
         createStateValue(
-          valueType="numericValue",
-          valueKind="columns",
+          lsType="numericValue",
+          lsKind="columns",
           numericValue=24,
           lsTransaction=lsTransaction),
         createStateValue(
-          valueType="numericValue",
-          valueKind="wells",
+          lsType="numericValue",
+          lsKind="wells",
           numericValue=384,
           lsTransaction=lsTransaction)
       )
@@ -315,9 +324,8 @@ createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy)
 getCompoundPlateInfo <- function(barcodeList, testMode = FALSE) {
   barcodeQuery <- paste(barcodeList,collapse="','")
   
-  # TODO: need to add current state
   if (testMode) {
-    fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
+    fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export2.csv")
     wellTable <- fakeAPI
   } else {
     wellTable <- query(paste0("SELECT * FROM api_container_contents WHERE barcode IN ('", barcodeQuery, "')"))
