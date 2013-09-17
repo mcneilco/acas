@@ -1,0 +1,13 @@
+applicationSettings$db_user <- "seurat"
+> applicationSettings$db_password <- "seurat"
+> query("select * from syn_observation_type", applicationSettings=applicationSettings)
+
+protocolNames <- readLines("public/src/modules/SeuratETL/src/server/assaylist.txt")
+inputQuery <- paste(readLines('public/src/modules/SeuratETL/src/server/seurat_schema_results_query.sql'), collapse=" ")
+
+  SELECT distinct(syn_phenomenon_type.name)
+  FROM syn_observation,
+    syn_observation_protocol,
+    syn_phenomenon_type
+  where syn_observation.protocol_id                =syn_observation_protocol.id
+  AND syn_observation_protocol.phenomenon_type_id=syn_phenomenon_type.id
