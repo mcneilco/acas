@@ -1,4 +1,4 @@
-SELECT PARENT.CORP_NAME                  AS "Corporate_Batch_ID",
+SELECT BATCH.CORP_BATCH_NAME                  AS "Corporate_Batch_ID",
   syn_phenomenon_type.name               AS "Protocol_Name", 
   syn_observation_protocol.version_num   AS "Experiment_Name",
   syn_person.name 	 					 AS	"Experiment_Scientist",

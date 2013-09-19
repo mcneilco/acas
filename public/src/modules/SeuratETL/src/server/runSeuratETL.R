@@ -8,6 +8,16 @@ seuratDatabaseSettings <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# seuratDatabaseSettings <- data.frame(
+#   db_driver = racas::applicationSettings$db_driver,
+#   db_user = "seurat",
+#   db_password = "seurat",
+#   db_name = "ORAPROD",
+#   db_host = "dsanpora03.dart.corp",
+#   db_port = racas::applicationSettings$db_port,
+#   stringsAsFactors = FALSE
+# )
+
 protocolNameQuery <- "SELECT distinct(syn_phenomenon_type.name)
         FROM syn_observation,
         syn_observation_protocol,
@@ -123,6 +133,7 @@ makeValueString <- function(exptRow, resultType) {
 }
 
 aggregateValues <- function(vals) {
+  
   firstVal = vals[[1]]
   allMatch = TRUE
   for (val in vals) {
@@ -133,14 +144,32 @@ aggregateValues <- function(vals) {
 }
 
 pivotExperiment <- function(expt) {
+  #expt <- experiments[experiments$Experiment_Name==exptName, ]
   expt[ ,corp_batch_name := Corporate_Batch_ID]
-  castExpt <- cast(expt, corp_batch_name + Expt_Batch_Number ~ Expt_Result_Type + Expt_Result_Units + Expt_Concentration + Expt_Conc_Units,
-                   add.missing=TRUE, fill="NA", fun.aggregate=aggregateValues)
+  #Sometimes Expt_Batch_Number is not set correctly, 
+  #We can't have 2 repeats of the same Corporate Batch ID, Expt Batch Number, and Expt Result Type combination
+  #So here we are finding those and seperating them
   
+  #First find repeated combinations of corporate_batch_name, Expt_Batch_Number, and Expt_Result_Type
+  #This code creates a marks any duplicates by creating a sequence along the combination of corporate_batch_name, Expt_Batch_Number, and Expt_Result_Type
+  expt[ ,artificialExptBatchNumber := paste0(corp_batch_name,"-",Expt_Batch_Number,"-",Expt_Result_Type)]
+  expt <- expt[order(artificialExptBatchNumber)]
+  expt[, repeatedSequenced := sequence(rle(expt$artificialExptBatchNumber)$lengths)]
+ 
+  #Any "artificialExptBatchNumber" with a value above 1 means that it was a repeat and cannot be matched to any other result properly
+  #So for anything like this, we create a unique new (and unique) Expt_Batch_Number
+  expt[, newExpt_Batch_Number := Expt_Batch_Number]
+  createUniqueExptBatchNumber <- expt$artificialExptBatchNumber %in% unique(expt$artificialExptBatchNumber[expt$repeatedSequenced > 1])
+  expt[ createUniqueExptBatchNumber, newExpt_Batch_Number := 1:length(createUniqueExptBatchNumber[createUniqueExptBatchNumber])]
+ 
+  
+  castExpt <- cast(expt, corp_batch_name + newExpt_Batch_Number ~ Expt_Result_Type + Expt_Result_Units + Expt_Concentration + Expt_Conc_Units,
+                   add.missing=TRUE, fill="NA", fun.aggregate=aggregateValues)
+
   i <- sapply(castExpt, is.factor)
   castExpt[i] <- lapply(castExpt[i], as.character)
   castExpt[castExpt=="NA"] <- ""
-  drops <- c("Expt_Batch_Number")
+  drops <- c("newExpt_Batch_Number")
   for ( name in names(castExpt)) {
     if (all(castExpt[ ,name]=="") | all(castExpt[ ,name]=="NA") ) drops <- c(drops, name)
   }
@@ -152,7 +181,6 @@ lookupType <- function(colName) {
   for (type in names(columnTypes)) {
     if (regexpr(type, colName, fixed=TRUE)>-1) return(columnTypes[type])
   }
-  
   return("error can't get type")
 }
 
@@ -191,7 +219,7 @@ parseGenericDataWrapper <- function(fileName) {
 }
 runETL <- function(databaseSettings = seuratDatabaseSettings, protocolQuery, logName = "com.acas.customer.etl", logFileName = "etl.log", logLevel = "INFO") {
   #databaseSettings = seuratDatabaseSettings
-  #protocolQuery <- protocolQuery
+  #protocolQuery <- protocolNameQuery
   #logName <- "com.dartneuroscience.seurat.etl"
   #logFileName <- "seuratETL.log"
   #logLevel <- "INFO"
@@ -217,7 +245,7 @@ runETL <- function(databaseSettings = seuratDatabaseSettings, protocolQuery, log
         where syn_observation.protocol_id                =syn_observation_protocol.id
         AND syn_observation_protocol.phenomenon_type_id=syn_phenomenon_type.id", applicationSettings = databaseSettings)
   
-  logger$info(paste0("found ",nrow(seuratProtocolNames)," protocols to etl"))
+  logger$info(paste0("found ",nrow(protocolNames)," protocols to etl"))
   
   logger$info("creating SEL files for each experiment by protocol")
   
@@ -228,7 +256,7 @@ runETL <- function(databaseSettings = seuratDatabaseSettings, protocolQuery, log
     experiments <- queryProtocol(protocolsToSearch[[p]], applicationSettings = databaseSettings)
     exptNames <- levels(as.factor(experiments$Experiment_Name))
     experiments <- as.data.table(experiments)
-    columnTypes <- list()
+    columnTypes <<- list()
     experiments[ ,value := makeValueString(.SD, Expt_Result_Type), by=Expt_Result_Type]
     experiments[Expt_Result_Type=="Assay Date" , value := as.character(as.Date(Expt_Result_Desc[Expt_Result_Type=="Assay Date"], format="%m/%d/%Y"))]
     
@@ -257,6 +285,7 @@ runETL <- function(databaseSettings = seuratDatabaseSettings, protocolQuery, log
   
   logger$info("creating SEL files for each experiment")
   
+  stop("stoping before creating anything")
   currentProtocols <- query("select label_text from api_protocol")[[1]]
   protocolsToSearch <- readLines("assaylist.txt")
   if (!all(protocolsToSearch %in%  currentProtocols)) {
