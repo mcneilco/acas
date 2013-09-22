@@ -65,6 +65,7 @@ exports.findByUsername = (username, fn) ->
 
 exports.loginStrategy = (username, password, done) ->
 	config = require '../public/src/conf/configurationNode.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	process.nextTick ->
 		exports.findByUsername username, (err, user) ->
 			if config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
@@ -81,8 +82,16 @@ exports.loginStrategy = (username, password, done) ->
 			else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
 				dnsAuthCheck username, password, (results) ->
 					if results.indexOf("Success")>=0
+						try
+							serverUtilityFunctions.logUsage "User logged in succesfully: ", "", username
+						catch error
+							console.log "Exception trying to log:"+error
 						return done null, user
 					else
+						try
+							serverUtilityFunctions.logUsage "User failed login: ", "", username
+						catch error
+							console.log "Exception trying to log:"+error
 						return done(null, false,
 							message: "Invalid credentials"
 						)
@@ -115,6 +124,7 @@ exports.ensureAuthenticated = (req, res, next) ->
 		return next()
 	res.redirect '/login'
 
+### Does not seem to be used
 exports.authenticationService = (req, resp) ->
 	config = require '../public/src/conf/configurationNode.js'
 	callback = (results) ->
@@ -132,7 +142,7 @@ exports.authenticationService = (req, resp) ->
 			callback("Success")
 		else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
 			dnsAuthCheck req.body.user, req.body.password, callback
-
+###
 dnsAuthCheck = (user, pass, retFun) ->
 	config = require '../public/src/conf/configurationNode.js'
 	request = require 'request'
@@ -145,7 +155,6 @@ dnsAuthCheck = (user, pass, retFun) ->
 		json: true
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
-			console.log JSON.stringify json
 			retFun JSON.stringify json
 		else
 			console.log 'got ajax error trying authenticate a user'
@@ -163,8 +172,6 @@ dnsGetUser = (username, callback) ->
 		json: true
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
-			console.log json
-
 			callback null,
 				id: json.DNSPerson.id
 				username: json.DNSPerson.id
@@ -178,7 +185,6 @@ dnsGetUser = (username, callback) ->
 			console.log response
 			callback null, null
 	)
-	logDnsUsage "User logged in", "NA", username
 
 
 

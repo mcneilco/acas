@@ -120,7 +120,7 @@ startApp = ->
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
 		loginRoutes.loginPost
 	app.get '/logout', loginRoutes.logout
-	app.post '/api/userAuthentication', loginRoutes.authenticationService
+#	app.post '/api/userAuthentication', loginRoutes.authenticationService
 	app.get '/api/users/:username', loginRoutes.getUsers
 
 	# serverAPI routes
@@ -199,7 +199,7 @@ startApp = ->
 	http.createServer(app).listen(app.get('port'), ->
 		console.log("Express server listening on port " + app.get('port'))
 	)
-	logDnsUsage("ACAS Node server started", "started", "")
+	serverUtilityFunctions.logUsage("ACAS Node server started", "started", "")
 
 
 ### if not DNS

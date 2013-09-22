@@ -78,9 +78,10 @@ app.get '/api/users/:username', loginRoutes.getUsers
   };
 
   exports.loginStrategy = function(username, password, done) {
-    var config;
+    var config, serverUtilityFunctions;
 
     config = require('../public/src/conf/configurationNode.js');
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     return process.nextTick(function() {
       return exports.findByUsername(username, function(err, user) {
         if (config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
@@ -100,9 +101,23 @@ app.get '/api/users/:username', loginRoutes.getUsers
           return done(null, user);
         } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
           return dnsAuthCheck(username, password, function(results) {
+            var error;
+
             if (results.indexOf("Success") >= 0) {
+              try {
+                serverUtilityFunctions.logUsage("User logged in succesfully: ", "", username);
+              } catch (_error) {
+                error = _error;
+                console.log("Exception trying to log:" + error);
+              }
               return done(null, user);
             } else {
+              try {
+                serverUtilityFunctions.logUsage("User failed login: ", "", username);
+              } catch (_error) {
+                error = _error;
+                console.log("Exception trying to log:" + error);
+              }
               return done(null, false, {
                 message: "Invalid credentials"
               });
@@ -149,31 +164,26 @@ app.get '/api/users/:username', loginRoutes.getUsers
     return res.redirect('/login');
   };
 
-  exports.authenticationService = function(req, resp) {
-    var callback, config;
+  /* Does not seem to be used
+  exports.authenticationService = (req, resp) ->
+  	config = require '../public/src/conf/configurationNode.js'
+  	callback = (results) ->
+  		if results.indexOf("Success")>=0
+  			resp.json
+  				status: "Success"
+  		else
+  			resp.json
+  				status: "Fail"
+  
+  	if global.specRunnerTestmode
+  		callback("Success")
+  	else
+  		if config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
+  			callback("Success")
+  		else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
+  			dnsAuthCheck req.body.user, req.body.password, callback
+  */
 
-    config = require('../public/src/conf/configurationNode.js');
-    callback = function(results) {
-      if (results.indexOf("Success") >= 0) {
-        return resp.json({
-          status: "Success"
-        });
-      } else {
-        return resp.json({
-          status: "Fail"
-        });
-      }
-    };
-    if (global.specRunnerTestmode) {
-      return callback("Success");
-    } else {
-      if (config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
-        return callback("Success");
-      } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-        return dnsAuthCheck(req.body.user, req.body.password, callback);
-      }
-    }
-  };
 
   dnsAuthCheck = function(user, pass, retFun) {
     var config, request,
@@ -191,7 +201,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
       json: true
     }, function(error, response, json) {
       if (!error && response.statusCode === 200) {
-        console.log(JSON.stringify(json));
         return retFun(JSON.stringify(json));
       } else {
         console.log('got ajax error trying authenticate a user');
@@ -208,13 +217,12 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
     config = require('../public/src/conf/configurationNode.js');
     request = require('request');
-    request({
+    return request({
       method: 'GET',
       url: config.serverConfigurationParams.configuration.userInformationServiceURL + username,
       json: true
     }, function(error, response, json) {
       if (!error && response.statusCode === 200) {
-        console.log(json);
         return callback(null, {
           id: json.DNSPerson.id,
           username: json.DNSPerson.id,
@@ -230,7 +238,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
         return callback(null, null);
       }
     });
-    return logDnsUsage("User logged in", "NA", username);
   };
 
   exports.getUsers = function(req, resp) {

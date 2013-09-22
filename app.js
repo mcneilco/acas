@@ -136,7 +136,6 @@
       failureFlash: true
     }), loginRoutes.loginPost);
     app.get('/logout', loginRoutes.logout);
-    app.post('/api/userAuthentication', loginRoutes.authenticationService);
     app.get('/api/users/:username', loginRoutes.getUsers);
     preferredBatchIdRoutes = require('./routes/PreferredBatchIdService.js');
     app.post('/api/preferredBatchId', preferredBatchIdRoutes.preferredBatchId);
@@ -187,7 +186,7 @@
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("Express server listening on port " + app.get('port'));
     });
-    return logDnsUsage("ACAS Node server started", "started", "");
+    return serverUtilityFunctions.logUsage("ACAS Node server started", "started", "");
   };
 
   /* if not DNS

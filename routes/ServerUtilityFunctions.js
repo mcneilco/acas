@@ -25,6 +25,7 @@
   exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
     var Tempfile, child, command, exec, preValErrors, rCommand, rCommandFile, requestJSONFile;
 
+    exports.logUsage("About to call R function: " + rFunction, JSON.stringify(request.body), request.body.user);
     if (preValidationFunction != null) {
       preValErrors = preValidationFunction.call(this, request.body);
     } else {
@@ -67,10 +68,20 @@
           experimentId: null,
           results: null
         };
-        return returnFunction.call(JSON.stringify(result));
+        returnFunction.call(JSON.stringify(result));
+        return exports.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), request.body.user);
       } else {
-        console.log('got success');
-        return returnFunction.call(this, stdout);
+        returnFunction.call(this, stdout);
+        try {
+          if (stdout.indexOf('"hasError":true' > -1)) {
+            return exports.logUsage("Returned success from R function with trapped errors: " + rFunction, stdout, request.body.user);
+          } else {
+            return exports.logUsage("Returned success from R function: " + rFunction, "", request.body.user);
+          }
+        } catch (_error) {
+          error = _error;
+          return console.log(error);
+        }
       }
     });
   };
@@ -114,6 +125,17 @@
         return console.log(response);
       }
     });
+  };
+
+  exports.logUsage = function(action, data, username) {
+    var config;
+
+    config = require('../public/src/conf/configurationNode.js');
+    if (config.serverConfigurationParams.configuration.loggingService.indexOf("DNS") === -1) {
+      return console.log("Log entry: " + action + " with data: " + data + " and user: " + username);
+    } else {
+      return logDnsUsage(action, data, username);
+    }
   };
 
 }).call(this);

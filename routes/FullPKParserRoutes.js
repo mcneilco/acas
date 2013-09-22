@@ -38,10 +38,8 @@ app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
         return response.end(rReturn);
       });
     } else {
-      logDnsUsage("Full PK parser service about to call R", "dryRunMode=" + request.body.dryRunMode, request.body.user);
       return serverUtilityFunctions.runRFunction(request, "public/src/modules/FullPK/src/server/fullPK.R", "parseFullPKData", function(rReturn) {
-        response.end(rReturn);
-        return logDnsUsage("Full PK parser service returned", "dryRunMode=" + request.body.dryRunMode, request.body.user);
+        return response.end(rReturn);
       });
     }
   };

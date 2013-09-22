@@ -39,14 +39,12 @@ exports.parseFullPKData = (request, response)  ->
 			response.end rReturn
 		)
 	else
-		logDnsUsage "Full PK parser service about to call R", "dryRunMode="+request.body.dryRunMode, request.body.user
 		serverUtilityFunctions.runRFunction(
 			request,
 			"public/src/modules/FullPK/src/server/fullPK.R",
 			"parseFullPKData",
 		(rReturn) ->
 			response.end rReturn
-			logDnsUsage "Full PK parser service returned", "dryRunMode="+request.body.dryRunMode, request.body.user
 		)
 
 

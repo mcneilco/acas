@@ -38,10 +38,8 @@ app.post '/api/metStabParser', metStabRoutes.parseMetStabData
         return response.end(rReturn);
       });
     } else {
-      logDnsUsage("MetStab parser service about to call R", "dryRunMode=" + request.body.dryRunMode, request.body.user);
       return serverUtilityFunctions.runRFunction(request, "public/src/modules/DNSMetStab/src/server/MetStab.R", "parseMetStabData", function(rReturn) {
-        response.end(rReturn);
-        return logDnsUsage("MetStab parser service returned", "dryRunMode=" + request.body.dryRunMode, request.body.user);
+        return response.end(rReturn);
       });
     }
   };
