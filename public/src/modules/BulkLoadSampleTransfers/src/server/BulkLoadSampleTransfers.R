@@ -55,44 +55,48 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   
   interactions <- data.frame()
   for (i in 1:nrow(logFile)) {
-    row <- logFile[i, ]
+    logRow <- logFile[i, ]
     
-    sourceTable <- containerTable[row$Source.Id == containerTable$WELL_ID, ]
-    destinationTable <- containerTable[row$Destination.Id == containerTable$WELL_ID, ]
+    sourceTable <- containerTable[logRow$Source.Id == containerTable$WELL_ID, ]
+    destinationTable <- containerTable[logRow$Destination.Id == containerTable$WELL_ID, ]
     ##################
-    if (sourceTable$VOLUME_UNIT[1] != row$Amount.Units[1]) {
+    if (sourceTable$VOLUME_UNIT[1] != logRow$Amount.Units[1]) {
       stop("Units must match")
       #TODO: fix units for them
       convertUnits()
     }
     newSourceSet <- sourceTable
-    newSourceSet$VOLUME <- sourceTable$VOLUME[1] - row$Amount.Transferred
+    newSourceSet$VOLUME <- sourceTable$VOLUME[1] - logRow$Amount.Transferred
     if (newSourceSet$VOLUME[1] < 0) {
       stop(paste0("More liquid was removed from well ", sourceTable$WELL_ID, " (", sourceTable$WELL_NAME, ") than was available."))
     } else if (newSourceSet$VOLUME[1] == 0) {
       newSourceSet <- data.frame()
     }
     ##################
-    if (sourceTable$VOLUME_UNIT[1] != row$Amount.Units[1]) {
+    if (sourceTable$VOLUME_UNIT[1] != logRow$Amount.Units[1]) {
       stop("Units must match")
       #TODO: fix units for them
       convertUnits()
     }
-    destinationVolume <- sum(destinationTable$VOLUME[1], row$Amount.Transferred, na.rm=TRUE)
-    destinationWellId <- row$Destination.Id
+    destinationVolume <- sum(destinationTable$VOLUME[1], logRow$Amount.Transferred, na.rm=TRUE)
+    destinationWellId <- logRow$Destination.Id
     combinedSet <- rbind.fill(sourceTable, destinationTable)
-    newDestinationSet <- ddply(combinedSet, ~BATCH_CODE, summarize, 
-                               WELL_ID = destinationWellId, 
-                               BATCH_CODE = BATCH_CODE[1], 
-                               VOLUME = destinationVolume, 
-                               VOLUME_UNIT = VOLUME_UNIT[1], 
-                               CONCENTRATION = sum(CONCENTRATION*VOLUME, na.rm = TRUE)/destinationVolume,
-                               CONCENTRATION_UNIT = CONCENTRATION_UNIT[1])
-    newDestinationSet$dateChanged <- row$Date.Time
+    buildResultRows <- function(setFrame, destinationWellId, destinationVolume) {
+      return(data.frame(
+        WELL_ID = destinationWellId, 
+        BATCH_CODE = setFrame$BATCH_CODE[1], 
+        VOLUME = destinationVolume, 
+        VOLUME_UNIT = setFrame$VOLUME_UNIT[1], 
+        CONCENTRATION = sum(setFrame$CONCENTRATION*setFrame$VOLUME, na.rm = TRUE)/destinationVolume,
+        CONCENTRATION_UNIT = setFrame$CONCENTRATION_UNIT[1],
+        stringsAsFactors=FALSE))
+    }
+    newDestinationSet <- ddply(combinedSet, ~BATCH_CODE, buildResultRows, destinationWellId, destinationVolume .inform=T)
+    newDestinationSet$dateChanged <- logRow$Date.Time
     newDestinationSet <- rbind.fill(newDestinationSet, destinationTable)
     
     # Remove old rows
-    containerTable <- containerTable[!(containerTable$WELL_ID %in% c(row$Destination.Id, row$Source.Id)), ]
+    containerTable <- containerTable[!(containerTable$WELL_ID %in% c(logRow$Destination.Id, logRow$Source.Id)), ]
     # Add new ones
     containerTable <- rbind.fill(containerTable, newSourceSet, newDestinationSet)
     
@@ -100,11 +104,11 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
     newInteraction <- data.frame(
       interactionType = "transferred to",
       interactionKind = "content transfer",
-      firstContainer = row$Source.Id,
-      secondContainer = row$Destination.Id,
-      dateTransferred = row$Date.Time,
-      volumeTransferred = row$Amount.Transferred,
-      protocol = row$Protocol
+      firstContainer = logRow$Source.Id,
+      secondContainer = logRow$Destination.Id,
+      dateTransferred = logRow$Date.Time,
+      volumeTransferred = logRow$Amount.Transferred,
+      protocol = logRow$Protocol
       )
     interactions <- rbind.fill(interactions, newInteraction)
   }
@@ -198,8 +202,8 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
 }
 createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsTransaction, recordedBy) {
   return(createContainerContainerInteraction(
-    interactionType= "has member",
-    interactionKind= "plate well",
+    lsType= "has member",
+    lsKind= "plate well",
     codeName= interactionCodeName,
     recordedBy= recordedBy,
     lsTransaction= lsTransaction,
