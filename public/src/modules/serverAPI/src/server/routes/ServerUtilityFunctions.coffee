@@ -16,7 +16,8 @@ basicRScriptPreValidation = (payload) ->
 	return result
 
 exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
-	exports.logUsage "About to call R function: "+rFunction, JSON.stringify(request.body), request.body.user
+	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(request.body), request.body.user
 	if preValidationFunction?
 		preValErrors = preValidationFunction.call @, request.body
 	else
@@ -62,14 +63,14 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 				experimentId: null
 				results: null
 			returnFunction.call JSON.stringify(result)
-			exports.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), request.body.user
+			csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), request.body.user
 		else
 			returnFunction.call @, stdout
 			try
 				if stdout.indexOf '"hasError":true' > -1
-					exports.logUsage "Returned success from R function with trapped errors: "+rFunction, stdout, request.body.user
+					csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, stdout, request.body.user
 				else
-					exports.logUsage "Returned success from R function: "+rFunction, "", request.body.user
+					csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", request.body.user
 			catch error
 				console.log error
 
@@ -110,11 +111,4 @@ exports.getFromACASServer = (baseurl, resp) ->
 				console.log response
 	)
 
-exports.logUsage = (action, data, username) ->
-	config = require '../public/src/conf/configurationNode.js'
-	if config.serverConfigurationParams.configuration.loggingService.indexOf("DNS") == -1
-		#TODO impelment our own logging service
-		console.log "Log entry: "+action+" with data: "+data+" and user: "+username
-	else
-		logDnsUsage action, data, username
 

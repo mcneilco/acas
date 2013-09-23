@@ -1,84 +1,10 @@
 (function() {
-  var asyncblock, exec, fs, startApp;
+  var csUtilities, startApp;
 
-  global.logDnsUsage = function(action, data, username) {
-    var config, form, req, request,
-      _this = this;
-
-    config = require('./public/src/conf/configurationNode.js');
-    request = require('request');
-    req = request.post(config.serverConfigurationParams.configuration.loggingService, function(error, response) {
-      if (!error && response.statusCode === 200) {
-        return console.log("logged: " + action + " with data: " + data + " and user: " + username);
-      } else {
-        console.log("got error trying log action: " + action + " with data: " + data);
-        console.log(error);
-        return console.log(response);
-      }
-    });
-    form = req.form();
-    form.append('application', 'acas');
-    form.append('action', action);
-    form.append('application_data', data);
-    return form.append('user_login', username);
-  };
-
-  fs = require('fs');
-
-  asyncblock = require('asyncblock');
-
-  exec = require('child_process').exec;
-
-  asyncblock(function(flow) {
-    var config, configLines, configTemplate, enableSpecRunner, hostName, jdbcParts, line, lineParts, name, setting, settings, _i, _len;
-
-    global.deployMode = process.env.DNSDeployMode;
-    exec("java -jar ../lib/dns-config-client.jar -m " + global.deployMode + " -c acas -d 2>/dev/null", flow.add());
-    config = flow.wait();
-    config = config.replace(/\\/g, "");
-    configLines = config.split("\n");
-    settings = {};
-    for (_i = 0, _len = configLines.length; _i < _len; _i++) {
-      line = configLines[_i];
-      lineParts = line.split("=");
-      if (lineParts[1] !== void 0) {
-        settings[lineParts[0]] = lineParts[1];
-      }
-    }
-    configTemplate = fs.readFileSync("./public/src/conf/configurationNode_Template.js").toString();
-    for (name in settings) {
-      setting = settings[name];
-      configTemplate = configTemplate.replace(RegExp(name, "g"), setting);
-    }
-    jdbcParts = settings["acas.jdbc.url"].split(":");
-    configTemplate = configTemplate.replace(/acas.api.db.location/g, jdbcParts[0] + ":" + jdbcParts[1] + ":" + jdbcParts[2] + ":@");
-    configTemplate = configTemplate.replace(/acas.api.db.host/g, jdbcParts[3].replace("@", ""));
-    configTemplate = configTemplate.replace(/acas.api.db.port/g, jdbcParts[4]);
-    configTemplate = configTemplate.replace(/acas.api.db.name/g, jdbcParts[5]);
-    enableSpecRunner = true;
-    switch (global.deployMode) {
-      case "Dev":
-        hostName = "acas-d";
-        break;
-      case "Test":
-        hostName = "acas-t";
-        break;
-      case "Stage":
-        hostName = "acas-s";
-        break;
-      case "Prod":
-        hostName = "acas";
-        enableSpecRunner = false;
-    }
-    configTemplate = configTemplate.replace(RegExp("acas.api.hostname", "g"), hostName);
-    configTemplate = configTemplate.replace(/acas.api.enableSpecRunner/g, enableSpecRunner);
-    configTemplate = configTemplate.replace(/acas.env.logDir/g, process.env.DNSLogDirectory);
-    fs.writeFileSync("./public/src/conf/configurationNode.js", configTemplate);
-    return startApp();
-  });
+  csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, metStabRoutes, microSolRoutes, pampaRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
+    var LocalStrategy, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, genericDataParserRoutes, http, loginRoutes, metStabRoutes, microSolRoutes, pampaRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
 
     config = require('./public/src/conf/configurationNode.js');
     express = require('express');
@@ -89,7 +15,7 @@
     passport = require('passport');
     util = require('util');
     LocalStrategy = require('passport-local').Strategy;
-    app = express();
+    global.app = express();
     app.configure(function() {
       app.set('port', process.env.PORT || config.serverConfigurationParams.configuration.portNumber);
       app.set('views', __dirname + '/views');
@@ -113,7 +39,8 @@
     });
     loginRoutes = require('./routes/loginRoutes');
     app.configure('development', function() {
-      return app.use(express.errorHandler());
+      app.use(express.errorHandler());
+      return console.log("node dev mode set");
     });
     routes = require('./routes');
     app.get('/', loginRoutes.ensureAuthenticated, routes.index);
@@ -125,11 +52,11 @@
       return done(null, user.username);
     });
     passport.deserializeUser(function(username, done) {
-      return loginRoutes.findByUsername(username, function(err, user) {
+      return csUtilities.findByUsername(username, function(err, user) {
         return done(err, user);
       });
     });
-    passport.use(new LocalStrategy(loginRoutes.loginStrategy));
+    passport.use(new LocalStrategy(csUtilities.loginStrategy));
     app.get('/login', loginRoutes.loginPage);
     app.post('/login', passport.authenticate('local', {
       failureRedirect: '/login',
@@ -162,8 +89,6 @@
     app.post('/api/docForBatches', docForBatchesRoutes.saveDocForBatches);
     genericDataParserRoutes = require('./routes/GenericDataParserRoutes.js');
     app.post('/api/genericDataParser', genericDataParserRoutes.parseGenericData);
-    fullPKParserRoutes = require('./routes/FullPKParserRoutes.js');
-    app.post('/api/fullPKParser', fullPKParserRoutes.parseFullPKData);
     microSolRoutes = require('./routes/MicroSolRoutes.js');
     app.post('/api/microSolParser', microSolRoutes.parseMicroSolData);
     pampaRoutes = require('./routes/PampaRoutes.js');
@@ -186,14 +111,16 @@
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("Express server listening on port " + app.get('port'));
     });
-    return serverUtilityFunctions.logUsage("ACAS Node server started", "started", "");
+    return csUtilities.logUsage("ACAS Node server started", "started", "");
   };
 
   /* if not DNS
   global.deployMode = "Dev"
-  startApp()
+  
    end if not DNS
   */
 
+
+  csUtilities.prepareConfigFile(startApp);
 
 }).call(this);

@@ -1,3 +1,4 @@
+
 requiredScripts = [
 	'/src/lib/jquery.min.js'
 	'/src/lib/json2.js'
@@ -19,7 +20,6 @@ requiredScripts = [
 
 applicationScripts = [
 	'/src/conf/configurationNode.js'
-	#'/src/conf/configuration.js'
 	# For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'

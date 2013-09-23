@@ -1,8 +1,8 @@
 /* To install this Module
 1) Add these lines to app.coffee:
 # FullPKParser routes
-fullPKParserRoutes = require './routes/FullPKParserRoutes.js'
-app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
+	fullPKParserRoutes = require './routes/FullPKParserRoutes.js'
+	app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
 
 2) Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 		{isHeader: false, menuName: "Load Full PK Experiment", mainControllerClassName: "FullPKParserController"}
@@ -43,5 +43,7 @@ app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
       });
     }
   };
+
+  app.post('/api/fullPKParser', exports.parseFullPKData);
 
 }).call(this);
