@@ -76,12 +76,16 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   # Get the indexes of columns in the section, using the longest of either of the first two rows
   sectionHeaderRow <- genericDataFileDataFrame[startSection + 1,]
   secondRow <- genericDataFileDataFrame[startSection + 2,]
-  sectionHeaderColumns <- grep(pattern="\\S", sapply(sectionHeaderRow,as.character))
-  secondHeaderColumns <- grep(pattern="\\S", sapply(secondRow,as.character))
-  if (length(sectionHeaderColumns)==0 && length(secondHeaderColumns)==0) {
+  sectionHeaderColumns <- grepl(pattern="\\S", sapply(sectionHeaderRow,as.character))
+  secondHeaderColumns <- grepl(pattern="\\S", sapply(secondRow,as.character))
+  if (all(!c(sectionHeaderColumns, secondHeaderColumns))) {
     stop(paste0("There must be at least two rows filled in after '", lookFor, "'."))
   }
-  dataColumnIndexes <- 1:max(sectionHeaderColumns, secondHeaderColumns)
+  if (any(!c(secondHeaderColumns, sectionHeaderColumns))) {
+    dataColumnIndexes <- 1:(min(which(!secondHeaderColumns & !sectionHeaderColumns))-1)
+  } else {
+    dataColumnIndexes <- 1:length(sectionHeaderRow)
+  }
   
   # Get the last line matching the section
   sectionColumn <- genericDataFileDataFrame[,names(startSection)]
@@ -103,9 +107,11 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
     foundData <- as.data.frame(t(foundData))
   }
   
+  foundData <- as.data.frame(lapply(foundData, trim), optional=TRUE)
+  
   return(foundData)
 }
-validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d") {
+validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryFormat = "%m/%d/%Y") {
   # Validates and/or coerces a given string to a specified date format
   #
   # Args:
@@ -153,6 +159,12 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d") {
   
   # Check if can be coerced to the expected format
   if(!isInFormat(expectedFormat, inputValue )) {
+    
+    # Let the secondary format pass through
+    if(isInFormat(secondaryFormat, inputValue)) {
+      return(coerceToDate(secondaryFormat, inputValue))
+    }
+    
     #First try substituting out the seperators in the inputValue for those in the expected format
     expectedSeperator <- ifelse(grepl("-",expectedFormat),"-", "/")
     inputValueWExpectedSeperator <- gsub("-|/",expectedSeperator,inputValue)
@@ -789,11 +801,14 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   # Check the Datatype row and get information from it
   hiddenColumns <- getHiddenColumns(as.character(unlist(calculatedResults[1,])))
   
-  clobColumns <- which(sapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255)))
-  if(any(clobColumns)) {
+  clobColumns <- vapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255), c(TRUE))
+
+  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])),as.character(unlist(calculatedResults[2,])), lockCorpBatchId, clobColumns)
+  
+  if(any(clobColumns & !(classRow=="Clob"))) {
     warning("One of your entries had more than 255 characters, so it will be saved as a 'Clob'. In the future, you should use this for your column header.")
   }
-  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])),as.character(unlist(calculatedResults[2,])), lockCorpBatchId, clobColumns)
+  
   # Remove Datatype Row
   calculatedResults <- calculatedResults[1:nrow(calculatedResults)>1,]
   
@@ -881,6 +896,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
   
   # Parse numeric data from the unparsed values
+  # TODO: just use as.numeric with suppressed warnings after removing commas in the middle and operators at the beginning to decide if it is a number
   matchExpression <- ".+\\-|[^0-9,\\.<>\\-]|\\..*\\.|-$" # If it has a "-" anywhere other than the beginning, has anything other than th list "0-9,.<>-", has a "-" at the end, or has two decimal points, it is not a number
   matches <- grepl(matchExpression,longResults$"UnparsedValue")
   longResults$"Result Value" <- longResults$"UnparsedValue"
@@ -1339,7 +1355,11 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
 validateProject <- function(projectName, configList) {
   require('RCurl')
   require('rjson')
+  tryCatch({
   projectList <- getURL(configList$projectService)
+  }, error = function(e) {
+    stop("The project service did not respond correctly, contact your system administrator")
+  })
   tryCatch({
     projectList <- fromJSON(projectList)
   }, error = function(e) {
@@ -1804,42 +1824,44 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
                                                                                    lsTransaction = lsTransaction)
         }
         
-        # Adds a value for the batchCode (Corporate Batch ID)
-        analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                                                                                 lsType = "codeValue",
-                                                                                 lsKind = "batch code",
-                                                                                 codeValue = as.character(calculatedResults$"Corporate Batch ID"[analysisGroupID == calculatedResults$analysisGroupID][1]),
-                                                                                 publicData = !calculatedResults$Hidden[i],
-                                                                                 lsTransaction = lsTransaction)
-        
-        # Adds a value for the concentration if there is one
-        if (!is.na(concentration)) {
+        if(!is.null(i)) {
+          # Adds a value for the batchCode (Corporate Batch ID)
           analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                                                                                   lsType = "numericValue",
-                                                                                   lsKind = "tested concentration",
-                                                                                   valueUnit= if(is.na(calculatedResults$"Conc Units"[i])){NULL} else {calculatedResults$"Conc Units"[i]},
-                                                                                   numericValue = calculatedResults$"Conc"[i],
+                                                                                   lsType = "codeValue",
+                                                                                   lsKind = "batch code",
+                                                                                   codeValue = as.character(calculatedResults$"Corporate Batch ID"[analysisGroupID == calculatedResults$analysisGroupID][1]),
                                                                                    publicData = !calculatedResults$Hidden[i],
                                                                                    lsTransaction = lsTransaction)
+          
+          # Adds a value for the concentration if there is one
+          if (!is.na(concentration)) {
+            analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+                                                                                     lsType = "numericValue",
+                                                                                     lsKind = "tested concentration",
+                                                                                     valueUnit= if(is.na(calculatedResults$"Conc Units"[i])){NULL} else {calculatedResults$"Conc Units"[i]},
+                                                                                     numericValue = calculatedResults$"Conc"[i],
+                                                                                     publicData = !calculatedResults$Hidden[i],
+                                                                                     lsTransaction = lsTransaction)
+          }
+          
+          # Adds a value for the time if there is one
+          if (!is.na(timePoint)) {
+            analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
+              recordedBy = recordedBy,
+              lsType = "numericValue",
+              lsKind = "time",
+              valueUnit= if(is.na(calculatedResults$"timeUnit"[i])){NULL} else {calculatedResults$"timeUnit"[i]},
+              numericValue = calculatedResults$"time"[i],
+              publicData = !calculatedResults$Hidden[i],
+              lsTransaction = lsTransaction)
+          }
+          # Creates the state
+          analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
+                                                                                            recordedBy=recordedBy,
+                                                                                            lsType="data",
+                                                                                            lsKind=metaData$Format[1],
+                                                                                            analysisGroupValues=analysisGroupValues)
         }
-        
-        # Adds a value for the time if there is one
-        if (!is.na(timePoint)) {
-          analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
-            recordedBy = recordedBy,
-            lsType = "numericValue",
-            lsKind = "time",
-            valueUnit= if(is.na(calculatedResults$"timeUnit"[i])){NULL} else {calculatedResults$"timeUnit"[i]},
-            numericValue = calculatedResults$"time"[i],
-            publicData = !calculatedResults$Hidden[i],
-            lsTransaction = lsTransaction)
-        }
-        # Creates the state
-        analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
-                                                                                          recordedBy=recordedBy,
-                                                                                          lsType="data",
-                                                                                          lsKind=metaData$Format[1],
-                                                                                          analysisGroupValues=analysisGroupValues)
       }
     }
     # Creates Treatment Groups based on rawResults
@@ -2142,6 +2164,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     annotationType <- formatSettings[[inputFormat]]$annotationType
     sigFigs <- formatSettings[[inputFormat]]$sigFigs
   } else {
+    # TODO: generate the list dynamically
+    if(!(inputFormat %in% c("Generic", "Dose Response"))) {
+      stop("The Format must be 'Generic', 'Dose Response', or some custom format that you have been given.")
+    }
     lookFor <- "Calculated Results"
     lockCorpBatchId <- TRUE
     replaceFakeCorpBatchId <- ""
@@ -2240,73 +2266,44 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   }
   
   if (!is.null(configList$resultViewerProtocolPrefix)) {
-    viewerLinkText <- paste0(configList$resultViewerProtocolPrefix, URLencode(validatedMetaData$"Protocol Name", reserved=TRUE), 
+    viewerLink <- paste0(configList$resultViewerProtocolPrefix, URLencode(validatedMetaData$"Protocol Name", reserved=TRUE), 
                          configList$resultViewerExperimentPrefix, URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
-    viewerLink <- paste0("<a href=", viewerLinkText, " target=\"_blank\">", viewerLinkText, "</a>")
   } else {
     viewerLink <- NULL
   }
-  if (rawOnlyFormat) {
-    summaryInfo <- list(
-      format = inputFormat,
-      lsTransactionId = lsTransaction,
-      info = list(
-        "Format" = as.character(validatedMetaData$Format),
-        "Protocol" = as.character(validatedMetaData$"Protocol Name"),
-        "Experiment" = as.character(validatedMetaData$"Experiment Name"),
-        "Scientist" = as.character(validatedMetaData$Scientist),
-        "Notebook" = as.character(validatedMetaData$Notebook),
-        "Assay Date" = as.character(validatedMetaData$"Assay Date"),
-        "Rows of Data" = max(calculatedResults$analysisGroupID),
-        "Columns of Data" = length(unique(calculatedResults$resultTypeAndUnit)),
-        "Unique Corporate Batch ID's" = length(unique(calculatedResults$"Corporate Batch ID"))
-      )
-    )
-    if(!is.null(validatedMetaData$Page)) {
-      summaryInfo$info$"Page" <- as.character(validatedMetaData$Page)
-    }
-    if(!is.null(validatedMetaData$"In Life Notebook")) {
-      notebookIndex <- which(names(summaryInfo$info) == "Notebook")[1]
-      summaryInfo$info <- c(summaryInfo$info[1:notebookIndex], 
-                            list("In Life Notebook"=validatedMetaData$"In Life Notebook"),
-                            summaryInfo$info[(notebookIndex+1):length(summaryInfo$info)])
-    }
-    if(!dryRun) {
-      summaryInfo$info$"Experiment Code Name" <- experiment$codeName
-      if (!is.null(viewerLink)) {       
-        summaryInfo$info$"Result Link (there may be a delay before data is available)" <- viewerLink
-      }
-    }
-  } else {
-    summaryInfo <- list(lsTransactionId=lsTransaction,
-                        format=as.character(validatedMetaData$Format),
-                        protocol=as.character(validatedMetaData$"Protocol Name"),
-                        experiment=as.character(validatedMetaData$"Experiment Name"),
-                        scientist=as.character(validatedMetaData$Scientist),
-                        notebook=as.character(validatedMetaData$Notebook),
-                        date=as.character(validatedMetaData$"Assay Date"),
-                        newProtocol=newProtocol,
-                        newExperiment=newExperiment,
-                        calcDataRows=max(calculatedResults$analysisGroupID),
-                        calcDataColumns=length(unique(calculatedResults$resultTypeAndUnit)),
-                        calcCorpBatchID=length(unique(calculatedResults$"Corporate Batch ID")),
-                        calcCurves=length(unique(calculatedResults$"Result Desc"[calculatedResults$"Result Type"==tempIdLabel]))
-    )
-    if (!is.null(subjectData)) {
-      summaryInfo$subjectPoints <- max(subjectData$pointID)
-      summaryInfo$subjectFlags <- length(subjectData$value[subjectData$ResultType=="flag" & !is.na(subjectData$value)])
-    }
-    if(!is.null(validatedMetaData$Page)) {
-      summaryInfo$page <- as.character(validatedMetaData$Page)
-    }
-    if(!is.null(validatedMetaData$"In Life Notebook")) {
-      summaryInfo$inLifeNotebook <- as.character(validatedMetaData$"In Life Notebook")
-    }
-    if(!dryRun) {
-      summaryInfo$experimentCodeName <- experiment$codeName
-      if (!is.null(viewerLink)) {       
-        summaryInfo$"resultLink" <- viewerLink
-      }
+  
+  summaryInfo <- list(
+    format = inputFormat,
+    lsTransactionId = lsTransaction,
+    info = list()
+  )
+  if (!is.null(lsTransaction)) {
+    summaryInfo$info$"Transaction Id" <- lsTransaction
+  }
+  summaryInfo$info$"Format" <- as.character(validatedMetaData$Format)
+  summaryInfo$info$"Protocol" <- as.character(validatedMetaData$"Protocol Name")
+  summaryInfo$info$"Experiment" <- as.character(validatedMetaData$"Experiment Name")
+  summaryInfo$info$"Scientist" <- as.character(validatedMetaData$Scientist)
+  summaryInfo$info$"Notebook" <- as.character(validatedMetaData$Notebook)
+  if(!is.null(validatedMetaData$Page)) {
+    summaryInfo$info$"Page" <- as.character(validatedMetaData$Page)
+  }
+  if(!is.null(validatedMetaData$"In Life Notebook")) {
+    notebookIndex <- which(names(summaryInfo$info) == "Notebook")[1]
+    summaryInfo$info$"In Life Notebook" <- as.character(validatedMetaData$"In Life Notebook")
+  }
+  summaryInfo$info$"Assay Date" = as.character(validatedMetaData$"Assay Date")
+  summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
+  summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$resultTypeAndUnit))
+  summaryInfo$info$"Unique Corporate Batch ID's" = length(unique(calculatedResults$"Corporate Batch ID"))
+  if (!is.null(subjectData)) {
+    summaryInfo$info$"Raw Results Data Points" <- max(subjectData$pointID)
+    summaryInfo$info$"Flagged Data Points" <- length(subjectData$value[subjectData$ResultType=="flag" & !is.na(subjectData$value)])
+  }
+  if(!dryRun) {
+    summaryInfo$info$"Experiment Code Name" <- experiment$codeName
+    if (!is.null(viewerLink)) {       
+      summaryInfo$viewerLink <- viewerLink
     }
   }
   summaryInfo$experimentEntity <- experiment
@@ -2369,101 +2366,6 @@ deleteSourceFile <- function(experiment, configList) {
     }
   }
 }
-createGenericDataParserHTML <- function(hasError,errorList,hasWarning,warningList,summaryInfo,dryRun) {
-  # Turns the output information into html
-  # 
-  # Args:
-  #   hasError:             A boolean marking that there are errors
-  #   errorList:            A list of errors
-  #   hasWarning:           A boolean marking that there are warnings
-  #   warningList:          A list of warnings
-  #   summaryInfo:          A list of information to return to the user
-  #   dryRun:               A boolean that marks if information should be saved to the server
-  #
-  # Returns:
-  #  A character vector of html code
-  
-  require('brew')
-  
-  # Create a brew to load opening messages, errors, and warnings
-  htmlOutputFormat <- "<p><%=startMessage%></p>
-  <%=if(hasError) {htmlErrorList}%>
-  <%=if(hasWarning&&dryRun) {htmlWarningList}%>"
-  
-  # If there is summmaryInfo, add it to the brew
-  if(!is.null(summaryInfo)) {
-    htmlOutputFormat <- paste0(htmlOutputFormat,
-                               "<h4>Summary</h4>
-                               <p>Experiment Information:</p>
-                               <ul>
-                               <%=if(!is.null(summaryInfo$lsTransactionId)){paste('<li>Transaction id:', summaryInfo$lsTransactionId,'</li>')}%>
-                               <li>Format: <%=summaryInfo$format%> </li>
-                               <li><%=if(summaryInfo$newProtocol) {'New '}%> Protocol: <%=summaryInfo$protocol%></li>
-                               <li><%=if(summaryInfo$newExperiment) {'New '}%> Experiment: <%=summaryInfo$experiment%></li>
-                               <%=if(!is.null(summaryInfo$experimentCodeName)){paste('<li>Experiment Code Name:', summaryInfo$experimentCodeName,'</li>')}%>
-                               <li>Scientist: <%=summaryInfo$scientist%> </li>
-                               <li>Notebook: <%=summaryInfo$notebook%> </li>
-                               <%=if(!is.null(summaryInfo$inLifeNotebook)){paste('<li>In Life Notebook:', summaryInfo$inLifeNotebook,'</li>')}%>
-                               <%=if(!is.null(summaryInfo$page)){paste('<li>Page:', summaryInfo$page,'</li>')}%>
-                               <li>Assay Date: <%=summaryInfo$date%> </li>
-                                <%=if(!is.null(summaryInfo$resultLink)){paste('<li>Result Link (there may be a delay before data is available):', summaryInfo$resultLink,'</li>')}%>
-                               </ul>
-                               <p>Calculated Results:</p>
-                               <ul>
-                               <li><%=summaryInfo$calcDataRows%> Row<%=if(summaryInfo$calcDataRows!=1){'s'}%> of Data</li>
-                               <li><%=summaryInfo$calcDataColumns%> Data Column<%=if(summaryInfo$calcDataColumns!=1){'s'}%></li>
-                               <li><%=summaryInfo$calcCorpBatchID%> Unique Corporate Batch ID<%=if(summaryInfo$calcCorpBatchID!=1){\"'s\"}%></li>")
-  }
-  
-  # If there are Raw Results, add info about them to the brew
-  if(!is.null(summaryInfo) && !is.null(summaryInfo$subjectPoints)) {
-    htmlOutputFormat <- paste0(htmlOutputFormat,
-                               "<li><%=summaryInfo$calcCurves%> Curve<%=if(summaryInfo$calcCurve!=1){'s'}%></li>
-                               </ul>
-                               <p>Raw Results:</p>
-                               <ul>
-                               <li><%=summaryInfo$subjectPoints%> Data Point<%=if(summaryInfo$subjectPoints!=1){'s'}%></li>
-                               <li><%=summaryInfo$subjectFlags%> Flagged Data Point<%=if(summaryInfo$subjectFlags!=1){'s'}%></li>
-                               </ul>")
-  } else {
-    htmlOutputFormat <- paste0(htmlOutputFormat,"</ul>")
-  }
-  
-  # Create a header based on whether this is a dryRun and if there are warnings and errors
-  if (dryRun) {
-    if (hasError==FALSE) {
-      if (hasWarning) {
-        startMessage <- "Please review the warnings and summary before uploading."
-      } else {
-        startMessage <- "Please review the summary before uploading."
-      }
-    } else {
-      startMessage <- "Please fix the following errors and use the 'Back' button at the bottom of this screen to upload a new version of the file."
-    }
-  } else {
-    if (hasError) {
-      startMessage <- "An error occured during uploading. If the messages below are unhelpful, you will need to contact your system administrator."
-    } else {
-      startMessage <- "Upload completed."
-    }
-  } 
-  
-  
-  # Create a list of Errors
-  htmlErrorList <- paste("<h4 style=\"color:red\">Errors:", length(errorList), "</h4>
-                         <ul><li>", paste(errorList,collapse='</li><li>'), "</li></ul>")
-  
-  # Create a list of Warnings
-  htmlWarningList <- paste0("<h4>Warnings: ", length(warningList), "</h4>
-                            <p>Warnings provide information on issues found in the upload file. ",
-                            "You can proceed with warnings; however, it is recommended that, if possible, ",
-                            "you make the changes suggested by the warnings ",
-                            "and upload a new version of the Excel file by using the 'Back' button at the bottom of this screen.</p>
-                            <ul><li>", paste(warningList,collapse='</li><li>'), "</li></ul>")
-  
-  #brew(text=htmlOutputFormat,output="GenericDataParserTest.html")
-  return(paste(capture.output(brew(text=htmlOutputFormat)),collapse="\n"))
-  }
 moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy, lsTransaction, fileServiceType, fileService) {
   # Creates a folder for the excel file that was parsed and puts the file there. Returns the new location.
   # 
@@ -2657,12 +2559,7 @@ parseGenericData <- function(request) {
   #   
   
   # Create the HTML to display
-  if (!is.null(loadResult$value$info)) {
-    htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
-  } else {
-    htmlSummary <- createGenericDataParserHTML(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
-  }
-  
+  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
   
   # Detach the box for error handling
   detach(errorHandlingBox)
