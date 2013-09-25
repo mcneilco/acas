@@ -80,6 +80,7 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
     }
     destinationVolume <- sum(destinationTable$VOLUME[1], logRow$Amount.Transferred, na.rm=TRUE)
     destinationWellId <- logRow$Destination.Id
+    sourceTable$VOLUME <- logRow$Amount.Transferred
     combinedSet <- rbind.fill(sourceTable, destinationTable)
     buildResultRows <- function(setFrame, destinationWellId, destinationVolume) {
       return(data.frame(
@@ -91,7 +92,7 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
         CONCENTRATION_UNIT = setFrame$CONCENTRATION_UNIT[1],
         stringsAsFactors=FALSE))
     }
-    newDestinationSet <- ddply(combinedSet, ~BATCH_CODE, buildResultRows, destinationWellId, destinationVolume .inform=T)
+    newDestinationSet <- ddply(combinedSet, ~BATCH_CODE, buildResultRows, destinationWellId, destinationVolume)
     newDestinationSet$dateChanged <- logRow$Date.Time
     newDestinationSet <- rbind.fill(newDestinationSet, destinationTable)
     
@@ -128,13 +129,13 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   containerTable$BARCODE <- NULL
   containerTable$WELL_NAME <- NULL
   containerTable$FakeId <- NULL
-  batchCodeRows <- data.frame(valueType = "codeValue", valueKind = "batch code", codeValue = containerTable$BATCH_CODE, containerId = containerTable$WELL_ID, stringsAsFactors=FALSE)
-  volumeRows <- data.frame(valueType = "numericValue", valueKind = "volume", numericValue = containerTable$VOLUME, valueUnit = containerTable$VOLUME_UNIT, containerId = containerTable$WELL_ID, stringsAsFactors=FALSE)
+  batchCodeRows <- data.frame(valueType = "codeValue", valueKind = "batch code", codeValue = containerTable$BATCH_CODE, containerID = containerTable$WELL_ID, stringsAsFactors=FALSE)
+  volumeRows <- data.frame(valueType = "numericValue", valueKind = "volume", numericValue = containerTable$VOLUME, valueUnit = containerTable$VOLUME_UNIT, containerID = containerTable$WELL_ID, stringsAsFactors=FALSE)
   volumeRows$stringValue <- NA
   infiniteRows <- volumeRows$numericValue == Inf
   volumeRows$stringValue[infiniteRows] <- "infinite"
   volumeRows$numericValue[infiniteRows] <- NA
-  concentrationRows <- data.frame(valueType = "numericValue", valueKind = "concentration", numericValue = containerTable$CONCENTRATION, valueUnit = containerTable$CONCENTRATION_UNIT, containerId = containerTable$WELL_ID, stringsAsFactors=FALSE)
+  concentrationRows <- data.frame(valueType = "numericValue", valueKind = "concentration", numericValue = containerTable$CONCENTRATION, valueUnit = containerTable$CONCENTRATION_UNIT, containerID = containerTable$WELL_ID, stringsAsFactors=FALSE)
   containerdf <- rbind.fill(batchCodeRows,volumeRows,concentrationRows)
     
   containerdf$stateGroupIndex <- 1
@@ -152,7 +153,7 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   containerdf$stateID <- stateIdAndVersion$entityStateId
   containerdf$stateVersion <- stateIdAndVersion$entityStateVersion
   
-  savedValues <- saveValuesFromLongFormat(containerdf, "container", stateGroupIndices = 1, lsTransaction=lsTransaction)
+  savedValues <- saveValuesFromLongFormat(containerdf, "container", stateGroups, lsTransaction, recordedBy, stateGroupIndices = 1)
   
   #### interaction Saving
   
@@ -162,8 +163,9 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
                                   use.names = FALSE)
   
   interactions$rowID <- 1:nrow(interactions)
-  createLocalContainerContainerItx <- function(interactionType, firstContainer, secondContainer, codeName, ...) {
-    createContainerContainerInteraction(interactionType = interactionType, 
+  createLocalContainerContainerItx <- function(interactionType, interactionKind, firstContainer, secondContainer, dateTransferred, volumeTransferred, protocol, codeName, ...) {
+    createContainerContainerInteraction(lsType = interactionType,
+                                        lsKind = interactionKind,
                                         firstContainer=list(id=firstContainer, version=0), 
                                         secondContainer=list(id=secondContainer, version=0), 
                                         codeName=codeName, lsTransaction=lsTransaction, recordedBy=recordedBy)
@@ -171,12 +173,12 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   interactionList <- mlply(interactions, .fun = createLocalContainerContainerItx)
   names(interactionList) <- NULL
   savedInteractions <- saveAcasEntities(interactionList, "itxcontainercontainers")
-  interactions$interactionId <- sapply(savedInteractions, getElement, "id")
+  interactions$itxContainerContainerID <- sapply(savedInteractions, getElement, "id")
   interactions$stateID <- 1:nrow(interactions)
   
-  dateRows <- data.frame(valueType = "dateValue", valueKind = "date transferred", dateValue = interactions$dateTransferred, interactionID = interactions$interactionId, stringsAsFactors=FALSE)
-  amountRows <- data.frame(valueType = "numericValue", valueKind = "amount transferred", numericValue = interactions$amountTransferred, interactionID = interactions$interactionId, stringsAsFactors=FALSE)
-  protocolRows <- data.frame(valueType = "stringValue", valueKind = "protocol", stringValue = interactions$protocol, interactionID = interactions$interactionId, stringsAsFactors=FALSE)
+  dateRows <- data.frame(valueType = "dateValue", valueKind = "date transferred", dateValue = interactions$dateTransferred, itxContainerContainerID = interactions$itxContainerContainerID, stringsAsFactors=FALSE)
+  amountRows <- data.frame(valueType = "numericValue", valueKind = "amount transferred", numericValue = interactions$volumeTransferred, itxContainerContainerID = interactions$itxContainerContainerID, stringsAsFactors=FALSE)
+  protocolRows <- data.frame(valueType = "stringValue", valueKind = "protocol", stringValue = interactions$protocol, itxContainerContainerID = interactions$itxContainerContainerID, stringsAsFactors=FALSE)
   interactiondf <- rbind.fill(dateRows, amountRows, protocolRows)
   interactiondf$stateGroupIndex <- 1
   
@@ -186,12 +188,17 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
                            valueKinds=c("date transferred", "amount transferred", "protocol"),
                            includesOthers=TRUE))
   
-  stateIdAndVersion <- saveStatesFromLongFormat(interactiondf, "interaction", stateGroups, idColumn="interactionID", recordedBy, lsTransaction)
+  stateIdAndVersion <- saveStatesFromLongFormat(interactiondf, "itxcontainercontainer", stateGroups, idColumn="itxContainerContainerID", recordedBy, lsTransaction)
   
-  containerdf$stateID <- stateIdAndVersion$entityStateId
-  containerdf$stateVersion <- stateIdAndVersion$entityStateVersion
+  interactiondf$stateID <- stateIdAndVersion$entityStateId
+  interactiondf$stateVersion <- stateIdAndVersion$entityStateVersion
   
-  savedValues <- saveValuesFromLongFormat(interactiondf, "interaction", stateGroupIndices = 1, lsTransaction=lsTransaction)
+  interactiondf$operatorType <- NA
+  # TODO: get the correct unit
+  interactiondf$unitType <- "volume"
+  interactiondf$publicData <- TRUE
+  
+  savedValues <- saveValuesFromLongFormat(interactiondf, "itxcontainercontainer", stateGroupIndices = 1, lsTransaction=lsTransaction, recordedBy = recordedBy)
   
   summaryInfo$info <- c(summaryInfo$info,
                         "New Plates" = length(newBarcodeList),
@@ -298,7 +305,7 @@ createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy)
       labelText = barcode,
       recordedBy = recordedBy,
       lsType = "barcode",
-      lsKind = "plate",
+      lsKind = "plate barcode",
       lsTransaction = lsTransaction)),
     containerStates = list(createContainerState(
       lsType="constants",
@@ -365,6 +372,7 @@ select id from container_state
 bulkLoadSampleTransfers <- function(request) {
   # The top level function
   require(racas)
+  options("scipen"=15)
   # Collect the information from the request
   request <- as.list(request)
   fileName <- request$fileToParse
