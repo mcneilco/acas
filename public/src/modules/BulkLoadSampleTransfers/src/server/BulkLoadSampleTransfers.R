@@ -1,12 +1,13 @@
 # Registers sample transfers from one well to another
 
 # bulkLoadSampleTransfers(request=list(fileToParse="public/src/modules/BulkLoadSampleTransfers/spec/specfiles/IFF Primary Screen Transfer Log 2013_4_18_edited_barcodes.csv", dryRun=TRUE, user = "smeyer"))
+# bulkLoadSampleTransfers(request=list(fileToParse="public/src/modules/BulkLoadSampleTransfers/spec/specfiles/shortTransfer.csv", dryRun=TRUE, user = "smeyer"))
 
 #containerTable <- fullContainerTable
 #containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME_UNIT), ]
 #containerTable <- containerTable[containerTable$WELL_ID %in% c(logFile$Source.Id, logFile$Destination.Id), ]
 #containerTable$VOLUME[containerTable$WELL_NAME == "A01"] <- Inf
-runMain <- function(fileName, dryRun, testMode, recordedBy) {
+runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   require(plyr)
   require(RCurl)
   
@@ -45,7 +46,7 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   
   containerTable <- containerTable[containerTable$WELL_ID %in% c(logFile$Source.Id, logFile$Destination.Id), ]
   
-  if (testMode) {
+  if (testMode || developmentMode) {
     logFile <- logFile[!is.na(logFile$Source.Id), ]
   } else {
     if(any(is.na(logFile$Source.Id))) {
@@ -113,7 +114,7 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
       )
     interactions <- rbind.fill(interactions, newInteraction)
   }
-
+  
   ### Save new plates (but not contents)
   lsTransaction <- createLsTransaction(comments="Sample Transfer load")$id
   
@@ -122,7 +123,6 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   containerTable$WELL_ID[IdsToReplace]  <- wellTranslation$newWellId[match(containerTable$WELL_ID, wellTranslation$oldWellId)][IdsToReplace]
   interactions$firstContainer  <- wellTranslation$newWellId[match(interactions$firstContainer, wellTranslation$oldWellId)]
   interactions$secondContainer <- wellTranslation$newWellId[match(interactions$secondContainer, wellTranslation$oldWellId)]
-  
   
   MarkContainersStatusIgnored(containerTable$WELL_ID)
   
@@ -149,7 +149,7 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   
   # idColumn may change to organize these correctly
   stateIdAndVersion <- saveStatesFromLongFormat(containerdf, "container", stateGroups, idColumn="containerID", recordedBy, lsTransaction)
-
+  
   containerdf$stateID <- stateIdAndVersion$entityStateId
   containerdf$stateVersion <- stateIdAndVersion$entityStateVersion
   
@@ -181,8 +181,7 @@ runMain <- function(fileName, dryRun, testMode, recordedBy) {
   protocolRows <- data.frame(valueType = "stringValue", valueKind = "protocol", stringValue = interactions$protocol, itxContainerContainerID = interactions$itxContainerContainerID, stringsAsFactors=FALSE)
   interactiondf <- rbind.fill(dateRows, amountRows, protocolRows)
   interactiondf$stateGroupIndex <- 1
-  
-  stateGroups <- list(list(entityKind="interaction",
+  stateGroups <- list(list(entityKind="itxcontainercontainer",
                            stateType="data",
                            stateKind="transfer data",
                            valueKinds=c("date transferred", "amount transferred", "protocol"),
@@ -381,9 +380,10 @@ bulkLoadSampleTransfers <- function(request) {
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
-  testMode <- TRUE
+  #testMode <- TRUE
+  developmentMode <- TRUE
   # Run the main function with error handling
-  loadResult <- tryCatch.W.E(runMain(fileName,dryRun, testMode, recordedBy))
+  loadResult <- tryCatch.W.E(runMain(fileName,dryRun, testMode, developmentMode, recordedBy))
   
   # If the output has class simpleError, save it as an error
   errorList <- list()

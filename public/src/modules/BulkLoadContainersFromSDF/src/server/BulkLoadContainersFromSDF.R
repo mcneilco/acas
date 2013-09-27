@@ -1,4 +1,4 @@
-# BulkLoadcontainersFromSDF.R
+# BulkLoadContainersFromSDF.R
 #
 #
 # Sam Meyer
@@ -20,9 +20,9 @@
 #   To run: 
 #     bulkLoadContainersFromSDF(list(fileName,dryRun,user))
 #   Example:
-#     bulkLoadContainersFromSDF(request=list(fileToParse="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf", dryRun= "true",user="smeyer"))
+#     bulkLoadContainersFromSDF(request=list(fileToParse="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/Shipment_8242_Update_cutoff.sdf", dryRun= "true",user="smeyer"))
+#     bulkLoadContainersFromSDF(request=list(fileToParse="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/control_cmpds.sdf", dryRun= "true",user="smeyer"))
 #     runMain(fileName="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf", dryRun= TRUE,recordedBy="smeyer")
-#     runMain(fileName="/Users/smeyer/Documents/clients/nextval/Shipment_8242_Update_cutoff.sdf", dryRun= F,recordedBy="smeyer")
 
 # Random notes on container and interaction creation:
 # yellowContainer <- createContainer(kind = "No, yellow!")
@@ -233,7 +233,7 @@ createWellFromSDFtable <- function(propertyTable, lsTransaction, recordedBy) {
             lsType= "numericValue",
             lsKind= "volume",
             stringValue= if (propertyTable$"ALIQUOT_VOLUME"==Inf) {"infinite"} else {NULL},
-            numericValue= if (propertyTable$"ALIQUOT_VOLUME"==Inf) {NULL} else {propertyTable$"ALIQUOT_CONC"},
+            numericValue= if (propertyTable$"ALIQUOT_VOLUME"==Inf) {NULL} else {propertyTable$"ALIQUOT_VOLUME"},
             valueUnit= propertyTable$"ALIQUOT_VOLUME_UNIT",
             lsTransaction= lsTransaction,
             recordedBy= recordedBy),
