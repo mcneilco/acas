@@ -37,14 +37,12 @@ exports.parseMetStabData = (request, response)  ->
 			response.end rReturn
 		)
 	else
-		logDnsUsage "MetStab parser service about to call R", "dryRunMode="+request.body.dryRunMode, request.body.user
 		serverUtilityFunctions.runRFunction(
 			request,
 			"public/src/modules/DNSMetStab/src/server/MetStab.R",
 			"parseMetStabData",
 		(rReturn) ->
 			response.end rReturn
-			logDnsUsage "MetStab parser service returned", "dryRunMode="+request.body.dryRunMode, request.body.user
 		)
 
 

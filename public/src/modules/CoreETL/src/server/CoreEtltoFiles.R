@@ -27,7 +27,7 @@ getHeaderLines <- function(expt) {
 	ePage <- levels(as.factor(expt$Expt_Nb_Page))
 	if (length(ePage) != 1) "problem with experiment results, more than one notebook page"
 	hl[[7]] <- paste("Page",ePage[[1]], sep=",")
-	eDate <- levels(as.factor(expt$Expt_Date))
+	eDate <- levels(as.factor(expt$Expt_Date + 3600))
 	if (length(eDate) != 1) "problem with experiment results, more than one experiment date"
 	dateParts <- strsplit(eDate, " ")
 	hl[[8]] <- paste("Assay Date", dateParts[[1]][[1]], sep=",")
@@ -63,8 +63,8 @@ makeFileName <- function(expt) {
 	eNames <- levels(as.factor(expt$Experiment_Name))
 	if (length(eNames) != 1) "problem with experiment results, more than one experiment name"
 	eName <- gsub("/","-",eNames[[1]])
-	dir.create(paste("coreSELFilesToLoad13/", pName, sep=""), recursive = TRUE, showWarnings=FALSE)
-	return(paste("coreSELFilesToLoad13/", pName,"/", eName, ".csv", sep=""))
+	dir.create(paste("coreSELFilesToLoad16/", pName, sep=""), recursive = TRUE, showWarnings=FALSE)
+	return(paste("coreSELFilesToLoad16/", pName,"/", eName, ".csv", sep=""))
 }
 
 makeValueString <- function(exptRow, resultType) {
@@ -82,7 +82,7 @@ makeValueString <- function(exptRow, resultType) {
 	val <- paste(ifelse(is.na(exptRow$Expt_Result_Operator), "", exptRow$Expt_Result_Operator),
 				ifelse(is.na(exptRow$Expt_Result_Value),
 					ifelse(is.na(exptRow$Expt_Result_Desc), "",exptRow$Expt_Result_Desc),
-					exptRow$Expt_Result_Value),
+					vapply(exptRow$Expt_Result_Value, format, c(""), digits=17)),
 				sep="")
 	return(val)
 }
@@ -103,7 +103,7 @@ pivotExperiment <- function(expt) {
 					add.missing=TRUE, fill="NA", fun.aggregate=aggregateValues)
 
 	i <- sapply(castExpt, is.factor)
-	castExpt[i] <- lapply(castExpt[i], as.character)
+	castExpt[i] <- as.character(castExpt[i])
 	castExpt[castExpt=="NA"] <- ""
 	drops <- c("Expt_Batch_Number")
 	for ( name in names(castExpt)) {

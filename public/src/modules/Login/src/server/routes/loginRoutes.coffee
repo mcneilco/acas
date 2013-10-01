@@ -18,74 +18,7 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
 ###
 
-
-
-users = [
-	id: 1
-	username: "bob"
-	password: "secret"
-	email: "bob@example.com"
-	firstName: "Bob"
-	lastName: "Roberts"
-,
-	id: 2
-	username: "jmcneil"
-	password: "birthday"
-	email: "jmcneil@example.com"
-	firstName: "John"
-	lastName: "McNeil"
-,
-	id: 3
-	username: "ldap-query"
-	password: "Est@P7uRi5SyR+"
-	email: ""
-	firstName: "ldap-query"
-	lastName: ""
-]
-
-exports.findById = (id, fn) ->
-	idx = id - 1
-	if users[idx]
-		fn null, users[idx]
-	else
-		fn new Error("User " + id + " does not exist")
-
-exports.findByUsername = (username, fn) ->
-	config = require '../public/src/conf/configurationNode.js'
-	if global.specRunnerTestmode or config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
-		i = 0
-		len = users.length
-		while i < len
-			user = users[i]
-			return fn(null, user)  if user.username is username
-			i++
-	else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
-		return dnsGetUser username, fn
-	fn null, null
-
-exports.loginStrategy = (username, password, done) ->
-	config = require '../public/src/conf/configurationNode.js'
-	process.nextTick ->
-		exports.findByUsername username, (err, user) ->
-			if config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
-				return done(err)  if err
-				unless user
-					return done(null, false,
-						message: "Unknown user " + username
-					)
-				unless user.password is password
-					return done(null, false,
-						message: "Invalid password"
-					)
-				return done null, user
-			else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
-				dnsAuthCheck username, password, (results) ->
-					if results.indexOf("Success")>=0
-						return done null, user
-					else
-						return done(null, false,
-							message: "Invalid credentials"
-						)
+csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 
 exports.loginPage = (req, res) ->
 	user = null
@@ -115,8 +48,16 @@ exports.ensureAuthenticated = (req, res, next) ->
 		return next()
 	res.redirect '/login'
 
+exports.getUsers = (req, resp) ->
+	callback = (err, user) ->
+		if user == null
+			resp.send(204)
+		else
+			delete user.password
+			resp.json user
+	csUtilities.getUser req.params.username, callback
+
 exports.authenticationService = (req, resp) ->
-	config = require '../public/src/conf/configurationNode.js'
 	callback = (results) ->
 		if results.indexOf("Success")>=0
 			resp.json
@@ -128,66 +69,4 @@ exports.authenticationService = (req, resp) ->
 	if global.specRunnerTestmode
 		callback("Success")
 	else
-		if config.serverConfigurationParams.configuration.userAuthenticationType == "Demo"
-			callback("Success")
-		else if config.serverConfigurationParams.configuration.userAuthenticationType == "DNS"
-			dnsAuthCheck req.body.user, req.body.password, callback
-
-dnsAuthCheck = (user, pass, retFun) ->
-	config = require '../public/src/conf/configurationNode.js'
-	request = require 'request'
-	request(
-		method: 'POST'
-		url: config.serverConfigurationParams.configuration.userAuthenticationServiceURL
-		form:
-			username: user
-			password: pass
-		json: true
-	, (error, response, json) =>
-		if !error && response.statusCode == 200
-			console.log JSON.stringify json
-			retFun JSON.stringify json
-		else
-			console.log 'got ajax error trying authenticate a user'
-			console.log error
-			console.log json
-			console.log response
-	)
-
-dnsGetUser = (username, callback) ->
-	config = require '../public/src/conf/configurationNode.js'
-	request = require 'request'
-	request(
-		method: 'GET'
-		url: config.serverConfigurationParams.configuration.userInformationServiceURL+username
-		json: true
-	, (error, response, json) =>
-		if !error && response.statusCode == 200
-			console.log json
-
-			callback null,
-				id: json.DNSPerson.id
-				username: json.DNSPerson.id
-				email: json.DNSPerson.email
-				firstName: json.DNSPerson.firstName
-				lastName: json.DNSPerson.lastName
-		else
-			console.log 'got ajax error trying get user information'
-			console.log error
-			console.log json
-			console.log response
-			callback null, null
-	)
-	logDnsUsage "User logged in", "NA", username
-
-
-
-exports.getUsers = (req, resp) ->
-	callback = (err, user) ->
-		if user == null
-			resp.send(204)
-		else
-			delete user.password
-			resp.json user
-
-	exports.findByUsername req.params.username, callback
+		csUtilities.authCheck req.body.user, req.body.password, callback
