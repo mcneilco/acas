@@ -41,7 +41,7 @@ exports.prepareConfigFile = (callback) ->
 		configLines = config.split("\n")
 		settings = {}
 		for line in configLines
-			lineParts = line.split "="
+			lineParts = line.split /\=(.+)?/
 			unless lineParts[1] is undefined
 				settings[lineParts[0]] = lineParts[1]
 		configTemplate = fs.readFileSync("./public/src/conf/configurationNode_Template.js").toString()

@@ -57,7 +57,7 @@
       settings = {};
       for (_i = 0, _len = configLines.length; _i < _len; _i++) {
         line = configLines[_i];
-        lineParts = line.split("=");
+        lineParts = line.split(/\=(.+)?/);
         if (lineParts[1] !== void 0) {
           settings[lineParts[0]] = lineParts[1];
         }
