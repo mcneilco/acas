@@ -44,6 +44,4 @@
     }
   };
 
-  app.post('/api/fullPKParser', exports.parseFullPKData);
-
 }).call(this);

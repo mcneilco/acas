@@ -47,7 +47,3 @@ exports.parseFullPKData = (request, response)  ->
 			response.end rReturn
 		)
 
-
-
-app.post '/api/fullPKParser', exports.parseFullPKData
-

@@ -4,7 +4,7 @@
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, genericDataParserRoutes, http, loginRoutes, metStabRoutes, microSolRoutes, pampaRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
+    var LocalStrategy, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, metStabRoutes, microSolRoutes, pampaRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
 
     config = require('./public/src/conf/configurationNode.js');
     express = require('express');
@@ -63,6 +63,7 @@
       failureFlash: true
     }), loginRoutes.loginPost);
     app.get('/logout', loginRoutes.logout);
+    app.post('/api/userAuthentication', loginRoutes.authenticationService);
     app.get('/api/users/:username', loginRoutes.getUsers);
     preferredBatchIdRoutes = require('./routes/PreferredBatchIdService.js');
     app.post('/api/preferredBatchId', preferredBatchIdRoutes.preferredBatchId);
@@ -89,6 +90,8 @@
     app.post('/api/docForBatches', docForBatchesRoutes.saveDocForBatches);
     genericDataParserRoutes = require('./routes/GenericDataParserRoutes.js');
     app.post('/api/genericDataParser', genericDataParserRoutes.parseGenericData);
+    fullPKParserRoutes = require('./routes/FullPKParserRoutes.js');
+    app.post('/api/fullPKParser', fullPKParserRoutes.parseFullPKData);
     microSolRoutes = require('./routes/MicroSolRoutes.js');
     app.post('/api/microSolParser', microSolRoutes.parseMicroSolData);
     pampaRoutes = require('./routes/PampaRoutes.js');
@@ -114,12 +117,7 @@
     return csUtilities.logUsage("ACAS Node server started", "started", "");
   };
 
-  /* if not DNS
-  global.deployMode = "Dev"
-  
-   end if not DNS
-  */
-
+  global.deployMode = "Dev";
 
   csUtilities.prepareConfigFile(startApp);
 

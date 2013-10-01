@@ -56,3 +56,17 @@ exports.getUsers = (req, resp) ->
 			delete user.password
 			resp.json user
 	csUtilities.getUser req.params.username, callback
+
+exports.authenticationService = (req, resp) ->
+	callback = (results) ->
+		if results.indexOf("Success")>=0
+			resp.json
+				status: "Success"
+		else
+			resp.json
+				status: "Fail"
+
+	if global.specRunnerTestmode
+		callback("Success")
+	else
+		csUtilities.authCheck req.body.user, req.body.password, callback

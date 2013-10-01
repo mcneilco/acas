@@ -96,13 +96,10 @@
 
 
   exports.runRFunctionTest = function(request, response) {
-    var serverUtilityFunctions;
-
-    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {
       'Content-Type': 'application/json'
     });
-    return serverUtilityFunctions.runRFunction(request, "public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
+    return exports.runRFunction(request, "public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
       return response.end(rReturn);
     });
   };

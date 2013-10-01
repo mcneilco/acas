@@ -83,16 +83,15 @@ app.post '/api/runRFunctionTest', serverUtilityFunctions.runRFunctionTest
 ###
 
 exports.runRFunctionTest = (request, response)  ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 	response.writeHead(200, {'Content-Type': 'application/json'});
 
-	serverUtilityFunctions.runRFunction(
+	exports.runRFunction(
 		request,
-	"public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R",
-	"runRFunctionTest",
-	(rReturn) ->
-		response.end rReturn
+		"public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R",
+		"runRFunctionTest",
+		(rReturn) ->
+			response.end rReturn
 	)
 
 exports.getFromACASServer = (baseurl, resp) ->

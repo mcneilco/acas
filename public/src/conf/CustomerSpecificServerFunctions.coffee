@@ -5,6 +5,7 @@
 ###
 
 exports.logUsage = (action, data, username) ->
+	#TODO add log level warning,error etc
 	config = require './configurationNode.js'
 	request = require 'request'
 	req = request.post config.serverConfigurationParams.configuration.loggingService , (error, response) =>
@@ -14,11 +15,16 @@ exports.logUsage = (action, data, username) ->
 			console.log "got error trying log action: "+action+" with data: "+data
 			console.log error
 			console.log response
-	form = req.form()
-	form.append('application', 'acas')
-	form.append('action', action)
-	form.append('application_data', data)
-	form.append('user_login', username)
+	unless username?
+		username = "NA"
+	try
+		form = req.form()
+		form.append('application', 'acas')
+		form.append('action', action)
+		form.append('application_data', data)
+		form.append('user_login', username)
+	catch error
+		console.log error
 
 exports.prepareConfigFile = (callback) ->
 	fs = require('fs')
@@ -65,7 +71,7 @@ exports.prepareConfigFile = (callback) ->
 		callback()
 	)
 
-dnsAuthCheck = (user, pass, retFun) ->
+exports.authCheck = (user, pass, retFun) ->
 	config = require './configurationNode.js'
 	request = require 'request'
 	request(
@@ -115,7 +121,7 @@ exports.findByUsername = (username, fn) ->
 exports.loginStrategy = (username, password, done) ->
 	process.nextTick ->
 		exports.findByUsername username, (err, user) ->
-			dnsAuthCheck username, password, (results) ->
+			exports.authCheck username, password, (results) ->
 				if results.indexOf("Success")>=0
 					try
 						exports.logUsage "User logged in succesfully: ", "NA", username

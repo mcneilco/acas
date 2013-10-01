@@ -63,7 +63,7 @@ startApp = ->
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
 		loginRoutes.loginPost
 	app.get '/logout', loginRoutes.logout
-#	app.post '/api/userAuthentication', loginRoutes.authenticationService
+	app.post '/api/userAuthentication', loginRoutes.authenticationService
 	app.get '/api/users/:username', loginRoutes.getUsers
 
 	# serverAPI routes
@@ -100,8 +100,8 @@ startApp = ->
 	app.post '/api/genericDataParser', genericDataParserRoutes.parseGenericData
 
 	# FullPKParser routes
-#	fullPKParserRoutes = require './routes/FullPKParserRoutes.js'
-#	app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
+	fullPKParserRoutes = require './routes/FullPKParserRoutes.js'
+	app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
 
 	# MicroSolParser routes
 	microSolRoutes = require './routes/MicroSolRoutes.js'
@@ -143,10 +143,7 @@ startApp = ->
 	)
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
-### if not DNS
+#  global.deployMode may be overwritten in prepareConfigFile
 global.deployMode = "Dev"
-
- end if not DNS
-###
 
 csUtilities.prepareConfigFile startApp

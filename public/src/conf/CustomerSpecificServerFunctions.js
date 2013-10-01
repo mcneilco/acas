@@ -6,10 +6,8 @@
 
 
 (function() {
-  var dnsAuthCheck;
-
   exports.logUsage = function(action, data, username) {
-    var config, form, req, request,
+    var config, error, form, req, request,
       _this = this;
 
     config = require('./configurationNode.js');
@@ -23,11 +21,19 @@
         return console.log(response);
       }
     });
-    form = req.form();
-    form.append('application', 'acas');
-    form.append('action', action);
-    form.append('application_data', data);
-    return form.append('user_login', username);
+    if (username == null) {
+      username = "NA";
+    }
+    try {
+      form = req.form();
+      form.append('application', 'acas');
+      form.append('action', action);
+      form.append('application_data', data);
+      return form.append('user_login', username);
+    } catch (_error) {
+      error = _error;
+      return console.log(error);
+    }
   };
 
   exports.prepareConfigFile = function(callback) {
@@ -89,7 +95,7 @@
     });
   };
 
-  dnsAuthCheck = function(user, pass, retFun) {
+  exports.authCheck = function(user, pass, retFun) {
     var config, request,
       _this = this;
 
@@ -151,7 +157,7 @@
   exports.loginStrategy = function(username, password, done) {
     return process.nextTick(function() {
       return exports.findByUsername(username, function(err, user) {
-        return dnsAuthCheck(username, password, function(results) {
+        return exports.authCheck(username, password, function(results) {
           var error;
 
           if (results.indexOf("Success") >= 0) {

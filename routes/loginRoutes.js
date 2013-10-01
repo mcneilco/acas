@@ -73,4 +73,25 @@ app.get '/api/users/:username', loginRoutes.getUsers
     return csUtilities.getUser(req.params.username, callback);
   };
 
+  exports.authenticationService = function(req, resp) {
+    var callback;
+
+    callback = function(results) {
+      if (results.indexOf("Success") >= 0) {
+        return resp.json({
+          status: "Success"
+        });
+      } else {
+        return resp.json({
+          status: "Fail"
+        });
+      }
+    };
+    if (global.specRunnerTestmode) {
+      return callback("Success");
+    } else {
+      return csUtilities.authCheck(req.body.user, req.body.password, callback);
+    }
+  };
+
 }).call(this);
