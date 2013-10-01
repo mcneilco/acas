@@ -23,8 +23,10 @@
   };
 
   exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
-    var Tempfile, child, command, exec, preValErrors, rCommand, rCommandFile, requestJSONFile;
+    var Tempfile, child, command, csUtilities, exec, preValErrors, rCommand, rCommandFile, requestJSONFile;
 
+    csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+    csUtilities.logUsage("About to call R function: " + rFunction, JSON.stringify(request.body), request.body.user);
     if (preValidationFunction != null) {
       preValErrors = preValidationFunction.call(this, request.body);
     } else {
@@ -67,10 +69,20 @@
           experimentId: null,
           results: null
         };
-        return returnFunction.call(JSON.stringify(result));
+        returnFunction.call(JSON.stringify(result));
+        return csUtilities.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), request.body.user);
       } else {
-        console.log('got success');
-        return returnFunction.call(this, stdout);
+        returnFunction.call(this, stdout);
+        try {
+          if (stdout.indexOf('"hasError":true' > -1)) {
+            return csUtilities.logUsage("Returned success from R function with trapped errors: " + rFunction, stdout, request.body.user);
+          } else {
+            return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", request.body.user);
+          }
+        } catch (_error) {
+          error = _error;
+          return console.log(error);
+        }
       }
     });
   };
@@ -84,13 +96,10 @@
 
 
   exports.runRFunctionTest = function(request, response) {
-    var serverUtilityFunctions;
-
-    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {
       'Content-Type': 'application/json'
     });
-    return serverUtilityFunctions.runRFunction(request, "public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
+    return exports.runRFunction(request, "public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
       return response.end(rReturn);
     });
   };

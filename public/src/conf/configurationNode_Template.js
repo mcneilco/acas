@@ -55,9 +55,9 @@
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "acas.api.reportRegistrationServiceURL";
 		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "";
 		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas.api.hostname:acas.node.port/api/users"
-		exports.serverConfigurationParams.configuration.loggingService = "acas.api.usageLoggingServiceURL";
-		exports.serverConfigurationParams.configuration.resultViewerProtocolPrefix = "http://dsandsrt03.dart.corp:9080/seurat/runseurat?cmd=newjob&AssayName=";
-		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "&AssayProtocol="
+		exports.serverConfigurationParams.configuration.loggingService = "acas.api.usageLoggingServiceURL"
+		exports.serverConfigurationParams.configuration.resultViewerProtocolPrefix = "acas.api.resultViewerProtocolPrefix";
+		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "acas.api.resultViewerExperimentPrefix"
 
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
