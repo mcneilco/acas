@@ -16,6 +16,8 @@ basicRScriptPreValidation = (payload) ->
 	return result
 
 exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
+	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(request.body), request.body.user
 	if preValidationFunction?
 		preValErrors = preValidationFunction.call @, request.body
 	else
@@ -61,9 +63,16 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 				experimentId: null
 				results: null
 			returnFunction.call JSON.stringify(result)
+			csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), request.body.user
 		else
-			console.log 'got success'
 			returnFunction.call @, stdout
+			try
+				if stdout.indexOf '"hasError":true' > -1
+					csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, stdout, request.body.user
+				else
+					csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", request.body.user
+			catch error
+				console.log error
 
 ### To allow following test routes to work, install this Module
 1) Add these lines to app.coffee:
@@ -74,16 +83,15 @@ app.post '/api/runRFunctionTest', serverUtilityFunctions.runRFunctionTest
 ###
 
 exports.runRFunctionTest = (request, response)  ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 	response.writeHead(200, {'Content-Type': 'application/json'});
 
-	serverUtilityFunctions.runRFunction(
+	exports.runRFunction(
 		request,
-	"public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R",
-	"runRFunctionTest",
-	(rReturn) ->
-		response.end rReturn
+		"public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R",
+		"runRFunctionTest",
+		(rReturn) ->
+			response.end rReturn
 	)
 
 exports.getFromACASServer = (baseurl, resp) ->
@@ -101,3 +109,5 @@ exports.getFromACASServer = (baseurl, resp) ->
 				console.log json
 				console.log response
 	)
+
+

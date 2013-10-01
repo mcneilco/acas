@@ -38,10 +38,8 @@ app.post '/api/pampaParser', pampaRoutes.parsePampaData
         return response.end(rReturn);
       });
     } else {
-      logDnsUsage("Pampa parser service about to call R", "dryRunMode=" + request.body.dryRunMode, request.body.user);
       return serverUtilityFunctions.runRFunction(request, "public/src/modules/DNSPampa/src/server/Pampa.R", "parsePampaData", function(rReturn) {
-        response.end(rReturn);
-        return logDnsUsage("Pampa parser service returned", "dryRunMode=" + request.body.dryRunMode, request.body.user);
+        return response.end(rReturn);
       });
     }
   };

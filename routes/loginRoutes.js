@@ -19,99 +19,9 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
 
 (function() {
-  var dnsAuthCheck, dnsGetUser, users;
+  var csUtilities;
 
-  users = [
-    {
-      id: 1,
-      username: "bob",
-      password: "secret",
-      email: "bob@example.com",
-      firstName: "Bob",
-      lastName: "Roberts"
-    }, {
-      id: 2,
-      username: "jmcneil",
-      password: "birthday",
-      email: "jmcneil@example.com",
-      firstName: "John",
-      lastName: "McNeil"
-    }, {
-      id: 3,
-      username: "ldap-query",
-      password: "Est@P7uRi5SyR+",
-      email: "",
-      firstName: "ldap-query",
-      lastName: ""
-    }
-  ];
-
-  exports.findById = function(id, fn) {
-    var idx;
-
-    idx = id - 1;
-    if (users[idx]) {
-      return fn(null, users[idx]);
-    } else {
-      return fn(new Error("User " + id + " does not exist"));
-    }
-  };
-
-  exports.findByUsername = function(username, fn) {
-    var config, i, len, user;
-
-    config = require('../public/src/conf/configurationNode.js');
-    if (global.specRunnerTestmode || config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
-      i = 0;
-      len = users.length;
-      while (i < len) {
-        user = users[i];
-        if (user.username === username) {
-          return fn(null, user);
-        }
-        i++;
-      }
-    } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-      return dnsGetUser(username, fn);
-    }
-    return fn(null, null);
-  };
-
-  exports.loginStrategy = function(username, password, done) {
-    var config;
-
-    config = require('../public/src/conf/configurationNode.js');
-    return process.nextTick(function() {
-      return exports.findByUsername(username, function(err, user) {
-        if (config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
-          if (err) {
-            return done(err);
-          }
-          if (!user) {
-            return done(null, false, {
-              message: "Unknown user " + username
-            });
-          }
-          if (user.password !== password) {
-            return done(null, false, {
-              message: "Invalid password"
-            });
-          }
-          return done(null, user);
-        } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-          return dnsAuthCheck(username, password, function(results) {
-            if (results.indexOf("Success") >= 0) {
-              return done(null, user);
-            } else {
-              return done(null, false, {
-                message: "Invalid credentials"
-              });
-            }
-          });
-        }
-      });
-    });
-  };
+  csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
 
   exports.loginPage = function(req, res) {
     var error, errorMsg, user;
@@ -149,10 +59,23 @@ app.get '/api/users/:username', loginRoutes.getUsers
     return res.redirect('/login');
   };
 
-  exports.authenticationService = function(req, resp) {
-    var callback, config;
+  exports.getUsers = function(req, resp) {
+    var callback;
 
-    config = require('../public/src/conf/configurationNode.js');
+    callback = function(err, user) {
+      if (user === null) {
+        return resp.send(204);
+      } else {
+        delete user.password;
+        return resp.json(user);
+      }
+    };
+    return csUtilities.getUser(req.params.username, callback);
+  };
+
+  exports.authenticationService = function(req, resp) {
+    var callback;
+
     callback = function(results) {
       if (results.indexOf("Success") >= 0) {
         return resp.json({
@@ -167,84 +90,8 @@ app.get '/api/users/:username', loginRoutes.getUsers
     if (global.specRunnerTestmode) {
       return callback("Success");
     } else {
-      if (config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
-        return callback("Success");
-      } else if (config.serverConfigurationParams.configuration.userAuthenticationType === "DNS") {
-        return dnsAuthCheck(req.body.user, req.body.password, callback);
-      }
+      return csUtilities.authCheck(req.body.user, req.body.password, callback);
     }
-  };
-
-  dnsAuthCheck = function(user, pass, retFun) {
-    var config, request,
-      _this = this;
-
-    config = require('../public/src/conf/configurationNode.js');
-    request = require('request');
-    return request({
-      method: 'POST',
-      url: config.serverConfigurationParams.configuration.userAuthenticationServiceURL,
-      form: {
-        username: user,
-        password: pass
-      },
-      json: true
-    }, function(error, response, json) {
-      if (!error && response.statusCode === 200) {
-        console.log(JSON.stringify(json));
-        return retFun(JSON.stringify(json));
-      } else {
-        console.log('got ajax error trying authenticate a user');
-        console.log(error);
-        console.log(json);
-        return console.log(response);
-      }
-    });
-  };
-
-  dnsGetUser = function(username, callback) {
-    var config, request,
-      _this = this;
-
-    config = require('../public/src/conf/configurationNode.js');
-    request = require('request');
-    request({
-      method: 'GET',
-      url: config.serverConfigurationParams.configuration.userInformationServiceURL + username,
-      json: true
-    }, function(error, response, json) {
-      if (!error && response.statusCode === 200) {
-        console.log(json);
-        return callback(null, {
-          id: json.DNSPerson.id,
-          username: json.DNSPerson.id,
-          email: json.DNSPerson.email,
-          firstName: json.DNSPerson.firstName,
-          lastName: json.DNSPerson.lastName
-        });
-      } else {
-        console.log('got ajax error trying get user information');
-        console.log(error);
-        console.log(json);
-        console.log(response);
-        return callback(null, null);
-      }
-    });
-    return logDnsUsage("User logged in", "NA", username);
-  };
-
-  exports.getUsers = function(req, resp) {
-    var callback;
-
-    callback = function(err, user) {
-      if (user === null) {
-        return resp.send(204);
-      } else {
-        delete user.password;
-        return resp.json(user);
-      }
-    };
-    return exports.findByUsername(req.params.username, callback);
   };
 
 }).call(this);
