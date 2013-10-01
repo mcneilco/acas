@@ -50,7 +50,7 @@ getHeaderLines <- function(expt) {
   dateParts <- strsplit(eDate, " ")
   yFormat <- strsplit(dateParts[[1]][[1]], "-")[[1]]
   if(nchar(yFormat) == 2) {
-    assayDate <- paste0("20",dateParts[[1]][[1]])
+    dateParts[[1]][[1]] <- paste0("20",dateParts[[1]][[1]])
   }
   assayDate <- gsub("^00","20",dateParts[[1]][[1]])
   hl[[8]] <- paste("Assay Date", assayDate, sep=",")
@@ -270,7 +270,6 @@ runSeuratETL <- function(databaseSettings = seuratDatabaseSettings, protocolQuer
     protocolName <- protocolsToSearch[[p]]
     logger$info(paste("...creating SEL files for protocol:", protocolsToSearch[[p]]))
     experiments <- queryProtocol(protocolsToSearch[[p]], applicationSettings = databaseSettings)
-    dbDisconnect(conn)
     
     exptNames <- levels(as.factor(experiments$Experiment_Name))
     experiments <- as.data.table(experiments)
