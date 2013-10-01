@@ -61,10 +61,10 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     sourceTable <- containerTable[logRow$Source.Id == containerTable$WELL_ID, ]
     destinationTable <- containerTable[logRow$Destination.Id == containerTable$WELL_ID, ]
     ##################
+    # Remove from source
     if (sourceTable$VOLUME_UNIT[1] != logRow$Amount.Units[1]) {
-      stop("Units must match")
-      #TODO: fix units for them
-      convertUnits()
+      logRow$Amount.Transferred <- convertVolumes(logRow$Amount.Transferred, logRow$Amount.Units[1], sourceTable$VOLUME_UNIT[1])
+      logRow$Amount.Units <- sourceTable$VOLUME_UNIT[1]
     }
     newSourceSet <- sourceTable
     newSourceSet$VOLUME <- sourceTable$VOLUME[1] - logRow$Amount.Transferred
@@ -74,11 +74,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
       newSourceSet <- data.frame()
     }
     ##################
-    if (sourceTable$VOLUME_UNIT[1] != logRow$Amount.Units[1]) {
-      stop("Units must match")
-      #TODO: fix units for them
-      convertUnits()
-    }
+    # Add to destination
     destinationVolume <- sum(destinationTable$VOLUME[1], logRow$Amount.Transferred, na.rm=TRUE)
     destinationWellId <- logRow$Destination.Id
     sourceTable$VOLUME <- logRow$Amount.Transferred
@@ -110,6 +106,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
       secondContainer = logRow$Destination.Id,
       dateTransferred = logRow$Date.Time,
       volumeTransferred = logRow$Amount.Transferred,
+      transferUnit = logRow$
       protocol = logRow$Protocol
       )
     interactions <- rbind.fill(interactions, newInteraction)
@@ -367,6 +364,17 @@ MarkContainersStatusIgnored <- function(idVector) {
 WHERE container_state_id in (
 select id from container_state
         WHERE container_id IN (", paste(idVector, collapse=","), "))"))
+}
+convertVolumes <- function (x, from, to) {
+  if (from=="nL" && to=="uL") {
+    return(x/1000)
+  } else if (from=="uL" && to=="nL") {
+    return(x*1000)
+  } else if (from==to) {
+    return(x)
+  } else {
+    stop(paste("Units not understood: Cannot convert from", from, "to", to))
+  }
 }
 bulkLoadSampleTransfers <- function(request) {
   # The top level function
