@@ -896,7 +896,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
   
   # Parse numeric data from the unparsed values
-  matches <- is.na(suppressWarnings(as.numeric(gsub("^(>=|<=|>|<)(.*)", "\\2", gsub(",","",longResults$"UnparsedValue")))))
+  matches <- is.na(suppressWarnings(as.numeric(gsub("^(>|<)(.*)", "\\2", gsub(",","",longResults$"UnparsedValue")))))
   longResults$"Result Value" <- longResults$"UnparsedValue"
   longResults$"Result Value"[matches] <- ""
   
@@ -909,7 +909,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$"Result Desc"[longResults$Class=="Clob"] <- ""
   
   # Parse Operators from the unparsed value
-  matchExpression <- ">=|<=|>|<"
+  matchExpression <- ">|<"
   longResults$"Result Operator" <- longResults$"Result Value"
   matches <- gregexpr(matchExpression,longResults$"Result Value")
   regmatches(longResults$"Result Operator",matches, invert = TRUE) <- ""
@@ -1525,8 +1525,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                     & !(subjectData$subjectID %in% excludedSubjects),]
   
   createRawOnlyTreatmentGroupData <- function(subjectData, sigFigs) {
-    isGreaterThan <- any(subjectData$valueOperator==">" | subjectData$valueOperator==">=", na.rm=TRUE)
-    isLessThan <- any(subjectData$valueOperator=="<" | subjectData$valueOperator=="<=", na.rm=TRUE)
+    isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
+    isLessThan <- any(subjectData$valueOperator=="<", na.rm=TRUE)
     if(isGreaterThan && isLessThan) {
       resultOperator <- "<>"
       resultValue <- NA
