@@ -117,8 +117,6 @@
     return csUtilities.logUsage("ACAS Node server started", "started", "");
   };
 
-  global.deployMode = "Dev";
-
-  csUtilities.prepareConfigFile(startApp);
+  startApp();
 
 }).call(this);

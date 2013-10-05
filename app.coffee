@@ -143,7 +143,4 @@ startApp = ->
 	)
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
-#  global.deployMode may be overwritten in prepareConfigFile
-global.deployMode = "Dev"
-
-csUtilities.prepareConfigFile startApp
+startApp()
