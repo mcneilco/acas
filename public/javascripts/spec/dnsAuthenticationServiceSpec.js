@@ -16,7 +16,7 @@
             url: "api/userAuthentication",
             data: {
               user: "ldap-query",
-              password: "Est@P7uRi5SyR+"
+              password: "fred"
             },
             success: function(json) {
               return _this.serviceReturn = json;
@@ -29,7 +29,7 @@
           });
         });
       });
-      return it('should return succesfull credentials', function() {
+      return it('should return succesfull credentials (expect to fail without valid creds in this spec file)', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           return expect(this.serviceReturn.status).toContain("Success");

@@ -12,8 +12,8 @@ describe 'User authentication Service testing', ->
 					type: 'POST'
 					url: "api/userAuthentication"
 					data:
-						user: "ldap-query" # credentials for DNS test user
-						password: "Est@P7uRi5SyR+"
+						user: "ldap-query"
+						password: "fred" # replace with valid creds to run in live service mode
 					success: (json) =>
 						@serviceReturn = json
 					error: (err) =>
@@ -21,7 +21,7 @@ describe 'User authentication Service testing', ->
 						@serviceReturn = null
 					dataType: 'json'
 
-		it 'should return succesfull credentials', ->
+		it 'should return succesfull credentials (expect to fail without valid creds in this spec file)', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn.status).toContain "Success"
@@ -80,4 +80,3 @@ describe 'User authentication Service testing', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn).toEqual "got 204"
-#TODO make work with DNS services

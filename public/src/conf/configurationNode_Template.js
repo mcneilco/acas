@@ -28,7 +28,6 @@
 		exports.serverConfigurationParams.configuration.userInformationServiceURL = "acas.api.personsServiceURL";
 
 // For Projects
-		exports.serverConfigurationParams.configuration.projectsType = "DNS";
 		exports.serverConfigurationParams.configuration.projectsServiceURL = "acas.api.projectsServiceURL";
 
 // For racas
@@ -54,10 +53,10 @@
 		exports.serverConfigurationParams.configuration.includeProject = "TRUE";
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "acas.api.reportRegistrationServiceURL";
 		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "";
-		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas.api.hostname:acas.node.port/api/users"
-		exports.serverConfigurationParams.configuration.loggingService = "acas.api.usageLoggingServiceURL"
+		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas.api.hostname:acas.node.port/api/users";
+		exports.serverConfigurationParams.configuration.loggingService = "acas.api.usageLoggingServiceURL";
 		exports.serverConfigurationParams.configuration.resultViewerProtocolPrefix = "acas.api.resultViewerProtocolPrefix";
-		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "acas.api.resultViewerExperimentPrefix"
+		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "acas.api.resultViewerExperimentPrefix";
 
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
