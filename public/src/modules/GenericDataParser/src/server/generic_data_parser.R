@@ -422,14 +422,16 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, preferredIdService, dryRun, serverPath, curveNames, testMode = FALSE, replaceFakeCorpBatchId="") {
+validateCalculatedResults <- function(calculatedResults, dryRun, serverPath, curveNames, testMode = FALSE, replaceFakeCorpBatchId="") {
   # Valides the calculated results (for now, this only validates the Corporate Batch Ids)
   #
   # Args:
   #	  calculatedResuluts:	      A "data.frame" of the calculated results
-  #   preferredIdService:       A string that is the web address of the preferred ID service
   #   testMode:                 A boolean
+  #   dryRun:                   A boolean
+  #   serverPath:               Path to ACAS roo services
   #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
+  #   curveNames:               A character vector of curveNames that will be needed as extra valueKinds
   #
   # Returns:
   #   a "data.frame" of the validated calculated results
@@ -437,7 +439,7 @@ validateCalculatedResults <- function(calculatedResults, preferredIdService, dry
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalCorporateBatchID != replaceFakeCorpBatchId
   batchIds <- unique(calculatedResults$"Corporate Batch ID"[batchesToCheck])
-  newBatchIds <- getPreferredId(batchIds, preferredIdService, testMode)
+  newBatchIds <- getPreferredId(batchIds, testMode=testMode)
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
   if (is.null(newBatchIds)) {
@@ -661,60 +663,6 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
     }
   }
   return(NULL)
-}
-getPreferredId <- function(batchIds, preferredIdService, testMode=FALSE) {
-  # Gets preferred Ids from a service
-  #
-  # Args:
-  #   batchIds:	            A character vector of the batch Ids
-  #   preferredIdService:   A string that is the web address of the preferred ID service
-  #   testMode:             A boolean marking if the testMode should be used
-  #
-  # Returns:
-  #   a list of pairs of requested IDs and preferred IDs
-  #   on an error, returns NULL
-  
-  require('RCurl')
-  
-  # Put the batchIds in the correct format
-  requestIds <- list()
-  if (testMode) {
-    requestIds$testMode <- "true"
-  }
-  requestIds$requests = lapply(batchIds,function(input) {return(list(requestName=input))})
-  
-  
-  # Get the preferred ids from the server
-  response <- list(error=FALSE)
-  tryCatch({
-    response <- getURL(
-      preferredIdService,
-      customrequest='POST',
-      httpheader=c('Content-Type'='application/json'),
-      postfields=toJSON(requestIds))
-  }, error = function(e) {
-    errorList <<- c(errorList,paste("Error in contacting the preferred ID service:", e$message))
-  })
-  if (substring(response,1,1)!="{") {
-    stop("Error in contacting the preferred ID service: ", response)
-  } else {
-    tryCatch({
-      response <- fromJSON(response)
-    }, error = function(e) {
-      stop("The loader was unable to parse the response it got from the preferred ID service: ", response)
-    })
-  }
-  
-  # Error handling
-  if (grepl("^Error:",response[1])) {
-    errorList <<- c(errorList, paste("The preferred ID service is having a problem:", response))
-    return(NULL)
-  } else if (response$error) {
-    errorList <<- c(errorList, paste("The preferred ID service is having a problem:", response$errorMessages))
-  }
-  
-  # Return the useful part
-  return(response$results)
 }
 getExcelColumnFromNumber <- function(number) {
   # Function to get an Excel-style column name from a column number
@@ -1548,7 +1496,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       "valueKind" = subjectData$valueKind[1],
       "valueUnit" = subjectData$valueUnit[1],
       "numericValue" = if(is.nan(resultValue)) NA else resultValue,
-      "stringValue" = if (length(unique(subjectData$stringValue)) == 1) subjectData$stringValue[1] else NA,
+      "stringValue" = if (length(unique(subjectData$stringValue)) == 1) {subjectData$stringValue[1]}
+      else if (is.nan(resultValue)) {'NA'}
+      else NA,
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
       "publicData" = subjectData$publicData[1],
@@ -2182,7 +2132,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, rawOnlyFormat, stateGroups)
   
   # Validate the Calculated Results
-  calculatedResults <- validateCalculatedResults(calculatedResults, preferredIdService=configList$preferredBatchIdService, 
+  calculatedResults <- validateCalculatedResults(calculatedResults,
                                                  dryRun, serverPath, curveNames, testMode=testMode, 
                                                  replaceFakeCorpBatchId=replaceFakeCorpBatchId)
   
