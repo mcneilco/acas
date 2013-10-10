@@ -37,12 +37,12 @@ parseFullPKData <- function(request){
   }, error = function(err) {
     return(list(completedSuccessfully = FALSE, preProcessorResponse = err$message))			
   })
-  parserInput <- list(fileToParse = preprocessPK(request$fileToParse, inputParameters))
   
   if(preProcessorCall$completedSuccessfully) {
     parserInput <- preProcessorCall$preProcessorResponse
     parserInput$dryRunMode <- request$dryRunMode
     parserInput$user <- request$user
+    parserInput$reportFile <- request$reportFile
     parserResponse <- parseGenericData(parserInput)
     if (!interpretJSONBoolean(request$dryRunMode)) {
       experiment <- fromJSON(getURL(paste0(racas::applicationSettings$serverPath, "experiments/codename/", parserResponse$results$experimentCode)))[[1]]
