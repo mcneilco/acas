@@ -107,7 +107,7 @@
             return expect(this.psac.$('.bv_hitThreshold').val()).toEqual('0.7');
           });
         });
-        return describe("parameter editing", function() {
+        describe("parameter editing", function() {
           return it("should update the model with when the threshold is changed", function() {
             var value;
 
@@ -115,6 +115,36 @@
             this.psac.$('.bv_hitThreshold').change();
             value = this.psac.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
             return expect(value.get('numericValue')).toEqual(0.8);
+          });
+        });
+        describe("should populate fields", function() {
+          return it("should show the transformation", function() {
+            return expect(this.psac.$('.bv_transformationRule').val()).toEqual('(maximum-minimum)/minimum');
+          });
+        });
+        describe("parameter editing", function() {
+          return it("should update the model with when the transformation is changed", function() {
+            var value;
+
+            this.psac.$('.bv_transformationRule').val('fiona');
+            this.psac.$('.bv_transformationRule').change();
+            value = this.psac.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
+            return expect(value.get('stringValue')).toEqual("fiona");
+          });
+        });
+        describe("should populate fields", function() {
+          return it("should show the normalization", function() {
+            return expect(this.psac.$('.bv_normalizationRule').val()).toEqual('none');
+          });
+        });
+        return describe("parameter editing", function() {
+          return it("should update the model with when the normalization is changed", function() {
+            var value;
+
+            this.psac.$('.bv_normalizationRule').val('plate order');
+            this.psac.$('.bv_normalizationRule').change();
+            value = this.psac.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "normalization rule");
+            return expect(value.get('stringValue')).toEqual("plate order");
           });
         });
       });

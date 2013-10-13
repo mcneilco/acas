@@ -44,6 +44,8 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	template: _.template($("#PrimaryScreenAnalysisView").html())
 	events:
 		"change .bv_hitThreshold": "handleHitThresholdChanged"
+		"change .bv_transformationRule": "handleTransformationRuleChanged"
+		"change .bv_normalizationRule": "handleNormalizationRuleChanged"
 
 	initialize: ->
 		@model.on "synced_and_repaired", @handleExperimentSaved
@@ -53,6 +55,8 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		$(@el).html @template()
 		@getControlStates()
 		@$('.bv_hitThreshold').val(@getHitThreshold())
+		@$('.bv_transformationRule').val(@getTransformationRule())
+		@$('.bv_normalizationRule').val(@getNormalizationRule())
 		@showExistingResults()
 		if not @model.isNew()
 			@handleExperimentSaved()
@@ -64,6 +68,14 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	getHitThreshold: ->
 		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
 		value.get('numericValue')
+
+	getTransformationRule: ->
+		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "data transformation rule"
+		value.get('stringValue')
+
+	getNormalizationRule: ->
+		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "normalization rule"
+		value.get('stringValue')
 
 	showExistingResults: ->
 		analysisStatus = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
@@ -79,6 +91,14 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	handleHitThresholdChanged: =>
 		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
 		value.set numericValue: parseFloat($.trim(@$('.bv_hitThreshold').val()))
+
+	handleTransformationRuleChanged: =>
+		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "data transformation rule"
+		value.set stringValue: $.trim(@$('.bv_transformationRule').val())
+
+	handleNormalizationRuleChanged: =>
+		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "normalization rule"
+		value.set stringValue: $.trim(@$('.bv_normalizationRule').val())
 
 	handleExperimentSaved: =>
 		if @analysisStatus is "complete"

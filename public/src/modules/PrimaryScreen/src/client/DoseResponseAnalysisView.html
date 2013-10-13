@@ -1,7 +1,7 @@
 <script type="text/template" id="DoseResponseAnalysisView" xmlns="http://www.w3.org/1999/html">
 
     <div>
-    <h5>Curve Fit Analysis</h5>
+        <h5>Curve Fit Analysis</h5>
     </div>
 
     <div>
@@ -16,7 +16,7 @@
                 <th>Parameter</th>
                 <th>Set Value</th>
             </tr>
-            <tr>
+            <tr class="bv_group_curveMin">
                 <td>
                     <label class="checkbox">
                         <input type="checkbox" class="bv_fixCurveMin" value="">
@@ -25,20 +25,20 @@
                 <td>curve min</td>
                 <td>
                     <fieldset>
-                        <input class="input-mini" type="text" placeholder="">
+                        <input class="input-mini bv_curveMin" type="text">
                     </fieldset>
                 </td>
             </tr>
-            <tr>
+            <tr class="bv_group_curveMax">
                 <td>
                     <label class="checkbox">
-                        <input type="checkbox" value="">
+                        <input type="checkbox" class="bv_fixCurveMax" value="0">
                     </label>
                 </td>
                 <td>curve max</td>
                 <td>
                     <fieldset>
-                        <input class="input-mini" type="text" placeholder="">
+                        <input class="input-mini bv_curveMax" type="text">
                     </fieldset>
                 </td>
             </tr>
@@ -72,7 +72,7 @@
 
     </div>
 
-<!--    <h5 class="pull-right">Group Curves By Batch</h5> -->
+    <!--    <h5 class="pull-right">Group Curves By Batch</h5> -->
 
     <div class="pull-left offset1">
         <label class="radio">

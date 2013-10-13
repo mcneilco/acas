@@ -69,6 +69,8 @@
 
     function PrimaryScreenAnalysisController() {
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
+      this.handleNormalizationRuleChanged = __bind(this.handleNormalizationRuleChanged, this);
+      this.handleTransformationRuleChanged = __bind(this.handleTransformationRuleChanged, this);
       this.handleHitThresholdChanged = __bind(this.handleHitThresholdChanged, this);
       this.render = __bind(this.render, this);      _ref1 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
       return _ref1;
@@ -77,7 +79,9 @@
     PrimaryScreenAnalysisController.prototype.template = _.template($("#PrimaryScreenAnalysisView").html());
 
     PrimaryScreenAnalysisController.prototype.events = {
-      "change .bv_hitThreshold": "handleHitThresholdChanged"
+      "change .bv_hitThreshold": "handleHitThresholdChanged",
+      "change .bv_transformationRule": "handleTransformationRuleChanged",
+      "change .bv_normalizationRule": "handleNormalizationRuleChanged"
     };
 
     PrimaryScreenAnalysisController.prototype.initialize = function() {
@@ -89,6 +93,8 @@
       $(this.el).html(this.template());
       this.getControlStates();
       this.$('.bv_hitThreshold').val(this.getHitThreshold());
+      this.$('.bv_transformationRule').val(this.getTransformationRule());
+      this.$('.bv_normalizationRule').val(this.getNormalizationRule());
       this.showExistingResults();
       if (!this.model.isNew()) {
         this.handleExperimentSaved();
@@ -105,6 +111,20 @@
 
       value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       return value.get('numericValue');
+    };
+
+    PrimaryScreenAnalysisController.prototype.getTransformationRule = function() {
+      var value;
+
+      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
+      return value.get('stringValue');
+    };
+
+    PrimaryScreenAnalysisController.prototype.getNormalizationRule = function() {
+      var value;
+
+      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "normalization rule");
+      return value.get('stringValue');
     };
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
@@ -129,6 +149,24 @@
       value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       return value.set({
         numericValue: parseFloat($.trim(this.$('.bv_hitThreshold').val()))
+      });
+    };
+
+    PrimaryScreenAnalysisController.prototype.handleTransformationRuleChanged = function() {
+      var value;
+
+      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
+      return value.set({
+        stringValue: $.trim(this.$('.bv_transformationRule').val())
+      });
+    };
+
+    PrimaryScreenAnalysisController.prototype.handleNormalizationRuleChanged = function() {
+      var value;
+
+      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "normalization rule");
+      return value.set({
+        stringValue: $.trim(this.$('.bv_normalizationRule').val())
       });
     };
 

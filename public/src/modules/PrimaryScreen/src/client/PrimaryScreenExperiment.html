@@ -37,7 +37,7 @@
         <div class="pull-left">
             <p>*Positive Control</p>
             <form class="form-inline">
-                <input class="input-medium pull-left bv_positiveControlBatch" type="text" placeholder="enter batch number" value="CRA-000399-1">
+                <input class="input-medium pull-left bv_positiveControlBatch" type="text" placeholder="enter batch number" value="">
                 <form>
                     <fieldset style="padding-left:10px;">
                         <input class="input-small pull-right bv_positiveControlConc" type="text" placeholder="Conc uM:" value="10">
@@ -50,7 +50,7 @@
         <div class="pull-right">
             <p style="padding-left:40px;">*Negative Control</p>
             <form class="form-inline" style="padding-left:40px;">
-                <input class="input-medium pull-left" type="text" placeholder="enter batch number" value="CRA-000396-1">
+                <input class="input-medium pull-left" type="text" placeholder="enter batch number" value="">
                 <form>
                     <fieldset style="padding-left:10px;">
                         <input class="input-small pull-right" type="text" placeholder="Conc uM:" value="1">
@@ -67,24 +67,25 @@
                 <input class="input-xlarge" type="text">
             </div>
         </div>
-        <div class="control-group">
+        <div class="control-group bv_group_transformationRule">
             <label class="control-label">*Transformation</label>
             <div class="controls">
-                <select style="width:285px;">
-                    <option>(Max-Min)/Min</option>
+                <select class="bv_transformationRule" style="width:285px;">
+                    <option value="(maximum-minimum)/minimum">(Max-Min)/Min</option>
+                    <option value="fiona">Fiona</option>
                 </select>
             </div>
         </div>
-        <div class="control-group">
+        <div class="control-group bv_group_normalizationRule">
             <label class="control-label">Normalization</label>
             <div class="controls">
-                <select style="width:285px;" placeholder="Plate Order">
-                    <option>Plate Order</option>
-                    <option>None</option>
+                <select class="bv_normalizationRule" style="width:285px;" placeholder="Plate Order">
+                    <option value="plate order">Plate Order</option>
+                    <option value="none">None</option>
                 </select>
             </div>
         </div>
-        <div class="control-group">
+        <div class="control-group bv_group_hitTreshold">
             <label class="control-label">*Hit Threshold</label>
             <div class="controls">
                 <input class="input-xlarge bv_hitThreshold" type="text">

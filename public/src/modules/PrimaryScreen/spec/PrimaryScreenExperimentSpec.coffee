@@ -84,6 +84,24 @@ describe "Primary Screen Experiment module testing", ->
 					@psac.$('.bv_hitThreshold').change()
 					value = @psac.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
 					expect(value.get('numericValue')).toEqual 0.8
+			describe "should populate fields", ->
+				it "should show the transformation", ->
+					expect(@psac.$('.bv_transformationRule').val()).toEqual '(maximum-minimum)/minimum'
+			describe "parameter editing", ->
+				it "should update the model with when the transformation is changed", ->
+					@psac.$('.bv_transformationRule').val('fiona')
+					@psac.$('.bv_transformationRule').change()
+					value = @psac.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "data transformation rule"
+					expect(value.get('stringValue')).toEqual "fiona"
+			describe "should populate fields", ->
+				it "should show the normalization", ->
+					expect(@psac.$('.bv_normalizationRule').val()).toEqual 'none'
+			describe "parameter editing", ->
+				it "should update the model with when the normalization is changed", ->
+					@psac.$('.bv_normalizationRule').val('plate order')
+					@psac.$('.bv_normalizationRule').change()
+					value = @psac.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "normalization rule"
+					expect(value.get('stringValue')).toEqual "plate order"
 
 	describe "Upload and Run Primary Analysis Controller testing", ->
 		beforeEach ->
