@@ -1,3 +1,5 @@
+# collapseGroupBy may eventually support a character vector to group by, but right now it checks if it is not null
+
 getFormatSettings <- function() {
   formatSettings <- list(
     "DNS In Vivo Behavior" = list(
@@ -121,16 +123,16 @@ getFormatSettings <- function() {
       annotationType = "s_behavior",
       hideAllData = TRUE,
       extraHeaders = data.frame(),
-      splitStates = c("Bin"),
       splitSubjects = c("Animal ID"),
-      includeTreatmentGroupData = FALSE,
+      includeTreatmentGroupData = TRUE,
       rowMeaning = "subjectState",
       stateGroups = list(list(entityKind = "subject",
                               stateType = "metadata", 
                               stateKind = "animal information", 
                               valueKinds = c("Animal ID"),
                               includesOthers = FALSE,
-                              includesCorpName = FALSE),
+                              includesCorpName = FALSE,
+                              collapseGroupBy = c("not null")),
                          list(entityKind = "subject",
                               stateType = "data",
                               stateKind = "treatment",
@@ -147,14 +149,16 @@ getFormatSettings <- function() {
                               stateKind = "animal information",
                               valueKinds = c("Animal ID"),
                               includesOthers = FALSE,
-                              includesCorpName = FALSE),
+                              includesCorpName = FALSE,
+                              collapseGroupBy = "not null"),
                          list(entityKind = "container",
                               labelType = "name",
                               labelKind = "container name",
                               labelText = "Animal ID",
                               valueKinds = c("Animal ID"),
                               includesOthers = FALSE,
-                              includesCorpName = FALSE))
+                              includesCorpName = FALSE,
+                              collapseGroupBy = "not null"))
     )
   )
   return(formatSettings)

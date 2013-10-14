@@ -42,6 +42,7 @@
 #########################################################################
 
 require(racas)
+source("public/src/conf/customFunctions.R")
 
 #####
 # Define Functions
@@ -471,6 +472,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, serverPath, cur
   neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
   
   validateValueKinds(neededValueKinds, neededValueKindTypes, serverPath, dryRun)
+  
   # Return the validated results
   return(calculatedResults)
 }
@@ -728,7 +730,7 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   # Return the validated Meta Data
   return(returnDataFrame)
 }
-organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, rawOnlyFormat = FALSE, stateGroups = NULL, splitStates = NULL, splitSubjects = NULL, inputFormat) {
+organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, rawOnlyFormat = FALSE, stateGroups = NULL, splitSubjects = NULL, inputFormat) {
   # Organizes the calculated results section
   #
   # Args:
@@ -810,7 +812,6 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
     if (!is.null(splitSubjects)) {
       results$subjectID <- as.numeric(as.factor(do.call(paste0, args=as.list(results[splitSubjects]))))
     }
-    source("public/src/conf/customFunctions.R")
     results$treatmentGroupID <- calculateTreatmemtGroupID(results, inputFormat, stateGroups, resultTypes)
   } else {
     results$treatmentGroupID <- NA
@@ -896,7 +897,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
                                   & is.na(organizedData$clobValue)), ]
   
   # Order
-  organizedData <- organizedData[do.call(order,organizedData[c("Corporate Batch ID","Result Type")]),]
+  #organizedData <- organizedData[do.call(order,organizedData[c("Corporate Batch ID","Result Type")]),]
   
   return(organizedData)
 }
@@ -1346,7 +1347,7 @@ validateScientist <- function(scientistName, configList) {
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
                               recordedBy, replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning="subject", 
-                              includeTreatmentGroupData) {
+                              includeTreatmentGroupData, inputFormat) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   require('plyr')
@@ -1428,8 +1429,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   #######  
   stateGroupIndex <- 1
   subjectData$stateGroupIndex <- NA
-  for (state in stateGroups) {
-    includedRows <- subjectData$valueKind %in% state$valueKinds
+  for (stateGroup in stateGroups) {
+    includedRows <- subjectData$valueKind %in% stateGroup$valueKinds
     newRows <- subjectData[includedRows & !is.na(subjectData$stateGroupIndex), ]
     subjectData$stateGroupIndex[includedRows & is.na(subjectData$stateGroupIndex)] <- stateGroupIndex
     if (nrow(newRows)>0) newRows$stateGroupIndex <- stateGroupIndex
@@ -1443,6 +1444,27 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   names(subjectData)[names(subjectData) == "Conc"] <- "concentration"
   names(subjectData)[names(subjectData) == "Conc Units"] <- "concentrationUnit"
   
+  makeUniqueSubjects <- function(subjectData) {
+    subjectData$subjectStateID <- subjectData$subjectStateID[1]
+    subjectData$batchCode <- subjectData$batchCode[1]
+    subjectData$originalBatchCode <- subjectData$originalBatchCode[1]
+    output <- unique(subjectData)
+    if (nrow(output) > 1) {
+      stop("Values in ", unique(subjectData$resultTypeAndUnit), " are expected to be the same for each subject.")
+    }
+    return(output)
+  }
+  for (i in 1:length(stateGroups)) {
+    stateGroup <- stateGroups[[i]]
+    subjectData <- ddply(subjectData, c("stateGroupIndex"), .fun = function(subjectData) {
+      if (subjectData$stateGroupIndex[1] == i && !is.null(stateGroup$collapseGroupBy)) {
+        subjectData <- ddply(subjectData, 
+                             c("resultTypeAndUnit","subjectID","stateGroupIndex"),
+                             .fun=makeUniqueSubjects)
+      }
+      return(subjectData)
+    })
+  }
   
   subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
                                 subjectData$concentration, "-", subjectData$concentrationUnit, "-",
@@ -1477,48 +1499,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     treatmentDataStart <- subjectData[subjectData$valueKind %in% treatmentDataValueKinds 
                                       & !(subjectData$subjectID %in% excludedSubjects),]
     
-    createRawOnlyTreatmentGroupData <- function(subjectData, sigFigs) {
-      isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
-      isLessThan <- any(subjectData$valueOperator=="<", na.rm=TRUE)
-      if(isGreaterThan && isLessThan) {
-        resultOperator <- "<>"
-        resultValue <- NA
-      } else if (isGreaterThan) {
-        resultOperator <- ">"
-        resultValue <- max(subjectData$numericValue, na.rm = TRUE)
-      } else if (isLessThan) {
-        resultOperator <- "<"
-        resultValue <- min(subjectData$numericValue, na.rm = TRUE)
-      } else {
-        resultOperator <- NA
-        resultValue <- mean(subjectData$numericValue, na.rm = TRUE)
-      }
-      if (!is.null(sigFigs)) { 
-        resultValue <- signif(resultValue, sigFigs)
-      }
-      return(data.frame(
-        "batchCode" = subjectData$batchCode[1],
-        "valueKind" = subjectData$valueKind[1],
-        "valueUnit" = subjectData$valueUnit[1],
-        "numericValue" = if(is.nan(resultValue)) NA else resultValue,
-        "stringValue" = if (length(unique(subjectData$stringValue)) == 1) {subjectData$stringValue[1]}
-        else if (is.nan(resultValue)) {'NA'}
-        else NA,
-        "valueOperator" = resultOperator,
-        "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
-        "publicData" = subjectData$publicData[1],
-        treatmentGroupID = subjectData$treatmentGroupID[1],
-        stateGroupIndex = subjectData$stateGroupIndex[1],
-        stateID = subjectData$stateID[1],
-        stateVersion = subjectData$stateVersion[1],
-        valueType = subjectData$valueType[1],
-        numberOfReplicates = sum(!is.na(subjectData$numericValue)),
-        uncertaintyType = if(!is.na(resultValue)) "standard deviation" else NA,
-        uncertainty = if(sum(!is.na(subjectData$numericValue)) > 2) {sd(subjectData$numericValue, na.rm=TRUE)} else NA,
-        stringsAsFactors=FALSE))
-    }
-    
-    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs)
+    # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
+    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
     treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
     stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
                                                 entityKind = "treatmentgroup", 
@@ -2116,7 +2098,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     curveNames <- formatSettings[[inputFormat]]$curveNames
     annotationType <- formatSettings[[inputFormat]]$annotationType
     sigFigs <- formatSettings[[inputFormat]]$sigFigs
-    splitStates <- formatSettings[[inputFormat]]$splitStates
     splitSubjects <- formatSettings[[inputFormat]]$splitSubjects
     rowMeaning <- formatSettings[[inputFormat]]$rowMeaning
     if(is.null(rowMeaning)) {
@@ -2138,7 +2119,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     curveNames <- NULL
     sigFigs <- NULL
     annotationType <- "s_general"
-    splitStates <- NULL
     splitSubjects <- NULL
   }
   
@@ -2146,7 +2126,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
-  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, rawOnlyFormat, stateGroups, splitStates, splitSubjects, inputFormat)
+  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, rawOnlyFormat, stateGroups, splitSubjects, inputFormat)
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(calculatedResults,
@@ -2221,7 +2201,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
                         stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
-                        replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning, includeTreatmentGroupData)
+                        replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning, includeTreatmentGroupData, inputFormat)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
