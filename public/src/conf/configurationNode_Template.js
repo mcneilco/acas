@@ -57,7 +57,9 @@
 		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas.api.hostname:acas.node.port/api/users"
 		exports.serverConfigurationParams.configuration.loggingService = "acas.api.usageLoggingServiceURL"
 		exports.serverConfigurationParams.configuration.resultViewerProtocolPrefix = "acas.api.resultViewerProtocolPrefix";
-		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "acas.api.resultViewerExperimentPrefix"
+		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "acas.api.resultViewerExperimentPrefix";
+		exports.serverConfigurationParams.configuration.deleteOnReload = "true";
+		exports.serverConfigurationParams.configuration.useCustomReportRegistration = "true"
 
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));

@@ -57,7 +57,9 @@
 		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas-d:48203/api/users"
 		exports.serverConfigurationParams.configuration.loggingService = "http://imapp01-d:8080/DNS/usage/v1/DNSUsageLogging/process"
 		exports.serverConfigurationParams.configuration.resultViewerProtocolPrefix = "http://dsandsrt03.dart.corp:9080/seurat/runseurat?cmd=newjob&AssayName=";
-		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "&AssayProtocol="
+		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "&AssayProtocol=";
+		exports.serverConfigurationParams.configuration.deleteOnReload = "true";
+		exports.serverConfigurationParams.configuration.useCustomReportRegistration = "true"
 
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));
