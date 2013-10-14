@@ -1375,8 +1375,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     batchNameList <- unique(subjectData$"Corporate Batch ID")
     if (configList$useCustomReportRegistration == "true") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
+    } else {
+      addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
     }
-    addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
   }
   
   # Analysis group
@@ -1714,8 +1715,9 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     batchNameList <- unique(calculatedResults$"Corporate Batch ID")
     if (configList$useCustomReportRegistration) {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
+    } else {
+      addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
     }
-    addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
   }
   
   # Each analysisGroupID creates an analysis group
@@ -2063,7 +2065,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
-  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, rawOnlyFormat, stateGroups)
+  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, rawOnlyFormat, stateGroups, splitSubjects, inputFormat)
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(calculatedResults,
