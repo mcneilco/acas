@@ -48,7 +48,7 @@
 
 // For generic data parser
 		exports.serverConfigurationParams.configuration.projectService = "http://acas.api.hostname:acas.node.port/api/projects";
-		exports.serverConfigurationParams.configuration.fileServiceType = "DNS";
+		exports.serverConfigurationParams.configuration.fileServiceType = "custom";
 		exports.serverConfigurationParams.configuration.externalFileService = "acas.api.externalFileServiceURL";
 		exports.serverConfigurationParams.configuration.stateGroupsScript = "public/src/conf/genericDataParserConfiguration.R";
 		exports.serverConfigurationParams.configuration.includeProject = "TRUE";
@@ -58,7 +58,7 @@
 		exports.serverConfigurationParams.configuration.loggingService = "acas.api.usageLoggingServiceURL"
 		exports.serverConfigurationParams.configuration.resultViewerProtocolPrefix = "acas.api.resultViewerProtocolPrefix";
 		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "acas.api.resultViewerExperimentPrefix";
-		exports.serverConfigurationParams.configuration.deleteOnReload = "true";
+		exports.serverConfigurationParams.configuration.deleteFilesOnReload = "true";
 		exports.serverConfigurationParams.configuration.useCustomReportRegistration = "true"
 
 

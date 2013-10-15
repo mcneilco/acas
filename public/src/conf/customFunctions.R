@@ -245,3 +245,19 @@ deleteAnnotation <- function(experiment, configList) {
     }
   }
 }
+customSourceFileMove <- function(fileStartLocation, fileName, fileService, experiment, recordedBy) {
+  require("XML")
+  
+  tryCatch({
+    response <- postForm(fileService,
+                         FILE = fileUpload(filename = fileStartLocation),
+                         OWNING_URL = paste0(racas::applicationSettings$serverPath, "experiments/codename/", experiment$codeName),
+                         CREATED_BY_LOGIN = recordedBy)
+    parsedXML <- xmlParse(response)
+    serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)
+  }, error = function(e) {
+    stop(paste("There was an error contacting the file service:", e))
+  })
+  
+  file.remove(fileStartLocation)
+}

@@ -29,9 +29,8 @@
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/Mia-Paca.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", dryRunMode = "true", user="smeyer"))
-#       file.copy(from="~/Documents/clients/DNS/Neuro/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/EXP23102_rCFC_PDE2A_DNS001306266_dates.xlsx", dryRunMode = "true", user="smeyer"))
+#       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", reportFile="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_error.xls", dryRunMode = "false", user="smeyer"))
 
 # Other files:
 # "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls"
@@ -812,6 +811,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
     if (!is.null(splitSubjects)) {
       results$subjectID <- as.numeric(as.factor(do.call(paste0, args=as.list(results[splitSubjects]))))
     }
+    # calculateTreatmentGroupID is in customFunctions.R
     results$treatmentGroupID <- calculateTreatmemtGroupID(results, inputFormat, stateGroups, resultTypes)
   } else {
     results$treatmentGroupID <- NA
@@ -895,9 +895,6 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
                                   & is.na(organizedData$"Result Operator")
                                   & is.na(organizedData$"Result Date")
                                   & is.na(organizedData$clobValue)), ]
-  
-  # Order
-  #organizedData <- organizedData[do.call(order,organizedData[c("Corporate Batch ID","Result Type")]),]
   
   return(organizedData)
 }
@@ -1351,6 +1348,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
   # For use in uploading when the results go into subjects rather than analysis groups
   
   require('plyr')
+  
   #Change in naming convention
   if (rowMeaning=="subject") {
     subjectData$subjectID <- NULL
@@ -1377,6 +1375,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     batchNameList <- unique(subjectData$"Corporate Batch ID")
     if (configList$useCustomReportRegistration == "true") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
+    } else {
+      addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
     }
   }
   
@@ -1715,6 +1715,8 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     batchNameList <- unique(calculatedResults$"Corporate Batch ID")
     if (configList$useCustomReportRegistration) {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
+    } else {
+      addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
     }
   }
   
@@ -2117,7 +2119,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Delete any old data under the same experiment name (delete and reload)
   if(!dryRun && !newExperiment && errorFree) {
-    if(configList$deleteOnReload == "true") {
+    if(configList$deleteFilesOnReload == "true") {
       deleteSourceFile(experiment, configList)
       deleteAnnotation(experiment, configList)
     }
@@ -2220,23 +2222,10 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     file.rename(from=fileStartLocation, to=file.path(fullFolderLocation, fileName))
     
     serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
-  } else if (fileServiceType == "DNS") {
-    require("XML")
-    
-    tryCatch({
-      response <- postForm(fileService,
-                           FILE = fileUpload(filename = fileStartLocation),
-                           OWNING_URL = paste0(racas::applicationSettings$serverPath, "experiments/codename/", experiment$codeName),
-                           CREATED_BY_LOGIN = recordedBy)
-      parsedXML <- xmlParse(response)
-      serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)
-    }, error = function(e) {
-      stop(paste("There was an error contacting the file service:", e))
-    })
-    
-    file.remove(fileStartLocation)
+  } else if (fileServiceType == "custom") {
+    customSourceFileMove(fileStartLocation, fileName, fileService, experiment, recordedBy)
   } else {
-    stop("Invalid file service")
+    stop("Invalid file service type")
   }
 
   locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
@@ -2262,7 +2251,7 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
   tryCatch({
     locationValue <- createStateValue(
       recordedBy = recordedBy,
-      lsType = "stringValue",
+      lsType = "fileValue",
       lsKind = "source file",
       fileValue = serverFileLocation,
       lsState = locationState,
