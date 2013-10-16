@@ -1,12 +1,14 @@
 # Code to set up basic experiment
 
 #     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
-source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
+require(racas)
+require(RCurl)
+lsServerURL <- racas::applicationSettings$serverPath
 
 
 ## example of creating a experiment with discrete parts 
 
-lsTransaction <- createLsTransaction(comments="primary analysis experiment transactions")
+lsTransaction <- createLsTransaction(comments="primary analysis experiment transactions")$id
 experimentStates <- list()  ## experiment may have many states
 experimentLabels <- list()  ## experiment may have many lables
 
@@ -14,180 +16,180 @@ experimentLabels <- list()  ## experiment may have many lables
 experimentValues <- list()
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "notebook",
+                          lsType = "stringValue",
+                          lsKind = "notebook",
                           stringValue = "NB 1234-123")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "target",
+                          lsType = "stringValue",
+                          lsKind = "target",
                           stringValue = "target A")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "assay format",
+                          lsType = "stringValue",
+                          lsKind = "assay format",
                           stringValue = "biochemical")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "experiment status",
+                          lsType = "stringValue",
+                          lsKind = "experiment status",
                           stringValue = "active")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "stringValue",
-                                                                   valueKind = "analysis status",
+                                                                   lsType = "stringValue",
+                                                                   lsKind = "analysis status",
                                                                    stringValue = "not started")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "clobValue",
-                                                                   valueKind = "analysis result html",
-                                                                   stringValue = "<p>not started</p>")
+                                                                   lsType = "clobValue",
+                                                                   lsKind = "analysis result html",
+                                                                   clobValue = "<p>not started</p>")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "dateValue",
-                                                                   valueKind = "completion date",
+                                                                   lsType = "dateValue",
+                                                                   lsKind = "completion date",
                                                                    dateValue = as.numeric(format(Sys.time(), "%s"))*1000)
 
 experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
                           experimentValues=experimentValues, 
                           recordedBy="userName", 
-                          stateType="metadata", 
-                          stateKind="experiment metadata", 
+                          lsType="metadata", 
+                          lsKind="experiment metadata", 
                           comments="")
 #################################################################################################
 ############################# BEGIN block of experiment experimental parameters - controls #######################
 experimentValues <- list()
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "control type",
+                          lsType = "stringValue",
+                          lsKind = "control type",
                           stringValue = "positive control")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "codeValue",
-                          valueKind = "batch code",
-                          codeValue = "CRA-000399:1")
+                          lsType = "codeValue",
+                          lsKind = "batch code",
+                          codeValue = "CRA-025998-1")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "numericValue",
-                          valueKind = "tested concentration",
+                          lsType = "numericValue",
+                          lsKind = "tested concentration",
                           numericValue = 10,
                           valueUnit = "uM")
 
 experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
                           experimentValues=experimentValues, 
                           recordedBy="userName", 
-                          stateType="metadata", 
-                          stateKind="experiment controls", 
+                          lsType="metadata", 
+                          lsKind="experiment controls", 
                           comments="")                   
 #################################################################################################
 ############################# BEGIN block of experiment experimental parameters - controls #######################
 experimentValues <- list()
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "control type",
+                          lsType = "stringValue",
+                          lsKind = "control type",
                           stringValue = "negative control")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "codeValue",
-                          valueKind = "batch code",
-                          codeValue = "CRA-000396:1")
+                          lsType = "codeValue",
+                          lsKind = "batch code",
+                          codeValue = "CRA-025996-1")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "numericValue",
-                          valueKind = "tested concentration",
+                          lsType = "numericValue",
+                          lsKind = "tested concentration",
                           numericValue = 1,
                           valueUnit = "uM")
 
 experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
                           experimentValues=experimentValues, 
                           recordedBy="userName", 
-                          stateType="metadata", 
-                          stateKind="experiment controls", 
+                          lsType="metadata", 
+                          lsKind="experiment controls", 
                           comments="")                   
 #################################################################################################
 ############################# BEGIN block of experiment experimental parameters - controls #######################
 experimentValues <- list()
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "control type",
+                          lsType = "stringValue",
+                          lsKind = "control type",
                           stringValue = "vehicle control")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "codeValue",
-                          valueKind = "batch code",
+                          lsType = "codeValue",
+                          lsKind = "batch code",
                           codeValue = "CMPD0000001-1")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "numericValue",
-                          valueKind = "tested concentration",
+                          lsType = "numericValue",
+                          lsKind = "tested concentration",
                           numericValue = 0,
                           valueUnit = "uM")
 
 experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
                           experimentValues=experimentValues, 
                           recordedBy="userName", 
-                          stateType="metadata", 
-                          stateKind="experiment controls", 
+                          lsType="metadata", 
+                          lsKind="experiment controls", 
                           comments="")                   
 #################################################################################################
 
 ############################# BEGIN block of experiment analysis parameters #######################
 experimentValues <- list()
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "reader instrument",
+                          lsType = "stringValue",
+                          lsKind = "reader instrument",
                           stringValue = "Molecular Dynamics FLIPR")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "data source",
+                          lsType = "stringValue",
+                          lsKind = "data source",
                           stringValue = "FLIPR Min Max")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "data transformation rule",
+                          lsType = "stringValue",
+                          lsKind = "data transformation rule",
                           stringValue = "(maximum-minimum)/minimum")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "stringValue",
-                          valueKind = "normalization rule",
+                          lsType = "stringValue",
+                          lsKind = "normalization rule",
                           stringValue = "plate order")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "numericValue",
-                          valueKind = "active efficacy threshold",
+                          lsType = "numericValue",
+                          lsKind = "active efficacy threshold",
                           numericValue = 0.7,
                           sigFigs = 1)
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "numericValue",
-                          valueKind = "active SD threshold",
+                          lsType = "numericValue",
+                          lsKind = "active SD threshold",
                           numericValue = -5,
                           sigFigs = 1)
                                                     
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "numericValue",
-                          valueKind = "curve min",
+                          lsType = "numericValue",
+                          lsKind = "curve min",
                           numericValue = 0,
                           sigFigs = 2)
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          valueType = "numericValue",
-                          valueKind = "curve max",
+                          lsType = "numericValue",
+                          lsKind = "curve max",
                           numericValue = 100,
                           sigFigs = 2)
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "stringValue",
-                                                                   valueKind = "replicate aggregation",
+                                                                   lsType = "stringValue",
+                                                                   lsKind = "replicate aggregation",
                                                                    stringValue = "no")
 
 
 experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
                           experimentValues=experimentValues, 
                           recordedBy="userName", 
-                          stateType="metadata", 
-                          stateKind="experiment analysis parameters", 
+                          lsType="metadata", 
+                          lsKind="experiment analysis parameters", 
                           comments="")
 #################################################################################################
 
@@ -197,62 +199,62 @@ codeName <- getAutoLabels(thingTypeAndKind="document_experiment", labelTypeAndKi
 ############################# BEGIN block of report locations #######################
 experimentValues <- list()
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "fileValue",
-                                                                   valueKind = "summary location",
+                                                                   lsType = "fileValue",
+                                                                   lsKind = "summary location",
                                                                    fileValue = paste0("experiments/",codeName,"/analysis/",codeName,"_Summary.pdf"))
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "fileValue",
-                                                                   valueKind = "data results location",
+                                                                   lsType = "fileValue",
+                                                                   lsKind = "data results location",
                                                                    fileValue = paste0("experiments/",codeName,"/analysis/",codeName,"_Results.csv"))
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "fileValue",
-                                                                   valueKind = "raw r results location",
+                                                                   lsType = "fileValue",
+                                                                   lsKind = "raw r results location",
                                                                    fileValue = paste0("experiments/",codeName,"/analysis/rawResults.Rda"))
 
 experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
                                                                         experimentValues=experimentValues, 
                                                                         recordedBy="userName", 
-                                                                        stateType="metadata", 
-                                                                        stateKind="report locations", 
+                                                                        lsType="metadata", 
+                                                                        lsKind="report locations", 
                                                                         comments="")
 
 #################################################################################################
 ############################# BEGIN block of raw data locations #######################
 experimentValues <- list()
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "fileValue",
-                                                                   valueKind = "max file",
+                                                                   lsType = "fileValue",
+                                                                   lsKind = "max file",
                                                                    fileValue = paste0("experiments/",codeName,"/analysis/rawData/BAR-123.stat1"))
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "fileValue",
-                                                                   valueKind = "min file",
+                                                                   lsType = "fileValue",
+                                                                   lsKind = "min file",
                                                                    fileValue = paste0("experiments/",codeName,"/analysis/rawData/BAR-123.stat2"))
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "fileValue",
-                                                                   valueKind = "seq file",
+                                                                   lsType = "fileValue",
+                                                                   lsKind = "seq file",
                                                                    fileValue = paste0("experiments/",codeName,"/analysis/rawData/BAR-123.seq1"))
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "stringValue",
-                                                                   valueKind = "barcode",
+                                                                   lsType = "codeValue",
+                                                                   lsKind = "barcode",
                                                                    stringValue = "BAR-123")
 
 experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
                                                                         experimentValues=experimentValues, 
                                                                         recordedBy="userName", 
-                                                                        stateType="metadata", 
-                                                                        stateKind="raw results locations", 
+                                                                        lsType="metadata", 
+                                                                        lsKind="raw results locations", 
                                                                         comments="")
 #############################  experiment labels #######################
 
 experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransaction = lsTransaction, 
 													recordedBy="userName", 
-													labelType="name", 
-													labelKind="experiment name",
+													lsType="name", 
+													lsKind="experiment name",
 													labelText=codeName,
 													preferred=TRUE)
 
@@ -260,18 +262,16 @@ experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransa
 
 ## get the protocols
 fullProtocollist <- fromJSON(getURL(paste(lsServerURL, "protocols/",sep="")))
-testProtocolCodeName <- "PROT-00000033"
+testProtocolCodeName <- "PROT-00000002"
 protocolObjectArray <- fromJSON(getURL(paste(lsServerURL, "protocols/codename/", testProtocolCodeName,sep="")))
 fullProtocolObject <- fromJSON(getURL(paste(lsServerURL, "protocols/", protocolObjectArray[[1]]$id,sep="")))
 
 ##### important step ########
-exptProtocol <- list(id=protocolObjectArray[[1]]$id)  ## the mininum required is the protocol id
+exptProtocol <- list(id=protocolObjectArray[[1]]$id, version=0)  ## the mininum required is the protocol id
 
 ### Save the experiment object #########
 experiment <- createExperiment(	lsTransaction = lsTransaction,
-                                kind = "primary analysis",
               protocol=exptProtocol,
-							codeName=codeName, 
 							shortDescription="primary analysis",  
 							recordedBy="smeyer", 
 							experimentLabels=experimentLabels,

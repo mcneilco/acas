@@ -29,7 +29,7 @@
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # configList <- readConfigFile("public/src/conf/configuration.js")
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, configList,experimentId=27099)
-# newest experimentID: 75191
+# newest experimentID: 75191, 9036, 11203
 
 # DryRun
 # user  system elapsed 
@@ -193,7 +193,7 @@ createWellTable <- function(barcodeList, configList, testMode) {
     wellTable <- query(paste0(
       "SELECT *
     FROM api_container_contents
-    WHERE barcode IN ('", barcodeQuery, "')"),configList)
+    WHERE barcode IN ('", barcodeQuery, "')"))
   }
   
   return(wellTable)
@@ -269,23 +269,26 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, e
   fluorescentWells <- allResultTable[allResultTable$fluorescent,list(barcode,well,sequence,timePoints)]
   hitWells <- allResultTable[allResultTable$efficacyThreshold,list(barcode,well,sequence,timePoints)]
   
-  
   plotFigure <- function(xData,yData, barcode, well, title) {
     xData <- as.numeric(unlist(strsplit(xData,"\t", fixed= TRUE)))
     yData <- as.numeric(unlist(strsplit(yData,"\t", fixed= TRUE)))
-    type="l";xlab="Time (sec)";ylab="Activity (rfu)"
-    plot(xData,yData,type=type,xlab=xlab,ylab=ylab)
+    type="l"; xlab="Time (sec)"; ylab="Activity (rfu)"
+    plot(xData, yData, type=type, xlab=xlab, ylab=ylab)
     title(main=paste(barcode,":",well))
     mtext(title, 3, line=0, adj=0.5, cex=1.2, outer=TRUE)
   }
   
-  par(mfcol=c(4,3), mar=c(4,4,4,4), oma =c(2,2,2,2))
-  mapply(plotFigure, fluorescentWells$timePoints, fluorescentWells$sequence, fluorescentWells$barcode, fluorescentWells$well, "Fluorescent Wells")
-  
-  par(mfcol=c(4,3), mar=c(4,4,4,4), oma =c(2,2,2,2))
-  mapply(plotFigure, hitWells$timePoints, hitWells$sequence, hitWells$barcode, hitWells$well, "Hit Wells")
-  
+  if(nrow(fluorescentWells) > 0) {
+    par(mfcol=c(4,3), mar=c(4,4,4,4), oma =c(2,2,2,2))
+    mapply(plotFigure, fluorescentWells$timePoints, fluorescentWells$sequence, fluorescentWells$barcode, fluorescentWells$well, "Fluorescent Wells")
+  }
+  if(nrow(hitWells) > 0) {
+    par(mfcol=c(4,3), mar=c(4,4,4,4), oma =c(2,2,2,2))
+    mapply(plotFigure, hitWells$timePoints, hitWells$sequence, hitWells$barcode, hitWells$well, "Hit Wells")
+  }
   dev.off()
+  
+
   return(pdfLocation)
 }
 createPlots <- function(resultTable){
@@ -376,12 +379,12 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   #save(subjectData, experimentId, file="test.Rda")
   originalNames <- names(subjectData)
   subjectData <- as.data.frame(subjectData)
-  names(subjectData) <- c('barcode', 'well name', 'fileName', 'maximum', 'minimum', 'fluorescent', 'time', 'fluorescence', 'batchCode', 'Dose', 'DoseUnit','well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold')
+  names(subjectData) <- c('barcode', 'well name', 'fileName', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 'batchCode', 'Dose', 'DoseUnit','well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold')
   
   stateGroups <- list(list(entityKind = "subject",
                            stateType = "data", 
                            stateKind = "test compound treatment", 
-                           valueKinds = c("Dose","fluorescence","time"),
+                           valueKinds = c("Dose"),
                            includesOthers = FALSE,
                            includesCorpName = TRUE),
                       list(entityKind = "subject",
@@ -393,56 +396,151 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
                       list(entityKind = "subject",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", "normalized efficacy"),
+                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", "normalized efficacy", "over efficacy threshold", "fluorescencePoints","timePoints"),
+                           includesOthers = FALSE,
+                           includesCorpName = FALSE),
+                      list(entityKind = "analysis group",
+                           stateType = "data",
+                           stateKind = "results",
+                           valueKinds = c("fluorescent", "normalized efficacy"),
+                           includesOthers = FALSE,
+                           includesCorpName = TRUE),
+                      list(entityKind = "analysis group",
+                           stateType = "metadata",
+                           stateKind = "plate information",
+                           valueKinds = c("well type"),
                            includesOthers = FALSE,
                            includesCorpName = FALSE)
                       )
   
-  resultTypes <- data.frame(DataColumn = c('barcode', 'well name', 'fileName', 'maximum', 'minimum', 'fluorescent', 'time', 'fluorescence', 'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold'),
-                            Type = c('barcode', 'well name', 'fileName', 'maximum', 'minimum', 'fluorescent', 'time', 'fluorescence', 'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold'),
-                            Units = c(NA, NA, NA, 'rfu', 'rfu', NA, 'sec', 'rfu', 'uM', NA, NA, NA, NA),
-                            valueType = c('stringValue','stringValue', 'stringValue','numericValue','numericValue','stringValue','clobValue','clobValue','numericValue','stringValue','numericValue','numericValue','numericValue'),
-                            stringsAsFactors = FALSE)
-   
-  meltedSubjectData <- makeLongData(subjectData,resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode"))
+  subjectData <- as.data.frame(lapply(subjectData, as.character), stringsAsFactors=FALSE, optional=TRUE)
   
+  # TODO: check that all dose units are same
+  resultTypes <- data.frame(DataColumn = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold'),
+                            Type = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold'),
+                            Units = c(NA, NA, 'rfu', 'rfu', NA, 'sec', 'rfu', subjectData$DoseUnit[1], NA, NA, NA, NA),
+                            valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue','clobValue','clobValue','numericValue','stringValue','numericValue','numericValue','stringValue'),
+                            stringsAsFactors = FALSE)
+  
+  subjectData$DoseUnit <- NULL
+  subjectData$fileName <- NULL
+  
+  makeLongData <- function(entityData, resultTypes, splitTreatmentGroupsBy) {
+    print(length(resultTypes))
+    library('reshape')
+    
+    entityData$entityID <- seq(1,nrow(entityData))
+    entityData$treatmentGroupID <- do.call(paste,entityData[,splitTreatmentGroupsBy])
+    entityData$treatmentGroupID <- as.numeric(factor(entityData$treatmentGroupID))
+    blankSpaces <- lapply(as.list(entityData), function(x) return (x != ""))
+    emptyColumns <- unlist(lapply(blankSpaces, sum) == 0)
+    resultTypes <- resultTypes[!(resultTypes$DataColumn %in% names(entityData)[emptyColumns]),]
+    
+    longResults <- reshape(entityData, idvar=c("id"), ids=row.names(entityData), v.names="UnparsedValue",
+                           times=resultTypes$DataColumn, timevar="resultTypeAndUnit",
+                           varying=list(resultTypes$DataColumn), direction="long", drop = names(entityData)[emptyColumns])
+    
+    # Add the extract result types information to the long format
+    longResults$valueUnit <- resultTypes$Units[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+    longResults$concentration <- resultTypes$Conc[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+    longResults$concentrationUnit <- resultTypes$concUnits[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+    longResults$valueType <- resultTypes$valueType[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+    longResults$valueKind <- resultTypes$Type[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+    
+    longResults$UnparsedValue <- trim(as.character(longResults$"UnparsedValue"))
+    
+    # Parse numeric data from the unparsed values
+    # TODO: just use as.numeric with suppressed warnings after removing commas in the middle and operators at the beginning to decide if it is a number
+    matchExpression <- ".+\\-|[^0-9,\\.<>\\-]|\\..*\\.|-$" # If it has a "-" anywhere other than the beginning, has anything other than th list "0-9,.<>-", has a "-" at the end, or has two decimal points, it is not a number
+    matches <- grepl(matchExpression,longResults$"UnparsedValue")
+    longResults$numericValue <- longResults$"UnparsedValue"
+    longResults$numericValue[matches] <- ""
+    
+    # Parse string values from the unparsed values
+    longResults$stringValue <- as.character(longResults$"UnparsedValue")
+    longResults$stringValue[!matches & longResults$valueType != "stringValue"] <- ""
+    
+    longResults$clobValue <- longResults$stringValue
+    longResults$clobValue[!longResults$valueType=="clobValue"] <- NA
+    longResults$stringValue[longResults$valueType=="clobValue"] <- ""
+    
+    longResults$codeValue <- longResults$stringValue
+    longResults$codeValue[!longResults$valueType=="codeValue"] <- NA
+    longResults$stringValue[longResults$valueType=="codeValue"] <- ""
+    
+    # Parse Operators from the unparsed value
+    matchExpression <- ">|<"
+    longResults$valueOperator <- longResults$numericValue
+    matches <- gregexpr(matchExpression,longResults$numericValue)
+    regmatches(longResults$valueOperator,matches, invert = TRUE) <- ""
+    
+    # Turn result values to numeric values
+    longResults$numericValue <-  as.numeric(gsub(",","",gsub(matchExpression,"",longResults$numericValue)))
+    
+    # For the results marked as "stringValue":
+    #   Set the Result Desc to the original value
+    #   Clear the other categories
+    longResults$numericValue[which(longResults$valueType=="stringValue")] <- rep(NA, sum(longResults$valueType=="stringValue"))
+    longResults$valueOperator[which(longResults$valueType=="stringValue")] <- rep(NA, sum(longResults$valueType=="stringValue"))
+    
+    
+    # For the results marked as "dateValue":
+    #   Apply the function validateDate to each entry
+    longResults$dateValue <- rep(NA, length(longResults$entityID))
+    if (length(which(longResults$valueType=="dateValue")) > 0) {
+      longResults$dateValue[which(longResults$valueType=="dateValue")] <- sapply(longResults$UnparsedValue[which(longResults$valueType=="dateValue")], FUN=validateDate)
+    }
+    longResults$numericValue[which(longResults$valueType=="dateValue")] <- rep(NA, sum(longResults$valueType=="dateValue"))
+    longResults$valueOperator[which(longResults$valueType=="dateValue")] <- rep(NA, sum(longResults$valueType=="dateValue"))
+    longResults$stringValue[which(longResults$valueType=="dateValue")] <- rep(NA, sum(longResults$valueType=="dateValue"))
+    
+    return(longResults)
+  }
+  
+  meltedSubjectData <- makeLongData(subjectData, resultTypes=resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode"))
   experiment <- fromJSON(getURL(paste0(configList$serverPath,"experiments/",experimentId)))
   
-  lsTransaction <- createLsTransaction(comments="Primary Analysis load")
+  subjectData <- meltedSubjectData
+  subjectData$subjectID <- subjectData$entityID
+  subjectData$publicData <- TRUE
+  
+  subjectData$analysisGroupID <- subjectData$treatmentGroupID
+  
+  lsTransaction <- createLsTransaction(comments="Primary Analysis load")$id
   
   # Get a list of codes
   analysisGroupCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="document_analysis group", 
                                              labelTypeAndKind="id_codeName",
-                                             numberOfLabels=length(unique(meltedSubjectData$analysisGroupID))),
+                                             numberOfLabels=length(unique(subjectData$analysisGroupID))),
                                       use.names=FALSE)
                                              #numberOfLabels=length(analysisGroupData$batchName))
                                              #numberOfLabels=length(unique(analysisGroupData$batchName))) 
   
-  subjectCodeNameList <- getAutoLabels(thingTypeAndKind="document_subject", 
+  subjectCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="document_subject", 
                                        labelTypeAndKind="id_codeName", 
-                                       numberOfLabels=length(unique(meltedSubjectData$entityID)))
+                                       numberOfLabels=length(unique(subjectData$entityID))),
+                                use.names=FALSE)
   
-  treatmentGroupCodeNameList <- getAutoLabels(thingTypeAndKind="document_treatment group", 
+  treatmentGroupCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="document_treatment group", 
                                               labelTypeAndKind="id_codeName", 
-                                              numberOfLabels=length(unique(meltedSubjectData$treatmentGroupID)))
+                                              numberOfLabels=length(unique(subjectData$treatmentGroupID))),
+                                       use.names=FALSE)
                                               #numberOfLabels=length(treatmentGroupData$batchName))
                                               #numberOfLabels=length(unique(treatmentGroupData$batchName)))
   
   recordedBy <- user
-
+  experiment$lsStates <- NULL
+  experiment$analysisGroups <- NULL
   analysisGroups <- lapply(FUN= createAnalysisGroup, X= analysisGroupCodeNameList,
                             recordedBy=recordedBy, lsTransaction=lsTransaction, experiment=experiment)
   
   savedAnalysisGroups <- saveAcasEntities(analysisGroups, "analysisgroups")
   
-  analysisGroupIds <- sapply(savedAnalysisGroups, getId)
+  analysisGroupIds <- sapply(savedAnalysisGroups, getElement, "id")
   
   subjectData$analysisGroupID <- analysisGroupIds[match(subjectData$analysisGroupID,1:length(analysisGroupIds))]
   
-  #Stopped here
-  stop("Not saving treatment groups correctly yet")
-  
-  meltedSubjectData$treatmentGroupCodeName <- treatmentGroupCodeNameList[meltedSubjectData$treatmentGroupID]
+  subjectData$treatmentGroupCodeName <- treatmentGroupCodeNameList[subjectData$treatmentGroupID]
   
   createLocalTreatmentGroup <- function(subjectData) {
     return(createTreatmentGroup(
@@ -452,12 +550,12 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
       lsTransaction=lsTransaction))
   }
   
-  treatmentGroups <- dlply(.data= meltedSubjectData, .variables= .(treatmentGroupID), .fun= createLocalTreatmentGroup)
+  treatmentGroups <- dlply(.data= subjectData, .variables= .(treatmentGroupID), .fun= createLocalTreatmentGroup)
   names(treatmentGroups) <- NULL
   
-  savedTreatmentGroups <- saveAcasEntities(treatmentGroups, "treatmentGroups")
+  savedTreatmentGroups <- saveAcasEntities(treatmentGroups, "treatmentgroups")
   
-  treatmentGroupIds <- sapply(savedTreatmentGroups, function(x) x$id)
+  treatmentGroupIds <- sapply(savedTreatmentGroups, getElement, "id")
   
   subjectData$treatmentGroupID <- treatmentGroupIds[subjectData$treatmentGroupID]
   
@@ -477,7 +575,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   
   savedSubjects <- saveAcasEntities(subjects, "subjects")
   
-  subjectIds <- sapply(savedSubjects, getId)
+  subjectIds <- sapply(savedSubjects, getElement, "id")
   
   subjectData$subjectID <- subjectIds[subjectData$subjectID]
   
@@ -486,8 +584,8 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   
   stateGroupIndex <- 1
   subjectData$stateGroupIndex <- NA
-  for (state in stateGroups) {
-    includedRows <- subjectData$"Result Type" %in% state$lsKinds
+  for (stateGroup in stateGroups) {
+    includedRows <- subjectData$valueKind %in% stateGroup$valueKinds
     newRows <- subjectData[includedRows & !is.na(subjectData$stateGroupIndex), ]
     subjectData$stateGroupIndex[includedRows & is.na(subjectData$stateGroupIndex)] <- stateGroupIndex
     if (nrow(newRows)>0) newRows$stateGroupIndex <- stateGroupIndex
@@ -496,35 +594,32 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   }
   
   othersGroupIndex <- which(sapply(stateGroups, FUN=getElement, "includesOthers"))
-  subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
+  if (length(othersGroupIndex) > 0) {  
+    subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
+  }
   
   subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex)
+  
   stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
   subjectData$stateID <- stateAndVersion$entityStateId
   subjectData$stateVersion <- stateAndVersion$entityStateVersion
   
   ### Subject Values ======================================================================= 
-  stop("Need to test with real data past here")
-  # Reorganization to match formats
-  names(subjectData) <- c("batchCode","valueKind","valueUnit","Conc","Conc Units", "numericValue","stringValue",
-                          "valueOperator","subjectID","dateValue","valueType", "resultTypeAndUnit","publicData", 
-                          "originalBatchCode", "treatmentGroupID", "subjectCodeName", "stateGroupIndex", "stateID", "stateVersion")
-  subjectData$publicData <- !subjectData$publicData
-  subjectData$valueType <- c("numericValue","stringValue","dateValue")[match(subjectData$valueType,c("Number","Text","Date"))]
-  
-  batchCodeStateIndices <- which(sapply(stateGroups, function(x) return(x$includesCorpName)))
+  batchCodeStateIndices <- which(sapply(stateGroups, getElement, "includesCorpName"))
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
-  savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction)
+  savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
   #
   #####  
   # Treatment Group states =========================================================================
-  treatmentGroupIndex <- which(sapply(stateGroups, getElement, "stateKind") == "treatment")
+  treatmentGroupIndex <- grep("treatment", sapply(stateGroups, getElement, "stateKind"))
   treatmentValueKinds <- stateGroups[[treatmentGroupIndex]]$valueKinds
   listedValueKinds <- do.call(c,lapply(stateGroups, getElement, "valueKinds"))
   otherValueKinds <- setdiff(unique(subjectData$valueKind),listedValueKinds)
-  treatmentDataValueKinds <- c(treatmentValueKinds,otherValueKinds)
+  resultsDataValueKinds <- stateGroups[sapply(stateGroups, function(x) x$stateKind)=="results"][[1]]$valueKinds
+  extraDataValueKinds <- stateGroups[sapply(stateGroups, function(x) x$stateKind)=="plate information"][[1]]$valueKinds
+  treatmentDataValueKinds <- c(treatmentValueKinds, otherValueKinds, resultsDataValueKinds, extraDataValueKinds)
   excludedSubjects <- subjectData$subjectID[subjectData$valueKind == "Exclude"]
   treatmentDataStart <- subjectData[subjectData$valueKind %in% treatmentDataValueKinds 
                                     & !(subjectData$subjectID %in% excludedSubjects),]
@@ -548,15 +643,14 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
     return(data.frame(
       "batchCode" = subjectData$batchCode[1],
       "valueKind" = subjectData$valueKind[1],
-      "vaueUnit" = subjectData$valueUnit[1],
-      "Conc" = subjectData$"Conc"[1],
-      "Conc Units" = subjectData$"Conc Units"[1],
+      "valueUnit" = subjectData$valueUnit[1],
       "numericValue" = resultValue,
       "stringValue" = if (length(unique(subjectData$stringValue)) == 1) subjectData$stringValue[1] else NA,
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
       "publicData" = subjectData$publicData[1],
       treatmentGroupID = subjectData$treatmentGroupID[1],
+      analysisGroupID = subjectData$analysisGroupID[1],
       stateGroupIndex = subjectData$stateGroupIndex[1],
       stateID = subjectData$stateID[1],
       stateVersion = subjectData$stateVersion[1],
@@ -567,7 +661,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
       stringsAsFactors=FALSE))
   }
   
-  treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit"), .fun = createRawOnlyTreatmentGroupData)
+  treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData)
   
   treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
   
@@ -587,17 +681,43 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   #### Treatment Group Values =====================================================================
   batchCodeStateIndices <- which(sapply(stateGroups, function(x) return(x$includesCorpName)))
   if (is.null(treatmentGroupData$stateVersion)) treatmentGroupData$stateVersion <- 0
+  
   treatmentGroupDataWithBatchCodeRows <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, batchCodeStateIndices))
-  # TODO: don't save fake batch codes as batch codes
+  
   savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows, 
                                                         entityKind = "treatmentgroup", 
                                                         stateGroups = stateGroups, 
                                                         stateGroupIndices = treatmentGroupIndices, 
-                                                        lsTransaction = lsTransaction)
+                                                        lsTransaction = lsTransaction,
+                                                        recordedBy=recordedBy)
 
-  
-  saveRawOnlyValues(entityData=subjectData, entityKind="subject", stateGroups=stateGroups, stateGroupIndices=c(1,2,3), 
-                    configList=configList, lsTransaction=lsTransaction)
+  analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
+  if (length(analysisGroupIndices > 0)) {
+    analysisGroupData <- treatmentGroupDataWithBatchCodeRows
+    analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
+    
+    #TODO: missing batch codes
+    stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
+                                                entityKind = "analysisgroup", 
+                                                stateGroups = stateGroups,
+                                                stateGroupIndices = analysisGroupIndices,
+                                                idColumn = "stateID",
+                                                recordedBy = recordedBy,
+                                                lsTransaction = lsTransaction)
+    
+    analysisGroupData$stateID <- stateAndVersion$entityStateId
+    analysisGroupData$stateVersion <- stateAndVersion$entityStateVersion
+    
+    analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
+    
+    #### Analysis Group Values =====================================================================
+    savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
+                                                         entityKind = "analysisgroup", 
+                                                         stateGroups = stateGroups, 
+                                                         stateGroupIndices = analysisGroupIndices,
+                                                         lsTransaction = lsTransaction,
+                                                         recordedBy = recordedBy)
+  }
   
 
 #   analysisGroups <- list()
@@ -863,10 +983,10 @@ combineFiles <- function(fileSet) {
   #   fileSet: a list of files which inclues stat1, stat2, and seq files
   # Returns:
   #   A data.frame with columns stat1, stat2, and seq files in sorted columns
-
-  stat1Frame <- parseStatFile(fileSet[1])
-  stat2Frame <- parseStatFile(fileSet[2])
-  seqData <- parseSeqFile(fileSet[3])
+  
+  stat1Frame <- parseStatFile(as.character(fileSet[1]))
+  stat2Frame <- parseStatFile(as.character(fileSet[2]))
+  seqData <- parseSeqFile(as.character(fileSet[3]))
   
   fluorescentList <- findFluorescents(seqData)
   allStatFrame <- merge(stat1Frame,stat2Frame)
@@ -999,19 +1119,19 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
       lsType = "fileValue",
       lsKind = "raw r results location",
       fileValue = rawResultsLocation,
-      experimentState = locationState)
+      lsState = locationState)
     
     resultsLocationValue <- createStateValue(
       lsType = "fileValue",
       lsKind = "data results location",
       fileValue = resultsLocation,
-      experimentState = locationState)
+      lsState = locationState)
     
     pdfLocationValue <- createStateValue(
-      lsType = "stringValue",
+      lsType = "fileValue",
       lsKind = "summary location",
       fileValue = pdfLocation,
-      experimentState = locationState)
+      lsState = locationState)
     
     saveExperimentValues(list(rawLocationValue,resultsLocationValue,pdfLocationValue))
   }, error = function(e) {
@@ -1114,7 +1234,7 @@ setAnalysisStatus <- function(status, metadataState) {
       lsType = "stringValue",
       lsKind = "analysis status",
       stringValue = status,
-      experimentState = metadataState)
+      lsState = metadataState)
     
     saveExperimentValues(list(statusValue))
   }, error = function(e) {
@@ -1178,6 +1298,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   fileNameTable <- validateInputFiles(folderToParse)
   
   # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
+  
   resultList <- apply(fileNameTable,1,combineFiles)
   resultTable <- as.data.table(do.call("rbind",resultList))
   barcodeList <- levels(resultTable$barcode)
@@ -1204,6 +1325,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   } else {
     resultTable$normalized <- resultTable$transformed
   }
+  
+  #TODO: remove once real data is in place
+  resultTable <- resultTable[!is.na(resultTable$batchName), ]
   
   batchDataTable <- data.table(values = resultTable$transformed, 
                                 batchName = resultTable$batchName,
@@ -1289,7 +1413,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
                                          experiment$codeName,'_Results.csv" target="_blank">Results</a>')
   }
   
-  summaryInfo$lsTransactionId <- lsTransaction$id
+  summaryInfo$lsTransactionId <- lsTransaction
   summaryInfo$experiment <- experiment
   
   return(summaryInfo)
@@ -1305,8 +1429,7 @@ runPrimaryAnalysis <- function(request) {
   folderToParse <- request$fileToParse
   dryRun <- request$dryRunMode
   user <- request$user
-  #testMode <- request$testMode
-  testMode <- TRUE
+  testMode <- request$testMode
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   #testMode <- interpretJSONBoolean(testMode)
@@ -1373,13 +1496,12 @@ runPrimaryAnalysis <- function(request) {
     } else {
       experiment <- loadResult$value$experiment
     }
+    if(!dryRun) {
+      htmlSummary <- saveAnalysisResults(experiment, hasError, htmlSummary)
+    }
   }, error= function(e) {
     htmlSummary <- paste(htmlSummary, "<p>Could not get the experiment</p>")  
   })
-  
-  if(!dryRun) {
-    htmlSummary <- saveAnalysisResults(experiment, hasError, htmlSummary)
-  }
   
   # Return the output structure
   response <- list(
