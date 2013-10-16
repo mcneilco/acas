@@ -104,13 +104,19 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     }
     
     # Save plate
+    if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")) {
+      dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")
+    }
+    newFileName <- paste0("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/", basename(fileName))
+    file.rename(fileName, newFileName)
+    
     lsTransaction <- createLsTransaction(comments="Bulk load from .sdf file")$id
     
     barcodes <- unique(propertyTable$ALIQUOT_PLATE_BARCODE)
     plateCodeNameList <- getAutoLabels(thingTypeAndKind="material_container",
                                       labelTypeAndKind="id_codeName", 
                                       numberOfLabels=length(barcodes))
-    plates <- mapply(barcodes, plateCodeNameList, FUN = createPlateWithBarcode, MoreArgs = list(lsTransaction=lsTransaction, recordedBy=recordedBy), USE.NAMES=FALSE)
+    plates <- mapply(barcodes, plateCodeNameList, FUN = createPlateWithBarcode, MoreArgs = list(lsTransaction=lsTransaction, recordedBy=recordedBy, sourceFile=newFileName), USE.NAMES=FALSE)
     plateList <- apply(plates,MARGIN=2,as.list)
     
     savedPlates <- saveContainers(plateList)
@@ -154,7 +160,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   }
   return(summaryInfo)
 }
-createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy) {
+createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy, sourceFile) {
   return(createContainer(
     codeName = codeName[[1]],
     lsType = "plate", 
@@ -192,8 +198,20 @@ createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy)
           lsTransaction=lsTransaction,
           recordedBy= recordedBy)
       )
+    ), createContainerState(
+      lsType="metadata",
+      lsKind="plate information",
+      recordedBy=recordedBy,
+      lsTransaction=lsTransaction,
+      containerValues= list(
+        createStateValue(
+          lsType="fileValue",
+          lsKind="source file",
+          fileValue=sourceFile,
+          lsTransaction=lsTransaction,
+          recordedBy= recordedBy))
+      ))
     ))
-  ))
 }
 createWellFromSDFtable <- function(propertyTable, lsTransaction, recordedBy) {
   return(createContainer(
