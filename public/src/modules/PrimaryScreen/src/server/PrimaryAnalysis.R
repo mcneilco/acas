@@ -413,6 +413,15 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
                            includesCorpName = FALSE)
                       )
   
+  # Turn logicals into "yes" and "no"
+  columnClasses <- lapply(subjectData, class)
+  for (i in 1:length(columnClasses)) {
+    if (columnClasses[[i]]=="logical") {
+      subjectData[[names(columnClasses)[i]]] <- ifelse(subjectData[[names(columnClasses)[i]]],"yes","no")
+    }
+  }
+  
+  # Turn all others into character
   subjectData <- as.data.frame(lapply(subjectData, as.character), stringsAsFactors=FALSE, optional=TRUE)
   
   # TODO: check that all dose units are same
@@ -426,7 +435,6 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   subjectData$fileName <- NULL
   
   makeLongData <- function(entityData, resultTypes, splitTreatmentGroupsBy) {
-    print(length(resultTypes))
     library('reshape')
     
     entityData$entityID <- seq(1,nrow(entityData))
@@ -450,9 +458,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
     longResults$UnparsedValue <- trim(as.character(longResults$"UnparsedValue"))
     
     # Parse numeric data from the unparsed values
-    # TODO: just use as.numeric with suppressed warnings after removing commas in the middle and operators at the beginning to decide if it is a number
-    matchExpression <- ".+\\-|[^0-9,\\.<>\\-]|\\..*\\.|-$" # If it has a "-" anywhere other than the beginning, has anything other than th list "0-9,.<>-", has a "-" at the end, or has two decimal points, it is not a number
-    matches <- grepl(matchExpression,longResults$"UnparsedValue")
+    matches <- is.na(suppressWarnings(as.numeric(gsub("^(>|<)(.*)", "\\2", gsub(",","",longResults$"UnparsedValue")))))
     longResults$numericValue <- longResults$"UnparsedValue"
     longResults$numericValue[matches] <- ""
     
@@ -460,13 +466,13 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
     longResults$stringValue <- as.character(longResults$"UnparsedValue")
     longResults$stringValue[!matches & longResults$valueType != "stringValue"] <- ""
     
-    longResults$clobValue <- longResults$stringValue
+    longResults$clobValue <- as.character(longResults$"UnparsedValue")
     longResults$clobValue[!longResults$valueType=="clobValue"] <- NA
-    longResults$stringValue[longResults$valueType=="clobValue"] <- ""
+    longResults$stringValue[longResults$valueType=="clobValue"] <- NA
     
-    longResults$codeValue <- longResults$stringValue
+    longResults$codeValue <- as.character(longResults$"UnparsedValue")
     longResults$codeValue[!longResults$valueType=="codeValue"] <- NA
-    longResults$stringValue[longResults$valueType=="codeValue"] <- ""
+    longResults$stringValue[longResults$valueType=="codeValue"] <- NA
     
     # Parse Operators from the unparsed value
     matchExpression <- ">|<"
@@ -645,7 +651,10 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
       "valueKind" = subjectData$valueKind[1],
       "valueUnit" = subjectData$valueUnit[1],
       "numericValue" = resultValue,
-      "stringValue" = if (length(unique(subjectData$stringValue)) == 1) subjectData$stringValue[1] else NA,
+      "stringValue" = if (length(unique(subjectData$stringValue)) == 1) {subjectData$stringValue[1]}
+      else if (all(subjectData$stringValue %in% c("yes", "no"))) {"sometimes"}
+      else if (is.nan(resultValue)) {'NA'}
+      else {NA},
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
       "publicData" = subjectData$publicData[1],
@@ -926,7 +935,7 @@ validateInputFiles <- function(dataDirectory) {
   #lack of protocol
   #no files
   #uneven files (no match or different lengths)
-  save(dataDirectory, file="dataDirectory.Rda")
+  #save(dataDirectory, file="dataDirectory.Rda")
   #collect the names of files
   fileList <- list.files(path = dataDirectory, pattern = "\\.stat[^\\.]*", full.names = TRUE)
   seqFileList <- list.files(path = dataDirectory, pattern = "\\.seq\\d$", full.names = TRUE)
@@ -1398,7 +1407,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
     
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, experiment)
     
-    save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
+    #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
     lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, configList, experimentId)
     
