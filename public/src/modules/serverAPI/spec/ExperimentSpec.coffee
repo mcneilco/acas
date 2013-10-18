@@ -207,6 +207,13 @@ describe "Experiment module testing", ->
 				runs ->
 					expect(@exp.get('protocol')  instanceof Protocol).toBeTruthy()
 
+	describe "Experiment List testing", ->
+		beforeEach ->
+			@el = new ExperimentList()
+		describe "existance tests", ->
+			it "should be defined", ->
+				expect(ExperimentList).toBeDefined()
+
 	describe "ExperimentBaseController testing", ->
 		# This basic controller manages display and editing of basic attributes
 		# Other controllers may be setup by a wrapping app controller to handle special

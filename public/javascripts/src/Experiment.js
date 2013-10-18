@@ -1,5 +1,5 @@
 (function() {
-  var _ref, _ref1,
+  var _ref, _ref1, _ref2,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -193,6 +193,20 @@
 
   })(Backbone.Model);
 
+  window.ExperimentList = (function(_super) {
+    __extends(ExperimentList, _super);
+
+    function ExperimentList() {
+      _ref1 = ExperimentList.__super__.constructor.apply(this, arguments);
+      return _ref1;
+    }
+
+    ExperimentList.prototype.model = Experiment;
+
+    return ExperimentList;
+
+  })(Backbone.Collection);
+
   window.ExperimentBaseController = (function(_super) {
     __extends(ExperimentBaseController, _super);
 
@@ -205,8 +219,8 @@
       this.handleDescriptionChanged = __bind(this.handleDescriptionChanged, this);
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
       this.handleRecordedByChanged = __bind(this.handleRecordedByChanged, this);
-      this.render = __bind(this.render, this);      _ref1 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      this.render = __bind(this.render, this);      _ref2 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     ExperimentBaseController.prototype.template = _.template($("#ExperimentBaseView").html());

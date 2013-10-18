@@ -196,22 +196,39 @@
 	]
 
 	exports.stubSavedExperiment = [
-		codeName: "EXPT-00000046"
-		id: 270
-		ignored: false
-		kind: null
-		lsTransaction:
-			comments: "protocol 201 transactions"
-			id: 179
-			recordedDate: 1361600825000
-			version: 0
+			codeName: "EXPT-00000046"
+			id: 270
+			ignored: false
+			kind: null
+			lsTransaction:
+				comments: "protocol 201 transactions"
+				id: 179
+				recordedDate: 1361600825000
+				version: 0
 
-		modifiedBy: null
-		modifiedDate: null
-		recordedBy: "jmcneil"
-		recordedDate: 1361600860000
-		shortDescription: "experiment short description goes here"
-		version: 0
+			modifiedBy: null
+			modifiedDate: null
+			recordedBy: "jmcneil"
+			recordedDate: 1361600860000
+			shortDescription: "experiment short description goes here"
+			version: 0
+		,
+			codeName: "EXPT-00000047"
+			id: 271
+			ignored: false
+			kind: null
+			lsTransaction:
+				comments: "protocol 201 transactions"
+				id: 180
+				recordedDate: 1361600825000
+				version: 0
+
+			modifiedBy: null
+			modifiedDate: null
+			recordedBy: "jmcneil"
+			recordedDate: 1375600860000
+			shortDescription: "2nd experiment short description goes here"
+			version: 0
 	]
 
 	exports.experimentToSave =

@@ -25,6 +25,10 @@
       menuName: "Analyze FLIPR Data",
       mainControllerClassName: "PrimaryScreenExperimentController"
     }, {
+      isHeader: false,
+      menuName: "Experiment Browser",
+      mainControllerClassName: "ExperimentBrowserController"
+    }, {
       isHeader: true,
       menuName: "Inventory"
     }, {

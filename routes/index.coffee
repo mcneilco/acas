@@ -56,6 +56,9 @@ applicationScripts = [
 	'/javascripts/src/BulkLoadSampleTransfers.js'
 	#Primary Screen module
 	'/javascripts/src/PrimaryScreenExperiment.js'
+	# For ExperimentBrowser module
+	'/javascripts/src/ExperimentBrowser.js'
+
 ]
 
 exports.index = (req, res) ->
@@ -131,6 +134,8 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/ServerUtilityFunctionsSpec.js'
 		#For Login module
 		'javascripts/spec/AuthenticationServiceSpec.js'
+		# For ExperimentBrowser module
+		'/javascripts/spec/ExperimentBrowserSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)

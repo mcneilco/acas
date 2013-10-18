@@ -17,7 +17,7 @@ This suite of services provides CRUD operations on Experiment Objects
         self = this;
         return $.ajax({
           type: 'GET',
-          url: "api/experiments/codename/PROT-00000124",
+          url: "api/experiments/codename/EXPT-00000124",
           data: {
             testMode: true
           },
@@ -32,6 +32,34 @@ This suite of services provides CRUD operations on Experiment Objects
         });
       });
       return it('should return a experiment stub', function() {
+        waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+        return runs(function() {
+          return expect(this.serviceReturn[0].codeName).toEqual("EXPT-00000046");
+        });
+      });
+    });
+    describe('when fetching Experiment stubs by ptotocol code', function() {
+      beforeEach(function() {
+        var self;
+
+        self = this;
+        return $.ajax({
+          type: 'GET',
+          url: "api/experiments/protocolCodename/PROT-00000005",
+          data: {
+            testMode: true
+          },
+          success: function(json) {
+            return self.serviceReturn = json;
+          },
+          error: function(err) {
+            console.log('got ajax error');
+            return self.serviceReturn = null;
+          },
+          dataType: 'json'
+        });
+      });
+      return it('should return an array of experiment stubs', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           return expect(this.serviceReturn[0].codeName).toEqual("EXPT-00000046");

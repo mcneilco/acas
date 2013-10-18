@@ -311,6 +311,16 @@
         });
       });
     });
+    describe("Experiment List testing", function() {
+      beforeEach(function() {
+        return this.el = new ExperimentList();
+      });
+      return describe("existance tests", function() {
+        return it("should be defined", function() {
+          return expect(ExperimentList).toBeDefined();
+        });
+      });
+    });
     return describe("ExperimentBaseController testing", function() {
       describe("When created with an unsaved experiment that has protocol attributes copied in", function() {
         beforeEach(function() {

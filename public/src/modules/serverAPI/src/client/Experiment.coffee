@@ -112,6 +112,9 @@ class window.Experiment extends Backbone.Model
 	getDescription: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "description"
 
+class window.ExperimentList extends Backbone.Collection
+	model: Experiment
+
 class window.ExperimentBaseController extends AbstractFormController
 	template: _.template($("#ExperimentBaseView").html())
 
