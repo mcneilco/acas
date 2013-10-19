@@ -107,8 +107,8 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")) {
       dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")
     }
-    newFileName <- paste0("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/", basename(fileName))
-    file.rename(fileName, newFileName)
+    newFileName <- paste0("uploadedPlates/", basename(fileName))
+    file.rename(fileName, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", newFileName))
     
     lsTransaction <- createLsTransaction(comments="Bulk load from .sdf file")$id
     

@@ -1,7 +1,9 @@
 # Registers sample transfers from one well to another
 
-# bulkLoadSampleTransfers(request=list(fileToParse="public/src/modules/BulkLoadSampleTransfers/spec/specfiles/IFF Primary Screen Transfer Log 2013_4_18_edited_barcodes.csv", dryRun=TRUE, user = "smeyer"))
-# bulkLoadSampleTransfers(request=list(fileToParse="public/src/modules/BulkLoadSampleTransfers/spec/specfiles/shortTransfer.csv", dryRun=TRUE, user = "smeyer"))
+# file.copy(from="public/src/modules/BulkLoadSampleTransfers/spec/specFiles/shortTransferNew.csv", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
+# bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/shortTransferNew.csv", dryRun=FALSE, user = "smeyer"))
+# bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/IFF Primary Screen Transfer Log 2013_4_18_edited_barcodes.csv", dryRun=TRUE, user = "smeyer"))
+# bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/shortTransfer.csv", dryRun=TRUE, user = "smeyer"))
 
 #containerTable <- fullContainerTable
 #containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME_UNIT), ]
@@ -98,7 +100,6 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     # Add new ones
     containerTable <- rbind.fill(containerTable, newSourceSet, newDestinationSet)
     
-    # TODO: add state that has date, amount, etc.
     newInteraction <- data.frame(
       interactionType = "transferred to",
       interactionKind = "content transfer",
@@ -106,16 +107,24 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
       secondContainer = logRow$Destination.Id,
       dateTransferred = logRow$Date.Time,
       volumeTransferred = logRow$Amount.Transferred,
-      transferUnit = logRow$
-      protocol = logRow$Protocol
+      transferUnit = logRow$Amount.Units,
+      protocol = logRow$Protocol,
+      stringsAsFactors = FALSE
       )
     interactions <- rbind.fill(interactions, newInteraction)
   }
   
-  ### Save new plates (but not contents)
   lsTransaction <- createLsTransaction(comments="Sample Transfer load")$id
   
-  wellTranslation <- saveNewWells(newBarcodeList, logFile, lsTransaction, recordedBy)
+  if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedLogFiles/")) {
+    dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedLogFiles/")
+  }
+  newFileName <- paste0("uploadedLogFiles/", basename(fileName))
+  # TODO: safe rename that will not overwrite
+  file.rename(fileName, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", newFileName))
+  
+  ### Save new plates (but not contents yet)
+  wellTranslation <- saveNewWells(newBarcodeList, logFile, lsTransaction, recordedBy, newFileName)
   IdsToReplace <- containerTable$WELL_ID < 0
   containerTable$WELL_ID[IdsToReplace]  <- wellTranslation$newWellId[match(containerTable$WELL_ID, wellTranslation$oldWellId)][IdsToReplace]
   interactions$firstContainer  <- wellTranslation$newWellId[match(interactions$firstContainer, wellTranslation$oldWellId)]
@@ -176,12 +185,13 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   dateRows <- data.frame(valueType = "dateValue", valueKind = "date transferred", dateValue = interactions$dateTransferred, itxContainerContainerID = interactions$itxContainerContainerID, stringsAsFactors=FALSE)
   amountRows <- data.frame(valueType = "numericValue", valueKind = "amount transferred", numericValue = interactions$volumeTransferred, itxContainerContainerID = interactions$itxContainerContainerID, stringsAsFactors=FALSE)
   protocolRows <- data.frame(valueType = "stringValue", valueKind = "protocol", stringValue = interactions$protocol, itxContainerContainerID = interactions$itxContainerContainerID, stringsAsFactors=FALSE)
-  interactiondf <- rbind.fill(dateRows, amountRows, protocolRows)
+  sourceFileRow <- data.frame(valueType = "fileValue", valueKind = "source file", fileValue = newFileName, itxContainerContainerID = interactions$itxContainerContainerID, stringsAsFactors=FALSE)
+  interactiondf <- rbind.fill(dateRows, amountRows, protocolRows, sourceFileRow)
   interactiondf$stateGroupIndex <- 1
   stateGroups <- list(list(entityKind="itxcontainercontainer",
                            stateType="data",
                            stateKind="transfer data",
-                           valueKinds=c("date transferred", "amount transferred", "protocol"),
+                           valueKinds=c("date transferred", "amount transferred", "protocol", "source file"),
                            includesOthers=TRUE))
   
   stateIdAndVersion <- saveStatesFromLongFormat(interactiondf, "itxcontainercontainer", stateGroups, idColumn="itxContainerContainerID", recordedBy, lsTransaction)
@@ -214,10 +224,10 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
     secondContainer= list(id=wellId, version=0)
   ))
 }
-saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy) {
+saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, logFilePath) {
   # Saves new wells and their interactions with plates
   
-  savedNewPlates <- registerNewPlates(newBarcodeList, lsTransaction=lsTransaction, recordedBy=recordedBy)
+  savedNewPlates <- registerNewPlates(newBarcodeList, lsTransaction=lsTransaction, recordedBy=recordedBy, sourceFile=logFilePath)
   
   # Now these are included in the new query- might change that
   #newPlateIdTranslation <- data.frame(barcode=newBarcodeList, plateId=sapply(savedNewPlates,getId))
@@ -278,19 +288,19 @@ saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy) {
   
   return(wellTranslation)
 }
-registerNewPlates <- function(barcodes, lsTransaction, recordedBy) {
+registerNewPlates <- function(barcodes, lsTransaction, recordedBy, sourceFile) {
   if (length(barcodes) < 1) return(list())
   plateCodeNameList <- getAutoLabels(thingTypeAndKind="material_container",
                                      labelTypeAndKind="id_codeName", 
                                      numberOfLabels=length(barcodes))
-  plates <- mapply(barcodes, plateCodeNameList, FUN = createPlateWithBarcode, MoreArgs = list(lsTransaction=lsTransaction, recordedBy=recordedBy), USE.NAMES=FALSE)
+  plates <- mapply(barcodes, plateCodeNameList, FUN = createPlateWithBarcode, MoreArgs = list(lsTransaction=lsTransaction, recordedBy=recordedBy, sourceFile=sourceFile), USE.NAMES=FALSE)
   plateList <- apply(plates,MARGIN=2,as.list)
   
   savedPlates <- saveContainers(plateList)
   
   return(savedPlates)
 }
-createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy) {
+createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy, sourceFile) {
   return(createContainer(
     codeName = codeName[[1]],
     lsType = "plate", 
@@ -325,6 +335,18 @@ createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy)
           numericValue=384,
           lsTransaction=lsTransaction)
       )
+    ), createContainerState(
+      lsType="metadata",
+      lsKind="plate information",
+      recordedBy=recordedBy,
+      lsTransaction=lsTransaction,
+      containerValues= list(
+        createStateValue(
+          lsType="fileValue",
+          lsKind="source file",
+          fileValue=sourceFile,
+          lsTransaction=lsTransaction,
+          recordedBy= recordedBy))
     ))
   ))
 }
@@ -385,10 +407,16 @@ bulkLoadSampleTransfers <- function(request) {
   fileName <- request$fileToParse
   dryRun <- request$dryRun
   recordedBy <- request$user
+  testMode <- request$testMode
+  
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
-  #testMode <- TRUE
+  testMode <- interpretJSONBoolean(testMode)
+  if(is.null(testMode)) {
+    testMode <- FALSE
+  }
+  
   developmentMode <- TRUE
   # Run the main function with error handling
   loadResult <- tryCatch.W.E(runMain(fileName,dryRun, testMode, developmentMode, recordedBy))
