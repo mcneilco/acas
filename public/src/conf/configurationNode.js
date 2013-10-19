@@ -28,6 +28,7 @@
 		exports.serverConfigurationParams.configuration.userInformationServiceURL = "http://imapp01-d:8080/DNS/persons/v1/Persons/";
 
 // For Projects
+		exports.serverConfigurationParams.configuration.projectsType = "DNS";
 		exports.serverConfigurationParams.configuration.projectsServiceURL = "http://imapp01-d:8080/DNS/codes/v1/Codes/Project.json";
 
 // For racas
@@ -47,16 +48,18 @@
 
 // For generic data parser
 		exports.serverConfigurationParams.configuration.projectService = "http://acas-d:48203/api/projects";
-		exports.serverConfigurationParams.configuration.fileServiceType = "DNS";
+		exports.serverConfigurationParams.configuration.fileServiceType = "custom";
 		exports.serverConfigurationParams.configuration.externalFileService = "http://imapp01-d:8080/DNS/core/v1/DNSFile/";
 		exports.serverConfigurationParams.configuration.stateGroupsScript = "public/src/conf/genericDataParserConfiguration.R";
 		exports.serverConfigurationParams.configuration.includeProject = "TRUE";
 		exports.serverConfigurationParams.configuration.reportRegistrationURL = "http://imapp01-d:8080/DNS/core/v1/DNSAnnotation/";
 		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "";
-		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas-d:48203/api/users";
-		exports.serverConfigurationParams.configuration.loggingService = "http://imapp01-d:8080/DNS/usage/v1/DNSUsageLogging/process";
+		exports.serverConfigurationParams.configuration.nameValidationService = "http://acas-d:48203/api/users"
+		exports.serverConfigurationParams.configuration.loggingService = "http://imapp01-d:8080/DNS/usage/v1/DNSUsageLogging/process"
 		exports.serverConfigurationParams.configuration.resultViewerProtocolPrefix = "http://dsandsrt03.dart.corp:9080/seurat/runseurat?cmd=newjob&AssayName=";
 		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "&AssayProtocol=";
+		exports.serverConfigurationParams.configuration.deleteFilesOnReload = "true";
+		exports.serverConfigurationParams.configuration.useCustomReportRegistration = "true"
 
 
 	})((typeof process === "undefined" || !process.versions ? window.configurationNode = window.configurationNode || {} : exports));

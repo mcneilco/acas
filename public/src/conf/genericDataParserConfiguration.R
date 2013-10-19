@@ -1,3 +1,5 @@
+# collapseGroupBy may eventually support a character vector to group by, but right now it checks if it is not null
+
 getFormatSettings <- function() {
   formatSettings <- list(
     "DNS In Vivo Behavior" = list(
@@ -117,6 +119,46 @@ getFormatSettings <- function() {
                                              "Brain Conc.", "B/P Ratio"),
                               includesOthers = TRUE,
                               includesCorpName = FALSE))
+    ), "DNS Locomotor" = list(
+      annotationType = "s_behavior",
+      hideAllData = TRUE,
+      extraHeaders = data.frame(),
+      splitSubjects = c("Animal ID"),
+      includeTreatmentGroupData = TRUE,
+      rowMeaning = "subjectState",
+      stateGroups = list(list(entityKind = "subject",
+                              stateType = "metadata", 
+                              stateKind = "animal information", 
+                              valueKinds = c("Animal ID"),
+                              includesOthers = FALSE,
+                              includesCorpName = FALSE,
+                              collapseGroupBy = c("not null")),
+                         list(entityKind = "subject",
+                              stateType = "data",
+                              stateKind = "treatment",
+                              valueKinds = c("Dose", "Vehicle", "Administration route","Treatment Time"),
+                              includesOthers = FALSE,
+                              includesCorpName = TRUE),
+                         list(entityKind = "subject",
+                              stateType = "data",
+                              stateKind = "raw data",
+                              includesOthers = TRUE,
+                              includesCorpName = FALSE),
+                         list(entityKind = "container",
+                              stateType = "metadata",
+                              stateKind = "animal information",
+                              valueKinds = c("Animal ID"),
+                              includesOthers = FALSE,
+                              includesCorpName = FALSE,
+                              collapseGroupBy = "not null"),
+                         list(entityKind = "container",
+                              labelType = "name",
+                              labelKind = "container name",
+                              labelText = "Animal ID",
+                              valueKinds = c("Animal ID"),
+                              includesOthers = FALSE,
+                              includesCorpName = FALSE,
+                              collapseGroupBy = "not null"))
     )
   )
   return(formatSettings)

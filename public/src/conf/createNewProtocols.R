@@ -19,7 +19,7 @@ protocolNameList <- c("CRO CYP DR 2C19", "CRO GABA DR [H3] Flunitrazepam Binding
 a <- query("select label_text from api_protocol")
 protocolNameList <- setdiff(protocolNameList, a[[1]])
 shortDescription <- "protocol created for core etl"
-extraProtocolsFrame3 <- data.frame(protocolName = protocolNameList, shortDescription)
+#extraProtocolsFrame3 <- data.frame(protocolName = protocolNameList, shortDescription)
 
 #protocolNameList <- c("CYP 1A2 10uM", "CYP 2C19 10uM", "CYP 2C9 10uM", "CYP 2D6 10uM", "CYP 3A4 10uM")
 #shortDescription <- "dmpk cyp protocol"
@@ -27,16 +27,17 @@ extraProtocolsFrame3 <- data.frame(protocolName = protocolNameList, shortDescrip
 
 protocolNameList <- c("PAMPA-BBB", "PAMPA-GIT")
 shortDescription <- "dmpk permeability protocol"
-extraProtocolsFrame5 <- data.frame(protocolName = protocolNameList, shortDescription)
+#extraProtocolsFrame5 <- data.frame(protocolName = protocolNameList, shortDescription)
 #protocolNameList <- c("PDE1A3 Scottish Biomed", "PDE1B Scottish Biomed", "PDE1C Scottish Biomed")
 #shortDescription <- "cameron"
 #extraProtocolsFrame5 <- data.frame(protocolName = protocolNameList, shortDescription)
 
 #testOnlyProtocol <- data.frame(protocolName = "TEST", shortDescription = "for TEST only, not for production")
 
-protocolsFrame <- rbind(extraProtocolsFrame3)
+#protocolsFrame <- rbind(extraProtocolsFrame3)
 #protocolsFrame <- rbind(protocolsFrame, extraProtocolsFrame1, extraProtocolsFrame2, extraProtocolsFrame3, extraProtocolsFrame4) #testOnlyProtocol)
-
+protocolsFrame <- data.frame(protocolName = "Rat Rotarod v.1.0", shortDescription = "behavior protocol")
+#protocolsFrame <- data.frame(protocolName = "PDE2A Biacore Kinetics", shortDescription = "Ka: on-rate of interaction, concentration dependent\nKd: off-rate of interaction, concentration independent\nKD: affinity of interaction\nt1/2: half-life of interaction (offrate)\nU: estimate of uniqueness of values, if U <15, constants are not significant")
 recordedBy = "smeyer"
 
 for (row in 1:nrow(protocolsFrame)) {
