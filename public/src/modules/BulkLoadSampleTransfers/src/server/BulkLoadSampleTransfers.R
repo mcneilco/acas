@@ -57,6 +57,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   }
   
   interactions <- data.frame()
+  
   for (i in 1:nrow(logFile)) {
     logRow <- logFile[i, ]
     
@@ -93,7 +94,6 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     }
     newDestinationSet <- ddply(combinedSet, ~BATCH_CODE, buildResultRows, destinationWellId, destinationVolume)
     newDestinationSet$dateChanged <- logRow$Date.Time
-    newDestinationSet <- rbind.fill(newDestinationSet, destinationTable)
     
     # Remove old rows
     containerTable <- containerTable[!(containerTable$WELL_ID %in% c(logRow$Destination.Id, logRow$Source.Id)), ]
@@ -114,6 +114,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     interactions <- rbind.fill(interactions, newInteraction)
   }
   
+  # Save things
   lsTransaction <- createLsTransaction(comments="Sample Transfer load")$id
   
   if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedLogFiles/")) {
@@ -225,6 +226,8 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
   ))
 }
 saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, logFilePath) {
+  require(plyr)
+  
   # Saves new wells and their interactions with plates
   
   savedNewPlates <- registerNewPlates(newBarcodeList, lsTransaction=lsTransaction, recordedBy=recordedBy, sourceFile=logFilePath)
@@ -232,15 +235,22 @@ saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, log
   # Now these are included in the new query- might change that
   #newPlateIdTranslation <- data.frame(barcode=newBarcodeList, plateId=sapply(savedNewPlates,getId))
   oldPlates <- unique(c(logFile$Destination.Barcode, logFile$Source.Barcode))
-  oldPlateIdTransation <- query(paste0(
-    "SELECT label_text AS barcode,
-    container_id    AS plateid
-    FROM container_label
-    WHERE label_text IN ('", paste(oldPlates, collapse = "','"), "')"))
-  plateIdTranslation <- oldPlateIdTransation
+  
+  oldPlates <- lapply(oldPlates, function(x) {list(labelText=x)})
+  
+  response <- getURL(
+    paste(racas::applicationSettings$serverPath, "containers/findByLabels/jsonArray", sep=""),
+    customrequest='POST',
+    httpheader=c('Content-Type'='application/json'),
+    postfields=toJSON(oldPlates))
+  if (grepl("^<",response)) {
+    stop (paste("The loader was unable to find the containers by barcodes. Instead, it got this response:", response))
+  }  
+  
+  plateIdTranslation <- ldply(fromJSON(response), function(x) {data.frame(barcode=x$lsLabels[[1]]$labelText, plateId=x$id)})
   
   newWellInformation <- unique(logFile[logFile$Destination.Id < 0, c('Destination.Barcode', 'Destination.Well', 'Destination.Id')])
-  newPlateIds <- plateIdTranslation$PLATEID[match(newWellInformation$Destination.Barcode, plateIdTranslation$BARCODE)]
+  newPlateIds <- plateIdTranslation$plateId[match(newWellInformation$Destination.Barcode, plateIdTranslation$barcode)]
   newWells <- data.frame(plateId = newPlateIds, 
                          labelText = newWellInformation$Destination.Well, 
                          containerId = newWellInformation$Destination.Id)
@@ -374,18 +384,54 @@ normalizeWellNames <- function(wellName) {
   return(gsub("(\\D)(\\d)$","\\10\\2",wellName))
 }
 MarkContainersStatusIgnored <- function(idVector) {
-  query(paste0(
-    "UPDATE container_state
-        SET ignored = 1,
-        version     = version+1
-        WHERE container_id IN (", paste(idVector, collapse=","), ")"))
-  query(paste0(
-    "UPDATE container_value
-        SET ignored = 1,
-        version     = version+1
-WHERE container_state_id in (
-select id from container_state
-        WHERE container_id IN (", paste(idVector, collapse=","), "))"))
+  # Get the containers
+  idVector <- unique(idVector)
+  containerList <- lapply(idVector, function(x) fromJSON(getURL(paste0(racas::applicationSettings$serverPath, "containers/", x))))
+  
+  # Get the containerStates and set the "container" value in each
+  containerStates <- unlist(lapply(containerList, function(container) {
+    lsStates <- container$lsStates
+    container$lsStates <- NULL
+    lsStates <- lapply(lsStates, function(lsState) {lsState$container <- container; return(lsState)})
+    return(lsStates)
+  }), recursive = FALSE)
+                                   
+  # Get the containerValues and set the "containerState" value in each                            
+  containerValues <- unlist(lapply(containerStates, function(containerState) {
+    lsValues <- containerState$lsValues
+    containerState$lsValues <- NULL
+    lsValues <- lapply(lsValues, function(lsValue) {lsValue$lsState <- containerState; return(lsValue)})
+    return(lsValues)
+  }), recursive = FALSE)
+  
+  # Ignore containerValues
+  containerValues <- lapply(containerValues, function(x) {x$ignored <- TRUE; return(x)})
+                                   
+  #Maybe remove ignored ones...
+  # Ignore containerStates, and remove values
+  containerStatesSimplified <- lapply(containerStates, function(x) {x$lsValues <- NULL; x$ignored <- TRUE; return(x)})  
+  
+  # Update containerStates
+  response <- getURL(
+    paste(racas::applicationSettings$serverPath, "containerstates/jsonArray", sep=""),
+    customrequest='PUT',
+    httpheader=c('Content-Type'='application/json'),
+    postfields=toJSON(containerStatesSimplified))
+  if (grepl("^<",response)) {
+    stop (paste("The loader was unable to update containerStates. Instead, it got this response:", response))
+  }
+  containerStates <- fromJSON(response)
+  
+  # Update containerValues
+  response <- getURL(
+    paste(racas::applicationSettings$serverPath, "containervalues/jsonArray", sep=""),
+    customrequest='PUT',
+    httpheader=c('Content-Type'='application/json'),
+    postfields=toJSON(containerValues))
+  if (grepl("^<",response)) {
+    stop (paste("The loader was unable to update containerValues. Instead, it got this response:", response))
+  }
+  containerValues <- fromJSON(response)
 }
 convertVolumes <- function (x, from, to) {
   if (from=="nL" && to=="uL") {
