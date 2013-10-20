@@ -19,17 +19,23 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
       "Transfers" = nrow(logFile),
       "User name" = recordedBy))
   
-  if (dryRun) return(summaryInfo)
-  
   containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)), testMode)
   
-  # TODO: this makes it look pretty, remove later (removed because it did not get Inf)
-  #containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME) & !is.na(containerTable$VOLUME_UNIT), ]
+  newBarcodeList <- unique(logFile$Destination.Barcode[!(logFile$Destination.Barcode %in% containerTable$BARCODE)])
+  logFileNewBarcodes <- unique(logFile$Destination.Barcode[logFile$Is.New.Plate])
+  
+  repeatNewBarcodes <- setdiff(logFileNewBarcodes, newBarcodeList)
+  if(length(repeatNewBarcodes) > 0) {
+    stop(paste0("These barcodes were marked as new in the log file but have already been registered: '", 
+                paste(repeatNewBarcodes, collapse="', '"), "'. It is likely that this file has already been loaded."))
+  }
+  
+  if (dryRun) {
+    return(summaryInfo)
+  }
   
   containerTable$VOLUME[containerTable$VOLUME_STRING == "infinite"] <- Inf
-  
-  newBarcodeList <- unique(logFile$Destination.Barcode[!(logFile$Destination.Barcode %in% containerTable$BARCODE)])
-  
+    
   logFile$Source.Well <- normalizeWellNames(logFile$Source.Well)
   logFile$Destination.Well <- normalizeWellNames(logFile$Destination.Well)
   logFile$FakeSourceId <- paste(logFile$Source.Barcode, logFile$Source.Well, sep="&")
