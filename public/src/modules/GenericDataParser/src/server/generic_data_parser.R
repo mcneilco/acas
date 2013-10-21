@@ -810,6 +810,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   if (rawOnlyFormat) {
     if (!is.null(splitSubjects)) {
       results$subjectID <- as.numeric(as.factor(do.call(paste0, args=as.list(results[splitSubjects]))))
+    } else {
+      results$subjectID <- NA
     }
     # calculateTreatmentGroupID is in customFunctions.R
     results$treatmentGroupID <- calculateTreatmemtGroupID(results, inputFormat, stateGroups, resultTypes)
@@ -1403,7 +1405,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                   'Result Date'='dateValue','clobValue'='clobValue','Class'='valueType','resultTypeAndUnit'='resultTypeAndUnit',
                   'Hidden'='publicData','originalCorporateBatchID'='originalBatchCode','treatmentGroupID'='treatmentGroupID',
                   'subjectID'='subjectID')
-  names(subjectData)[names(nameChange)==names(subjectData)] <- nameChange[names(subjectData)]
+  names(subjectData)[names(subjectData) %in% names(nameChange)] <- nameChange[names(subjectData)]
   subjectData$publicData <- !subjectData$publicData
   subjectData$valueType <- c("numericValue","stringValue","dateValue", "clobValue")[match(subjectData$valueType,c("Number","Text","Date", "Clob"))]
   
@@ -1993,7 +1995,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   if (grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
     tryCatch({
-      genericDataFileDataFrame <- read.xls(pathToGenericDataFormatExcelFile, header = FALSE, blank.lines.skip = FALSE, stringsAsFactors=FALSE)
+      genericDataFileDataFrame <- read.xls(pathToGenericDataFormatExcelFile, header = FALSE, blank.lines.skip = FALSE, stringsAsFactors=FALSE, na.strings=c())
       if (grepl("\\.xlsx$",pathToGenericDataFormatExcelFile)) {
         genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&gt;",replacement=">"), stringsAsFactors=FALSE)
         genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&lt;",replacement="<"), stringsAsFactors=FALSE)
@@ -2003,7 +2005,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     })
   } else if (grepl("\\.csv$",pathToGenericDataFormatExcelFile)){
     tryCatch({
-      genericDataFileDataFrame <- read.csv(pathToGenericDataFormatExcelFile, header = FALSE, stringsAsFactors=FALSE)
+      genericDataFileDataFrame <- read.csv(pathToGenericDataFormatExcelFile, header = FALSE, stringsAsFactors=FALSE, na.strings=c())
     }, error = function(e) {
       stop("Cannot read input csv file")
     })
@@ -2223,7 +2225,7 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     
     serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
   } else if (fileServiceType == "custom") {
-    customSourceFileMove(fileStartLocation, fileName, fileService, experiment, recordedBy)
+    serverFileLocation <- customSourceFileMove(fileStartLocation, fileName, fileService, experiment, recordedBy)
   } else {
     stop("Invalid file service type")
   }
