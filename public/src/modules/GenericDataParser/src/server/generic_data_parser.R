@@ -850,7 +850,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$"Result Desc" <- as.character(longResults$"UnparsedValue")
   longResults$"Result Desc"[!matches & longResults$Class != "Text"] <- ""
   
-  longResults$clobValue <- longResults$"Result Desc"
+  longResults$clobValue <- as.character(longResults$"UnparsedValue")
   longResults$clobValue[!longResults$Class=="Clob"] <- NA
   longResults$"Result Desc"[longResults$Class=="Clob"] <- ""
   
