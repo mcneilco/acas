@@ -184,21 +184,19 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryForma
         
         # Add to the warnings that we coerced the date to a "Best Match"
         warning(paste0("A date is not in the proper format. Found: \"",inputValue,"\" This was interpreted as \"",bestMatchingDate, 
-                       "\". Please enter dates in the following format: \"", format(Sys.Date(), expectedFormat),
-                       "\", or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
+                       "\". Please enter dates as YYYY-MM-DD, or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>  for more information."))
         returnDate <- bestMatchingDate
       } else {
         # If we couldn't parse the data into any of the formats, then we add this to the erorrs and return no date
         errorList <<- c(errorList,paste0("The loader was unable to change the date '", inputValue, 
-                                         "' to the proper format. Please change it to the following format: \"",
-                                         format(Sys.Date(), expectedFormat),"\"",
-                                         " or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
+                                         "' to the proper format. Please change it to the format YYYY-MM-DD, ",
+                                         " or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a> for more information."))
       }
     } else {
       # If the change in the seperators fixed the issue, then we add this to the warnings and return the coerced date
       warning(paste0("A date is not in the proper format. Found: \"",inputValue,"\" This was interpreted as \"",
                      inputValueWExpectedSeperator, 
-                     "\". Please enter dates in the following format: \"", format(Sys.Date(), expectedFormat),"\""))
+                     "\". Please enter dates as YYYY-MM-DD."))
       returnDate <- inputValueWExpectedSeperator
     }
   } else {
