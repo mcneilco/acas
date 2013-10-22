@@ -40,7 +40,7 @@ parsePampaData <- function(request){
       						"<p>",preProcessorCall$preProcessorResponse,"</p>")
 	  response <- list(
 	   commit= FALSE,
-	   transactionId = -1,
+	   transactionId = NULL,
 	   results= list(
 		 path= getwd(),
 		 fileToParse= NULL,
