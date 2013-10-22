@@ -26,7 +26,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   
   repeatNewBarcodes <- setdiff(logFileNewBarcodes, newBarcodeList)
   if(length(repeatNewBarcodes) > 0) {
-    stop(paste0("These barcodes were marked as new in the log file but have already been registered: '", 
+    stop(paste0("Some barcodes were marked as new in the log file but have already been registered: '",
                 paste(repeatNewBarcodes, collapse="', '"), "'. It is likely that this file has already been loaded."))
   }
   

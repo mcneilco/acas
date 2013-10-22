@@ -80,7 +80,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     propertyTable <- as.data.frame(lapply(requiredProperties,function(property) sapply(moleculeList,get.property,key=property)))
     names(propertyTable) <- requiredProperties
     
-    sampleIdTranslationList <- query("select compound_name, property_value from seurat.compound_properties where property_name = 'SAMPLE_ID'")
+    sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
     
     # Only lot 1 is loaded using this loader
     sampleIdTranslationList$COMPOUND_NAME <- paste0(sampleIdTranslationList$COMPOUND_NAME,"-1")

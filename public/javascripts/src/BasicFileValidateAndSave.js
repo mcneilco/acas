@@ -65,7 +65,7 @@
         inputTitle: '',
         url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
         fieldIsRequired: false,
-        allowedFileTypes: ['xls', 'xlsx', 'csv']
+        allowedFileTypes: ['xls', 'xlsx', 'csv', 'sdf']
       });
       this.parseFileController.on('fileInput:uploadComplete', this.handleParseFileUploaded);
       this.parseFileController.on('fileInput:removedFile', this.handleParseFileRemoved);
