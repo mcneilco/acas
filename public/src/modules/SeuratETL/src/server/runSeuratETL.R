@@ -45,7 +45,7 @@ getHeaderLines <- function(expt) {
   ePage <- levels(as.factor(expt$Expt_Nb_Page))
   if (length(ePage) != 1) "problem with experiment results, more than one notebook page"
   hl[[7]] <- paste("Page",ePage[[1]], sep=",")
-  eDate <- levels(as.factor(expt$Expt_Date))
+  eDate <- levels(as.factor(expt$Expt_Date + 3600))
   if (length(eDate) != 1) "problem with experiment results, more than one experiment date"
   dateParts <- strsplit(eDate, " ")
   yFormat <- strsplit(dateParts[[1]][[1]], "-")[[1]]
