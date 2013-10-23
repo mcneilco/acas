@@ -165,6 +165,14 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryForma
       return(coerceToDate(secondaryFormat, inputValue))
     }
     
+    # Return an error for any numbers
+    if(!is.na(suppressWarnings(as.numeric(inputValue)))) {
+      errorList <<- c(errorList, paste0("A number was found where a date was expected. This often occurs when dates ",
+                                        "are set as a Number Format 'Date' or 'General' in Excel rather than 'Text'. ",
+                                        "Please format the dates as Excel 'Text' and enter in the format YYYY-MM-DD."))
+      return(NA)       
+    }
+    
     #First try substituting out the seperators in the inputValue for those in the expected format
     expectedSeperator <- ifelse(grepl("-",expectedFormat),"-", "/")
     inputValueWExpectedSeperator <- gsub("-|/",expectedSeperator,inputValue)
@@ -872,7 +880,9 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   #   Apply the function validateDate to each entry
   longResults$"Result Date" <- rep(NA, length(longResults$analysisGroupID))
   if (length(which(longResults$Class=="Date")) > 0) {
-    longResults$"Result Date"[which(longResults$Class=="Date")] <- sapply(longResults$UnparsedValue[which(longResults$Class=="Date")], FUN=validateDate)
+    dateTranslation <- lapply(unique(longResults$UnparsedValue[which(longResults$Class=="Date")]), validateDate)
+    names(dateTranslation) <- unique(longResults$UnparsedValue[which(longResults$Class=="Date")])
+    longResults$"Result Date"[which(longResults$Class=="Date")] <- dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date")]]
   }
   longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
   longResults$"Result Operator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
