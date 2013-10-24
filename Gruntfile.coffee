@@ -47,7 +47,16 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 
-			compileConfig:
+			compileConf:
+				files: [
+					expand: true
+					flatten: true
+					src: ["conf/*.coffee"]
+					dest: "conf/"
+					ext: '.js'
+				]
+
+			compilePublicConf:
 				files: [
 					expand: true
 					flatten: true
@@ -91,9 +100,13 @@ module.exports = (grunt) ->
 				files: "./*.coffee"
 				tasks: "coffee:compileApp"
 
-			compileConfig:
+			compileConf:
+				files: "conf/*.coffee"
+				tasks: "coffee:compileConf"
+
+			compilePublicConf:
 				files: "public/src/conf/*.coffee"
-				tasks: "coffee:compileConfig"
+				tasks: "coffee:compilePublicConf"
 
 			compileRoutes:
 				files: "routes/*.coffee"

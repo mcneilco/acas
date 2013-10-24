@@ -26,13 +26,13 @@ exports.logUsage = (action, data, username) ->
 	catch error
 		console.log error
 
-exports.prepareConfigFile = (callback) ->
+exports.fillConfigTemplateFile = (callback) ->
 	fs = require('fs')
 	asyncblock = require('asyncblock');
 	exec = require('child_process').exec;
 	asyncblock((flow) ->
 		global.deployMode = process.env.DNSDeployMode
-		exec("java -jar ../lib/dns-config-client.jar -m "+global.deployMode+" -c acas -d 2>/dev/null", flow.add())
+		exec("java -jar ../../lib/dns-config-client.jar -m "+global.deployMode+" -c acas -d 2>/dev/null", flow.add())
 		config = flow.wait()
 		if config.indexOf("It=works") > -1
 			console.log "Can't contact DNS config service. If you are doing local dev, check your VPN."
@@ -44,7 +44,7 @@ exports.prepareConfigFile = (callback) ->
 			lineParts = line.split /\=(.+)?/
 			unless lineParts[1] is undefined
 				settings[lineParts[0]] = lineParts[1]
-		configTemplate = fs.readFileSync("./public/src/conf/configurationNode_Template.js").toString()
+		configTemplate = fs.readFileSync("../public/src/conf/configurationNode_Template.js").toString()
 		for name, setting of settings
 			configTemplate = configTemplate.replace(RegExp(name,"g"), setting)
 		# deal with special cases
@@ -67,7 +67,7 @@ exports.prepareConfigFile = (callback) ->
 		configTemplate = configTemplate.replace(/acas.api.enableSpecRunner/g, enableSpecRunner)
 		configTemplate = configTemplate.replace(/acas.env.logDir/g, process.env.DNSLogDirectory)
 
-		fs.writeFileSync "./public/src/conf/configurationNode.js", configTemplate
+		fs.writeFileSync "../public/src/conf/configurationNode.js", configTemplate
 		callback()
 	)
 

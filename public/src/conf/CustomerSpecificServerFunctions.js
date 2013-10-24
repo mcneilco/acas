@@ -38,7 +38,7 @@
     }
   };
 
-  exports.prepareConfigFile = function(callback) {
+  exports.fillConfigTemplateFile = function(callback) {
     var asyncblock, exec, fs;
 
     fs = require('fs');
@@ -48,7 +48,7 @@
       var config, configLines, configTemplate, enableSpecRunner, hostName, jdbcParts, line, lineParts, name, setting, settings, _i, _len;
 
       global.deployMode = process.env.DNSDeployMode;
-      exec("java -jar ../lib/dns-config-client.jar -m " + global.deployMode + " -c acas -d 2>/dev/null", flow.add());
+      exec("java -jar ../../lib/dns-config-client.jar -m " + global.deployMode + " -c acas -d 2>/dev/null", flow.add());
       config = flow.wait();
       if (config.indexOf("It=works") > -1) {
         console.log("Can't contact DNS config service. If you are doing local dev, check your VPN.");
@@ -64,7 +64,7 @@
           settings[lineParts[0]] = lineParts[1];
         }
       }
-      configTemplate = fs.readFileSync("./public/src/conf/configurationNode_Template.js").toString();
+      configTemplate = fs.readFileSync("../public/src/conf/configurationNode_Template.js").toString();
       for (name in settings) {
         setting = settings[name];
         configTemplate = configTemplate.replace(RegExp(name, "g"), setting);
@@ -92,7 +92,7 @@
       configTemplate = configTemplate.replace(RegExp("acas.api.hostname", "g"), hostName);
       configTemplate = configTemplate.replace(/acas.api.enableSpecRunner/g, enableSpecRunner);
       configTemplate = configTemplate.replace(/acas.env.logDir/g, process.env.DNSLogDirectory);
-      fs.writeFileSync("./public/src/conf/configurationNode.js", configTemplate);
+      fs.writeFileSync("../public/src/conf/configurationNode.js", configTemplate);
       return callback();
     });
   };

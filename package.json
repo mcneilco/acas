@@ -18,6 +18,7 @@
 	"underscore": ">= 0.0.0",
 	"temporary": ">= 0.0.0",
 	"each": ">= 0.0.0",
-	"asyncblock": "*"
+	"asyncblock": "*",
+	"properties": "*"
   }
 }
