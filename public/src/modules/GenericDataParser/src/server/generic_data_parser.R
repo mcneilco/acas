@@ -55,8 +55,9 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   # Returns:
   #   A dataframe of the of section in the generic excel file
   
+  require('gdata')
+  
   # Get the first line matching the section
-  lookFor <- lookFor
   listMatch <- sapply(genericDataFileDataFrame,grep,pattern = lookFor,ignore.case = TRUE, perl = TRUE)
   firstInstanceInEachColumn <- suppressWarnings(unlist(lapply(listMatch, min)))
   startSection <- firstInstanceInEachColumn[is.finite(firstInstanceInEachColumn)][1]
@@ -90,7 +91,7 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   # Get the last line matching the section
   sectionColumn <- genericDataFileDataFrame[,names(startSection)]
   sectionColumnSubset <- subset(sectionColumn, 1:length(sectionColumn) > startSection)
-  sectionLength <- which(sectionColumnSubset %in% "")[1]
+  sectionLength <- which(is.na(sectionColumnSubset) | sectionColumnSubset %in% "")[1]
   if(is.na(sectionLength)) {
     sectionLength <- length(sectionColumnSubset) + 1
   }
@@ -165,11 +166,11 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryForma
       return(coerceToDate(secondaryFormat, inputValue))
     }
     
-    # Return an error for any numbers
-    if(!is.na(suppressWarnings(as.numeric(inputValue)))) {
-      errorList <<- c(errorList, paste0("A number was found where a date was expected. This often occurs when dates ",
-                                        "are set as a Number Format 'Date' or 'General' in Excel rather than 'Text'. ",
-                                        "Please format the dates as Excel 'Text' and enter in the format YYYY-MM-DD."))
+    # Return an error for Excel Date formats
+    if(inputValue == "A_date_was_in_Excel_Date_format") {
+      errorList <<- c(errorList, paste0("A date was has a Number Format of 'Date' or 'General' in Excel rather than 'Text'. ",
+                                        "Please format the dates as Excel 'Text' and use the format YYYY-MM-DD. ",
+                                        "Excel stores dates in a format we cannot accept."))
       return(NA)       
     }
     
@@ -748,6 +749,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   #	  a data frame containing the organized calculated data
   
   require('reshape')
+  require('gdata')
   
   if(ncol(calculatedResults)==1) {
     stop("The rows below Calculated Results must have at least two columns filled: one for Corporate Batch ID's and one for data.")
@@ -1213,6 +1215,8 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   #
   # Returns:
   #  A list that is an experiment
+  
+  require('gdata')
   
   experimentStates <- list()
   
@@ -1986,7 +1990,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   
-  require('gdata')
+  require('XLConnect')
   require('RCurl')
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
@@ -2001,11 +2005,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   if (grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
     tryCatch({
-      genericDataFileDataFrame <- read.xls(pathToGenericDataFormatExcelFile, header = FALSE, blank.lines.skip = FALSE, stringsAsFactors=FALSE)
-      if (grepl("\\.xlsx$",pathToGenericDataFormatExcelFile)) {
-        genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&gt;",replacement=">"), stringsAsFactors=FALSE)
-        genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&lt;",replacement="<"), stringsAsFactors=FALSE)
-      }
+      wb <- loadWorkbook(pathToGenericDataFormatExcelFile)
+      genericDataFileDataFrame <- readWorksheet(wb, sheet=1, header = FALSE, dateTimeFormat="A_date_was_in_Excel_Date_format")
     }, error = function(e) {
       stop("Cannot read input excel file")
     })
