@@ -2,20 +2,8 @@ calculateTreatmemtGroupID <- function(results, inputFormat, stateGroups, resultT
   # Returns a column that will be added to results that separates treatmentGroups
   
   # insert formats with custom code in "if" statements
-  if(inputFormat == "DNS Locomotor") {
-    neededColumns <- c("Bin (min)", "Dose (mg/kg)", "Vehicle", "Administration route","Treatment Time (min)", "subjectID")
-    if (any(!(neededColumns %in% names(results)))) {
-      stop("Missing columns needed for Locomotor data. Needs 'Bin (min)', 'Dose (mg/kg)', 'Vehicle', 'Administration route','Treatment Time (min)'")
-    }
-    treatmentFrame <- results[, c("Bin (min)", "Dose (mg/kg)", "Vehicle", "Administration route","Treatment Time (min)", "subjectID")]
-    treatmentFrame <- treatmentFrame[with(treatmentFrame, order(`Bin (min)`)),]
-    
-    createTreatmentGroupUnique <- function(df) {
-      return(data.frame(subjectID=df$subjectID, treatmentGroupID=paste(df[c("Dose (mg/kg)", "Vehicle", "Administration route","Treatment Time (min)")],collapse="-")))
-    }
-    treatmentMatching <- ddply(treatmentFrame, .(subjectID), createTreatmentGroupUnique)
-    treatmentMatching$treatmentGroupID <- as.numeric(as.factor(treatmentMatching$treatmentGroupID))
-    return(treatmentMatching$treatmentGroupID[match(results$subjectID, treatmentMatching$subjectID)])
+  #if(inputFormat == "") {
+  if (FALSE) {
   } else {
     # Standard code
     treatmentGrouping <- which(lapply(stateGroups, getElement, "stateKind") == "treatment")
@@ -32,14 +20,7 @@ calculateTreatmemtGroupID <- function(results, inputFormat, stateGroups, resultT
 
 createRawOnlyTreatmentGroupData <- function(subjectData, sigFigs, inputFormat) {
   # Calculates the treatment group data when averaging subject level data
-  if(inputFormat == "DNS Locomotor") {
-    # Maybe hardcode in codes for PO-PO-PO-PO-SC-SC or others... really hard to maintain order...
-    subjectData <- ddply(subjectData, "subjectID", .fun = function (subjectData) {
-      if (length(unique(subjectData$stringValue)) > 1) {
-        subjectData$stringValue <- paste(subjectData$stringValue, collapse=";")
-      }
-      return(subjectData)
-    })
+  if (inputFormat == "CNS PK") {
     isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
     isLessThan <- any(subjectData$valueOperator=="<", na.rm=TRUE)
     if(isGreaterThan && isLessThan) {
@@ -63,7 +44,8 @@ createRawOnlyTreatmentGroupData <- function(subjectData, sigFigs, inputFormat) {
       "valueKind" = subjectData$valueKind[1],
       "valueUnit" = subjectData$valueUnit[1],
       "numericValue" = if(is.nan(resultValue)) NA else resultValue,
-      "stringValue" = if (length(unique(subjectData$stringValue)) == 1) {subjectData$stringValue[1]}
+      "stringValue" = if ((length(unique(subjectData$stringValue)) == 1) && subjectData$valueKind[1]!="CSF Conc.") {subjectData$stringValue[1]}
+      else if (any(subjectData$stringValue == "BQL", na.rm=TRUE) && subjectData$valueKind[1]=="CSF Conc.") {"BQL"}
       else if (is.nan(resultValue)) {"NA"}
       else NA,
       "valueOperator" = resultOperator,
@@ -78,46 +60,6 @@ createRawOnlyTreatmentGroupData <- function(subjectData, sigFigs, inputFormat) {
       uncertaintyType = if(!is.na(resultValue)) "standard deviation" else NA,
       uncertainty = if(sum(!is.na(subjectData$numericValue)) > 2) {sd(subjectData$numericValue, na.rm=TRUE)} else NA,
       stringsAsFactors=FALSE))
-  } else if (inputFormat == "CNS PK") {
-  isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
-  isLessThan <- any(subjectData$valueOperator=="<", na.rm=TRUE)
-  if(isGreaterThan && isLessThan) {
-    resultOperator <- "<>"
-    resultValue <- NA
-  } else if (isGreaterThan) {
-    resultOperator <- ">"
-    resultValue <- max(subjectData$numericValue, na.rm = TRUE)
-  } else if (isLessThan) {
-    resultOperator <- "<"
-    resultValue <- min(subjectData$numericValue, na.rm = TRUE)
-  } else {
-    resultOperator <- NA
-    resultValue <- mean(subjectData$numericValue, na.rm = TRUE)
-  }
-  if (!is.null(sigFigs)) { 
-    resultValue <- signif(resultValue, sigFigs)
-  }
-  return(data.frame(
-    "batchCode" = subjectData$batchCode[1],
-    "valueKind" = subjectData$valueKind[1],
-    "valueUnit" = subjectData$valueUnit[1],
-    "numericValue" = if(is.nan(resultValue)) NA else resultValue,
-    "stringValue" = if ((length(unique(subjectData$stringValue)) == 1) && subjectData$valueKind[1]!="CSF Conc.") {subjectData$stringValue[1]}
-    else if (any(subjectData$stringValue == "BQL", na.rm=TRUE) && subjectData$valueKind[1]=="CSF Conc.") {"BQL"}
-    else if (is.nan(resultValue)) {"NA"}
-    else NA,
-    "valueOperator" = resultOperator,
-    "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
-    "publicData" = subjectData$publicData[1],
-    treatmentGroupID = subjectData$treatmentGroupID[1],
-    stateGroupIndex = subjectData$stateGroupIndex[1],
-    stateID = subjectData$stateID[1],
-    stateVersion = subjectData$stateVersion[1],
-    valueType = subjectData$valueType[1],
-    numberOfReplicates = sum(!is.na(subjectData$numericValue)),
-    uncertaintyType = if(!is.na(resultValue)) "standard deviation" else NA,
-    uncertainty = if(sum(!is.na(subjectData$numericValue)) > 2) {sd(subjectData$numericValue, na.rm=TRUE)} else NA,
-    stringsAsFactors=FALSE))
   } else {
     # Standard code
     isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
