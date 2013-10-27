@@ -64,7 +64,7 @@
       var curveUrl;
 
       this.$el.empty();
-      curveUrl = configurationNode.serverConfigurationParams.configuration.rapache + "/curve/render/?legend=false&curveIds=";
+      curveUrl = window.conf.service.rapache.fullpath + "/curve/render/?legend=false&curveIds=";
       curveUrl += this.model.get('curveid') + "&height=200&width=250&axes=false";
       this.$el.html(this.template({
         curveUrl: curveUrl
@@ -146,7 +146,7 @@
       this.$el.empty();
       if (this.model != null) {
         if (this.model.get('curveid') !== "") {
-          curveUrl = configurationNode.serverConfigurationParams.configuration.rshiny + "/fit/?curveIds=";
+          curveUrl = window.conf.service.rshiny.fullpath + "/fit/?curveIds=";
           curveUrl += this.model.get('curveid');
         }
       }

@@ -38,6 +38,59 @@
     }
   };
 
+  exports.getConfServiceVars = function(sysEnv, callback) {
+    var asyncblock, exec, properties;
+
+    properties = require("properties");
+    asyncblock = require('asyncblock');
+    exec = require('child_process').exec;
+    return asyncblock(function(flow) {
+      var config, deployMode, options;
+
+      deployMode = sysEnv.DNSDeployMode;
+      exec("java -jar ../../lib/dns-config-client.jar -m " + deployMode + " -c acas -d 2>/dev/null", flow.add());
+      config = flow.wait();
+      if (config.indexOf("It=works") > -1) {
+        console.log("Can't contact DNS config service. If you are doing local dev, check your VPN.");
+        process.exit(1);
+      }
+      config = config.replace(/\\/g, "");
+      options = {
+        namespaces: true
+      };
+      return properties.parse(config, options, function(error, dnsconf) {
+        var jdbcParts;
+
+        if (error != null) {
+          return console.log("Parsing DNS conf service output failed: " + error);
+        } else {
+          dnsconf.acas.api.enableSpecRunner = true;
+          switch (global.deployMode) {
+            case "Dev":
+              dnsconf.acas.api.hostname = "acas-d";
+              break;
+            case "Test":
+              dnsconf.acas.api.hostname = "acas-t";
+              break;
+            case "Stage":
+              dnsconf.acas.api.hostname = "acas-s";
+              break;
+            case "Prod":
+              dnsconf.acas.api.hostname = "acas";
+              dnsconf.acas.api.enableSpecRunner = false;
+          }
+          jdbcParts = dnsconf.acas.jdbc.url.split(":");
+          dnsconf.acas.api.db = {};
+          dnsconf.acas.api.db.location = jdbcParts[0] + ":" + jdbcParts[1] + ":" + jdbcParts[2] + ":@";
+          dnsconf.acas.api.db.host = jdbcParts[3].replace("@", "");
+          dnsconf.acas.api.db.port = jdbcParts[4];
+          dnsconf.acas.api.db.name = jdbcParts[5];
+          return callback(dnsconf);
+        }
+      });
+    });
+  };
+
   exports.fillConfigTemplateFile = function(callback) {
     var asyncblock, exec, fs;
 

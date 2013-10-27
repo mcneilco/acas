@@ -36,7 +36,7 @@ requiredScripts = [
 ]
 
 applicationScripts = [
-	'/src/conf/configurationNode.js'
+	'/src/conf/conf.js'
 	#Curve Analysis module
 	'/javascripts/src/CurveCurator.js'
 	'/javascripts/src/CurveCuratorAppController.js'
@@ -48,8 +48,8 @@ exports.getCurveStubs = (req, resp) ->
 		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveStubs
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.rapache+"/experimentcode/curvids/?experimentcode="
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.rapache.fullpath+"/experimentcode/curvids/?experimentcode="
 		request = require 'request'
 		request(
 			method: 'GET'

@@ -4,7 +4,7 @@
       this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
       };
-      return this.serviceType = window.configurationNode.serverConfigurationParams.configuration.userAuthenticationType;
+      return this.serviceType = window.conf.authentication.user.type;
     });
     describe('when auth service called', function() {
       beforeEach(function() {

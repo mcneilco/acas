@@ -20,8 +20,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocols/codename/" + req.params.code;
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistance.fullpath + "/protocols/codename/" + req.params.code;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -35,8 +35,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.fullSavedProtocol));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocols/" + req.params.id;
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistance.fullpath + "/protocols/" + req.params.id;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -50,8 +50,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocols";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistance.fullpath + "/protocols";
       request = require('request');
       return request({
         method: 'POST',
@@ -80,8 +80,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocols";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistance.fullpath + "/protocols";
       request = require('request');
       return request({
         method: 'PUT',
@@ -109,8 +109,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.protocolLabels));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocollabels";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistance.fullpath + "/protocollabels";
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -151,8 +151,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       labels = protocolServiceTestJSON.protocolLabels;
       return resp.json(translateToCodes(labels));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocollabels";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistance.fullpath + "/protocollabels";
       request = require('request');
       return request({
         method: 'GET',

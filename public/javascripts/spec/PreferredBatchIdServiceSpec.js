@@ -6,7 +6,7 @@
       this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
       };
-      serviceType = window.configurationNode.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType;
+      serviceType = window.conf.service.external.preferred.batchid.type;
       if (!window.AppLaunchParams.liveServiceTest) {
         this.requestData = {
           requests: [

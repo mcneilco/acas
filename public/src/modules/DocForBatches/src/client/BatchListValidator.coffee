@@ -147,7 +147,7 @@ class window.BatchListValidatorController extends Backbone.View
 			@$(".bv_addButton").attr "disabled", true
 			$.ajax
 				type: "POST"
-				url: window.configurationNode.serverConfigurationParams.configuration.preferredBatchIdService
+				url: window.conf.service.preferred.batchid.path
 				data:
 					requests: @currentReqArray
 					testMode: window.AppLaunchParams.testMode

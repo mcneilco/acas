@@ -2,10 +2,9 @@ csUtilities = require "./public/src/conf/CustomerSpecificServerFunctions.js"
 
 startApp = ->
 # Regular system startup
-	config = require './public/src/conf/configurationNode.js'
+	config = require './conf/compiled/conf.js'
 	express = require('express')
 	user = require('./routes/user')
-
 	http = require('http')
 	path = require('path')
 
@@ -17,7 +16,7 @@ startApp = ->
 
 	global.app = express()
 	app.configure( ->
-		app.set('port', process.env.PORT || config.serverConfigurationParams.configuration.portNumber)
+		app.set('port', config.all.client.port)
 		app.set('views', __dirname + '/views')
 		app.set('view engine', 'jade')
 		app.use(express.favicon())
@@ -46,7 +45,7 @@ startApp = ->
 	# main routes
 	routes = require('./routes')
 	app.get '/', loginRoutes.ensureAuthenticated, routes.index
-	if config.serverConfigurationParams.configuration.enableSpecRunner
+	if config.all.server.enablespecrunner
 		app.get '/SpecRunner', routes.specRunner
 		app.get '/LiveServiceSpecRunner', routes.liveServiceSpecRunner
 

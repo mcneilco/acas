@@ -2,7 +2,7 @@ describe 'User authentication Service testing', ->
 	beforeEach ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
-		@serviceType = window.configurationNode.serverConfigurationParams.configuration.userAuthenticationType
+		@serviceType = window.conf.authentication.user.type
 
 
 	describe 'when auth service called', ->

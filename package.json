@@ -19,6 +19,8 @@
 	"temporary": ">= 0.0.0",
 	"each": ">= 0.0.0",
 	"asyncblock": "*",
-	"properties": "*"
+	"properties": "*",
+	"underscoreDeepExtend": "git://github.com/pygy/underscoreDeepExtend.git",
+	"flat": "*"
   }
 }

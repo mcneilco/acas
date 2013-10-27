@@ -12,7 +12,7 @@ describe 'LS File Input Behavior Testing', ->
 				@echoFileController = new LSFileInputController
 						el: '#fixture',
 						inputTitle: 'Test File'
-						url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
+						url: "http://"+window.conf.host+":"+window.conf.service.file.port
 						fieldIsRequired: true
 				@echoFileController.render()
 

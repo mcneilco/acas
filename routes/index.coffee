@@ -19,7 +19,7 @@ requiredScripts = [
 ]
 
 applicationScripts = [
-	'/src/conf/configurationNode.js'
+	'/src/conf/conf.js'
 	# For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'

@@ -26,7 +26,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@parseFileController = new LSFileInputController
 			el: @$('.bv_parseFile')
 			inputTitle: ''
-			url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
+			url: "http://"+window.conf.host+":"+window.conf.service.file.port
 			fieldIsRequired: false
 			allowedFileTypes: ['xls', 'xlsx', 'csv']
 		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
@@ -37,7 +37,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@reportFileController = new LSFileInputController
 				el: @$('.bv_reportFile')
 				inputTitle: ''
-				url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
+				url: "http://"+window.conf.host+":"+window.conf.service.file.port
 				fieldIsRequired: false
 				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
 			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)

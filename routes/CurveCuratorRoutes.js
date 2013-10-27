@@ -25,7 +25,7 @@ In layout.jade
 
   requiredScripts = ['/src/lib/jquery.min.js', '/src/lib/json2.js', '/src/lib/underscore.js', '/src/lib/backbone-min.js', '/src/lib/bootstrap/bootstrap.min.js', '/src/lib/bootstrap/bootstrap-tooltip.js', '/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js', '/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js', '/src/lib/bootstrap/bootstrap.min.js', '/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js'];
 
-  applicationScripts = ['/src/conf/configurationNode.js', '/javascripts/src/CurveCurator.js', '/javascripts/src/CurveCuratorAppController.js'];
+  applicationScripts = ['/src/conf/conf.js', '/javascripts/src/CurveCurator.js', '/javascripts/src/CurveCuratorAppController.js'];
 
   exports.getCurveStubs = function(req, resp) {
     var baseurl, config, curveCuratorTestData, request,
@@ -36,8 +36,8 @@ In layout.jade
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveStubs));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.rapache + "/experimentcode/curvids/?experimentcode=";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "/experimentcode/curvids/?experimentcode=";
       request = require('request');
       return request({
         method: 'GET',
