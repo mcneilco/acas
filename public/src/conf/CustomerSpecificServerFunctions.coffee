@@ -26,13 +26,53 @@ exports.logUsage = (action, data, username) ->
 	catch error
 		console.log error
 
-exports.prepareConfigFile = (callback) ->
+
+exports.getConfServiceVars = (sysEnv, callback) ->
+	properties = require "properties"
+	asyncblock = require('asyncblock');
+	exec = require('child_process').exec;
+	asyncblock((flow) ->
+		deployMode = sysEnv.DNSDeployMode
+		exec("java -jar ../../lib/dns-config-client.jar -m "+deployMode+" -c acas -d 2>/dev/null", flow.add())
+		config = flow.wait()
+		if config.indexOf("It=works") > -1
+			console.log "Can't contact DNS config service. If you are doing local dev, check your VPN."
+			process.exit 1
+		config = config.replace(/\\/g, "")
+
+		options =
+			namespaces: true
+
+		properties.parse config, options, (error, dnsconf) ->
+			if error?
+				console.log "Parsing DNS conf service output failed: "+error
+			else
+				dnsconf.acas.api.enableSpecRunner = true
+				switch(global.deployMode)
+					when "Dev" then dnsconf.acas.api.hostname = "acas-d"
+					when "Test" then dnsconf.acas.api.hostname = "acas-t"
+					when "Stage" then dnsconf.acas.api.hostname = "acas-s"
+					when "Prod"
+						dnsconf.acas.api.hostname = "acas"
+						dnsconf.acas.api.enableSpecRunner = false
+				jdbcParts = dnsconf.acas.jdbc.url.split ":"
+				dnsconf.acas.api.db = {}
+				dnsconf.acas.api.db.location = jdbcParts[0]+":"+jdbcParts[1]+":"+jdbcParts[2]+":@"
+				dnsconf.acas.api.db.host = jdbcParts[3].replace("@","")
+				dnsconf.acas.api.db.port = jdbcParts[4]
+				dnsconf.acas.api.db.name = jdbcParts[5]
+
+				callback(dnsconf)
+		)
+
+
+exports.fillConfigTemplateFile = (callback) ->
 	fs = require('fs')
 	asyncblock = require('asyncblock');
 	exec = require('child_process').exec;
 	asyncblock((flow) ->
 		global.deployMode = process.env.DNSDeployMode
-		exec("java -jar ../lib/dns-config-client.jar -m "+global.deployMode+" -c acas -d 2>/dev/null", flow.add())
+		exec("java -jar ../../lib/dns-config-client.jar -m "+global.deployMode+" -c acas -d 2>/dev/null", flow.add())
 		config = flow.wait()
 		if config.indexOf("It=works") > -1
 			console.log "Can't contact DNS config service. If you are doing local dev, check your VPN."
@@ -44,7 +84,7 @@ exports.prepareConfigFile = (callback) ->
 			lineParts = line.split /\=(.+)?/
 			unless lineParts[1] is undefined
 				settings[lineParts[0]] = lineParts[1]
-		configTemplate = fs.readFileSync("./public/src/conf/configurationNode_Template.js").toString()
+		configTemplate = fs.readFileSync("../public/src/conf/configurationNode_Template.js").toString()
 		for name, setting of settings
 			configTemplate = configTemplate.replace(RegExp(name,"g"), setting)
 		# deal with special cases
@@ -67,7 +107,7 @@ exports.prepareConfigFile = (callback) ->
 		configTemplate = configTemplate.replace(/acas.api.enableSpecRunner/g, enableSpecRunner)
 		configTemplate = configTemplate.replace(/acas.env.logDir/g, process.env.DNSLogDirectory)
 
-		fs.writeFileSync "./public/src/conf/configurationNode.js", configTemplate
+		fs.writeFileSync "../public/src/conf/configurationNode.js", configTemplate
 		callback()
 	)
 
@@ -136,3 +176,34 @@ exports.loginStrategy = (username, password, done) ->
 					return done(null, false,
 						message: "Invalid credentials"
 					)
+
+exports.getProjects = (resp) ->
+	config = require './configurationNode.js'
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: config.serverConfigurationParams.configuration.projectsServiceURL
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			console.log JSON.stringify json
+			console.log JSON.stringify dnsFormatProjectResponse json
+			resp.json dnsFormatProjectResponse json
+		else
+			console.log 'got ajax error trying get project list'
+			console.log error
+			console.log json
+			console.log response
+	)
+
+dnsFormatProjectResponse =  (json) ->
+	_ = require 'underscore'
+	projects = []
+	_.each json, (proj) ->
+		p = proj.DNSCode
+		projects.push
+			code: p.code
+			name: p.name
+			ignored: !p.active
+
+	projects

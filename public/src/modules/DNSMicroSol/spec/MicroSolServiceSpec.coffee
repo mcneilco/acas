@@ -5,7 +5,7 @@ It returns the usual error and warning info, but also a CSV preview of the data 
 ###
 #Service call data with good data:
 goodDataRequest =
-	fileToParse: "public/src/modules/DNSMicroSol/spec/specFiles/2013yyy_usol_xxxxx.xls"
+	fileToParse: "public/src/modules/DNSMicroSol/spec/specFiles/2013yyy_usol_xxxxx copy.xls"
 	inputParameters: window.MicroSolTestJSON.validMicroSol
 	dryRun: true
 	user: 'jmcneil'

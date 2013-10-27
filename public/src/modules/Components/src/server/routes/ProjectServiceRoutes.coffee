@@ -7,46 +7,10 @@ app.get '/api/projects', projectServiceRoutes.getProjects
 
 
 exports.getProjects = (req, resp) ->
-	config = require '../public/src/conf/configurationNode.js'
+	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 	if global.specRunnerTestmode
 		projectServiceTestJSON = require '../public/javascripts/spec/testFixtures/projectServiceTestJSON.js'
 		resp.end JSON.stringify projectServiceTestJSON.projects
 	else
-		console.log "calling live projects service"
-		if config.serverConfigurationParams.configuration.projectsType == "ACAS"
-			#TODO Replace with service to look in ACAS database for registered projects
-			projectServiceTestJSON = require '../public/javascripts/spec/testFixtures/projectServiceTestJSON.js'
-			resp.end JSON.stringify projectServiceTestJSON.projects
-		else if config.serverConfigurationParams.configuration.projectsType == "DNS"
-			dnsGetProjects resp
+		csUtilities.getProjects resp
 
-dnsGetProjects = (resp) ->
-	config = require '../public/src/conf/configurationNode.js'
-	request = require 'request'
-	request(
-		method: 'GET'
-		url: config.serverConfigurationParams.configuration.projectsServiceURL
-		json: true
-	, (error, response, json) =>
-		if !error && response.statusCode == 200
-			console.log JSON.stringify json
-			console.log JSON.stringify dnsFormatProjectResponse json
-			resp.json dnsFormatProjectResponse json
-		else
-			console.log 'got ajax error trying get project list'
-			console.log error
-			console.log json
-			console.log response
-	)
-
-dnsFormatProjectResponse =  (json) ->
-	_ = require 'underscore'
-	projects = []
-	_.each json, (proj) ->
-		p = proj.DNSCode
-		projects.push
-			code: p.code
-			name: p.name
-			ignored: !p.active
-
-	projects

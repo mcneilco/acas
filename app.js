@@ -6,7 +6,7 @@
   startApp = function() {
     var LocalStrategy, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, metStabRoutes, microSolRoutes, pampaRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
 
-    config = require('./public/src/conf/configurationNode.js');
+    config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
     http = require('http');
@@ -17,7 +17,7 @@
     LocalStrategy = require('passport-local').Strategy;
     global.app = express();
     app.configure(function() {
-      app.set('port', process.env.PORT || config.serverConfigurationParams.configuration.portNumber);
+      app.set('port', config.all.client.port);
       app.set('views', __dirname + '/views');
       app.set('view engine', 'jade');
       app.use(express.favicon());
@@ -44,7 +44,7 @@
     });
     routes = require('./routes');
     app.get('/', loginRoutes.ensureAuthenticated, routes.index);
-    if (config.serverConfigurationParams.configuration.enableSpecRunner) {
+    if (config.all.server.enablespecrunner) {
       app.get('/SpecRunner', routes.specRunner);
       app.get('/LiveServiceSpecRunner', routes.liveServiceSpecRunner);
     }
@@ -117,8 +117,6 @@
     return csUtilities.logUsage("ACAS Node server started", "started", "");
   };
 
-  global.deployMode = "Dev";
-
-  csUtilities.prepareConfigFile(startApp);
+  startApp();
 
 }).call(this);

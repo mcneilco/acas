@@ -259,7 +259,7 @@
         this.$(".bv_addButton").attr("disabled", true);
         return $.ajax({
           type: "POST",
-          url: window.configurationNode.serverConfigurationParams.configuration.preferredBatchIdService,
+          url: window.conf.service.preferred.batchid.path,
           data: {
             requests: this.currentReqArray,
             testMode: window.AppLaunchParams.testMode

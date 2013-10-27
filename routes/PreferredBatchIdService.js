@@ -7,7 +7,7 @@
     _ = require("underscore");
     each = require("each");
     request = require('request');
-    config = require('../public/src/conf/configurationNode.js');
+    config = require('../conf/compiled/conf.js');
     requests = req.body.requests;
     return each(requests).parallel(1).on("item", function(batchName, next) {
       var baseurl,
@@ -17,9 +17,9 @@
         console.log("running fake batch check");
         checkBatch_TestMode(batchName);
         return next();
-      } else if (config.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType === "LabSynchCmpdReg") {
+      } else if (config.all.client.service.external.preferred.batchid.type === "LabSynchCmpdReg") {
         console.log("running LabSynchCmpdReg batch check");
-        baseurl = config.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL;
+        baseurl = config.all.server.service.external.preferred.batchid.url;
         return request({
           method: 'GET',
           url: baseurl + batchName.requestName,
@@ -38,9 +38,9 @@
           }
           return next();
         });
-      } else if (config.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType === "SingleBatchNameQueryString") {
+      } else if (config.all.client.service.external.preferred.batchid.type === "SingleBatchNameQueryString") {
         console.log("running SingleBatchNameQueryString batch check");
-        baseurl = config.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL;
+        baseurl = config.all.server.service.external.preferred.batchid.url;
         return request({
           method: 'GET',
           url: baseurl + batchName.requestName + ".csv",

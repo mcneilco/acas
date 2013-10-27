@@ -63,7 +63,7 @@
       this.parseFileController = new LSFileInputController({
         el: this.$('.bv_parseFile'),
         inputTitle: '',
-        url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
+        url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
         fieldIsRequired: false,
         allowedFileTypes: ['xls', 'xlsx', 'csv']
       });
@@ -74,7 +74,7 @@
         this.reportFileController = new LSFileInputController({
           el: this.$('.bv_reportFile'),
           inputTitle: '',
-          url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
+          url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
           fieldIsRequired: false,
           allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
         });

@@ -28,8 +28,8 @@ app.put '/api/experiments', experimentRoutes.putExperiment
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "experiments/" + req.params.id;
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistance.fullpath + "/experiments/" + req.params.id;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -43,8 +43,8 @@ app.put '/api/experiments', experimentRoutes.putExperiment
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "experiments";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistance.fullpath + "/experiments";
       request = require('request');
       return request({
         method: 'POST',
@@ -73,8 +73,8 @@ app.put '/api/experiments', experimentRoutes.putExperiment
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "experiments";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistance.fullpath + "/experiments";
       request = require('request');
       return request({
         method: 'PUT',

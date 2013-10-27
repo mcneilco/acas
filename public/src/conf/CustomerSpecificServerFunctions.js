@@ -6,6 +6,8 @@
 
 
 (function() {
+  var dnsFormatProjectResponse;
+
   exports.logUsage = function(action, data, username) {
     var config, error, form, req, request,
       _this = this;
@@ -36,7 +38,60 @@
     }
   };
 
-  exports.prepareConfigFile = function(callback) {
+  exports.getConfServiceVars = function(sysEnv, callback) {
+    var asyncblock, exec, properties;
+
+    properties = require("properties");
+    asyncblock = require('asyncblock');
+    exec = require('child_process').exec;
+    return asyncblock(function(flow) {
+      var config, deployMode, options;
+
+      deployMode = sysEnv.DNSDeployMode;
+      exec("java -jar ../../lib/dns-config-client.jar -m " + deployMode + " -c acas -d 2>/dev/null", flow.add());
+      config = flow.wait();
+      if (config.indexOf("It=works") > -1) {
+        console.log("Can't contact DNS config service. If you are doing local dev, check your VPN.");
+        process.exit(1);
+      }
+      config = config.replace(/\\/g, "");
+      options = {
+        namespaces: true
+      };
+      return properties.parse(config, options, function(error, dnsconf) {
+        var jdbcParts;
+
+        if (error != null) {
+          return console.log("Parsing DNS conf service output failed: " + error);
+        } else {
+          dnsconf.acas.api.enableSpecRunner = true;
+          switch (global.deployMode) {
+            case "Dev":
+              dnsconf.acas.api.hostname = "acas-d";
+              break;
+            case "Test":
+              dnsconf.acas.api.hostname = "acas-t";
+              break;
+            case "Stage":
+              dnsconf.acas.api.hostname = "acas-s";
+              break;
+            case "Prod":
+              dnsconf.acas.api.hostname = "acas";
+              dnsconf.acas.api.enableSpecRunner = false;
+          }
+          jdbcParts = dnsconf.acas.jdbc.url.split(":");
+          dnsconf.acas.api.db = {};
+          dnsconf.acas.api.db.location = jdbcParts[0] + ":" + jdbcParts[1] + ":" + jdbcParts[2] + ":@";
+          dnsconf.acas.api.db.host = jdbcParts[3].replace("@", "");
+          dnsconf.acas.api.db.port = jdbcParts[4];
+          dnsconf.acas.api.db.name = jdbcParts[5];
+          return callback(dnsconf);
+        }
+      });
+    });
+  };
+
+  exports.fillConfigTemplateFile = function(callback) {
     var asyncblock, exec, fs;
 
     fs = require('fs');
@@ -46,7 +101,7 @@
       var config, configLines, configTemplate, enableSpecRunner, hostName, jdbcParts, line, lineParts, name, setting, settings, _i, _len;
 
       global.deployMode = process.env.DNSDeployMode;
-      exec("java -jar ../lib/dns-config-client.jar -m " + global.deployMode + " -c acas -d 2>/dev/null", flow.add());
+      exec("java -jar ../../lib/dns-config-client.jar -m " + global.deployMode + " -c acas -d 2>/dev/null", flow.add());
       config = flow.wait();
       if (config.indexOf("It=works") > -1) {
         console.log("Can't contact DNS config service. If you are doing local dev, check your VPN.");
@@ -62,7 +117,7 @@
           settings[lineParts[0]] = lineParts[1];
         }
       }
-      configTemplate = fs.readFileSync("./public/src/conf/configurationNode_Template.js").toString();
+      configTemplate = fs.readFileSync("../public/src/conf/configurationNode_Template.js").toString();
       for (name in settings) {
         setting = settings[name];
         configTemplate = configTemplate.replace(RegExp(name, "g"), setting);
@@ -90,7 +145,7 @@
       configTemplate = configTemplate.replace(RegExp("acas.api.hostname", "g"), hostName);
       configTemplate = configTemplate.replace(/acas.api.enableSpecRunner/g, enableSpecRunner);
       configTemplate = configTemplate.replace(/acas.env.logDir/g, process.env.DNSLogDirectory);
-      fs.writeFileSync("./public/src/conf/configurationNode.js", configTemplate);
+      fs.writeFileSync("../public/src/conf/configurationNode.js", configTemplate);
       return callback();
     });
   };
@@ -182,6 +237,48 @@
         });
       });
     });
+  };
+
+  exports.getProjects = function(resp) {
+    var config, request,
+      _this = this;
+
+    config = require('./configurationNode.js');
+    request = require('request');
+    return request({
+      method: 'GET',
+      url: config.serverConfigurationParams.configuration.projectsServiceURL,
+      json: true
+    }, function(error, response, json) {
+      if (!error && response.statusCode === 200) {
+        console.log(JSON.stringify(json));
+        console.log(JSON.stringify(dnsFormatProjectResponse(json)));
+        return resp.json(dnsFormatProjectResponse(json));
+      } else {
+        console.log('got ajax error trying get project list');
+        console.log(error);
+        console.log(json);
+        return console.log(response);
+      }
+    });
+  };
+
+  dnsFormatProjectResponse = function(json) {
+    var projects, _;
+
+    _ = require('underscore');
+    projects = [];
+    _.each(json, function(proj) {
+      var p;
+
+      p = proj.DNSCode;
+      return projects.push({
+        code: p.code,
+        name: p.name,
+        ignored: !p.active
+      });
+    });
+    return projects;
   };
 
 }).call(this);
