@@ -28,6 +28,8 @@ exports.parseFullPKData = (request, response)  ->
 	request.connection.setTimeout 600000
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
+	console.log request
+
 	response.writeHead(200, {'Content-Type': 'application/json'});
 	if global.specRunnerTestmode
 		console.log "test mode: "+global.specRunnerTestmode

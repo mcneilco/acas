@@ -44,10 +44,16 @@
     properties = require("properties");
     asyncblock = require('asyncblock');
     exec = require('child_process').exec;
+    if (sysEnv.DNSDeployMode == null) {
+      sysEnv.DNSDeployMode = "Dev";
+    }
+    if (sysEnv.DNSLogDirectory == null) {
+      sysEnv.DNSLogDirectory = "/tmp";
+    }
     return asyncblock(function(flow) {
-      var config, deployMode, options;
+      var config, options;
 
-      deployMode = sysEnv.DNSDeployMode;
+      global.deployMode = sysEnv.DNSDeployMode;
       exec("java -jar ../../lib/dns-config-client.jar -m " + deployMode + " -c acas -d 2>/dev/null", flow.add());
       config = flow.wait();
       if (config.indexOf("It=works") > -1) {
@@ -64,20 +70,20 @@
         if (error != null) {
           return console.log("Parsing DNS conf service output failed: " + error);
         } else {
-          dnsconf.acas.api.enableSpecRunner = true;
+          dnsconf.enableSpecRunner = true;
           switch (global.deployMode) {
             case "Dev":
-              dnsconf.acas.api.hostname = "acas-d";
+              dnsconf.hostname = "acas-d.dart.corp";
               break;
             case "Test":
-              dnsconf.acas.api.hostname = "acas-t";
+              dnsconf.hostname = "acas-t.dart.corp";
               break;
             case "Stage":
-              dnsconf.acas.api.hostname = "acas-s";
+              dnsconf.hostname = "acas-s.dart.corp";
               break;
             case "Prod":
-              dnsconf.acas.api.hostname = "acas";
-              dnsconf.acas.api.enableSpecRunner = false;
+              dnsconf.hostname = "acas.dart.corp";
+              dnsconf.enableSpecRunner = false;
           }
           jdbcParts = dnsconf.acas.jdbc.url.split(":");
           dnsconf.acas.api.db = {};

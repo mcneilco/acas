@@ -6,10 +6,9 @@ _.mixin({deepExtend: underscoreDeepExtend(_)})
 fs = require 'fs'
 flat = require 'flat'
 
-global.deployMode = "Dev"
-sysEnv = process.env
-global.deployMode = "Dev"
+global.deployMode= "Dev" # This may be overridden in getConfServiceVars()
 
+sysEnv = process.env
 
 csUtilities.getConfServiceVars sysEnv, (confVars) ->
 
@@ -39,6 +38,7 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 					writeJSONFormat allConf
 					writeClientJSONFormat allConf
 					writePropertiesFormat allConf
+
 
 writeJSONFormat = (conf) ->
 	fs.writeFile "./compiled/conf.js", "exports.all="+JSON.stringify(conf)+";"

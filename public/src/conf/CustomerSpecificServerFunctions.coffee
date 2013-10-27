@@ -31,8 +31,14 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	properties = require "properties"
 	asyncblock = require('asyncblock');
 	exec = require('child_process').exec;
+
+	unless sysEnv.DNSDeployMode?
+		sysEnv.DNSDeployMode = "Dev"
+	unless sysEnv.DNSLogDirectory?
+		sysEnv.DNSLogDirectory = "/tmp"
+
 	asyncblock((flow) ->
-		deployMode = sysEnv.DNSDeployMode
+		global.deployMode = sysEnv.DNSDeployMode
 		exec("java -jar ../../lib/dns-config-client.jar -m "+deployMode+" -c acas -d 2>/dev/null", flow.add())
 		config = flow.wait()
 		if config.indexOf("It=works") > -1
@@ -47,14 +53,14 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 			if error?
 				console.log "Parsing DNS conf service output failed: "+error
 			else
-				dnsconf.acas.api.enableSpecRunner = true
+				dnsconf.enableSpecRunner = true
 				switch(global.deployMode)
-					when "Dev" then dnsconf.acas.api.hostname = "acas-d"
-					when "Test" then dnsconf.acas.api.hostname = "acas-t"
-					when "Stage" then dnsconf.acas.api.hostname = "acas-s"
+					when "Dev" then dnsconf.hostname = "acas-d.dart.corp"
+					when "Test" then dnsconf.hostname = "acas-t.dart.corp"
+					when "Stage" then dnsconf.hostname = "acas-s.dart.corp"
 					when "Prod"
-						dnsconf.acas.api.hostname = "acas"
-						dnsconf.acas.api.enableSpecRunner = false
+						dnsconf.hostname = "acas.dart.corp"
+						dnsconf.enableSpecRunner = false
 				jdbcParts = dnsconf.acas.jdbc.url.split ":"
 				dnsconf.acas.api.db = {}
 				dnsconf.acas.api.db.location = jdbcParts[0]+":"+jdbcParts[1]+":"+jdbcParts[2]+":@"

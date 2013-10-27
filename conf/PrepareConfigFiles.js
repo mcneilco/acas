@@ -21,8 +21,6 @@
 
   sysEnv = process.env;
 
-  global.deployMode = "Dev";
-
   csUtilities.getConfServiceVars(sysEnv, function(confVars) {
     var configDir, options, substitutions;
 
