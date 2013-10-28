@@ -26,7 +26,7 @@ parseFullPKData <- function(request){
   
   request <- as.list(request)
   inputParameters <- request$inputParameters
-  inputParameters$assayDate <- as.Date(inputParameters$assayDate, format="%s")
+  inputParameters$assayDate <- as.character(as.Date(ISOdate(1970,1,1, hour=0) + as.numeric(inputParameters$assayDate)/1000, tz=""))
   inputParameters <- c(experimentMetaData = "", inputParameters)
   bioavailabilityIndex <- which(names(inputParameters)=="bioavailability")
   inputParameters <- c(inputParameters[1:bioavailabilityIndex - 1], list("", "rawData"=""), inputParameters[bioavailabilityIndex:length(inputParameters)])
