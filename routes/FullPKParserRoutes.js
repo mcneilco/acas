@@ -29,7 +29,6 @@
 
     request.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-    console.log(request);
     response.writeHead(200, {
       'Content-Type': 'application/json'
     });

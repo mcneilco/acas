@@ -24,7 +24,7 @@ exports.experimentById = (req, resp) ->
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistance.fullpath+"/experiments/"+req.params.id
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+req.params.id
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -34,7 +34,7 @@ exports.postExperiment = (req, resp) ->
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistance.fullpath+"/experiments"
+		baseurl = config.all.client.service.persistence.fullpath+"experiments"
 		request = require 'request'
 		request(
 				method: 'POST'
@@ -59,7 +59,7 @@ exports.putExperiment = (req, resp) ->
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistance.fullpath+"/experiments"
+		baseurl = config.all.client.service.persistence.fullpath+"experiments"
 		request = require 'request'
 		request(
 			method: 'PUT'

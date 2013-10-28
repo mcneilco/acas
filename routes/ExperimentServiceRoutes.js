@@ -29,7 +29,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistance.fullpath + "/experiments/" + req.params.id;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/" + req.params.id;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -44,7 +44,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistance.fullpath + "/experiments";
+      baseurl = config.all.client.service.persistence.fullpath + "experiments";
       request = require('request');
       return request({
         method: 'POST',
@@ -74,7 +74,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistance.fullpath + "/experiments";
+      baseurl = config.all.client.service.persistence.fullpath + "experiments";
       request = require('request');
       return request({
         method: 'PUT',
