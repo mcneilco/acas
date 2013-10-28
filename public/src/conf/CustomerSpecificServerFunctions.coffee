@@ -31,10 +31,12 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	properties = require "properties"
 	asyncblock = require('asyncblock');
 	exec = require('child_process').exec;
+	os = require 'os'
 
-	unless sysEnv.DNSDeployMode?
+
+	if typeof sysEnv.DNSDeployMode == "undefined"
 		sysEnv.DNSDeployMode = "Dev"
-	unless sysEnv.DNSLogDirectory?
+	if typeof sysEnv.DNSLogDirectory == "undefined"
 		sysEnv.DNSLogDirectory = "/tmp"
 
 	asyncblock((flow) ->
@@ -53,7 +55,12 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 			if error?
 				console.log "Parsing DNS conf service output failed: "+error
 			else
-				dnsconf.enableSpecRunner = true
+				if global.deployMode == "Prod"
+					dnsconf.enableSpecRunner = false
+				else
+					dnsconf.enableSpecRunner = true
+
+				#dnsconf.hostname = os.hostname()
 				switch(global.deployMode)
 					when "Dev" then dnsconf.hostname = "acas-d.dart.corp"
 					when "Test" then dnsconf.hostname = "acas-t.dart.corp"
@@ -61,6 +68,7 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 					when "Prod"
 						dnsconf.hostname = "acas.dart.corp"
 						dnsconf.enableSpecRunner = false
+
 				jdbcParts = dnsconf.acas.jdbc.url.split ":"
 				dnsconf.acas.api.db = {}
 				dnsconf.acas.api.db.location = jdbcParts[0]+":"+jdbcParts[1]+":"+jdbcParts[2]+":@"

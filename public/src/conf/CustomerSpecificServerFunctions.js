@@ -39,15 +39,16 @@
   };
 
   exports.getConfServiceVars = function(sysEnv, callback) {
-    var asyncblock, exec, properties;
+    var asyncblock, exec, os, properties;
 
     properties = require("properties");
     asyncblock = require('asyncblock');
     exec = require('child_process').exec;
-    if (sysEnv.DNSDeployMode == null) {
+    os = require('os');
+    if (typeof sysEnv.DNSDeployMode === "undefined") {
       sysEnv.DNSDeployMode = "Dev";
     }
-    if (sysEnv.DNSLogDirectory == null) {
+    if (typeof sysEnv.DNSLogDirectory === "undefined") {
       sysEnv.DNSLogDirectory = "/tmp";
     }
     return asyncblock(function(flow) {
@@ -70,7 +71,11 @@
         if (error != null) {
           return console.log("Parsing DNS conf service output failed: " + error);
         } else {
-          dnsconf.enableSpecRunner = true;
+          if (global.deployMode === "Prod") {
+            dnsconf.enableSpecRunner = false;
+          } else {
+            dnsconf.enableSpecRunner = true;
+          }
           switch (global.deployMode) {
             case "Dev":
               dnsconf.hostname = "acas-d.dart.corp";
