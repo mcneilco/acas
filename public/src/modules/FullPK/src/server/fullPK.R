@@ -45,9 +45,11 @@ parseFullPKData <- function(request){
     parserInput$reportFile <- request$reportFile
     parserResponse <- parseGenericData(parserInput)
     if (!interpretJSONBoolean(request$dryRunMode)) {
-      experiment <- fromJSON(getURL(paste0(racas::applicationSettings$serverPath, "experiments/codename/", parserResponse$results$experimentCode)))[[1]]
+      experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/codename/", 
+                                           parserResponse$results$experimentCode)))[[1]]
       moveFileToExperimentFolder(request$fileToParse, experiment, request$user, response$transactionId, 
-                                 racas::applicationSettings$fileServiceType, racas::applicationSettings$externalFileService)
+                                 racas::applicationSettings$server.service.external.file.type,
+                                 racas::applicationSettings$server.service.external.file.url)
     }
     parserResponse$results <- c(parserResponse$results,preProcessorCall$preProcessorResponse)
     return(parserResponse)

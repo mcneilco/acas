@@ -130,7 +130,7 @@ registerReportFile <- function(reportFilePath, batchNameList, reportFileSummary,
            entityCorpName = batchCode))
   })
   
-  tryCatch({response <- postForm(configList$reportRegistrationURL,
+  tryCatch({response <- postForm(configList$server.service.external.report.registration.url,
                                  FILE=fileUpload(filename = reportFilePath),
                                  PAYLOAD_TYPE="JSON",
                                  PAYLOAD=toJSON(annotationList))
@@ -188,7 +188,7 @@ deleteSourceFile <- function(experiment, configList) {
       fileToDelete <- valuesToDelete[[1]]$fileValue
       tryCatch({
         response <- getURL(
-          paste0(configList$externalFileService, "deactivate/", fileToDelete),
+          paste0(configList$server.service.external.file.service.url, "deactivate/", fileToDelete),
           customrequest='DELETE',
           httpheader=c('Content-Type'='application/json'))
       }, error = function(e) {

@@ -42,6 +42,7 @@
 
 require(racas)
 source("public/src/conf/customFunctions.R")
+source("public/src/conf/genericDataParserConfiguration.R")
 
 #####
 # Define Functions
@@ -290,7 +291,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
     isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE)
   )
   
-  if (!is.null(configList$includeProject) && configList$includeProject == "TRUE") {
+  if (!is.null(configList$client.include.project) && configList$client.include.project == "TRUE") {
     expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
   }
   if (length(formatSettings) > 0) {
@@ -422,14 +423,13 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, serverPath, curveNames, testMode = FALSE, replaceFakeCorpBatchId="") {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="") {
   # Valides the calculated results (for now, this only validates the Corporate Batch Ids)
   #
   # Args:
   #	  calculatedResuluts:	      A "data.frame" of the calculated results
   #   testMode:                 A boolean
   #   dryRun:                   A boolean
-  #   serverPath:               Path to ACAS roo services
   #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #   curveNames:               A character vector of curveNames that will be needed as extra valueKinds
   #
@@ -470,7 +470,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, serverPath, cur
   neededValueKinds <- c(calculatedResults$"Result Type", curveNames)
   neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
   
-  validateValueKinds(neededValueKinds, neededValueKindTypes, serverPath, dryRun)
+  validateValueKinds(neededValueKinds, neededValueKindTypes, dryRun)
   
   # Return the validated results
   return(calculatedResults)
@@ -589,13 +589,12 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   # Return classRow
   return(classRow)
 }
-validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPath, dryRun) {
+validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   # Checks that column headers are valid valueKinds (or creates them if they are new)
   #
   # Args:
   #   neededValueKinds:       A character vector listed column headers
   #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds
-  #   serverPath:             The path to the acas server
   #
   # Returns:
   #	  NULL
@@ -603,7 +602,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
   require(rjson)
   require(RCurl)
   
-  currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
+  currentValueKindsList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds")))
   if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
@@ -641,7 +640,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
     if (!dryRun) {
       # Create the new valueKinds, using the correct valueType
       # TODO: also check that valueKinds have the correct valueType when being loaded a second time
-      valueTypesList <- fromJSON(getURL(paste0(serverPath, "valuetypes")))
+      valueTypesList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuetypes")))
       valueTypes <- sapply(valueTypesList, getElement, "typeName")
       valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
       valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob"))]
@@ -654,7 +653,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
                                     SIMPLIFY = F, USE.NAMES = F)
       tryCatch({
         response <- getURL(
-          paste0(serverPath, "valuekinds/jsonArray"),
+          paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds/jsonArray"),
           customrequest='POST',
           httpheader=c('Content-Type'='application/json'),
           postfields=toJSON(newValueKindsUpload))
@@ -1086,14 +1085,14 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
   }
   
   tryCatch({
-    protocolList <- fromJSON(getURL(paste0(configList$serverPath, "protocols?FindByProtocolName&protocolName=", URLencode(protocolName, reserved = TRUE))))
+    protocolList <- fromJSON(getURL(paste0(configList$client.service.persistence.fullpath, "protocols?FindByProtocolName&protocolName=", URLencode(protocolName, reserved = TRUE))))
   }, error = function(e) {
     stop("There was an error in accessing the protocol. Please contact your system administrator.")
   })
   
   # If no protocol with the given name exists, warn the user
   if (length(protocolList)==0) {
-    allowedCreationFormats <- configList$allowProtocolCreationWithFormats
+    allowedCreationFormats <- configList$server.allow.protocol.creation.formats
     allowedCreationFormats <- unlist(strsplit(allowedCreationFormats, ","))
     if (formFormat %in% allowedCreationFormats || forceProtocolCreation) {
       warning(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
@@ -1104,7 +1103,7 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
     protocol <- NA
   } else {
     # If the protocol does exist, get the full version
-    protocol <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/", protocolList[[1]]$id))))
+    protocol <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "protocols/", protocolList[[1]]$id))))
   }
   return(protocol)
   
@@ -1126,7 +1125,7 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
   require('rjson')
   
   tryCatch({
-    experimentList <- fromJSON(getURL(paste0(configList$serverPath, "experiments?FindByExperimentName&experimentName=", URLencode(experimentName, reserved=TRUE))))
+    experimentList <- fromJSON(getURL(paste0(configList$client.service.persistence.fullpath, "experiments?FindByExperimentName&experimentName=", URLencode(experimentName, reserved=TRUE))))
   }, error = function(e) {
     stop("There was an error checking if the experiment already exists. Please contact your system administrator.")
   })
@@ -1143,7 +1142,7 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
           experimentList <- correctExperiments
         }
       }
-      protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/", experimentList[[1]]$protocol$id))))
+      protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "protocols/", experimentList[[1]]$protocol$id))))
     }, error = function(e) {
       stop("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
     })
@@ -1291,14 +1290,14 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   
   # Save the experiment to the server
   experiment <- saveExperiment(experiment)
-  experiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/", experiment$id))))
+  experiment <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "experiments/", experiment$id))))
   return(experiment)
 }
 validateProject <- function(projectName, configList) {
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(configList$projectService)
+  projectList <- getURL(paste0(configList$client.host, ":", configList$client.port, configList$client.service.project.path))
   }, error = function(e) {
     stop("The project service did not respond correctly, contact your system administrator")
   })
@@ -1324,7 +1323,7 @@ validateScientist <- function(scientistName, configList) {
   require('rjson')
   
   tryCatch({
-    response <- getURL(URLencode(paste0(configList$nameValidationService, "/", scientistName)))
+    response <- getURL(URLencode(paste0(configList$client.host, ":", configList$client.port, configList$client.service.users.path, "/", scientistName)))
     if (response == "") {
       errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
       return("")
@@ -1343,7 +1342,7 @@ validateScientist <- function(scientistName, configList) {
   
   return(username)
 }
-uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
+uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
                               recordedBy, replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning="subject", 
                               includeTreatmentGroupData, inputFormat) {
@@ -1372,10 +1371,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                      numberOfLabels=max(subjectData$treatmentGroupID)),
                                        use.names=FALSE)
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$server.service.external.file.type, configList$server.service.external.file.service.url)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(subjectData$"Corporate Batch ID")
-    if (configList$useCustomReportRegistration == "true") {
+    if (!is.null(configList$server.service.external.report.registration.url)) {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
       addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
@@ -1674,7 +1673,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
 }
 uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
-                       serverPath,protocol,experiment, fileStartLocation, configList, reportFilePath, 
+                       protocol,experiment, fileStartLocation, configList, reportFilePath, 
                        reportFileSummary, recordedBy, annotationType) {
   # Uploads all the data to the server
   # 
@@ -1712,10 +1711,12 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     treatmentGroupCodeNameNumber <- 1
   }
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, 
+                                                   configList$server.service.external.file.type, 
+                                                   configList$server.service.external.file.service.url)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(calculatedResults$"Corporate Batch ID")
-    if (configList$useCustomReportRegistration) {
+    if (!is.null(configList$server.service.external.report.registration.url)) {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
       addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
@@ -1974,7 +1975,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   return(NULL)
 }
-runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serverPath,
+runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
                     configList, testMode = FALSE, recordedBy) {
   # This function runs all of the functions within the error handling
@@ -2016,12 +2017,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
   
-  if ("stateGroupsScript" %in% names(configList)) {
-    source(configList$stateGroupsScript)
-    formatSettings <- getFormatSettings()
-  } else {
-    formatSettings <- list()
-  }
+  formatSettings <- getFormatSettings()
   
   validatedMetaDataList <- validateMetaData(metaData, configList, formatSettings)
   validatedMetaData <- validatedMetaDataList$validatedMetaData
@@ -2071,7 +2067,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(calculatedResults,
-                                                 dryRun, serverPath, curveNames, testMode=testMode, 
+                                                 dryRun, curveNames, testMode=testMode, 
                                                  replaceFakeCorpBatchId=replaceFakeCorpBatchId)
   
   # Grab the Raw Results Section
@@ -2121,7 +2117,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Delete any old data under the same experiment name (delete and reload)
   if(!dryRun && !newExperiment && errorFree) {
-    if(configList$deleteFilesOnReload == "true") {
+    if(configList$server.delete.files.on.reload == "true") {
       deleteSourceFile(experiment, configList)
       deleteAnnotation(experiment, configList)
     }
@@ -2143,20 +2139,25 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     reportFileSummary <- paste0(validatedMetaData$'Protocol Name', " - ", validatedMetaData$'Experiment Name')
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
-                        serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
+                        experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
                         stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
                         replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning, includeTreatmentGroupData, inputFormat)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
-                 xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
+                 xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
                  reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType)
     }
   }
   
-  if (!is.null(configList$resultViewerProtocolPrefix)) {
-    viewerLink <- paste0(configList$resultViewerProtocolPrefix, URLencode(validatedMetaData$"Protocol Name", reserved=TRUE), 
-                         configList$resultViewerExperimentPrefix, URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
+  if (!is.null(configList$client.service.result.viewer.experiment.parameter)) {
+    viewerLink <- paste0(configList$client.service.result.viewer.host, ":",
+                         configList$client.service.result.viewer.port,
+                         configList$client.service.result.viewer.path, "&",
+                         configList$client.service.result.viewer.protocol.parameter, "=",
+                         URLencode(validatedMetaData$"Protocol Name", reserved=TRUE), "&",
+                         configList$client.service.result.viewer.experiment.parameter, "=",
+                         URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
   } else {
     viewerLink <- NULL
   }
@@ -2295,9 +2296,6 @@ parseGenericData <- function(request) {
   require('compiler')
   enableJIT(3)
   options("scipen"=15)
-    
-  # Info (now in config file at SeuratAddOns/public/src/conf/configurationNode.js)
-  #serverPath <- "http://host3.labsynch.com:8080/labseer"
   
   # This is used for outputting the JSON rather than sending it to the server
   developmentMode <- FALSE
@@ -2317,9 +2315,8 @@ parseGenericData <- function(request) {
     testMode <- FALSE
   }
   
-  # Set the global for the library
+  # Set configList to the applicationSettings (shorter to type)
   configList <- racas::applicationSettings
-  lsServerURL <- configList$serverPath
   
   experiment <- NULL
   
@@ -2332,7 +2329,6 @@ parseGenericData <- function(request) {
   # Run the function and save output (value), errors, and warnings
   loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
                                      reportFilePath = reportFilePath,
-                                     serverPath = lsServerURL,
                                      dryRun = dryRun,
                                      developmentMode = developmentMode,
                                      configList=configList, 
@@ -2345,7 +2341,7 @@ parseGenericData <- function(request) {
     loadResult$value <- NULL
   } else if (sum(class(loadResult$value)=="SQLException")>0) {
     errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
-                                         configList$databaseLocation,configList$serverAddress,configList$databasePort, ":", 
+                                         configList$server.database.host,configList$server.database.port, ":", 
                                          as.character(loadResult$value), ". Please contact your system administrator.")))
     loadResult$value <- NULL
   } else if (sum(class(loadResult$value)=="error")>0 || class(loadResult$value)!="list") {
