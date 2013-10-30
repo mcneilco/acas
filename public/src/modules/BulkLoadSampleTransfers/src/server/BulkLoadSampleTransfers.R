@@ -64,6 +64,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   
   interactions <- data.frame()
   
+  # This is a bit slow... 9.5 seconds for 700 rows
   for (i in 1:nrow(logFile)) {
     logRow <- logFile[i, ]
     
@@ -161,11 +162,13 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
                            includesOthers=TRUE))
   
   # idColumn may change to organize these correctly
+  #9.7 sec (736 transfers) (1056 states)
   stateIdAndVersion <- saveStatesFromLongFormat(containerdf, "container", stateGroups, idColumn="containerID", recordedBy, lsTransaction)
   
   containerdf$stateID <- stateIdAndVersion$entityStateId
   containerdf$stateVersion <- stateIdAndVersion$entityStateVersion
   
+  #29.8 sec (736 transfers) (3168 values)
   savedValues <- saveValuesFromLongFormat(containerdf, "container", stateGroups, lsTransaction, recordedBy, stateGroupIndices = 1)
   
   #### interaction Saving
@@ -185,6 +188,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   }
   interactionList <- mlply(interactions, .fun = createLocalContainerContainerItx)
   names(interactionList) <- NULL
+  # 26.15 sec (704 interactions)
   savedInteractions <- saveAcasEntities(interactionList, "itxcontainercontainers")
   interactions$itxContainerContainerID <- sapply(savedInteractions, getElement, "id")
   interactions$stateID <- 1:nrow(interactions)
@@ -201,6 +205,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
                            valueKinds=c("date transferred", "amount transferred", "protocol", "source file"),
                            includesOthers=TRUE))
   
+  # 8 seconds (704 interactions)
   stateIdAndVersion <- saveStatesFromLongFormat(interactiondf, "itxcontainercontainer", stateGroups, idColumn="itxContainerContainerID", recordedBy, lsTransaction)
   
   interactiondf$stateID <- stateIdAndVersion$entityStateId
@@ -211,6 +216,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   interactiondf$unitType <- "volume"
   interactiondf$publicData <- TRUE
   
+  # 22.5 seconds (2816 values)
   savedValues <- saveValuesFromLongFormat(interactiondf, "itxcontainercontainer", stateGroupIndices = 1, lsTransaction=lsTransaction, recordedBy = recordedBy)
   
   summaryInfo$info <- c(summaryInfo$info,
@@ -232,9 +238,10 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
   ))
 }
 saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, logFilePath) {
+  # Saves new wells and their interactions with plates
   require(plyr)
   
-  # Saves new wells and their interactions with plates
+  
   
   savedNewPlates <- registerNewPlates(newBarcodeList, lsTransaction=lsTransaction, recordedBy=recordedBy, sourceFile=logFilePath)
   
@@ -279,6 +286,7 @@ saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, log
                       lsTransaction=lsTransaction, recordedBy=recordedBy)
     names(wellList) <- NULL
     
+    # 5.66 seconds maybe a problem later?
     savedWells <- saveContainers(wellList)
     
     newWells$wellId <- sapply(savedWells, function(x) x$id)
@@ -295,6 +303,7 @@ saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, log
                           lsTransaction=lsTransaction, recordedBy=recordedBy)
     names(interactions) <- NULL
     
+    # 25.68 seconds
     savedContainerContainerInteractions <- saveContainerContainerInteractions(interactions)
     
   }
@@ -392,52 +401,39 @@ normalizeWellNames <- function(wellName) {
 MarkContainersStatusIgnored <- function(idVector) {
   # Get the containers
   idVector <- unique(idVector)
-  containerList <- lapply(idVector, function(x) fromJSON(getURL(paste0(racas::applicationSettings$serverPath, "containers/", x))))
+  idList <- lapply(idVector, function(x) list(id=x))
   
-  # Get the containerStates and set the "container" value in each
-  containerStates <- unlist(lapply(containerList, function(container) {
-    lsStates <- container$lsStates
-    container$lsStates <- NULL
-    lsStates <- lapply(lsStates, function(lsState) {lsState$container <- container; return(lsState)})
-    return(lsStates)
-  }), recursive = FALSE)
-                                   
-  # Get the containerValues and set the "containerState" value in each                            
-  containerValues <- unlist(lapply(containerStates, function(containerState) {
-    lsValues <- containerState$lsValues
-    containerState$lsValues <- NULL
-    lsValues <- lapply(lsValues, function(lsValue) {lsValue$lsState <- containerState; return(lsValue)})
-    return(lsValues)
-  }), recursive = FALSE)
-  
-  # Ignore containerValues
-  containerValues <- lapply(containerValues, function(x) {x$ignored <- TRUE; return(x)})
-                                   
-  #Maybe remove ignored ones...
-  # Ignore containerStates, and remove values
-  containerStatesSimplified <- lapply(containerStates, function(x) {x$lsValues <- NULL; x$ignored <- TRUE; return(x)})  
-  
-  # Update containerStates
   response <- getURL(
-    paste(racas::applicationSettings$serverPath, "containerstates/jsonArray", sep=""),
-    customrequest='PUT',
+    paste0(racas::applicationSettings$serverPath, "containerstates/findValidContainerStates/jsonArray"),
+    customrequest='POST',
     httpheader=c('Content-Type'='application/json'),
-    postfields=toJSON(containerStatesSimplified))
+    postfields=toJSON(idList))
   if (grepl("^<",response)) {
-    stop (paste("The loader was unable to update containerStates. Instead, it got this response:", response))
+    stop("Server failed to respond to requests for valid container states")
   }
   containerStates <- fromJSON(response)
   
-  # Update containerValues
-  response <- getURL(
-    paste(racas::applicationSettings$serverPath, "containervalues/jsonArray", sep=""),
-    customrequest='PUT',
-    httpheader=c('Content-Type'='application/json'),
-    postfields=toJSON(containerValues))
-  if (grepl("^<",response)) {
-    stop (paste("The loader was unable to update containerValues. Instead, it got this response:", response))
+  # Ignore containerStates
+  # Remove values and states that are already ignored
+  alreadyIgnoredStates <- vapply(containerStates, function(x) {x$ignored}, c(TRUE))
+  testCompoundStates <- vapply(containerStates, function(x) {x$lsKind=="test compound content"}, c(TRUE))
+  containerStatesSimplified <- lapply(containerStates, function(x) {x$lsValues <- NULL; x$ignored <- TRUE; return(x)})
+  containerStatesSimplified <- containerStatesSimplified[testCompoundStates & !alreadyIgnoredStates]
+  
+  # Ignore containerStates
+  #52.6 sec (700 rows)
+  ignoreContainerStates <- function(entities, acasCategory= "containerstates", lsServerURL = racas::applicationSettings$serverPath) {
+    response <- getURL(
+      paste(lsServerURL, acasCategory, "/ignore/jsonArray", sep=""),
+      customrequest='PUT',
+      httpheader=c('Content-Type'='application/json'),
+      postfields=toJSON(entities))
+    if (grepl("^<",response)) {
+      stop(paste0("The loader was unable to ignore your ", acasCategory, ". Instead, it got this response: ", response))
+    }
   }
-  containerValues <- fromJSON(response)
+  
+  ignoreContainerStates(containerStatesSimplified)
 }
 convertVolumes <- function (x, from, to) {
   if (from=="nL" && to=="uL") {

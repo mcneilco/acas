@@ -417,8 +417,6 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   columnClasses <- lapply(subjectData, class)
   for (i in 1:length(columnClasses)) {
     if (columnClasses[[i]]=="logical") {
-      subjectData <<- subjectData
-      i <<- i
       subjectData[[names(columnClasses)[i]]] <- ifelse(subjectData[[names(columnClasses)[i]]],"yes","no")
     }
   }
@@ -729,6 +727,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
                                                          lsTransaction = lsTransaction,
                                                          recordedBy = recordedBy)
   }
+  
   return(lsTransaction)
 }
 validateInputFiles <- function(dataDirectory) {
@@ -1169,7 +1168,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
                                wellType = resultTable$wellType,
                                barcode = resultTable$barcode,
                                maxTime = resultTable$maxTime)
-resultTable$startReadMax
+  
   aggregateReplicates <- "no"
   if (aggregateReplicates == "across plates") {
     treatmentGroupData <- batchDataTable[,list(groupMean = mean(values), stDev = sd(values), n=length(values)),  by=list(batchName,fluorescent,concentration,concUnit)]
