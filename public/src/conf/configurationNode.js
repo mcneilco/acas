@@ -17,7 +17,7 @@
 		exports.serverConfigurationParams.configuration.password = "acas_dev_password";
 		exports.serverConfigurationParams.configuration.serverPath = "http://suse.labsynch.com:8080/acas/";
 		exports.serverConfigurationParams.configuration.enableSpecRunner = true;
-		exports.serverConfigurationParams.configuration.requireLogin = false;
+		exports.serverConfigurationParams.configuration.requireLogin = true;
 // For preferred ID service
 		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://localhost:3000/api/preferredBatchId";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "SeuratCmpdReg";
