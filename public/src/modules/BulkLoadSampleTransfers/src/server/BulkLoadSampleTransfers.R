@@ -403,77 +403,37 @@ MarkContainersStatusIgnored <- function(idVector) {
   idVector <- unique(idVector)
   idList <- lapply(idVector, function(x) list(id=x))
   
-  containerList <- getURL(
-    paste0(racas::applicationSettings$serverPath, "containers/findByIdsDTO/jsonArray"),
+  response <- getURL(
+    paste0(racas::applicationSettings$serverPath, "containerstates/findValidContainerStates/jsonArray"),
     customrequest='POST',
     httpheader=c('Content-Type'='application/json'),
     postfields=toJSON(idList))
-  
   if (grepl("^<",response)) {
-    stop ("Server failed to respond to requests for containers")
+    stop("Server failed to respond to requests for valid container states")
   }
-  containerList <- fromJSON(containerList)
+  containerStates <- fromJSON(response)
   
-  #61.367 sec (700 rows)
-  #containerList <- lapply(idVector, function(x) fromJSON(getURL(paste0(racas::applicationSettings$serverPath, "containers/", x))))
-    
-  # Get the containerStates and set the "container" value in each
-  containerStates <- unlist(lapply(containerList, function(container) {
-    lsStates <- container$lsStates
-    container$lsStates <- NULL
-    lsStates <- lapply(lsStates, function(lsState) {lsState$container <- container; return(lsState)})
-    return(lsStates)
-  }), recursive = FALSE)
-                                   
-  # Get the containerValues and set the "containerState" value in each                            
-#   containerValues <- unlist(lapply(containerStates, function(containerState) {
-#     lsValues <- containerState$lsValues
-#     containerState$lsValues <- NULL
-#     lsValues <- lapply(lsValues, function(lsValue) {lsValue$lsState <- containerState; return(lsValue)})
-#     return(lsValues)
-#   }), recursive = FALSE)
-  
-  # Ignore containerValues
-#   containerValues <- lapply(containerValues, function(x) {x$ignored <- TRUE; return(x)})
-                                   
   # Ignore containerStates
   # Remove values and states that are already ignored
+  alreadyIgnoredStates <- vapply(containerStates, function(x) {x$ignored}, c(TRUE))
+  testCompoundStates <- vapply(containerStates, function(x) {x$lsKind=="test compound content"}, c(TRUE))
   containerStatesSimplified <- lapply(containerStates, function(x) {x$lsValues <- NULL; x$ignored <- TRUE; return(x)})
-  alreadyIgnoredStates <- vapply(containerStatesSimplified, function(x) {x$ignored}, c(TRUE))
-  containerStatesSimplified <- containerStatesSimplified[!alreadyIgnoredStates]
+  containerStatesSimplified <- containerStatesSimplified[testCompoundStates & !alreadyIgnoredStates]
   
-  # Update containerStates
+  # Ignore containerStates
   #52.6 sec (700 rows)
-  replaceAcasEntitiesInternal <- function(entities, acasCategory, lsServerURL = racas::applicationSettings$serverPath) {
+  ignoreContainerStates <- function(entities, acasCategory= "containerstates", lsServerURL = racas::applicationSettings$serverPath) {
     response <- getURL(
-      paste(racas::applicationSettings$serverPath, acasCategory, "/jsonArray", sep=""),
+      paste(lsServerURL, acasCategory, "/ignore/jsonArray", sep=""),
       customrequest='PUT',
       httpheader=c('Content-Type'='application/json'),
       postfields=toJSON(entities))
     if (grepl("^<",response)) {
-      stop (paste0("The loader was unable to update your " acasCategory, ". Instead, it got this response: ", response))
+      stop(paste0("The loader was unable to ignore your ", acasCategory, ". Instead, it got this response: ", response))
     }
   }
   
-  replaceAcasEntities <- function(entities, acasCategory, lsServerURL = racas::applicationSettings$serverPath) {
-    if (length(entities) > 150) {
-      replaceAcasEntitiesInternal(entities[1:100], acasCategory, lsServerURL)
-      replaceAcasEntities(entities[101:length(entities)], acasCategory, lsServerURL)
-    } else {
-      replaceAcasEntitiesInternal(entities, acasCategory, lsServerURL)
-    }
-  }
-  
-#   # Update containerValues
-#   response <- getURL(
-#     paste(racas::applicationSettings$serverPath, "containervalues/jsonArray", sep=""),
-#     customrequest='PUT',
-#     httpheader=c('Content-Type'='application/json'),
-#     postfields=toJSON(containerValues))
-#   if (grepl("^<",response)) {
-#     stop (paste("The loader was unable to update containerValues. Instead, it got this response:", response))
-#   }
-#   containerValues <- fromJSON(response)
+  ignoreContainerStates(containerStatesSimplified)
 }
 convertVolumes <- function (x, from, to) {
   if (from=="nL" && to=="uL") {
