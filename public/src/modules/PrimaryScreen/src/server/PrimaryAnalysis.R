@@ -204,7 +204,7 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, e
   require('gridExtra')
   require('data.table')
   require('reshape')
-  source("public/src/modules/PrimaryScreen/src/server/PrimaryAnalysisPlots.R")
+  source("public/src/modules/PrimaryScreen/src/server/primaryAnalysisPlots.R")
   
   allResultTable <- resultTable
   resultTable <- resultTable[!resultTable$fluorescent,]
@@ -379,7 +379,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   #save(subjectData, experimentId, file="test.Rda")
   originalNames <- names(subjectData)
   subjectData <- as.data.frame(subjectData)
-  names(subjectData) <- c('barcode', 'well name', 'fileName', 'maximum', 'startReadMax', 'endReadMax', 'minimum', 'startReadMin', 'endReadMin' 'fluorescent', 'timePoints', 'fluorescencePoints', 'batchCode', 'Dose', 'DoseUnit','well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold')
+  names(subjectData) <- c('barcode', 'well name', 'fileName', 'maximum', 'startReadMax', 'endReadMax', 'minimum', 'startReadMin', 'endReadMin', 'fluorescent', 'timePoints', 'fluorescencePoints', 'batchCode', 'Dose', 'DoseUnit','well type', 'transformed efficacy', 'normalized efficacy', 'index', 'max time','over efficacy threshold')
   
   stateGroups <- list(list(entityKind = "subject",
                            stateType = "data", 
@@ -396,7 +396,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
                       list(entityKind = "subject",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", "normalized efficacy", "over efficacy threshold", "fluorescencePoints","timePoints"),
+                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", "normalized efficacy", "over efficacy threshold", "fluorescencePoints","timePoints"), #TODO: add "max time"
                            includesOthers = FALSE,
                            includesCorpName = FALSE),
                       list(entityKind = "analysis group",
@@ -436,6 +436,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   
   makeLongData <- function(entityData, resultTypes, splitTreatmentGroupsBy) {
     library('reshape')
+    library('gdata')
     
     entityData$entityID <- seq(1,nrow(entityData))
     entityData$treatmentGroupID <- do.call(paste,entityData[,splitTreatmentGroupsBy])
@@ -997,32 +998,30 @@ getExperimentParameters <- function(experiment) {
 #     return(stringValue)
 #   }
   controlStates <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment controls"]
+  flattenedValues <- ldply(controlStates, function(x) {
+    ldply(x$lsValues, function(y, x) {
+      output <- as.data.frame(y, stringsAsFactors=FALSE)
+      output$stateId <- x$id
+      output$stateKind <- x$lsKind
+      return(output)
+    }, x=x)
+  })
   
-  # TODO: probably just turn all the states into a data frame, get rid of this madness
-  for (state in controlStates) {
-    for (value in state$lsValues) {
-      if (!is.null(value$stringValue)) {
-        if (value$stringValue == "positive control") {
-          for (value in state$lsValues) {
-            if (!is.null(value$codeValue)) {
-              positiveControl <- value$codeValue
-            }
-          }
-        } else if (value$stringValue == "negative control") {
-          for (value in state$lsValues) {
-            if (!is.null(value$codeValue)) {
-              negativeControl <- value$codeValue
-            }
-          }
-        }
-      }
-    }
+  getBatchCodeForControl <- function(flattenedValues, controlType) {
+    controlStateId <- flattenedValues[!is.na(flattenedValues$stringValue) & flattenedValues$stringValue == controlType, ]$stateId
+    control <- flattenedValues[flattenedValues$stateId == controlStateId & flattenedValues$lsKind == "batch code", ]$codeValue
+    return(control)
   }
+  
+  positiveControl <- getBatchCodeForControl(flattenedValues, "positive control")
+  negativeControl <- getBatchCodeForControl(flattenedValues, "negative control")
+  agonist <- getBatchCodeForControl(flattenedValues, "agonist")
   
   return(list(efficacyThreshold=effThreshold,
               transformation=transformation, 
               positiveControl=positiveControl, 
-              negativeControl=negativeControl))
+              negativeControl=negativeControl,
+              agonist=agonist))
 }
 getExperimentById <- function(experimentId, configList) {
   # Gets experiment given an id
@@ -1137,7 +1136,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   
   batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
+  
   resultTable$wellType <- getWellTypes(resultTable$batchName, parameters$positiveControl, parameters$negativeControl)
+  
+  # Remove agonist compounds (TODO: needs to be modified to include concentration for fructose)
+  resultTable <- resultTable[!(resultTable$batchName == parameters$agonist)]
   
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformation)

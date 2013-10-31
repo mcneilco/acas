@@ -2,8 +2,10 @@
 
 #     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
 #source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
-require(racas)
 require(RCurl)
+require(rjson)
+require(racas)
+
 lsServerURL <- racas::applicationSettings$serverPath
 
 ## example of creating a protocol with discrete parts 
@@ -52,7 +54,7 @@ protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = l
 protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
                           lsType = "codeValue",
                           lsKind = "batch code",
-                          codeValue = "CRA-000399-1")
+                          codeValue = "FL0073900-1-1")
 
 protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
                           lsType = "numericValue",
@@ -77,7 +79,7 @@ protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = l
 protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
                           lsType = "codeValue",
                           lsKind = "batch code",
-                          codeValue = "CRA-000396-1")
+                          codeValue = "FL0073895-1-1")
 
 protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
                           lsType = "numericValue",
@@ -116,6 +118,31 @@ protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction 
                           lsType="metadata", 
                           lsKind="experiment controls", 
                           comments="")                   
+#################################################################################################
+############################# BEGIN block of experiment experimental parameters - controls #######################
+experimentValues <- list()
+experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
+                                                                   lsType = "stringValue",
+                                                                   lsKind = "control type",
+                                                                   stringValue = "agonist")
+
+experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
+                                                                   lsType = "codeValue",
+                                                                   lsKind = "batch code",
+                                                                   codeValue = "FL0073897-1-1")
+
+experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
+                                                                   lsType = "numericValue",
+                                                                   lsKind = "tested concentration",
+                                                                   numericValue = 0,
+                                                                   valueUnit = "uM")
+
+experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
+                                                                        experimentValues=experimentValues, 
+                                                                        recordedBy="userName", 
+                                                                        lsType="metadata", 
+                                                                        lsKind="experiment controls", 
+                                                                        comments="")
 #################################################################################################
 
 ############################# BEGIN block of protocol analysis parameters #######################
@@ -192,7 +219,8 @@ protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction 
 ### Save the protocol object #########
 protocol <- createProtocol(	lsTransaction = lsTransaction, 
 							shortDescription="primary analysis",  
-							recordedBy="username", 
+							recordedBy="username",
+                            codeName="PROT-00000034",
 							protocolLabels=protocolLabels,
 							protocolStates=protocolStates)
 

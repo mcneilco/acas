@@ -1,11 +1,12 @@
 # Code to set up basic experiment
 
 #     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
+require(Rcurl)
+require(rsjon)
 require(racas)
-require(RCurl)
 lsServerURL <- racas::applicationSettings$serverPath
 
-
+#71452
 ## example of creating a experiment with discrete parts 
 
 lsTransaction <- createLsTransaction(comments="primary analysis experiment transactions")$id
@@ -67,7 +68,7 @@ experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
                           lsType = "codeValue",
                           lsKind = "batch code",
-                          codeValue = "CRA-025998-1")
+                          codeValue = "FL0073900-1-1")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
                           lsType = "numericValue",
@@ -92,7 +93,7 @@ experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
                           lsType = "codeValue",
                           lsKind = "batch code",
-                          codeValue = "CRA-025996-1")
+                          codeValue = "FL0073895-1-1")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
                           lsType = "numericValue",
@@ -130,7 +131,33 @@ experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransa
                           recordedBy="userName", 
                           lsType="metadata", 
                           lsKind="experiment controls", 
-                          comments="")                   
+                          comments="")    
+
+#################################################################################################
+############################# BEGIN block of experiment experimental parameters - controls #######################
+experimentValues <- list()
+experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
+                                                                   lsType = "stringValue",
+                                                                   lsKind = "control type",
+                                                                   stringValue = "agonist")
+
+experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
+                                                                   lsType = "codeValue",
+                                                                   lsKind = "batch code",
+                                                                   codeValue = "FL0073897-1-1")
+
+experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
+                                                                   lsType = "numericValue",
+                                                                   lsKind = "tested concentration",
+                                                                   numericValue = 0,
+                                                                   valueUnit = "uM")
+
+experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
+                                                                        experimentValues=experimentValues, 
+                                                                        recordedBy="userName", 
+                                                                        lsType="metadata", 
+                                                                        lsKind="experiment controls", 
+                                                                        comments="")
 #################################################################################################
 
 ############################# BEGIN block of experiment analysis parameters #######################
@@ -262,7 +289,7 @@ experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransa
 
 ## get the protocols
 fullProtocollist <- fromJSON(getURL(paste(lsServerURL, "protocols/",sep="")))
-testProtocolCodeName <- "PROT-00000002"
+testProtocolCodeName <- "PROT-00000034"
 protocolObjectArray <- fromJSON(getURL(paste(lsServerURL, "protocols/codename/", testProtocolCodeName,sep="")))
 fullProtocolObject <- fromJSON(getURL(paste(lsServerURL, "protocols/", protocolObjectArray[[1]]$id,sep="")))
 
