@@ -1,8 +1,8 @@
 # Code to set up basic experiment
 
 #     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
-require(Rcurl)
-require(rsjon)
+require(RCurl)
+require(rjson)
 require(racas)
 lsServerURL <- racas::applicationSettings$serverPath
 

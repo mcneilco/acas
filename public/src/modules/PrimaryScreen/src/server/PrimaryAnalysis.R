@@ -981,6 +981,8 @@ getExperimentParameters <- function(experiment) {
   # Returns:
   #   a list with efficacyThreshold, transformation, positiveControl, negativeControl
   
+  require('plyr')
+  
   experimentState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment analysis parameters"][[1]]
   transformationValue <- experimentState$lsValues[lapply(experimentState$lsValues,getElement,"lsKind")=="data transformation rule"][[1]]
   transformation <- transformationValue$stringValue
