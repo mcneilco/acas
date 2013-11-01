@@ -610,6 +610,13 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
   require(rjson)
   require(RCurl)
   
+  # Throw errors for words used with special meanings by the loader
+  internalReservedWords <- c("concentration", "time")
+  usedReservedWords <- internalReservedWords %in% neededValueKinds
+  if (any(usedReservedWords)) {
+    stop(paste0(sqliz(internalReservedWords[usedReservedWords]), " is reserved and cannot be used as a column header."))
+  }
+  
   currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
   if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
@@ -626,6 +633,12 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
   
   comparisonFrame <- merge(oldValueKindTypeFrame, currentValueKindTypeFrame, by.x = "oldValueKinds", by.y = "currentValueKinds")
   wrongValueTypes <- comparisonFrame$oldValueKindTypes != comparisonFrame$matchingValueTypes
+  
+  # Throw errors if any values are of types that cannot be entered in SEL
+  reservedValueKinds <- comparisonFrame$oldValueKinds[comparisonFrame$matchingValueTypes %in% c("codeValue", "fileValue", "urlValue", "blobValue")]
+  if (length(reservedValueKinds) > 0) {
+    stop(paste0("The column header ", sqliz(reservedValueKinds), " is reserved and cannot be used"))
+  }
   
   if(any(wrongValueTypes)) {
     problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
@@ -688,14 +701,12 @@ getExcelColumnFromNumber <- function(number) {
     return("none")
   }
   
-  alphabet <-c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", 
-               "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
   divisionResult <- floor((number-1)/26)
   remainder <- (number-1)%%26
   if (divisionResult > 0) {
-    return(paste0(getExcelColumnFromNumber(divisionResult),alphabet[remainder+1]))
+    return(paste0(getExcelColumnFromNumber(divisionResult),LETTERS[remainder+1]))
   } else {
-    return(alphabet[remainder+1])
+    return(LETTERS[remainder+1])
   }
 }
 extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
