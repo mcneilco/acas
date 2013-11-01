@@ -1,0 +1,19 @@
+require(RCurl)
+require(rjson)
+
+x <- readline("What is the experiment code? ")
+
+experiment <- fromJSON(getURL(paste0("http://acas:8080/acas/experiments/codename/", x)))[[1]]
+
+
+locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
+
+locationState <- locationState[[1]]
+
+lsKinds <- lapply(locationState$lsValues, function(x) x$"lsKind")
+
+valuesToFind <- locationState$lsValues[lsKinds %in% c("source file")]
+
+fileToFind <- valuesTofind[[1]]$fileValue
+
+cat(paste0("http://dsanpimapp01:8080/DNS/core/v1/DNSFile/", fileToFind))
