@@ -1320,8 +1320,8 @@ validateProject <- function(projectName, configList) {
   })
   projectCodes <- sapply(projectList, function(x) x$code)
   if(length(projectCodes) == 0) {errorList <<- c(errorList, "No projects are available, contact your system administrator")}
-  if (projectName %in% projectCodes) {
-    return(projectName)
+  if (toupper(projectName) %in% projectCodes) {
+    return(toupper(projectName))
   } else {
     errorList <<- c(errorList, paste0("The project you entered is not an available project. Please enter one of these projects: '",
                                       paste(projectCodes, collapse = "', '"), "'."))
