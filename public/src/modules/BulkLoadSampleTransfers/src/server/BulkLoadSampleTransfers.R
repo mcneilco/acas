@@ -17,21 +17,28 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   
   summaryInfo <- list(info = list(
       "Transfers" = nrow(logFile),
+      "Possible Transfer Errors" = sum(logFile$Possible.Transfer.Error),
       "User name" = recordedBy))
   
   containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)), testMode)
   
+  # Throw errors if the Is.New.Plate is not true
   newBarcodeList <- unique(logFile$Destination.Barcode[!(logFile$Destination.Barcode %in% containerTable$BARCODE)])
+  oldBarcodeList <- unique(containerTable$BARCODE)
   logFileNewBarcodes <- unique(logFile$Destination.Barcode[logFile$Is.New.Plate])
+  logFileOldBarcodes <- unique(logFile$Destination.Barcode[!logFile$Is.New.Plate])
   
   repeatNewBarcodes <- setdiff(logFileNewBarcodes, newBarcodeList)
   if(length(repeatNewBarcodes) > 0) {
     stop(paste0("Some barcodes were marked as new in the log file but have already been registered: '",
                 paste(repeatNewBarcodes, collapse="', '"), "'. It is likely that this file has already been loaded."))
   }
-  
-  if (dryRun) {
-    return(summaryInfo)
+  missingOldBarcodes <- setdiff(logFileOldBarcodes, oldBarcodeList)
+  if(length(missingOldBarcodes) > 0) {
+    stop(paste0("Some barcodes were marked as old in the log file but have never been registered: '",
+                paste(missingOldBarcodes, collapse="', '"), 
+                "'. It is likely that this file depends on a file that has not yet been loaded. ",
+                "Check for other files that should be loaded first."))
   }
   
   # Set infinite volume and concentration to numbers istead of text
@@ -60,8 +67,14 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     logFile <- logFile[!is.na(logFile$Source.Id), ]
   } else {
     if(any(is.na(logFile$Source.Id))) {
-      stop("Not all source plates have been registered")
+      stop(paste("Not all source plates have been registered. ",
+           "It is likely that this file depends on a file that has not yet been loaded. ",
+           "Check for other files that should be loaded first."))
     }
+  }
+  
+  if (dryRun) {
+    return(summaryInfo)
   }
   
   interactions <- data.frame()
