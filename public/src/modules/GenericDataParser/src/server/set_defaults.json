@@ -84,6 +84,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "notebook", lsType:{id:1, version:0}},
 {kindName: "notebook page", lsType:{id:7, version:0}},
 {kindName: "completion date", lsType:{id:4, version:0}},
+{kindName: "scientist", lsType:{id:1, version:0}},
 {kindName: "status", lsType:{id:1, version:0}},
 {kindName: "analysis status", lsType:{id:1, version:0}},
 {kindName: "analysis result html", lsType:{id:5, version:0}},

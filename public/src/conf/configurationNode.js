@@ -62,7 +62,9 @@
 		exports.serverConfigurationParams.configuration.allowProtocolCreationWithFormats = "Generic,Dose Response,Custom Example";
 		exports.serverConfigurationParams.configuration.nameValidationService = "http://localhost:3000/api/users";
 		exports.serverConfigurationParams.configuration.resultViewerProtocolPrefix = "http://host3.labsynch.com:9080/seurat/runseurat?cmd=newjob&AssayName=";
-		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "&AssayProtocol="
+		exports.serverConfigurationParams.configuration.resultViewerExperimentPrefix = "&AssayProtocol=";
+		exports.serverConfigurationParams.configuration.deleteFilesOnReload = "false";
+		exports.serverConfigurationParams.configuration.useCustomReportRegistration = "false"
 
 
 
