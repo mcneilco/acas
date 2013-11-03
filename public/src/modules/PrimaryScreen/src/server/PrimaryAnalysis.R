@@ -76,8 +76,8 @@ getParamByKey <- function(params, key) {
 	components <- strsplit(line, " = ")
 	return( components[[1]][[2]])
 }
-getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
-  # Takes the vector of batch names and outputs a vector marking which are positive and negative controls
+getBatchNamesAndConcentrations <- function(barcode, well, wellTable, ignore="") {
+  # Matches result rows up with batch names and concentrations
   #
   # Args:
   #   barcode:        A vector of the barcodes
@@ -85,6 +85,11 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
   #   wellTabe:       A data.frame with columns of BARCODE, WELL_NAME, BATCH_CODE,CONCENTRATION,CONCENTRATION_UNIT
   # Returns:
   #   A data.frame with batchName,concentration, and concUnit that matches the order of the input barcodes and wells
+  
+  # TODO: does not deal with multiple compounds in one well
+  
+  # Remove agonist compounds (TODO: needs to be modified to include concentration for fructose)
+  wellTable <- wellTable[!(wellTable$BATCH_CODE == ignore), ]
   
   wellUniqueId <- paste(barcode, well)
   wellTableUniqueId <- paste(wellTable$BARCODE, wellTable$WELL_NAME)
@@ -1035,6 +1040,7 @@ getExperimentById <- function(experimentId, configList) {
   #   a list that is an experiment
   
   require('RCurl')
+  require('rjson')
   
   experiment <- NULL
   tryCatch({
@@ -1136,13 +1142,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   
   wellTable <- createWellTable(barcodeList, configList, testMode)
   
-  batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
+  batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable, parameters$agonist)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
   
   resultTable$wellType <- getWellTypes(resultTable$batchName, parameters$positiveControl, parameters$negativeControl)
-  
-  # Remove agonist compounds (TODO: needs to be modified to include concentration for fructose)
-  resultTable <- resultTable[!(resultTable$batchName == parameters$agonist)]
   
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformation)
@@ -1166,6 +1169,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   
   #TODO: remove once real data is in place
   resultTable <- resultTable[!is.na(resultTable$batchName), ]
+  
   batchDataTable <- data.table(values = resultTable$transformed, 
                                 batchName = resultTable$batchName,
                                 fluorescent = resultTable$fluorescent,
@@ -1216,6 +1220,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   if (dryRun) {
     
   } else {
+    lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
     rawResultsLocation <- paste0("experiments/",experiment$codeName,"/analysis/rawResults.Rda")

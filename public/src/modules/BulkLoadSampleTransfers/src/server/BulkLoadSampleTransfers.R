@@ -17,25 +17,34 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   
   summaryInfo <- list(info = list(
       "Transfers" = nrow(logFile),
+      "Possible Transfer Errors" = sum(logFile$Possible.Transfer.Error),
       "User name" = recordedBy))
   
   containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)), testMode)
   
+  # Throw errors if the Is.New.Plate is not true
   newBarcodeList <- unique(logFile$Destination.Barcode[!(logFile$Destination.Barcode %in% containerTable$BARCODE)])
+  oldBarcodeList <- unique(containerTable$BARCODE)
   logFileNewBarcodes <- unique(logFile$Destination.Barcode[logFile$Is.New.Plate])
+  logFileOldBarcodes <- unique(logFile$Destination.Barcode[!logFile$Is.New.Plate])
   
   repeatNewBarcodes <- setdiff(logFileNewBarcodes, newBarcodeList)
   if(length(repeatNewBarcodes) > 0) {
     stop(paste0("Some barcodes were marked as new in the log file but have already been registered: '",
                 paste(repeatNewBarcodes, collapse="', '"), "'. It is likely that this file has already been loaded."))
   }
-  
-  if (dryRun) {
-    return(summaryInfo)
+  missingOldBarcodes <- setdiff(logFileOldBarcodes, oldBarcodeList)
+  if(length(missingOldBarcodes) > 0) {
+    stop(paste0("Some barcodes were marked as old in the log file but have never been registered: '",
+                paste(missingOldBarcodes, collapse="', '"), 
+                "'. It is likely that this file depends on a file that has not yet been loaded. ",
+                "Check for other files that should be loaded first."))
   }
   
+  # Set infinite volume and concentration to numbers istead of text
   containerTable$VOLUME[containerTable$VOLUME_STRING == "infinite"] <- Inf
-    
+  containerTable$CONCENTRATION[containerTable$CONCENTRATION_STRING == "infinite"] <- Inf
+  
   logFile$Source.Well <- normalizeWellNames(logFile$Source.Well)
   logFile$Destination.Well <- normalizeWellNames(logFile$Destination.Well)
   logFile$FakeSourceId <- paste(logFile$Source.Barcode, logFile$Source.Well, sep="&")
@@ -49,7 +58,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   logFile$Date.Time <- as.POSIXct(logFile$Date.Time, format = "%Y-%m-%d %H:%M")
   
   # New wells have a negative destination Id as a placeholder
-  logFile$Destination.Id[is.na(logFile$Destination.Id)] <- -1:-sum(is.na(logFile$Destination.Id))
+  logFile$Destination.Id[is.na(logFile$Destination.Id)] <- -as.numeric(as.factor(logFile$FakeDestinationId[is.na(logFile$Destination.Id)]))
   logFile$Source.Id[is.na(logFile$Source.Id)] <- logFile$Destination.Id[match(logFile$FakeSourceId, logFile$FakeDestinationId)][is.na(logFile$Source.Id)]
   
   containerTable <- containerTable[containerTable$WELL_ID %in% c(logFile$Source.Id, logFile$Destination.Id), ]
@@ -58,12 +67,17 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     logFile <- logFile[!is.na(logFile$Source.Id), ]
   } else {
     if(any(is.na(logFile$Source.Id))) {
-      stop("Not all source plates have been registered")
+      stop(paste("Not all source plates have been registered. ",
+           "It is likely that this file depends on a file that has not yet been loaded. ",
+           "Check for other files that should be loaded first."))
     }
   }
   
-  interactions <- data.frame()
+  if (dryRun) {
+    return(summaryInfo)
+  }
   
+  interactions <- data.frame()
   # This is a bit slow... 9.5 seconds for 700 rows
   for (i in 1:nrow(logFile)) {
     logRow <- logFile[i, ]
@@ -140,17 +154,20 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   
   MarkContainersStatusIgnored(containerTable$WELL_ID)
   
+  containerTable$stateID <- 1:nrow(containerTable)
   containerTable$BARCODE <- NULL
   containerTable$WELL_NAME <- NULL
   containerTable$FakeId <- NULL
-  batchCodeRows <- data.frame(valueType = "codeValue", valueKind = "batch code", codeValue = containerTable$BATCH_CODE, containerID = containerTable$WELL_ID, stringsAsFactors=FALSE)
-  volumeRows <- data.frame(valueType = "numericValue", valueKind = "volume", numericValue = containerTable$VOLUME, valueUnit = containerTable$VOLUME_UNIT, containerID = containerTable$WELL_ID, stringsAsFactors=FALSE)
+  batchCodeRows <- data.frame(stateID = containerTable$stateID, valueType = "codeValue", valueKind = "batch code", codeValue = containerTable$BATCH_CODE, containerID = containerTable$WELL_ID, stringsAsFactors=FALSE)
+  volumeRows <- data.frame(stateID = containerTable$stateID, valueType = "numericValue", valueKind = "volume", numericValue = containerTable$VOLUME, valueUnit = containerTable$VOLUME_UNIT, containerID = containerTable$WELL_ID, stringsAsFactors=FALSE)
   volumeRows$stringValue <- NA
-  infiniteRows <- volumeRows$numericValue == Inf
-  volumeRows$stringValue[infiniteRows] <- "infinite"
-  volumeRows$numericValue[infiniteRows] <- NA
-  concentrationRows <- data.frame(valueType = "numericValue", valueKind = "concentration", numericValue = containerTable$CONCENTRATION, valueUnit = containerTable$CONCENTRATION_UNIT, containerID = containerTable$WELL_ID, stringsAsFactors=FALSE)
+  concentrationRows <- data.frame(stateID = containerTable$stateID, valueType = "numericValue", valueKind = "concentration", numericValue = containerTable$CONCENTRATION, valueUnit = containerTable$CONCENTRATION_UNIT, containerID = containerTable$WELL_ID, stringsAsFactors=FALSE)
   containerdf <- rbind.fill(batchCodeRows,volumeRows,concentrationRows)
+  
+  # Set the rows with Inf numbers to a stringValue
+  infiniteRows <- containerdf$numericValue == Inf
+  containerdf$stringValue[infiniteRows] <- "infinite"
+  containerdf$numericValue[infiniteRows] <- NA
     
   containerdf$stateGroupIndex <- 1
   containerdf$publicData <- TRUE
@@ -161,9 +178,8 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
                            valueKinds=c(),
                            includesOthers=TRUE))
   
-  # idColumn may change to organize these correctly
   #9.7 sec (736 transfers) (1056 states)
-  stateIdAndVersion <- saveStatesFromLongFormat(containerdf, "container", stateGroups, idColumn="containerID", recordedBy, lsTransaction)
+  stateIdAndVersion <- saveStatesFromLongFormat(containerdf, "container", stateGroups, idColumn="stateID", recordedBy, lsTransaction)
   
   containerdf$stateID <- stateIdAndVersion$entityStateId
   containerdf$stateVersion <- stateIdAndVersion$entityStateVersion
