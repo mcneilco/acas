@@ -5,18 +5,34 @@
 ###
 
 exports.logUsage = (action, data, username) ->
-	#TODO add log level warning,error etc
-	config = require './configurationNode.js'
+	# We generate this config file from the DNS configuration service
+	config = require '../../../conf/compiled/conf.js'
+
+	# this is a node module that is like jQuery's $.POST
 	request = require 'request'
-	req = request.post config.serverConfigurationParams.configuration.loggingService , (error, response) =>
+
+	# Setup the request with a call-back function
+	req = request.post config.all.server.service.external.logging.url , (error, response) =>
 		if !error && response.statusCode == 200
+			# I copy the log to the node console 
 			console.log "logged: "+action+" with data: "+data+" and user: "+username
 		else
 			console.log "got error trying log action: "+action+" with data: "+data
 			console.log error
 			console.log response
+
+	#If you don't supply a username, the log fails.
+	#For example, there is no username on system start, which I log
 	unless username?
 		username = "NA"
+
+	#Also, if you send an empty string for application_data, the logging service won't record the user name
+	if data == ""
+		data = "NA"
+
+	#The logging service will only accept a form post, you can't just do the post in one step like with most services
+	#This is how you do that with the request module
+	#If I have an error in this form submit, I don't want to take down ACAS, so try-catch
 	try
 		form = req.form()
 		form.append('application', 'acas')
@@ -32,7 +48,6 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	asyncblock = require('asyncblock');
 	exec = require('child_process').exec;
 	os = require 'os'
-
 
 	if typeof sysEnv.DNSDeployMode == "undefined"
 		sysEnv.DNSDeployMode = "Dev"
@@ -79,58 +94,12 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 				callback(dnsconf)
 		)
 
-
-exports.fillConfigTemplateFile = (callback) ->
-	fs = require('fs')
-	asyncblock = require('asyncblock');
-	exec = require('child_process').exec;
-	asyncblock((flow) ->
-		global.deployMode = process.env.DNSDeployMode
-		exec("java -jar ../../lib/dns-config-client.jar -m "+global.deployMode+" -c acas -d 2>/dev/null", flow.add())
-		config = flow.wait()
-		if config.indexOf("It=works") > -1
-			console.log "Can't contact DNS config service. If you are doing local dev, check your VPN."
-			process.exit 1
-		config = config.replace(/\\/g, "")
-		configLines = config.split("\n")
-		settings = {}
-		for line in configLines
-			lineParts = line.split /\=(.+)?/
-			unless lineParts[1] is undefined
-				settings[lineParts[0]] = lineParts[1]
-		configTemplate = fs.readFileSync("../public/src/conf/configurationNode_Template.js").toString()
-		for name, setting of settings
-			configTemplate = configTemplate.replace(RegExp(name,"g"), setting)
-		# deal with special cases
-		jdbcParts = settings["acas.jdbc.url"].split ":"
-		configTemplate = configTemplate.replace(/acas.api.db.location/g, jdbcParts[0]+":"+jdbcParts[1]+":"+jdbcParts[2]+":@")
-		configTemplate = configTemplate.replace(/acas.api.db.host/g, jdbcParts[3].replace("@",""))
-		configTemplate = configTemplate.replace(/acas.api.db.port/g, jdbcParts[4])
-		configTemplate = configTemplate.replace(/acas.api.db.name/g, jdbcParts[5])
-
-		# replace server name
-		enableSpecRunner = true
-		switch(global.deployMode)
-			when "Dev" then hostName = "acas-d"
-			when "Test" then hostName = "acas-t"
-			when "Stage" then hostName = "acas-s"
-			when "Prod"
-				hostName = "acas"
-				enableSpecRunner = false
-		configTemplate = configTemplate.replace(RegExp("acas.api.hostname","g"), hostName)
-		configTemplate = configTemplate.replace(/acas.api.enableSpecRunner/g, enableSpecRunner)
-		configTemplate = configTemplate.replace(/acas.env.logDir/g, process.env.DNSLogDirectory)
-
-		fs.writeFileSync "../public/src/conf/configurationNode.js", configTemplate
-		callback()
-	)
-
 exports.authCheck = (user, pass, retFun) ->
-	config = require './configurationNode.js'
+	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		method: 'POST'
-		url: config.serverConfigurationParams.configuration.userAuthenticationServiceURL
+		url: config.all.server.service.external.user.authentication.url
 		form:
 			username: user
 			password: pass
@@ -146,11 +115,11 @@ exports.authCheck = (user, pass, retFun) ->
 	)
 
 exports.getUser = (username, callback) ->
-	config = require './configurationNode.js'
+	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		method: 'GET'
-		url: config.serverConfigurationParams.configuration.userInformationServiceURL+username
+		url: config.all.server.service.external.user.information.url+username
 		json: true
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
@@ -178,13 +147,13 @@ exports.loginStrategy = (username, password, done) ->
 			exports.authCheck username, password, (results) ->
 				if results.indexOf("Success")>=0
 					try
-						exports.logUsage "User logged in succesfully: ", "NA", username
+						exports.logUsage "User logged in succesfully: ", "", username
 					catch error
 						console.log "Exception trying to log:"+error
 					return done null, user
 				else
 					try
-						exports.logUsage "User failed login: ", "NA", username
+						exports.logUsage "User failed login: ", "", username
 					catch error
 						console.log "Exception trying to log:"+error
 					return done(null, false,
@@ -192,11 +161,11 @@ exports.loginStrategy = (username, password, done) ->
 					)
 
 exports.getProjects = (resp) ->
-	config = require './configurationNode.js'
+	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		method: 'GET'
-		url: config.serverConfigurationParams.configuration.projectsServiceURL
+		url: config.all.server.service.external.project.url
 		json: true
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
