@@ -1222,7 +1222,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                        lsTransaction= lsTransaction)
   }
   if (!is.null(metaData$Page)) {
-    experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "numericValue",
+    experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
                                                                        lsKind = "notebook page",
                                                                        stringValue = metaData$Page[1],
                                                                        lsTransaction= lsTransaction)
