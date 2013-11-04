@@ -1146,13 +1146,12 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
       stop("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
     })
     
-    #TODO choose the preferred label
-    if (is.na(protocol) || protocolOfExperiment$lsLabels[[1]]$id != protocol$lsLabels[[1]]$id) {
+    if (is.na(protocol) || protocolOfExperiment$id != protocol$id) {
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
         errorList <<- c(errorList,paste0("Experiment '",experimentName,
-                                         "' does not exist in the protocol that you entered, but it does exist in '", protocolOfExperiment$lsLabels[[1]]$labelText, 
+                                         "' does not exist in the protocol that you entered, but it does exist in '", getPreferredProtocolName(protocolOfExperiment), 
                                          "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
         experiment <- experimentList[[1]]
       }
@@ -1164,6 +1163,15 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
   }
   # Return the experiment
   return(experiment)
+}
+getPreferredProtocolName <- function(protocol, protocolName = NULL) {
+  # gets the preferred protocol name from the protocol and checks that it is the same as the current protocol name
+  preferredName <- protocol$lsLabels[vapply(protocol$lsLabels, getElement, c(TRUE), "preferred")][[1]]$labelText
+  if (!is.null(protocolName) && preferredName != protocolName) {
+    warning(paste0("The protocol name that you entered, '", protocolName, 
+                   "', was replaced by the preferred name '", preferredName, "'"))
+  }
+  return(preferredName)
 }
 createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   # creates a protocol with the protocol name and scientist in the metaData
@@ -2103,6 +2111,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Get the protocol and experiment and, when not on a dry run, create them if they do not exist
   protocol <- getProtocolByName(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
   newProtocol <- is.na(protocol[[1]])
+  if (!newProtocol) {
+    metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
+  }
   
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
