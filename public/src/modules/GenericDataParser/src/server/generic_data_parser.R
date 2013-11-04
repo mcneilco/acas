@@ -57,7 +57,6 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   #   A dataframe of the of section in the generic excel file
   
   # Get the first line matching the section
-  lookFor <- lookFor
   listMatch <- sapply(genericDataFileDataFrame,grep,pattern = lookFor,ignore.case = TRUE, perl = TRUE)
   firstInstanceInEachColumn <- suppressWarnings(unlist(lapply(listMatch, min)))
   startSection <- firstInstanceInEachColumn[is.finite(firstInstanceInEachColumn)][1]
@@ -82,8 +81,8 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   if (all(!c(sectionHeaderColumns, secondHeaderColumns))) {
     stop(paste0("There must be at least two rows filled in after '", lookFor, "'."))
   }
-  if (any(!c(secondHeaderColumns, sectionHeaderColumns))) {
-    dataColumnIndexes <- 1:(min(which(!secondHeaderColumns & !sectionHeaderColumns))-1)
+  if (any(!secondHeaderColumns & !sectionHeaderColumns)) {
+    dataColumnIndexes <- 1:(min(which(!secondHeaderColumns & !sectionHeaderColumns)) - 1)
   } else {
     dataColumnIndexes <- 1:length(sectionHeaderRow)
   }
