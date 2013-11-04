@@ -1512,71 +1512,73 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
     treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
     treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
-    stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
-                                                entityKind = "treatmentgroup", 
-                                                stateGroups = stateGroups,
-                                                stateGroupIndices = treatmentGroupIndices,
-                                                idColumn = "stateID",
-                                                recordedBy = recordedBy,
-                                                lsTransaction = lsTransaction)
-    
-    treatmentGroupData$stateID <- stateAndVersion$entityStateId
-    treatmentGroupData$stateVersion <- stateAndVersion$entityStateVersion
-    
-    treatmentGroupData$treatmentGroupStateID <- treatmentGroupData$stateID
-    
-    #### Treatment Group Values =====================================================================
-    batchCodeStateIndices <- which(sapply(stateGroups, function(x) return(x$includesCorpName)))
-    if (is.null(treatmentGroupData$stateVersion)) treatmentGroupData$stateVersion <- 0
-    treatmentGroupDataWithBatchCodeRows <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, batchCodeStateIndices))
-    # TODO: don't save fake batch codes as batch codes
-    savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows, 
-                                                          entityKind = "treatmentgroup", 
-                                                          stateGroups = stateGroups, 
-                                                          stateGroupIndices = treatmentGroupIndices, 
-                                                          lsTransaction = lsTransaction,
-                                                          recordedBy = recordedBy)
-    
-    #### Analysis Group States =====================================================================
-    analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
-    if (length(analysisGroupIndices > 0)) {
-      analysisGroupData <- treatmentGroupDataWithBatchCodeRows
-      if (!is.null(curveNames)) {
-        curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, 
-                                valueKind = curveNames, 
-                                publicData = TRUE, 
-                                valueType = "stringValue", 
-                                stringValue = paste0(1:length(curveNames), "_", analysisGroup$codeName),
-                                stringsAsFactors=FALSE)
-        renderingHintRow <- data.frame(stateGroupIndex = analysisGroupIndices, 
-                                       valueKind = "Rendering Hint", 
-                                       publicData = FALSE, 
-                                       valueType = "stringValue", 
-                                       stringValue = "PK IV PO Single Dose",
-                                       stringsAsFactors=FALSE)
-        analysisGroupData <- rbind.fill(analysisGroupData, curveRows, renderingHintRow)
-      }
-      analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
-      analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
-      stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
-                                                  entityKind = "analysisgroup", 
+    if (nrow(treatmentGroupData) > 0) {
+      stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
+                                                  entityKind = "treatmentgroup", 
                                                   stateGroups = stateGroups,
-                                                  stateGroupIndices = analysisGroupIndices,
+                                                  stateGroupIndices = treatmentGroupIndices,
                                                   idColumn = "stateID",
                                                   recordedBy = recordedBy,
                                                   lsTransaction = lsTransaction)
       
-      analysisGroupData$stateID <- stateAndVersion$entityStateId
-      analysisGroupData$stateVersion <- stateAndVersion$entityStateVersion
+      treatmentGroupData$stateID <- stateAndVersion$entityStateId
+      treatmentGroupData$stateVersion <- stateAndVersion$entityStateVersion
       
-      analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
-      #### Analysis Group Values =====================================================================
-      savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
-                                                           entityKind = "analysisgroup", 
-                                                           stateGroups = stateGroups, 
-                                                           stateGroupIndices = analysisGroupIndices,
-                                                           lsTransaction = lsTransaction,
-                                                           recordedBy = recordedBy)
+      treatmentGroupData$treatmentGroupStateID <- treatmentGroupData$stateID
+      
+      #### Treatment Group Values =====================================================================
+      batchCodeStateIndices <- which(sapply(stateGroups, function(x) return(x$includesCorpName)))
+      if (is.null(treatmentGroupData$stateVersion)) treatmentGroupData$stateVersion <- 0
+      treatmentGroupDataWithBatchCodeRows <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, batchCodeStateIndices))
+      # TODO: don't save fake batch codes as batch codes
+      savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows, 
+                                                            entityKind = "treatmentgroup", 
+                                                            stateGroups = stateGroups, 
+                                                            stateGroupIndices = treatmentGroupIndices, 
+                                                            lsTransaction = lsTransaction,
+                                                            recordedBy = recordedBy)
+      
+      #### Analysis Group States =====================================================================
+      analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
+      if (length(analysisGroupIndices > 0)) {
+        analysisGroupData <- treatmentGroupDataWithBatchCodeRows
+        if (!is.null(curveNames)) {
+          curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, 
+                                  valueKind = curveNames, 
+                                  publicData = TRUE, 
+                                  valueType = "stringValue", 
+                                  stringValue = paste0(1:length(curveNames), "_", analysisGroup$codeName),
+                                  stringsAsFactors=FALSE)
+          renderingHintRow <- data.frame(stateGroupIndex = analysisGroupIndices, 
+                                         valueKind = "Rendering Hint", 
+                                         publicData = FALSE, 
+                                         valueType = "stringValue", 
+                                         stringValue = "PK IV PO Single Dose",
+                                         stringsAsFactors=FALSE)
+          analysisGroupData <- rbind.fill(analysisGroupData, curveRows, renderingHintRow)
+        }
+        analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
+        analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
+        stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
+                                                    entityKind = "analysisgroup", 
+                                                    stateGroups = stateGroups,
+                                                    stateGroupIndices = analysisGroupIndices,
+                                                    idColumn = "stateID",
+                                                    recordedBy = recordedBy,
+                                                    lsTransaction = lsTransaction)
+        
+        analysisGroupData$stateID <- stateAndVersion$entityStateId
+        analysisGroupData$stateVersion <- stateAndVersion$entityStateVersion
+        
+        analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
+        #### Analysis Group Values =====================================================================
+        savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
+                                                             entityKind = "analysisgroup", 
+                                                             stateGroups = stateGroups, 
+                                                             stateGroupIndices = analysisGroupIndices,
+                                                             lsTransaction = lsTransaction,
+                                                             recordedBy = recordedBy)
+      }
     }
   }
   ### Container creation ==================================================================
