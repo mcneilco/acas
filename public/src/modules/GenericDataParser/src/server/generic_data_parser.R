@@ -42,6 +42,7 @@
 
 require(racas)
 source("public/src/conf/customFunctions.R")
+source("public/src/conf/genericDataParserConfiguration.R")
 
 #####
 # Define Functions
@@ -82,8 +83,8 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   if (all(!c(sectionHeaderColumns, secondHeaderColumns))) {
     stop(paste0("There must be at least two rows filled in after '", lookFor, "'."))
   }
-  if (any(!c(secondHeaderColumns, sectionHeaderColumns))) {
-    dataColumnIndexes <- 1:(min(which(!secondHeaderColumns & !sectionHeaderColumns))-1)
+  if (any(!secondHeaderColumns & !sectionHeaderColumns)) {
+    dataColumnIndexes <- 1:(min(which(!secondHeaderColumns & !sectionHeaderColumns)) - 1)
   } else {
     dataColumnIndexes <- 1:length(sectionHeaderRow)
   }
@@ -829,6 +830,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   if (rawOnlyFormat) {
     if (!is.null(splitSubjects)) {
       results$subjectID <- as.numeric(as.factor(do.call(paste0, args=as.list(results[splitSubjects]))))
+    } else {
+      results$subjectID <- NA
     }
     # calculateTreatmentGroupID is in customFunctions.R
     results$treatmentGroupID <- calculateTreatmemtGroupID(results, inputFormat, stateGroups, resultTypes)
@@ -1167,13 +1170,12 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
       stop("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
     })
     
-    #TODO choose the preferred label
-    if (is.na(protocol) || protocolOfExperiment$lsLabels[[1]]$id != protocol$lsLabels[[1]]$id) {
+    if (is.na(protocol) || protocolOfExperiment$id != protocol$id) {
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
         errorList <<- c(errorList,paste0("Experiment '",experimentName,
-                                         "' does not exist in the protocol that you entered, but it does exist in '", protocolOfExperiment$lsLabels[[1]]$labelText, 
+                                         "' does not exist in the protocol that you entered, but it does exist in '", getPreferredProtocolName(protocolOfExperiment), 
                                          "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
         experiment <- experimentList[[1]]
       }
@@ -1185,6 +1187,15 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
   }
   # Return the experiment
   return(experiment)
+}
+getPreferredProtocolName <- function(protocol, protocolName = NULL) {
+  # gets the preferred protocol name from the protocol and checks that it is the same as the current protocol name
+  preferredName <- protocol$lsLabels[vapply(protocol$lsLabels, getElement, c(TRUE), "preferred")][[1]]$labelText
+  if (!is.null(protocolName) && preferredName != protocolName) {
+    warning(paste0("The protocol name that you entered, '", protocolName, 
+                   "', was replaced by the preferred name '", preferredName, "'"))
+  }
+  return(preferredName)
 }
 createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   # creates a protocol with the protocol name and scientist in the metaData
@@ -1344,6 +1355,8 @@ validateScientist <- function(scientistName, configList) {
   require('RCurl')
   require('rjson')
   
+  response <- NULL
+  username <- "username"
   tryCatch({
     response <- getURL(URLencode(paste0(configList$nameValidationService, "/", scientistName)))
     if (response == "") {
@@ -1355,12 +1368,14 @@ validateScientist <- function(scientistName, configList) {
     return("")
   })
   
-  tryCatch({
-    username <- fromJSON(response)$username
-  }, error = function(e) {
-    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
-    return("")
-  })
+  if (!is.null(response)) {
+    tryCatch({
+      username <- fromJSON(response)$username
+    }, error = function(e) {
+      errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+      return("")
+    })
+  }
   
   return(username)
 }
@@ -1426,7 +1441,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                   'Result Date'='dateValue','clobValue'='clobValue','Class'='valueType','resultTypeAndUnit'='resultTypeAndUnit',
                   'Hidden'='publicData','originalCorporateBatchID'='originalBatchCode','treatmentGroupID'='treatmentGroupID',
                   'subjectID'='subjectID')
-  names(subjectData)[names(nameChange)==names(subjectData)] <- nameChange[names(subjectData)]
+  names(subjectData)[names(subjectData) %in% names(nameChange)] <- nameChange[names(subjectData)]
   subjectData$publicData <- !subjectData$publicData
   subjectData$valueType <- c("numericValue","stringValue","dateValue", "clobValue")[match(subjectData$valueType,c("Number","Text","Date", "Clob"))]
   
@@ -1527,71 +1542,73 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
     # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
     treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
     treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
-    stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
-                                                entityKind = "treatmentgroup", 
-                                                stateGroups = stateGroups,
-                                                stateGroupIndices = treatmentGroupIndices,
-                                                idColumn = "stateID",
-                                                recordedBy = recordedBy,
-                                                lsTransaction = lsTransaction)
-    
-    treatmentGroupData$stateID <- stateAndVersion$entityStateId
-    treatmentGroupData$stateVersion <- stateAndVersion$entityStateVersion
-    
-    treatmentGroupData$treatmentGroupStateID <- treatmentGroupData$stateID
-    
-    #### Treatment Group Values =====================================================================
-    batchCodeStateIndices <- which(sapply(stateGroups, function(x) return(x$includesCorpName)))
-    if (is.null(treatmentGroupData$stateVersion)) treatmentGroupData$stateVersion <- 0
-    treatmentGroupDataWithBatchCodeRows <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, batchCodeStateIndices))
-    # TODO: don't save fake batch codes as batch codes
-    savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows, 
-                                                          entityKind = "treatmentgroup", 
-                                                          stateGroups = stateGroups, 
-                                                          stateGroupIndices = treatmentGroupIndices, 
-                                                          lsTransaction = lsTransaction,
-                                                          recordedBy = recordedBy)
-    
-    #### Analysis Group States =====================================================================
-    analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
-    if (length(analysisGroupIndices > 0)) {
-      analysisGroupData <- treatmentGroupDataWithBatchCodeRows
-      if (!is.null(curveNames)) {
-        curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, 
-                                valueKind = curveNames, 
-                                publicData = TRUE, 
-                                valueType = "stringValue", 
-                                stringValue = paste0(1:length(curveNames), "_", analysisGroup$codeName),
-                                stringsAsFactors=FALSE)
-        renderingHintRow <- data.frame(stateGroupIndex = analysisGroupIndices, 
-                                       valueKind = "Rendering Hint", 
-                                       publicData = FALSE, 
-                                       valueType = "stringValue", 
-                                       stringValue = "PK IV PO Single Dose",
-                                       stringsAsFactors=FALSE)
-        analysisGroupData <- rbind.fill(analysisGroupData, curveRows, renderingHintRow)
-      }
-      analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
-      analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
-      stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
-                                                  entityKind = "analysisgroup", 
+    if (nrow(treatmentGroupData) > 0) {
+      stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
+                                                  entityKind = "treatmentgroup", 
                                                   stateGroups = stateGroups,
-                                                  stateGroupIndices = analysisGroupIndices,
+                                                  stateGroupIndices = treatmentGroupIndices,
                                                   idColumn = "stateID",
                                                   recordedBy = recordedBy,
                                                   lsTransaction = lsTransaction)
       
-      analysisGroupData$stateID <- stateAndVersion$entityStateId
-      analysisGroupData$stateVersion <- stateAndVersion$entityStateVersion
+      treatmentGroupData$stateID <- stateAndVersion$entityStateId
+      treatmentGroupData$stateVersion <- stateAndVersion$entityStateVersion
       
-      analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
-      #### Analysis Group Values =====================================================================
-      savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
-                                                           entityKind = "analysisgroup", 
-                                                           stateGroups = stateGroups, 
-                                                           stateGroupIndices = analysisGroupIndices,
-                                                           lsTransaction = lsTransaction,
-                                                           recordedBy = recordedBy)
+      treatmentGroupData$treatmentGroupStateID <- treatmentGroupData$stateID
+      
+      #### Treatment Group Values =====================================================================
+      batchCodeStateIndices <- which(sapply(stateGroups, function(x) return(x$includesCorpName)))
+      if (is.null(treatmentGroupData$stateVersion)) treatmentGroupData$stateVersion <- 0
+      treatmentGroupDataWithBatchCodeRows <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, batchCodeStateIndices))
+      # TODO: don't save fake batch codes as batch codes
+      savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows, 
+                                                            entityKind = "treatmentgroup", 
+                                                            stateGroups = stateGroups, 
+                                                            stateGroupIndices = treatmentGroupIndices, 
+                                                            lsTransaction = lsTransaction,
+                                                            recordedBy = recordedBy)
+      
+      #### Analysis Group States =====================================================================
+      analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
+      if (length(analysisGroupIndices > 0)) {
+        analysisGroupData <- treatmentGroupDataWithBatchCodeRows
+        if (!is.null(curveNames)) {
+          curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, 
+                                  valueKind = curveNames, 
+                                  publicData = TRUE, 
+                                  valueType = "stringValue", 
+                                  stringValue = paste0(1:length(curveNames), "_", analysisGroup$codeName),
+                                  stringsAsFactors=FALSE)
+          renderingHintRow <- data.frame(stateGroupIndex = analysisGroupIndices, 
+                                         valueKind = "Rendering Hint", 
+                                         publicData = FALSE, 
+                                         valueType = "stringValue", 
+                                         stringValue = "PK IV PO Single Dose",
+                                         stringsAsFactors=FALSE)
+          analysisGroupData <- rbind.fill(analysisGroupData, curveRows, renderingHintRow)
+        }
+        analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
+        analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
+        stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
+                                                    entityKind = "analysisgroup", 
+                                                    stateGroups = stateGroups,
+                                                    stateGroupIndices = analysisGroupIndices,
+                                                    idColumn = "stateID",
+                                                    recordedBy = recordedBy,
+                                                    lsTransaction = lsTransaction)
+        
+        analysisGroupData$stateID <- stateAndVersion$entityStateId
+        analysisGroupData$stateVersion <- stateAndVersion$entityStateVersion
+        
+        analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
+        #### Analysis Group Values =====================================================================
+        savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
+                                                             entityKind = "analysisgroup", 
+                                                             stateGroups = stateGroups, 
+                                                             stateGroupIndices = analysisGroupIndices,
+                                                             lsTransaction = lsTransaction,
+                                                             recordedBy = recordedBy)
+      }
     }
   }
   ### Container creation ==================================================================
@@ -1989,7 +2006,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     write(toJSON(analysisGroups), file = testOutputLocation)
   } else {
     # Write the data to the server. The response is unused.
-    response <- saveAnalysisGroups(analysisGroups)
+    response <- saveAcasEntities(analysisGroups, "analysisgroups")
     # Used during testing
     #cat(toJSON(saveAnalysisGroups(analysisGroups)))
   }
@@ -2034,12 +2051,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
   
-  if ("stateGroupsScript" %in% names(configList)) {
-    source(configList$stateGroupsScript)
-    formatSettings <- getFormatSettings()
-  } else {
-    formatSettings <- list()
-  }
+  formatSettings <- getFormatSettings()
   
   validatedMetaDataList <- validateMetaData(metaData, configList, formatSettings)
   validatedMetaData <- validatedMetaDataList$validatedMetaData
@@ -2126,6 +2138,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   # Get the protocol and experiment and, when not on a dry run, create them if they do not exist
   protocol <- getProtocolByName(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
   newProtocol <- is.na(protocol[[1]])
+  if (!newProtocol) {
+    metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
+  }
   
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
@@ -2243,7 +2258,7 @@ moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy
     
     serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
   } else if (fileServiceType == "custom") {
-    customSourceFileMove(fileStartLocation, fileName, fileService, experiment, recordedBy)
+    serverFileLocation <- customSourceFileMove(fileStartLocation, fileName, fileService, experiment, recordedBy)
   } else {
     stop("Invalid file service type")
   }
@@ -2313,9 +2328,6 @@ parseGenericData <- function(request) {
   require('compiler')
   enableJIT(3)
   options("scipen"=15)
-    
-  # Info (now in config file at SeuratAddOns/public/src/conf/configurationNode.js)
-  #serverPath <- "http://host3.labsynch.com:8080/labseer"
   
   # This is used for outputting the JSON rather than sending it to the server
   developmentMode <- FALSE
@@ -2335,7 +2347,7 @@ parseGenericData <- function(request) {
     testMode <- FALSE
   }
   
-  # Set the global for the library
+  # Set configList to the applicationSettings (shorter to type)
   configList <- racas::applicationSettings
   lsServerURL <- configList$serverPath
   
