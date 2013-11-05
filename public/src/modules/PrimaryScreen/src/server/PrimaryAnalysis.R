@@ -1223,20 +1223,22 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
+    # Get individual points that are greater than the threshold
+    resultTable$efficacyThreshold <- (resultTable$transformed > parameters$efficacyThreshold) & !resultTable$fluorescent & resultTable$wellType=="test"
+    
     rawResultsLocation <- paste0("experiments/",experiment$codeName,"/analysis/rawResults.Rda")
     save(resultTable,parameters,file=paste0("serverOnlyModules/blueimp-file-upload-node/public/files/",rawResultsLocation))
     
     resultsLocation <- paste0("experiments/", experiment$codeName,"/analysis/",experiment$codeName, "_Results.csv")
     if (analysisType == "primary") {
-      outputTable <- data.table("Corporate Batch ID" = analysisGroupData$batchName, "Hit" = analysisGroupData$efficacyThreshold,
-                                "Activity" = analysisGroupData$groupMean, "Fluorescent"= analysisGroupData$fluorescent,
-                                "Max Time (s)" = analysisGroupData$maxTime)
+      # May need to return to using analysisGroupData eventually
+      outputTable <- data.table("Corporate Batch ID" = resultTable$batchName, "Barcode" = resultTable$barcode,
+                                "Well" = resultTable$well, "Hit" = resultTable$efficacyThreshold,
+                                "Activity" = resultTable$transformed, "Fluorescent"= resultTable$fluorescent,
+                                "Max Time (s)" = resultTable$maxTime, "Well Type" = resultTable$wellType)
     }
     outputTable <- outputTable[order(Hit,Fluorescent,decreasing=TRUE)]
     write.csv(outputTable, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", resultsLocation), row.names=FALSE)
-    
-    # Get individual points that are greater than the threshold
-    resultTable$efficacyThreshold <- (resultTable$transformed > parameters$efficacyThreshold) & !resultTable$fluorescent & resultTable$wellType=="test"
     
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, experiment)
     
