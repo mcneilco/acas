@@ -1,8 +1,9 @@
-createDensityPlot <- function(resultTable, threshold, margins = c(5,4,4,8)) {
+createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)) {
   # Creates a density plot
   #
   # Args:
-  #   resultTable:     	A data.frame of the data to plot
+  #   values:           Numeric vector of values to plot
+  #   wellTypes:     	  String vector of well types of values (above)
   #	  threshold:        A numeric of the efficacy threshold
   #
   # Returns:
@@ -14,9 +15,9 @@ createDensityPlot <- function(resultTable, threshold, margins = c(5,4,4,8)) {
   par(mar=margins)
   
   # Create density data to graph
-  NCdensity <- density(resultTable$transformed[resultTable$wellType == "NC"])
-  PCdensity <- density(resultTable$transformed[resultTable$wellType == "PC"])
-  testDensity <- density(resultTable$transformed[resultTable$wellType == "test"])
+  NCdensity <- density(values[wellTypes == "NC"])
+  PCdensity <- density(values[wellTypes == "PC"])
+  testDensity <- density(values[wellTypes == "test"])
   yHeight <- max(NCdensity$y, PCdensity$y, testDensity$y)
   
   plot(NCdensity, 

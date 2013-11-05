@@ -222,7 +222,7 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, e
   textplot(textToShow, halign="left",valign="top")
   title("Primary Screen")
   
-  createDensityPlot(resultTable, threshold = parameters$efficacyThreshold, margins = c(25,4,4,8))
+  createDensityPlot(resultTable$normalized, resultTable$wellType, threshold = parameters$efficacyThreshold, margins = c(25,4,4,8))
   
   print(createGGComparison(graphTitle = "Plate Comparison", xColumn=resultTable$barcode,
                    wellType = resultTable$wellType, dataRow = resultTable$transformed, xLabel = "Plate", 
@@ -236,7 +236,7 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, e
   rowVector <- gsub("\\d", "", resultTable$well)
   columnVector <- gsub("\\D", "", resultTable$well)
   for (barcode in levels(resultTable$barcode)) {
-    plateData <- data.frame(transformedValues = resultTable$transformed[resultTable$barcode==barcode], 
+    plateData <- data.frame(transformedValues = resultTable$normalized[resultTable$barcode==barcode], 
                             well = resultTable$well[resultTable$barcode==barcode], hits=resultTable$efficacyThreshold[resultTable$barcode==barcode])
     g1 <- createGGHeatmap(paste("Heatmap ",barcode), plateData)
 #     g2 <- createGGComparison(graphTitle = paste("Row Comparison ",barcode), 
@@ -1154,7 +1154,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   #resultTable$sdScore <- computeSDScore(resultTable)
   
   # normalization
-  normalization <- "none"
+  normalization <- "plate order"
   if (normalization=="plate order") {
     resultTable[,normalized:=computeNormalized(transformed,wellType), by= barcode]
   } else if (normalization=="row order") {
@@ -1224,7 +1224,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
     # Get individual points that are greater than the threshold
-    resultTable$efficacyThreshold <- (resultTable$transformed > parameters$efficacyThreshold) & !resultTable$fluorescent & resultTable$wellType=="test"
+    resultTable$efficacyThreshold <- (resultTable$normalized > parameters$efficacyThreshold) & !resultTable$fluorescent & resultTable$wellType=="test"
     
     rawResultsLocation <- paste0("experiments/",experiment$codeName,"/analysis/rawResults.Rda")
     save(resultTable,parameters,file=paste0("serverOnlyModules/blueimp-file-upload-node/public/files/",rawResultsLocation))
