@@ -26,6 +26,7 @@
 # For Dose Response, there is a read plate name but no barcode...
 # What to do when two runs are done on the same barcode?
 
+# runPrimaryAnalysis(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/PrimaryAnalysisFiles.zip",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=255259))
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # configList <- readConfigFile("public/src/conf/configuration.js")
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, configList,experimentId=27099)
@@ -253,6 +254,7 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, e
                              dataRow = plateData$transformedValues,
                              hits = plateData$hits,
                              xLabel = "Column",
+                             yLabel = "Normalized Activity (rfu)",
                              colourPalette = c("red","green","black"))
 #     resultTable$well <- factor(resultTable$well, levels = levels(resultTable$well)[order(gsub("\\D", "", levels(resultTable$well)))])
 #     resultTable <- resultTable[order(gsub("\\D", "", resultTable$well)),]
@@ -1234,6 +1236,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
       # May need to return to using analysisGroupData eventually
       outputTable <- data.table("Corporate Batch ID" = resultTable$batchName, "Barcode" = resultTable$barcode,
                                 "Well" = resultTable$well, "Hit" = resultTable$efficacyThreshold,
+                                "Normalized Activity" = resultTable$normalized,
                                 "Activity" = resultTable$transformed, "Fluorescent"= resultTable$fluorescent,
                                 "Max Time (s)" = resultTable$maxTime, "Well Type" = resultTable$wellType)
     }

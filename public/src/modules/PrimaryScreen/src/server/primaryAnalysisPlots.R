@@ -44,7 +44,7 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
 }
 createGGComparison <- function(graphTitle, yLimits = NULL, 
                                xColumn, wellType, dataRow, hits = NULL,
-                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, margins = c(1,1,1,1), rotateXLabel = FALSE, colourPalette = NA) {
+                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, yLabel="Activity (rfu)", margins = c(1,1,1,1), rotateXLabel = FALSE, colourPalette = NA) {
   #error handling
   if (all(!PC,!NC,!test)) {
     print("needs to plot something")
@@ -73,7 +73,7 @@ createGGComparison <- function(graphTitle, yLimits = NULL,
     g <- g + geom_point()
    }
     g <- g + xlab(xLabel) +
-    ylab("Activity (rfu)") +
+    ylab(yLabel) +
     ggtitle(graphTitle) +
     coord_cartesian(ylim=yLimits)
     theme(panel.margin = unit(0,"null"),
