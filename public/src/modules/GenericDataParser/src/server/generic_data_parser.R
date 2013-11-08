@@ -994,6 +994,14 @@ organizeRawResults <- function(rawResults, calculatedResults) {
   xLabel <- resultTypes$Type[match(xLabelWithUnit,resultTypes$DataColumn)]
   yLabel <- resultTypes$Type[match(yLabelWithUnit,resultTypes$DataColumn)]
   
+  # Force them to use Dose and Response (would add a flag later for other similar formats that are not Dose Respose)
+  if (xLabel != "Dose") {
+    errorList <<- c(errorList, "The x Raw Result must be 'Dose' for this format.")
+  }
+  if (yLabel != "Response") {
+    errorList <<- c(errorList, "The y Raw Result must be 'Response' for this format.")
+  }
+  
   #Drop Columns that are unnecessary in this context
   resultTypes <- resultTypes[,c("DataColumn","Type","Units")]
   
