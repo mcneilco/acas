@@ -37,10 +37,10 @@
         <div class="pull-left">
             <p>*Positive Control</p>
             <form class="form-inline">
-                <input class="input-medium pull-left bv_positiveControlBatch" type="text" placeholder="enter batch number" value="">
+                <input class="input-medium pull-left bv_posControlBatch bv_group_posControlBatch" type="text" placeholder="enter batch number" value="">
                 <form>
                     <fieldset style="padding-left:10px;">
-                        <input class="input-small pull-right bv_positiveControlConc" type="text" placeholder="Conc uM:" value="10">
+                        <input class="input-small pull-right bv_posControlConc bv_group_posControlConc" type="text" placeholder="Conc uM:" value="">
 
                     </fieldset>
                 </form>
@@ -50,10 +50,10 @@
         <div class="pull-right">
             <p style="padding-left:40px;">*Negative Control</p>
             <form class="form-inline" style="padding-left:40px;">
-                <input class="input-medium pull-left" type="text" placeholder="enter batch number" value="">
+                <input class="input-medium pull-left bv_negControlBatch bv_group_negControlBatch" type="text" placeholder="enter batch number" value="">
                 <form>
                     <fieldset style="padding-left:10px;">
-                        <input class="input-small pull-right" type="text" placeholder="Conc uM:" value="1">
+                        <input class="input-small pull-right bv_negControlConc bv_group_negControlConc" type="text" placeholder="Conc uM:" value="">
                     </fieldset>
                 </form>
             </form>
@@ -64,7 +64,7 @@
         <div class="control-group">
             <label class="control-label">*Vehicle Control</label>
             <div class="controls">
-                <input class="input-xlarge" type="text">
+                <input class="input-xlarge bv_vehControlBatch bv_group_vehControlBatch" type="text">
             </div>
         </div>
         <div class="control-group bv_group_transformationRule">

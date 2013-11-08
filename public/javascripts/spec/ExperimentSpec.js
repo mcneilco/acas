@@ -264,7 +264,7 @@
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
       });
-      return describe("model composite component conversion", function() {
+      describe("model composite component conversion", function() {
         beforeEach(function() {
           runs(function() {
             var _this = this;
@@ -307,6 +307,25 @@
         return it("should convert protocol has to Protocol", function() {
           return runs(function() {
             return expect(this.exp.get('protocol') instanceof Protocol).toBeTruthy();
+          });
+        });
+      });
+      return describe("control state handling", function() {
+        beforeEach(function() {
+          return this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
+        });
+        return describe("fetch controls", function() {
+          it("should return any control states", function() {
+            var controls;
+
+            controls = this.exp.getControlStates();
+            return expect(controls[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual("CRA-000396:1");
+          });
+          return it("should returned a specific control state", function() {
+            var negControl;
+
+            negControl = this.exp.getControlType("negative control");
+            return expect(negControl[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual("CRA-000396:1");
           });
         });
       });

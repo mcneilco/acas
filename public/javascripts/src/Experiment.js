@@ -189,6 +189,23 @@
       return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "description");
     };
 
+    Experiment.prototype.getControlStates = function() {
+      return this.get('lsStates').getStatesByTypeAndKind("metadata", "experiment controls");
+    };
+
+    Experiment.prototype.getControlType = function(type) {
+      var controls, matched;
+
+      controls = this.getControlStates();
+      matched = controls.filter(function(cont) {
+        var vals;
+
+        vals = cont.getValuesByTypeAndKind("stringValue", "control type");
+        return vals[0].get('stringValue') === type;
+      });
+      return matched;
+    };
+
     return Experiment;
 
   })(Backbone.Model);

@@ -207,6 +207,17 @@ describe "Experiment module testing", ->
 				runs ->
 					expect(@exp.get('protocol')  instanceof Protocol).toBeTruthy()
 
+		describe "control state handling", ->
+			beforeEach ->
+				@exp = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
+			describe "fetch controls", ->
+				it "should return any control states", ->
+					controls = @exp.getControlStates()
+					expect(controls[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual "CRA-000396:1"
+				it "should returned a specific control state", ->
+					negControl = @exp.getControlType("negative control")
+					expect(negControl[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual "CRA-000396:1"
+
 	describe "Experiment List testing", ->
 		beforeEach ->
 			@el = new ExperimentList()

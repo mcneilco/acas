@@ -91,7 +91,7 @@
     PrimaryScreenAnalysisController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      this.getControlStates();
+      this.showControlValues();
       this.$('.bv_hitThreshold').val(this.getHitThreshold());
       this.$('.bv_transformationRule').val(this.getTransformationRule());
       this.$('.bv_normalizationRule').val(this.getNormalizationRule());
@@ -102,8 +102,12 @@
       return this;
     };
 
-    PrimaryScreenAnalysisController.prototype.getControlStates = function() {
-      return this.controlStates = this.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment controls");
+    PrimaryScreenAnalysisController.prototype.showControlValues = function() {
+      var negControl;
+
+      negControl = this.model.getControlType("negative control");
+      console.log(negControl);
+      return console.log(this.model.getControlStates());
     };
 
     PrimaryScreenAnalysisController.prototype.getHitThreshold = function() {

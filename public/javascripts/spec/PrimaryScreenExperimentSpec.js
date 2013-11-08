@@ -29,7 +29,7 @@
             return expect(this.psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual(0);
           });
           it("Should load an analysis controller", function() {
-            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_positiveControlBatch').length).toNotEqual(0);
+            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_posControlBatch').length).toNotEqual(0);
           });
           return it("Should load a dose response controller", function() {
             return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual(0);
@@ -96,7 +96,7 @@
             return expect(this.psac).toBeDefined;
           });
           it("Should load the template", function() {
-            return expect(this.psac.$('.bv_positiveControlBatch').length).toNotEqual(0);
+            return expect(this.psac.$('.bv_posControlBatch').length).toNotEqual(0);
           });
           return it("Should load a data loader", function() {
             return expect(this.psac.$('.bv_fileUploadWrapper').length).toNotEqual(0);
@@ -133,8 +133,14 @@
           });
         });
         describe("should populate fields", function() {
-          return it("should show the normalization", function() {
+          it("should show the normalization", function() {
             return expect(this.psac.$('.bv_normalizationRule').val()).toEqual('none');
+          });
+          it("should show the negative control batch", function() {
+            return expect(this.psac.$('.bv_negControlBatch').val()).toEqual("CRA-000396:1");
+          });
+          return it("should show the negative control concentration", function() {
+            return expect(this.psac.$('.bv_negControlConc').val()).toEqual(1.0);
           });
         });
         return describe("parameter editing", function() {

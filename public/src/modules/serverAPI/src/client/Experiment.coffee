@@ -112,6 +112,18 @@ class window.Experiment extends Backbone.Model
 	getDescription: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "description"
 
+	getControlStates: ->
+		@.get('lsStates').getStatesByTypeAndKind "metadata", "experiment controls"
+
+	getControlType: (type) ->
+		controls = @getControlStates()
+		matched = controls.filter (cont) ->
+			vals = cont.getValuesByTypeAndKind "stringValue", "control type"
+			vals[0].get('stringValue') == type
+
+		matched
+
+
 class window.ExperimentList extends Backbone.Collection
 	model: Experiment
 

@@ -21,7 +21,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "Should load a base experiment controller", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
-					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_positiveControlBatch').length).toNotEqual 0
+					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_posControlBatch').length).toNotEqual 0
 				it "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual 0
 			describe "saving to server", ->
@@ -72,7 +72,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "Class should exist", ->
 					expect(@psac).toBeDefined
 				it "Should load the template", ->
-					expect(@psac.$('.bv_positiveControlBatch').length).toNotEqual 0
+					expect(@psac.$('.bv_posControlBatch').length).toNotEqual 0
 				it "Should load a data loader", ->
 					expect(@psac.$('.bv_fileUploadWrapper').length).toNotEqual 0
 			describe "should populate fields", ->
@@ -96,6 +96,11 @@ describe "Primary Screen Experiment module testing", ->
 			describe "should populate fields", ->
 				it "should show the normalization", ->
 					expect(@psac.$('.bv_normalizationRule').val()).toEqual 'none'
+				it "should show the negative control batch", ->
+					expect(@psac.$('.bv_negControlBatch').val()).toEqual "CRA-000396:1"
+				it "should show the negative control concentration", ->
+					expect(@psac.$('.bv_negControlConc').val()).toEqual 1.0
+
 			describe "parameter editing", ->
 				it "should update the model with when the normalization is changed", ->
 					@psac.$('.bv_normalizationRule').val('plate order')

@@ -53,7 +53,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-		@getControlStates()
+		@showControlValues()
 		@$('.bv_hitThreshold').val(@getHitThreshold())
 		@$('.bv_transformationRule').val(@getTransformationRule())
 		@$('.bv_normalizationRule').val(@getNormalizationRule())
@@ -62,8 +62,12 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@handleExperimentSaved()
 		@
 
-	getControlStates: ->
-		@controlStates = @model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment controls")
+	showControlValues: ->
+		negControl = @model.getControlType("negative control")
+		console.log negControl
+		console.log @model.getControlStates()
+		#@$('bv_negControlBatch').val negControl[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')
+
 
 	getHitThreshold: ->
 		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
