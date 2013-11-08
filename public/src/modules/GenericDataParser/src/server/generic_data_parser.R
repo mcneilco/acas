@@ -56,6 +56,8 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   # Returns:
   #   A dataframe of the of section in the generic excel file
   
+  require('gdata')
+  
   # Get the first line matching the section
   listMatch <- sapply(genericDataFileDataFrame,grep,pattern = lookFor,ignore.case = TRUE, perl = TRUE)
   firstInstanceInEachColumn <- suppressWarnings(unlist(lapply(listMatch, min)))
@@ -90,7 +92,7 @@ getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
   # Get the last line matching the section
   sectionColumn <- genericDataFileDataFrame[,names(startSection)]
   sectionColumnSubset <- subset(sectionColumn, 1:length(sectionColumn) > startSection)
-  sectionLength <- which(sectionColumnSubset %in% "")[1]
+  sectionLength <- which(is.na(sectionColumnSubset) | sectionColumnSubset %in% "")[1]
   if(is.na(sectionLength)) {
     sectionLength <- length(sectionColumnSubset) + 1
   }
@@ -165,6 +167,14 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryForma
       return(coerceToDate(secondaryFormat, inputValue))
     }
     
+    # Return an error for Excel Date formats
+    if(inputValue == "A_date_was_in_Excel_Date_format") {
+      errorList <<- c(errorList, paste0("A date was has a Number Format of 'Date' or 'General' in Excel rather than 'Text'. ",
+                                        "Please format the dates as Excel 'Text' and use the format YYYY-MM-DD. ",
+                                        "Excel stores dates in a format we cannot accept."))
+      return(NA)       
+    }
+    
     #First try substituting out the seperators in the inputValue for those in the expected format
     expectedSeperator <- ifelse(grepl("-",expectedFormat),"-", "/")
     inputValueWExpectedSeperator <- gsub("-|/",expectedSeperator,inputValue)
@@ -184,21 +194,19 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryForma
         
         # Add to the warnings that we coerced the date to a "Best Match"
         warning(paste0("A date is not in the proper format. Found: \"",inputValue,"\" This was interpreted as \"",bestMatchingDate, 
-                       "\". Please enter dates in the following format: \"", format(Sys.Date(), expectedFormat),
-                       "\", or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
+                       "\". Please enter dates as YYYY-MM-DD, or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>  for more information."))
         returnDate <- bestMatchingDate
       } else {
         # If we couldn't parse the data into any of the formats, then we add this to the erorrs and return no date
         errorList <<- c(errorList,paste0("The loader was unable to change the date '", inputValue, 
-                                         "' to the proper format. Please change it to the following format: \"",
-                                         format(Sys.Date(), expectedFormat),"\"",
-                                         " or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>"))
+                                         "' to the proper format. Please change it to the format YYYY-MM-DD, ",
+                                         " or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a> for more information."))
       }
     } else {
       # If the change in the seperators fixed the issue, then we add this to the warnings and return the coerced date
       warning(paste0("A date is not in the proper format. Found: \"",inputValue,"\" This was interpreted as \"",
                      inputValueWExpectedSeperator, 
-                     "\". Please enter dates in the following format: \"", format(Sys.Date(), expectedFormat),"\""))
+                     "\". Please enter dates as YYYY-MM-DD."))
       returnDate <- inputValueWExpectedSeperator
     }
   } else {
@@ -601,7 +609,14 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   require(rjson)
   require(RCurl)
   
-  currentValueKindsList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds")))
+  # Throw errors for words used with special meanings by the loader
+  internalReservedWords <- c("concentration", "time")
+  usedReservedWords <- internalReservedWords %in% neededValueKinds
+  if (any(usedReservedWords)) {
+    stop(paste0(sqliz(internalReservedWords[usedReservedWords]), " is reserved and cannot be used as a column header."))
+  }
+  
+  currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
   if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
@@ -617,6 +632,12 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   
   comparisonFrame <- merge(oldValueKindTypeFrame, currentValueKindTypeFrame, by.x = "oldValueKinds", by.y = "currentValueKinds")
   wrongValueTypes <- comparisonFrame$oldValueKindTypes != comparisonFrame$matchingValueTypes
+  
+  # Throw errors if any values are of types that cannot be entered in SEL
+  reservedValueKinds <- comparisonFrame$oldValueKinds[comparisonFrame$matchingValueTypes %in% c("codeValue", "fileValue", "urlValue", "blobValue")]
+  if (length(reservedValueKinds) > 0) {
+    stop(paste0("The column header ", sqliz(reservedValueKinds), " is reserved and cannot be used"))
+  }
   
   if(any(wrongValueTypes)) {
     problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
@@ -679,14 +700,12 @@ getExcelColumnFromNumber <- function(number) {
     return("none")
   }
   
-  alphabet <-c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", 
-               "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
   divisionResult <- floor((number-1)/26)
   remainder <- (number-1)%%26
   if (divisionResult > 0) {
-    return(paste0(getExcelColumnFromNumber(divisionResult),alphabet[remainder+1]))
+    return(paste0(getExcelColumnFromNumber(divisionResult),LETTERS[remainder+1]))
   } else {
-    return(alphabet[remainder+1])
+    return(LETTERS[remainder+1])
   }
 }
 extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
@@ -740,6 +759,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   #	  a data frame containing the organized calculated data
   
   require('reshape')
+  require('gdata')
   
   if(ncol(calculatedResults)==1) {
     stop("The rows below Calculated Results must have at least two columns filled: one for Corporate Batch ID's and one for data.")
@@ -850,7 +870,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   longResults$"Result Desc" <- as.character(longResults$"UnparsedValue")
   longResults$"Result Desc"[!matches & longResults$Class != "Text"] <- ""
   
-  longResults$clobValue <- longResults$"Result Desc"
+  longResults$clobValue <- as.character(longResults$"UnparsedValue")
   longResults$clobValue[!longResults$Class=="Clob"] <- NA
   longResults$"Result Desc"[longResults$Class=="Clob"] <- ""
   
@@ -874,7 +894,9 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   #   Apply the function validateDate to each entry
   longResults$"Result Date" <- rep(NA, length(longResults$analysisGroupID))
   if (length(which(longResults$Class=="Date")) > 0) {
-    longResults$"Result Date"[which(longResults$Class=="Date")] <- sapply(longResults$UnparsedValue[which(longResults$Class=="Date")], FUN=validateDate)
+    dateTranslation <- lapply(unique(longResults$UnparsedValue[which(longResults$Class=="Date")]), validateDate)
+    names(dateTranslation) <- unique(longResults$UnparsedValue[which(longResults$Class=="Date")])
+    longResults$"Result Date"[which(longResults$Class=="Date")] <- dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date")]]
   }
   longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
   longResults$"Result Operator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
@@ -1214,6 +1236,8 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   # Returns:
   #  A list that is an experiment
   
+  require('gdata')
+  
   experimentStates <- list()
   
   # Store the metaData in experiment values
@@ -1316,8 +1340,8 @@ validateProject <- function(projectName, configList) {
   })
   projectCodes <- sapply(projectList, function(x) x$code)
   if(length(projectCodes) == 0) {errorList <<- c(errorList, "No projects are available, contact your system administrator")}
-  if (projectName %in% projectCodes) {
-    return(projectName)
+  if (toupper(projectName) %in% projectCodes) {
+    return(toupper(projectName))
   } else {
     errorList <<- c(errorList, paste0("The project you entered is not an available project. Please enter one of these projects: '",
                                       paste(projectCodes, collapse = "', '"), "'."))
@@ -1329,6 +1353,8 @@ validateScientist <- function(scientistName, configList) {
   require('RCurl')
   require('rjson')
   
+  response <- NULL
+  username <- "username"
   tryCatch({
     response <- getURL(URLencode(paste0(configList$client.host, ":", configList$client.port, configList$client.service.users.path, "/", scientistName)))
     if (response == "") {
@@ -1340,12 +1366,14 @@ validateScientist <- function(scientistName, configList) {
     return("")
   })
   
-  tryCatch({
-    username <- fromJSON(response)$username
-  }, error = function(e) {
-    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
-    return("")
-  })
+  if (!is.null(response)) {
+    tryCatch({
+      username <- fromJSON(response)$username
+    }, error = function(e) {
+      errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+      return("")
+    })
+  }
   
   return(username)
 }
@@ -1978,7 +2006,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     write(toJSON(analysisGroups), file = testOutputLocation)
   } else {
     # Write the data to the server. The response is unused.
-    response <- saveAnalysisGroups(analysisGroups)
+    response <- saveAcasEntities(analysisGroups, "analysisgroups")
     # Used during testing
     #cat(toJSON(saveAnalysisGroups(analysisGroups)))
   }
@@ -1990,7 +2018,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   
-  require('gdata')
+  require('XLConnect')
   require('RCurl')
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
@@ -2005,17 +2033,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   if (grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
     tryCatch({
-      genericDataFileDataFrame <- read.xls(pathToGenericDataFormatExcelFile, header = FALSE, blank.lines.skip = FALSE, stringsAsFactors=FALSE, na.strings=c())
-      if (grepl("\\.xlsx$",pathToGenericDataFormatExcelFile)) {
-        genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&gt;",replacement=">"), stringsAsFactors=FALSE)
-        genericDataFileDataFrame <- as.data.frame(sapply(genericDataFileDataFrame,gsub,pattern="&lt;",replacement="<"), stringsAsFactors=FALSE)
-      }
+      wb <- loadWorkbook(pathToGenericDataFormatExcelFile)
+      genericDataFileDataFrame <- readWorksheet(wb, sheet=1, header = FALSE, dateTimeFormat="A_date_was_in_Excel_Date_format")
     }, error = function(e) {
       stop("Cannot read input excel file")
     })
   } else if (grepl("\\.csv$",pathToGenericDataFormatExcelFile)){
     tryCatch({
-      genericDataFileDataFrame <- read.csv(pathToGenericDataFormatExcelFile, header = FALSE, stringsAsFactors=FALSE, na.strings=c())
+      genericDataFileDataFrame <- read.csv(pathToGenericDataFormatExcelFile, header = FALSE, stringsAsFactors=FALSE)
     }, error = function(e) {
       stop("Cannot read input csv file")
     })
