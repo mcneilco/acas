@@ -124,7 +124,7 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryForma
   
   returnDate <- ""
   
-  if (inputValue == "") {return (NA)}
+  if (is.na(inputValue) | inputValue == "") {return (NA)}
   
   # Function to attempt to coerce the date into a given format
   coerceToDate <- function(format, inputValue) {
@@ -293,9 +293,10 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   }
   
   expectedDataFormat <- data.frame(
-    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", "Page","Assay Date"),
-    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
-    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE)
+    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", 
+                "Short Description", "Experiment Keywords", "Page","Assay Date"),
+    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
   )
   
   if (!is.null(configList$client.include.project) && configList$client.include.project == "TRUE") {
@@ -616,7 +617,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     stop(paste0(sqliz(internalReservedWords[usedReservedWords]), " is reserved and cannot be used as a column header."))
   }
   
-  currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
+  currentValueKindsList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds")))
   if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
@@ -896,7 +897,9 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   if (length(which(longResults$Class=="Date")) > 0) {
     dateTranslation <- lapply(unique(longResults$UnparsedValue[which(longResults$Class=="Date")]), validateDate)
     names(dateTranslation) <- unique(longResults$UnparsedValue[which(longResults$Class=="Date")])
-    longResults$"Result Date"[which(longResults$Class=="Date")] <- dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date")]]
+    longResults$"Result Date"[which(longResults$Class=="Date" & 
+      !is.na(longResults$UnparsedValue))] <- unlist(dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date" & 
+                                                                                                !is.na(longResults$UnparsedValue))]])
   }
   longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
   longResults$"Result Operator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
@@ -1322,7 +1325,11 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experiment <- createExperiment(lsTransaction = lsTransaction, 
                                  protocol = protocol,
                                  #lsKind = "generic loader",
-                                 shortDescription="experiment created by generic data parser",  
+                                 shortDescription = if(!is.null(metaData$"Short Description"[1])) {
+                                   metaData$"Short Description"[1]
+                                     } else {
+                                   "experiment created by generic data parser"
+                                     },  
                                  recordedBy=recordedBy, 
                                  experimentLabels=experimentLabels,
                                  experimentStates=experimentStates)
