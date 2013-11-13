@@ -52,7 +52,8 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   }
   
   tryCatch({
-    moleculeList <- load.molecules(molfiles=fileName)
+    moleculeList <- iload.molecules(fileName, type="sdf")
+    firstMolecule <- nextElem(moleculeList)
   }, error = function(e) {
     stop(paste("Error in loading the file:",e))
   })
@@ -60,7 +61,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   requiredProperties <- c("ALIQUOT_PLATE_BARCODE","ALIQUOT_WELL_ID","SAMPLE_ID","ALIQUOT_SOLVENT","ALIQUOT_CONC","ALIQUOT_CONC_UNIT",
                           "ALIQUOT_VOLUME","ALIQUOT_VOLUME_UNIT","ALIQUOT_DATE")
   
-  availableProperties <- names(get.properties(moleculeList[[1]]))
+  availableProperties <- names(get.properties(firstMolecule))
   
   differences <- setdiff(requiredProperties,availableProperties)
   
@@ -72,13 +73,20 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   
   summaryInfo <- list(
     info = list(
-      "Number of wells to load" = length(moleculeList),
       "User name" = recordedBy
     ))
   
   if (!dryRun) {
-    propertyTable <- as.data.frame(lapply(requiredProperties,function(property) sapply(moleculeList,get.property,key=property)))
+    propertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(firstMolecule, key=property)))
     names(propertyTable) <- requiredProperties
+    while(hasNext(moleculeList)) {
+      mol <- nextElem(moleculeList)
+      newPropertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(mol, key=property)))
+      names(newPropertyTable) <- requiredProperties
+      propertyTable <- rbind.fill(propertyTable, newPropertyTable)
+    }
+    
+    summaryInfo$info$"Number of wells loaded" <- nrow(PropertyTable)
     
     sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
     
