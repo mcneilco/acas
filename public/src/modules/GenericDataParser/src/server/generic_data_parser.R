@@ -494,6 +494,7 @@ getHiddenColumns <- function(classRow) {
   
   # Pull out info about hidden columns
   dataShown <- gsub(".*\\((.*)\\).*||.*", "\\1",classRow)
+  dataShown[is.na(dataShown)] <- ""
   hiddenColumns <- grepl("hidden",dataShown)
   shownColumns <- grepl("shown",dataShown)
   defaultColumns <- dataShown %in% ""
@@ -541,10 +542,10 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   classRow[clobColumns] <- "Clob"
   
   # Check if the datatypes are entered correctly
-  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob",""))
+  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob","", NA))
   
   # Let the user know about empty datatypes
-  emptyClasses <- which(classRow=="" | classRow==" ")
+  emptyClasses <- which(is.na(classRow) | trim(classRow)=="")
   if(length(emptyClasses)>0) {
     if(length(emptyClasses)==1) {
       warning(paste0("Column ", getExcelColumnFromNumber(emptyClasses), " (" , LabelRow[emptyClasses], ") does not have a Datatype entered. ",
@@ -561,7 +562,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
                     "and", getExcelColumnFromNumber(tail(emptyClasses,n=1)),
                     "as numbers, but it may not work very well. Please enter 'Number','Text', or 'Date'."))
     }
-    classRow[classRow==""] <- "Number"
+    classRow[is.na(classRow) | classRow==""] <- "Number"
   }
   
   if(length(badClasses)>0) {
@@ -691,23 +692,25 @@ getExcelColumnFromNumber <- function(number) {
   #
   #
   # Args:
-  #    number:    A numeric of the column number
+  #    number:    A numeric vector of the column numbers
   #
   # Returns:
   #   An excel-style set of column names (i.e. "B" or "AR")
   
-  if (number < 1) {
+  if (any(number < 1)) {
     warning(paste("An invalid column number was attempted to be turned into a letter:",number))
     return("none")
   }
   
-  divisionResult <- floor((number-1)/26)
-  remainder <- (number-1)%%26
-  if (divisionResult > 0) {
-    return(paste0(getExcelColumnFromNumber(divisionResult),LETTERS[remainder+1]))
-  } else {
-    return(LETTERS[remainder+1])
-  }
+  return(vapply(X=number, FUN.VALUE=c(""), FUN=function(number) {
+    divisionResult <- floor((number-1)/26)
+    remainder <- (number-1)%%26
+    if (divisionResult > 0) {
+      return(paste0(getExcelColumnFromNumber(divisionResult),LETTERS[remainder+1]))
+    } else {
+      return(LETTERS[remainder+1])
+    }
+  }))
 }
 extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   # Extracts result types, units, conc, and conc units from a list of strings
@@ -719,9 +722,10 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   #  A data frame containing the Result Type, Units, Conc, and ConcUnits for each item in the result types character vector
   
   require('gdata')
-  
-  if (sum(is.na(resultTypesVector))!=0 || sum(resultTypesVector=="")!=0 || sum(resultTypesVector==" ")!=0) {
-    stop("Some of the column labels in the 'Calculated Results' section are blank. Enter a label for each column.")
+  emptyResultTypes <- is.na(resultTypesVector) | (trim(resultTypesVector) == "")
+  if (any(emptyResultTypes)) {
+    stop(paste0("Column ", paste(getExcelColumnFromNumber(which(emptyResultTypes)), collapse=", "), " has a blank column header. ",
+                "Please enter a column header before reuploading."))
   }
   
   dataColumns <- c()
@@ -887,9 +891,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   # For the results marked as "Text":
   #   Set the Result Desc to the original value
   #   Clear the other categories
-  longResults$"Result Value"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text"))
-  longResults$"Result Operator"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text"))
-  
+  longResults$"Result Value"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
+  longResults$"Result Operator"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
   
   # For the results marked as "Date":
   #   Apply the function validateDate to each entry
@@ -901,9 +904,9 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
       !is.na(longResults$UnparsedValue))] <- unlist(dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date" & 
                                                                                                 !is.na(longResults$UnparsedValue))]])
   }
-  longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
-  longResults$"Result Operator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
-  longResults$"Result Desc"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
+  longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
+  longResults$"Result Operator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
+  longResults$"Result Desc"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
   
   # Clean up the data frame to look nice (remove extra columns)
   row.names(longResults) <- 1:nrow(longResults)
