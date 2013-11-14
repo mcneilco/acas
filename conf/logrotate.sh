@@ -25,9 +25,9 @@ logDirectory=$(get_prop $APP_CONFIG_FILE $LOG_PATH_VARIABLE)
 if [ -d "$logDirectory" ]; then
   echo "Rotating log files in $logDirectory"
   cd $logDirectory
-  exec /usr/sbin/logrotate  -s logrotate.log $LOGROTATE_CONFIG_FILE
+  exec /usr/sbin/logrotate  -s logrotate_state_file $LOGROTATE_CONFIG_FILE
   #To Force Rotate
-  #exec /usr/sbin/logrotate -f -s logrotate.log $LOGROTATE_CONFIG_FILE
+  #exec /usr/sbin/logrotate -f -s logrotate_state_file $LOGROTATE_CONFIG_FILE
 fi
 
 echo "Log directory \"$logDirectory\" does not exist"
