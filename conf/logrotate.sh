@@ -8,11 +8,10 @@
 #
 #########################################################################
 
-APP_CONFIG_FILE="compiled/conf.properties"
+APP_CONFIG_FILE=$ACAS_HOME/conf/compiled/conf.properties
 LOG_PATH_VARIABLE=server.log.path
-LOGROTATE_CONFIG_FILE=$(readlink -f logrotate.conf)
+LOGROTATE_CONFIG_FILE=$ACAS_HOME/conf/logrotate.conf
 
-echo $LOGROTATE_CONFIG_FILE
 get_prop(){
 propfile=$1
 key=$2
@@ -27,7 +26,8 @@ if [ -d "$logDirectory" ]; then
   echo "Rotating log files in $logDirectory"
   cd $logDirectory
   exec /usr/sbin/logrotate  -s logrotate.log $LOGROTATE_CONFIG_FILE
+  #To Force Rotate
+  #exec /usr/sbin/logrotate -f -s logrotate.log $LOGROTATE_CONFIG_FILE
 fi
 
 echo "Log directory \"$logDirectory\" does not exist"
-
