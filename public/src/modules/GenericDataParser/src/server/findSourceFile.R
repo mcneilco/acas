@@ -14,6 +14,6 @@ lsKinds <- lapply(locationState$lsValues, function(x) x$"lsKind")
 
 valuesToFind <- locationState$lsValues[lsKinds %in% c("source file")]
 
-fileToFind <- valuesTofind[[1]]$fileValue
+fileToFind <- valuesToFind[[1]]$fileValue
 
 cat(paste0("http://dsanpimapp01:8080/DNS/core/v1/DNSFile/", fileToFind))
