@@ -14,7 +14,6 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
 (function() {
   exports.protocolByCodename = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
-
     console.log(req.params.code);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
@@ -29,7 +28,6 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
 
   exports.protocolById = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
-
     console.log(req.params.id);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
@@ -45,7 +43,6 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
   exports.postProtocol = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
-
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
@@ -75,7 +72,6 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
   exports.putProtocol = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
-
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
@@ -104,7 +100,6 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
 
   exports.protocolLabels = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
-
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.protocolLabels));
@@ -117,42 +112,25 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
   };
 
   exports.protocolCodeList = function(req, resp) {
-    var baseurl, config, filterString, labels, protocolServiceTestJSON, request, shouldFilter, translateToCodes,
+    var baseurl, config, filterString, labels, protocolServiceTestJSON, request, shouldFilter,
       _this = this;
-
     console.log(req.params);
     if (req.params.str != null) {
       shouldFilter = true;
       filterString = req.params.str;
+    } else {
+      shouldFilter = false;
     }
-    translateToCodes = function(labels) {
-      var label, match, protCodes, _i, _len;
-
-      protCodes = [];
-      for (_i = 0, _len = labels.length; _i < _len; _i++) {
-        label = labels[_i];
-        if (shouldFilter) {
-          match = label.labelText.toUpperCase().indexOf(filterString.toUpperCase()) > -1;
-        } else {
-          match = true;
-        }
-        if (!label.ignored && !label.protocol.ignored && label.lsType === "name" && match) {
-          protCodes.push({
-            code: label.protocol.codeName,
-            name: label.labelText,
-            ignored: label.ignored
-          });
-        }
-      }
-      return protCodes;
-    };
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       labels = protocolServiceTestJSON.protocolLabels;
       return resp.json(translateToCodes(labels));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "protocollabels";
+      baseurl = config.all.client.service.persistence.fullpath + "protocollabels/codetable";
+      if (shouldFilter) {
+        baseurl += "/?protocolName=" + filterString;
+      }
       request = require('request');
       return request({
         method: 'GET',
@@ -160,7 +138,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
         json: true
       }, function(error, response, json) {
         if (!error && response.statusCode === 200) {
-          return resp.json(translateToCodes(json));
+          return resp.json(json);
         } else {
           console.log('got ajax error trying to get protocol labels');
           console.log(error);

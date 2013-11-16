@@ -22,7 +22,6 @@
 
     MetStab.prototype.validate = function(attrs) {
       var errors;
-
       errors = [];
       if (attrs.protocolName === "Select Protocol") {
         errors.push({
@@ -69,7 +68,8 @@
     __extends(MetStabController, _super);
 
     function MetStabController() {
-      this.render = __bind(this.render, this);      _ref1 = MetStabController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = MetStabController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -92,7 +92,6 @@
 
     MetStabController.prototype.render = function() {
       var date;
-
       MetStabController.__super__.render.call(this);
       this.$('.bv_assayDate').datepicker();
       this.$('.bv_assayDate').datepicker("option", "dateFormat", "yy-mm-dd");
@@ -126,13 +125,13 @@
       this.validateParseFile = __bind(this.validateParseFile, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
-      this.handleMSFormValid = __bind(this.handleMSFormValid, this);      _ref2 = MetStabParserController.__super__.constructor.apply(this, arguments);
+      this.handleMSFormValid = __bind(this.handleMSFormValid, this);
+      _ref2 = MetStabParserController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
     MetStabParserController.prototype.initialize = function() {
       var _this = this;
-
       this.fileProcessorURL = "/api/metStabParser";
       this.errorOwnerName = 'MetStabParserController';
       this.loadReportFile = false;

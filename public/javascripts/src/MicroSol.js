@@ -21,7 +21,6 @@
 
     MicroSol.prototype.validate = function(attrs) {
       var errors;
-
       errors = [];
       if (attrs.protocolName === "Select Protocol") {
         errors.push({
@@ -62,7 +61,8 @@
     __extends(MicroSolController, _super);
 
     function MicroSolController() {
-      this.render = __bind(this.render, this);      _ref1 = MicroSolController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = MicroSolController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -109,13 +109,13 @@
       this.validateParseFile = __bind(this.validateParseFile, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
-      this.handleMSFormValid = __bind(this.handleMSFormValid, this);      _ref2 = MicroSolParserController.__super__.constructor.apply(this, arguments);
+      this.handleMSFormValid = __bind(this.handleMSFormValid, this);
+      _ref2 = MicroSolParserController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
     MicroSolParserController.prototype.initialize = function() {
       var _this = this;
-
       this.fileProcessorURL = "/api/microSolParser";
       this.errorOwnerName = 'MicroSolParserController';
       this.loadReportFile = false;

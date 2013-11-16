@@ -30,7 +30,6 @@
         });
         it('should require that protocolName not be "unassigned"', function() {
           var filtErrors;
-
           this.microSol.set({
             protocolName: "Select Protocol"
           });
@@ -42,7 +41,6 @@
         });
         it('should require that scientist not be ""', function() {
           var filtErrors;
-
           this.microSol.set({
             scientist: ""
           });
@@ -54,7 +52,6 @@
         });
         it('should require that notebook not be ""', function() {
           var filtErrors;
-
           this.microSol.set({
             notebook: ""
           });
@@ -66,7 +63,6 @@
         });
         return it('should require that project not be "unassigned"', function() {
           var filtErrors;
-
           this.microSol.set({
             project: "unassigned"
           });
@@ -174,10 +170,8 @@
           });
           return it("should trigger 'amDirty' when field changed", function() {
             var _this = this;
-
             runs(function() {
               var _this = this;
-
               this.amDirtySet = false;
               this.fpkc.on('amDirty', function() {
                 return _this.amDirtySet = true;

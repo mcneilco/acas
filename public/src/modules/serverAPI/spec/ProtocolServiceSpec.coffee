@@ -128,11 +128,11 @@ describe 'Protocol CRUD testing', ->
 						dataType: 'json'
 
 			it 'should return an array of protocols', ->
-				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				waitsFor( @waitForServiceReturn, 'service did not return', 5000)
 				runs ->
 					expect(@serviceReturn.length).toBeGreaterThan 0
 			it 'should a hash with code defined', ->
-				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				waitsFor( @waitForServiceReturn, 'service did not return', 5000)
 				runs ->
 					expect(@serviceReturn[0].code).toContain "PROT-"
 			it 'should a hash with name defined', ->

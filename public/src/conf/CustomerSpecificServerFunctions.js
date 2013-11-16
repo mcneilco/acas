@@ -11,7 +11,6 @@
   exports.logUsage = function(action, data, username) {
     var config, error, form, req, request,
       _this = this;
-
     config = require('../../../conf/compiled/conf.js');
     request = require('request');
     req = request.post(config.all.server.service.external.logging.url, function(error, response) {
@@ -43,7 +42,6 @@
 
   exports.getConfServiceVars = function(sysEnv, callback) {
     var asyncblock, exec, os, properties;
-
     properties = require("properties");
     asyncblock = require('asyncblock');
     exec = require('child_process').exec;
@@ -56,7 +54,6 @@
     }
     return asyncblock(function(flow) {
       var config, options;
-
       global.deployMode = sysEnv.DNSDeployMode;
       exec("java -jar ../../lib/dns-config-client.jar -m " + deployMode + " -c acas -d 2>/dev/null", flow.add());
       config = flow.wait();
@@ -70,7 +67,6 @@
       };
       return properties.parse(config, options, function(error, dnsconf) {
         var jdbcParts;
-
         if (error != null) {
           return console.log("Parsing DNS conf service output failed: " + error);
         } else {
@@ -108,7 +104,6 @@
   exports.authCheck = function(user, pass, retFun) {
     var config, request,
       _this = this;
-
     config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
@@ -134,7 +129,6 @@
   exports.getUser = function(username, callback) {
     var config, request,
       _this = this;
-
     config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
@@ -169,7 +163,6 @@
       return exports.findByUsername(username, function(err, user) {
         return exports.authCheck(username, password, function(results) {
           var error;
-
           if (results.indexOf("Success") >= 0) {
             try {
               exports.logUsage("User logged in succesfully: ", "", username);
@@ -197,7 +190,6 @@
   exports.getProjects = function(resp) {
     var config, request,
       _this = this;
-
     config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
@@ -220,12 +212,10 @@
 
   dnsFormatProjectResponse = function(json) {
     var projects, _;
-
     _ = require('underscore');
     projects = [];
     _.each(json, function(proj) {
       var p;
-
       p = proj.DNSCode;
       return projects.push({
         code: p.code,

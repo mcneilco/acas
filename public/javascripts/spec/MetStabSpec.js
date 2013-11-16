@@ -31,7 +31,6 @@
         });
         it('should require that protocolName not be "unassigned"', function() {
           var filtErrors;
-
           this.metStab.set({
             protocolName: "Select Protocol"
           });
@@ -43,7 +42,6 @@
         });
         it('should require that scientist not be ""', function() {
           var filtErrors;
-
           this.metStab.set({
             scientist: ""
           });
@@ -55,7 +53,6 @@
         });
         it('should require that notebook not be ""', function() {
           var filtErrors;
-
           this.metStab.set({
             notebook: ""
           });
@@ -67,7 +64,6 @@
         });
         it('should require that project not be "unassigned"', function() {
           var filtErrors;
-
           this.metStab.set({
             project: "unassigned"
           });
@@ -79,7 +75,6 @@
         });
         return it('should require that assayDate not be ""', function() {
           var filtErrors;
-
           this.metStab.set({
             assayDate: new Date("").getTime()
           });
@@ -192,10 +187,8 @@
           });
           return it("should trigger 'amDirty' when field changed", function() {
             var _this = this;
-
             runs(function() {
               var _this = this;
-
               this.amDirtySet = false;
               this.fpkc.on('amDirty', function() {
                 return _this.amDirtySet = true;

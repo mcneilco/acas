@@ -8,7 +8,8 @@
     __extends(CurveCuratorAppRouter, _super);
 
     function CurveCuratorAppRouter() {
-      this.loadCurvesForExptCode = __bind(this.loadCurvesForExptCode, this);      _ref = CurveCuratorAppRouter.__super__.constructor.apply(this, arguments);
+      this.loadCurvesForExptCode = __bind(this.loadCurvesForExptCode, this);
+      _ref = CurveCuratorAppRouter.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -33,7 +34,8 @@
 
     function CurveCuratorAppController() {
       this.loadCurvesForExptCode = __bind(this.loadCurvesForExptCode, this);
-      this.render = __bind(this.render, this);      _ref1 = CurveCuratorAppController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = CurveCuratorAppController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 

@@ -5,7 +5,6 @@
 
   startApp = function() {
     var LocalStrategy, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, metStabRoutes, microSolRoutes, pampaRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
-
     config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');

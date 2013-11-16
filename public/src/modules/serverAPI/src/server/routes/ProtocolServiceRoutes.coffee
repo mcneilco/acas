@@ -99,19 +99,8 @@ exports.protocolCodeList = (req, resp) ->
 	if req.params.str?
 		shouldFilter = true
 		filterString = req.params.str
-	translateToCodes = (labels) ->
-		protCodes = []
-		for label in labels
-			if shouldFilter
-				match = label.labelText.toUpperCase().indexOf(filterString.toUpperCase()) > -1
-			else
-				match = true
-			if !label.ignored and !label.protocol.ignored and label.lsType=="name" and match
-				protCodes.push
-					code: label.protocol.codeName
-					name: label.labelText
-					ignored: label.ignored
-		protCodes
+	else
+		shouldFilter = false
 
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
@@ -120,7 +109,9 @@ exports.protocolCodeList = (req, resp) ->
 
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"protocollabels"
+		baseurl = config.all.client.service.persistence.fullpath+"protocollabels/codetable"
+		if shouldFilter
+			baseurl += "/?protocolName="+filterString
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -128,7 +119,7 @@ exports.protocolCodeList = (req, resp) ->
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				resp.json translateToCodes(json)
+				resp.json json
 			else
 				console.log 'got ajax error trying to get protocol labels'
 				console.log error
