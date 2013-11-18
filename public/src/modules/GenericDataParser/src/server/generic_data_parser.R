@@ -2206,13 +2206,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     }
   }
   
-  if (!is.null(configList$client.service.result.viewer.experiment.parameter)) {
-    viewerLink <- paste0(configList$client.service.result.viewer.host, ":",
-                         configList$client.service.result.viewer.port,
-                         configList$client.service.result.viewer.path, "&",
-                         configList$client.service.result.viewer.protocol.parameter, "=",
-                         URLencode(validatedMetaData$"Protocol Name", reserved=TRUE), "&",
-                         configList$client.service.result.viewer.experiment.parameter, "=",
+  if (!is.null(configList$client.service.result.viewer.protocolPrefix)) {
+    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix,
+                         URLencode(validatedMetaData$"Protocol Name", reserved=TRUE),
+                         configList$client.service.result.viewer.experimentPrefix,
                          URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
   } else {
     viewerLink <- NULL
