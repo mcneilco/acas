@@ -901,7 +901,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
     dateTranslation <- lapply(unique(longResults$UnparsedValue[which(longResults$Class=="Date")]), validateDate)
     names(dateTranslation) <- unique(longResults$UnparsedValue[which(longResults$Class=="Date")])
     longResults$"Result Date"[which(longResults$Class=="Date" & 
-      !is.na(longResults$UnparsedValue))] <- unlist(dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date" & 
+                                      !is.na(longResults$UnparsedValue) &
+                                      longResults$UnparsedValue != "")] <- unlist(dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date" & 
                                                                                                 !is.na(longResults$UnparsedValue))]])
   }
   longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
