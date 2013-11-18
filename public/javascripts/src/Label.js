@@ -57,12 +57,10 @@
 
     LabelList.prototype.pickBestLabel = function() {
       var bestLabel, current, names, preferred;
-
       preferred = this.getPreferred();
       if (preferred.length > 0) {
         bestLabel = _.max(preferred, function(lab) {
           var rd;
-
           rd = lab.get('recordedDate');
           if (rd === "") {
             return rd;
@@ -75,7 +73,6 @@
         if (names.length > 0) {
           bestLabel = _.max(names, function(lab) {
             var rd;
-
             rd = lab.get('recordedDate');
             if (rd === "") {
               return rd;
@@ -87,7 +84,6 @@
           current = this.getCurrent();
           bestLabel = _.max(current, function(lab) {
             var rd;
-
             rd = lab.get('recordedDate');
             if (rd === "") {
               return rd;
@@ -102,13 +98,11 @@
 
     LabelList.prototype.pickBestName = function() {
       var bestLabel, preferredNames;
-
       preferredNames = _.filter(this.getCurrent(), function(lab) {
         return lab.get('preferred') && (lab.get('labelType') === "name");
       });
       bestLabel = _.max(preferredNames, function(lab) {
         var rd;
-
         rd = lab.get('recordedDate');
         if (rd === "") {
           return rd;
@@ -121,7 +115,6 @@
 
     LabelList.prototype.setBestName = function(label) {
       var currentName;
-
       label.set({
         labelType: 'name',
         preferred: true,

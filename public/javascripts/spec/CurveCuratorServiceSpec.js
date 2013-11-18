@@ -8,7 +8,6 @@
     return describe('Get curve stubs from experiment code', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'GET',

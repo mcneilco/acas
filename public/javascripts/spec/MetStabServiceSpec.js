@@ -71,7 +71,6 @@ It returns the usual error and warning info, but also a CSV preview of the data 
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/metStabParser",
@@ -102,7 +101,6 @@ It returns the usual error and warning info, but also a CSV preview of the data 
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/metStabParser",

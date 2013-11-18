@@ -71,7 +71,6 @@ It also takes a series pf parameters that would normally be in a header block
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/fullPKParser",
@@ -101,7 +100,6 @@ It also takes a series pf parameters that would normally be in a header block
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/fullPKParser",

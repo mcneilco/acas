@@ -23,7 +23,6 @@
 
   csUtilities.getConfServiceVars(sysEnv, function(confVars) {
     var configDir, options, substitutions;
-
     substitutions = {
       env: sysEnv,
       conf: confVars
@@ -43,7 +42,6 @@
       } else {
         return properties.parse(configDir + "config_advanced.properties", options, function(error, confAdv) {
           var allConf;
-
           if (typeof errors !== "undefined" && errors !== null) {
             return console.log("Problem parsing config_advanced.properties: " + error);
           } else {
@@ -67,7 +65,6 @@
 
   writePropertiesFormat = function(conf) {
     var attr, configOut, flatConf, value;
-
     fs = require('fs');
     flatConf = flat.flatten(conf);
     configOut = "";

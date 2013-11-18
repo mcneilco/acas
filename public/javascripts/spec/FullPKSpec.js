@@ -36,7 +36,6 @@
         });
         it('should require that protocolName not be "unassigned"', function() {
           var filtErrors;
-
           this.fullPK.set({
             protocolName: "Select Protocol"
           });
@@ -48,7 +47,6 @@
         });
         it('should require that experimentName not be ""', function() {
           var filtErrors;
-
           this.fullPK.set({
             experimentName: ""
           });
@@ -60,7 +58,6 @@
         });
         it('should require that scientist not be ""', function() {
           var filtErrors;
-
           this.fullPK.set({
             scientist: ""
           });
@@ -72,7 +69,6 @@
         });
         it('should require that notebook not be ""', function() {
           var filtErrors;
-
           this.fullPK.set({
             notebook: ""
           });
@@ -84,7 +80,6 @@
         });
         it('should require that inLifeNotebook not be ""', function() {
           var filtErrors;
-
           this.fullPK.set({
             inLifeNotebook: ""
           });
@@ -96,7 +91,6 @@
         });
         it('should require that project not be "unassigned"', function() {
           var filtErrors;
-
           this.fullPK.set({
             project: "unassigned"
           });
@@ -108,7 +102,6 @@
         });
         it('should require that bioavailability not be ""', function() {
           var filtErrors;
-
           this.fullPK.set({
             bioavailability: ""
           });
@@ -120,7 +113,6 @@
         });
         it('should require that aucType not be ""', function() {
           var filtErrors;
-
           this.fullPK.set({
             aucType: ""
           });
@@ -132,7 +124,6 @@
         });
         return it('should require that assayDate not be ""', function() {
           var filtErrors;
-
           this.fullPK.set({
             assayDate: new Date("").getTime()
           });
@@ -265,10 +256,8 @@
           });
           return it("should trigger 'amDirty' when field changed", function() {
             var _this = this;
-
             runs(function() {
               var _this = this;
-
               this.amDirtySet = false;
               this.fpkc.on('amDirty', function() {
                 return _this.amDirtySet = true;

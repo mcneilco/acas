@@ -18,7 +18,6 @@
 
     DocForBatches.prototype.initialize = function() {
       var js;
-
       if (this.has('json')) {
         js = this.get('json');
         return this.set({
@@ -43,7 +42,6 @@
 
     DocForBatches.prototype.validate = function(attrs) {
       var errors;
-
       errors = [];
       if (!attrs.docUpload.isValid()) {
         errors.push({
@@ -67,7 +65,6 @@
     DocForBatches.prototype._fetchStubProtocol = function() {
       var docForBatchesProtocolCode,
         _this = this;
-
       docForBatchesProtocolCode = "ACASdocForBatches";
       return $.ajax({
         type: 'GET',
@@ -88,7 +85,6 @@
 
     DocForBatches.prototype.asExperiment = function() {
       var analysisGroup, analysisGroups, eName, exp, recBy, recDate;
-
       if (!this.isValid()) {
         return null;
       }
@@ -132,7 +128,8 @@
       this.save = __bind(this.save, this);
       this.subFormIsInvalid = __bind(this.subFormIsInvalid, this);
       this.subFormIsValid = __bind(this.subFormIsValid, this);
-      this.render = __bind(this.render, this);      _ref1 = DocForBatchesController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = DocForBatchesController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -153,7 +150,6 @@
 
     DocForBatchesController.prototype.setupSubControllers = function() {
       var _this = this;
-
       this.docUploadController = new DocUploadController({
         model: this.model.get('docUpload'),
         el: this.$('.bv_docUpload')
@@ -203,7 +199,6 @@
 
     DocForBatchesController.prototype.save = function() {
       var _this = this;
-
       if (this.model.isValid()) {
         return $.ajax({
           type: 'POST',

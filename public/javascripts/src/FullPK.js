@@ -27,7 +27,6 @@
 
     FullPK.prototype.validate = function(attrs) {
       var errors;
-
       errors = [];
       if (attrs.protocolName === "Select Protocol") {
         errors.push({
@@ -98,7 +97,8 @@
     __extends(FullPKController, _super);
 
     function FullPKController() {
-      this.render = __bind(this.render, this);      _ref1 = FullPKController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = FullPKController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -125,7 +125,6 @@
 
     FullPKController.prototype.render = function() {
       var date;
-
       FullPKController.__super__.render.call(this);
       this.$('.bv_assayDate').datepicker();
       this.$('.bv_assayDate').datepicker("option", "dateFormat", "yy-mm-dd");
@@ -163,13 +162,13 @@
       this.validateParseFile = __bind(this.validateParseFile, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.handleFPKFormInvalid = __bind(this.handleFPKFormInvalid, this);
-      this.handleFPKFormValid = __bind(this.handleFPKFormValid, this);      _ref2 = FullPKParserController.__super__.constructor.apply(this, arguments);
+      this.handleFPKFormValid = __bind(this.handleFPKFormValid, this);
+      _ref2 = FullPKParserController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
     FullPKParserController.prototype.initialize = function() {
       var _this = this;
-
       this.fileProcessorURL = "/api/fullPKParser";
       this.errorOwnerName = 'FullPKParser';
       this.loadReportFile = true;

@@ -25,7 +25,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.loginPage = function(req, res) {
     var error, errorMsg, user;
-
     user = null;
     if (req.user != null) {
       user = req.user;
@@ -61,7 +60,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.getUsers = function(req, resp) {
     var callback;
-
     callback = function(err, user) {
       if (user === null) {
         return resp.send(204);
@@ -75,7 +73,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.authenticationService = function(req, resp) {
     var callback;
-
     callback = function(results) {
       if (results.indexOf("Success") >= 0) {
         return resp.json({

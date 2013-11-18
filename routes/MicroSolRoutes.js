@@ -31,7 +31,6 @@ app.post '/api/microSolParser', microSolRoutes.parseMicroSolData
 (function() {
   exports.parseMicroSolData = function(request, response) {
     var serverUtilityFunctions;
-
     request.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {

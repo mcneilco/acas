@@ -26,7 +26,6 @@ app.post '/api/pampaParser', pampaRoutes.parsePampaData
 (function() {
   exports.parsePampaData = function(request, response) {
     var serverUtilityFunctions;
-
     request.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {
