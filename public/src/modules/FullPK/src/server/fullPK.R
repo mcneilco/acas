@@ -44,13 +44,21 @@ parseFullPKData <- function(request){
     parserInput$user <- request$user
     parserInput$reportFile <- request$reportFile
     parserResponse <- parseGenericData(parserInput)
-    if (!interpretJSONBoolean(request$dryRunMode)) {
-      experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/codename/", 
-                                           parserResponse$results$experimentCode)))[[1]]
-      moveFileToExperimentFolder(request$fileToParse, experiment, request$user, response$transactionId, 
-                                 racas::applicationSettings$server.service.external.file.type,
-                                 racas::applicationSettings$server.service.external.file.url)
-    }
+    tryCatch({
+      if (!interpretJSONBoolean(request$dryRunMode)) {
+        experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/codename/", 
+                                             parserResponse$results$experimentCode)))[[1]]
+        moveFileToExperimentFolder(request$fileToParse, experiment, request$user, response$transactionId, 
+                                   racas::applicationSettings$server.service.external.file.type,
+                                   racas::applicationSettings$server.service.external.file.service.url)
+      }
+    }, error = function(e) {
+      parserResponse$results$htmlSummary = paste0(
+        parserResponse$results$htmlSummary,
+        "<h4>The custom pre-processor encountered an error during execution</h4>",
+        "<p>The source file could not be saved</p>")
+    })
+
     parserResponse$results <- c(parserResponse$results,preProcessorCall$preProcessorResponse)
     return(parserResponse)
   } else {

@@ -16,7 +16,7 @@ parseMicroSolData <- function(request){
   preProcessorCall <- tryCatch({
     require(dmpk)
 	outputFileName <- paste0(request$fileToParse, "Processed.csv")
-    response <- pionToSEL(inputFilePath = request$fileToParse, outputFilePath = outputFileName, exptMetaData = inputParameters, logDir = racas::applicationSettings$logDir)
+    response <- pionToSEL(inputFilePath = request$fileToParse, outputFilePath = outputFileName, exptMetaData = inputParameters, logDir = racas::applicationSettings$server.log.path)
     list(completedSuccessfully = TRUE, preProcessorResponse = response)
   }, error = function(err) {
     return(list(completedSuccessfully = FALSE, preProcessorResponse = err$message))			
@@ -26,11 +26,20 @@ parseMicroSolData <- function(request){
     parserInput$dryRunMode <- request$dryRunMode
     parserInput$user <- request$user
     parserResponse <- parseGenericData(parserInput)
-    if (!interpretJSONBoolean(request$dryRunMode)) {
-    	experiment <- fromJSON(getURL(paste0(racas::applicationSettings$serverPath, "experiments/codename/", parserResponse$results$experimentCode)))[[1]]
-    	moveFileToExperimentFolder(request$fileToParse, experiment, request$user, response$transactionId, 
-                               racas::applicationSettings$fileServiceType, racas::applicationSettings$externalFileService)
-  	}
+    tryCatch({
+      if (!interpretJSONBoolean(request$dryRunMode)) {
+        experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/codename/", 
+                                             parserResponse$results$experimentCode)))[[1]]
+        moveFileToExperimentFolder(request$fileToParse, experiment, request$user, response$transactionId, 
+                                   racas::applicationSettings$server.service.external.file.type,
+                                   racas::applicationSettings$server.service.external.file.service.url)
+      }
+    }, error = function(e) {
+      parserResponse$results$htmlSummary = paste0(
+        parserResponse$results$htmlSummary,
+        "<h4>The custom pre-processor encountered an error during execution</h4>",
+        "<p>The source file could not be saved</p>")
+    })
     parserResponse$results <- c(parserResponse$results,preProcessorCall$preProcessorResponse)
     return(parserResponse)
   } else {
