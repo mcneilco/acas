@@ -26,6 +26,7 @@
 # For Dose Response, there is a read plate name but no barcode...
 # What to do when two runs are done on the same barcode?
 
+# runPrimaryAnalysis(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/PrimaryAnalysisFiles.zip",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=255259))
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # configList <- readConfigFile("public/src/conf/configuration.js")
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, configList,experimentId=27099)
@@ -76,8 +77,8 @@ getParamByKey <- function(params, key) {
 	components <- strsplit(line, " = ")
 	return( components[[1]][[2]])
 }
-getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
-  # Takes the vector of batch names and outputs a vector marking which are positive and negative controls
+getBatchNamesAndConcentrations <- function(barcode, well, wellTable, ignore="") {
+  # Matches result rows up with batch names and concentrations
   #
   # Args:
   #   barcode:        A vector of the barcodes
@@ -85,6 +86,11 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
   #   wellTabe:       A data.frame with columns of BARCODE, WELL_NAME, BATCH_CODE,CONCENTRATION,CONCENTRATION_UNIT
   # Returns:
   #   A data.frame with batchName,concentration, and concUnit that matches the order of the input barcodes and wells
+  
+  # TODO: does not deal with multiple compounds in one well
+  
+  # Remove agonist compounds (TODO: needs to be modified to include concentration for fructose)
+  wellTable <- wellTable[!(wellTable$BATCH_CODE == ignore), ]
   
   wellUniqueId <- paste(barcode, well)
   wellTableUniqueId <- paste(wellTable$BARCODE, wellTable$WELL_NAME)
@@ -204,7 +210,7 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, e
   require('gridExtra')
   require('data.table')
   require('reshape')
-  source("public/src/modules/PrimaryScreen/src/server/PrimaryAnalysisPlots.R")
+  source("public/src/modules/PrimaryScreen/src/server/primaryAnalysisPlots.R")
   
   allResultTable <- resultTable
   resultTable <- resultTable[!resultTable$fluorescent,]
@@ -217,7 +223,7 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, e
   textplot(textToShow, halign="left",valign="top")
   title("Primary Screen")
   
-  createDensityPlot(resultTable, threshold = parameters$efficacyThreshold, margins = c(25,4,4,8))
+  createDensityPlot(resultTable$normalized, resultTable$wellType, threshold = parameters$efficacyThreshold, margins = c(25,4,4,8))
   
   print(createGGComparison(graphTitle = "Plate Comparison", xColumn=resultTable$barcode,
                    wellType = resultTable$wellType, dataRow = resultTable$transformed, xLabel = "Plate", 
@@ -231,7 +237,7 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, e
   rowVector <- gsub("\\d", "", resultTable$well)
   columnVector <- gsub("\\D", "", resultTable$well)
   for (barcode in levels(resultTable$barcode)) {
-    plateData <- data.frame(transformedValues = resultTable$transformed[resultTable$barcode==barcode], 
+    plateData <- data.frame(transformedValues = resultTable$normalized[resultTable$barcode==barcode], 
                             well = resultTable$well[resultTable$barcode==barcode], hits=resultTable$efficacyThreshold[resultTable$barcode==barcode])
     g1 <- createGGHeatmap(paste("Heatmap ",barcode), plateData)
 #     g2 <- createGGComparison(graphTitle = paste("Row Comparison ",barcode), 
@@ -248,6 +254,7 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, e
                              dataRow = plateData$transformedValues,
                              hits = plateData$hits,
                              xLabel = "Column",
+                             yLabel = "Normalized Activity (rfu)",
                              colourPalette = c("red","green","black"))
 #     resultTable$well <- factor(resultTable$well, levels = levels(resultTable$well)[order(gsub("\\D", "", levels(resultTable$well)))])
 #     resultTable <- resultTable[order(gsub("\\D", "", resultTable$well)),]
@@ -379,7 +386,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   #save(subjectData, experimentId, file="test.Rda")
   originalNames <- names(subjectData)
   subjectData <- as.data.frame(subjectData)
-  names(subjectData) <- c('barcode', 'well name', 'fileName', 'maximum', 'startReadMax', 'endReadMax', 'minimum', 'startReadMin', 'endReadMin' 'fluorescent', 'timePoints', 'fluorescencePoints', 'batchCode', 'Dose', 'DoseUnit','well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold')
+  names(subjectData) <- c('barcode', 'well name', 'fileName', 'maximum', 'startReadMax', 'endReadMax', 'minimum', 'startReadMin', 'endReadMin', 'fluorescent', 'timePoints', 'fluorescencePoints', 'batchCode', 'Dose', 'DoseUnit','well type', 'transformed efficacy', 'normalized efficacy', 'index', 'max time','over efficacy threshold')
   
   stateGroups <- list(list(entityKind = "subject",
                            stateType = "data", 
@@ -396,7 +403,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
                       list(entityKind = "subject",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", "normalized efficacy", "over efficacy threshold", "fluorescencePoints","timePoints"),
+                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", "normalized efficacy", "over efficacy threshold", "fluorescencePoints","timePoints"), #TODO: add "max time"
                            includesOthers = FALSE,
                            includesCorpName = FALSE),
                       list(entityKind = "analysis group",
@@ -436,6 +443,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   
   makeLongData <- function(entityData, resultTypes, splitTreatmentGroupsBy) {
     library('reshape')
+    library('gdata')
     
     entityData$entityID <- seq(1,nrow(entityData))
     entityData$treatmentGroupID <- do.call(paste,entityData[,splitTreatmentGroupsBy])
@@ -980,6 +988,8 @@ getExperimentParameters <- function(experiment) {
   # Returns:
   #   a list with efficacyThreshold, transformation, positiveControl, negativeControl
   
+  require('plyr')
+  
   experimentState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment analysis parameters"][[1]]
   transformationValue <- experimentState$lsValues[lapply(experimentState$lsValues,getElement,"lsKind")=="data transformation rule"][[1]]
   transformation <- transformationValue$stringValue
@@ -997,32 +1007,30 @@ getExperimentParameters <- function(experiment) {
 #     return(stringValue)
 #   }
   controlStates <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment controls"]
+  flattenedValues <- ldply(controlStates, function(x) {
+    ldply(x$lsValues, function(y, x) {
+      output <- as.data.frame(y, stringsAsFactors=FALSE)
+      output$stateId <- x$id
+      output$stateKind <- x$lsKind
+      return(output)
+    }, x=x)
+  })
   
-  # TODO: probably just turn all the states into a data frame, get rid of this madness
-  for (state in controlStates) {
-    for (value in state$lsValues) {
-      if (!is.null(value$stringValue)) {
-        if (value$stringValue == "positive control") {
-          for (value in state$lsValues) {
-            if (!is.null(value$codeValue)) {
-              positiveControl <- value$codeValue
-            }
-          }
-        } else if (value$stringValue == "negative control") {
-          for (value in state$lsValues) {
-            if (!is.null(value$codeValue)) {
-              negativeControl <- value$codeValue
-            }
-          }
-        }
-      }
-    }
+  getBatchCodeForControl <- function(flattenedValues, controlType) {
+    controlStateId <- flattenedValues[!is.na(flattenedValues$stringValue) & flattenedValues$stringValue == controlType, ]$stateId
+    control <- flattenedValues[flattenedValues$stateId == controlStateId & flattenedValues$lsKind == "batch code", ]$codeValue
+    return(control)
   }
+  
+  positiveControl <- getBatchCodeForControl(flattenedValues, "positive control")
+  negativeControl <- getBatchCodeForControl(flattenedValues, "negative control")
+  agonist <- getBatchCodeForControl(flattenedValues, "agonist")
   
   return(list(efficacyThreshold=effThreshold,
               transformation=transformation, 
               positiveControl=positiveControl, 
-              negativeControl=negativeControl))
+              negativeControl=negativeControl,
+              agonist=agonist))
 }
 getExperimentById <- function(experimentId, configList) {
   # Gets experiment given an id
@@ -1034,6 +1042,7 @@ getExperimentById <- function(experimentId, configList) {
   #   a list that is an experiment
   
   require('RCurl')
+  require('rjson')
   
   experiment <- NULL
   tryCatch({
@@ -1135,8 +1144,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   
   wellTable <- createWellTable(barcodeList, configList, testMode)
   
-  batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
+  batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable, parameters$agonist)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
+  
   resultTable$wellType <- getWellTypes(resultTable$batchName, parameters$positiveControl, parameters$negativeControl)
   
   #calculations
@@ -1146,7 +1156,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   #resultTable$sdScore <- computeSDScore(resultTable)
   
   # normalization
-  normalization <- "none"
+  normalization <- "plate order"
   if (normalization=="plate order") {
     resultTable[,normalized:=computeNormalized(transformed,wellType), by= barcode]
   } else if (normalization=="row order") {
@@ -1161,6 +1171,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   
   #TODO: remove once real data is in place
   resultTable <- resultTable[!is.na(resultTable$batchName), ]
+  
   batchDataTable <- data.table(values = resultTable$transformed, 
                                 batchName = resultTable$batchName,
                                 fluorescent = resultTable$fluorescent,
@@ -1211,22 +1222,26 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   if (dryRun) {
     
   } else {
+    lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
+    
+    # Get individual points that are greater than the threshold
+    resultTable$efficacyThreshold <- (resultTable$normalized > parameters$efficacyThreshold) & !resultTable$fluorescent & resultTable$wellType=="test"
     
     rawResultsLocation <- paste0("experiments/",experiment$codeName,"/analysis/rawResults.Rda")
     save(resultTable,parameters,file=paste0("serverOnlyModules/blueimp-file-upload-node/public/files/",rawResultsLocation))
     
     resultsLocation <- paste0("experiments/", experiment$codeName,"/analysis/",experiment$codeName, "_Results.csv")
     if (analysisType == "primary") {
-      outputTable <- data.table("Corporate Batch ID" = analysisGroupData$batchName, "Hit" = analysisGroupData$efficacyThreshold,
-                                "Activity" = analysisGroupData$groupMean, "Fluorescent"= analysisGroupData$fluorescent,
-                                "Max Time (s)" = analysisGroupData$maxTime)
+      # May need to return to using analysisGroupData eventually
+      outputTable <- data.table("Corporate Batch ID" = resultTable$batchName, "Barcode" = resultTable$barcode,
+                                "Well" = resultTable$well, "Hit" = resultTable$efficacyThreshold,
+                                "Normalized Activity" = resultTable$normalized,
+                                "Activity" = resultTable$transformed, "Fluorescent"= resultTable$fluorescent,
+                                "Max Time (s)" = resultTable$maxTime, "Well Type" = resultTable$wellType)
     }
     outputTable <- outputTable[order(Hit,Fluorescent,decreasing=TRUE)]
     write.csv(outputTable, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", resultsLocation), row.names=FALSE)
-    
-    # Get individual points that are greater than the threshold
-    resultTable$efficacyThreshold <- (resultTable$transformed > parameters$efficacyThreshold) & !resultTable$fluorescent & resultTable$wellType=="test"
     
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, experiment)
     

@@ -1,8 +1,9 @@
-createDensityPlot <- function(resultTable, threshold, margins = c(5,4,4,8)) {
+createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)) {
   # Creates a density plot
   #
   # Args:
-  #   resultTable:     	A data.frame of the data to plot
+  #   values:           Numeric vector of values to plot
+  #   wellTypes:     	  String vector of well types of values (above)
   #	  threshold:        A numeric of the efficacy threshold
   #
   # Returns:
@@ -14,9 +15,9 @@ createDensityPlot <- function(resultTable, threshold, margins = c(5,4,4,8)) {
   par(mar=margins)
   
   # Create density data to graph
-  NCdensity <- density(resultTable$transformed[resultTable$wellType == "NC"])
-  PCdensity <- density(resultTable$transformed[resultTable$wellType == "PC"])
-  testDensity <- density(resultTable$transformed[resultTable$wellType == "test"])
+  NCdensity <- density(values[wellTypes == "NC"])
+  PCdensity <- density(values[wellTypes == "PC"])
+  testDensity <- density(values[wellTypes == "test"])
   yHeight <- max(NCdensity$y, PCdensity$y, testDensity$y)
   
   plot(NCdensity, 
@@ -43,7 +44,7 @@ createDensityPlot <- function(resultTable, threshold, margins = c(5,4,4,8)) {
 }
 createGGComparison <- function(graphTitle, yLimits = NULL, 
                                xColumn, wellType, dataRow, hits = NULL,
-                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, margins = c(1,1,1,1), rotateXLabel = FALSE, colourPalette = NA) {
+                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, yLabel="Activity (rfu)", margins = c(1,1,1,1), rotateXLabel = FALSE, colourPalette = NA) {
   #error handling
   if (all(!PC,!NC,!test)) {
     print("needs to plot something")
@@ -72,7 +73,7 @@ createGGComparison <- function(graphTitle, yLimits = NULL,
     g <- g + geom_point()
    }
     g <- g + xlab(xLabel) +
-    ylab("Activity (rfu)") +
+    ylab(yLabel) +
     ggtitle(graphTitle) +
     coord_cartesian(ylim=yLimits)
     theme(panel.margin = unit(0,"null"),
