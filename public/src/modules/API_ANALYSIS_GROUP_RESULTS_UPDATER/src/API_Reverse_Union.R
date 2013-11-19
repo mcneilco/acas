@@ -2,23 +2,17 @@
 ## will ping pong between tables. (possibly a little more brittle)
 #API_ANALYSIS_GROUP_RESULTS_UPDATER.R
 require(racas)
-require(logging)
 require(sendmailR)
 
-logReset()
-basicConfig(level='FINEST')
-logName <- "com.dartneuroscience.acas.api_analysis_group_results_updater"
-logFilePath <- paste0(applicationSettings$logDir,"/api_analysis_group_results_updater.log")
-getLogger(logName)$addHandler(writeToFile, file=logFilePath)
-logger <- getLogger(logName)
+logger <- createLogger(logName = "com.dartneuroscience.acas.api_analysis_group_results_updater", logFileName = "api_analysis_group_results_updater.log")
 
 updaterApplicationSettings <- data.frame(
-  db_driver = racas::applicationSettings$db_driver,
-  db_user = "seurat",
-  db_password = "seurat",
-  db_name = racas::applicationSettings$db_name,
-  db_host = racas::applicationSettings$db_host,
-  db_port = racas::applicationSettings$db_port,
+  server.database.r.driver = racas::applicationSettings$server.database.r.driver,
+  server.database.username = "seurat",
+  server.database.password = "seurat",
+  server.database.name = racas::applicationSettings$server.database.name,
+  server.database.host = racas::applicationSettings$server.database.host,
+  server.database.port = racas::applicationSettings$server.database.port,
   stringsAsFactors = FALSE
 )
 
