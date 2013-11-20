@@ -191,7 +191,7 @@ experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
                           lsType = "numericValue",
                           lsKind = "active SD threshold",
-                          numericValue = -5,
+                          numericValue = 3,
                           sigFigs = 1)
                                                     
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 

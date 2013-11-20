@@ -24,27 +24,28 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
        main = "Screen Histogram",
        xlim = c(-1,2),
        ylim = c(0,yHeight*1.04),
-       xlab = "Activity (rfu)",
+       xlab = "Normalized Activity (rfu)",
        ylab = "Number per bin",
        yaxs="i",
        type="n"
   )
   
   # draw the threshold
-  lines(x=rep(threshold,2),y=c(0,yHeight*1.5), col="blue",lwd=3, lty=2)
+  lines(x=rep(threshold,2),y=c(0,yHeight*1.5), col="red",lwd=2, lty=1)
   
   # draw the density graphs
   polygon(PCdensity$x,PCdensity$y,col="green")
-  polygon(NCdensity$x,NCdensity$y,col="red")
+  polygon(NCdensity$x,NCdensity$y,col="blue")
   polygon(testDensity$x,testDensity$y,col="black",density=120,border="black")
   
   # legend
   #"xpd = TRUE" lets the legend go outside the plot
-  legend(x=2.3, y=yHeight, fill=c("red","black","green","blue"), legend=c("- control","test","+ control","threshold"), xpd = TRUE)
+  legend(x=2.3, y=yHeight, fill=c("blue","black","green","red"), legend=c("- control","test","+ control","threshold"), xpd = TRUE)
 }
 createGGComparison <- function(graphTitle, yLimits = NULL, 
                                xColumn, wellType, dataRow, hits = NULL,
-                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, yLabel="Activity (rfu)", margins = c(1,1,1,1), rotateXLabel = FALSE, colourPalette = NA) {
+                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, yLabel="Activity (rfu)", margins = c(1,1,1,1), 
+                               rotateXLabel = FALSE, colourPalette = NA, threshold = NULL) {
   #error handling
   if (all(!PC,!NC,!test)) {
     print("needs to plot something")
@@ -57,31 +58,47 @@ createGGComparison <- function(graphTitle, yLimits = NULL,
   # dataRow is the value column
   # xColumn is the x side
   graphDataFrame <- data.frame(xColumn=xColumn, wellType=wellType, dataRow=dataRow)
-  if (!is.null(hits)) graphDataFrame$isHit=hits
+  if (!is.null(hits)) {
+    graphDataFrame$isHit=hits
+    graphDataFrame$typeAndHit <- paste(graphDataFrame$wellType, "-", graphDataFrame$isHit)
+  } else {
+    graphDataFrame$typeAndHit <- graphDataFrame$wellType
+  }
   
   plotList <- list(if(PC)"PC",if(NC)"NC",if(test)"test")
   
   limitedGraphDataFrame <- graphDataFrame[wellType %in% plotList,]
-    
-  g <- ggplot(limitedGraphDataFrame, aes(x=xColumn, y=dataRow, colour=wellType))
-  if (!is.null(hits)) g <- g + aes(shape=isHit)
-   if (test) {
-     g <- g + (geom_point(data=limitedGraphDataFrame[limitedGraphDataFrame$wellType=="test",],colour="black"))
-     g <- g + (geom_point(data=limitedGraphDataFrame[limitedGraphDataFrame$wellType!="test",]))
-   }
-   else {
+  
+  well <- limitedGraphDataFrame$typeAndHit
+  
+  well[well=="NC - FALSE"] <- "NC"
+  well[well=="PC - FALSE"] <- "PC"
+  well[well=="test - FALSE"] <- "test - not hit"
+  well[well=="test - TRUE"] <- "test - hit"
+  
+  #colourPalette <- list() TODO: get rid of unused colors when there are no hits
+  
+  g <- ggplot(limitedGraphDataFrame, aes(x=xColumn, y=dataRow, colour=well))
+  #if (!is.null(hits)) g <- g + aes(shape=isHit)
+  if (!is.null(threshold)) {
+    g <- g + geom_hline(yintercept = threshold, color="red")
+  }
+  if (test) {
+    #g <- g + (geom_point(data=limitedGraphDataFrame[limitedGraphDataFrame$wellType=="test",],colour="black"))
+    g <- g + (geom_point(data=limitedGraphDataFrame))
+  } else {
     g <- g + geom_point()
-   }
-    g <- g + xlab(xLabel) +
+  }
+  g <- g + xlab(xLabel) +
     ylab(yLabel) +
     ggtitle(graphTitle) +
     coord_cartesian(ylim=yLimits)
-    theme(panel.margin = unit(0,"null"),
-          plot.margin = unit(margins, "lines"),
-          axis.text.x = element_text(size = rel(1)),
-          axis.text.y = element_text(size = rel(1)))
+  theme(panel.margin = unit(0,"null"),
+        plot.margin = unit(margins, "lines"),
+        axis.text.x = element_text(size = rel(1)),
+        axis.text.y = element_text(size = rel(1)))
 
-    if(rotateXLabel) g <- g + theme(axis.text.x = element_text(angle = -90, vjust=0.5))
+  if(rotateXLabel) g <- g + theme(axis.text.x = element_text(angle = -90, vjust=0.5))
   
   if(all(!is.na(colourPalette))) g <- g + scale_colour_manual(values=colourPalette)
   
