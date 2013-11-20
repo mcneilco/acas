@@ -16,7 +16,7 @@ parseMetStabData <- function(request){
   preProcessorCall <- tryCatch({
     require(dmpk)
 	outputFileName <- paste0(request$fileToParse, "Processed.csv")
-    response <- galileoToSEL(inputFilePath = request$fileToParse, outputFilePath = outputFileName, exptMetaData = inputParameters, logDir = racas::applicationSettings$server.log.path)
+    response <- galileoToSEL(inputFilePath = request$fileToParse, outputFilePath = outputFileName, exptMetaData = inputParameters)
     list(completedSuccessfully = TRUE, preProcessorResponse = response)
   }, error = function(err) {
     return(list(completedSuccessfully = FALSE, preProcessorResponse = err$message))			
