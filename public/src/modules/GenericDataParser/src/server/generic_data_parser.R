@@ -2218,8 +2218,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   if (!is.null(configList$client.service.result.viewer.protocolPrefix)) {
-    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, protocolPostfix,
-                         URLencode(validatedMetaData$"Protocol Name", reserved=TRUE),
+    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, 
+                         URLencode(paste0(validatedMetaData$"Protocol Name", protocolPostfix), reserved=TRUE), 
                          configList$client.service.result.viewer.experimentPrefix,
                          URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
   } else {
