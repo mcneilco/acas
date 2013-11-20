@@ -2207,8 +2207,18 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     }
   }
   
+  # Add name modifier to protocol name for viewer
+  protocolPostfixStates <- protocol$lsStates[lapply(protocol$lsStates, getElement, "lsTypeAndKind") == "metadata_name modifier"]
+  if (length(protocolPostfixStates) > 0) {
+    protocolPostfixState <- protocolPostfixStates[[1]]
+    protocolPostfixValues <- protocolPostfixState$lsValues[lapply(protocolPostfixState$lsValues, getElement, "lsTypeAndKind") == "stringValue_postfix"]
+    protocolPostfix <- protocolPostfixValues[[1]]$stringValue
+  } else {
+    protocolPostfix <- ""
+  }
+  
   if (!is.null(configList$client.service.result.viewer.protocolPrefix)) {
-    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix,
+    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, protocolPostfix,
                          URLencode(validatedMetaData$"Protocol Name", reserved=TRUE),
                          configList$client.service.result.viewer.experimentPrefix,
                          URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
