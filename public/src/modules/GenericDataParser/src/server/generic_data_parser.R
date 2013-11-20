@@ -1588,7 +1588,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
       #### Analysis Group States =====================================================================
       analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
       if (length(analysisGroupIndices > 0)) {
-        analysisGroupData <- treatmentGroupDataWithBatchCodeRows
+        analysisGroupData <- treatmentGroupData
+        analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices, optionalColumns = "analysisGroupID"))
         if (!is.null(curveNames)) {
           curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, 
                                   valueKind = curveNames, 
