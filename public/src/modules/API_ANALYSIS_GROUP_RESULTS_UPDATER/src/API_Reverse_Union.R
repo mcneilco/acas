@@ -372,7 +372,7 @@ tryCatch({
 	if(error_api_analysis_group_results) {
 		rollback <- dbRollback(conn)
 		logger$error("API_ANALYSIS_GROUP_RESULTS update unsuccessful, rolledback ")
-		stop(paste0("API_ANALYSIS_GROUP_RESULTS update unsuccessful, rolled back\n for details see\n",logFilePath))
+		stop(paste0("API_ANALYSIS_GROUP_RESULTS update unsuccessful, rolled back\n for details see\napi_analysis_group_results_updater.log"))
 	} else {
 		commited <- dbCommit(conn)
 		logger$info("API_ANALYSIS_GROUP_RESULTS successfully updated and committed")
