@@ -205,7 +205,14 @@
     };
 
     Experiment.prototype.getProjectCode = function() {
-      return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "project");
+      var projectCodeValue;
+      projectCodeValue = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "project");
+      if (projectCodeValue.get('codeValue') === void 0 || projectCodeValue.get('codeValue') === "") {
+        projectCodeValue.set({
+          codeValue: "unassigned"
+        });
+      }
+      return projectCodeValue;
     };
 
     Experiment.prototype.getControlStates = function() {
@@ -277,7 +284,8 @@
       this.setBindings();
       $(this.el).empty();
       $(this.el).html(this.template());
-      return this.setupProtocolSelect();
+      this.setupProtocolSelect();
+      return this.setupProjectSelect();
     };
 
     ExperimentBaseController.prototype.render = function() {
@@ -285,6 +293,7 @@
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
+      this.$('.bv_projectCode').val(this.model.getProjectCode().get('codeValue'));
       this.$('.bv_shortDescription').html(this.model.get('shortDescription'));
       this.$('.bv_description').html(this.model.get('description'));
       bestName = this.model.get('lsLabels').pickBestName();
@@ -302,6 +311,7 @@
         this.$('.bv_recordedDate').val(date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate());
       }
       this.$('.bv_description').html(this.model.getDescription().get('stringValue'));
+      this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
       return this;
     };
 
@@ -322,6 +332,20 @@
           name: "Select Protocol"
         }),
         selectedCode: protocolCode
+      });
+    };
+
+    ExperimentBaseController.prototype.setupProjectSelect = function() {
+      this.projectList = new PickListList();
+      this.projectList.url = "/api/projects";
+      return this.projectListController = new PickListSelectController({
+        el: this.$('.bv_projectCode'),
+        collection: this.projectList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Project"
+        }),
+        selectedCode: this.model.getProjectCode().get('codeValue')
       });
     };
 

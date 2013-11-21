@@ -1273,7 +1273,7 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: "Project1"
+				codeValue: "project1"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -1501,7 +1501,7 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: "Project1"
+				codeValue: "project1"
 				comments: null
 				dateValue: null
 				fileValue: null

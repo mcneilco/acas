@@ -50,8 +50,11 @@
           it('Should have a notebook value', function() {
             return expect(this.exp.getNotebook() instanceof Value).toBeTruthy();
           });
-          return it('Should have a project value', function() {
+          it('Should have a project value', function() {
             return expect(this.exp.getProjectCode() instanceof Value).toBeTruthy();
+          });
+          return it('Project code should default to unassigned ', function() {
+            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
           });
         });
       });
@@ -130,7 +133,7 @@
             return expect(this.exp.getNotebook().get('stringValue')).toEqual("911");
           });
           return it('Should have a project value', function() {
-            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("Project1");
+            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("project1");
           });
         });
       });
@@ -168,7 +171,7 @@
             return expect(this.exp.getNotebook().get('stringValue')).toBeUndefined();
           });
           return it('Should have a projectCode value', function() {
-            return expect(this.exp.getProjectCode().get('codeValue')).toBeUndefined();
+            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
           });
         });
       });
@@ -407,6 +410,31 @@
             });
           });
         });
+        describe("it should show a picklist for protocols", function() {
+          beforeEach(function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_protocolCode option').length > 0;
+            }, 1000);
+            return runs(function() {});
+          });
+          return it("should show protocol options after loading them from server", function() {
+            return expect(this.ebc.$('.bv_protocolCode option').length).toBeGreaterThan(0);
+          });
+        });
+        describe("it should show a picklist for projects", function() {
+          beforeEach(function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_projectCode option').length > 0;
+            }, 1000);
+            return runs(function() {});
+          });
+          it("should show project options after loading them from server", function() {
+            return expect(this.ebc.$('.bv_projectCode option').length).toBeGreaterThan(0);
+          });
+          return it("should default to unassigned", function() {
+            return expect(this.ebc.$('.bv_projectCode').val()).toEqual("unassigned");
+          });
+        });
         describe("populated fields", function() {
           it("should show the protocol code", function() {
             waitsFor(function() {
@@ -425,16 +453,8 @@
           it("should fill the description field", function() {
             return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
           });
-          it("should not fill the notebook field", function() {
+          return it("should not fill the notebook field", function() {
             return expect(this.ebc.$('.bv_notebook').val()).toEqual("");
-          });
-          return it("should set the project to unassigned", function() {
-            waitsFor(function() {
-              return this.ebc.$('.bv_projectCode option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.ebc.$('.bv_projectCode').val()).toEqual("unassigned");
-            });
           });
         });
         return describe("User edits fields", function() {
@@ -465,10 +485,31 @@
             this.ebc.$('.bv_experimentName').change();
             return expect(this.ebc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated experiment name");
           });
-          return it("should update model when recorded date is changed", function() {
+          it("should update model when recorded date is changed", function() {
             this.ebc.$('.bv_recordedDate').val(" 2013-3-16   ");
             this.ebc.$('.bv_recordedDate').change();
             return expect(this.ebc.model.get('recordedDate')).toEqual(new Date(2013, 2, 16).getTime());
+          });
+          it("should update model when notebook is changed", function() {
+            this.ebc.$('.bv_notebook').val(" Updated notebook   ");
+            this.ebc.$('.bv_notebook').change();
+            return expect(this.ebc.model.getNotebook().get('stringValue')).toEqual("Updated notebook");
+          });
+          return it("should update model when protocol is changed", function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_protocolCode option').length > 0;
+            }, 1000);
+            runs(function() {
+              this.ebc.model.set({
+                protocol: {}
+              });
+              this.ebc.$('.bv_protocolCode').val("PROT-00000001");
+              return this.ebc.$('.bv_protocolCode').change();
+            });
+            waits(200);
+            return runs(function() {
+              return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000001");
+            });
           });
         });
       });
@@ -487,6 +528,14 @@
           }, 1000);
           return runs(function() {
             return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
+          });
+        });
+        it("should show the project code", function() {
+          waitsFor(function() {
+            return this.ebc.$('.bv_projectCode option').length > 0;
+          }, 1000);
+          return runs(function() {
+            return expect(this.ebc.$('.bv_projectCode').val()).toEqual("project1");
           });
         });
         it("should show the protocol name", function() {
@@ -513,8 +562,11 @@
         it("should fill the user field", function() {
           return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("smeyer");
         });
-        return it("should fill the code field", function() {
+        it("should fill the code field", function() {
           return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
+        });
+        return it("should fill the notebook field", function() {
+          return expect(this.ebc.$('.bv_notebook').val()).toEqual("911");
         });
       });
       return describe("When created from a new experiment", function() {
@@ -533,6 +585,14 @@
             }, 1000);
             return runs(function() {
               return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("unassigned");
+            });
+          });
+          it("should have project code not set", function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_projectCode option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.ebc.$('.bv_projectCode').val()).toEqual("unassigned");
             });
           });
           it("should have use protocol parameters disabled", function() {

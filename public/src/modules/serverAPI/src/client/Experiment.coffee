@@ -127,7 +127,11 @@ class window.Experiment extends Backbone.Model
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
 
 	getProjectCode: ->
-		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "project"
+		projectCodeValue = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "project"
+		if projectCodeValue.get('codeValue') is undefined or projectCodeValue.get('codeValue') is ""
+			projectCodeValue.set codeValue: "unassigned"
+
+		projectCodeValue
 
 	getControlStates: ->
 		@.get('lsStates').getStatesByTypeAndKind "metadata", "experiment controls"
@@ -164,10 +168,12 @@ class window.ExperimentBaseController extends AbstractFormController
 		$(@el).empty()
 		$(@el).html @template()
 		@setupProtocolSelect()
+		@setupProjectSelect()
 
 	render: =>
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
+		@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
 		@$('.bv_shortDescription').html @model.get('shortDescription')
 		@$('.bv_description').html @model.get('description')
 		bestName = @model.get('lsLabels').pickBestName()
@@ -183,6 +189,7 @@ class window.ExperimentBaseController extends AbstractFormController
 			date = new Date(@model.get('recordedDate'))
 			@$('.bv_recordedDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
 		@$('.bv_description').html(@model.getDescription().get('stringValue'))
+		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 
 		@
 
@@ -200,6 +207,17 @@ class window.ExperimentBaseController extends AbstractFormController
 				code: "unassigned"
 				name: "Select Protocol"
 			selectedCode: protocolCode
+
+	setupProjectSelect: ->
+		@projectList = new PickListList()
+		@projectList.url = "/api/projects"
+		@projectListController = new PickListSelectController
+			el: @$('.bv_projectCode')
+			collection: @projectList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Project"
+			selectedCode: @model.getProjectCode().get('codeValue')
 
 	setUseProtocolParametersDisabledState: ->
 		if (not @model.isNew()) or (@model.get('protocol') == null) or (@$('.bv_protocolCode').val() == "")

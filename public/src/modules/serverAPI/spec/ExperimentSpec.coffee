@@ -37,6 +37,8 @@ describe "Experiment module testing", ->
 					expect(@exp.getNotebook() instanceof Value).toBeTruthy()
 				it 'Should have a project value', ->
 					expect(@exp.getProjectCode() instanceof Value).toBeTruthy()
+				it 'Project code should default to unassigned ', ->
+					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
 
 		describe "when loaded from existing", ->
 			beforeEach ->
@@ -91,7 +93,7 @@ describe "Experiment module testing", ->
 				it 'Should have a notebook value', ->
 					expect(@exp.getNotebook().get('stringValue')).toEqual "911"
 				it 'Should have a project value', ->
-					expect(@exp.getProjectCode().get('codeValue')).toEqual "Project1"
+					expect(@exp.getProjectCode().get('codeValue')).toEqual "project1"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -116,7 +118,7 @@ describe "Experiment module testing", ->
 				it 'Should not have a notebook value', ->
 					expect(@exp.getNotebook().get('stringValue')).toBeUndefined()
 				it 'Should have a projectCode value', ->
-					expect(@exp.getProjectCode().get('codeValue')).toBeUndefined()
+					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -282,6 +284,26 @@ describe "Experiment module testing", ->
 					, 500
 					runs ->
 						expect(@copied).toBeTruthy()
+			describe "it should show a picklist for protocols", ->
+				beforeEach ->
+					waitsFor ->
+						@ebc.$('.bv_protocolCode option').length > 0
+					,
+						1000
+					runs ->
+				it "should show protocol options after loading them from server", ->
+					expect(@ebc.$('.bv_protocolCode option').length).toBeGreaterThan 0
+			describe "it should show a picklist for projects", ->
+				beforeEach ->
+					waitsFor ->
+						@ebc.$('.bv_projectCode option').length > 0
+					,
+						1000
+					runs ->
+				it "should show project options after loading them from server", ->
+					expect(@ebc.$('.bv_projectCode option').length).toBeGreaterThan 0
+				it "should default to unassigned", ->
+					expect(@ebc.$('.bv_projectCode').val()).toEqual "unassigned"
 			describe "populated fields", ->
 				it "should show the protocol code", ->
 					waitsFor ->
@@ -297,12 +319,6 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_description').html()).toEqual "long description goes here"
 				it "should not fill the notebook field", ->
 					expect(@ebc.$('.bv_notebook').val()).toEqual ""
-				it "should set the project to unassigned", ->
-					waitsFor ->
-						@ebc.$('.bv_projectCode option').length > 0
-					, 1000
-					runs ->
-						expect(@ebc.$('.bv_projectCode').val()).toEqual "unassigned"
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
 					expect(@ebc.model.get 'recordedBy').toEqual ""
@@ -330,6 +346,23 @@ describe "Experiment module testing", ->
 					@ebc.$('.bv_recordedDate').val(" 2013-3-16   ")
 					@ebc.$('.bv_recordedDate').change()
 					expect(@ebc.model.get 'recordedDate').toEqual new Date(2013,2,16).getTime()
+				it "should update model when notebook is changed", ->
+					@ebc.$('.bv_notebook').val(" Updated notebook   ")
+					@ebc.$('.bv_notebook').change()
+					expect(@ebc.model.getNotebook().get('stringValue')).toEqual "Updated notebook"
+				it "should update model when protocol is changed", ->
+					waitsFor ->
+						@ebc.$('.bv_protocolCode option').length > 0
+					, 1000
+					runs ->
+						# manually change protocol, then let this set back since I don't have other stubs to load
+						@ebc.model.set protocol: {}
+						@ebc.$('.bv_protocolCode').val("PROT-00000001")
+						@ebc.$('.bv_protocolCode').change()
+					#changing protocol needs a server round trip
+					waits 200
+					runs ->
+						expect(@ebc.model.get('protocol').get('codeName')).toEqual "PROT-00000001"
 		describe "When created from a saved experiment", ->
 			beforeEach ->
 				@exp2 = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -343,6 +376,12 @@ describe "Experiment module testing", ->
 				, 1000
 				runs ->
 					expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
+			it "should show the project code", ->
+				waitsFor ->
+					@ebc.$('.bv_projectCode option').length > 0
+				, 1000
+				runs ->
+					expect(@ebc.$('.bv_projectCode').val()).toEqual "project1"
 			it "should show the protocol name", ->
 				waits(200) # needs to fill out stub protocol
 				runs ->
@@ -363,6 +402,8 @@ describe "Experiment module testing", ->
 				expect(@ebc.$('.bv_recordedBy').val()).toEqual "smeyer"
 			it "should fill the code field", ->
 				expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
+			it "should fill the notebook field", ->
+				expect(@ebc.$('.bv_notebook').val()).toEqual "911"
 		describe "When created from a new experiment", ->
 			beforeEach ->
 				@exp0 = new Experiment()
@@ -377,6 +418,12 @@ describe "Experiment module testing", ->
 					, 1000
 					runs ->
 						expect(@ebc.$('.bv_protocolCode').val()).toEqual "unassigned"
+				it "should have project code not set", ->
+					waitsFor ->
+						@ebc.$('.bv_projectCode option').length > 0
+					, 1000
+					runs ->
+						expect(@ebc.$('.bv_projectCode').val()).toEqual "unassigned"
 				it "should have use protocol parameters disabled", ->
 					expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual "disabled"
 				it "should fill the date field", ->
