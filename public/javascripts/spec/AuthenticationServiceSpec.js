@@ -14,8 +14,8 @@
             type: 'POST',
             url: "api/userAuthentication",
             data: {
-              user: "ldap-query",
-              password: "fred"
+              user: "bob",
+              password: "secret"
             },
             success: function(json) {
               return _this.serviceReturn = json;
