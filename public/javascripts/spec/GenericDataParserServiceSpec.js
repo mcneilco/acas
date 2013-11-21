@@ -68,7 +68,6 @@ This service parses data from the generic format and saves it to the database
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/genericDataParser",
@@ -98,7 +97,6 @@ This service parses data from the generic format and saves it to the database
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/genericDataParser",

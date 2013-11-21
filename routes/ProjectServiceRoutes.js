@@ -9,7 +9,6 @@ app.get '/api/projects', projectServiceRoutes.getProjects
 (function() {
   exports.getProjects = function(req, resp) {
     var config, projectServiceTestJSON;
-
     config = require('../public/src/conf/configurationNode.js');
     if (global.specRunnerTestmode) {
       projectServiceTestJSON = require('../public/javascripts/spec/testFixtures/projectServiceTestJSON.js');

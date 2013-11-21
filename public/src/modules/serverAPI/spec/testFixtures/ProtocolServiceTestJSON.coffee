@@ -153,6 +153,64 @@
 				lsTypeAndKind: "stringValue_description"
 				valueUnit: null
 				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 5
+				ignored: false
+				lsKind: "notebook"
+				lsTransaction: 2
+				lsType: "stringValue"
+				lsTypeAndKind: "stringValue_notebook"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: "912"
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: "Project1"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 904699999
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: "long description goes here"
+				uncertainty: null
+				urlValue: null
+				lsKind: "project"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_project"
+				valueUnit: null
+				version: 0
 			]
 			modifiedBy: null
 			modifiedDate: null

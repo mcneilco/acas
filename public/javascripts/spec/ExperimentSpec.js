@@ -44,8 +44,14 @@
           });
         });
         return describe("required states and values", function() {
-          return it('Should have a description value', function() {
+          it('Should have a description value', function() {
             return expect(this.exp.getDescription() instanceof Value).toBeTruthy();
+          });
+          it('Should have a notebook value', function() {
+            return expect(this.exp.getNotebook() instanceof Value).toBeTruthy();
+          });
+          return it('Should have a project value', function() {
+            return expect(this.exp.getProjectCode() instanceof Value).toBeTruthy();
           });
         });
       });
@@ -117,8 +123,14 @@
           it("should have labels", function() {
             return expect(this.exp.get('lsLabels').at(0).get('lsKind')).toEqual("experiment name");
           });
-          return it('Should have a description value', function() {
+          it('Should have a description value', function() {
             return expect(this.exp.getDescription().get('stringValue')).toEqual("long description goes here");
+          });
+          it('Should have a notebook value', function() {
+            return expect(this.exp.getNotebook().get('stringValue')).toEqual("911");
+          });
+          return it('Should have a project value', function() {
+            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("Project1");
           });
         });
       });
@@ -149,8 +161,14 @@
           it("should have the states copied", function() {
             return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
           });
-          return it('Should have a description value', function() {
+          it('Should have a description value', function() {
             return expect(this.exp.getDescription().get('stringValue')).toEqual("long description goes here");
+          });
+          it('Should not have a notebook value', function() {
+            return expect(this.exp.getNotebook().get('stringValue')).toBeUndefined();
+          });
+          return it('Should have a projectCode value', function() {
+            return expect(this.exp.getProjectCode().get('codeValue')).toBeUndefined();
           });
         });
       });
@@ -158,7 +176,6 @@
         it("should trigger change when label changed", function() {
           runs(function() {
             var _this = this;
-
             this.exp = new Experiment();
             this.experimentChanged = false;
             this.exp.get('lsLabels').setBestName(new Label({
@@ -188,7 +205,6 @@
         return it("should trigger change when value changed in state", function() {
           runs(function() {
             var _this = this;
-
             this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
             this.experimentChanged = false;
             this.exp.on('change', function() {
@@ -215,7 +231,6 @@
         });
         it("should be invalid when name is empty", function() {
           var filtErrors;
-
           this.exp.get('lsLabels').setBestName(new Label({
             labelKind: "experiment name",
             labelText: "",
@@ -230,7 +245,6 @@
         });
         it("should be invalid when date is empty", function() {
           var filtErrors;
-
           this.exp.set({
             recordedDate: new Date("").getTime()
           });
@@ -242,7 +256,6 @@
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
-
           this.exp.set({
             recordedBy: ""
           });
@@ -251,9 +264,8 @@
             return err.attribute === 'recordedBy';
           });
         });
-        return it("should be invalid when protocol not selected", function() {
+        it("should be invalid when protocol not selected", function() {
           var filtErrors;
-
           this.exp.set({
             protocol: null
           });
@@ -263,12 +275,35 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
+        it("should be invalid when notebook is empty", function() {
+          var filtErrors;
+          this.exp.getNotebook().set({
+            stringValue: "",
+            recordedBy: this.exp.get('recordedBy')
+          });
+          expect(this.exp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.exp.validationError, function(err) {
+            return err.attribute === 'notebook';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it("should be invalid when projectCode is unassigned", function() {
+          var filtErrors;
+          this.exp.getProjectCode().set({
+            codeValue: "unassigned",
+            recordedBy: this.exp.get('recordedBy')
+          });
+          expect(this.exp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.exp.validationError, function(err) {
+            return err.attribute === 'projectCode';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
       });
       describe("model composite component conversion", function() {
         beforeEach(function() {
           runs(function() {
             var _this = this;
-
             this.saveSucessful = false;
             this.saveComplete = false;
             this.exp = new Experiment({
@@ -317,13 +352,11 @@
         return describe("fetch controls", function() {
           it("should return any control states", function() {
             var controls;
-
             controls = this.exp.getControlStates();
             return expect(controls[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual("CRA-000396:1");
           });
           return it("should returned a specific control state", function() {
             var negControl;
-
             negControl = this.exp.getControlType("negative control");
             return expect(negControl[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual("CRA-000396:1");
           });
@@ -345,7 +378,6 @@
         beforeEach(function() {
           return runs(function() {
             var _this = this;
-
             this.copied = false;
             this.exp = new Experiment();
             this.exp.on("protocol_attributes_copied", function() {
@@ -387,8 +419,22 @@
           it("should show the protocol name", function() {
             return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
           });
-          return it("should fill the short description field", function() {
+          it("should fill the short description field", function() {
             return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
+          });
+          it("should fill the description field", function() {
+            return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
+          });
+          it("should not fill the notebook field", function() {
+            return expect(this.ebc.$('.bv_notebook').val()).toEqual("");
+          });
+          return it("should set the project to unassigned", function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_projectCode option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.ebc.$('.bv_projectCode').val()).toEqual("unassigned");
+            });
           });
         });
         return describe("User edits fields", function() {
@@ -405,7 +451,6 @@
           });
           it("should update model when description is changed", function() {
             var desc, states, values;
-
             this.ebc.$('.bv_description').val(" New long description   ");
             this.ebc.$('.bv_description').change();
             states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");

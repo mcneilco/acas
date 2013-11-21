@@ -10,7 +10,8 @@
     function PrimaryScreenExperimentController() {
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
-      this.handleSaveClicked = __bind(this.handleSaveClicked, this);      _ref = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
+      this.handleSaveClicked = __bind(this.handleSaveClicked, this);
+      _ref = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -72,7 +73,8 @@
       this.handleNormalizationRuleChanged = __bind(this.handleNormalizationRuleChanged, this);
       this.handleTransformationRuleChanged = __bind(this.handleTransformationRuleChanged, this);
       this.handleHitThresholdChanged = __bind(this.handleHitThresholdChanged, this);
-      this.render = __bind(this.render, this);      _ref1 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -104,7 +106,6 @@
 
     PrimaryScreenAnalysisController.prototype.showControlValues = function() {
       var negControl;
-
       negControl = this.model.getControlType("negative control");
       console.log(negControl);
       return console.log(this.model.getControlStates());
@@ -112,28 +113,24 @@
 
     PrimaryScreenAnalysisController.prototype.getHitThreshold = function() {
       var value;
-
       value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       return value.get('numericValue');
     };
 
     PrimaryScreenAnalysisController.prototype.getTransformationRule = function() {
       var value;
-
       value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
       return value.get('stringValue');
     };
 
     PrimaryScreenAnalysisController.prototype.getNormalizationRule = function() {
       var value;
-
       value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "normalization rule");
       return value.get('stringValue');
     };
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
       var analysisStatus, resultValue;
-
       analysisStatus = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
       if (analysisStatus !== null) {
         this.analysisStatus = analysisStatus.get('stringValue');
@@ -149,7 +146,6 @@
 
     PrimaryScreenAnalysisController.prototype.handleHitThresholdChanged = function() {
       var value;
-
       value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
       return value.set({
         numericValue: parseFloat($.trim(this.$('.bv_hitThreshold').val()))
@@ -158,7 +154,6 @@
 
     PrimaryScreenAnalysisController.prototype.handleTransformationRuleChanged = function() {
       var value;
-
       value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
       return value.set({
         stringValue: $.trim(this.$('.bv_transformationRule').val())
@@ -167,7 +162,6 @@
 
     PrimaryScreenAnalysisController.prototype.handleNormalizationRuleChanged = function() {
       var value;
-
       value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "normalization rule");
       return value.set({
         stringValue: $.trim(this.$('.bv_normalizationRule').val())

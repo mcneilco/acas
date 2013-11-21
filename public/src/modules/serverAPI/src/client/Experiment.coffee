@@ -65,10 +65,11 @@ class window.Experiment extends Backbone.Model
 			evals = new ValueList()
 			svals = st.get('lsValues')
 			svals.each (sv) ->
-				evalue = new Value(sv.attributes)
-				evalue.unset 'id'
-				evalue.unset 'lsTransaction'
-				evals.add(evalue)
+				unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project"
+					evalue = new Value(sv.attributes)
+					evalue.unset 'id'
+					evalue.unset 'lsTransaction'
+					evals.add(evalue)
 			estate.set lsValues: evals
 			estates.add(estate)
 		@set
@@ -103,6 +104,16 @@ class window.Experiment extends Backbone.Model
 			errors.push
 				attribute: 'protocol'
 				message: "Protocol must be set"
+		notebook = @getNotebook().get('stringValue')
+		if notebook is "" or notebook is "unassigned" or notebook is undefined
+			errors.push
+				attribute: 'notebook'
+				message: "Notebook must be set"
+		projectCode = @getProjectCode().get('codeValue')
+		if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
+			errors.push
+				attribute: 'projectCode'
+				message: "Project must be set"
 
 		if errors.length > 0
 			return errors
@@ -111,6 +122,12 @@ class window.Experiment extends Backbone.Model
 
 	getDescription: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "description"
+
+	getNotebook: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
+
+	getProjectCode: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "project"
 
 	getControlStates: ->
 		@.get('lsStates').getStatesByTypeAndKind "metadata", "experiment controls"

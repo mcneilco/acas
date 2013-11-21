@@ -1311,6 +1311,34 @@
               lsTypeAndKind: "stringValue_description",
               valueUnit: null,
               version: 0
+            }, {
+              clobValue: null,
+              codeValue: "Project1",
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 904699999,
+              ignored: false,
+              lsTransaction: {
+                comments: "",
+                id: 87,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: null,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: null,
+              stringValue: "long description goes here",
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "project",
+              valueOperator: null,
+              lsType: "codeValue",
+              lsTypeAndKind: "codeValue_project",
+              valueUnit: null,
+              version: 0
             }
           ],
           modifiedBy: null,
@@ -1519,6 +1547,34 @@
               unitType: null,
               unitTypeAndKind: "null_null",
               urlValue: null,
+              version: 0
+            }, {
+              clobValue: null,
+              codeValue: "Project1",
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 904699999,
+              ignored: false,
+              lsTransaction: {
+                comments: "",
+                id: 87,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: null,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: null,
+              stringValue: "long description goes here",
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "project",
+              valueOperator: null,
+              lsType: "codeValue",
+              lsTypeAndKind: "codeValue_project",
+              valueUnit: null,
               version: 0
             }, {
               clobValue: null,

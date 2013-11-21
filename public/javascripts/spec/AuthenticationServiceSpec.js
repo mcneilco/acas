@@ -10,7 +10,6 @@
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/userAuthentication",
@@ -40,7 +39,6 @@
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'GET',
             url: "api/users/jmcneil",
@@ -90,7 +88,6 @@
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'GET',
             url: "api/users/starksofwesteros",

@@ -22,7 +22,6 @@
 
     DocUpload.prototype.validate = function(attrs) {
       var errors, _ref1;
-
       errors = [];
       if ((_ref1 = attrs.docType) !== 'url' && _ref1 !== 'file') {
         errors.push({
@@ -66,7 +65,8 @@
       this.clearNewFileName = __bind(this.clearNewFileName, this);
       this.setNewFileName = __bind(this.setNewFileName, this);
       this.docTypeChanged = __bind(this.docTypeChanged, this);
-      this.render = __bind(this.render, this);      _ref1 = DocUploadController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = DocUploadController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -118,7 +118,6 @@
 
     DocUploadController.prototype.docTypeChanged = function(event) {
       var currentChecked;
-
       currentChecked = this.$('[name="docTypeRadio"]:checked').val();
       if (currentChecked !== 'url') {
         this.$('.bv_urlInputWrapper').hide('slide');

@@ -39,7 +39,6 @@
       describe("parameter editing", function() {
         return it("should update the model when the curve min is changed", function() {
           var value;
-
           this.drac.$('.bv_curveMin').val('7.0');
           this.drac.$('.bv_curveMin').change();
           value = this.drac.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "curve min");
@@ -49,7 +48,6 @@
       return describe("parameter editing", function() {
         return it("should update the model when the curve max is changed", function() {
           var value;
-
           this.drac.$('.bv_curveMax').val('100.0');
           this.drac.$('.bv_curveMax').change();
           value = this.drac.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "curve max");

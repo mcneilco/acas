@@ -33,6 +33,10 @@ describe "Experiment module testing", ->
 			describe "required states and values", ->
 				it 'Should have a description value', ->
 					expect(@exp.getDescription() instanceof Value).toBeTruthy()
+				it 'Should have a notebook value', ->
+					expect(@exp.getNotebook() instanceof Value).toBeTruthy()
+				it 'Should have a project value', ->
+					expect(@exp.getProjectCode() instanceof Value).toBeTruthy()
 
 		describe "when loaded from existing", ->
 			beforeEach ->
@@ -84,6 +88,10 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsLabels').at(0).get('lsKind')).toEqual "experiment name"
 				it 'Should have a description value', ->
 					expect(@exp.getDescription().get('stringValue')).toEqual "long description goes here"
+				it 'Should have a notebook value', ->
+					expect(@exp.getNotebook().get('stringValue')).toEqual "911"
+				it 'Should have a project value', ->
+					expect(@exp.getProjectCode().get('codeValue')).toEqual "Project1"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -105,6 +113,10 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 				it 'Should have a description value', ->
 					expect(@exp.getDescription().get('stringValue')).toEqual "long description goes here"
+				it 'Should not have a notebook value', ->
+					expect(@exp.getNotebook().get('stringValue')).toBeUndefined()
+				it 'Should have a projectCode value', ->
+					expect(@exp.getProjectCode().get('codeValue')).toBeUndefined()
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -174,6 +186,24 @@ describe "Experiment module testing", ->
 				expect(@exp.isValid()).toBeFalsy()
 				filtErrors = _.filter(@exp.validationError, (err) ->
 					err.attribute=='protocol'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when notebook is empty", ->
+				@exp.getNotebook().set
+					stringValue: ""
+					recordedBy: @exp.get('recordedBy')
+				expect(@exp.isValid()).toBeFalsy()
+				filtErrors = _.filter(@exp.validationError, (err) ->
+					err.attribute=='notebook'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when projectCode is unassigned", ->
+				@exp.getProjectCode().set
+					codeValue: "unassigned"
+					recordedBy: @exp.get('recordedBy')
+				expect(@exp.isValid()).toBeFalsy()
+				filtErrors = _.filter(@exp.validationError, (err) ->
+					err.attribute=='projectCode'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
@@ -263,6 +293,16 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
 				it "should fill the short description field", ->
 					expect(@ebc.$('.bv_shortDescription').html()).toEqual "primary analysis"
+				it "should fill the description field", ->
+					expect(@ebc.$('.bv_description').html()).toEqual "long description goes here"
+				it "should not fill the notebook field", ->
+					expect(@ebc.$('.bv_notebook').val()).toEqual ""
+				it "should set the project to unassigned", ->
+					waitsFor ->
+						@ebc.$('.bv_projectCode option').length > 0
+					, 1000
+					runs ->
+						expect(@ebc.$('.bv_projectCode').val()).toEqual "unassigned"
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
 					expect(@ebc.model.get 'recordedBy').toEqual ""
