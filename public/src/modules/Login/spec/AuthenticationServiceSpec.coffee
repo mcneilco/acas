@@ -2,7 +2,8 @@ describe 'User authentication Service testing', ->
 	beforeEach ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
-		@serviceType = window.configurationNode.serverConfigurationParams.configuration.userAuthenticationType
+		@serviceType = window.conf.authentication.user.type
+
 
 	describe 'when auth service called', ->
 		beforeEach ->
@@ -20,7 +21,7 @@ describe 'User authentication Service testing', ->
 						@serviceReturn = null
 					dataType: 'json'
 
-		it 'should return succesfull credentials', ->
+		it 'should return succesfull credentials (expect to fail without valid creds in this spec file)', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn.status).toContain "Success"
@@ -66,7 +67,7 @@ describe 'User authentication Service testing', ->
 					type: 'GET'
 					url: "api/users/starksofwesteros"
 					success: (json) =>
-						@serviceReturn = json
+						@serviceReturn = "got 200"
 					error: (err) =>
 						console.log 'got ajax error'
 						@serviceReturn = null
@@ -78,8 +79,5 @@ describe 'User authentication Service testing', ->
 		it 'should return 204', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				console.log @serviceType
-				if @serviceType != "Demo"
-					expect(@serviceReturn).toEqual "got 204"
-				else
-					expect(@serviceReturn.username).toEqual "starksofwesteros"
+				expect(@serviceReturn).toEqual "got 204"
+#TODO make work with DNS services

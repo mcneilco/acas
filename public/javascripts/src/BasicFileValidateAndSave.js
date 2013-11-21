@@ -20,7 +20,8 @@
       this.handleReportFileUploaded = __bind(this.handleReportFileUploaded, this);
       this.handleParseFileRemoved = __bind(this.handleParseFileRemoved, this);
       this.handleParseFileUploaded = __bind(this.handleParseFileUploaded, this);
-      this.render = __bind(this.render, this);      _ref = BasicFileValidateAndSaveController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref = BasicFileValidateAndSaveController.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -63,7 +64,7 @@
       this.parseFileController = new LSFileInputController({
         el: this.$('.bv_parseFile'),
         inputTitle: '',
-        url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
+        url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
         fieldIsRequired: false,
         allowedFileTypes: ['xls', 'xlsx', 'csv']
       });
@@ -74,7 +75,7 @@
         this.reportFileController = new LSFileInputController({
           el: this.$('.bv_reportFile'),
           inputTitle: '',
-          url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
+          url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
           fieldIsRequired: false,
           allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
         });
@@ -118,7 +119,6 @@
 
     BasicFileValidateAndSaveController.prototype.validateParseFile = function() {
       var _this = this;
-
       if (this.parseFileUploaded && !this.$(".bv_next").attr('disabled')) {
         this.notificationController.clearAllNotificiations();
         this.$('.bv_validateStatusDropDown').modal({
@@ -157,7 +157,6 @@
 
     BasicFileValidateAndSaveController.prototype.prepareDataToPost = function(dryRun) {
       var data, user;
-
       user = this.userName;
       if (user == null) {
         user = window.AppLaunchParams.loginUserName;
@@ -174,7 +173,6 @@
 
     BasicFileValidateAndSaveController.prototype.handleValidationReturnSuccess = function(json) {
       var summaryStr, _ref1;
-
       summaryStr = "Validation Results: ";
       if (!json.hasError) {
         this.filePassedValidation = true;
@@ -195,12 +193,14 @@
       if (((_ref1 = json.results) != null ? _ref1.htmlSummary : void 0) != null) {
         this.$('.bv_htmlSummary').html(json.results.htmlSummary);
       }
-      return this.$('.bv_validateStatusDropDown').modal("hide");
+      this.$('.bv_validateStatusDropDown').modal("hide");
+      if (json.results.csvDataPreview != null) {
+        return this.showCSVPreview(json.results.csvDataPreview);
+      }
     };
 
     BasicFileValidateAndSaveController.prototype.handleSaveReturnSuccess = function(json) {
       var summaryStr;
-
       summaryStr = "Upload Results: ";
       if (!json.hasError) {
         summaryStr += "Success ";
@@ -221,7 +221,6 @@
 
     BasicFileValidateAndSaveController.prototype.loadAnother = function() {
       var fn;
-
       this.showFileSelectPhase();
       fn = function() {
         return this.$('.bv_deleteFile').click();
@@ -237,7 +236,8 @@
       this.$('.bv_nextControlContainer').show();
       this.$('.bv_saveControlContainer').hide();
       this.$('.bv_completeControlContainer').hide();
-      return this.$('.bv_notifications').hide();
+      this.$('.bv_notifications').hide();
+      return this.$('.bv_csvPreviewContainer').hide();
     };
 
     BasicFileValidateAndSaveController.prototype.showFileUploadPhase = function() {
@@ -251,6 +251,7 @@
 
     BasicFileValidateAndSaveController.prototype.showFileUploadCompletePhase = function() {
       this.$('.bv_htmlSummary').show();
+      this.$('.bv_csvPreviewContainer').hide();
       this.$('.bv_fileUploadWrapper').hide();
       this.$('.bv_nextControlContainer').hide();
       this.$('.bv_saveControlContainer').hide();
@@ -267,6 +268,32 @@
     BasicFileValidateAndSaveController.prototype.handleFormValid = function() {
       this.$(".bv_next").removeAttr('disabled');
       return this.$(".bv_save").removeAttr('disabled');
+    };
+
+    BasicFileValidateAndSaveController.prototype.showCSVPreview = function(csv) {
+      var csvRows, headCells, r, rowCells, val, _i, _j, _k, _len, _len1, _ref1;
+      this.$('.csvPreviewTHead').empty();
+      this.$('.csvPreviewTBody').empty();
+      csvRows = csv.split('\n');
+      if (csvRows.length > 1) {
+        headCells = csvRows[0].split(',');
+        if (headCells.length > 1) {
+          this.$('.csvPreviewTHead').append("<tr></tr>");
+          for (_i = 0, _len = headCells.length; _i < _len; _i++) {
+            val = headCells[_i];
+            this.$('.csvPreviewTHead tr').append("<th>" + val + "</th>");
+          }
+          for (r = _j = 1, _ref1 = csvRows.length - 2; 1 <= _ref1 ? _j <= _ref1 : _j >= _ref1; r = 1 <= _ref1 ? ++_j : --_j) {
+            this.$('.csvPreviewTBody').append("<tr></tr>");
+            rowCells = csvRows[r].split(',');
+            for (_k = 0, _len1 = rowCells.length; _k < _len1; _k++) {
+              val = rowCells[_k];
+              this.$('.csvPreviewTBody tr:last').append("<td>" + val + "</td>");
+            }
+          }
+          return this.$('.bv_csvPreviewContainer').show();
+        }
+      }
     };
 
     return BasicFileValidateAndSaveController;

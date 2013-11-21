@@ -11,7 +11,6 @@ app.put '/api/experiments', experimentRoutes.putExperiment
 (function() {
   exports.experimentByCodename = function(request, response) {
     var experimentServiceTestJSON;
-
     console.log(request.params.code);
     console.log(request.query.testMode);
     if (request.query.testMode) {
@@ -22,14 +21,13 @@ app.put '/api/experiments', experimentRoutes.putExperiment
 
   exports.experimentById = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
-
     console.log(req.params.id);
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "experiments/" + req.params.id;
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/" + req.params.id;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -38,13 +36,12 @@ app.put '/api/experiments', experimentRoutes.putExperiment
   exports.postExperiment = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
-
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "experiments";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experiments";
       request = require('request');
       return request({
         method: 'POST',
@@ -68,13 +65,12 @@ app.put '/api/experiments', experimentRoutes.putExperiment
   exports.putExperiment = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
-
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "experiments";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experiments";
       request = require('request');
       return request({
         method: 'PUT',

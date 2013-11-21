@@ -9,19 +9,20 @@
       mainControllerClassName: "GenericDataParserController"
     }, {
       isHeader: false,
-      menuName: "Analyze FLIPR Data",
-      mainControllerClassName: "PrimaryScreenExperimentController"
-    }, {
-      isHeader: true,
-      menuName: "Inventory"
+      menuName: "Load Full PK Experiment",
+      mainControllerClassName: "FullPKParserController"
     }, {
       isHeader: false,
-      menuName: "Load Containers From SDF",
-      mainControllerClassName: "BulkLoadContainersFromSDFController"
+      menuName: "Load Micro Solubility Experiment",
+      mainControllerClassName: "MicroSolParserController"
     }, {
       isHeader: false,
-      menuName: "Load Sample Transfer Log",
-      mainControllerClassName: "BulkLoadSampleTransfersController"
+      menuName: "Load PAMPA Experiment",
+      mainControllerClassName: "PampaParserController"
+    }, {
+      isHeader: false,
+      menuName: "Load Met. Stab. Experiment",
+      mainControllerClassName: "MetStabParserController"
     }
   ];
 

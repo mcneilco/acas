@@ -33,7 +33,8 @@
     __extends(ModuleMenusController, _super);
 
     function ModuleMenusController() {
-      this.render = __bind(this.render, this);      _ref1 = ModuleMenusController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = ModuleMenusController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -55,11 +56,12 @@
     ModuleMenusController.prototype.render = function() {
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
-      if (window.configurationNode.serverConfigurationParams.configuration.requireLogin) {
-        this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
-        this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
-      } else {
-        this.$('.bv_userInfo').hide();
+      this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
+      this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
+      if (window.AppLaunchParams.deployMode != null) {
+        if (window.AppLaunchParams.deployMode.toUpperCase() !== "PROD") {
+          this.$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase());
+        }
       }
       return this;
     };

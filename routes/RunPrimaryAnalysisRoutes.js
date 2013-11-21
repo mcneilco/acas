@@ -31,7 +31,6 @@ app.post '/api/primaryAnalysis/runPrimaryAnalysis', runPrimaryAnalysisRoutes.run
 
   exports.primaryScreenExperimentIndex = function(request, response) {
     var scriptsToLoad;
-
     scriptsToLoad = requiredScripts.concat(applicationScripts);
     return response.render('PrimaryScreenExperiment', {
       title: 'Primary Screen Experiment',
@@ -44,7 +43,6 @@ app.post '/api/primaryAnalysis/runPrimaryAnalysis', runPrimaryAnalysisRoutes.run
 
   exports.runPrimaryAnalysis = function(request, response) {
     var serverUtilityFunctions;
-
     request.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     console.log(request.body);

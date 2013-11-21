@@ -96,7 +96,7 @@
             dropZoneClassId: 'field1',
             autoUpload: false,
             maxNumberOfFiles: 1,
-            url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
+            url: "http://" + window.conf.host + ":" + window.conf.service.file.port
           });
           return this.fc.render();
         });

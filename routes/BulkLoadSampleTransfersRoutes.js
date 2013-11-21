@@ -16,7 +16,6 @@ app.post '/api/bulkLoadSampleTransfers', bulkLoadSampleTransfersRoutes.bulkLoadS
 (function() {
   exports.bulkLoadSampleTransfers = function(request, response) {
     var serverUtilityFunctions;
-
     request.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {

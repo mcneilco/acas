@@ -9,7 +9,8 @@
 
     function PrimaryScreenAppRouter() {
       this.existingExperiment = __bind(this.existingExperiment, this);
-      this.newExperiment = __bind(this.newExperiment, this);      _ref = PrimaryScreenAppRouter.__super__.constructor.apply(this, arguments);
+      this.newExperiment = __bind(this.newExperiment, this);
+      _ref = PrimaryScreenAppRouter.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -40,7 +41,8 @@
     function PrimaryScreenAppController() {
       this.existingExperiment = __bind(this.existingExperiment, this);
       this.newExperiment = __bind(this.newExperiment, this);
-      this.render = __bind(this.render, this);      _ref1 = PrimaryScreenAppController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref1 = PrimaryScreenAppController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -73,7 +75,6 @@
     PrimaryScreenAppController.prototype.existingExperiment = function(expId) {
       var exp,
         _this = this;
-
       exp = new Experiment({
         id: expId
       });

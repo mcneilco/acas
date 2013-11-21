@@ -2,11 +2,10 @@
   describe('PreferredBatchId Service testing', function() {
     beforeEach(function() {
       var serviceType;
-
       this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
       };
-      serviceType = window.configurationNode.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType;
+      serviceType = window.conf.service.external.preferred.batchid.type;
       if (!window.AppLaunchParams.liveServiceTest) {
         this.requestData = {
           requests: [
@@ -93,7 +92,6 @@
         beforeEach(function() {
           return runs(function() {
             var _this = this;
-
             return $.ajax({
               type: 'POST',
               url: "api/preferredBatchId",

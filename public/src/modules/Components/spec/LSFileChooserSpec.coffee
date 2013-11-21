@@ -75,7 +75,7 @@ describe 'LS File Chooser Behavior Testing', ->
 					dropZoneClassId: 'field1'
 					autoUpload: false
 					maxNumberOfFiles: 1
-					url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
+					url: "http://"+window.conf.host+":"+window.conf.service.file.port
 				@fc.render()
 				
 			it 'should have upload url', ->

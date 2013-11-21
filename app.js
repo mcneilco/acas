@@ -1,10 +1,11 @@
 (function() {
-  var startApp;
+  var csUtilities, startApp;
+
+  csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, app, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, genericDataParserRoutes, http, loginRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
-
-    config = require('./public/src/conf/configurationNode.js');
+    var LocalStrategy, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, metStabRoutes, microSolRoutes, pampaRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
+    config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
     http = require('http');
@@ -13,9 +14,9 @@
     passport = require('passport');
     util = require('util');
     LocalStrategy = require('passport-local').Strategy;
-    app = express();
+    global.app = express();
     app.configure(function() {
-      app.set('port', process.env.PORT || config.serverConfigurationParams.configuration.portNumber);
+      app.set('port', config.all.client.port);
       app.set('views', __dirname + '/views');
       app.set('view engine', 'jade');
       app.use(express.favicon());
@@ -37,15 +38,12 @@
     });
     loginRoutes = require('./routes/loginRoutes');
     app.configure('development', function() {
-      return app.use(express.errorHandler());
+      app.use(express.errorHandler());
+      return console.log("node dev mode set");
     });
     routes = require('./routes');
-    if (config.serverConfigurationParams.configuration.requireLogin) {
-      app.get('/', loginRoutes.ensureAuthenticated, routes.index);
-    } else {
-      app.get('/', routes.index);
-    }
-    if (config.serverConfigurationParams.configuration.enableSpecRunner) {
+    app.get('/', loginRoutes.ensureAuthenticated, routes.index);
+    if (config.all.server.enablespecrunner) {
       app.get('/SpecRunner', routes.specRunner);
       app.get('/LiveServiceSpecRunner', routes.liveServiceSpecRunner);
     }
@@ -53,11 +51,11 @@
       return done(null, user.username);
     });
     passport.deserializeUser(function(username, done) {
-      return loginRoutes.findByUsername(username, function(err, user) {
+      return csUtilities.findByUsername(username, function(err, user) {
         return done(err, user);
       });
     });
-    passport.use(new LocalStrategy(loginRoutes.loginStrategy));
+    passport.use(new LocalStrategy(csUtilities.loginStrategy));
     app.get('/login', loginRoutes.loginPage);
     app.post('/login', passport.authenticate('local', {
       failureRedirect: '/login',
@@ -91,6 +89,14 @@
     app.post('/api/docForBatches', docForBatchesRoutes.saveDocForBatches);
     genericDataParserRoutes = require('./routes/GenericDataParserRoutes.js');
     app.post('/api/genericDataParser', genericDataParserRoutes.parseGenericData);
+    fullPKParserRoutes = require('./routes/FullPKParserRoutes.js');
+    app.post('/api/fullPKParser', fullPKParserRoutes.parseFullPKData);
+    microSolRoutes = require('./routes/MicroSolRoutes.js');
+    app.post('/api/microSolParser', microSolRoutes.parseMicroSolData);
+    pampaRoutes = require('./routes/PampaRoutes.js');
+    app.post('/api/pampaParser', pampaRoutes.parsePampaData);
+    metStabRoutes = require('./routes/MetStabRoutes.js');
+    app.post('/api/metStabParser', metStabRoutes.parseMetStabData);
     bulkLoadContainersFromSDFRoutes = require('./routes/BulkLoadContainersFromSDFRoutes.js');
     app.post('/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF);
     bulkLoadSampleTransfersRoutes = require('./routes/BulkLoadSampleTransfersRoutes.js');
@@ -104,9 +110,10 @@
     app.get('/api/curves/stub/:exptCode', curveCuratorRoutes.getCurveStubs);
     serverUtilityFunctions = require('./routes/ServerUtilityFunctions.js');
     app.post('/api/runRFunctionTest', serverUtilityFunctions.runRFunctionTest);
-    return http.createServer(app).listen(app.get('port'), function() {
+    http.createServer(app).listen(app.get('port'), function() {
       return console.log("Express server listening on port " + app.get('port'));
     });
+    return csUtilities.logUsage("ACAS Node server started", "started", "");
   };
 
   startApp();

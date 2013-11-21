@@ -65,7 +65,6 @@ The raw data and results are stored in the database. Additionally, a PDF is gene
     describe('when run with valid input', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'POST',
@@ -91,7 +90,6 @@ The raw data and results are stored in the database. Additionally, a PDF is gene
     return describe('when run with flawed input file', function() {
       beforeEach(function() {
         var self;
-
         goodExampleData.fileToParse += "_with_error";
         self = this;
         return $.ajax({

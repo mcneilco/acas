@@ -4,19 +4,18 @@
       this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
       };
-      return this.serviceType = window.configurationNode.serverConfigurationParams.configuration.userAuthenticationType;
+      return this.serviceType = window.conf.authentication.user.type;
     });
     describe('when auth service called', function() {
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/userAuthentication",
             data: {
-              user: "bob",
-              password: "secret"
+              user: "ldap-query",
+              password: "fred"
             },
             success: function(json) {
               return _this.serviceReturn = json;
@@ -29,7 +28,7 @@
           });
         });
       });
-      return it('should return succesfull credentials', function() {
+      return it('should return succesfull credentials (expect to fail without valid creds in this spec file)', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           return expect(this.serviceReturn.status).toContain("Success");
@@ -40,7 +39,6 @@
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'GET',
             url: "api/users/jmcneil",
@@ -90,12 +88,11 @@
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'GET',
             url: "api/users/starksofwesteros",
             success: function(json) {
-              return _this.serviceReturn = json;
+              return _this.serviceReturn = "got 200";
             },
             error: function(err) {
               console.log('got ajax error');
@@ -113,12 +110,7 @@
       return it('should return 204', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          console.log(this.serviceType);
-          if (this.serviceType !== "Demo") {
-            return expect(this.serviceReturn).toEqual("got 204");
-          } else {
-            return expect(this.serviceReturn.username).toEqual("starksofwesteros");
-          }
+          return expect(this.serviceReturn).toEqual("got 204");
         });
       });
     });

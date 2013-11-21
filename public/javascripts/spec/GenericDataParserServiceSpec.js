@@ -9,7 +9,7 @@ This service parses data from the generic format and saves it to the database
   goodDataRequest = {
     fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve_with_warnings.xls",
     reportFile: null,
-    dryRun: true,
+    dryRunMode: true,
     user: 'jmcneil',
     testMode: true
   };
@@ -17,7 +17,7 @@ This service parses data from the generic format and saves it to the database
   badDataRequest = {
     fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls",
     reportFile: null,
-    dryRun: true,
+    dryRunMode: true,
     user: 'jmcneil',
     testMode: true
   };
@@ -29,7 +29,7 @@ This service parses data from the generic format and saves it to the database
       fileToParse: "filename.xls",
       reportFile: null,
       htmlSummary: "HTML from service",
-      dryRun: true
+      dryRunMode: true
     },
     hasError: false,
     hasWarning: true,
@@ -43,7 +43,7 @@ This service parses data from the generic format and saves it to the database
       fileToParse: "filename.xls",
       reportFile: null,
       htmlSummary: "Error: There is a problem in this file...",
-      dryRun: true
+      dryRunMode: true
     },
     hasError: true,
     hasWarning: true,
@@ -68,7 +68,6 @@ This service parses data from the generic format and saves it to the database
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/genericDataParser",
@@ -98,7 +97,6 @@ This service parses data from the generic format and saves it to the database
       beforeEach(function() {
         return runs(function() {
           var _this = this;
-
           return $.ajax({
             type: 'POST',
             url: "api/genericDataParser",

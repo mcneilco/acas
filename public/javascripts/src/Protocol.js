@@ -44,7 +44,6 @@
 
     ProtocolState.prototype.initialize = function() {
       var _this = this;
-
       if (this.has('protocolValues')) {
         if (!(this.get('protocolValues') instanceof ProtocolValueList)) {
           this.set({
@@ -59,7 +58,6 @@
 
     ProtocolState.prototype.parse = function(resp) {
       var _this = this;
-
       if (resp.protocolValues != null) {
         if (!(resp.protocolValues instanceof ProtocolValueList)) {
           resp.protocolValues = new ProtocolValueList(resp.protocolValues);
@@ -93,7 +91,8 @@
     __extends(Protocol, _super);
 
     function Protocol() {
-      this.parse = __bind(this.parse, this);      _ref4 = Protocol.__super__.constructor.apply(this, arguments);
+      this.parse = __bind(this.parse, this);
+      _ref4 = Protocol.__super__.constructor.apply(this, arguments);
       return _ref4;
     }
 
@@ -114,7 +113,6 @@
 
     Protocol.prototype.parse = function(resp) {
       var _this = this;
-
       if (resp.protocolLabels != null) {
         if (!(resp.protocolLabels instanceof LabelList)) {
           resp.protocolLabels = new LabelList(resp.protocolLabels);
@@ -153,7 +151,6 @@
 
     Protocol.prototype.setupCompositeChangeTriggers = function() {
       var _this = this;
-
       this.get('protocolLabels').on('change', function() {
         return _this.trigger('change');
       });

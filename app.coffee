@@ -1,23 +1,22 @@
-
+csUtilities = require "./public/src/conf/CustomerSpecificServerFunctions.js"
 
 startApp = ->
 # Regular system startup
-	config = require './public/src/conf/configurationNode.js'
+	config = require './conf/compiled/conf.js'
 	express = require('express')
 	user = require('./routes/user')
-
 	http = require('http')
 	path = require('path')
 
-	# Added for login support
+	# Added for logging support
 	flash = require 'connect-flash'
 	passport = require 'passport'
 	util = require 'util'
 	LocalStrategy = require('passport-local').Strategy
 
-	app = express()
+	global.app = express()
 	app.configure( ->
-		app.set('port', process.env.PORT || config.serverConfigurationParams.configuration.portNumber)
+		app.set('port', config.all.client.port)
 		app.set('views', __dirname + '/views')
 		app.set('view engine', 'jade')
 		app.use(express.favicon())
@@ -37,17 +36,16 @@ startApp = ->
 	)
 	loginRoutes = require './routes/loginRoutes'
 
+	#TODO Do we need these next three lines? What do they do?
 	app.configure('development', ->
 		app.use(express.errorHandler())
+		console.log "node dev mode set"
 	)
 
 	# main routes
 	routes = require('./routes')
-	if config.serverConfigurationParams.configuration.requireLogin
-		app.get '/', loginRoutes.ensureAuthenticated, routes.index
-	else
-		app.get '/', routes.index
-	if config.serverConfigurationParams.configuration.enableSpecRunner
+	app.get '/', loginRoutes.ensureAuthenticated, routes.index
+	if config.all.server.enablespecrunner
 		app.get '/SpecRunner', routes.specRunner
 		app.get '/LiveServiceSpecRunner', routes.liveServiceSpecRunner
 
@@ -55,9 +53,9 @@ startApp = ->
 	passport.serializeUser (user, done) ->
 		done null, user.username
 	passport.deserializeUser (username, done) ->
-		loginRoutes.findByUsername username, (err, user) ->
+		csUtilities.findByUsername username, (err, user) ->
 			done err, user
-	passport.use new LocalStrategy loginRoutes.loginStrategy
+	passport.use new LocalStrategy csUtilities.loginStrategy
 
 	app.get '/login', loginRoutes.loginPage
 	app.post '/login',
@@ -89,7 +87,6 @@ startApp = ->
 	projectServiceRoutes = require './routes/ProjectServiceRoutes.js'
 	app.get '/api/projects', projectServiceRoutes.getProjects
 
-
 	# DocForBatches routes
 	docForBatchesRoutes = require './routes/DocForBatchesRoutes.js'
 	app.get '/docForBatches/*', docForBatchesRoutes.docForBatchesIndex
@@ -100,6 +97,22 @@ startApp = ->
 	# GenericDataParser routes
 	genericDataParserRoutes = require './routes/GenericDataParserRoutes.js'
 	app.post '/api/genericDataParser', genericDataParserRoutes.parseGenericData
+
+	# FullPKParser routes
+	fullPKParserRoutes = require './routes/FullPKParserRoutes.js'
+	app.post '/api/fullPKParser', fullPKParserRoutes.parseFullPKData
+
+	# MicroSolParser routes
+	microSolRoutes = require './routes/MicroSolRoutes.js'
+	app.post '/api/microSolParser', microSolRoutes.parseMicroSolData
+
+	# PampaParser routes
+	pampaRoutes = require './routes/PampaRoutes.js'
+	app.post '/api/pampaParser', pampaRoutes.parsePampaData
+
+	# MetStabParser routes
+	metStabRoutes = require './routes/MetStabRoutes.js'
+	app.post '/api/metStabParser', metStabRoutes.parseMetStabData
 
 	# BulkLoadContainersFromSDF routes
 	bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
@@ -127,6 +140,6 @@ startApp = ->
 	http.createServer(app).listen(app.get('port'), ->
 		console.log("Express server listening on port " + app.get('port'))
 	)
+	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 startApp()
-

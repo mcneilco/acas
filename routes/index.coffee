@@ -1,3 +1,4 @@
+
 requiredScripts = [
 	'/src/lib/jquery.min.js'
 	'/src/lib/json2.js'
@@ -18,13 +19,13 @@ requiredScripts = [
 ]
 
 applicationScripts = [
-	'/src/conf/configurationNode.js'
-	#'/src/conf/configuration.js'
+	'/src/conf/conf.js'
 	# For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
+	'/javascripts/src/AbstractParserFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
 	'/javascripts/src/PickList.js'
 	# For serverAPI module
@@ -50,6 +51,14 @@ applicationScripts = [
 	#'javascripts/src/AppController.js'
 	# For Generic Data Parser module
 	'/javascripts/src/GenericDataParser.js'
+	# For FullPK module
+	'/javascripts/src/FullPK.js'
+	# For MicroSol module
+	'/javascripts/src/MicroSol.js'
+	# For Pampa module
+	'/javascripts/src/Pampa.js'
+	# For MetStab module
+	'/javascripts/src/MetStab.js'
 	# For BulkLoadContainersFromSDF module
 	'/javascripts/src/BulkLoadContainersFromSDF.js'
 	# For BulkLoadSampleTransfers module
@@ -66,9 +75,11 @@ exports.index = (req, res) ->
 		title: "ACAS Home"
 		scripts: scriptsToLoad
 		appParams:
-			loginUserName: if req.user? then req.user.username else ""
-			loginUser: if req.user? then req.user else ""
+			loginUserName: req.user.username
+			loginUser: req.user
 			testMode: false
+			deployMode: global.deployMode
+#			deployMode: "Test"
 
 
 exports.specRunner = (req, res) ->
@@ -83,6 +94,8 @@ exports.specRunner = (req, res) ->
 	]
 
 	specScripts = [
+		#For login module
+		'javascripts/spec/dnsAuthenticationServiceSpec.js'
 		# For serverAPI module
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		'javascripts/spec/ProtocolServiceSpec.js'
@@ -121,6 +134,22 @@ exports.specRunner = (req, res) ->
 		# For Generic Data Parser module
 		'javascripts/spec/GenericDataParserSpec.js'
 		'javascripts/spec/GenericDataParserServiceSpec.js'
+		# For Full PK Parser module
+		'javascripts/spec/testFixtures/FullPKTestJSON.js'
+		'javascripts/spec/FullPKSpec.js'
+		'javascripts/spec/FullPKParserServiceSpec.js'
+		# For MicroSol Parser module
+		'javascripts/spec/testFixtures/MicroSolTestJSON.js'
+		'javascripts/spec/MicroSolSpec.js'
+		'javascripts/spec/MicroSolServiceSpec.js'
+		# For Pampa Parser module
+		'javascripts/spec/testFixtures/PampaTestJSON.js'
+		'javascripts/spec/PampaSpec.js'
+		'javascripts/spec/PampaServiceSpec.js'
+		# For MetStab Parser module
+		'javascripts/spec/testFixtures/MetStabTestJSON.js'
+		'javascripts/spec/MetStabSpec.js'
+		'javascripts/spec/MetStabServiceSpec.js'
 		# For BulkLoadContainersFromSDF module
 		'javascripts/spec/BulkLoadContainersFromSDFSpec.js'
 		'javascripts/spec/BulkLoadContainersFromSDFServerSpec.js'
@@ -129,8 +158,6 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/BulkloadSampleTransfersServerSpec.js'
 		#For ServerUtility testing module
 		'javascripts/spec/ServerUtilityFunctionsSpec.js'
-		#For Login module
-		'javascripts/spec/AuthenticationServiceSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)
@@ -149,6 +176,7 @@ exports.specRunner = (req, res) ->
 				lastName: "McNeil"
 			testMode: true
 			liveServiceTest: false
+			deployMode: global.deployMode
 	})
 
 exports.liveServiceSpecRunner = (req, res) ->
@@ -167,6 +195,11 @@ exports.liveServiceSpecRunner = (req, res) ->
 		# For serverAPI module
 		'javascripts/spec/ProtocolServiceSpec.js'
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
+		#For login module
+		'javascripts/spec/dnsAuthenticationServiceSpec.js'
+		#For DNSMicroSol module
+		'javascripts/spec/testFixtures/MicroSolTestJSON.js'
+		'javascripts/spec/MicroSolServiceSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)

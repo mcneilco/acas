@@ -52,12 +52,30 @@
         return expect(this.mmc.$('.bv_logout').attr('href')).toContain('logout');
       });
     });
-    return describe("Sub Controllers load after rendering", function() {
+    describe("Sub Controllers load after rendering", function() {
       it("Should have 4 menu items", function() {
         return expect(this.mmc.$('.bv_modLaunchMenuWrapper li').length).toEqual(4);
       });
       return it("Should create and make divs for all the non header ModuleLauncherControllers", function() {
         return expect(this.mmc.$('.bv_mainModuleWrapper div.bv_moduleContent').length).toEqual(3);
+      });
+    });
+    return describe("Deploy mode display", function() {
+      beforeEach(function() {
+        return this.mmc = new ModuleMenusController({
+          el: $('#fixture'),
+          menuListJSON: this.testMenuItems
+        });
+      });
+      it("should show the deploy mode if set", function() {
+        window.AppLaunchParams.deployMode = "Stage";
+        this.mmc.render();
+        return expect(this.mmc.$('.bv_deployMode h1').html()).toEqual("STAGE");
+      });
+      return it("should not show the deploy mode if set to Prod", function() {
+        window.AppLaunchParams.deployMode = "Prod";
+        this.mmc.render();
+        return expect(this.mmc.$('.bv_deployMode h1').html()).toEqual("");
       });
     });
   });
