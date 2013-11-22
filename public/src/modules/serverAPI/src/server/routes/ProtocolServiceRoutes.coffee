@@ -98,9 +98,23 @@ exports.protocolCodeList = (req, resp) ->
 	console.log req.params
 	if req.params.str?
 		shouldFilter = true
-		filterString = req.params.str
+		filterString = req.params.str.toUpperCase()
 	else
 		shouldFilter = false
+
+	translateToCodes = (labels) ->
+		protCodes = []
+		for label in labels
+			if shouldFilter
+				match = label.labelText.toUpperCase().indexOf(filterString) > -1
+			else
+				match = true
+			if !label.ignored and !label.protocol.ignored and label.lsType=="name" and match
+				protCodes.push
+					code: label.protocol.codeName
+					name: label.labelText
+					ignored: label.ignored
+		protCodes
 
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'

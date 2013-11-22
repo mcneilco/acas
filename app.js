@@ -4,7 +4,7 @@
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, fullPKParserRoutes, genericDataParserRoutes, http, loginRoutes, metStabRoutes, microSolRoutes, pampaRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
+    var LocalStrategy, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, genericDataParserRoutes, http, loginRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, routes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
     config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
@@ -89,14 +89,6 @@
     app.post('/api/docForBatches', docForBatchesRoutes.saveDocForBatches);
     genericDataParserRoutes = require('./routes/GenericDataParserRoutes.js');
     app.post('/api/genericDataParser', genericDataParserRoutes.parseGenericData);
-    fullPKParserRoutes = require('./routes/FullPKParserRoutes.js');
-    app.post('/api/fullPKParser', fullPKParserRoutes.parseFullPKData);
-    microSolRoutes = require('./routes/MicroSolRoutes.js');
-    app.post('/api/microSolParser', microSolRoutes.parseMicroSolData);
-    pampaRoutes = require('./routes/PampaRoutes.js');
-    app.post('/api/pampaParser', pampaRoutes.parsePampaData);
-    metStabRoutes = require('./routes/MetStabRoutes.js');
-    app.post('/api/metStabParser', metStabRoutes.parseMetStabData);
     bulkLoadContainersFromSDFRoutes = require('./routes/BulkLoadContainersFromSDFRoutes.js');
     app.post('/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF);
     bulkLoadSampleTransfersRoutes = require('./routes/BulkLoadSampleTransfersRoutes.js');

@@ -25,11 +25,14 @@ describe "Module Menus Controller testing", ->
 			expect($('.bv_modLaunchMenuWrapper')).not.toBeNull()
 			expect($('.bv_mainModuleWrapper')).not.toBeNull()
 		it "should show the user first name", ->
-			expect(@mmc.$('.bv_loginUserFirstName').html()).toContain 'John'
+			if window.conf.require.login
+				expect(@mmc.$('.bv_loginUserFirstName').html()).toContain 'John'
 		it "should show the user last name", ->
-			expect(@mmc.$('.bv_loginUserLastName').html()).toContain 'McNeil'
+			if window.conf.require.login
+				expect(@mmc.$('.bv_loginUserLastName').html()).toContain 'McNeil'
 		it "should show a logout link", ->
-			expect(@mmc.$('.bv_logout').attr('href')).toContain 'logout'
+			if window.conf.require.login
+				expect(@mmc.$('.bv_logout').attr('href')).toContain 'logout'
 
 	describe "Sub Controllers load after rendering", ->
 		it "Should have 4 menu items", ->

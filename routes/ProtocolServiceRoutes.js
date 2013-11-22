@@ -112,15 +112,35 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
   };
 
   exports.protocolCodeList = function(req, resp) {
-    var baseurl, config, filterString, labels, protocolServiceTestJSON, request, shouldFilter,
+    var baseurl, config, filterString, labels, protocolServiceTestJSON, request, shouldFilter, translateToCodes,
       _this = this;
     console.log(req.params);
     if (req.params.str != null) {
       shouldFilter = true;
-      filterString = req.params.str;
+      filterString = req.params.str.toUpperCase();
     } else {
       shouldFilter = false;
     }
+    translateToCodes = function(labels) {
+      var label, match, protCodes, _i, _len;
+      protCodes = [];
+      for (_i = 0, _len = labels.length; _i < _len; _i++) {
+        label = labels[_i];
+        if (shouldFilter) {
+          match = label.labelText.toUpperCase().indexOf(filterString) > -1;
+        } else {
+          match = true;
+        }
+        if (!label.ignored && !label.protocol.ignored && label.lsType === "name" && match) {
+          protCodes.push({
+            code: label.protocol.codeName,
+            name: label.labelText,
+            ignored: label.ignored
+          });
+        }
+      }
+      return protCodes;
+    };
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       labels = protocolServiceTestJSON.protocolLabels;

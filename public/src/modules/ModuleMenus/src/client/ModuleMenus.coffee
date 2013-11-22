@@ -46,7 +46,7 @@ class window.ModuleMenusController extends Backbone.View
 		# it instantiates new controllers and views but doesn't delete the old controllers
 		@moduleLauncherMenuListController.render()
 		@moduleLauncherListController.render()
-		if window.configurationNode.serverConfigurationParams.configuration.requireLogin
+		if window.conf.require.login
 			@$('.bv_loginUserFirstName').html window.AppLaunchParams.loginUser.firstName
 			@$('.bv_loginUserLastName').html window.AppLaunchParams.loginUser.lastName
 		else
