@@ -13,11 +13,6 @@
   exports.getConfServiceVars = function(sysEnv, callback) {
     var conf;
     conf = {};
-    if (global.deployMode === "Prod") {
-      conf.enableSpecRunner = false;
-    } else {
-      conf.enableSpecRunner = true;
-    }
     return callback(conf);
   };
 

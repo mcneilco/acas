@@ -13,6 +13,7 @@ startApp = ->
 	passport = require 'passport'
 	util = require 'util'
 	LocalStrategy = require('passport-local').Strategy
+	global.deployMode = config.all.client.deployMode
 
 	global.app = express()
 	app.configure( ->
@@ -44,8 +45,12 @@ startApp = ->
 
 	# main routes
 	routes = require('./routes')
-	app.get '/', loginRoutes.ensureAuthenticated, routes.index
-	if config.all.server.enablespecrunner
+	if config.all.client.require.login
+		app.get '/', loginRoutes.ensureAuthenticated, routes.index
+	else
+		app.get '/', routes.index
+
+	if config.all.server.enableSpecRunner
 		app.get '/SpecRunner', routes.specRunner
 		app.get '/LiveServiceSpecRunner', routes.liveServiceSpecRunner
 

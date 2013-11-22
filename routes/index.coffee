@@ -61,14 +61,27 @@ applicationScripts = [
 
 exports.index = (req, res) ->
 	#"use strict"
+	config = require '../conf/compiled/conf.js'
 	global.specRunnerTestmode = false
 	scriptsToLoad = requiredScripts.concat(applicationScripts)
+	if config.all.client.require.login
+		loginUserName = req.user.username
+		loginUser = req.user
+	else
+		loginUserName = "nouser"
+		loginUser =
+			id: 0,
+			username: "nouser",
+			email: "nouser@nowhere.com",
+			firstName: "no",
+			lastName: "user"
+
 	return res.render 'index',
 		title: "ACAS Home"
 		scripts: scriptsToLoad
 		appParams:
-			loginUserName: req.user.username
-			loginUser: req.user
+			loginUserName: loginUserName
+			loginUser: loginUser
 			testMode: false
 			deployMode: global.deployMode
 #			deployMode: "Test"
@@ -86,8 +99,6 @@ exports.specRunner = (req, res) ->
 	]
 
 	specScripts = [
-		#For login module
-		'javascripts/spec/dnsAuthenticationServiceSpec.js'
 		# For serverAPI module
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		'javascripts/spec/ProtocolServiceSpec.js'
@@ -171,8 +182,6 @@ exports.liveServiceSpecRunner = (req, res) ->
 		# For serverAPI module
 		'javascripts/spec/ProtocolServiceSpec.js'
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
-		#For login module
-		'javascripts/spec/dnsAuthenticationServiceSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)

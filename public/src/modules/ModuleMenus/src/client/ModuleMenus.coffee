@@ -51,5 +51,8 @@ class window.ModuleMenusController extends Backbone.View
 			@$('.bv_loginUserLastName').html window.AppLaunchParams.loginUser.lastName
 		else
 			@$('.bv_userInfo').hide()
+		if window.AppLaunchParams.deployMode?
+			unless window.AppLaunchParams.deployMode.toUpperCase() =="PROD"
+				@$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase())
 
 		@

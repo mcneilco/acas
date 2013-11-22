@@ -62,6 +62,11 @@
       } else {
         this.$('.bv_userInfo').hide();
       }
+      if (window.AppLaunchParams.deployMode != null) {
+        if (window.AppLaunchParams.deployMode.toUpperCase() !== "PROD") {
+          this.$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase());
+        }
+      }
       return this;
     };
 

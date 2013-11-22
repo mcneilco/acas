@@ -11,10 +11,6 @@ exports.logUsage = (action, data, username) ->
 
 exports.getConfServiceVars = (sysEnv, callback) ->
 	conf = {}
-	if global.deployMode == "Prod"
-		conf.enableSpecRunner = false
-	else
-		conf.enableSpecRunner = true
 	callback(conf)
 
 exports.authCheck = (user, pass, retFun) ->

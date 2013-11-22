@@ -46,6 +46,11 @@
             return console.log("Problem parsing config_advanced.properties: " + error);
           } else {
             allConf = _.deepExtend(confAdv, conf);
+            if (allConf.client.deployMode === "Prod") {
+              allConf.server.enableSpecRunner = false;
+            } else {
+              allConf.server.enableSpecRunner = true;
+            }
             writeJSONFormat(allConf);
             writeClientJSONFormat(allConf);
             return writePropertiesFormat(allConf);
