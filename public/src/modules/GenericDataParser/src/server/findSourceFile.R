@@ -1,9 +1,12 @@
+# This is a utility function for finding source files, only used from command line at the moment
+
 require(RCurl)
 require(rjson)
+library(racas)
 
 x <- readline("What is the experiment code? ")
 
-experiment <- fromJSON(getURL(paste0("http://acas:8080/acas/experiments/codename/", x)))[[1]]
+experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/codename/", x)))[[1]]
 
 
 locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
@@ -16,4 +19,4 @@ valuesToFind <- locationState$lsValues[lsKinds %in% c("source file")]
 
 fileToFind <- valuesToFind[[1]]$fileValue
 
-cat(paste0("http://dsanpimapp01:8080/DNS/core/v1/DNSFile/", fileToFind))
+cat(paste0(server.service.external.file.service.url, fileToFind))

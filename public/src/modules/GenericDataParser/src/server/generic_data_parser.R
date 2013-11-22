@@ -299,7 +299,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
     isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
   )
   
-  if (!is.null(configList$client.include.project) && configList$client.include.project == "TRUE") {
+  if (!is.null(configList$client.include.project) && configList$client.include.project) {
     expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
   }
   if (length(formatSettings) > 0) {
@@ -1428,9 +1428,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$server.service.external.file.type, configList$server.service.external.file.service.url)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(subjectData$"Corporate Batch ID")
-    if (!is.null(configList$server.service.external.report.registration.url)) {
+    if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
+      # addFileLink should be defined in customFunctions.R
       addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
     }
   }
@@ -1773,7 +1774,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
                                                    configList$server.service.external.file.service.url)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(calculatedResults$"Corporate Batch ID")
-    if (!is.null(configList$server.service.external.report.registration.url)) {
+    if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
       addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
@@ -2208,7 +2209,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   # Add name modifier to protocol name for viewer
-  protocolPostfixStates <- protocol$lsStates[lapply(protocol$lsStates, getElement, "lsTypeAndKind") == "metadata_name modifier"]
+  if (is.list(protocol)) {
+    protocolPostfixStates <- protocol$lsStates[lapply(protocol$lsStates, getElement, "lsTypeAndKind") == "metadata_name modifier"]
+  } else {
+    protocolPostfixStates <- list()
+  }
   if (length(protocolPostfixStates) > 0) {
     protocolPostfixState <- protocolPostfixStates[[1]]
     protocolPostfixValues <- protocolPostfixState$lsValues[lapply(protocolPostfixState$lsValues, getElement, "lsTypeAndKind") == "stringValue_postfix"]
