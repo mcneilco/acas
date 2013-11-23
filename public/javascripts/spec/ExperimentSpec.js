@@ -158,7 +158,6 @@
         it("should trigger change when label changed", function() {
           runs(function() {
             var _this = this;
-
             this.exp = new Experiment();
             this.experimentChanged = false;
             this.exp.get('lsLabels').setBestName(new Label({
@@ -188,7 +187,6 @@
         return it("should trigger change when value changed in state", function() {
           runs(function() {
             var _this = this;
-
             this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
             this.experimentChanged = false;
             this.exp.on('change', function() {
@@ -215,7 +213,6 @@
         });
         it("should be invalid when name is empty", function() {
           var filtErrors;
-
           this.exp.get('lsLabels').setBestName(new Label({
             labelKind: "experiment name",
             labelText: "",
@@ -230,7 +227,6 @@
         });
         it("should be invalid when date is empty", function() {
           var filtErrors;
-
           this.exp.set({
             recordedDate: new Date("").getTime()
           });
@@ -242,7 +238,6 @@
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
-
           this.exp.set({
             recordedBy: ""
           });
@@ -253,7 +248,6 @@
         });
         return it("should be invalid when protocol not selected", function() {
           var filtErrors;
-
           this.exp.set({
             protocol: null
           });
@@ -268,7 +262,6 @@
         beforeEach(function() {
           runs(function() {
             var _this = this;
-
             this.saveSucessful = false;
             this.saveComplete = false;
             this.exp = new Experiment({
@@ -316,7 +309,6 @@
         beforeEach(function() {
           return runs(function() {
             var _this = this;
-
             this.copied = false;
             this.exp = new Experiment();
             this.exp.on("protocol_attributes_copied", function() {
@@ -376,7 +368,6 @@
           });
           it("should update model when description is changed", function() {
             var desc, states, values;
-
             this.ebc.$('.bv_description').val(" New long description   ");
             this.ebc.$('.bv_description').change();
             states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");

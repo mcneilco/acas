@@ -71,7 +71,6 @@
         return describe("setBestName functionality", function() {
           return it("should update existing unsaved label when best name changed", function() {
             var oldBestId;
-
             oldBestId = this.ell.pickBestLabel().id;
             this.ell.setBestName(new Label({
               labelText: "new best name",
@@ -166,7 +165,6 @@
           });
           it("should return requested value", function() {
             var values;
-
             values = this.es.getValuesByTypeAndKind("stringValue", "notebook");
             expect(values.length).toEqual(1);
             return expect(values[0].get('stringValue')).toEqual("911");
@@ -174,7 +172,6 @@
           return it("should trigger change when value changed in state", function() {
             runs(function() {
               var _this = this;
-
               this.stateChanged = false;
               this.es.on('change', function() {
                 return _this.stateChanged = true;
@@ -218,7 +215,6 @@
         describe("Get states by type and kind", function() {
           return it("should return requested state", function() {
             var values;
-
             values = this.esl.getStatesByTypeAndKind("metadata", "experiment metadata");
             expect(values.length).toEqual(1);
             return expect(values[0].get('lsTypeAndKind')).toEqual("metadata_experiment metadata");
@@ -227,7 +223,6 @@
         describe("Get value by type and kind", function() {
           return it("should return requested value", function() {
             var value;
-
             value = this.esl.getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
             return expect(value.get('stringValue')).toEqual("911");
           });
@@ -235,13 +230,11 @@
         return describe("get or create a state or value", function() {
           it("should return an existing state", function() {
             var st;
-
             st = this.esl.getOrCreateStateByTypeAndKind("metadata", "experiment metadata");
             return expect(st.get('lsType')).toEqual("metadata");
           });
           return it("return an existing value", function() {
             var val;
-
             val = this.esl.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
             return expect(val.get('stringValue')).toEqual("911");
           });

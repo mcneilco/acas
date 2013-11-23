@@ -13,7 +13,6 @@ This suite of services provides CRUD operations on Experiment Objects
     describe('when fetching Experiment stub by code', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'GET',
@@ -41,7 +40,6 @@ This suite of services provides CRUD operations on Experiment Objects
     describe('when fetching full Experiment by id', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'GET',
@@ -66,7 +64,6 @@ This suite of services provides CRUD operations on Experiment Objects
     describe('when saving new experiment', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'POST',
@@ -92,7 +89,6 @@ This suite of services provides CRUD operations on Experiment Objects
     return describe('when updating existing experiment', function() {
       beforeEach(function() {
         var self;
-
         self = this;
         return $.ajax({
           type: 'PUT',

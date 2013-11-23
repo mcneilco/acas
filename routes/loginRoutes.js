@@ -52,7 +52,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.findById = function(id, fn) {
     var idx;
-
     idx = id - 1;
     if (users[idx]) {
       return fn(null, users[idx]);
@@ -63,7 +62,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.findByUsername = function(username, fn) {
     var config, i, len, user;
-
     config = require('../public/src/conf/configurationNode.js');
     if (global.specRunnerTestmode || config.serverConfigurationParams.configuration.userAuthenticationType === "Demo") {
       i = 0;
@@ -89,7 +87,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.loginStrategy = function(username, password, done) {
     var config;
-
     config = require('../public/src/conf/configurationNode.js');
     return process.nextTick(function() {
       return exports.findByUsername(username, function(err, user) {
@@ -117,7 +114,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.loginPage = function(req, res) {
     var error, errorMsg, user;
-
     user = null;
     if (req.user != null) {
       user = req.user;
@@ -153,7 +149,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.authenticationService = function(req, resp) {
     var callback, config;
-
     config = require('../public/src/conf/configurationNode.js');
     callback = function(results) {
       if (results.indexOf("Success") >= 0) {
@@ -179,7 +174,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.getUsers = function(req, resp) {
     var callback;
-
     callback = function(err, user) {
       if (user === null) {
         return resp.send(204);

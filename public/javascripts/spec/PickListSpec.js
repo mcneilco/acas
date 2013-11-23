@@ -13,7 +13,6 @@
       beforeEach(function() {
         runs(function() {
           var _this = this;
-
           this.serviceReturn = false;
           this.pickListList = new PickListList(window.projectServiceTestJSON.projects);
           this.pickListList.url = "/api/projects";
@@ -69,7 +68,6 @@
           it("should return selected model", function() {
             return runs(function() {
               var mdl;
-
               this.pickListController.$("option")[1].selected = true;
               mdl = this.pickListController.getSelectedModel();
               expect(mdl.get("code")).toEqual("project2");
