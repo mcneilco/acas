@@ -102,7 +102,7 @@ class window.Experiment extends Backbone.Model
 				message: "Scientist must be set"
 		if attrs.protocol == null
 			errors.push
-				attribute: 'protocol'
+				attribute: 'protocolCode'
 				message: "Protocol must be set"
 		notebook = @getNotebook().get('stringValue')
 		if notebook is "" or notebook is "unassigned" or notebook is undefined
@@ -159,6 +159,8 @@ class window.ExperimentBaseController extends AbstractFormController
 		"change .bv_recordedDate": "handleDateChanged"
 		"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
 		"change .bv_protocolCode": "handleProtocolCodeChanged"
+		"change .bv_projectCode": "handleProjectCodeChanged"
+		"change .bv_notebook": "handleNotebookChanged"
 		"click .bv_recordDateIcon": "handleRecordDateIconClicked"
 
 	initialize: ->
@@ -287,6 +289,12 @@ class window.ExperimentBaseController extends AbstractFormController
 				error: (err) ->
 					alert 'got ajax error from api/protocols/codename/ in Exeriment.coffee'
 				dataType: 'json'
+
+	handleProjectCodeChanged: =>
+		@model.getProjectCode().set codeValue: @$('.bv_projectCode').val()
+
+	handleNotebookChanged: =>
+		@model.getNotebook().set stringValue: $.trim @$('.bv_notebook').val()
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))

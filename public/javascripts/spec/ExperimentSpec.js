@@ -53,8 +53,11 @@
           it('Should have a project value', function() {
             return expect(this.exp.getProjectCode() instanceof Value).toBeTruthy();
           });
-          return it('Project code should default to unassigned ', function() {
+          it('Project code should default to unassigned ', function() {
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
+          });
+          return it('completionDate should default to today ', function() {
+            return expect(this.exp.getCompletionDate().get('dateValue')).toEqual("need to look at fullpk and do the same");
           });
         });
       });
@@ -274,7 +277,7 @@
           });
           expect(this.exp.isValid()).toBeFalsy();
           filtErrors = _.filter(this.exp.validationError, function(err) {
-            return err.attribute === 'protocol';
+            return err.attribute === 'protocolCode';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -495,7 +498,7 @@
             this.ebc.$('.bv_notebook').change();
             return expect(this.ebc.model.getNotebook().get('stringValue')).toEqual("Updated notebook");
           });
-          return it("should update model when protocol is changed", function() {
+          it("should update model when protocol is changed", function() {
             waitsFor(function() {
               return this.ebc.$('.bv_protocolCode option').length > 0;
             }, 1000);
@@ -509,6 +512,16 @@
             waits(200);
             return runs(function() {
               return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000001");
+            });
+          });
+          return it("should update model when project is changed", function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_projectCode option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.ebc.$('.bv_projectCode').val("project2");
+              this.ebc.$('.bv_projectCode').change();
+              return expect(this.ebc.model.getProjectCode().get('codeValue')).toEqual("project2");
             });
           });
         });
@@ -646,6 +659,9 @@
         });
         return describe("controller validation rules", function() {
           beforeEach(function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_protocolCode option').length > 0 && this.ebc.$('.bv_projectCode option').length > 0;
+            }, 1000);
             runs(function() {
               this.ebc.$('.bv_recordedBy').val("jmcneil");
               this.ebc.$('.bv_recordedBy').change();
@@ -660,7 +676,11 @@
             });
             waits(200);
             runs(function() {
-              return this.ebc.$('.bv_useProtocolParameters').click();
+              this.ebc.$('.bv_useProtocolParameters').click();
+              this.ebc.$('.bv_projectCode').val("project1");
+              this.ebc.$('.bv_projectCode').change();
+              this.ebc.$('.bv_notebook').val("my notebook");
+              return this.ebc.$('.bv_notebook').change();
             });
             return waits(200);
           });
@@ -713,7 +733,7 @@
               });
             });
           });
-          return describe("when protocol not selected", function() {
+          describe("when protocol not selected", function() {
             beforeEach(function() {
               return runs(function() {
                 this.ebc.$('.bv_protocolCode').val("unassigned");
@@ -722,7 +742,33 @@
             });
             return it("should show error on protocol dropdown", function() {
               return runs(function() {
-                return expect(this.ebc.$('.bv_group_protocol').hasClass('error')).toBeTruthy();
+                return expect(this.ebc.$('.bv_group_protocolCode').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          describe("when project not selected", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.ebc.$('.bv_projectCode').val("unassigned");
+                return this.ebc.$('.bv_projectCode').change();
+              });
+            });
+            return it("should show error on project dropdown", function() {
+              return runs(function() {
+                return expect(this.ebc.$('.bv_group_projectCode').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          return describe("when notebook not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.ebc.$('.bv_notebook').val("");
+                return this.ebc.$('.bv_notebook').change();
+              });
+            });
+            return it("should show error on notebook dropdown", function() {
+              return runs(function() {
+                return expect(this.ebc.$('.bv_group_notebook').hasClass('error')).toBeTruthy();
               });
             });
           });

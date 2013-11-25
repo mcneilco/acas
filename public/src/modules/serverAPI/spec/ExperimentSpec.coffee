@@ -39,6 +39,8 @@ describe "Experiment module testing", ->
 					expect(@exp.getProjectCode() instanceof Value).toBeTruthy()
 				it 'Project code should default to unassigned ', ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
+				it 'completionDate should default to today ', ->
+					expect(@exp.getCompletionDate().get('dateValue')).toEqual "need to look at fullpk and do the same"
 
 		describe "when loaded from existing", ->
 			beforeEach ->
@@ -187,7 +189,7 @@ describe "Experiment module testing", ->
 				@exp.set protocol: null
 				expect(@exp.isValid()).toBeFalsy()
 				filtErrors = _.filter(@exp.validationError, (err) ->
-					err.attribute=='protocol'
+					err.attribute=='protocolCode'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when notebook is empty", ->
@@ -363,6 +365,14 @@ describe "Experiment module testing", ->
 					waits 200
 					runs ->
 						expect(@ebc.model.get('protocol').get('codeName')).toEqual "PROT-00000001"
+				it "should update model when project is changed", ->
+					waitsFor ->
+						@ebc.$('.bv_projectCode option').length > 0
+					, 1000
+					runs ->
+						@ebc.$('.bv_projectCode').val("project2")
+						@ebc.$('.bv_projectCode').change()
+						expect(@ebc.model.getProjectCode().get('codeValue')).toEqual "project2"
 		describe "When created from a saved experiment", ->
 			beforeEach ->
 				@exp2 = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -457,6 +467,9 @@ describe "Experiment module testing", ->
 							expect(@ebc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 			describe "controller validation rules", ->
 				beforeEach ->
+					waitsFor ->
+						@ebc.$('.bv_protocolCode option').length > 0 && @ebc.$('.bv_projectCode option').length > 0
+					, 1000
 					runs ->
 						@ebc.$('.bv_recordedBy').val("jmcneil")
 						@ebc.$('.bv_recordedBy').change()
@@ -471,6 +484,11 @@ describe "Experiment module testing", ->
 					waits(200)
 					runs ->
 						@ebc.$('.bv_useProtocolParameters').click()
+						# must set notebook and project after copying protocol params because those are rest
+						@ebc.$('.bv_projectCode').val("project1")
+						@ebc.$('.bv_projectCode').change()
+						@ebc.$('.bv_notebook').val("my notebook")
+						@ebc.$('.bv_notebook').change()
 					waits(200)
 				it "should be valid if form fully filled out", ->
 					runs ->
@@ -509,15 +527,30 @@ describe "Experiment module testing", ->
 							@ebc.$('.bv_protocolCode').change()
 					it "should show error on protocol dropdown", ->
 						runs ->
-							expect(@ebc.$('.bv_group_protocol').hasClass('error')).toBeTruthy()
+							expect(@ebc.$('.bv_group_protocolCode').hasClass('error')).toBeTruthy()
+				describe "when project not selected", ->
+					beforeEach ->
+						runs ->
+							@ebc.$('.bv_projectCode').val("unassigned")
+							@ebc.$('.bv_projectCode').change()
+					it "should show error on project dropdown", ->
+						runs ->
+							expect(@ebc.$('.bv_group_projectCode').hasClass('error')).toBeTruthy()
+				describe "when notebook not filled", ->
+					beforeEach ->
+						runs ->
+							@ebc.$('.bv_notebook').val("")
+							@ebc.$('.bv_notebook').change()
+					it "should show error on notebook dropdown", ->
+						runs ->
+							expect(@ebc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
 
 
 
 
 
 #TODO make scientist and date render from and update recorded** if new expt and updated** if existing
-#TODO add notebook field
 #TODO fix styling or DOM grouping to force protocol, scientist and date fields to show red when they have error style
 #TODO fix all recordedBy in states, values and lables before initial save,
 # or when that field is updated
-#TODO save user input date in state, not recordedDate
+#TODO save user input date in state, not recordedDate. Set recorded date to time at save

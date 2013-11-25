@@ -171,7 +171,7 @@
       }
       if (attrs.protocol === null) {
         errors.push({
-          attribute: 'protocol',
+          attribute: 'protocolCode',
           message: "Protocol must be set"
         });
       }
@@ -253,6 +253,8 @@
 
     function ExperimentBaseController() {
       this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
+      this.handleNotebookChanged = __bind(this.handleNotebookChanged, this);
+      this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
       this.handleProtocolCodeChanged = __bind(this.handleProtocolCodeChanged, this);
       this.handleRecordDateIconClicked = __bind(this.handleRecordDateIconClicked, this);
       this.handleDateChanged = __bind(this.handleDateChanged, this);
@@ -275,6 +277,8 @@
       "change .bv_recordedDate": "handleDateChanged",
       "click .bv_useProtocolParameters": "handleUseProtocolParametersClicked",
       "change .bv_protocolCode": "handleProtocolCodeChanged",
+      "change .bv_projectCode": "handleProjectCodeChanged",
+      "change .bv_notebook": "handleNotebookChanged",
       "click .bv_recordDateIcon": "handleRecordDateIconClicked"
     };
 
@@ -454,6 +458,18 @@
           dataType: 'json'
         });
       }
+    };
+
+    ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
+      return this.model.getProjectCode().set({
+        codeValue: this.$('.bv_projectCode').val()
+      });
+    };
+
+    ExperimentBaseController.prototype.handleNotebookChanged = function() {
+      return this.model.getNotebook().set({
+        stringValue: $.trim(this.$('.bv_notebook').val())
+      });
     };
 
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
