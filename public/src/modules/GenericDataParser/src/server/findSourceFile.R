@@ -3,8 +3,12 @@ require(rjson)
 
 x <- readline("What is the experiment code? ")
 
-experiment <- fromJSON(getURL(paste0("http://acas:8080/acas/experiments/codename/", x)))[[1]]
-
+if (x == "" | x == "n") {
+  x <- readline("What is the experiment name? ")
+  experiment <- fromJSON(getURL(paste0("http://acas.dart.corp:8080/acas/experiments?FindByExperimentName&experimentName=", URLencode(x, reserved=TRUE))))[[1]]
+} else{
+  experiment <- fromJSON(getURL(paste0("http://acas.dart.corp:8080/acas/experiments/codename/", x)))[[1]]
+}
 
 locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
 
