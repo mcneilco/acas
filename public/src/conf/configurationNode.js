@@ -20,7 +20,7 @@
 		exports.serverConfigurationParams.configuration.requireLogin = true;
 // For preferred ID service
 		exports.serverConfigurationParams.configuration.preferredBatchIdService = "http://usubtrdapqv1:3000/api/preferredBatchId";
-		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "LabSynchCmpdReg";
+		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType = "SeuratCmpdReg";
 		exports.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL = "http:///usubtrdapqv1:8080/cmpdreg/metalots/corpName/";
 
 // For Login

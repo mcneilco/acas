@@ -13,7 +13,7 @@
     requests = req.body.requests;
     if (serviceType === "SeuratCmpdReg" && !global.specRunnerTestmode) {
       req.body.user = "";
-      return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
+      return serverUtilityFunctions.runRFunction(req, "public/src/modules/serverAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
         return resp.end(rReturn);
       });
     } else {
