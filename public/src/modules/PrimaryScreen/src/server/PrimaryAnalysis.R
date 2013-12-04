@@ -90,6 +90,9 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable, ignore="") 
   # TODO: does not deal with multiple compounds in one well
   
   # Remove agonist compounds (TODO: needs to be modified to include concentration for fructose)
+  if(ignore != "" && !(ignore %in% wellTable$BATCH_CODE)){
+    stop("The agonist was not found in the plates. Have all transfers been loaded?")
+  }
   wellTable <- wellTable[!(wellTable$BATCH_CODE == ignore), ]
   
   wellUniqueId <- paste(barcode, well)
