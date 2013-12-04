@@ -57,7 +57,7 @@ createGGComparison <- function(graphTitle, yLimits = NULL,
   # wellType is the test/PC/NC column
   # dataRow is the value column
   # xColumn is the x side
-  graphDataFrame <- data.frame(xColumn=xColumn, wellType=wellType, dataRow=dataRow)
+  graphDataFrame <- data.frame(xColumn=xColumn, wellType=wellType, dataRow=dataRow, stringsAsFactors = F)
   if (!is.null(hits)) {
     graphDataFrame$isHit=hits
     graphDataFrame$typeAndHit <- paste(graphDataFrame$wellType, "-", graphDataFrame$isHit)
@@ -75,7 +75,7 @@ createGGComparison <- function(graphTitle, yLimits = NULL,
   well[well=="PC - FALSE"] <- "PC"
   well[well=="test - FALSE"] <- "test - not hit"
   well[well=="test - TRUE"] <- "test - hit"
-  
+  limitedGraphDataFrame$well <- well
   #colourPalette <- list() TODO: get rid of unused colors when there are no hits
   
   g <- ggplot(limitedGraphDataFrame, aes(x=xColumn, y=dataRow, colour=well))

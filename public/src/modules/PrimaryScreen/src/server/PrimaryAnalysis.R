@@ -746,6 +746,22 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, c
   
   return(lsTransaction)
 }
+validateBarcode <- function(barcode, filePath) {
+  # Checks that the barcode inside the file matches the one in the file path
+  # Returns the barcode inside the file name
+  fileNameBarcode <- gsub(".+_([^/]+)_[^/]+$", "\\1", filePath)
+  if (fileNameBarcode == filePath) {
+    fileName <- gsub(".+/([^/]+)+$", "\\1", filePath)
+    warning("No barcode could be found between underscores in ", fileName, ", so the barcode inside the file will be used")
+    return (barcode)
+  }
+  if (fileNameBarcode != barcode) {
+    fileName <- gsub(".+/([^/]+)+$", "\\1", filePath)
+    warning(paste0("The barcode '", barcode, "' inside the file ", fileName, 
+                   " was replaced by the barcode '", fileNameBarcode, "'"))
+  }
+  return(fileNameBarcode)
+}
 validateInputFiles <- function(dataDirectory) {
   # Validates and organizes the names of the input files
   #
@@ -767,7 +783,7 @@ validateInputFiles <- function(dataDirectory) {
   
   # the program exits when there are no files
   if (length(fileList) == 0) {
-    stop("No .stat files found")
+    stop("No files found")
   }
   
   stat1List <- grep("\\.stat1$", fileList, value="TRUE")
@@ -802,7 +818,7 @@ findFluorescents <- function(seqData) {
   # Returns:
   #   A character vector of well names
   
-  fluorescentRows <- (seqData[15,]-seqData[9,])>200
+  fluorescentRows <- (seqData[13, ] - seqData[9, ]) > 100
   
   fluorescentRowNums <- which(fluorescentRows)
   
@@ -877,6 +893,7 @@ parseStatFile <- function(fileName) {
   startRead <- getParamByKey(paramLines, "Start Sample")
   endRead <- getParamByKey(paramLines, "End Sample")
   
+  barcode <- validateBarcode(barcode, fileName)
   
   statData <- makeDataFrameOfWellsGrid(mainData, barcode, readName)
   statData$fileName <- gsub("(.*)\\.stat.$","\\1",fileName)
@@ -1140,7 +1157,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
     
     oldFiles <- as.list(paste0(filesLocation,"/",list.files(filesLocation)))
     
-    do.call(file.remove,oldFiles)
+    do.call(unlink, list(oldFiles, recursive=T))
     
     unzip(zipfile=folderToParse, exdir=paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName, "/rawData"))
     folderToParse <- paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName, "/rawData")
@@ -1236,10 +1253,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   }
    
   
-  
   summaryInfo <- list(
     info = list(
-      "Plates analyzed" = length(unique(resultTable$barcode)),
+      "Sweetener" = parameters$agonist,
+      "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
       "Compounds analyzed" = length(unique(resultTable$batchName)),
       "Hits" = sum(analysisGroupData$threshold),
       "Threshold" = signif(meanValue + sdValue * parameters$activeSDThreshold, 3),
