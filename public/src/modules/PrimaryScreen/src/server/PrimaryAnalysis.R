@@ -1205,7 +1205,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, configList, experimen
   resultTable[, overallMaxTime:=as.numeric(unlist(strsplit(timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(sequence, "\t"))))]), by = index]
   
   #TODO: remove once real data is in place
-  resultTable <- resultTable[!is.na(resultTable$batchName), ]
+  if (any(is.na(resultTable$batchName))) {
+    warning("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
+    resultTable <- resultTable[!is.na(resultTable$batchName), ]
+  }
   
   batchDataTable <- data.table(values = resultTable$transformed, 
                                batchName = resultTable$batchName,
