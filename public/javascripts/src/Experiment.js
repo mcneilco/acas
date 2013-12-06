@@ -20,7 +20,7 @@
       lsType: "default",
       lsKind: "default",
       recordedBy: "",
-      recordedDate: null,
+      recordedDate: new Date().getTime(),
       shortDescription: "",
       lsLabels: new LabelList(),
       lsStates: new StateList(),
@@ -141,7 +141,7 @@
     };
 
     Experiment.prototype.validate = function(attrs) {
-      var bestName, errors, nameError, notebook, projectCode;
+      var bestName, cDate, errors, nameError, notebook, projectCode;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = false;
@@ -189,6 +189,19 @@
           message: "Project must be set"
         });
       }
+      cDate = this.getCompletionDate().get('dateValue');
+      if (cDate === void 0 || cDate === "") {
+        cDate = "fred";
+      }
+      if (isNaN(cDate)) {
+        errors.push({
+          attribute: 'completionDate',
+          message: "Assay completion date must be set"
+        });
+      }
+      if (errors.length > 0) {
+        return errors;
+      }
       if (errors.length > 0) {
         return errors;
       } else {
@@ -215,19 +228,8 @@
       return projectCodeValue;
     };
 
-    Experiment.prototype.getControlStates = function() {
-      return this.get('lsStates').getStatesByTypeAndKind("metadata", "experiment controls");
-    };
-
-    Experiment.prototype.getControlType = function(type) {
-      var controls, matched;
-      controls = this.getControlStates();
-      matched = controls.filter(function(cont) {
-        var vals;
-        vals = cont.getValuesByTypeAndKind("stringValue", "control type");
-        return vals[0].get('stringValue') === type;
-      });
-      return matched;
+    Experiment.prototype.getCompletionDate = function() {
+      return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "dateValue", "completion date");
     };
 
     return Experiment;
@@ -256,7 +258,7 @@
       this.handleNotebookChanged = __bind(this.handleNotebookChanged, this);
       this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
       this.handleProtocolCodeChanged = __bind(this.handleProtocolCodeChanged, this);
-      this.handleRecordDateIconClicked = __bind(this.handleRecordDateIconClicked, this);
+      this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
       this.handleDateChanged = __bind(this.handleDateChanged, this);
       this.handleNameChanged = __bind(this.handleNameChanged, this);
       this.handleDescriptionChanged = __bind(this.handleDescriptionChanged, this);
@@ -274,12 +276,12 @@
       "change .bv_shortDescription": "handleShortDescriptionChanged",
       "change .bv_description": "handleDescriptionChanged",
       "change .bv_experimentName": "handleNameChanged",
-      "change .bv_recordedDate": "handleDateChanged",
+      "change .bv_completionDate": "handleDateChanged",
       "click .bv_useProtocolParameters": "handleUseProtocolParametersClicked",
       "change .bv_protocolCode": "handleProtocolCodeChanged",
       "change .bv_projectCode": "handleProjectCodeChanged",
       "change .bv_notebook": "handleNotebookChanged",
-      "click .bv_recordDateIcon": "handleRecordDateIconClicked"
+      "click .bv_completionDateIcon": "handleCompletionDateIconClicked"
     };
 
     ExperimentBaseController.prototype.initialize = function() {
@@ -308,11 +310,11 @@
       this.$('.bv_experimentCode').html(this.model.get('codeName'));
       this.getAndShowProtocolName();
       this.setUseProtocolParametersDisabledState();
-      this.$('.bv_recordedDate').datepicker();
-      this.$('.bv_recordedDate').datepicker("option", "dateFormat", "yy-mm-dd");
-      if (this.model.get('recordedDate') !== null) {
-        date = new Date(this.model.get('recordedDate'));
-        this.$('.bv_recordedDate').val(date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate());
+      this.$('.bv_completionDate').datepicker();
+      this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
+      if (this.model.getCompletionDate().get('dateValue') != null) {
+        date = new Date(this.model.getCompletionDate().get('dateValue'));
+        this.$('.bv_completionDate').val(date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate());
       }
       this.$('.bv_description').html(this.model.getDescription().get('stringValue'));
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
@@ -401,7 +403,7 @@
 
     ExperimentBaseController.prototype.handleDescriptionChanged = function() {
       return this.model.getDescription().set({
-        stringValue: $.trim(this.$('.bv_description').val()),
+        stringValue: this.getTrimmedInput('.bv_description'),
         recordedBy: this.model.get('recordedBy')
       });
     };
@@ -413,19 +415,18 @@
         labelKind: "experiment name",
         labelText: newName,
         recordedBy: this.model.get('recordedBy'),
-        recordedDate: this.model.get('recordedDate')
+        recordedDate: new Date().getTime()
       }));
     };
 
     ExperimentBaseController.prototype.handleDateChanged = function() {
-      this.model.set({
-        recordedDate: this.convertYMDDateToMs(this.getTrimmedInput('.bv_recordedDate'))
+      return this.model.getCompletionDate().set({
+        dateValue: this.convertYMDDateToMs(this.getTrimmedInput('.bv_completionDate'))
       });
-      return this.handleNameChanged();
     };
 
-    ExperimentBaseController.prototype.handleRecordDateIconClicked = function() {
-      return $(".bv_recordedDate").datepicker("show");
+    ExperimentBaseController.prototype.handleCompletionDateIconClicked = function() {
+      return $(".bv_completionDate").datepicker("show");
     };
 
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
@@ -468,7 +469,7 @@
 
     ExperimentBaseController.prototype.handleNotebookChanged = function() {
       return this.model.getNotebook().set({
-        stringValue: $.trim(this.$('.bv_notebook').val())
+        stringValue: this.getTrimmedInput('.bv_notebook')
       });
     };
 

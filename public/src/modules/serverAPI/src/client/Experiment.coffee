@@ -4,7 +4,7 @@ class window.Experiment extends Backbone.Model
 		lsType: "default"
 		lsKind: "default"
 		recordedBy: ""
-		recordedDate: null
+		recordedDate: new Date().getTime()
 		shortDescription: ""
 		lsLabels: new LabelList()
 		lsStates: new StateList()
@@ -114,6 +114,15 @@ class window.Experiment extends Backbone.Model
 			errors.push
 				attribute: 'projectCode'
 				message: "Project must be set"
+		cDate = @getCompletionDate().get('dateValue')
+		if cDate is undefined or cDate is "" then cDate = "fred"
+		if isNaN(cDate)
+			errors.push
+				attribute: 'completionDate'
+				message: "Assay completion date must be set"
+
+		if errors.length > 0
+			return errors
 
 		if errors.length > 0
 			return errors
@@ -133,16 +142,8 @@ class window.Experiment extends Backbone.Model
 
 		projectCodeValue
 
-	getControlStates: ->
-		@.get('lsStates').getStatesByTypeAndKind "metadata", "experiment controls"
-
-	getControlType: (type) ->
-		controls = @getControlStates()
-		matched = controls.filter (cont) ->
-			vals = cont.getValuesByTypeAndKind "stringValue", "control type"
-			vals[0].get('stringValue') == type
-
-		matched
+	getCompletionDate: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
 
 
 class window.ExperimentList extends Backbone.Collection
@@ -156,12 +157,12 @@ class window.ExperimentBaseController extends AbstractFormController
 		"change .bv_shortDescription": "handleShortDescriptionChanged"
 		"change .bv_description": "handleDescriptionChanged"
 		"change .bv_experimentName": "handleNameChanged"
-		"change .bv_recordedDate": "handleDateChanged"
+		"change .bv_completionDate": "handleDateChanged"
 		"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
 		"change .bv_protocolCode": "handleProtocolCodeChanged"
 		"change .bv_projectCode": "handleProjectCodeChanged"
 		"change .bv_notebook": "handleNotebookChanged"
-		"click .bv_recordDateIcon": "handleRecordDateIconClicked"
+		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
 
 	initialize: ->
 		@model.on 'sync', @render
@@ -185,11 +186,11 @@ class window.ExperimentBaseController extends AbstractFormController
 		@$('.bv_experimentCode').html(@model.get('codeName'))
 		@getAndShowProtocolName()
 		@setUseProtocolParametersDisabledState()
-		@$('.bv_recordedDate').datepicker( );
-		@$('.bv_recordedDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
-		if @model.get('recordedDate') != null
-			date = new Date(@model.get('recordedDate'))
-			@$('.bv_recordedDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
+		@$('.bv_completionDate').datepicker( );
+		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+		if @model.getCompletionDate().get('dateValue')?
+			date = new Date(@model.getCompletionDate().get('dateValue'))
+			@$('.bv_completionDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
 		@$('.bv_description').html(@model.getDescription().get('stringValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 
@@ -252,7 +253,7 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	handleDescriptionChanged: =>
 		@model.getDescription().set
-			stringValue: $.trim(@$('.bv_description').val())
+			stringValue: @getTrimmedInput('.bv_description')
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
@@ -261,14 +262,13 @@ class window.ExperimentBaseController extends AbstractFormController
 			labelKind: "experiment name"
 			labelText: newName
 			recordedBy: @model.get 'recordedBy'
-			recordedDate: @model.get 'recordedDate'
+			recordedDate: new Date().getTime()
 
 	handleDateChanged: =>
-		@model.set recordedDate: @convertYMDDateToMs(@getTrimmedInput('.bv_recordedDate'))
-		@handleNameChanged()
+		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
 
-	handleRecordDateIconClicked: =>
-		$( ".bv_recordedDate" ).datepicker( "show" );
+	handleCompletionDateIconClicked: =>
+		$( ".bv_completionDate" ).datepicker( "show" );
 
 	handleProtocolCodeChanged: =>
 		code = @$('.bv_protocolCode').val()
@@ -294,7 +294,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@model.getProjectCode().set codeValue: @$('.bv_projectCode').val()
 
 	handleNotebookChanged: =>
-		@model.getNotebook().set stringValue: $.trim @$('.bv_notebook').val()
+		@model.getNotebook().set stringValue: @getTrimmedInput('.bv_notebook')
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))

@@ -1,36 +1,21 @@
 ((exports) ->
 	exports.primaryScreenAnalysisParameters =
-		dataAnalysis:
-			positiveControl:
-				batchCode: "CMPD-12345678-01"
-				concentratation: 10
-				conentrationUnits: "uM"
-			negativeControl:
-				batchCode: "CMPD-87654321-01"
-				concentratation: 1
-				conentrationUnits: "uM"
-			vehicleControl:
-				batchCode: "CMPD-00000001-01"
-				concentratation: null
-				conentrationUnits: null
-			transformation: "(Max-Min)/Min"
-			normalization: "Plate Order"
-			hitEfficacyThreshold: null
-			hitSDThreshold: 5.0
-		modelFit:
-			fitParameters:
-				curveMin:
-					lock: true
-					value: 0.0
-				curveMax:
-					lock: true
-					value: 100.0
-				hilSlope:
-					lock: false
-					value: null
-				ec50:
-					lock: false
-					value: null
-				groupBy: "across all plates"
+		positiveControl:
+			batchCode: "CMPD-12345678-01"
+			concentration: 10
+			conentrationUnits: "uM"
+		negativeControl:
+			batchCode: "CMPD-87654321-01"
+			concentration: 1
+			conentrationUnits: "uM"
+		vehicleControl:
+			batchCode: "CMPD-00000001-01"
+			concentration: null
+			conentrationUnits: null
+		transformationRule: "(maximum-minimum)/minimum"
+		normalizationRule: "plate order"
+		hitEfficacyThreshold: 42
+		hitSDThreshold: 5.0
+		thresholdType: "sd"
 
-) (if (typeof process is "undefined" or not process.versions) then window.protocolServiceTestJSON = window.protocolServiceTestJSON or {} else exports)
+) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenTestJSON = window.primaryScreenTestJSON or {} else exports)

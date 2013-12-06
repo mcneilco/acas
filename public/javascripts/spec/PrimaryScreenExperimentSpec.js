@@ -9,7 +9,174 @@
   });
 
   describe("Primary Screen Experiment module testing", function() {
-    describe("Primary Screen Experiment Controller testing", function() {
+    describe("Analysis Parameter model testing", function() {
+      return describe("When loaded from new", function() {
+        beforeEach(function() {
+          return this.psap = new PrimaryScreenAnalysisParameters();
+        });
+        return describe("Existence and Defaults", function() {
+          it("should be defined", function() {
+            return expect(this.psap).toBeDefined();
+          });
+          return it("should have defaults", function() {
+            expect(this.psap.get('transformationRule')).toEqual("unassigned");
+            expect(this.psap.get('normalizationRule')).toEqual("unassigned");
+            expect(this.psap.get('hitEfficacyThreshold')).toBeNull();
+            expect(this.psap.get('hitSDThreshold')).toBeNull();
+            expect(this.psap.get('positiveControl') instanceof Backbone.Model).toBeTruthy();
+            expect(this.psap.get('negativeControl') instanceof Backbone.Model).toBeTruthy();
+            expect(this.psap.get('vehicleControl') instanceof Backbone.Model).toBeTruthy();
+            return expect(this.psap.get('thresholdType')).toEqual("sd");
+          });
+        });
+      });
+    });
+    describe("Primary Screen Experiment model testing", function() {
+      return describe("When loaded from existing", function() {
+        beforeEach(function() {
+          return this.pse = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
+        });
+        return describe("Existence and Defaults", function() {
+          it("should be defined", function() {
+            return expect(this.pse).toBeDefined();
+          });
+          it('Should be able to get analysis parameters', function() {
+            return expect(this.pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy();
+          });
+          it('Should parse analysis parameters', function() {
+            return expect(this.pse.getAnalysisParameters().get('hitSDThreshold')).toEqual(5);
+          });
+          it('Should parse pos control into backbone models', function() {
+            return expect(this.pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual("CMPD-12345678-01");
+          });
+          it('Should parse neg control into backbone models', function() {
+            return expect(this.pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual("CMPD-87654321-01");
+          });
+          return it('Should parse veh control into backbone models', function() {
+            return expect(this.pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual("CMPD-00000001-01");
+          });
+        });
+      });
+    });
+    describe('PrimaryScreenAnalysisParameters Controller', function() {
+      return describe('when instantiated', function() {
+        beforeEach(function() {
+          this.psapc = new PrimaryScreenAnalysisParametersController({
+            model: new PrimaryScreenAnalysisParameters(window.primaryScreenTestJSON.primaryScreenAnalysisParameters),
+            el: $('#fixture')
+          });
+          return this.psapc.render();
+        });
+        describe("basic existance tests", function() {
+          it('should exist', function() {
+            return expect(this.psapc).toBeDefined();
+          });
+          it('should load a template', function() {
+            return expect(this.psapc.$('.bv_autofillSection').length).toEqual(1);
+          });
+          return it('should load autofill template', function() {
+            return expect(this.psapc.$('.bv_hitSDThreshold').length).toEqual(1);
+          });
+        });
+        describe("render existing parameters", function() {
+          it('should show the transformation rule', function() {
+            return expect(this.psapc.$('.bv_transformationRule').val()).toEqual("(maximum-minimum)/minimum");
+          });
+          it('should show the normalization rule', function() {
+            return expect(this.psapc.$('.bv_normalizationRule').val()).toEqual("plate order");
+          });
+          it('should show the hitSDThreshold', function() {
+            return expect(this.psapc.$('.bv_hitSDThreshold').val()).toEqual('5');
+          });
+          it('should show the hitEfficacyThreshold', function() {
+            return expect(this.psapc.$('.bv_hitEfficacyThreshold').val()).toEqual('42');
+          });
+          it('should start with thresholdType radio set', function() {
+            return expect(this.psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual('sd');
+          });
+          it('should show the posControlBatch', function() {
+            return expect(this.psapc.$('.bv_posControlBatch').val()).toEqual('CMPD-12345678-01');
+          });
+          it('should show the posControlConc', function() {
+            return expect(this.psapc.$('.bv_posControlConc').val()).toEqual('10');
+          });
+          it('should show the negControlBatch', function() {
+            return expect(this.psapc.$('.bv_negControlBatch').val()).toEqual('CMPD-87654321-01');
+          });
+          it('should show the negControlConc', function() {
+            return expect(this.psapc.$('.bv_negControlConc').val()).toEqual('1');
+          });
+          return it('should show the vehControlBatch', function() {
+            return expect(this.psapc.$('.bv_vehControlBatch').val()).toEqual('CMPD-00000001-01');
+          });
+        });
+        describe("model updates", function() {
+          it("should update the transformation rule", function() {
+            this.psapc.$('.bv_transformationRule').val('unassigned');
+            this.psapc.$('.bv_transformationRule').change();
+            return expect(this.psapc.model.get('transformationRule')).toEqual("unassigned");
+          });
+          it("should update the normalizationRule rule", function() {
+            this.psapc.$('.bv_normalizationRule').val('unassigned');
+            this.psapc.$('.bv_normalizationRule').change();
+            return expect(this.psapc.model.get('normalizationRule')).toEqual("unassigned");
+          });
+          it("should update the hitSDThreshold ", function() {
+            this.psapc.$('.bv_hitSDThreshold').val(' 24 ');
+            this.psapc.$('.bv_hitSDThreshold').change();
+            return expect(this.psapc.model.get('hitSDThreshold')).toEqual("24");
+          });
+          it("should update the hitEfficacyThreshold ", function() {
+            this.psapc.$('.bv_hitEfficacyThreshold').val(' 25 ');
+            this.psapc.$('.bv_hitEfficacyThreshold').change();
+            return expect(this.psapc.model.get('hitEfficacyThreshold')).toEqual("25");
+          });
+          it("should update the positiveControl ", function() {
+            this.psapc.$('.bv_posControlBatch').val(' pos cont ');
+            this.psapc.$('.bv_posControlBatch').change();
+            return expect(this.psapc.model.get('positiveControl').get('batchCode')).toEqual("pos cont");
+          });
+          it("should update the positiveControl conc ", function() {
+            this.psapc.$('.bv_posControlConc').val(' 61 ');
+            this.psapc.$('.bv_posControlConc').change();
+            return expect(this.psapc.model.get('positiveControl').get('concentration')).toEqual("61");
+          });
+          it("should update the negativeControl ", function() {
+            this.psapc.$('.bv_negControlBatch').val(' neg cont ');
+            this.psapc.$('.bv_negControlBatch').change();
+            return expect(this.psapc.model.get('negativeControl').get('batchCode')).toEqual("neg cont");
+          });
+          it("should update the negativeControl conc ", function() {
+            this.psapc.$('.bv_negControlConc').val(' 62 ');
+            this.psapc.$('.bv_negControlConc').change();
+            return expect(this.psapc.model.get('negativeControl').get('concentration')).toEqual("62");
+          });
+          it("should update the vehicleControl ", function() {
+            this.psapc.$('.bv_vehControlBatch').val(' veh cont ');
+            this.psapc.$('.bv_vehControlBatch').change();
+            return expect(this.psapc.model.get('vehicleControl').get('batchCode')).toEqual("veh cont");
+          });
+          return it("should update the thresholdType ", function() {
+            this.psapc.$('.bv_thresholdTypeEfficacy').click();
+            return expect(this.psapc.model.get('thresholdType')).toEqual("efficacy");
+          });
+        });
+        return describe("behavior and validation", function() {
+          it("should disable sd threshold field if that radio not selected", function() {
+            this.psapc.$('.bv_thresholdTypeEfficacy').click();
+            expect(this.psapc.$('.bv_hitSDThreshold').attr("disabled")).toEqual("disabled");
+            return expect(this.psapc.$('.bv_hitEfficacyThreshold').attr("disabled")).toBeUndefined();
+          });
+          return it("should disable efficacy threshold field if that radio not selected", function() {
+            this.psapc.$('.bv_thresholdTypeEfficacy').click();
+            this.psapc.$('.bv_thresholdTypeSD').click();
+            expect(this.psapc.$('.bv_hitEfficacyThreshold').attr("disabled")).toEqual("disabled");
+            return expect(this.psapc.$('.bv_hitSDThreshold').attr("disabled")).toBeUndefined();
+          });
+        });
+      });
+    });
+    xdescribe("Primary Screen Experiment Controller testing", function() {
       return describe("basic plumbing checks with new experiment", function() {
         beforeEach(function() {
           this.psec = new PrimaryScreenExperimentController({
@@ -37,34 +204,40 @@
         });
         return describe("saving to server", function() {
           beforeEach(function() {
+            var _this = this;
             waitsFor(function() {
-              return this.psec.$('.bv_protocolCode option').length > 0;
+              return _this.psec.$('.bv_protocolCode option').length > 0 && _this.psec.$('.bv_projectCode option').length > 0;
             }, 1000);
             runs(function() {
-              this.psec.$('.bv_recordedBy').val("jmcneil");
-              this.psec.$('.bv_recordedBy').change();
-              this.psec.$('.bv_shortDescription').val(" New short description   ");
-              this.psec.$('.bv_shortDescription').change();
-              this.psec.$('.bv_description').val(" New long description   ");
-              this.psec.$('.bv_description').change();
-              this.psec.$('.bv_experimentName').val(" Updated experiment name   ");
-              this.psec.$('.bv_experimentName').change();
-              this.psec.$('.bv_recordedDate').val(" 2013-3-16   ");
-              this.psec.$('.bv_recordedDate').change();
-              this.psec.$('.bv_protocolCode').val("PROT-00000001");
-              return this.psec.$('.bv_protocolCode').change();
+              _this.psec.$('.bv_recordedBy').val("jmcneil");
+              _this.psec.$('.bv_recordedBy').change();
+              _this.psec.$('.bv_shortDescription').val(" New short description   ");
+              _this.psec.$('.bv_shortDescription').change();
+              _this.psec.$('.bv_description').val(" New long description   ");
+              _this.psec.$('.bv_description').change();
+              _this.psec.$('.bv_experimentName').val(" Updated experiment name   ");
+              _this.psec.$('.bv_experimentName').change();
+              _this.psec.$('.bv_recordedDate').val(" 2013-3-16   ");
+              _this.psec.$('.bv_recordedDate').change();
+              _this.psec.$('.bv_protocolCode').val("PROT-00000001");
+              return _this.psec.$('.bv_protocolCode').change();
             });
-            waits(200);
+            waits(500);
             runs(function() {
-              return this.psec.$('.bv_useProtocolParameters').click();
+              _this.psec.$('.bv_useProtocolParameters').click();
+              _this.psec.$('.bv_projectCode').val("project1");
+              _this.psec.$('.bv_projectCode').change();
+              _this.psec.$('.bv_notebook').val("my notebook");
+              _this.psec.$('.bv_notebook').change();
+              _this.psec.$('.bv_completionDate').val(" 2013-3-16   ");
+              return _this.psec.$('.bv_completionDate').change();
             });
             return waits(200);
           });
           return describe("expect save to work", function() {
             it("model should be valid and ready to save", function() {
               return runs(function() {
-                expect(this.psec.model.isValid()).toBeTruthy();
-                return console.log(this.psec.model.validationError);
+                return expect(this.psec.model.isValid()).toBeTruthy();
               });
             });
             return it("should update experiment code", function() {
@@ -80,7 +253,7 @@
         });
       });
     });
-    describe("Primary Screen Analysis Controller testing", function() {
+    xdescribe("Primary Screen Analysis Controller testing", function() {
       return describe("basic plumbing checks with experiment copied from template", function() {
         beforeEach(function() {
           this.exp = new Experiment();

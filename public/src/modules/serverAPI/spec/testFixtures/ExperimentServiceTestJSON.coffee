@@ -1090,6 +1090,37 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
+				clobValue: 'fred={  positiveControl: {    batchCode: "CMPD-12345678-01",    concentratation: 10,    concentrationUnits: "uM"  },  negativeControl: {    batchCode: "CMPD-87654321-01",    concentratation: 1,    concentrationUnits: "uM"  },  vehicleControl: {    batchCode: "CMPD-00000001-01",    concentratation: null,    concentrationUnits: null  },  transformationRule: "(Max-Min)/Min",  normalizationRule: "Plate Order",  hitEfficacyThreshold: null,  hitSDThreshold: 5.0}'
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 333
+				ignored: false
+				lsKind: "data analysis parameters"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_data analysis parameters"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
 				clobValue: null
 				codeValue: null
 				comments: null

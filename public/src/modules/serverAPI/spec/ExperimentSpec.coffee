@@ -22,8 +22,8 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
 					expect(@exp.get('recordedBy')).toEqual ""
-				it 'Should have an empty recordedDate', ->
-					expect(@exp.get('recordedDate')).toBeNull()
+				it 'Should have an recordedDate set to now', ->
+					expect(new Date(@exp.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				it 'Should have an empty short description', ->
 					expect(@exp.get('shortDescription')).toEqual ""
 				it 'Should have no protocol', ->
@@ -39,8 +39,8 @@ describe "Experiment module testing", ->
 					expect(@exp.getProjectCode() instanceof Value).toBeTruthy()
 				it 'Project code should default to unassigned ', ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
-				it 'completionDate should default to today ', ->
-					expect(@exp.getCompletionDate().get('dateValue')).toEqual "need to look at fullpk and do the same"
+				it 'completionDate should be null ', ->
+					expect(@exp.getCompletionDate().get('dateValue')).toEqual null
 
 		describe "when loaded from existing", ->
 			beforeEach ->
@@ -96,6 +96,8 @@ describe "Experiment module testing", ->
 					expect(@exp.getNotebook().get('stringValue')).toEqual "911"
 				it 'Should have a project value', ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "project1"
+				it 'Should have a completionDate value', ->
+					expect(@exp.getCompletionDate().get('dateValue')).toEqual 1342080000000
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -119,7 +121,9 @@ describe "Experiment module testing", ->
 					expect(@exp.getDescription().get('stringValue')).toEqual "long description goes here"
 				it 'Should not have a notebook value', ->
 					expect(@exp.getNotebook().get('stringValue')).toBeUndefined()
-				it 'Should have a projectCode value', ->
+				it 'Should not have a completionDate value', ->
+					expect(@exp.getCompletionDate().get('dateValue')).toBeUndefined()
+				it 'Should have a projectCode value of unassigned', ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
@@ -150,7 +154,7 @@ describe "Experiment module testing", ->
 					@experimentChanged = false
 					@exp.on 'change', =>
 						@experimentChanged = true
-					@exp.get('lsStates').at(0).get('lsValues').at(0).set(lsKind: 'fred')
+					@exp.get('lsStates').at(0).get('lsValues').at(0).set(codeValue: 'fred')
 				waitsFor ->
 					@experimentChanged
 				, 500
@@ -210,6 +214,14 @@ describe "Experiment module testing", ->
 					err.attribute=='projectCode'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
+			it 'should require that completionDate not be ""', ->
+				@exp.getCompletionDate().set
+					dateValue: new Date("").getTime()
+				expect(@exp.isValid()).toBeFalsy()
+				filtErrors = _.filter(@exp.validationError, (err) ->
+					err.attribute=='completionDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
 
 		describe "model composite component conversion", ->
 			beforeEach ->
@@ -240,17 +252,6 @@ describe "Experiment module testing", ->
 			it "should convert protocol has to Protocol", ->
 				runs ->
 					expect(@exp.get('protocol')  instanceof Protocol).toBeTruthy()
-
-		describe "control state handling", ->
-			beforeEach ->
-				@exp = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
-			describe "fetch controls", ->
-				it "should return any control states", ->
-					controls = @exp.getControlStates()
-					expect(controls[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual "CRA-000396:1"
-				it "should returned a specific control state", ->
-					negControl = @exp.getControlType("negative control")
-					expect(negControl[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual "CRA-000396:1"
 
 	describe "Experiment List testing", ->
 		beforeEach ->
@@ -344,12 +345,12 @@ describe "Experiment module testing", ->
 					@ebc.$('.bv_experimentName').val(" Updated experiment name   ")
 					@ebc.$('.bv_experimentName').change()
 					expect(@ebc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated experiment name"
-				it "should update model when recorded date is changed", ->
-					@ebc.$('.bv_recordedDate').val(" 2013-3-16   ")
-					@ebc.$('.bv_recordedDate').change()
-					expect(@ebc.model.get 'recordedDate').toEqual new Date(2013,2,16).getTime()
+				it "should update model when completion date is changed", ->
+					@ebc.$('.bv_completionDate').val(" 2013-3-16   ")
+					@ebc.$('.bv_completionDate').change()
+					expect(@ebc.model.getCompletionDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
-					@ebc.$('.bv_notebook').val(" Updated notebook   ")
+					@ebc.$('.bv_notebook').val(" Updated notebook  ")
 					@ebc.$('.bv_notebook').change()
 					expect(@ebc.model.getNotebook().get('stringValue')).toEqual "Updated notebook"
 				it "should update model when protocol is changed", ->
@@ -407,7 +408,7 @@ describe "Experiment module testing", ->
 			xit "should fill the name field", ->
 				expect(@ebc.$('.bv_experimentName').val()).toEqual "FLIPR target A biochemical"
 			it "should fill the date field", ->
-				expect(@ebc.$('.bv_recordedDate').val()).toEqual "2013-7-7"
+				expect(@ebc.$('.bv_completionDate').val()).toEqual "2012-6-12"
 			it "should fill the user field", ->
 				expect(@ebc.$('.bv_recordedBy').val()).toEqual "smeyer"
 			it "should fill the code field", ->
@@ -436,8 +437,8 @@ describe "Experiment module testing", ->
 						expect(@ebc.$('.bv_projectCode').val()).toEqual "unassigned"
 				it "should have use protocol parameters disabled", ->
 					expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual "disabled"
-				it "should fill the date field", ->
-					expect(@ebc.$('.bv_recordedDate').val()).toEqual ""
+				it "should not fill the date field", ->
+					expect(@ebc.$('.bv_completionDate').val()).toEqual ""
 			describe "when user picks protocol ", ->
 				beforeEach ->
 					runs ->
@@ -473,8 +474,6 @@ describe "Experiment module testing", ->
 					runs ->
 						@ebc.$('.bv_recordedBy').val("jmcneil")
 						@ebc.$('.bv_recordedBy').change()
-						@ebc.$('.bv_recordedDate').val(" 2013-3-16   ")
-						@ebc.$('.bv_recordedDate').change()
 						@ebc.$('.bv_shortDescription').val(" New short description   ")
 						@ebc.$('.bv_shortDescription').change()
 						@ebc.$('.bv_protocolCode').val("PROT-00000001")
@@ -489,10 +488,13 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_projectCode').change()
 						@ebc.$('.bv_notebook').val("my notebook")
 						@ebc.$('.bv_notebook').change()
+						@ebc.$('.bv_completionDate').val(" 2013-3-16   ")
+						@ebc.$('.bv_completionDate').change()
 					waits(200)
-				it "should be valid if form fully filled out", ->
-					runs ->
-						expect(@ebc.isValid()).toBeTruthy()
+				describe "form validation setup", ->
+					it "should be valid if form fully filled out", ->
+						runs ->
+							expect(@ebc.isValid()).toBeTruthy()
 				describe "when name field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -507,11 +509,11 @@ describe "Experiment module testing", ->
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
-							@ebc.$('.bv_recordedDate').val("")
-							@ebc.$('.bv_recordedDate').change()
+							@ebc.$('.bv_completionDate').val("")
+							@ebc.$('.bv_completionDate').change()
 					it "should show error in date field", ->
 						runs ->
-							expect(@ebc.$('.bv_group_recordedDate').hasClass('error')).toBeTruthy()
+							expect(@ebc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
@@ -551,6 +553,5 @@ describe "Experiment module testing", ->
 
 #TODO make scientist and date render from and update recorded** if new expt and updated** if existing
 #TODO fix styling or DOM grouping to force protocol, scientist and date fields to show red when they have error style
-#TODO fix all recordedBy in states, values and lables before initial save,
-# or when that field is updated
-#TODO save user input date in state, not recordedDate. Set recorded date to time at save
+#TODO fix all recordedBy in states, values and lables before initial save
+#TODO add keywords field to experiment

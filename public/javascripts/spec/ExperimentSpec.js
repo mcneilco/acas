@@ -30,8 +30,8 @@
           it('Should have an empty scientist', function() {
             return expect(this.exp.get('recordedBy')).toEqual("");
           });
-          it('Should have an empty recordedDate', function() {
-            return expect(this.exp.get('recordedDate')).toBeNull();
+          it('Should have an recordedDate set to now', function() {
+            return expect(new Date(this.exp.get('recordedDate')).getHours()).toEqual(new Date().getHours());
           });
           it('Should have an empty short description', function() {
             return expect(this.exp.get('shortDescription')).toEqual("");
@@ -56,8 +56,8 @@
           it('Project code should default to unassigned ', function() {
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
           });
-          return it('completionDate should default to today ', function() {
-            return expect(this.exp.getCompletionDate().get('dateValue')).toEqual("need to look at fullpk and do the same");
+          return it('completionDate should be null ', function() {
+            return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(null);
           });
         });
       });
@@ -135,8 +135,11 @@
           it('Should have a notebook value', function() {
             return expect(this.exp.getNotebook().get('stringValue')).toEqual("911");
           });
-          return it('Should have a project value', function() {
+          it('Should have a project value', function() {
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("project1");
+          });
+          return it('Should have a completionDate value', function() {
+            return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(1342080000000);
           });
         });
       });
@@ -173,7 +176,10 @@
           it('Should not have a notebook value', function() {
             return expect(this.exp.getNotebook().get('stringValue')).toBeUndefined();
           });
-          return it('Should have a projectCode value', function() {
+          it('Should not have a completionDate value', function() {
+            return expect(this.exp.getCompletionDate().get('dateValue')).toBeUndefined();
+          });
+          return it('Should have a projectCode value of unassigned', function() {
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
           });
         });
@@ -217,7 +223,7 @@
               return _this.experimentChanged = true;
             });
             return this.exp.get('lsStates').at(0).get('lsValues').at(0).set({
-              lsKind: 'fred'
+              codeValue: 'fred'
             });
           });
           waitsFor(function() {
@@ -293,7 +299,7 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        return it("should be invalid when projectCode is unassigned", function() {
+        it("should be invalid when projectCode is unassigned", function() {
           var filtErrors;
           this.exp.getProjectCode().set({
             codeValue: "unassigned",
@@ -305,8 +311,19 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
+        return it('should require that completionDate not be ""', function() {
+          var filtErrors;
+          this.exp.getCompletionDate().set({
+            dateValue: new Date("").getTime()
+          });
+          expect(this.exp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.exp.validationError, function(err) {
+            return err.attribute === 'completionDate';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
       });
-      describe("model composite component conversion", function() {
+      return describe("model composite component conversion", function() {
         beforeEach(function() {
           runs(function() {
             var _this = this;
@@ -348,23 +365,6 @@
         return it("should convert protocol has to Protocol", function() {
           return runs(function() {
             return expect(this.exp.get('protocol') instanceof Protocol).toBeTruthy();
-          });
-        });
-      });
-      return describe("control state handling", function() {
-        beforeEach(function() {
-          return this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
-        });
-        return describe("fetch controls", function() {
-          it("should return any control states", function() {
-            var controls;
-            controls = this.exp.getControlStates();
-            return expect(controls[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual("CRA-000396:1");
-          });
-          return it("should returned a specific control state", function() {
-            var negControl;
-            negControl = this.exp.getControlType("negative control");
-            return expect(negControl[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')).toEqual("CRA-000396:1");
           });
         });
       });
@@ -488,13 +488,13 @@
             this.ebc.$('.bv_experimentName').change();
             return expect(this.ebc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated experiment name");
           });
-          it("should update model when recorded date is changed", function() {
-            this.ebc.$('.bv_recordedDate').val(" 2013-3-16   ");
-            this.ebc.$('.bv_recordedDate').change();
-            return expect(this.ebc.model.get('recordedDate')).toEqual(new Date(2013, 2, 16).getTime());
+          it("should update model when completion date is changed", function() {
+            this.ebc.$('.bv_completionDate').val(" 2013-3-16   ");
+            this.ebc.$('.bv_completionDate').change();
+            return expect(this.ebc.model.getCompletionDate().get('dateValue')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
-            this.ebc.$('.bv_notebook').val(" Updated notebook   ");
+            this.ebc.$('.bv_notebook').val(" Updated notebook  ");
             this.ebc.$('.bv_notebook').change();
             return expect(this.ebc.model.getNotebook().get('stringValue')).toEqual("Updated notebook");
           });
@@ -570,7 +570,7 @@
           return expect(this.ebc.$('.bv_experimentName').val()).toEqual("FLIPR target A biochemical");
         });
         it("should fill the date field", function() {
-          return expect(this.ebc.$('.bv_recordedDate').val()).toEqual("2013-7-7");
+          return expect(this.ebc.$('.bv_completionDate').val()).toEqual("2012-6-12");
         });
         it("should fill the user field", function() {
           return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("smeyer");
@@ -611,8 +611,8 @@
           it("should have use protocol parameters disabled", function() {
             return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual("disabled");
           });
-          return it("should fill the date field", function() {
-            return expect(this.ebc.$('.bv_recordedDate').val()).toEqual("");
+          return it("should not fill the date field", function() {
+            return expect(this.ebc.$('.bv_completionDate').val()).toEqual("");
           });
         });
         describe("when user picks protocol ", function() {
@@ -665,8 +665,6 @@
             runs(function() {
               this.ebc.$('.bv_recordedBy').val("jmcneil");
               this.ebc.$('.bv_recordedBy').change();
-              this.ebc.$('.bv_recordedDate').val(" 2013-3-16   ");
-              this.ebc.$('.bv_recordedDate').change();
               this.ebc.$('.bv_shortDescription').val(" New short description   ");
               this.ebc.$('.bv_shortDescription').change();
               this.ebc.$('.bv_protocolCode').val("PROT-00000001");
@@ -680,13 +678,17 @@
               this.ebc.$('.bv_projectCode').val("project1");
               this.ebc.$('.bv_projectCode').change();
               this.ebc.$('.bv_notebook').val("my notebook");
-              return this.ebc.$('.bv_notebook').change();
+              this.ebc.$('.bv_notebook').change();
+              this.ebc.$('.bv_completionDate').val(" 2013-3-16   ");
+              return this.ebc.$('.bv_completionDate').change();
             });
             return waits(200);
           });
-          it("should be valid if form fully filled out", function() {
-            return runs(function() {
-              return expect(this.ebc.isValid()).toBeTruthy();
+          describe("form validation setup", function() {
+            return it("should be valid if form fully filled out", function() {
+              return runs(function() {
+                return expect(this.ebc.isValid()).toBeTruthy();
+              });
             });
           });
           describe("when name field not filled in", function() {
@@ -710,13 +712,13 @@
           describe("when date field not filled in", function() {
             beforeEach(function() {
               return runs(function() {
-                this.ebc.$('.bv_recordedDate').val("");
-                return this.ebc.$('.bv_recordedDate').change();
+                this.ebc.$('.bv_completionDate').val("");
+                return this.ebc.$('.bv_completionDate').change();
               });
             });
             return it("should show error in date field", function() {
               return runs(function() {
-                return expect(this.ebc.$('.bv_group_recordedDate').hasClass('error')).toBeTruthy();
+                return expect(this.ebc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
               });
             });
           });

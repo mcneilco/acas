@@ -25,6 +25,7 @@ applicationScripts = [
 	'/javascripts/src/LSFileChooser.js'
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
+	'/javascripts/src/AbstractParserFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
 	'/javascripts/src/PickList.js'
 	# For serverAPI module
@@ -108,6 +109,7 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js'
 		'javascripts/spec/PrimaryScreenExperimentSpec.js'
 		'javascripts/spec/DoseResponseAnalysisSpec.js'
+		'javascripts/spec/testFixtures/PrimaryScreenTestJSON.js'
 		#Curve Analysis module
 		'javascripts/spec/CurveCuratorServiceSpec.js'
 		'javascripts/spec/CurveCuratorSpec.js'

@@ -6,7 +6,7 @@ class window.DoseResponseAnalysisController extends AbstractFormController
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-		console.log @getCurveMin()
+		#console.log @getCurveMin()
 		@$('.bv_curveMin').val(@getCurveMin())
 		@$('.bv_curveMax').val(@getCurveMax())
 		@

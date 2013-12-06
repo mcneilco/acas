@@ -1,3 +1,98 @@
+class window.PrimaryScreenAnalysisParameters extends Backbone.Model
+	defaults:
+		transformationRule: "unassigned"
+		normalizationRule: "unassigned"
+		hitEfficacyThreshold: null
+		hitSDThreshold: null
+		positiveControl: new Backbone.Model()
+		negativeControl: new Backbone.Model()
+		vehicleControl: new Backbone.Model()
+		thresholdType: "sd"
+
+	initialize: ->
+		@fixCompositeClasses()
+
+
+	fixCompositeClasses: =>
+		if @get('positiveControl') not instanceof Backbone.Model
+			@set positiveControl: new Backbone.Model(@get('positiveControl'))
+		@get('positiveControl').on "change", =>
+			@trigger 'change'
+		if @get('negativeControl') not instanceof Backbone.Model
+			@set negativeControl: new Backbone.Model(@get('negativeControl'))
+		@get('negativeControl').on "change", =>
+			@trigger 'change'
+		if @get('vehicleControl') not instanceof Backbone.Model
+			@set vehicleControl: new Backbone.Model(@get('vehicleControl'))
+		@get('vehicleControl').on "change", =>
+			@trigger 'change'
+
+class window.PrimaryScreenExperiment extends Experiment
+	getAnalysisParameters: ->
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
+		if ap.get('clobValue')?
+			return new PrimaryScreenAnalysisParameters eval(ap.get('clobValue'))
+		else
+			return new PrimaryScreenAnalysisParameters()
+
+
+class window.PrimaryScreenAnalysisParametersController extends AbstractParserFormController
+	template: _.template($("#PrimaryScreenAnalysisParametersView").html())
+	autofillTemplate: _.template($("#PrimaryScreenAnalysisParametersAutofillView").html())
+
+	events:
+		"change .bv_transformationRule": "handleInputChanged"
+		"change .bv_normalizationRule": "handleInputChanged"
+		"change .bv_transformationRule": "handleInputChanged"
+		"change .bv_hitEfficacyThreshold": "handleInputChanged"
+		"change .bv_hitSDThreshold": "handleInputChanged"
+		"change .bv_posControlBatch": "handleInputChanged"
+		"change .bv_posControlConc": "handleInputChanged"
+		"change .bv_negControlBatch": "handleInputChanged"
+		"change .bv_negControlConc": "handleInputChanged"
+		"change .bv_vehControlBatch": "handleInputChanged"
+		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
+		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
+
+	initialize: ->
+		@errorOwnerName = 'PrimaryScreenAnalysisParametersController'
+		super()
+
+	render: =>
+		@$('.bv_autofillSection').empty()
+		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
+		@$('.bv_transformationRule').val(@model.get('transformationRule'))
+		@$('.bv_normalizationRule').val(@model.get('normalizationRule'))
+
+		@
+
+	handleInputChanged: =>
+		@model.set
+			transformationRule: @$('.bv_transformationRule').val()
+			normalizationRule: @$('.bv_normalizationRule').val()
+			hitEfficacyThreshold: @getTrimmedInput('.bv_hitEfficacyThreshold')
+			hitSDThreshold: @getTrimmedInput('.bv_hitSDThreshold')
+		@model.get('positiveControl').set
+			batchCode: @getTrimmedInput('.bv_posControlBatch')
+			concentration: @getTrimmedInput('.bv_posControlConc')
+		@model.get('negativeControl').set
+			batchCode: @getTrimmedInput('.bv_negControlBatch')
+			concentration: @getTrimmedInput('.bv_negControlConc')
+		@model.get('vehicleControl').set
+			batchCode: @getTrimmedInput('.bv_vehControlBatch')
+			concentration: null
+
+	handleThresholdTypeChanged: =>
+		thresholdType = @$("input[name='bv_thresholdType']:checked").val()
+		@model.set thresholdType: thresholdType
+		if thresholdType=="efficacy"
+			@$('.bv_hitSDThreshold').attr('disabled','disabled')
+			@$('.bv_hitEfficacyThreshold').removeAttr('disabled')
+		else
+			@$('.bv_hitEfficacyThreshold').attr('disabled','disabled')
+			@$('.bv_hitSDThreshold').removeAttr('disabled')
+
+
 class window.PrimaryScreenExperimentController extends Backbone.View
 	template: _.template($("#PrimaryScreenExperimentView").html())
 	events:
@@ -63,9 +158,9 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@
 
 	showControlValues: ->
-		negControl = @model.getControlType("negative control")
-		console.log negControl
-		console.log @model.getControlStates()
+		#negControl = @model.getControlType("negative control")
+		#console.log negControl
+		#console.log @model.getControlStates()
 		#@$('bv_negControlBatch').val negControl[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')
 
 

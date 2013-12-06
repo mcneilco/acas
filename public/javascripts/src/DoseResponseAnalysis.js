@@ -24,7 +24,6 @@
     DoseResponseAnalysisController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      console.log(this.getCurveMin());
       this.$('.bv_curveMin').val(this.getCurveMin());
       this.$('.bv_curveMax').val(this.getCurveMax());
       return this;

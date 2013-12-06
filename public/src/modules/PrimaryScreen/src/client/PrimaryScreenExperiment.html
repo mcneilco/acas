@@ -29,18 +29,22 @@
 </script>
 
 
-<script type="text/template" id="PrimaryScreenAnalysisView" xmlns="http://www.w3.org/1999/html">
+<script type="text/template" id="PrimaryScreenAnalysisParametersView" xmlns="http://www.w3.org/1999/html">
 
-    <h5>Data Analysis</h5>
+    <div class="bv_autofillSection"></div>
+</script>
+
+<script type="text/template" id="PrimaryScreenAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
+
 
     <div>
         <div class="pull-left">
             <p>*Positive Control</p>
             <form class="form-inline">
-                <input class="input-medium pull-left bv_posControlBatch bv_group_posControlBatch" type="text" placeholder="enter batch number" value="">
+                <input class="input-medium pull-left bv_posControlBatch bv_group_posControlBatch" value="<%=positiveControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
                 <form>
                     <fieldset style="padding-left:10px;">
-                        <input class="input-small pull-right bv_posControlConc bv_group_posControlConc" type="text" placeholder="Conc uM:" value="">
+                        <input class="input-small pull-right bv_posControlConc bv_group_posControlConc" value="<%=positiveControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
 
                     </fieldset>
                 </form>
@@ -50,10 +54,10 @@
         <div class="pull-right">
             <p style="padding-left:40px;">*Negative Control</p>
             <form class="form-inline" style="padding-left:40px;">
-                <input class="input-medium pull-left bv_negControlBatch bv_group_negControlBatch" type="text" placeholder="enter batch number" value="">
+                <input class="input-medium pull-left bv_negControlBatch bv_group_negControlBatch" value="<%=negativeControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
                 <form>
                     <fieldset style="padding-left:10px;">
-                        <input class="input-small pull-right bv_negControlConc bv_group_negControlConc" type="text" placeholder="Conc uM:" value="">
+                        <input class="input-small pull-right bv_negControlConc bv_group_negControlConc" value="<%=negativeControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
                     </fieldset>
                 </form>
             </form>
@@ -64,38 +68,49 @@
         <div class="control-group">
             <label class="control-label">*Vehicle Control</label>
             <div class="controls">
-                <input class="input-xlarge bv_vehControlBatch bv_group_vehControlBatch" type="text">
+                <input class="input-xlarge bv_vehControlBatch bv_group_vehControlBatch" value="<%=vehicleControl.get('batchCode')%>" type="text">
             </div>
         </div>
         <div class="control-group bv_group_transformationRule">
             <label class="control-label">*Transformation</label>
             <div class="controls">
                 <select class="bv_transformationRule" style="width:285px;">
+                    <option value="unassigned">Select Rule</option>
                     <option value="(maximum-minimum)/minimum">(Max-Min)/Min</option>
-                    <option value="fiona">Fiona</option>
                 </select>
             </div>
         </div>
         <div class="control-group bv_group_normalizationRule">
             <label class="control-label">Normalization</label>
             <div class="controls">
-                <select class="bv_normalizationRule" style="width:285px;" placeholder="Plate Order">
+                <select class="bv_normalizationRule" value="<%=normalizationRule%>" style="width:285px;" placeholder="Plate Order">
+                    <option value="unassigned">Select Rule</option>
                     <option value="plate order">Plate Order</option>
                     <option value="none">None</option>
                 </select>
             </div>
         </div>
-        <div class="control-group bv_group_hitTreshold">
-            <label class="control-label">*Hit Threshold</label>
+        <div class="control-group bv_group_hitEfficacyThreshold">
+            <input type="radio" name="bv_thresholdType" value="efficacy" class="bv_thresholdTypeEfficacy" <% if (thresholdType=="efficacy") { %> checked="checked"<% }%> />
+            <label class="control-label">*Hit Efficacy Threshold</label>
             <div class="controls">
-                <input class="input-xlarge bv_hitThreshold" type="text">
+                <input class="input-xlarge bv_hitEfficacyThreshold" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% }%>>
+            </div>
+        </div>
+        <div class="control-group bv_group_hitSDThreshold">
+            <input type="radio" name="bv_thresholdType" value="sd" class="bv_thresholdTypeSD" <% if (thresholdType=="sd") { %> checked="checked"<% }%> />
+            <label class="control-label">*Hit SD Threshold</label>
+            <div class="controls">
+                <input class="input-xlarge bv_hitSDThreshold" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
             </div>
         </div>
 
 
     </form>
 
-
+</script>
+<script type="text/template" id="PrimaryScreenAnalysisView" xmlns="http://www.w3.org/1999/html">
+    <h5>Data Analysis</h5>
 
     <hr>
 
