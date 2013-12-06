@@ -189,7 +189,7 @@ describe "Primary Screen Experiment module testing", ->
 						runs ->
 							expect(@psec.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
 
-	xdescribe "Primary Screen Analysis Controller testing", ->
+	describe "Primary Screen Analysis Controller testing", ->
 		describe "basic plumbing checks with experiment copied from template", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -202,41 +202,9 @@ describe "Primary Screen Experiment module testing", ->
 				it "Class should exist", ->
 					expect(@psac).toBeDefined
 				it "Should load the template", ->
-					expect(@psac.$('.bv_posControlBatch').length).toNotEqual 0
-				it "Should load a data loader", ->
-					expect(@psac.$('.bv_fileUploadWrapper').length).toNotEqual 0
-			describe "should populate fields", ->
-				it "should show the threshold", ->
-					expect(@psac.$('.bv_hitThreshold').val()).toEqual '0.7'
-			describe "parameter editing", ->
-				it "should update the model with when the threshold is changed", ->
-					@psac.$('.bv_hitThreshold').val('0.8')
-					@psac.$('.bv_hitThreshold').change()
-					value = @psac.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
-					expect(value.get('numericValue')).toEqual 0.8
-			describe "should populate fields", ->
-				it "should show the transformation", ->
-					expect(@psac.$('.bv_transformationRule').val()).toEqual '(maximum-minimum)/minimum'
-			describe "parameter editing", ->
-				it "should update the model with when the transformation is changed", ->
-					@psac.$('.bv_transformationRule').val('fiona')
-					@psac.$('.bv_transformationRule').change()
-					value = @psac.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "data transformation rule"
-					expect(value.get('stringValue')).toEqual "fiona"
-			describe "should populate fields", ->
-				it "should show the normalization", ->
-					expect(@psac.$('.bv_normalizationRule').val()).toEqual 'none'
-				it "should show the negative control batch", ->
-					expect(@psac.$('.bv_negControlBatch').val()).toEqual "CRA-000396:1"
-				it "should show the negative control concentration", ->
-					expect(@psac.$('.bv_negControlConc').val()).toEqual 1.0
+					expect(@psac.$('.bv_analysisStatus').length).toNotEqual 0
 
-			describe "parameter editing", ->
-				it "should update the model with when the normalization is changed", ->
-					@psac.$('.bv_normalizationRule').val('plate order')
-					@psac.$('.bv_normalizationRule').change()
-					value = @psac.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "normalization rule"
-					expect(value.get('stringValue')).toEqual "plate order"
+
 
 	describe "Upload and Run Primary Analysis Controller testing", ->
 		beforeEach ->

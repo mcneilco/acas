@@ -253,7 +253,7 @@
         });
       });
     });
-    xdescribe("Primary Screen Analysis Controller testing", function() {
+    describe("Primary Screen Analysis Controller testing", function() {
       return describe("basic plumbing checks with experiment copied from template", function() {
         beforeEach(function() {
           this.exp = new Experiment();
@@ -264,63 +264,12 @@
           });
           return this.psac.render();
         });
-        describe("Basic loading", function() {
+        return describe("Basic loading", function() {
           it("Class should exist", function() {
             return expect(this.psac).toBeDefined;
           });
-          it("Should load the template", function() {
-            return expect(this.psac.$('.bv_posControlBatch').length).toNotEqual(0);
-          });
-          return it("Should load a data loader", function() {
-            return expect(this.psac.$('.bv_fileUploadWrapper').length).toNotEqual(0);
-          });
-        });
-        describe("should populate fields", function() {
-          return it("should show the threshold", function() {
-            return expect(this.psac.$('.bv_hitThreshold').val()).toEqual('0.7');
-          });
-        });
-        describe("parameter editing", function() {
-          return it("should update the model with when the threshold is changed", function() {
-            var value;
-            this.psac.$('.bv_hitThreshold').val('0.8');
-            this.psac.$('.bv_hitThreshold').change();
-            value = this.psac.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
-            return expect(value.get('numericValue')).toEqual(0.8);
-          });
-        });
-        describe("should populate fields", function() {
-          return it("should show the transformation", function() {
-            return expect(this.psac.$('.bv_transformationRule').val()).toEqual('(maximum-minimum)/minimum');
-          });
-        });
-        describe("parameter editing", function() {
-          return it("should update the model with when the transformation is changed", function() {
-            var value;
-            this.psac.$('.bv_transformationRule').val('fiona');
-            this.psac.$('.bv_transformationRule').change();
-            value = this.psac.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
-            return expect(value.get('stringValue')).toEqual("fiona");
-          });
-        });
-        describe("should populate fields", function() {
-          it("should show the normalization", function() {
-            return expect(this.psac.$('.bv_normalizationRule').val()).toEqual('none');
-          });
-          it("should show the negative control batch", function() {
-            return expect(this.psac.$('.bv_negControlBatch').val()).toEqual("CRA-000396:1");
-          });
-          return it("should show the negative control concentration", function() {
-            return expect(this.psac.$('.bv_negControlConc').val()).toEqual(1.0);
-          });
-        });
-        return describe("parameter editing", function() {
-          return it("should update the model with when the normalization is changed", function() {
-            var value;
-            this.psac.$('.bv_normalizationRule').val('plate order');
-            this.psac.$('.bv_normalizationRule').change();
-            value = this.psac.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "normalization rule");
-            return expect(value.get('stringValue')).toEqual("plate order");
+          return it("Should load the template", function() {
+            return expect(this.psac.$('.bv_analysisStatus').length).toNotEqual(0);
           });
         });
       });

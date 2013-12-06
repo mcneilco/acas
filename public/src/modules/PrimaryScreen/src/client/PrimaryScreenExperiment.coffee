@@ -93,6 +93,108 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_hitSDThreshold').removeAttr('disabled')
 
 
+
+class window.PrimaryScreenAnalysisController extends Backbone.View
+	template: _.template($("#PrimaryScreenAnalysisView").html())
+
+	initialize: ->
+		@model.on "synced_and_repaired", @handleExperimentSaved
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@showExistingResults()
+		if not @model.isNew()
+			@handleExperimentSaved()
+		@
+
+	showExistingResults: ->
+		analysisStatus = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+		if analysisStatus != null
+			@analysisStatus = analysisStatus.get('stringValue')
+			@$('.bv_analysisStatus').html(@analysisStatus)
+		else
+			@analysisStatus = "not started"
+		resultValue = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
+		if resultValue != null
+			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
+
+	handleExperimentSaved: =>
+		@dataAnalysisController = new UploadAndRunPrimaryAnalsysisController
+			el: @$('.bv_fileUploadWrapper')
+			paramsFromExperiment:	@model.getAnalysisParameters()
+		@dataAnalysisController.setUser(@model.get('recordedBy'))
+		@dataAnalysisController.setExperimentId(@model.id)
+		if @analysisStatus is "complete"
+			@dataAnalysisController.psapc.disableAllInputs()
+
+class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
+	initialize: ->
+		UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(@, arguments)
+		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
+		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
+		@allowedFileTypes = ['zip']
+		@loadReportFile = false
+		super()
+		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+		@psapc = new PrimaryScreenAnalysisParametersController
+			model: new PrimaryScreenAnalysisParameters(@options.paramsFromExperiment)
+			el: @$('.bv_additionalValuesForm')
+		@psapc.on 'valid', @handleMSFormValid
+		@psapc.on 'invalid', @handleMSFormInvalid
+		@psapc.on 'notifyError', @notificationController.addNotification
+		@psapc.on 'clearErrors', @notificationController.clearAllNotificiations
+		@psapc.on 'amDirty', =>
+			@trigger 'amDirty'
+		@psapc.render()
+
+	handleMSFormValid: =>
+		if @parseFileUploaded
+			@handleFormValid()
+
+	handleMSFormInvalid: =>
+		@handleFormInvalid()
+
+	handleFormValid: ->
+		if @psapc.isValid()
+			super()
+
+	handleValidationReturnSuccess: (json) =>
+		super(json)
+		@psapc.disableAllInputs()
+
+	showFileSelectPhase: ->
+		super()
+		if @psapc?
+			@psapc.enableAllInputs()
+
+	validateParseFile: =>
+		@psapc.updateModel()
+		unless !@psapc.isValid()
+			@additionalData =
+				inputParameters: @psapc.model.toJSON()
+			super()
+
+	validateParseFile: =>
+		@psapc.updateModel()
+		unless !@psapc.isValid()
+			@additionalData =
+				inputParameters: @psapc.model.toJSON()
+				primaryAnalysisExperimentId: @experimentId
+				testMode: false
+			super()
+
+	setUser: (user) ->
+		@userName = user
+
+	setExperimentId: (expId) ->
+		@experimentId = expId
+
+
+
+
+
+# This wraps all the tabs
 class window.PrimaryScreenExperimentController extends Backbone.View
 	template: _.template($("#PrimaryScreenExperimentView").html())
 	events:
@@ -134,93 +236,3 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 	handleProtocolAttributesCopied: =>
 		@analysisController.render()
 
-
-class window.PrimaryScreenAnalysisController extends Backbone.View
-	template: _.template($("#PrimaryScreenAnalysisView").html())
-	events:
-		"change .bv_hitThreshold": "handleHitThresholdChanged"
-		"change .bv_transformationRule": "handleTransformationRuleChanged"
-		"change .bv_normalizationRule": "handleNormalizationRuleChanged"
-
-	initialize: ->
-		@model.on "synced_and_repaired", @handleExperimentSaved
-
-	render: =>
-		$(@el).empty()
-		$(@el).html @template()
-		@showControlValues()
-		@$('.bv_hitThreshold').val(@getHitThreshold())
-		@$('.bv_transformationRule').val(@getTransformationRule())
-		@$('.bv_normalizationRule').val(@getNormalizationRule())
-		@showExistingResults()
-		if not @model.isNew()
-			@handleExperimentSaved()
-		@
-
-	showControlValues: ->
-		#negControl = @model.getControlType("negative control")
-		#console.log negControl
-		#console.log @model.getControlStates()
-		#@$('bv_negControlBatch').val negControl[0].getValuesByTypeAndKind("codeValue", "batch code")[0].get('codeValue')
-
-
-	getHitThreshold: ->
-		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
-		value.get('numericValue')
-
-	getTransformationRule: ->
-		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "data transformation rule"
-		value.get('stringValue')
-
-	getNormalizationRule: ->
-		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "normalization rule"
-		value.get('stringValue')
-
-	showExistingResults: ->
-		analysisStatus = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
-		if analysisStatus != null
-			@analysisStatus = analysisStatus.get('stringValue')
-			@$('.bv_analysisStatus').html(@analysisStatus)
-		else
-			@analysisStatus = "not started"
-		resultValue = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
-		if resultValue != null
-			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
-
-	handleHitThresholdChanged: =>
-		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold"
-		value.set numericValue: parseFloat($.trim(@$('.bv_hitThreshold').val()))
-
-	handleTransformationRuleChanged: =>
-		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "data transformation rule"
-		value.set stringValue: $.trim(@$('.bv_transformationRule').val())
-
-	handleNormalizationRuleChanged: =>
-		value = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment analysis parameters", "stringValue", "normalization rule"
-		value.set stringValue: $.trim(@$('.bv_normalizationRule').val())
-
-	handleExperimentSaved: =>
-		if @analysisStatus is "complete"
-			@$('.bv_fileUploadWrapper').html("")
-		else
-			@dataAnalysisController = new UploadAndRunPrimaryAnalsysisController
-				el: @$('.bv_fileUploadWrapper')
-			@dataAnalysisController.setUser(@model.get('recordedBy'))
-			@dataAnalysisController.setExperimentId(@model.id)
-
-class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
-	initialize: ->
-		UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(@, arguments)
-		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
-		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
-		@allowedFileTypes = ['zip']
-		super()
-		@$('.bv_moduleTitle').html("Upload Data and Analyze")
-
-	setUser: (user) ->
-		@userName = user
-
-	setExperimentId: (expId) ->
-		@additionalData =
-			primaryAnalysisExperimentId: expId
-			testMode: false

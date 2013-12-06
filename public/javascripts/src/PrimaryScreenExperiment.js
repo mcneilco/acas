@@ -165,6 +165,161 @@
 
   })(AbstractParserFormController);
 
+  window.PrimaryScreenAnalysisController = (function(_super) {
+    __extends(PrimaryScreenAnalysisController, _super);
+
+    function PrimaryScreenAnalysisController() {
+      this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
+      this.render = __bind(this.render, this);
+      _ref3 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
+      return _ref3;
+    }
+
+    PrimaryScreenAnalysisController.prototype.template = _.template($("#PrimaryScreenAnalysisView").html());
+
+    PrimaryScreenAnalysisController.prototype.initialize = function() {
+      return this.model.on("synced_and_repaired", this.handleExperimentSaved);
+    };
+
+    PrimaryScreenAnalysisController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.showExistingResults();
+      if (!this.model.isNew()) {
+        this.handleExperimentSaved();
+      }
+      return this;
+    };
+
+    PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
+      var analysisStatus, resultValue;
+      analysisStatus = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
+      if (analysisStatus !== null) {
+        this.analysisStatus = analysisStatus.get('stringValue');
+        this.$('.bv_analysisStatus').html(this.analysisStatus);
+      } else {
+        this.analysisStatus = "not started";
+      }
+      resultValue = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
+      if (resultValue !== null) {
+        return this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
+      }
+    };
+
+    PrimaryScreenAnalysisController.prototype.handleExperimentSaved = function() {
+      this.dataAnalysisController = new UploadAndRunPrimaryAnalsysisController({
+        el: this.$('.bv_fileUploadWrapper'),
+        paramsFromExperiment: this.model.getAnalysisParameters()
+      });
+      this.dataAnalysisController.setUser(this.model.get('recordedBy'));
+      this.dataAnalysisController.setExperimentId(this.model.id);
+      if (this.analysisStatus === "complete") {
+        return this.dataAnalysisController.psapc.disableAllInputs();
+      }
+    };
+
+    return PrimaryScreenAnalysisController;
+
+  })(Backbone.View);
+
+  window.UploadAndRunPrimaryAnalsysisController = (function(_super) {
+    __extends(UploadAndRunPrimaryAnalsysisController, _super);
+
+    function UploadAndRunPrimaryAnalsysisController() {
+      this.validateParseFile = __bind(this.validateParseFile, this);
+      this.validateParseFile = __bind(this.validateParseFile, this);
+      this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
+      this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
+      this.handleMSFormValid = __bind(this.handleMSFormValid, this);
+      _ref4 = UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
+      return _ref4;
+    }
+
+    UploadAndRunPrimaryAnalsysisController.prototype.initialize = function() {
+      var _this = this;
+      UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(this, arguments);
+      this.fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis";
+      this.errorOwnerName = 'UploadAndRunPrimaryAnalsysisController';
+      this.allowedFileTypes = ['zip'];
+      this.loadReportFile = false;
+      UploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
+      this.$('.bv_moduleTitle').html("Upload Data and Analyze");
+      this.psapc = new PrimaryScreenAnalysisParametersController({
+        model: new PrimaryScreenAnalysisParameters(this.options.paramsFromExperiment),
+        el: this.$('.bv_additionalValuesForm')
+      });
+      this.psapc.on('valid', this.handleMSFormValid);
+      this.psapc.on('invalid', this.handleMSFormInvalid);
+      this.psapc.on('notifyError', this.notificationController.addNotification);
+      this.psapc.on('clearErrors', this.notificationController.clearAllNotificiations);
+      this.psapc.on('amDirty', function() {
+        return _this.trigger('amDirty');
+      });
+      return this.psapc.render();
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.handleMSFormValid = function() {
+      if (this.parseFileUploaded) {
+        return this.handleFormValid();
+      }
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.handleMSFormInvalid = function() {
+      return this.handleFormInvalid();
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.handleFormValid = function() {
+      if (this.psapc.isValid()) {
+        return UploadAndRunPrimaryAnalsysisController.__super__.handleFormValid.call(this);
+      }
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.handleValidationReturnSuccess = function(json) {
+      UploadAndRunPrimaryAnalsysisController.__super__.handleValidationReturnSuccess.call(this, json);
+      return this.psapc.disableAllInputs();
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.showFileSelectPhase = function() {
+      UploadAndRunPrimaryAnalsysisController.__super__.showFileSelectPhase.call(this);
+      if (this.psapc != null) {
+        return this.psapc.enableAllInputs();
+      }
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.validateParseFile = function() {
+      this.psapc.updateModel();
+      if (!!this.psapc.isValid()) {
+        this.additionalData = {
+          inputParameters: this.psapc.model.toJSON()
+        };
+        return UploadAndRunPrimaryAnalsysisController.__super__.validateParseFile.call(this);
+      }
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.validateParseFile = function() {
+      this.psapc.updateModel();
+      if (!!this.psapc.isValid()) {
+        this.additionalData = {
+          inputParameters: this.psapc.model.toJSON(),
+          primaryAnalysisExperimentId: this.experimentId,
+          testMode: false
+        };
+        return UploadAndRunPrimaryAnalsysisController.__super__.validateParseFile.call(this);
+      }
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.setUser = function(user) {
+      return this.userName = user;
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.setExperimentId = function(expId) {
+      return this.experimentId = expId;
+    };
+
+    return UploadAndRunPrimaryAnalsysisController;
+
+  })(BasicFileValidateAndSaveController);
+
   window.PrimaryScreenExperimentController = (function(_super) {
     __extends(PrimaryScreenExperimentController, _super);
 
@@ -172,8 +327,8 @@
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
-      _ref3 = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
-      return _ref3;
+      _ref5 = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
+      return _ref5;
     }
 
     PrimaryScreenExperimentController.prototype.template = _.template($("#PrimaryScreenExperimentView").html());
@@ -225,151 +380,5 @@
     return PrimaryScreenExperimentController;
 
   })(Backbone.View);
-
-  window.PrimaryScreenAnalysisController = (function(_super) {
-    __extends(PrimaryScreenAnalysisController, _super);
-
-    function PrimaryScreenAnalysisController() {
-      this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
-      this.handleNormalizationRuleChanged = __bind(this.handleNormalizationRuleChanged, this);
-      this.handleTransformationRuleChanged = __bind(this.handleTransformationRuleChanged, this);
-      this.handleHitThresholdChanged = __bind(this.handleHitThresholdChanged, this);
-      this.render = __bind(this.render, this);
-      _ref4 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
-      return _ref4;
-    }
-
-    PrimaryScreenAnalysisController.prototype.template = _.template($("#PrimaryScreenAnalysisView").html());
-
-    PrimaryScreenAnalysisController.prototype.events = {
-      "change .bv_hitThreshold": "handleHitThresholdChanged",
-      "change .bv_transformationRule": "handleTransformationRuleChanged",
-      "change .bv_normalizationRule": "handleNormalizationRuleChanged"
-    };
-
-    PrimaryScreenAnalysisController.prototype.initialize = function() {
-      return this.model.on("synced_and_repaired", this.handleExperimentSaved);
-    };
-
-    PrimaryScreenAnalysisController.prototype.render = function() {
-      $(this.el).empty();
-      $(this.el).html(this.template());
-      this.showControlValues();
-      this.$('.bv_hitThreshold').val(this.getHitThreshold());
-      this.$('.bv_transformationRule').val(this.getTransformationRule());
-      this.$('.bv_normalizationRule').val(this.getNormalizationRule());
-      this.showExistingResults();
-      if (!this.model.isNew()) {
-        this.handleExperimentSaved();
-      }
-      return this;
-    };
-
-    PrimaryScreenAnalysisController.prototype.showControlValues = function() {};
-
-    PrimaryScreenAnalysisController.prototype.getHitThreshold = function() {
-      var value;
-      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
-      return value.get('numericValue');
-    };
-
-    PrimaryScreenAnalysisController.prototype.getTransformationRule = function() {
-      var value;
-      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
-      return value.get('stringValue');
-    };
-
-    PrimaryScreenAnalysisController.prototype.getNormalizationRule = function() {
-      var value;
-      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "normalization rule");
-      return value.get('stringValue');
-    };
-
-    PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
-      var analysisStatus, resultValue;
-      analysisStatus = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
-      if (analysisStatus !== null) {
-        this.analysisStatus = analysisStatus.get('stringValue');
-        this.$('.bv_analysisStatus').html(this.analysisStatus);
-      } else {
-        this.analysisStatus = "not started";
-      }
-      resultValue = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
-      if (resultValue !== null) {
-        return this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
-      }
-    };
-
-    PrimaryScreenAnalysisController.prototype.handleHitThresholdChanged = function() {
-      var value;
-      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "numericValue", "active efficacy threshold");
-      return value.set({
-        numericValue: parseFloat($.trim(this.$('.bv_hitThreshold').val()))
-      });
-    };
-
-    PrimaryScreenAnalysisController.prototype.handleTransformationRuleChanged = function() {
-      var value;
-      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "data transformation rule");
-      return value.set({
-        stringValue: $.trim(this.$('.bv_transformationRule').val())
-      });
-    };
-
-    PrimaryScreenAnalysisController.prototype.handleNormalizationRuleChanged = function() {
-      var value;
-      value = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment analysis parameters", "stringValue", "normalization rule");
-      return value.set({
-        stringValue: $.trim(this.$('.bv_normalizationRule').val())
-      });
-    };
-
-    PrimaryScreenAnalysisController.prototype.handleExperimentSaved = function() {
-      if (this.analysisStatus === "complete") {
-        return this.$('.bv_fileUploadWrapper').html("");
-      } else {
-        this.dataAnalysisController = new UploadAndRunPrimaryAnalsysisController({
-          el: this.$('.bv_fileUploadWrapper')
-        });
-        this.dataAnalysisController.setUser(this.model.get('recordedBy'));
-        return this.dataAnalysisController.setExperimentId(this.model.id);
-      }
-    };
-
-    return PrimaryScreenAnalysisController;
-
-  })(Backbone.View);
-
-  window.UploadAndRunPrimaryAnalsysisController = (function(_super) {
-    __extends(UploadAndRunPrimaryAnalsysisController, _super);
-
-    function UploadAndRunPrimaryAnalsysisController() {
-      _ref5 = UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
-      return _ref5;
-    }
-
-    UploadAndRunPrimaryAnalsysisController.prototype.initialize = function() {
-      UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(this, arguments);
-      this.fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis";
-      this.errorOwnerName = 'UploadAndRunPrimaryAnalsysisController';
-      this.allowedFileTypes = ['zip'];
-      UploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
-      return this.$('.bv_moduleTitle').html("Upload Data and Analyze");
-    };
-
-    UploadAndRunPrimaryAnalsysisController.prototype.setUser = function(user) {
-      return this.userName = user;
-    };
-
-    UploadAndRunPrimaryAnalsysisController.prototype.setExperimentId = function(expId) {
-      return this.additionalData = {
-        primaryAnalysisExperimentId: expId,
-        testMode: false
-      };
-    };
-
-    return UploadAndRunPrimaryAnalsysisController;
-
-  })(BasicFileValidateAndSaveController);
 
 }).call(this);
