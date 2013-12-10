@@ -197,12 +197,10 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 # This wraps all the tabs
 class window.PrimaryScreenExperimentController extends Backbone.View
 	template: _.template($("#PrimaryScreenExperimentView").html())
-	events:
-		"click .bv_save": "handleSaveClicked"
 
 	initialize: ->
 		unless @model?
-			@model = new Experiment()
+			@model = new PrimaryScreenExperiment()
 
 		$(@el).html @template()
 		@model.on 'sync', @handleExperimentSaved
@@ -223,14 +221,7 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 		@doseRespController.render()
 		return @
 
-	handleSaveClicked: =>
-		#TODO add validation code and keep this button disabled until saving is a good idea
-		#console.log @model.getDescription()
-		#console.log JSON.stringify @model
-		@model.save()
-
 	handleExperimentSaved: =>
-		#console.log @model
 		@analysisController.render()
 
 	handleProtocolAttributesCopied: =>

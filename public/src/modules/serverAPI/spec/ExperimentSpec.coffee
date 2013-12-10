@@ -58,14 +58,12 @@ describe "Experiment module testing", ->
 					expect(@exp.get('analysisGroups').at(0) instanceof AnalysisGroup).toBeTruthy()
 				it "should have the states ", ->
 					expect(@exp.get('analysisGroups').at(0).get('lsStates') instanceof StateList).toBeTruthy()
-
 				it "should have the states lsKind ", ->
 					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsKind')).toEqual 'Document for Batch'
 				it "should have the states lsType", ->
 					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsType')).toEqual 'results'
 				it "should have the states recordedBy", ->
 					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('recordedBy')).toEqual 'jmcneil'
-
 				it "should have the AnalysisGroupValues ", ->
 					expect(@exp.get('analysisGroups').at(0).get('lsStates').at(0).get('lsValues') instanceof ValueList).toBeTruthy()
 				it "should have the AnalysisGroupValues array", ->
@@ -101,6 +99,9 @@ describe "Experiment module testing", ->
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
+				@exp.getNotebook().set stringValue: "spec test NB"
+				@exp.getCompletionDate().set dateValue: 2000000000000
+				@exp.getProjectCode().set codeValue: "project45"
 				@exp.copyProtocolAttributes new Protocol(window.protocolServiceTestJSON.fullSavedProtocol)
 			describe "after initial load", ->
 				it "Class should exist", ->
@@ -119,12 +120,12 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 				it 'Should have a description value', ->
 					expect(@exp.getDescription().get('stringValue')).toEqual "long description goes here"
-				it 'Should not have a notebook value', ->
-					expect(@exp.getNotebook().get('stringValue')).toBeUndefined()
-				it 'Should not have a completionDate value', ->
-					expect(@exp.getCompletionDate().get('dateValue')).toBeUndefined()
-				it 'Should have a projectCode value of unassigned', ->
-					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
+				it 'Should not override set notebook value', ->
+					expect(@exp.getNotebook().get('stringValue')).toEqual "spec test NB"
+				it 'Should not override completionDate value', ->
+					expect(@exp.getCompletionDate().get('dateValue')).toEqual 2000000000000
+				it 'Should not override projectCode value', ->
+					expect(@exp.getProjectCode().get('codeValue')).toEqual "project45"
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -268,12 +269,16 @@ describe "Experiment module testing", ->
 			beforeEach ->
 				runs ->
 					@copied = false
-					@exp = new Experiment()
-					@exp.on "protocol_attributes_copied", =>
+					@exp0 = new Experiment()
+					# I should not have to clear these. I think (hope) it is a bug in spec runner
+					@exp0.getNotebook().set stringValue: null
+					@exp0.getCompletionDate().set dateValue: null
+					@exp0.getProjectCode().set codeValue: null
+					@exp0.on "protocol_attributes_copied", =>
 						@copied = true
-					@exp.copyProtocolAttributes new Protocol(window.protocolServiceTestJSON.fullSavedProtocol)
+					@exp0.copyProtocolAttributes new Protocol(window.protocolServiceTestJSON.fullSavedProtocol)
 					@ebc = new ExperimentBaseController
-						model: @exp
+						model: @exp0
 						el: $('#fixture')
 					@ebc.render()
 			describe "Basic loading", ->
@@ -397,6 +402,8 @@ describe "Experiment module testing", ->
 				waits(200) # needs to fill out stub protocol
 				runs ->
 					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
+			it "should show the save button text as Update", ->
+				expect(@ebc.$('.bv_save').html()).toEqual "Update"
 			it "should have use protocol parameters disabled", ->
 				expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual "disabled"
 			it "should fill the short description field", ->
@@ -439,6 +446,10 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual "disabled"
 				it "should not fill the date field", ->
 					expect(@ebc.$('.bv_completionDate').val()).toEqual ""
+				it "should show the save button text as Save", ->
+					expect(@ebc.$('.bv_save').html()).toEqual "Save"
+				it "should show the save button disabled", ->
+					expect(@ebc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 			describe "when user picks protocol ", ->
 				beforeEach ->
 					runs ->
@@ -495,6 +506,9 @@ describe "Experiment module testing", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@ebc.isValid()).toBeTruthy()
+					it "save button should be enabled", ->
+						runs ->
+							expect(@ebc.$('.bv_save').attr('disabled')).toBeUndefined()
 				describe "when name field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -506,6 +520,9 @@ describe "Experiment module testing", ->
 					it "should show error in name field", ->
 						runs ->
 							expect(@ebc.$('.bv_group_experimentName').hasClass('error')).toBeTruthy()
+					it "should show the save button disabled", ->
+						runs ->
+							expect(@ebc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -546,6 +563,22 @@ describe "Experiment module testing", ->
 					it "should show error on notebook dropdown", ->
 						runs ->
 							expect(@ebc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
+				describe "expect save to work", ->
+					it "model should be valid and ready to save", ->
+						runs ->
+							expect(@ebc.model.isValid()).toBeTruthy()
+					it "should update experiment code", ->
+						runs ->
+							@ebc.$('.bv_save').click()
+						waits(100)
+						runs ->
+							expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
+					it "should show the save button text as Update", ->
+						runs ->
+							@ebc.$('.bv_save').click()
+						waits(100)
+						runs ->
+							expect(@ebc.$('.bv_save').html()).toEqual "Update"
 
 
 

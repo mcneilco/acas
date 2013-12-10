@@ -326,20 +326,15 @@
     function PrimaryScreenExperimentController() {
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
-      this.handleSaveClicked = __bind(this.handleSaveClicked, this);
       _ref5 = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
       return _ref5;
     }
 
     PrimaryScreenExperimentController.prototype.template = _.template($("#PrimaryScreenExperimentView").html());
 
-    PrimaryScreenExperimentController.prototype.events = {
-      "click .bv_save": "handleSaveClicked"
-    };
-
     PrimaryScreenExperimentController.prototype.initialize = function() {
       if (this.model == null) {
-        this.model = new Experiment();
+        this.model = new PrimaryScreenExperiment();
       }
       $(this.el).html(this.template());
       this.model.on('sync', this.handleExperimentSaved);
@@ -363,10 +358,6 @@
       this.analysisController.render();
       this.doseRespController.render();
       return this;
-    };
-
-    PrimaryScreenExperimentController.prototype.handleSaveClicked = function() {
-      return this.model.save();
     };
 
     PrimaryScreenExperimentController.prototype.handleExperimentSaved = function() {

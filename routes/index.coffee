@@ -64,7 +64,7 @@ applicationScripts = [
 
 exports.index = (req, res) ->
 	#"use strict"
-	global.specRunnerTestmode = false
+	global.specRunnerTestmode = true
 	scriptsToLoad = requiredScripts.concat(applicationScripts)
 	return res.render 'index',
 		title: "ACAS Home"

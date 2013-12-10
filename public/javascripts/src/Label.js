@@ -248,7 +248,8 @@
     };
 
     StateList.prototype.getOrCreateStateByTypeAndKind = function(sType, sKind) {
-      var mState, mStates;
+      var mState, mStates,
+        _this = this;
       mStates = this.getStatesByTypeAndKind(sType, sKind);
       mState = mStates[0];
       if (mState == null) {
@@ -257,12 +258,16 @@
           lsKind: sKind
         });
         this.add(mState);
+        mState.on('change', function() {
+          return _this.trigger('change');
+        });
       }
       return mState;
     };
 
     StateList.prototype.getOrCreateValueByTypeAndKind = function(sType, sKind, vType, vKind) {
-      var descVal, descVals, metaState;
+      var descVal, descVals, metaState,
+        _this = this;
       metaState = this.getOrCreateStateByTypeAndKind(sType, sKind);
       descVals = metaState.getValuesByTypeAndKind(vType, vKind);
       descVal = descVals[0];
@@ -272,6 +277,9 @@
           lsKind: vKind
         });
         metaState.get('lsValues').add(descVal);
+        descVal.on('change', function() {
+          return _this.trigger('change');
+        });
       }
       return descVal;
     };

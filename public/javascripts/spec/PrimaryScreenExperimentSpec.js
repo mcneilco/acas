@@ -203,7 +203,7 @@
           });
         });
         return describe("saving to server", function() {
-          beforeEach(function() {
+          return beforeEach(function() {
             var _this = this;
             waitsFor(function() {
               return _this.psec.$('.bv_protocolCode option').length > 0 && _this.psec.$('.bv_projectCode option').length > 0;
@@ -233,22 +233,6 @@
               return _this.psec.$('.bv_completionDate').change();
             });
             return waits(200);
-          });
-          return describe("expect save to work", function() {
-            it("model should be valid and ready to save", function() {
-              return runs(function() {
-                return expect(this.psec.model.isValid()).toBeTruthy();
-              });
-            });
-            return it("should update experiment code", function() {
-              runs(function() {
-                return this.psec.$('.bv_save').click();
-              });
-              waits(100);
-              return runs(function() {
-                return expect(this.psec.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
-              });
-            });
           });
         });
       });

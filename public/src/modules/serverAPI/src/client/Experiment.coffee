@@ -55,6 +55,11 @@ class window.Experiment extends Backbone.Model
 			@trigger 'change'
 
 	copyProtocolAttributes: (protocol) ->
+		#cache values I don't want to overwrite
+		notebook = @getNotebook().get('stringValue')
+		completionDate = @getCompletionDate().get('dateValue')
+		project = @getProjectCode().get('codeValue')
+
 		estates = new StateList()
 		pstates = protocol.get('lsStates')
 		pstates.each (st) ->
@@ -65,7 +70,7 @@ class window.Experiment extends Backbone.Model
 			evals = new ValueList()
 			svals = st.get('lsValues')
 			svals.each (sv) ->
-				unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project"
+				unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project" || sv.get('lsKind')=="completion date"
 					evalue = new Value(sv.attributes)
 					evalue.unset 'id'
 					evalue.unset 'lsTransaction'
@@ -77,6 +82,11 @@ class window.Experiment extends Backbone.Model
 			protocol: protocol
 			shortDescription: protocol.get('shortDescription')
 			lsStates: estates
+		@getNotebook().set stringValue: notebook
+		@getCompletionDate().set dateValue: completionDate
+		@getProjectCode().set codeValue: project
+		@setupCompositeChangeTriggers()
+		@trigger 'change'
 		@trigger "protocol_attributes_copied"
 		return
 
@@ -163,6 +173,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		"change .bv_projectCode": "handleProjectCodeChanged"
 		"change .bv_notebook": "handleNotebookChanged"
 		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+		"click .bv_save": "handleSaveClicked"
 
 	initialize: ->
 		@model.on 'sync', @render
@@ -170,6 +181,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@setBindings()
 		$(@el).empty()
 		$(@el).html @template()
+		@$('.bv_save').attr('disabled', 'disabled')
 		@setupProtocolSelect()
 		@setupProjectSelect()
 
@@ -193,6 +205,10 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_completionDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
 		@$('.bv_description').html(@model.getDescription().get('stringValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
+		if @model.isNew()
+			@$('.bv_save').html("Save")
+		else
+			@$('.bv_save').html("Update")
 
 		@
 
@@ -299,3 +315,14 @@ class window.ExperimentBaseController extends AbstractFormController
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
 		@render()
+
+	handleSaveClicked: =>
+		@model.save()
+
+	validationError: =>
+		super()
+		@$('.bv_save').attr('disabled', 'disabled')
+
+	clearValidationErrorStyles: =>
+		super()
+		@$('.bv_save').removeAttr('disabled')

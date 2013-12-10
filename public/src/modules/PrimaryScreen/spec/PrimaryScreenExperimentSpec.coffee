@@ -178,17 +178,6 @@ describe "Primary Screen Experiment module testing", ->
 						@psec.$('.bv_completionDate').change()
 					waits(200)
 
-				describe "expect save to work", ->
-					it "model should be valid and ready to save", ->
-						runs ->
-							expect(@psec.model.isValid()).toBeTruthy()
-					it "should update experiment code", ->
-						runs ->
-							@psec.$('.bv_save').click()
-						waits(100)
-						runs ->
-							expect(@psec.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
-
 	describe "Primary Screen Analysis Controller testing", ->
 		describe "basic plumbing checks with experiment copied from template", ->
 			beforeEach ->
@@ -221,6 +210,4 @@ describe "Primary Screen Experiment module testing", ->
 
 
 
-#TODO Save button should be disabled if everyone not validated
-#TODO Save button should change to update for existing experiment.
-#TODO Need to update by field, not meta experiment
+#TODO add agonist field

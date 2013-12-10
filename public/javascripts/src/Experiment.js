@@ -106,7 +106,10 @@
     };
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
-      var estates, pstates;
+      var completionDate, estates, notebook, project, pstates;
+      notebook = this.getNotebook().get('stringValue');
+      completionDate = this.getCompletionDate().get('dateValue');
+      project = this.getProjectCode().get('codeValue');
       estates = new StateList();
       pstates = protocol.get('lsStates');
       pstates.each(function(st) {
@@ -119,7 +122,7 @@
         svals = st.get('lsValues');
         svals.each(function(sv) {
           var evalue;
-          if (!(sv.get('lsKind') === "notebook" || sv.get('lsKind') === "project")) {
+          if (!(sv.get('lsKind') === "notebook" || sv.get('lsKind') === "project" || sv.get('lsKind') === "completion date")) {
             evalue = new Value(sv.attributes);
             evalue.unset('id');
             evalue.unset('lsTransaction');
@@ -137,6 +140,17 @@
         shortDescription: protocol.get('shortDescription'),
         lsStates: estates
       });
+      this.getNotebook().set({
+        stringValue: notebook
+      });
+      this.getCompletionDate().set({
+        dateValue: completionDate
+      });
+      this.getProjectCode().set({
+        codeValue: project
+      });
+      this.setupCompositeChangeTriggers();
+      this.trigger('change');
       this.trigger("protocol_attributes_copied");
     };
 
@@ -254,6 +268,9 @@
     __extends(ExperimentBaseController, _super);
 
     function ExperimentBaseController() {
+      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
+      this.validationError = __bind(this.validationError, this);
+      this.handleSaveClicked = __bind(this.handleSaveClicked, this);
       this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
       this.handleNotebookChanged = __bind(this.handleNotebookChanged, this);
       this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
@@ -281,7 +298,8 @@
       "change .bv_protocolCode": "handleProtocolCodeChanged",
       "change .bv_projectCode": "handleProjectCodeChanged",
       "change .bv_notebook": "handleNotebookChanged",
-      "click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+      "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
+      "click .bv_save": "handleSaveClicked"
     };
 
     ExperimentBaseController.prototype.initialize = function() {
@@ -290,6 +308,7 @@
       this.setBindings();
       $(this.el).empty();
       $(this.el).html(this.template());
+      this.$('.bv_save').attr('disabled', 'disabled');
       this.setupProtocolSelect();
       return this.setupProjectSelect();
     };
@@ -318,6 +337,11 @@
       }
       this.$('.bv_description').html(this.model.getDescription().get('stringValue'));
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
+      if (this.model.isNew()) {
+        this.$('.bv_save').html("Save");
+      } else {
+        this.$('.bv_save').html("Update");
+      }
       return this;
     };
 
@@ -476,6 +500,20 @@
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
       this.model.copyProtocolAttributes(this.model.get('protocol'));
       return this.render();
+    };
+
+    ExperimentBaseController.prototype.handleSaveClicked = function() {
+      return this.model.save();
+    };
+
+    ExperimentBaseController.prototype.validationError = function() {
+      ExperimentBaseController.__super__.validationError.call(this);
+      return this.$('.bv_save').attr('disabled', 'disabled');
+    };
+
+    ExperimentBaseController.prototype.clearValidationErrorStyles = function() {
+      ExperimentBaseController.__super__.clearValidationErrorStyles.call(this);
+      return this.$('.bv_save').removeAttr('disabled');
     };
 
     return ExperimentBaseController;

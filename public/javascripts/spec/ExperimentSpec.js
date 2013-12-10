@@ -146,6 +146,15 @@
       describe("when created from template protocol", function() {
         beforeEach(function() {
           this.exp = new Experiment();
+          this.exp.getNotebook().set({
+            stringValue: "spec test NB"
+          });
+          this.exp.getCompletionDate().set({
+            dateValue: 2000000000000
+          });
+          this.exp.getProjectCode().set({
+            codeValue: "project45"
+          });
           return this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
         });
         return describe("after initial load", function() {
@@ -173,14 +182,14 @@
           it('Should have a description value', function() {
             return expect(this.exp.getDescription().get('stringValue')).toEqual("long description goes here");
           });
-          it('Should not have a notebook value', function() {
-            return expect(this.exp.getNotebook().get('stringValue')).toBeUndefined();
+          it('Should not override set notebook value', function() {
+            return expect(this.exp.getNotebook().get('stringValue')).toEqual("spec test NB");
           });
-          it('Should not have a completionDate value', function() {
-            return expect(this.exp.getCompletionDate().get('dateValue')).toBeUndefined();
+          it('Should not override completionDate value', function() {
+            return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(2000000000000);
           });
-          return it('Should have a projectCode value of unassigned', function() {
-            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
+          return it('Should not override projectCode value', function() {
+            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("project45");
           });
         });
       });
@@ -385,13 +394,22 @@
           return runs(function() {
             var _this = this;
             this.copied = false;
-            this.exp = new Experiment();
-            this.exp.on("protocol_attributes_copied", function() {
+            this.exp0 = new Experiment();
+            this.exp0.getNotebook().set({
+              stringValue: null
+            });
+            this.exp0.getCompletionDate().set({
+              dateValue: null
+            });
+            this.exp0.getProjectCode().set({
+              codeValue: null
+            });
+            this.exp0.on("protocol_attributes_copied", function() {
               return _this.copied = true;
             });
-            this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
+            this.exp0.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
             this.ebc = new ExperimentBaseController({
-              model: this.exp,
+              model: this.exp0,
               el: $('#fixture')
             });
             return this.ebc.render();
@@ -557,6 +575,9 @@
             return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
           });
         });
+        it("should show the save button text as Update", function() {
+          return expect(this.ebc.$('.bv_save').html()).toEqual("Update");
+        });
         it("should have use protocol parameters disabled", function() {
           return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual("disabled");
         });
@@ -611,8 +632,14 @@
           it("should have use protocol parameters disabled", function() {
             return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual("disabled");
           });
-          return it("should not fill the date field", function() {
+          it("should not fill the date field", function() {
             return expect(this.ebc.$('.bv_completionDate').val()).toEqual("");
+          });
+          it("should show the save button text as Save", function() {
+            return expect(this.ebc.$('.bv_save').html()).toEqual("Save");
+          });
+          return it("should show the save button disabled", function() {
+            return expect(this.ebc.$('.bv_save').attr('disabled')).toEqual('disabled');
           });
         });
         describe("when user picks protocol ", function() {
@@ -685,9 +712,14 @@
             return waits(200);
           });
           describe("form validation setup", function() {
-            return it("should be valid if form fully filled out", function() {
+            it("should be valid if form fully filled out", function() {
               return runs(function() {
                 return expect(this.ebc.isValid()).toBeTruthy();
+              });
+            });
+            return it("save button should be enabled", function() {
+              return runs(function() {
+                return expect(this.ebc.$('.bv_save').attr('disabled')).toBeUndefined();
               });
             });
           });
@@ -703,9 +735,14 @@
                 return expect(this.ebc.isValid()).toBeFalsy();
               });
             });
-            return it("should show error in name field", function() {
+            it("should show error in name field", function() {
               return runs(function() {
                 return expect(this.ebc.$('.bv_group_experimentName').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should show the save button disabled", function() {
+              return runs(function() {
+                return expect(this.ebc.$('.bv_save').attr('disabled')).toEqual('disabled');
               });
             });
           });
@@ -761,7 +798,7 @@
               });
             });
           });
-          return describe("when notebook not filled", function() {
+          describe("when notebook not filled", function() {
             beforeEach(function() {
               return runs(function() {
                 this.ebc.$('.bv_notebook').val("");
@@ -771,6 +808,31 @@
             return it("should show error on notebook dropdown", function() {
               return runs(function() {
                 return expect(this.ebc.$('.bv_group_notebook').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          return describe("expect save to work", function() {
+            it("model should be valid and ready to save", function() {
+              return runs(function() {
+                return expect(this.ebc.model.isValid()).toBeTruthy();
+              });
+            });
+            it("should update experiment code", function() {
+              runs(function() {
+                return this.ebc.$('.bv_save').click();
+              });
+              waits(100);
+              return runs(function() {
+                return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
+              });
+            });
+            return it("should show the save button text as Update", function() {
+              runs(function() {
+                return this.ebc.$('.bv_save').click();
+              });
+              waits(100);
+              return runs(function() {
+                return expect(this.ebc.$('.bv_save').html()).toEqual("Update");
               });
             });
           });
