@@ -2,6 +2,7 @@
 1) Add these lines to app.coffee under # serverAPI routes:
 experimentRoutes = require './routes/ExperimentServiceRoutes.js'
 app.get '/api/experiments/codename/:code', experimentRoutes.experimentByCodename
+app.get '/api/experiments/protocolCodename/:code', experimentRoutes.experimentByProtocolCodename
 app.get '/api/experiments/:id', experimentRoutes.experimentById
 app.post '/api/experiments', experimentRoutes.postExperiment
 app.put '/api/experiments', experimentRoutes.putExperiment
@@ -19,6 +20,21 @@ app.put '/api/experiments', experimentRoutes.putExperiment
     } else {
       config = require('../public/src/conf/configurationNode.js');
       baseurl = config.serverConfigurationParams.configuration.serverPath + "experiments/codename/" + request.params.code;
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, response);
+    }
+  };
+
+  exports.experimentByProtocolCodename = function(request, response) {
+    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    console.log(request.params.code);
+    console.log(request.query.testMode);
+    if (request.query.testMode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return response.end(JSON.stringify(experimentServiceTestJSON.stubSavedExperiment));
+    } else {
+      config = require('../public/src/conf/configurationNode.js');
+      baseurl = config.serverConfigurationParams.configuration.serverPath + "experiments/protocolCodename/" + request.params.code;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, response);
     }

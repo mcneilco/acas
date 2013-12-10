@@ -4,7 +4,7 @@ class window.Experiment extends Backbone.Model
 		lsType: "default"
 		lsKind: "default"
 		recordedBy: ""
-		recordedDate: null
+		recordedDate: new Date().getTime()
 		shortDescription: ""
 		lsLabels: new LabelList()
 		lsStates: new StateList()
@@ -55,6 +55,11 @@ class window.Experiment extends Backbone.Model
 			@trigger 'change'
 
 	copyProtocolAttributes: (protocol) ->
+		#cache values I don't want to overwrite
+		notebook = @getNotebook().get('stringValue')
+		completionDate = @getCompletionDate().get('dateValue')
+		project = @getProjectCode().get('codeValue')
+
 		estates = new StateList()
 		pstates = protocol.get('lsStates')
 		pstates.each (st) ->
@@ -65,10 +70,11 @@ class window.Experiment extends Backbone.Model
 			evals = new ValueList()
 			svals = st.get('lsValues')
 			svals.each (sv) ->
-				evalue = new Value(sv.attributes)
-				evalue.unset 'id'
-				evalue.unset 'lsTransaction'
-				evals.add(evalue)
+				unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project" || sv.get('lsKind')=="completion date"
+					evalue = new Value(sv.attributes)
+					evalue.unset 'id'
+					evalue.unset 'lsTransaction'
+					evals.add(evalue)
 			estate.set lsValues: evals
 			estates.add(estate)
 		@set
@@ -76,6 +82,11 @@ class window.Experiment extends Backbone.Model
 			protocol: protocol
 			shortDescription: protocol.get('shortDescription')
 			lsStates: estates
+		@getNotebook().set stringValue: notebook
+		@getCompletionDate().set dateValue: completionDate
+		@getProjectCode().set codeValue: project
+		@setupCompositeChangeTriggers()
+		@trigger 'change'
 		@trigger "protocol_attributes_copied"
 		return
 
@@ -101,8 +112,27 @@ class window.Experiment extends Backbone.Model
 				message: "Scientist must be set"
 		if attrs.protocol == null
 			errors.push
-				attribute: 'protocol'
+				attribute: 'protocolCode'
 				message: "Protocol must be set"
+		notebook = @getNotebook().get('stringValue')
+		if notebook is "" or notebook is "unassigned" or notebook is undefined
+			errors.push
+				attribute: 'notebook'
+				message: "Notebook must be set"
+		projectCode = @getProjectCode().get('codeValue')
+		if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
+			errors.push
+				attribute: 'projectCode'
+				message: "Project must be set"
+		cDate = @getCompletionDate().get('dateValue')
+		if cDate is undefined or cDate is "" then cDate = "fred"
+		if isNaN(cDate)
+			errors.push
+				attribute: 'completionDate'
+				message: "Assay completion date must be set"
+
+		if errors.length > 0
+			return errors
 
 		if errors.length > 0
 			return errors
@@ -112,6 +142,23 @@ class window.Experiment extends Backbone.Model
 	getDescription: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "description"
 
+	getNotebook: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
+
+	getProjectCode: ->
+		projectCodeValue = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "project"
+		if projectCodeValue.get('codeValue') is undefined or projectCodeValue.get('codeValue') is ""
+			projectCodeValue.set codeValue: "unassigned"
+
+		projectCodeValue
+
+	getCompletionDate: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
+
+
+class window.ExperimentList extends Backbone.Collection
+	model: Experiment
+
 class window.ExperimentBaseController extends AbstractFormController
 	template: _.template($("#ExperimentBaseView").html())
 
@@ -120,10 +167,13 @@ class window.ExperimentBaseController extends AbstractFormController
 		"change .bv_shortDescription": "handleShortDescriptionChanged"
 		"change .bv_description": "handleDescriptionChanged"
 		"change .bv_experimentName": "handleNameChanged"
-		"change .bv_recordedDate": "handleDateChanged"
+		"change .bv_completionDate": "handleDateChanged"
 		"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
 		"change .bv_protocolCode": "handleProtocolCodeChanged"
-		"click .bv_recordDateIcon": "handleRecordDateIconClicked"
+		"change .bv_projectCode": "handleProjectCodeChanged"
+		"change .bv_notebook": "handleNotebookChanged"
+		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+		"click .bv_save": "handleSaveClicked"
 
 	initialize: ->
 		@model.on 'sync', @render
@@ -131,11 +181,14 @@ class window.ExperimentBaseController extends AbstractFormController
 		@setBindings()
 		$(@el).empty()
 		$(@el).html @template()
+		@$('.bv_save').attr('disabled', 'disabled')
 		@setupProtocolSelect()
+		@setupProjectSelect()
 
 	render: =>
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
+		@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
 		@$('.bv_shortDescription').html @model.get('shortDescription')
 		@$('.bv_description').html @model.get('description')
 		bestName = @model.get('lsLabels').pickBestName()
@@ -145,12 +198,17 @@ class window.ExperimentBaseController extends AbstractFormController
 		@$('.bv_experimentCode').html(@model.get('codeName'))
 		@getAndShowProtocolName()
 		@setUseProtocolParametersDisabledState()
-		@$('.bv_recordedDate').datepicker( );
-		@$('.bv_recordedDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
-		if @model.get('recordedDate') != null
-			date = new Date(@model.get('recordedDate'))
-			@$('.bv_recordedDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
+		@$('.bv_completionDate').datepicker( );
+		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+		if @model.getCompletionDate().get('dateValue')?
+			date = new Date(@model.getCompletionDate().get('dateValue'))
+			@$('.bv_completionDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
 		@$('.bv_description').html(@model.getDescription().get('stringValue'))
+		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
+		if @model.isNew()
+			@$('.bv_save').html("Save")
+		else
+			@$('.bv_save').html("Update")
 
 		@
 
@@ -168,6 +226,17 @@ class window.ExperimentBaseController extends AbstractFormController
 				code: "unassigned"
 				name: "Select Protocol"
 			selectedCode: protocolCode
+
+	setupProjectSelect: ->
+		@projectList = new PickListList()
+		@projectList.url = "/api/projects"
+		@projectListController = new PickListSelectController
+			el: @$('.bv_projectCode')
+			collection: @projectList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Project"
+			selectedCode: @model.getProjectCode().get('codeValue')
 
 	setUseProtocolParametersDisabledState: ->
 		if (not @model.isNew()) or (@model.get('protocol') == null) or (@$('.bv_protocolCode').val() == "")
@@ -200,7 +269,7 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	handleDescriptionChanged: =>
 		@model.getDescription().set
-			stringValue: $.trim(@$('.bv_description').val())
+			stringValue: @getTrimmedInput('.bv_description')
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
@@ -209,14 +278,13 @@ class window.ExperimentBaseController extends AbstractFormController
 			labelKind: "experiment name"
 			labelText: newName
 			recordedBy: @model.get 'recordedBy'
-			recordedDate: @model.get 'recordedDate'
+			recordedDate: new Date().getTime()
 
 	handleDateChanged: =>
-		@model.set recordedDate: @convertYMDDateToMs(@getTrimmedInput('.bv_recordedDate'))
-		@handleNameChanged()
+		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
 
-	handleRecordDateIconClicked: =>
-		$( ".bv_recordedDate" ).datepicker( "show" );
+	handleCompletionDateIconClicked: =>
+		$( ".bv_completionDate" ).datepicker( "show" );
 
 	handleProtocolCodeChanged: =>
 		code = @$('.bv_protocolCode').val()
@@ -238,6 +306,23 @@ class window.ExperimentBaseController extends AbstractFormController
 					alert 'got ajax error from api/protocols/codename/ in Exeriment.coffee'
 				dataType: 'json'
 
+	handleProjectCodeChanged: =>
+		@model.getProjectCode().set codeValue: @$('.bv_projectCode').val()
+
+	handleNotebookChanged: =>
+		@model.getNotebook().set stringValue: @getTrimmedInput('.bv_notebook')
+
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
 		@render()
+
+	handleSaveClicked: =>
+		@model.save()
+
+	validationError: =>
+		super()
+		@$('.bv_save').attr('disabled', 'disabled')
+
+	clearValidationErrorStyles: =>
+		super()
+		@$('.bv_save').removeAttr('disabled')

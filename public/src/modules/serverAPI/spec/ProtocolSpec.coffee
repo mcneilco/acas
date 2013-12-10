@@ -38,7 +38,7 @@ describe "Protocol module testing", ->
 				it "should have states with kind ", ->
 					expect(@prot.get('lsStates').at(0).get('lsKind')).toEqual "experiment controls"
 				it "states should have values", ->
-					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "control type"
+					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "data analysis parameters"
 		describe "when loaded from stub", ->
 			beforeEach ->
 				@prot = new Protocol window.protocolServiceTestJSON.stubSavedProtocol[0]

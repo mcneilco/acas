@@ -30,8 +30,8 @@
           it('Should have an empty scientist', function() {
             return expect(this.exp.get('recordedBy')).toEqual("");
           });
-          it('Should have an empty recordedDate', function() {
-            return expect(this.exp.get('recordedDate')).toBeNull();
+          it('Should have an recordedDate set to now', function() {
+            return expect(new Date(this.exp.get('recordedDate')).getHours()).toEqual(new Date().getHours());
           });
           it('Should have an empty short description', function() {
             return expect(this.exp.get('shortDescription')).toEqual("");
@@ -44,8 +44,20 @@
           });
         });
         return describe("required states and values", function() {
-          return it('Should have a description value', function() {
+          it('Should have a description value', function() {
             return expect(this.exp.getDescription() instanceof Value).toBeTruthy();
+          });
+          it('Should have a notebook value', function() {
+            return expect(this.exp.getNotebook() instanceof Value).toBeTruthy();
+          });
+          it('Should have a project value', function() {
+            return expect(this.exp.getProjectCode() instanceof Value).toBeTruthy();
+          });
+          it('Project code should default to unassigned ', function() {
+            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
+          });
+          return it('completionDate should be null ', function() {
+            return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(null);
           });
         });
       });
@@ -117,14 +129,32 @@
           it("should have labels", function() {
             return expect(this.exp.get('lsLabels').at(0).get('lsKind')).toEqual("experiment name");
           });
-          return it('Should have a description value', function() {
+          it('Should have a description value', function() {
             return expect(this.exp.getDescription().get('stringValue')).toEqual("long description goes here");
+          });
+          it('Should have a notebook value', function() {
+            return expect(this.exp.getNotebook().get('stringValue')).toEqual("911");
+          });
+          it('Should have a project value', function() {
+            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("project1");
+          });
+          return it('Should have a completionDate value', function() {
+            return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(1342080000000);
           });
         });
       });
       describe("when created from template protocol", function() {
         beforeEach(function() {
           this.exp = new Experiment();
+          this.exp.getNotebook().set({
+            stringValue: "spec test NB"
+          });
+          this.exp.getCompletionDate().set({
+            dateValue: 2000000000000
+          });
+          this.exp.getProjectCode().set({
+            codeValue: "project45"
+          });
           return this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
         });
         return describe("after initial load", function() {
@@ -149,8 +179,17 @@
           it("should have the states copied", function() {
             return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
           });
-          return it('Should have a description value', function() {
+          it('Should have a description value', function() {
             return expect(this.exp.getDescription().get('stringValue')).toEqual("long description goes here");
+          });
+          it('Should not override set notebook value', function() {
+            return expect(this.exp.getNotebook().get('stringValue')).toEqual("spec test NB");
+          });
+          it('Should not override completionDate value', function() {
+            return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(2000000000000);
+          });
+          return it('Should not override projectCode value', function() {
+            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("project45");
           });
         });
       });
@@ -193,7 +232,7 @@
               return _this.experimentChanged = true;
             });
             return this.exp.get('lsStates').at(0).get('lsValues').at(0).set({
-              lsKind: 'fred'
+              codeValue: 'fred'
             });
           });
           waitsFor(function() {
@@ -246,14 +285,49 @@
             return err.attribute === 'recordedBy';
           });
         });
-        return it("should be invalid when protocol not selected", function() {
+        it("should be invalid when protocol not selected", function() {
           var filtErrors;
           this.exp.set({
             protocol: null
           });
           expect(this.exp.isValid()).toBeFalsy();
           filtErrors = _.filter(this.exp.validationError, function(err) {
-            return err.attribute === 'protocol';
+            return err.attribute === 'protocolCode';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when notebook is empty", function() {
+          var filtErrors;
+          this.exp.getNotebook().set({
+            stringValue: "",
+            recordedBy: this.exp.get('recordedBy')
+          });
+          expect(this.exp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.exp.validationError, function(err) {
+            return err.attribute === 'notebook';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when projectCode is unassigned", function() {
+          var filtErrors;
+          this.exp.getProjectCode().set({
+            codeValue: "unassigned",
+            recordedBy: this.exp.get('recordedBy')
+          });
+          expect(this.exp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.exp.validationError, function(err) {
+            return err.attribute === 'projectCode';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it('should require that completionDate not be ""', function() {
+          var filtErrors;
+          this.exp.getCompletionDate().set({
+            dateValue: new Date("").getTime()
+          });
+          expect(this.exp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.exp.validationError, function(err) {
+            return err.attribute === 'completionDate';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -304,19 +378,38 @@
         });
       });
     });
+    describe("Experiment List testing", function() {
+      beforeEach(function() {
+        return this.el = new ExperimentList();
+      });
+      return describe("existance tests", function() {
+        return it("should be defined", function() {
+          return expect(ExperimentList).toBeDefined();
+        });
+      });
+    });
     return describe("ExperimentBaseController testing", function() {
       describe("When created with an unsaved experiment that has protocol attributes copied in", function() {
         beforeEach(function() {
           return runs(function() {
             var _this = this;
             this.copied = false;
-            this.exp = new Experiment();
-            this.exp.on("protocol_attributes_copied", function() {
+            this.exp0 = new Experiment();
+            this.exp0.getNotebook().set({
+              stringValue: null
+            });
+            this.exp0.getCompletionDate().set({
+              dateValue: null
+            });
+            this.exp0.getProjectCode().set({
+              codeValue: null
+            });
+            this.exp0.on("protocol_attributes_copied", function() {
               return _this.copied = true;
             });
-            this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
+            this.exp0.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
             this.ebc = new ExperimentBaseController({
-              model: this.exp,
+              model: this.exp0,
               el: $('#fixture')
             });
             return this.ebc.render();
@@ -338,6 +431,31 @@
             });
           });
         });
+        describe("it should show a picklist for protocols", function() {
+          beforeEach(function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_protocolCode option').length > 0;
+            }, 1000);
+            return runs(function() {});
+          });
+          return it("should show protocol options after loading them from server", function() {
+            return expect(this.ebc.$('.bv_protocolCode option').length).toBeGreaterThan(0);
+          });
+        });
+        describe("it should show a picklist for projects", function() {
+          beforeEach(function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_projectCode option').length > 0;
+            }, 1000);
+            return runs(function() {});
+          });
+          it("should show project options after loading them from server", function() {
+            return expect(this.ebc.$('.bv_projectCode option').length).toBeGreaterThan(0);
+          });
+          return it("should default to unassigned", function() {
+            return expect(this.ebc.$('.bv_projectCode').val()).toEqual("unassigned");
+          });
+        });
         describe("populated fields", function() {
           it("should show the protocol code", function() {
             waitsFor(function() {
@@ -350,8 +468,14 @@
           it("should show the protocol name", function() {
             return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
           });
-          return it("should fill the short description field", function() {
+          it("should fill the short description field", function() {
             return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
+          });
+          it("should fill the description field", function() {
+            return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
+          });
+          return it("should not fill the notebook field", function() {
+            return expect(this.ebc.$('.bv_notebook').val()).toEqual("");
           });
         });
         return describe("User edits fields", function() {
@@ -382,10 +506,41 @@
             this.ebc.$('.bv_experimentName').change();
             return expect(this.ebc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated experiment name");
           });
-          return it("should update model when recorded date is changed", function() {
-            this.ebc.$('.bv_recordedDate').val(" 2013-3-16   ");
-            this.ebc.$('.bv_recordedDate').change();
-            return expect(this.ebc.model.get('recordedDate')).toEqual(new Date(2013, 2, 16).getTime());
+          it("should update model when completion date is changed", function() {
+            this.ebc.$('.bv_completionDate').val(" 2013-3-16   ");
+            this.ebc.$('.bv_completionDate').change();
+            return expect(this.ebc.model.getCompletionDate().get('dateValue')).toEqual(new Date(2013, 2, 16).getTime());
+          });
+          it("should update model when notebook is changed", function() {
+            this.ebc.$('.bv_notebook').val(" Updated notebook  ");
+            this.ebc.$('.bv_notebook').change();
+            return expect(this.ebc.model.getNotebook().get('stringValue')).toEqual("Updated notebook");
+          });
+          it("should update model when protocol is changed", function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_protocolCode option').length > 0;
+            }, 1000);
+            runs(function() {
+              this.ebc.model.set({
+                protocol: {}
+              });
+              this.ebc.$('.bv_protocolCode').val("PROT-00000001");
+              return this.ebc.$('.bv_protocolCode').change();
+            });
+            waits(200);
+            return runs(function() {
+              return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000001");
+            });
+          });
+          return it("should update model when project is changed", function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_projectCode option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.ebc.$('.bv_projectCode').val("project2");
+              this.ebc.$('.bv_projectCode').change();
+              return expect(this.ebc.model.getProjectCode().get('codeValue')).toEqual("project2");
+            });
           });
         });
       });
@@ -406,11 +561,22 @@
             return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
           });
         });
+        it("should show the project code", function() {
+          waitsFor(function() {
+            return this.ebc.$('.bv_projectCode option').length > 0;
+          }, 1000);
+          return runs(function() {
+            return expect(this.ebc.$('.bv_projectCode').val()).toEqual("project1");
+          });
+        });
         it("should show the protocol name", function() {
           waits(200);
           return runs(function() {
             return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
           });
+        });
+        it("should show the save button text as Update", function() {
+          return expect(this.ebc.$('.bv_save').html()).toEqual("Update");
         });
         it("should have use protocol parameters disabled", function() {
           return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual("disabled");
@@ -425,13 +591,16 @@
           return expect(this.ebc.$('.bv_experimentName').val()).toEqual("FLIPR target A biochemical");
         });
         it("should fill the date field", function() {
-          return expect(this.ebc.$('.bv_recordedDate').val()).toEqual("2013-7-7");
+          return expect(this.ebc.$('.bv_completionDate').val()).toEqual("2012-6-12");
         });
         it("should fill the user field", function() {
           return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("smeyer");
         });
-        return it("should fill the code field", function() {
+        it("should fill the code field", function() {
           return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
+        });
+        return it("should fill the notebook field", function() {
+          return expect(this.ebc.$('.bv_notebook').val()).toEqual("911");
         });
       });
       return describe("When created from a new experiment", function() {
@@ -452,11 +621,25 @@
               return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("unassigned");
             });
           });
+          it("should have project code not set", function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_projectCode option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.ebc.$('.bv_projectCode').val()).toEqual("unassigned");
+            });
+          });
           it("should have use protocol parameters disabled", function() {
             return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual("disabled");
           });
-          return it("should fill the date field", function() {
-            return expect(this.ebc.$('.bv_recordedDate').val()).toEqual("");
+          it("should not fill the date field", function() {
+            return expect(this.ebc.$('.bv_completionDate').val()).toEqual("");
+          });
+          it("should show the save button text as Save", function() {
+            return expect(this.ebc.$('.bv_save').html()).toEqual("Save");
+          });
+          return it("should show the save button disabled", function() {
+            return expect(this.ebc.$('.bv_save').attr('disabled')).toEqual('disabled');
           });
         });
         describe("when user picks protocol ", function() {
@@ -503,11 +686,12 @@
         });
         return describe("controller validation rules", function() {
           beforeEach(function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_protocolCode option').length > 0 && this.ebc.$('.bv_projectCode option').length > 0;
+            }, 1000);
             runs(function() {
               this.ebc.$('.bv_recordedBy').val("jmcneil");
               this.ebc.$('.bv_recordedBy').change();
-              this.ebc.$('.bv_recordedDate').val(" 2013-3-16   ");
-              this.ebc.$('.bv_recordedDate').change();
               this.ebc.$('.bv_shortDescription').val(" New short description   ");
               this.ebc.$('.bv_shortDescription').change();
               this.ebc.$('.bv_protocolCode').val("PROT-00000001");
@@ -517,13 +701,26 @@
             });
             waits(200);
             runs(function() {
-              return this.ebc.$('.bv_useProtocolParameters').click();
+              this.ebc.$('.bv_useProtocolParameters').click();
+              this.ebc.$('.bv_projectCode').val("project1");
+              this.ebc.$('.bv_projectCode').change();
+              this.ebc.$('.bv_notebook').val("my notebook");
+              this.ebc.$('.bv_notebook').change();
+              this.ebc.$('.bv_completionDate').val(" 2013-3-16   ");
+              return this.ebc.$('.bv_completionDate').change();
             });
             return waits(200);
           });
-          it("should be valid if form fully filled out", function() {
-            return runs(function() {
-              return expect(this.ebc.isValid()).toBeTruthy();
+          describe("form validation setup", function() {
+            it("should be valid if form fully filled out", function() {
+              return runs(function() {
+                return expect(this.ebc.isValid()).toBeTruthy();
+              });
+            });
+            return it("save button should be enabled", function() {
+              return runs(function() {
+                return expect(this.ebc.$('.bv_save').attr('disabled')).toBeUndefined();
+              });
             });
           });
           describe("when name field not filled in", function() {
@@ -538,22 +735,27 @@
                 return expect(this.ebc.isValid()).toBeFalsy();
               });
             });
-            return it("should show error in name field", function() {
+            it("should show error in name field", function() {
               return runs(function() {
                 return expect(this.ebc.$('.bv_group_experimentName').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should show the save button disabled", function() {
+              return runs(function() {
+                return expect(this.ebc.$('.bv_save').attr('disabled')).toEqual('disabled');
               });
             });
           });
           describe("when date field not filled in", function() {
             beforeEach(function() {
               return runs(function() {
-                this.ebc.$('.bv_recordedDate').val("");
-                return this.ebc.$('.bv_recordedDate').change();
+                this.ebc.$('.bv_completionDate').val("");
+                return this.ebc.$('.bv_completionDate').change();
               });
             });
             return it("should show error in date field", function() {
               return runs(function() {
-                return expect(this.ebc.$('.bv_group_recordedDate').hasClass('error')).toBeTruthy();
+                return expect(this.ebc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
               });
             });
           });
@@ -570,7 +772,7 @@
               });
             });
           });
-          return describe("when protocol not selected", function() {
+          describe("when protocol not selected", function() {
             beforeEach(function() {
               return runs(function() {
                 this.ebc.$('.bv_protocolCode').val("unassigned");
@@ -579,7 +781,58 @@
             });
             return it("should show error on protocol dropdown", function() {
               return runs(function() {
-                return expect(this.ebc.$('.bv_group_protocol').hasClass('error')).toBeTruthy();
+                return expect(this.ebc.$('.bv_group_protocolCode').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          describe("when project not selected", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.ebc.$('.bv_projectCode').val("unassigned");
+                return this.ebc.$('.bv_projectCode').change();
+              });
+            });
+            return it("should show error on project dropdown", function() {
+              return runs(function() {
+                return expect(this.ebc.$('.bv_group_projectCode').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          describe("when notebook not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.ebc.$('.bv_notebook').val("");
+                return this.ebc.$('.bv_notebook').change();
+              });
+            });
+            return it("should show error on notebook dropdown", function() {
+              return runs(function() {
+                return expect(this.ebc.$('.bv_group_notebook').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          return describe("expect save to work", function() {
+            it("model should be valid and ready to save", function() {
+              return runs(function() {
+                return expect(this.ebc.model.isValid()).toBeTruthy();
+              });
+            });
+            it("should update experiment code", function() {
+              runs(function() {
+                return this.ebc.$('.bv_save').click();
+              });
+              waits(100);
+              return runs(function() {
+                return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
+              });
+            });
+            return it("should show the save button text as Update", function() {
+              runs(function() {
+                return this.ebc.$('.bv_save').click();
+              });
+              waits(100);
+              return runs(function() {
+                return expect(this.ebc.$('.bv_save').html()).toEqual("Update");
               });
             });
           });

@@ -196,22 +196,39 @@
 	]
 
 	exports.stubSavedExperiment = [
-		codeName: "EXPT-00000046"
-		id: 270
-		ignored: false
-		kind: null
-		lsTransaction:
-			comments: "protocol 201 transactions"
-			id: 179
-			recordedDate: 1361600825000
-			version: 0
+			codeName: "EXPT-00000046"
+			id: 270
+			ignored: false
+			kind: null
+			lsTransaction:
+				comments: "protocol 201 transactions"
+				id: 179
+				recordedDate: 1361600825000
+				version: 0
 
-		modifiedBy: null
-		modifiedDate: null
-		recordedBy: "jmcneil"
-		recordedDate: 1361600860000
-		shortDescription: "experiment short description goes here"
-		version: 0
+			modifiedBy: null
+			modifiedDate: null
+			recordedBy: "jmcneil"
+			recordedDate: 1361600860000
+			shortDescription: "experiment short description goes here"
+			version: 0
+		,
+			codeName: "EXPT-00000047"
+			id: 271
+			ignored: false
+			kind: null
+			lsTransaction:
+				comments: "protocol 201 transactions"
+				id: 180
+				recordedDate: 1361600825000
+				version: 0
+
+			modifiedBy: null
+			modifiedDate: null
+			recordedBy: "jmcneil"
+			recordedDate: 1375600860000
+			shortDescription: "2nd experiment short description goes here"
+			version: 0
 	]
 
 	exports.experimentToSave =
@@ -239,7 +256,6 @@
 
 
 
-
 	exports.fullExperimentFromServer =
 		analysisGroups: [
 			codeName: "AG-00000002"
@@ -248,7 +264,6 @@
 			lsKind: "Generic"
 			lsLabels: []
 			lsStates: [
-				comments: null
 				id: 17
 				ignored: false
 				lsKind: "Generic"
@@ -969,6 +984,105 @@
 		]
 		lsStates: [
 			comments: null
+			id: 2
+			ignored: false
+			lsKind: "experiment controls"
+			lsTransaction: 1
+			lsType: "metadata"
+			lsTypeAndKind: "metadata_experiment controls"
+			lsValues: [
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80471
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: "negative control"
+				uncertainty: null
+				urlValue: null
+				lsKind: "control type"
+				valueOperator: null
+				lsType: "stringValue"
+				lsTypeAndKind: "stringValue_control type"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80470
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 1.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "tested concentration"
+				valueOperator: null
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_tested concentration"
+				valueUnit: "uM"
+				version: 0
+			,
+				clobValue: null
+				codeValue: "CRA-000396:1"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80469
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "batch code"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_batch code"
+				valueUnit: null
+				version: 0
+			]
+			modifiedBy: null
+			modifiedDate: null
+			recordedBy: "userName"
+			recordedDate: 1375141474000
+			version: 0
+			comments: null
+		,
+			comments: null
 			id: 11
 			ignored: false
 			lsKind: "experiment metadata"
@@ -976,6 +1090,37 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
+				clobValue: 'fred={  positiveControl: {    batchCode: "CMPD-12345678-01",    concentratation: 10,    concentrationUnits: "uM"  },  negativeControl: {    batchCode: "CMPD-87654321-01",    concentratation: 1,    concentrationUnits: "uM"  },  vehicleControl: {    batchCode: "CMPD-00000001-01",    concentratation: null,    concentrationUnits: null  },  transformationRule: "(Max-Min)/Min",  normalizationRule: "Plate Order",  hitEfficacyThreshold: null,  hitSDThreshold: 5.0}'
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 333
+				ignored: false
+				lsKind: "data analysis parameters"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_data analysis parameters"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
 				clobValue: null
 				codeValue: null
 				comments: null
@@ -1155,6 +1300,33 @@
 				valueOperator: null
 				lsType: "stringValue"
 				lsTypeAndKind: "stringValue_description"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: "project1"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 904699999
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: "long description goes here"
+				uncertainty: null
+				urlValue: null
+				lsKind: "project"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_project"
 				valueUnit: null
 				version: 0
 			]
@@ -1357,6 +1529,33 @@
 				unitType: null
 				unitTypeAndKind: "null_null"
 				urlValue: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: "project1"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 904699999
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: "long description goes here"
+				uncertainty: null
+				urlValue: null
+				lsKind: "project"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_project"
+				valueUnit: null
 				version: 0
 			,
 				clobValue: null

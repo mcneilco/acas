@@ -161,13 +161,13 @@
             return expect(this.es.get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
           });
           it("state should have populated value", function() {
-            return expect(this.es.get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
+            return expect(this.es.get('lsValues').at(0).get('lsKind')).toEqual("control type");
           });
           it("should return requested value", function() {
             var values;
-            values = this.es.getValuesByTypeAndKind("stringValue", "notebook");
+            values = this.es.getValuesByTypeAndKind("stringValue", "control type");
             expect(values.length).toEqual(1);
-            return expect(values[0].get('stringValue')).toEqual("911");
+            return expect(values[0].get('stringValue')).toEqual("negative control");
           });
           return it("should trigger change when value changed in state", function() {
             runs(function() {
@@ -209,7 +209,7 @@
             return expect(this.esl.at(0).get('lsValues').length).toEqual(window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length);
           });
           return it("first state should have populated value", function() {
-            return expect(this.esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual("notebook page");
+            return expect(this.esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual("control type");
           });
         });
         describe("Get states by type and kind", function() {

@@ -56,7 +56,7 @@
             return expect(this.prot.get('lsStates').at(0).get('lsKind')).toEqual("experiment controls");
           });
           return it("states should have values", function() {
-            return expect(this.prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual("control type");
+            return expect(this.prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual("data analysis parameters");
           });
         });
       });

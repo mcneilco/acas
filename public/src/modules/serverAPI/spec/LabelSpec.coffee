@@ -115,11 +115,11 @@ describe "Label module testing", ->
 				it "state should have values", ->
 					expect(@es.get('lsValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length
 				it "state should have populated value", ->
-					expect(@es.get('lsValues').at(0).get('lsKind')).toEqual "notebook page"
+					expect(@es.get('lsValues').at(0).get('lsKind')).toEqual "control type"
 				it "should return requested value", ->
-					values = @es.getValuesByTypeAndKind("stringValue", "notebook")
+					values = @es.getValuesByTypeAndKind("stringValue", "control type")
 					expect(values.length).toEqual 1
-					expect(values[0].get('stringValue')).toEqual "911"
+					expect(values[0].get('stringValue')).toEqual "negative control"
 				it "should trigger change when value changed in state", ->
 					runs ->
 						@stateChanged = false
@@ -146,7 +146,7 @@ describe "Label module testing", ->
 				it "states should have values", ->
 					expect(@esl.at(0).get('lsValues').length).toEqual window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0].lsValues.length
 				it "first state should have populated value", ->
-					expect(@esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual "notebook page"
+					expect(@esl.at(0).get('lsValues').at(0).get('lsKind')).toEqual "control type"
 			describe "Get states by type and kind", ->
 				it "should return requested state", ->
 					values = @esl.getStatesByTypeAndKind "metadata", "experiment metadata"

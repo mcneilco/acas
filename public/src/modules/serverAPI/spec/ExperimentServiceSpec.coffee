@@ -13,7 +13,7 @@ describe 'Experiment CRUD testing', ->
 			self = @
 			$.ajax
 				type: 'GET'
-				url: "api/experiments/codename/PROT-00000124"
+				url: "api/experiments/codename/EXPT-00000124"
 				data:
 					testMode: true
 				success: (json) ->
@@ -24,6 +24,26 @@ describe 'Experiment CRUD testing', ->
 				dataType: 'json'
 
 		it 'should return a experiment stub', ->
+			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+			runs ->
+				expect(@serviceReturn[0].codeName).toEqual "EXPT-00000046"
+
+	describe 'when fetching Experiment stubs by ptotocol code', ->
+		beforeEach ->
+			self = @
+			$.ajax
+				type: 'GET'
+				url: "api/experiments/protocolCodename/PROT-00000005"
+				data:
+					testMode: true
+				success: (json) ->
+					self.serviceReturn = json
+				error: (err) ->
+					console.log 'got ajax error'
+					self.serviceReturn = null
+				dataType: 'json'
+
+		it 'should return an array of experiment stubs', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn[0].codeName).toEqual "EXPT-00000046"
@@ -84,3 +104,4 @@ describe 'Experiment CRUD testing', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn.id).not.toBeNull()
+

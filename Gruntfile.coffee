@@ -67,7 +67,7 @@ module.exports = (grunt) ->
 
 		watch:
 			coffee:
-				files: 'public/src/modules/**/*.coffee'
+				files: 'public/src/modules/**/src/client/*.coffee'
 				tasks: 'coffee:app'
 
 			compileSpec:

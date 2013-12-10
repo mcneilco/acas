@@ -123,6 +123,8 @@ class window.StateList extends Backbone.Collection
 				lsType: sType
 				lsKind: sKind
 			@.add mState
+			mState.on 'change', =>
+				@trigger('change')
 		return mState
 
 	getOrCreateValueByTypeAndKind: (sType, sKind, vType, vKind) ->
@@ -134,6 +136,8 @@ class window.StateList extends Backbone.Collection
 				lsType: vType
 				lsKind: vKind
 			metaState.get('lsValues').add descVal
+			descVal.on 'change', =>
+				@trigger('change')
 		return descVal
 
 

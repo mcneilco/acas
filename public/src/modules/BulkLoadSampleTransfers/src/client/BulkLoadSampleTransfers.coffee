@@ -1,4 +1,3 @@
-
 class window.BulkLoadSampleTransfersController extends BasicFileValidateAndSaveController
 
 	initialize: ->
