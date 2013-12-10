@@ -40,8 +40,9 @@
 # Stopped for transport
 
 runMain <- function(fileName,dryRun=TRUE,recordedBy) {
-  require('rcdk')
-  require('plyr')
+  library('rcdk')
+  library('plyr')
+  library('iterators')
   
   testMode <- TRUE
   
