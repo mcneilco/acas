@@ -4,6 +4,7 @@ runPrimaryAnalysis <- function(request) {
 	transactionId = NULL
 	request <- as.list(request)
 	fileToParse <- request$fileToParse
+	analysisParameters <- request$analysisParameters
 	cat (request$dryRun)
 	dryRun <- request$dryRun
 	if (regexpr("with_error", fileToParse)>0)  {

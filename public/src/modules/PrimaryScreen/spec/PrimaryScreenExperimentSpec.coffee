@@ -30,16 +30,24 @@ describe "Primary Screen Experiment module testing", ->
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
 					expect(@pse).toBeDefined()
-				it 'Should be able to get analysis parameters', ->
-					expect(@pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy()
-				it 'Should parse analysis parameters', ->
-					expect(@pse.getAnalysisParameters().get('hitSDThreshold')).toEqual 5
-				it 'Should parse pos control into backbone models', ->
-					expect(@pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual "CMPD-12345678-01"
-				it 'Should parse neg control into backbone models', ->
-					expect(@pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual "CMPD-87654321-01"
-				it 'Should parse veh control into backbone models', ->
-					expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
+			describe "special getters", ->
+				describe "analysis parameters", ->
+					it 'Should be able to get analysis parameters', ->
+						expect(@pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy()
+						console.log @pse.getAnalysisParameters()
+					it 'Should parse analysis parameters', ->
+						expect(@pse.getAnalysisParameters().get('hitSDThreshold')).toEqual 5
+					it 'Should parse pos control into backbone models', ->
+						expect(@pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual "CMPD-12345678-01"
+					it 'Should parse neg control into backbone models', ->
+						expect(@pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual "CMPD-87654321-01"
+					it 'Should parse veh control into backbone models', ->
+						expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
+				describe "others", ->
+					it "should be able to get the analysis status", ->
+						expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
+					it "should be able to get the analysis result html", ->
+						expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->
@@ -127,14 +135,11 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psapc.$('.bv_hitEfficacyThreshold').attr("disabled")).toEqual "disabled"
 					expect(@psapc.$('.bv_hitSDThreshold').attr("disabled")).toBeUndefined()
 
-
-
-
-	xdescribe "Primary Screen Experiment Controller testing", ->
+	describe "Primary Screen Experiment Controller testing", ->
 		describe "basic plumbing checks with new experiment", ->
 			beforeEach ->
 				@psec = new PrimaryScreenExperimentController
-					model: new Experiment()
+					model: new PrimaryScreenExperiment()
 					el: $('#fixture')
 				@psec.render()
 			describe "Basic loading", ->
@@ -145,43 +150,14 @@ describe "Primary Screen Experiment module testing", ->
 				it "Should load a base experiment controller", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
-					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_posControlBatch').length).toNotEqual 0
+					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual 0
 				it "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual 0
-			describe "saving to server", ->
-				beforeEach ->
-					waitsFor =>
-						@psec.$('.bv_protocolCode option').length > 0 && @psec.$('.bv_projectCode option').length > 0
-					, 1000
-					runs =>
-						@psec.$('.bv_recordedBy').val("jmcneil")
-						@psec.$('.bv_recordedBy').change()
-						@psec.$('.bv_shortDescription').val(" New short description   ")
-						@psec.$('.bv_shortDescription').change()
-						@psec.$('.bv_description').val(" New long description   ")
-						@psec.$('.bv_description').change()
-						@psec.$('.bv_experimentName').val(" Updated experiment name   ")
-						@psec.$('.bv_experimentName').change()
-						@psec.$('.bv_recordedDate').val(" 2013-3-16   ")
-						@psec.$('.bv_recordedDate').change()
-						@psec.$('.bv_protocolCode').val("PROT-00000001")
-						@psec.$('.bv_protocolCode').change()
-					waits(500)
-					runs =>
-						@psec.$('.bv_useProtocolParameters').click()
-						# must set notebook and project after copying protocol params because those are rest
-						@psec.$('.bv_projectCode').val("project1")
-						@psec.$('.bv_projectCode').change()
-						@psec.$('.bv_notebook').val("my notebook")
-						@psec.$('.bv_notebook').change()
-						@psec.$('.bv_completionDate').val(" 2013-3-16   ")
-						@psec.$('.bv_completionDate').change()
-					waits(200)
 
 	describe "Primary Screen Analysis Controller testing", ->
 		describe "basic plumbing checks with experiment copied from template", ->
 			beforeEach ->
-				@exp = new Experiment()
+				@exp = new PrimaryScreenExperiment()
 				@exp.copyProtocolAttributes new Protocol(window.protocolServiceTestJSON.fullSavedProtocol)
 				@psac = new PrimaryScreenAnalysisController
 					model: @exp
@@ -192,13 +168,20 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psac).toBeDefined
 				it "Should load the template", ->
 					expect(@psac.$('.bv_analysisStatus').length).toNotEqual 0
+			describe "display logic", ->
+				it "should show analysis status not started becuase this is a new experiment", ->
+					expect(@psac.$('.bv_analysisStatus').html()).toEqual "not started"
+				it "should not show analysis results becuase this is a new experiment", ->
+					expect(@psac.$('.bv_analysisResultsHTML').html()).toEqual ""
 
 
 
 	describe "Upload and Run Primary Analysis Controller testing", ->
 		beforeEach ->
+			@exp = new PrimaryScreenExperiment()
 			@uarpac = new UploadAndRunPrimaryAnalsysisController
 				el: $('#fixture')
+				paramsFromExperiment:	@exp.getAnalysisParameters()
 			@uarpac.render()
 
 		describe "Basic loading", ->
@@ -211,3 +194,5 @@ describe "Primary Screen Experiment module testing", ->
 
 
 #TODO add agonist field
+#TODO analysis parameter validation
+# change eval of analaysis params to $.parseJSON

@@ -1,7 +1,17 @@
 /*
-This service runs a primary data analysis. The data is provided in a directory containing one or more data files. There should be no extraneous files not required for data analysis in this source directory. For example, the FLIPR will make one file for the max values for each plate, and another file for the min values. If multiple plates are to be analyzed, there would be multiple files. The way the files should be interpreted is determined by the dataSource parameter of the PrimaryAnalysisProtocol
+This service runs a primary data analysis.
+  The data is provided in a directory containing one or more data files.
+  There should be no extraneous files not required for data analysis in this source directory.
+  For example, the FLIPR will make one file for the max values for each plate, and another file for the min values
+  If multiple plates are to be analyzed, there would be multiple files.
+  The way the files should be interpreted is determined by the dataSource parameter of the PrimaryAnalysisProtocol
 
-The raw data and results are stored in the database. Additionally, a PDF is generated summarizing the analysis in graphs and tables. There is also csv result file containing the raw data, batch number, transformed data, well types, and well flags
+  The raw data and results are stored in the database.
+  Additionally, a PDF is generated summarizing the analysis in graphs and tables.
+  There is also csv result file containing the raw data, batch number, transformed data, well types, and well flags
+	Finally, analysis parameters need to be saved as a CLOB value
+  state type: "metadata", state kind: "experiment metadata"
+  value type: "clobValue", value kind:"data analysis parameters"
 */
 
 
@@ -11,6 +21,7 @@ The raw data and results are stored in the database. Additionally, a PDF is gene
   goodExampleData = {
     primaryAnalysisExperimentId: 332134,
     fileToParse: "/var/www/rScripts/specFiles/primaryAnalysis/GoodFLIPRMinMaxSet1/rawData.zip",
+    analysisParameters: window.primaryScreenTestJSON.primaryScreenAnalysisParameters,
     user: 'jmcneil',
     dryRun: true
   };
@@ -37,7 +48,7 @@ The raw data and results are stored in the database. Additionally, a PDF is gene
     transactionId: null,
     results: {
       fileToParse: "path/to/file",
-      htmlSummary: "Error: Can't read dat file",
+      htmlSummary: "Error: Can't read data file",
       dryRun: true
     },
     hasError: true,

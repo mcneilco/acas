@@ -166,7 +166,7 @@
           it("should return requested value", function() {
             var values;
             values = this.es.getValuesByTypeAndKind("stringValue", "control type");
-            expect(values.length).toEqual(1);
+            expect(values.length).toEqual(2);
             return expect(values[0].get('stringValue')).toEqual("negative control");
           });
           return it("should trigger change when value changed in state", function() {
