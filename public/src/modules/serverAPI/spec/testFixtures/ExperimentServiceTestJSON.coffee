@@ -996,6 +996,34 @@
 				comments: null
 				dateValue: null
 				fileValue: null
+				id: 80471333
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: "negative control"
+				uncertainty: null
+				urlValue: null
+				lsKind: "control type"
+				valueOperator: null
+				lsType: "stringValue"
+				lsTypeAndKind: "stringValue_control type"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
 				id: 80471
 				ignored: false
 				lsTransaction:
@@ -1090,7 +1118,7 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
-				clobValue: 'fred={  positiveControl: {    batchCode: "CMPD-12345678-01",    concentratation: 10,    concentrationUnits: "uM"  },  negativeControl: {    batchCode: "CMPD-87654321-01",    concentratation: 1,    concentrationUnits: "uM"  },  vehicleControl: {    batchCode: "CMPD-00000001-01",    concentratation: null,    concentrationUnits: null  },  transformationRule: "(Max-Min)/Min",  normalizationRule: "Plate Order",  hitEfficacyThreshold: null,  hitSDThreshold: 5.0}'
+				clobValue: 'fred={  positiveControl: {    batchCode: "CMPD-12345678-01",    concentration: 10,    conentrationUnits: "uM"  },  negativeControl: {    batchCode: "CMPD-87654321-01",    concentration: 1,    conentrationUnits: "uM"  },  agonistControl: {    batchCode: "CMPD-87654399-01",    concentration: 2,    conentrationUnits: "uM"  },  vehicleControl: {    batchCode: "CMPD-00000001-01",    concentration: null,    conentrationUnits: null  },  transformationRule: "(maximum-minimum)/minimum",  normalizationRule: "plate order",  hitEfficacyThreshold: 42,  hitSDThreshold: 5.0,  thresholdType: "sd"}'
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -1144,6 +1172,37 @@
 				recordedDate: 1375889487000
 				sigFigs: null
 				stringValue: "12"
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 33
+				ignored: false
+				lsKind: "analysis status"
+				lsTransaction: 2
+				lsType: "stringValue"
+				lsTypeAndKind: "numericValue_notebook page"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: "not started"
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null

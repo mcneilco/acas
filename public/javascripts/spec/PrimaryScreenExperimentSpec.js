@@ -36,24 +36,37 @@
         beforeEach(function() {
           return this.pse = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
         });
-        return describe("Existence and Defaults", function() {
-          it("should be defined", function() {
+        describe("Existence and Defaults", function() {
+          return it("should be defined", function() {
             return expect(this.pse).toBeDefined();
           });
-          it('Should be able to get analysis parameters', function() {
-            return expect(this.pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy();
+        });
+        return describe("special getters", function() {
+          describe("analysis parameters", function() {
+            it('Should be able to get analysis parameters', function() {
+              expect(this.pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy();
+              return console.log(this.pse.getAnalysisParameters());
+            });
+            it('Should parse analysis parameters', function() {
+              return expect(this.pse.getAnalysisParameters().get('hitSDThreshold')).toEqual(5);
+            });
+            it('Should parse pos control into backbone models', function() {
+              return expect(this.pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual("CMPD-12345678-01");
+            });
+            it('Should parse neg control into backbone models', function() {
+              return expect(this.pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual("CMPD-87654321-01");
+            });
+            return it('Should parse veh control into backbone models', function() {
+              return expect(this.pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual("CMPD-00000001-01");
+            });
           });
-          it('Should parse analysis parameters', function() {
-            return expect(this.pse.getAnalysisParameters().get('hitSDThreshold')).toEqual(5);
-          });
-          it('Should parse pos control into backbone models', function() {
-            return expect(this.pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual("CMPD-12345678-01");
-          });
-          it('Should parse neg control into backbone models', function() {
-            return expect(this.pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual("CMPD-87654321-01");
-          });
-          return it('Should parse veh control into backbone models', function() {
-            return expect(this.pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual("CMPD-00000001-01");
+          return describe("others", function() {
+            it("should be able to get the analysis status", function() {
+              return expect(this.pse.getAnalysisStatus().get('stringValue')).toEqual("not started");
+            });
+            return it("should be able to get the analysis result html", function() {
+              return expect(this.pse.getAnalysisResultHTML().get('clobValue')).toEqual("<p>Analysis not yet completed</p>");
+            });
           });
         });
       });
@@ -176,16 +189,16 @@
         });
       });
     });
-    xdescribe("Primary Screen Experiment Controller testing", function() {
+    describe("Primary Screen Experiment Controller testing", function() {
       return describe("basic plumbing checks with new experiment", function() {
         beforeEach(function() {
           this.psec = new PrimaryScreenExperimentController({
-            model: new Experiment(),
+            model: new PrimaryScreenExperiment(),
             el: $('#fixture')
           });
           return this.psec.render();
         });
-        describe("Basic loading", function() {
+        return describe("Basic loading", function() {
           it("Class should exist", function() {
             return expect(this.psec).toBeDefined();
           });
@@ -196,43 +209,10 @@
             return expect(this.psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual(0);
           });
           it("Should load an analysis controller", function() {
-            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_posControlBatch').length).toNotEqual(0);
+            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual(0);
           });
           return it("Should load a dose response controller", function() {
             return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual(0);
-          });
-        });
-        return describe("saving to server", function() {
-          return beforeEach(function() {
-            var _this = this;
-            waitsFor(function() {
-              return _this.psec.$('.bv_protocolCode option').length > 0 && _this.psec.$('.bv_projectCode option').length > 0;
-            }, 1000);
-            runs(function() {
-              _this.psec.$('.bv_recordedBy').val("jmcneil");
-              _this.psec.$('.bv_recordedBy').change();
-              _this.psec.$('.bv_shortDescription').val(" New short description   ");
-              _this.psec.$('.bv_shortDescription').change();
-              _this.psec.$('.bv_description').val(" New long description   ");
-              _this.psec.$('.bv_description').change();
-              _this.psec.$('.bv_experimentName').val(" Updated experiment name   ");
-              _this.psec.$('.bv_experimentName').change();
-              _this.psec.$('.bv_recordedDate').val(" 2013-3-16   ");
-              _this.psec.$('.bv_recordedDate').change();
-              _this.psec.$('.bv_protocolCode').val("PROT-00000001");
-              return _this.psec.$('.bv_protocolCode').change();
-            });
-            waits(500);
-            runs(function() {
-              _this.psec.$('.bv_useProtocolParameters').click();
-              _this.psec.$('.bv_projectCode').val("project1");
-              _this.psec.$('.bv_projectCode').change();
-              _this.psec.$('.bv_notebook').val("my notebook");
-              _this.psec.$('.bv_notebook').change();
-              _this.psec.$('.bv_completionDate').val(" 2013-3-16   ");
-              return _this.psec.$('.bv_completionDate').change();
-            });
-            return waits(200);
           });
         });
       });
@@ -240,7 +220,7 @@
     describe("Primary Screen Analysis Controller testing", function() {
       return describe("basic plumbing checks with experiment copied from template", function() {
         beforeEach(function() {
-          this.exp = new Experiment();
+          this.exp = new PrimaryScreenExperiment();
           this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
           this.psac = new PrimaryScreenAnalysisController({
             model: this.exp,
@@ -248,7 +228,7 @@
           });
           return this.psac.render();
         });
-        return describe("Basic loading", function() {
+        describe("Basic loading", function() {
           it("Class should exist", function() {
             return expect(this.psac).toBeDefined;
           });
@@ -256,12 +236,22 @@
             return expect(this.psac.$('.bv_analysisStatus').length).toNotEqual(0);
           });
         });
+        return describe("display logic", function() {
+          it("should show analysis status not started becuase this is a new experiment", function() {
+            return expect(this.psac.$('.bv_analysisStatus').html()).toEqual("not started");
+          });
+          return it("should not show analysis results becuase this is a new experiment", function() {
+            return expect(this.psac.$('.bv_analysisResultsHTML').html()).toEqual("");
+          });
+        });
       });
     });
     return describe("Upload and Run Primary Analysis Controller testing", function() {
       beforeEach(function() {
+        this.exp = new PrimaryScreenExperiment();
         this.uarpac = new UploadAndRunPrimaryAnalsysisController({
-          el: $('#fixture')
+          el: $('#fixture'),
+          paramsFromExperiment: this.exp.getAnalysisParameters()
         });
         return this.uarpac.render();
       });

@@ -118,7 +118,7 @@ describe "Label module testing", ->
 					expect(@es.get('lsValues').at(0).get('lsKind')).toEqual "control type"
 				it "should return requested value", ->
 					values = @es.getValuesByTypeAndKind("stringValue", "control type")
-					expect(values.length).toEqual 1
+					expect(values.length).toEqual 2
 					expect(values[0].get('stringValue')).toEqual "negative control"
 				it "should trigger change when value changed in state", ->
 					runs ->
