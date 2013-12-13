@@ -13,7 +13,6 @@
     return describe('when instantiated', function() {
       beforeEach(function() {
         var _ref;
-
         this.TestAbstractFormController = (function(_super) {
           __extends(TestAbstractFormController, _super);
 

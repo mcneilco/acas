@@ -71,7 +71,6 @@
         return describe("setBestName functionality", function() {
           return it("should update existing unsaved label when best name changed", function() {
             var oldBestId;
-
             oldBestId = this.ell.pickBestLabel().id;
             this.ell.setBestName(new Label({
               labelText: "new best name",
