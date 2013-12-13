@@ -6,6 +6,7 @@
       <option name="suppressedTasks">
         <set>
           <option value="CoffeeScript" />
+          <option value="Jade" />
         </set>
       </option>
     </inspection_tool>

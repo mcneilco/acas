@@ -1,3 +1,4 @@
+
 requiredScripts = [
 	'/src/lib/jquery.min.js'
 	'/src/lib/json2.js'
@@ -18,13 +19,13 @@ requiredScripts = [
 ]
 
 applicationScripts = [
-	'/src/conf/configurationNode.js'
-	#'/src/conf/configuration.js'
+	'/src/conf/conf.js'
 	# For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
+	'/javascripts/src/AbstractParserFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
 	'/javascripts/src/PickList.js'
 	# For serverAPI module
@@ -60,15 +61,30 @@ applicationScripts = [
 
 exports.index = (req, res) ->
 	#"use strict"
+	config = require '../conf/compiled/conf.js'
 	global.specRunnerTestmode = false
 	scriptsToLoad = requiredScripts.concat(applicationScripts)
+	if config.all.client.require.login
+		loginUserName = req.user.username
+		loginUser = req.user
+	else
+		loginUserName = "nouser"
+		loginUser =
+			id: 0,
+			username: "nouser",
+			email: "nouser@nowhere.com",
+			firstName: "no",
+			lastName: "user"
+
 	return res.render 'index',
 		title: "ACAS Home"
 		scripts: scriptsToLoad
 		appParams:
-			loginUserName: if req.user? then req.user.username else ""
-			loginUser: if req.user? then req.user else ""
+			loginUserName: loginUserName
+			loginUser: loginUser
 			testMode: false
+			deployMode: global.deployMode
+#			deployMode: "Test"
 
 
 exports.specRunner = (req, res) ->
@@ -129,8 +145,6 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/BulkloadSampleTransfersServerSpec.js'
 		#For ServerUtility testing module
 		'javascripts/spec/ServerUtilityFunctionsSpec.js'
-		#For Login module
-		'javascripts/spec/AuthenticationServiceSpec.js'
 	]
 
 	scriptsToLoad = requiredScripts.concat(jasmineScripts, specScripts)
@@ -149,6 +163,7 @@ exports.specRunner = (req, res) ->
 				lastName: "McNeil"
 			testMode: true
 			liveServiceTest: false
+			deployMode: global.deployMode
 	})
 
 exports.liveServiceSpecRunner = (req, res) ->

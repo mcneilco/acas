@@ -25,14 +25,32 @@ describe "Module Menus Controller testing", ->
 			expect($('.bv_modLaunchMenuWrapper')).not.toBeNull()
 			expect($('.bv_mainModuleWrapper')).not.toBeNull()
 		it "should show the user first name", ->
-			expect(@mmc.$('.bv_loginUserFirstName').html()).toContain 'John'
+			if window.conf.require.login
+				expect(@mmc.$('.bv_loginUserFirstName').html()).toContain 'John'
 		it "should show the user last name", ->
-			expect(@mmc.$('.bv_loginUserLastName').html()).toContain 'McNeil'
+			if window.conf.require.login
+				expect(@mmc.$('.bv_loginUserLastName').html()).toContain 'McNeil'
 		it "should show a logout link", ->
-			expect(@mmc.$('.bv_logout').attr('href')).toContain 'logout'
+			if window.conf.require.login
+				expect(@mmc.$('.bv_logout').attr('href')).toContain 'logout'
 
 	describe "Sub Controllers load after rendering", ->
 		it "Should have 4 menu items", ->
 			expect(@mmc.$('.bv_modLaunchMenuWrapper li').length).toEqual 4
 		it "Should create and make divs for all the non header ModuleLauncherControllers", ->
 			expect(@mmc.$('.bv_mainModuleWrapper div.bv_moduleContent').length).toEqual 3
+
+	describe "Deploy mode display", ->
+		beforeEach ->
+			@mmc = new ModuleMenusController
+				el: $('#fixture')
+				menuListJSON: @testMenuItems # should be in a global config file
+		it "should show the deploy mode if set", ->
+			window.AppLaunchParams.deployMode = "Stage"
+			@mmc.render()
+			expect(@mmc.$('.bv_deployMode h1').html()).toEqual "STAGE"
+		it "should not show the deploy mode if set to Prod", ->
+			window.AppLaunchParams.deployMode = "Prod"
+			@mmc.render()
+			expect(@mmc.$('.bv_deployMode h1').html()).toEqual ""
+

@@ -21,7 +21,7 @@ describe 'PreferredBatchId Service testing', ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
 
-		serviceType = window.configurationNode.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType
+		serviceType = window.conf.service.external.preferred.batchid.type
 		if not window.AppLaunchParams.liveServiceTest
 			# Test stub service
 			@requestData =

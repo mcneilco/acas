@@ -19,8 +19,8 @@ exports.protocolByCodename = (req, resp) ->
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify protocolServiceTestJSON.stubSavedProtocol
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"protocols/codename/"+req.params.code
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -31,8 +31,8 @@ exports.protocolById = (req, resp) ->
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify protocolServiceTestJSON.fullSavedProtocol
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"protocols/"+req.params.id
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/"+req.params.id
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -41,8 +41,8 @@ exports.postProtocol = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullSavedProtocol
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"protocols"
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocols"
 		request = require 'request'
 		request(
 			method: 'POST'
@@ -65,8 +65,8 @@ exports.putProtocol = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullSavedProtocol
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"protocols"
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocols"
 		request = require 'request'
 		request(
 			method: 'PUT'
@@ -89,8 +89,8 @@ exports.protocolLabels = (req, resp) ->
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify protocolServiceTestJSON.protocolLabels
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"protocollabels"
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocollabels"
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -98,15 +98,18 @@ exports.protocolCodeList = (req, resp) ->
 	console.log req.params
 	if req.params.str?
 		shouldFilter = true
-		filterString = req.params.str
+		filterString = req.params.str.toUpperCase()
+	else
+		shouldFilter = false
+
 	translateToCodes = (labels) ->
 		protCodes = []
 		for label in labels
 			if shouldFilter
-				match = label.labelText.indexOf(filterString) > -1
+				match = label.labelText.toUpperCase().indexOf(filterString) > -1
 			else
 				match = true
-			if !label.ignored and label.lsType=="name" and match
+			if !label.ignored and !label.protocol.ignored and label.lsType=="name" and match
 				protCodes.push
 					code: label.protocol.codeName
 					name: label.labelText
@@ -119,8 +122,10 @@ exports.protocolCodeList = (req, resp) ->
 		resp.json translateToCodes(labels)
 
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"protocollabels"
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocollabels/codetable"
+		if shouldFilter
+			baseurl += "/?protocolName="+filterString
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -128,7 +133,7 @@ exports.protocolCodeList = (req, resp) ->
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				resp.json translateToCodes(json)
+				resp.json json
 			else
 				console.log 'got ajax error trying to get protocol labels'
 				console.log error

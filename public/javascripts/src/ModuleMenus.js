@@ -56,11 +56,16 @@
     ModuleMenusController.prototype.render = function() {
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
-      if (window.configurationNode.serverConfigurationParams.configuration.requireLogin) {
+      if (window.conf.require.login) {
         this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
         this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
       } else {
         this.$('.bv_userInfo').hide();
+      }
+      if (window.AppLaunchParams.deployMode != null) {
+        if (window.AppLaunchParams.deployMode.toUpperCase() !== "PROD") {
+          this.$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase());
+        }
       }
       return this;
     };

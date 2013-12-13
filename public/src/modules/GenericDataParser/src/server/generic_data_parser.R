@@ -124,7 +124,7 @@ validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryForma
   
   returnDate <- ""
   
-  if (inputValue == "") {return (NA)}
+  if (is.na(inputValue) | inputValue == "") {return (NA)}
   
   # Function to attempt to coerce the date into a given format
   coerceToDate <- function(format, inputValue) {
@@ -293,12 +293,13 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   }
   
   expectedDataFormat <- data.frame(
-    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", "Page","Assay Date"),
-    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
-    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE)
+    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", 
+                "Short Description", "Experiment Keywords", "Page","Assay Date"),
+    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
   )
   
-  if (!is.null(configList$includeProject) && configList$includeProject == "TRUE") {
+  if (!is.null(configList$client.include.project) && configList$client.include.project) {
     expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
   }
   if (length(formatSettings) > 0) {
@@ -430,14 +431,13 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, serverPath, curveNames, testMode = FALSE, replaceFakeCorpBatchId="") {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="") {
   # Valides the calculated results (for now, this only validates the Corporate Batch Ids)
   #
   # Args:
   #	  calculatedResuluts:	      A "data.frame" of the calculated results
   #   testMode:                 A boolean
   #   dryRun:                   A boolean
-  #   serverPath:               Path to ACAS roo services
   #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #   curveNames:               A character vector of curveNames that will be needed as extra valueKinds
   #
@@ -478,7 +478,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, serverPath, cur
   neededValueKinds <- c(calculatedResults$"Result Type", curveNames)
   neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
   
-  validateValueKinds(neededValueKinds, neededValueKindTypes, serverPath, dryRun)
+  validateValueKinds(neededValueKinds, neededValueKindTypes, dryRun)
   
   # Return the validated results
   return(calculatedResults)
@@ -494,6 +494,7 @@ getHiddenColumns <- function(classRow) {
   
   # Pull out info about hidden columns
   dataShown <- gsub(".*\\((.*)\\).*||.*", "\\1",classRow)
+  dataShown[is.na(dataShown)] <- ""
   hiddenColumns <- grepl("hidden",dataShown)
   shownColumns <- grepl("shown",dataShown)
   defaultColumns <- dataShown %in% ""
@@ -541,10 +542,10 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   classRow[clobColumns] <- "Clob"
   
   # Check if the datatypes are entered correctly
-  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob",""))
+  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob","", NA))
   
   # Let the user know about empty datatypes
-  emptyClasses <- which(classRow=="" | classRow==" ")
+  emptyClasses <- which(is.na(classRow) | trim(classRow)=="")
   if(length(emptyClasses)>0) {
     if(length(emptyClasses)==1) {
       warning(paste0("Column ", getExcelColumnFromNumber(emptyClasses), " (" , LabelRow[emptyClasses], ") does not have a Datatype entered. ",
@@ -561,7 +562,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
                     "and", getExcelColumnFromNumber(tail(emptyClasses,n=1)),
                     "as numbers, but it may not work very well. Please enter 'Number','Text', or 'Date'."))
     }
-    classRow[classRow==""] <- "Number"
+    classRow[is.na(classRow) | classRow==""] <- "Number"
   }
   
   if(length(badClasses)>0) {
@@ -577,7 +578,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
       classRow[i][grep(pattern = "double", classRow[i], ignore.case = TRUE)] <- "Number"
       classRow[i][grep(pattern = "date", classRow[i], ignore.case = TRUE)] <- "Date"
       classRow[i][grep(pattern = "clob", classRow[i], ignore.case = TRUE)] <- "Clob"
-      if (classRow[i] != oldClassRow[i]) {
+      if (classRow[i] != oldClassRow[i] & !is.na(LabelRow[i])) {
         warning(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
                        "' as a datatype and interpreted it as '", classRow[i], 
                        "'. Please enter 'Number','Text', or 'Date'."))
@@ -597,13 +598,12 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   # Return classRow
   return(classRow)
 }
-validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPath, dryRun) {
+validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   # Checks that column headers are valid valueKinds (or creates them if they are new)
   #
   # Args:
   #   neededValueKinds:       A character vector listed column headers
   #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds
-  #   serverPath:             The path to the acas server
   #
   # Returns:
   #	  NULL
@@ -618,7 +618,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
     stop(paste0(sqliz(internalReservedWords[usedReservedWords]), " is reserved and cannot be used as a column header."))
   }
   
-  currentValueKindsList <- fromJSON(getURL(paste0(serverPath, "valuekinds")))
+  currentValueKindsList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds")))
   if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
@@ -662,7 +662,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
     if (!dryRun) {
       # Create the new valueKinds, using the correct valueType
       # TODO: also check that valueKinds have the correct valueType when being loaded a second time
-      valueTypesList <- fromJSON(getURL(paste0(serverPath, "valuetypes")))
+      valueTypesList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuetypes")))
       valueTypes <- sapply(valueTypesList, getElement, "typeName")
       valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
       valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob"))]
@@ -675,7 +675,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, serverPat
                                     SIMPLIFY = F, USE.NAMES = F)
       tryCatch({
         response <- getURL(
-          paste0(serverPath, "valuekinds/jsonArray"),
+          paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds/jsonArray"),
           customrequest='POST',
           httpheader=c('Content-Type'='application/json'),
           postfields=toJSON(newValueKindsUpload))
@@ -692,23 +692,25 @@ getExcelColumnFromNumber <- function(number) {
   #
   #
   # Args:
-  #    number:    A numeric of the column number
+  #    number:    A numeric vector of the column numbers
   #
   # Returns:
   #   An excel-style set of column names (i.e. "B" or "AR")
   
-  if (number < 1) {
+  if (any(number < 1)) {
     warning(paste("An invalid column number was attempted to be turned into a letter:",number))
     return("none")
   }
   
-  divisionResult <- floor((number-1)/26)
-  remainder <- (number-1)%%26
-  if (divisionResult > 0) {
-    return(paste0(getExcelColumnFromNumber(divisionResult),LETTERS[remainder+1]))
-  } else {
-    return(LETTERS[remainder+1])
-  }
+  return(vapply(X=number, FUN.VALUE=c(""), FUN=function(number) {
+    divisionResult <- floor((number-1)/26)
+    remainder <- (number-1)%%26
+    if (divisionResult > 0) {
+      return(paste0(getExcelColumnFromNumber(divisionResult),LETTERS[remainder+1]))
+    } else {
+      return(LETTERS[remainder+1])
+    }
+  }))
 }
 extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   # Extracts result types, units, conc, and conc units from a list of strings
@@ -720,9 +722,10 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   #  A data frame containing the Result Type, Units, Conc, and ConcUnits for each item in the result types character vector
   
   require('gdata')
-  
-  if (sum(is.na(resultTypesVector))!=0 || sum(resultTypesVector=="")!=0 || sum(resultTypesVector==" ")!=0) {
-    stop("Some of the column labels in the 'Calculated Results' section are blank. Enter a label for each column.")
+  emptyResultTypes <- is.na(resultTypesVector) | (trim(resultTypesVector) == "")
+  if (any(emptyResultTypes)) {
+    stop(paste0("Column ", paste(getExcelColumnFromNumber(which(emptyResultTypes)), collapse=", "), " has a blank column header. ",
+                "Please enter a column header before reuploading."))
   }
   
   dataColumns <- c()
@@ -888,9 +891,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   # For the results marked as "Text":
   #   Set the Result Desc to the original value
   #   Clear the other categories
-  longResults$"Result Value"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text"))
-  longResults$"Result Operator"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text"))
-  
+  longResults$"Result Value"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
+  longResults$"Result Operator"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
   
   # For the results marked as "Date":
   #   Apply the function validateDate to each entry
@@ -898,11 +900,14 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   if (length(which(longResults$Class=="Date")) > 0) {
     dateTranslation <- lapply(unique(longResults$UnparsedValue[which(longResults$Class=="Date")]), validateDate)
     names(dateTranslation) <- unique(longResults$UnparsedValue[which(longResults$Class=="Date")])
-    longResults$"Result Date"[which(longResults$Class=="Date")] <- dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date")]]
+    longResults$"Result Date"[which(longResults$Class=="Date" & 
+                                      !is.na(longResults$UnparsedValue) &
+                                      longResults$UnparsedValue != "")] <- unlist(dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date" & 
+                                                                                                !is.na(longResults$UnparsedValue))]])
   }
-  longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
-  longResults$"Result Operator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
-  longResults$"Result Desc"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date"))
+  longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
+  longResults$"Result Operator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
+  longResults$"Result Desc"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
   
   # Clean up the data frame to look nice (remove extra columns)
   row.names(longResults) <- 1:nrow(longResults)
@@ -995,6 +1000,14 @@ organizeRawResults <- function(rawResults, calculatedResults) {
   # Get the x and y labels without units
   xLabel <- resultTypes$Type[match(xLabelWithUnit,resultTypes$DataColumn)]
   yLabel <- resultTypes$Type[match(yLabelWithUnit,resultTypes$DataColumn)]
+  
+  # Force them to use Dose and Response (would add a flag later for other similar formats that are not Dose Respose)
+  if (xLabel != "Dose") {
+    errorList <<- c(errorList, "The x Raw Result must be 'Dose' for this format.")
+  }
+  if (yLabel != "Response") {
+    errorList <<- c(errorList, "The y Raw Result must be 'Response' for this format.")
+  }
   
   #Drop Columns that are unnecessary in this context
   resultTypes <- resultTypes[,c("DataColumn","Type","Units")]
@@ -1108,14 +1121,14 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
   }
   
   tryCatch({
-    protocolList <- fromJSON(getURL(paste0(configList$serverPath, "protocols?FindByProtocolName&protocolName=", URLencode(protocolName, reserved = TRUE))))
+    protocolList <- fromJSON(getURL(paste0(configList$client.service.persistence.fullpath, "protocols?FindByProtocolName&protocolName=", URLencode(protocolName, reserved = TRUE))))
   }, error = function(e) {
     stop("There was an error in accessing the protocol. Please contact your system administrator.")
   })
   
   # If no protocol with the given name exists, warn the user
   if (length(protocolList)==0) {
-    allowedCreationFormats <- configList$allowProtocolCreationWithFormats
+    allowedCreationFormats <- configList$server.allow.protocol.creation.formats
     allowedCreationFormats <- unlist(strsplit(allowedCreationFormats, ","))
     if (formFormat %in% allowedCreationFormats || forceProtocolCreation) {
       warning(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
@@ -1126,7 +1139,7 @@ getProtocolByName <- function(protocolName, configList, formFormat) {
     protocol <- NA
   } else {
     # If the protocol does exist, get the full version
-    protocol <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/", protocolList[[1]]$id))))
+    protocol <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "protocols/", protocolList[[1]]$id))))
   }
   return(protocol)
   
@@ -1148,7 +1161,7 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
   require('rjson')
   
   tryCatch({
-    experimentList <- fromJSON(getURL(paste0(configList$serverPath, "experiments?FindByExperimentName&experimentName=", URLencode(experimentName, reserved=TRUE))))
+    experimentList <- fromJSON(getURL(paste0(configList$client.service.persistence.fullpath, "experiments?FindByExperimentName&experimentName=", URLencode(experimentName, reserved=TRUE))))
   }, error = function(e) {
     stop("There was an error checking if the experiment already exists. Please contact your system administrator.")
   })
@@ -1165,7 +1178,7 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
           experimentList <- correctExperiments
         }
       }
-      protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "protocols/", experimentList[[1]]$protocol$id))))
+      protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "protocols/", experimentList[[1]]$protocol$id))))
     }, error = function(e) {
       stop("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
     })
@@ -1255,7 +1268,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                        lsTransaction= lsTransaction)
   }
   if (!is.null(metaData$Page)) {
-    experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "numericValue",
+    experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
                                                                        lsKind = "notebook page",
                                                                        stringValue = metaData$Page[1],
                                                                        lsTransaction= lsTransaction)
@@ -1316,21 +1329,25 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experiment <- createExperiment(lsTransaction = lsTransaction, 
                                  protocol = protocol,
                                  #lsKind = "generic loader",
-                                 shortDescription="experiment created by generic data parser",  
+                                 shortDescription = if(!is.null(metaData$"Short Description"[1])) {
+                                   metaData$"Short Description"[1]
+                                     } else {
+                                   "experiment created by generic data parser"
+                                     },  
                                  recordedBy=recordedBy, 
                                  experimentLabels=experimentLabels,
                                  experimentStates=experimentStates)
   
   # Save the experiment to the server
   experiment <- saveExperiment(experiment)
-  experiment <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/", experiment$id))))
+  experiment <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "experiments/", experiment$id))))
   return(experiment)
 }
 validateProject <- function(projectName, configList) {
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(configList$projectService)
+  projectList <- getURL(paste0(configList$client.host, ":", configList$client.port, configList$client.service.project.path))
   }, error = function(e) {
     stop("The project service did not respond correctly, contact your system administrator")
   })
@@ -1358,7 +1375,7 @@ validateScientist <- function(scientistName, configList) {
   response <- NULL
   username <- "username"
   tryCatch({
-    response <- getURL(URLencode(paste0(configList$nameValidationService, "/", scientistName)))
+    response <- getURL(URLencode(paste0(configList$client.host, ":", configList$client.port, configList$client.service.users.path, "/", scientistName)))
     if (response == "") {
       errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
       return("")
@@ -1379,7 +1396,7 @@ validateScientist <- function(scientistName, configList) {
   
   return(username)
 }
-uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, experiment, fileStartLocation, 
+uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
                               recordedBy, replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning="subject", 
                               includeTreatmentGroupData, inputFormat) {
@@ -1408,12 +1425,13 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
                                                      numberOfLabels=max(subjectData$treatmentGroupID)),
                                        use.names=FALSE)
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$server.service.external.file.type, configList$server.service.external.file.service.url)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(subjectData$"Corporate Batch ID")
-    if (configList$useCustomReportRegistration == "true") {
+    if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
+      # addFileLink should be defined in customFunctions.R
       addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
     }
   }
@@ -1571,7 +1589,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
       #### Analysis Group States =====================================================================
       analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
       if (length(analysisGroupIndices > 0)) {
-        analysisGroupData <- treatmentGroupDataWithBatchCodeRows
+        analysisGroupData <- treatmentGroupData
+        analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices, optionalColumns = "analysisGroupID"))
         if (!is.null(curveNames)) {
           curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, 
                                   valueKind = curveNames, 
@@ -1712,7 +1731,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, serverPath, 
 }
 uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
-                       serverPath,protocol,experiment, fileStartLocation, configList, reportFilePath, 
+                       protocol,experiment, fileStartLocation, configList, reportFilePath, 
                        reportFileSummary, recordedBy, annotationType) {
   # Uploads all the data to the server
   # 
@@ -1750,10 +1769,12 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     treatmentGroupCodeNameNumber <- 1
   }
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$fileServiceType, configList$externalFileService)
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, 
+                                                   configList$server.service.external.file.type, 
+                                                   configList$server.service.external.file.service.url)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(calculatedResults$"Corporate Batch ID")
-    if (configList$useCustomReportRegistration) {
+    if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
       addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
@@ -2012,7 +2033,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   return(NULL)
 }
-runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serverPath,
+runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
                     configList, testMode = FALSE, recordedBy) {
   # This function runs all of the functions within the error handling
@@ -2101,7 +2122,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(calculatedResults,
-                                                 dryRun, serverPath, curveNames, testMode=testMode, 
+                                                 dryRun, curveNames, testMode=testMode, 
                                                  replaceFakeCorpBatchId=replaceFakeCorpBatchId)
   
   # Grab the Raw Results Section
@@ -2154,7 +2175,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
   
   # Delete any old data under the same experiment name (delete and reload)
   if(!dryRun && !newExperiment && errorFree) {
-    if(configList$deleteFilesOnReload == "true") {
+    if(configList$server.delete.files.on.reload == "true") {
       deleteSourceFile(experiment, configList)
       deleteAnnotation(experiment, configList)
     }
@@ -2176,20 +2197,36 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL, serve
     reportFileSummary <- paste0(validatedMetaData$'Protocol Name', " - ", validatedMetaData$'Experiment Name')
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
-                        serverPath, experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
+                        experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
                         stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
                         replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning, includeTreatmentGroupData, inputFormat)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
-                 xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,serverPath,protocol,experiment, 
+                 xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
                  reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType)
     }
   }
   
-  if (!is.null(configList$resultViewerProtocolPrefix)) {
-    viewerLink <- paste0(configList$resultViewerProtocolPrefix, URLencode(validatedMetaData$"Protocol Name", reserved=TRUE), 
-                         configList$resultViewerExperimentPrefix, URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
+  # Add name modifier to protocol name for viewer
+  if (is.list(protocol)) {
+    protocolPostfixStates <- protocol$lsStates[lapply(protocol$lsStates, getElement, "lsTypeAndKind") == "metadata_name modifier"]
+  } else {
+    protocolPostfixStates <- list()
+  }
+  if (length(protocolPostfixStates) > 0) {
+    protocolPostfixState <- protocolPostfixStates[[1]]
+    protocolPostfixValues <- protocolPostfixState$lsValues[lapply(protocolPostfixState$lsValues, getElement, "lsTypeAndKind") == "stringValue_postfix"]
+    protocolPostfix <- protocolPostfixValues[[1]]$stringValue
+  } else {
+    protocolPostfix <- ""
+  }
+  
+  if (!is.null(configList$client.service.result.viewer.protocolPrefix)) {
+    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, 
+                         URLencode(paste0(validatedMetaData$"Protocol Name", protocolPostfix), reserved=TRUE), 
+                         configList$client.service.result.viewer.experimentPrefix,
+                         URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
   } else {
     viewerLink <- NULL
   }
@@ -2349,7 +2386,6 @@ parseGenericData <- function(request) {
   
   # Set configList to the applicationSettings (shorter to type)
   configList <- racas::applicationSettings
-  lsServerURL <- configList$serverPath
   
   experiment <- NULL
   
@@ -2362,7 +2398,6 @@ parseGenericData <- function(request) {
   # Run the function and save output (value), errors, and warnings
   loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
                                      reportFilePath = reportFilePath,
-                                     serverPath = lsServerURL,
                                      dryRun = dryRun,
                                      developmentMode = developmentMode,
                                      configList=configList, 
@@ -2375,7 +2410,7 @@ parseGenericData <- function(request) {
     loadResult$value <- NULL
   } else if (sum(class(loadResult$value)=="SQLException")>0) {
     errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
-                                         configList$databaseLocation,configList$serverAddress,configList$databasePort, ":", 
+                                         configList$server.database.host,configList$server.database.port, ":", 
                                          as.character(loadResult$value), ". Please contact your system administrator.")))
     loadResult$value <- NULL
   } else if (sum(class(loadResult$value)=="error")>0 || class(loadResult$value)!="list") {
