@@ -15,7 +15,7 @@ getFormatSettings <- function() {
                          list(entityKind = "subject",
                               stateType = "data",
                               stateKind = "treatment",
-                              valueKinds = c("Condition", "Dose", "Vehicle", "Administration route","Treatment Time"),
+                              valueKinds = c("Condition", "Dose", "Vehicle", "Administration route","Treatment Time", "Retention Interval"),
                               includesOthers = FALSE,
                               includesCorpName = TRUE),
                          list(entityKind = "subject",
@@ -90,7 +90,7 @@ getFormatSettings <- function() {
                               stateType = "data",
                               stateKind = "calculated data",
                               valueKinds = c("PO Dose", "Time", "Plasma Conc.", "CSF Conc.", 
-                                             "Brain Conc.", "B/P Ratio", "Formulation", "Species"),
+                                             "Brain Conc.", "B/P Ratio", "Formulation", "Species", "SC Dose"),
                               includesOthers = FALSE,
                               includesCorpName = TRUE),
                          list(entityKind = "container",
@@ -116,7 +116,7 @@ getFormatSettings <- function() {
                               stateType = "data",
                               stateKind = "raw data",
                               valueKinds = c("Time", "Plasma Conc.", "CSF Conc.", 
-                                             "Brain Conc.", "B/P Ratio"),
+                                             "Brain Conc.", "B/P Ratio", "SC Dose"),
                               includesOthers = TRUE,
                               includesCorpName = FALSE))
     ), "DNS Locomotor" = list(
