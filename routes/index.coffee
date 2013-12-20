@@ -5,6 +5,7 @@ requiredScripts = [
 	'/src/lib/backbone-min.js'
 	#'/src/lib/backbone-localstorage.js'
 	'/src/lib/bootstrap/bootstrap-tooltip.js'
+	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js'
 	'/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js'
 	'/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js'
 	'/src/lib/bootstrap/bootstrap.min.js'
@@ -28,6 +29,7 @@ applicationScripts = [
 	'/javascripts/src/AbstractParserFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
 	'/javascripts/src/PickList.js'
+	'/javascripts/src/TagList.js'
 	# For serverAPI module
 	'/javascripts/src/Label.js'
 	'/javascripts/src/AnalysisGroup.js'
@@ -93,8 +95,10 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/LSFileChooserSpec.js'
 		'javascripts/spec/LSErrorNotificationSpec.js'
 		'javascripts/spec/ProjectsServiceSpec.js'
-		'javascripts/spec/PickListSpec.js'
 		'javascripts/spec/testFixtures/projectServiceTestJSON.js'
+		'javascripts/spec/PickListSpec.js'
+		'javascripts/spec/TagListSpec.js'
+		'javascripts/spec/testFixtures/TagListTestJSON.js'
 		# For serverAPI module
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 		'javascripts/spec/ProtocolServiceSpec.js'

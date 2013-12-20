@@ -17,6 +17,9 @@ describe "Experiment module testing", ->
 				it 'Should have an empty label list', ->
 					expect(@exp.get('lsLabels').length).toEqual 0
 					expect(@exp.get('lsLabels') instanceof LabelList).toBeTruthy()
+				it 'Should have an empty tags list', ->
+					expect(@exp.get('lsTags').length).toEqual 0
+					expect(@exp.get('lsTags') instanceof Backbone.Collection).toBeTruthy()
 				it 'Should have an empty state list', ->
 					expect(@exp.get('lsStates').length).toEqual 0
 					expect(@exp.get('lsStates') instanceof StateList).toBeTruthy()
@@ -39,8 +42,27 @@ describe "Experiment module testing", ->
 					expect(@exp.getProjectCode() instanceof Value).toBeTruthy()
 				it 'Project code should default to unassigned ', ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
+				it 'Experiment status should default to new ', ->
+					expect(@exp.getStatus().get('stringValue')).toEqual "New"
 				it 'completionDate should be null ', ->
 					expect(@exp.getCompletionDate().get('dateValue')).toEqual null
+			describe "other features", ->
+				describe "should tell you if it is editable based on status", ->
+					it "should be locked if status is New", ->
+						@exp.getStatus().set stringValue: "New"
+						expect(@exp.isEditable()).toBeTruthy()
+					it "should be locked if status is Started", ->
+						@exp.getStatus().set stringValue: "Started"
+						expect(@exp.isEditable()).toBeTruthy()
+					it "should be locked if status is Complete", ->
+						@exp.getStatus().set stringValue: "Complete"
+						expect(@exp.isEditable()).toBeTruthy()
+					it "should be locked if status is Finalized", ->
+						@exp.getStatus().set stringValue: "Finalized"
+						expect(@exp.isEditable()).toBeFalsy()
+					it "should be locked if status is Rejected", ->
+						@exp.getStatus().set stringValue: "Rejected"
+						expect(@exp.isEditable()).toBeFalsy()
 
 		describe "when loaded from existing", ->
 			beforeEach ->
@@ -96,6 +118,8 @@ describe "Experiment module testing", ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "project1"
 				it 'Should have a completionDate value', ->
 					expect(@exp.getCompletionDate().get('dateValue')).toEqual 1342080000000
+				it 'Should have a status value', ->
+					expect(@exp.getStatus().get('stringValue')).toEqual "Started"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -126,6 +150,10 @@ describe "Experiment module testing", ->
 					expect(@exp.getCompletionDate().get('dateValue')).toEqual 2000000000000
 				it 'Should not override projectCode value', ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "project45"
+				it 'Should not have a tags', ->
+					expect(@exp.get('lsTags').length).toEqual 0
+				it 'Should have a status value of new', ->
+					expect(@exp.getStatus().get('stringValue')).toEqual "New"
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -250,9 +278,12 @@ describe "Experiment module testing", ->
 				runs ->
 					expect(@exp.get('lsStates')  instanceof StateList).toBeTruthy()
 					expect(@exp.get('lsStates').length).toBeGreaterThan 0
-			it "should convert protocol has to Protocol", ->
+			it "should convert protocol  to Protocol", ->
 				runs ->
 					expect(@exp.get('protocol')  instanceof Protocol).toBeTruthy()
+			it "should convert tags has to collection of Tags", ->
+				runs ->
+					expect(@exp.get('lsTags')  instanceof TagList).toBeTruthy()
 
 	describe "Experiment List testing", ->
 		beforeEach ->
@@ -379,6 +410,15 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_projectCode').val("project2")
 						@ebc.$('.bv_projectCode').change()
 						expect(@ebc.model.getProjectCode().get('codeValue')).toEqual "project2"
+				it "should update model when tag added", ->
+					@ebc.$('.bv_tags').tagsinput 'add', "lucy"
+					@ebc.$('.bv_tags').focusout()
+					console.log @ebc.model.get('lsTags')
+					expect(@ebc.model.get('lsTags').at(0).get('tagText')).toEqual "lucy"
+				it "should update model when experiment status changed", ->
+					@ebc.$('.bv_status').val('Complete')
+					@ebc.$('.bv_status').change()
+					expect(@ebc.model.getStatus().get('stringValue')).toEqual 'Complete'
 		describe "When created from a saved experiment", ->
 			beforeEach ->
 				@exp2 = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -422,6 +462,10 @@ describe "Experiment module testing", ->
 				expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
 			it "should fill the notebook field", ->
 				expect(@ebc.$('.bv_notebook').val()).toEqual "911"
+			it "should show the tags", ->
+				expect(@ebc.$('.bv_tags').tagsinput('items')[0]).toEqual "stuff"
+			it "show the status", ->
+				expect(@ebc.$('.bv_status').val()).toEqual "Started"
 		describe "When created from a new experiment", ->
 			beforeEach ->
 				@exp0 = new Experiment()
@@ -579,6 +623,30 @@ describe "Experiment module testing", ->
 						waits(100)
 						runs ->
 							expect(@ebc.$('.bv_save').html()).toEqual "Update"
+				describe "Experiment status behavior", ->
+					it "should disable all fields if experiment is Finalized", ->
+						runs ->
+							@ebc.$('.bv_status').val('Finalized')
+							@ebc.$('.bv_status').change()
+						waits 1000
+						runs ->
+							expect(@ebc.$('.bv_notebook').attr('disabled')).toEqual 'disabled'
+							expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
+					it "should enable all fields if experiment is Started", ->
+						@ebc.$('.bv_status').val('Finalized')
+						@ebc.$('.bv_status').change()
+						@ebc.$('.bv_status').val('Started')
+						@ebc.$('.bv_status').change()
+						expect(@ebc.$('.bv_notebook').attr('disabled')).toBeUndefined()
+					it "should hide lock icon if experiment is new", ->
+						@ebc.$('.bv_status').val('New')
+						@ebc.$('.bv_status').change()
+						expect(@ebc.$('.bv_lock')).toBeHidden()
+					it "should show lock icon if experiment is finalized", ->
+						@ebc.$('.bv_status').val('Finalized')
+						@ebc.$('.bv_status').change()
+						expect(@ebc.$('.bv_lock')).toBeVisible()
+
 
 
 
@@ -587,4 +655,3 @@ describe "Experiment module testing", ->
 #TODO make scientist and date render from and update recorded** if new expt and updated** if existing
 #TODO fix styling or DOM grouping to force protocol, scientist and date fields to show red when they have error style
 #TODO fix all recordedBy in states, values and lables before initial save
-#TODO add keywords field to experiment

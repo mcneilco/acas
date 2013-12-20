@@ -34,11 +34,6 @@ class window.AbstractParserFormController extends AbstractFormController
 				name: "Select Protocol"
 			selectedCode: "unassigned"
 
-	disableAllInputs: ->
-		@$('input').attr 'disabled', 'disabled'
-		@$('select').attr 'disabled', 'disabled'
-
 	enableAllInputs: ->
-		@$('input').removeAttr 'disabled'
-		@$('select').removeAttr 'disabled'
+		super()
 		@$('.bv_csvPreviewContainer').hide()

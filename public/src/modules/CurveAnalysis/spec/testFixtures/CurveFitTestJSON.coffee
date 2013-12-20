@@ -47,5 +47,4 @@
 				displayName: "EC50 threshold exceeded"
 
 
-
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenTestJSON = window.primaryScreenTestJSON or {} else exports)

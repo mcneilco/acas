@@ -1017,6 +1017,15 @@
           version: 0
         }
       ],
+      lsTags: [
+        {
+          id: 1,
+          tagText: "stuff"
+        }, {
+          id: 2,
+          tagText: "more stuff"
+        }
+      ],
       lsStates: [
         {
           comments: null,
@@ -1365,7 +1374,7 @@
               recordedBy: "smeyer",
               recordedDate: 1375889487000,
               sigFigs: null,
-              stringValue: "Approved",
+              stringValue: "Started",
               uncertainty: null,
               uncertaintyType: null,
               unitKind: null,
@@ -1533,6 +1542,15 @@
           recordedBy: "jmcneil",
           recordedDate: 1367455532000,
           version: 0
+        }
+      ],
+      lsTags: [
+        {
+          id: 1,
+          tagText: "stuff"
+        }, {
+          id: 2,
+          tagText: "more stuff"
         }
       ],
       lsStates: [
@@ -1720,7 +1738,7 @@
               recordedBy: "smeyer",
               recordedDate: 1375889487000,
               sigFigs: null,
-              stringValue: "Approved",
+              stringValue: "Started",
               uncertainty: null,
               uncertaintyType: null,
               unitKind: null,
