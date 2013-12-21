@@ -88,6 +88,16 @@
       return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getTime();
     };
 
+    AbstractFormController.prototype.disableAllInputs = function() {
+      this.$('input').attr('disabled', 'disabled');
+      return this.$('select').attr('disabled', 'disabled');
+    };
+
+    AbstractFormController.prototype.enableAllInputs = function() {
+      this.$('input').removeAttr('disabled');
+      return this.$('select').removeAttr('disabled');
+    };
+
     return AbstractFormController;
 
   })(Backbone.View);

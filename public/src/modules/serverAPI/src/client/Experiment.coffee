@@ -32,6 +32,10 @@ class window.Experiment extends Backbone.Model
 		if resp.protocol?
 			if resp.protocol not instanceof Protocol
 				resp.protocol = new Protocol(resp.protocol)
+		if resp.lsTags not instanceof TagList
+			resp.lsTags = new TagList(resp.lsTags)
+			resp.lsTags.on 'change', =>
+				@trigger 'change'
 		resp
 
 	fixCompositeClasses: =>
@@ -47,11 +51,16 @@ class window.Experiment extends Backbone.Model
 		if @get('protocol') != null
 			if @get('protocol') not instanceof Backbone.Model
 				@set protocol: new Protocol(@get('protocol'))
+		if @get('lsTags') != null
+			if @get('lsTags') not instanceof TagList
+				@set lsTags: new TagList(@get('lsTags'))
 
 	setupCompositeChangeTriggers: ->
 		@get('lsLabels').on 'change', =>
 			@trigger 'change'
 		@get('lsStates').on 'change', =>
+			@trigger 'change'
+		@get('lsTags').on 'change', =>
 			@trigger 'change'
 
 	copyProtocolAttributes: (protocol) ->
@@ -155,6 +164,22 @@ class window.Experiment extends Backbone.Model
 	getCompletionDate: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
 
+	getStatus: ->
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
+		if status.get('stringValue') is undefined or status.get('stringValue') is ""
+			status.set stringValue: "New"
+
+		status
+
+	isEditable: ->
+		status = @getStatus().get 'stringValue'
+		switch status
+			when "New" then return true
+			when "Started" then return true
+			when "Complete" then return true
+			when "Finalized" then return false
+			when "Rejected" then return false
+		return true
 
 class window.ExperimentList extends Backbone.Collection
 	model: Experiment
@@ -172,6 +197,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		"change .bv_protocolCode": "handleProtocolCodeChanged"
 		"change .bv_projectCode": "handleProjectCodeChanged"
 		"change .bv_notebook": "handleNotebookChanged"
+		"change .bv_status": "handleStatusChanged"
 		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
 		"click .bv_save": "handleSaveClicked"
 
@@ -184,6 +210,8 @@ class window.ExperimentBaseController extends AbstractFormController
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupProtocolSelect()
 		@setupProjectSelect()
+		@setupTagList()
+		@model.getStatus().on 'change', @updateEditable
 
 	render: =>
 		if @model.get('protocol') != null
@@ -205,12 +233,15 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_completionDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
 		@$('.bv_description').html(@model.getDescription().get('stringValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
+		@$('.bv_status').val(@model.getStatus().get('stringValue'))
 		if @model.isNew()
 			@$('.bv_save').html("Save")
 		else
 			@$('.bv_save').html("Update")
 
 		@
+		@updateEditable()
+
 
 	setupProtocolSelect: ->
 		if @model.get('protocol') != null
@@ -237,6 +268,13 @@ class window.ExperimentBaseController extends AbstractFormController
 				code: "unassigned"
 				name: "Select Project"
 			selectedCode: @model.getProjectCode().get('codeValue')
+
+	setupTagList: ->
+		@$('.bv_tags').val ""
+		@tagListController = new TagListController
+			el: @$('.bv_tags')
+			collection: @model.get 'lsTags'
+		@tagListController.render()
 
 	setUseProtocolParametersDisabledState: ->
 		if (not @model.isNew()) or (@model.get('protocol') == null) or (@$('.bv_protocolCode').val() == "")
@@ -315,6 +353,20 @@ class window.ExperimentBaseController extends AbstractFormController
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
 		@render()
+
+	handleStatusChanged: =>
+		@model.getStatus().set stringValue: @getTrimmedInput('.bv_status')
+		# this is required in addtion to model change event watcher only for spec. real app works without it
+		@updateEditable()
+
+	updateEditable: =>
+		if @model.isEditable()
+			@enableAllInputs()
+			@$('.bv_lock').hide()
+		else
+			@disableAllInputs()
+			@$('.bv_status').removeAttr('disabled')
+			@$('.bv_lock').show()
 
 	handleSaveClicked: =>
 		@model.save()

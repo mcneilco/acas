@@ -1017,6 +1017,15 @@
           version: 0
         }
       ],
+      lsTags: [
+        {
+          id: 1,
+          tagText: "stuff"
+        }, {
+          id: 2,
+          tagText: "more stuff"
+        }
+      ],
       lsStates: [
         {
           comments: null,
@@ -1227,6 +1236,37 @@
               comments: null,
               dateValue: null,
               fileValue: null,
+              id: 422,
+              ignored: false,
+              lsKind: "analysis status",
+              lsTransaction: 2,
+              lsType: "stringValue",
+              lsTypeAndKind: "clobValue_analysis status",
+              modifiedBy: null,
+              modifiedDate: null,
+              numberOfReplicates: null,
+              numericValue: null,
+              operatorKind: null,
+              operatorType: "comparison",
+              operatorTypeAndKind: "comparison_null",
+              publicData: true,
+              recordedBy: "smeyer",
+              recordedDate: 1375889487000,
+              sigFigs: null,
+              stringValue: "not started",
+              uncertainty: null,
+              uncertaintyType: null,
+              unitKind: null,
+              unitType: null,
+              unitTypeAndKind: "null_null",
+              urlValue: null,
+              version: 0
+            }, {
+              clobValue: null,
+              codeValue: null,
+              comments: null,
+              dateValue: null,
+              fileValue: null,
               id: 5,
               ignored: false,
               lsKind: "notebook",
@@ -1306,7 +1346,7 @@
               recordedBy: "smeyer",
               recordedDate: 1375889487000,
               sigFigs: null,
-              stringValue: "Approved",
+              stringValue: "Started",
               uncertainty: null,
               uncertaintyType: null,
               unitKind: null,
@@ -1474,6 +1514,15 @@
           recordedBy: "jmcneil",
           recordedDate: 1367455532000,
           version: 0
+        }
+      ],
+      lsTags: [
+        {
+          id: 1,
+          tagText: "stuff"
+        }, {
+          id: 2,
+          tagText: "more stuff"
         }
       ],
       lsStates: [
@@ -1661,7 +1710,7 @@
               recordedBy: "smeyer",
               recordedDate: 1375889487000,
               sigFigs: null,
-              stringValue: "Approved",
+              stringValue: "Started",
               uncertainty: null,
               uncertaintyType: null,
               unitKind: null,

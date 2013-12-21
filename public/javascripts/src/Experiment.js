@@ -61,6 +61,12 @@
           resp.protocol = new Protocol(resp.protocol);
         }
       }
+      if (!(resp.lsTags instanceof TagList)) {
+        resp.lsTags = new TagList(resp.lsTags);
+        resp.lsTags.on('change', function() {
+          return _this.trigger('change');
+        });
+      }
       return resp;
     };
 
@@ -88,8 +94,15 @@
       }
       if (this.get('protocol') !== null) {
         if (!(this.get('protocol') instanceof Backbone.Model)) {
-          return this.set({
+          this.set({
             protocol: new Protocol(this.get('protocol'))
+          });
+        }
+      }
+      if (this.get('lsTags') !== null) {
+        if (!(this.get('lsTags') instanceof TagList)) {
+          return this.set({
+            lsTags: new TagList(this.get('lsTags'))
           });
         }
       }
@@ -100,7 +113,10 @@
       this.get('lsLabels').on('change', function() {
         return _this.trigger('change');
       });
-      return this.get('lsStates').on('change', function() {
+      this.get('lsStates').on('change', function() {
+        return _this.trigger('change');
+      });
+      return this.get('lsTags').on('change', function() {
         return _this.trigger('change');
       });
     };
@@ -246,6 +262,35 @@
       return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "dateValue", "completion date");
     };
 
+    Experiment.prototype.getStatus = function() {
+      var status;
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "status");
+      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
+        status.set({
+          stringValue: "New"
+        });
+      }
+      return status;
+    };
+
+    Experiment.prototype.isEditable = function() {
+      var status;
+      status = this.getStatus().get('stringValue');
+      switch (status) {
+        case "New":
+          return true;
+        case "Started":
+          return true;
+        case "Complete":
+          return true;
+        case "Finalized":
+          return false;
+        case "Rejected":
+          return false;
+      }
+      return true;
+    };
+
     return Experiment;
 
   })(Backbone.Model);
@@ -271,6 +316,8 @@
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
+      this.updateEditable = __bind(this.updateEditable, this);
+      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
       this.handleNotebookChanged = __bind(this.handleNotebookChanged, this);
       this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
@@ -298,6 +345,7 @@
       "change .bv_protocolCode": "handleProtocolCodeChanged",
       "change .bv_projectCode": "handleProjectCodeChanged",
       "change .bv_notebook": "handleNotebookChanged",
+      "change .bv_status": "handleStatusChanged",
       "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
       "click .bv_save": "handleSaveClicked"
     };
@@ -310,7 +358,9 @@
       $(this.el).html(this.template());
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupProtocolSelect();
-      return this.setupProjectSelect();
+      this.setupProjectSelect();
+      this.setupTagList();
+      return this.model.getStatus().on('change', this.updateEditable);
     };
 
     ExperimentBaseController.prototype.render = function() {
@@ -337,12 +387,14 @@
       }
       this.$('.bv_description').html(this.model.getDescription().get('stringValue'));
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
+      this.$('.bv_status').val(this.model.getStatus().get('stringValue'));
       if (this.model.isNew()) {
         this.$('.bv_save').html("Save");
       } else {
         this.$('.bv_save').html("Update");
       }
-      return this;
+      this;
+      return this.updateEditable();
     };
 
     ExperimentBaseController.prototype.setupProtocolSelect = function() {
@@ -377,6 +429,15 @@
         }),
         selectedCode: this.model.getProjectCode().get('codeValue')
       });
+    };
+
+    ExperimentBaseController.prototype.setupTagList = function() {
+      this.$('.bv_tags').val("");
+      this.tagListController = new TagListController({
+        el: this.$('.bv_tags'),
+        collection: this.model.get('lsTags')
+      });
+      return this.tagListController.render();
     };
 
     ExperimentBaseController.prototype.setUseProtocolParametersDisabledState = function() {
@@ -500,6 +561,24 @@
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
       this.model.copyProtocolAttributes(this.model.get('protocol'));
       return this.render();
+    };
+
+    ExperimentBaseController.prototype.handleStatusChanged = function() {
+      this.model.getStatus().set({
+        stringValue: this.getTrimmedInput('.bv_status')
+      });
+      return this.updateEditable();
+    };
+
+    ExperimentBaseController.prototype.updateEditable = function() {
+      if (this.model.isEditable()) {
+        this.enableAllInputs();
+        return this.$('.bv_lock').hide();
+      } else {
+        this.disableAllInputs();
+        this.$('.bv_status').removeAttr('disabled');
+        return this.$('.bv_lock').show();
+      }
     };
 
     ExperimentBaseController.prototype.handleSaveClicked = function() {

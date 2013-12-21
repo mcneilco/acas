@@ -23,6 +23,10 @@
             expect(this.exp.get('lsLabels').length).toEqual(0);
             return expect(this.exp.get('lsLabels') instanceof LabelList).toBeTruthy();
           });
+          it('Should have an empty tags list', function() {
+            expect(this.exp.get('lsTags').length).toEqual(0);
+            return expect(this.exp.get('lsTags') instanceof Backbone.Collection).toBeTruthy();
+          });
           it('Should have an empty state list', function() {
             expect(this.exp.get('lsStates').length).toEqual(0);
             return expect(this.exp.get('lsStates') instanceof StateList).toBeTruthy();
@@ -43,7 +47,7 @@
             return expect(this.exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy();
           });
         });
-        return describe("required states and values", function() {
+        describe("required states and values", function() {
           it('Should have a description value', function() {
             return expect(this.exp.getDescription() instanceof Value).toBeTruthy();
           });
@@ -56,8 +60,45 @@
           it('Project code should default to unassigned ', function() {
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
           });
+          it('Experiment status should default to new ', function() {
+            return expect(this.exp.getStatus().get('stringValue')).toEqual("New");
+          });
           return it('completionDate should be null ', function() {
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(null);
+          });
+        });
+        return describe("other features", function() {
+          return describe("should tell you if it is editable based on status", function() {
+            it("should be locked if status is New", function() {
+              this.exp.getStatus().set({
+                stringValue: "New"
+              });
+              return expect(this.exp.isEditable()).toBeTruthy();
+            });
+            it("should be locked if status is Started", function() {
+              this.exp.getStatus().set({
+                stringValue: "Started"
+              });
+              return expect(this.exp.isEditable()).toBeTruthy();
+            });
+            it("should be locked if status is Complete", function() {
+              this.exp.getStatus().set({
+                stringValue: "Complete"
+              });
+              return expect(this.exp.isEditable()).toBeTruthy();
+            });
+            it("should be locked if status is Finalized", function() {
+              this.exp.getStatus().set({
+                stringValue: "Finalized"
+              });
+              return expect(this.exp.isEditable()).toBeFalsy();
+            });
+            return it("should be locked if status is Rejected", function() {
+              this.exp.getStatus().set({
+                stringValue: "Rejected"
+              });
+              return expect(this.exp.isEditable()).toBeFalsy();
+            });
           });
         });
       });
@@ -138,8 +179,11 @@
           it('Should have a project value', function() {
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("project1");
           });
-          return it('Should have a completionDate value', function() {
+          it('Should have a completionDate value', function() {
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(1342080000000);
+          });
+          return it('Should have a status value', function() {
+            return expect(this.exp.getStatus().get('stringValue')).toEqual("Started");
           });
         });
       });
@@ -188,8 +232,14 @@
           it('Should not override completionDate value', function() {
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(2000000000000);
           });
-          return it('Should not override projectCode value', function() {
+          it('Should not override projectCode value', function() {
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("project45");
+          });
+          it('Should not have a tags', function() {
+            return expect(this.exp.get('lsTags').length).toEqual(0);
+          });
+          return it('Should have a status value of new', function() {
+            return expect(this.exp.getStatus().get('stringValue')).toEqual("New");
           });
         });
       });
@@ -371,9 +421,14 @@
             return expect(this.exp.get('lsStates').length).toBeGreaterThan(0);
           });
         });
-        return it("should convert protocol has to Protocol", function() {
+        it("should convert protocol  to Protocol", function() {
           return runs(function() {
             return expect(this.exp.get('protocol') instanceof Protocol).toBeTruthy();
+          });
+        });
+        return it("should convert tags has to collection of Tags", function() {
+          return runs(function() {
+            return expect(this.exp.get('lsTags') instanceof TagList).toBeTruthy();
           });
         });
       });
@@ -532,7 +587,7 @@
               return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000001");
             });
           });
-          return it("should update model when project is changed", function() {
+          it("should update model when project is changed", function() {
             waitsFor(function() {
               return this.ebc.$('.bv_projectCode option').length > 0;
             }, 1000);
@@ -541,6 +596,17 @@
               this.ebc.$('.bv_projectCode').change();
               return expect(this.ebc.model.getProjectCode().get('codeValue')).toEqual("project2");
             });
+          });
+          it("should update model when tag added", function() {
+            this.ebc.$('.bv_tags').tagsinput('add', "lucy");
+            this.ebc.$('.bv_tags').focusout();
+            console.log(this.ebc.model.get('lsTags'));
+            return expect(this.ebc.model.get('lsTags').at(0).get('tagText')).toEqual("lucy");
+          });
+          return it("should update model when experiment status changed", function() {
+            this.ebc.$('.bv_status').val('Complete');
+            this.ebc.$('.bv_status').change();
+            return expect(this.ebc.model.getStatus().get('stringValue')).toEqual('Complete');
           });
         });
       });
@@ -599,8 +665,14 @@
         it("should fill the code field", function() {
           return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
         });
-        return it("should fill the notebook field", function() {
+        it("should fill the notebook field", function() {
           return expect(this.ebc.$('.bv_notebook').val()).toEqual("911");
+        });
+        it("should show the tags", function() {
+          return expect(this.ebc.$('.bv_tags').tagsinput('items')[0]).toEqual("stuff");
+        });
+        return it("show the status", function() {
+          return expect(this.ebc.$('.bv_status').val()).toEqual("Started");
         });
       });
       return describe("When created from a new experiment", function() {
@@ -811,7 +883,7 @@
               });
             });
           });
-          return describe("expect save to work", function() {
+          describe("expect save to work", function() {
             it("model should be valid and ready to save", function() {
               return runs(function() {
                 return expect(this.ebc.model.isValid()).toBeTruthy();
@@ -834,6 +906,36 @@
               return runs(function() {
                 return expect(this.ebc.$('.bv_save').html()).toEqual("Update");
               });
+            });
+          });
+          return describe("Experiment status behavior", function() {
+            it("should disable all fields if experiment is Finalized", function() {
+              runs(function() {
+                this.ebc.$('.bv_status').val('Finalized');
+                return this.ebc.$('.bv_status').change();
+              });
+              waits(1000);
+              return runs(function() {
+                expect(this.ebc.$('.bv_notebook').attr('disabled')).toEqual('disabled');
+                return expect(this.ebc.$('.bv_status').attr('disabled')).toBeUndefined();
+              });
+            });
+            it("should enable all fields if experiment is Started", function() {
+              this.ebc.$('.bv_status').val('Finalized');
+              this.ebc.$('.bv_status').change();
+              this.ebc.$('.bv_status').val('Started');
+              this.ebc.$('.bv_status').change();
+              return expect(this.ebc.$('.bv_notebook').attr('disabled')).toBeUndefined();
+            });
+            it("should hide lock icon if experiment is new", function() {
+              this.ebc.$('.bv_status').val('New');
+              this.ebc.$('.bv_status').change();
+              return expect(this.ebc.$('.bv_lock')).toBeHidden();
+            });
+            return it("should show lock icon if experiment is finalized", function() {
+              this.ebc.$('.bv_status').val('Finalized');
+              this.ebc.$('.bv_status').change();
+              return expect(this.ebc.$('.bv_lock')).toBeVisible();
             });
           });
         });

@@ -55,3 +55,10 @@ class window.AbstractFormController extends Backbone.View
 		dateParts = inStr.split('-')
 		new Date(dateParts[0], dateParts[1]-1, dateParts[2]).getTime()
 
+	disableAllInputs: ->
+		@$('input').attr 'disabled', 'disabled'
+		@$('select').attr 'disabled', 'disabled'
+
+	enableAllInputs: ->
+		@$('input').removeAttr 'disabled'
+		@$('select').removeAttr 'disabled'

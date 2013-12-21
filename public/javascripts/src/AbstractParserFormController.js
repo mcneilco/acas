@@ -56,14 +56,8 @@
       });
     };
 
-    AbstractParserFormController.prototype.disableAllInputs = function() {
-      this.$('input').attr('disabled', 'disabled');
-      return this.$('select').attr('disabled', 'disabled');
-    };
-
     AbstractParserFormController.prototype.enableAllInputs = function() {
-      this.$('input').removeAttr('disabled');
-      this.$('select').removeAttr('disabled');
+      AbstractParserFormController.__super__.enableAllInputs.call(this);
       return this.$('.bv_csvPreviewContainer').hide();
     };
 
