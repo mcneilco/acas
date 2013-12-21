@@ -7,6 +7,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		positiveControl: new Backbone.Model()
 		negativeControl: new Backbone.Model()
 		vehicleControl: new Backbone.Model()
+		agonistControl: new Backbone.Model()
 		thresholdType: "sd"
 
 	initialize: ->
@@ -26,6 +27,60 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			@set vehicleControl: new Backbone.Model(@get('vehicleControl'))
 		@get('vehicleControl').on "change", =>
 			@trigger 'change'
+		if @get('agonistControl') not instanceof Backbone.Model
+			@set agonistControl: new Backbone.Model(@get('agonistControl'))
+		@get('agonistControl').on "change", =>
+			@trigger 'change'
+
+	validate: (attrs) ->
+		errors = []
+		positiveControl = @get('positiveControl').get('batchCode')
+		if positiveControl is "" or positiveControl is undefined
+			errors.push
+				attribute: 'positiveControlBatch'
+				message: "Positive control batch much be set"
+		positiveControl = @get('positiveControl').get('concentration')
+		if positiveControl is "" or positiveControl is undefined
+			errors.push
+				attribute: 'positiveControlConc'
+				message: "Positive control conc much be set"
+		negativeControl = @get('negativeControl').get('batchCode')
+		if negativeControl is "" or negativeControl is undefined
+			errors.push
+				attribute: 'negativeControlBatch'
+				message: "Negative control batch much be set"
+		negativeControl = @get('negativeControl').get('concentration')
+		if negativeControl is "" or negativeControl is undefined
+			errors.push
+				attribute: 'negativeControlConc'
+				message: "Negative control conc much be set"
+		agonistControl = @get('agonistControl').get('batchCode')
+		if agonistControl is "" or agonistControl is undefined
+			errors.push
+				attribute: 'agonistControlBatch'
+				message: "Agonist control batch much be set"
+		agonistControl = @get('agonistControl').get('concentration')
+		if agonistControl is "" or agonistControl is undefined
+			errors.push
+				attribute: 'agonistControlConc'
+				message: "Agonist control conc much be set"
+		vehicleControl = @get('vehicleControl').get('batchCode')
+		if vehicleControl is "" or vehicleControl is undefined
+			errors.push
+				attribute: 'vehicleControlBatch'
+				message: "Vehicle control must be set"
+		if attrs.transformationRule is "unassigned" or attrs.transformationRule is ""
+			errors.push
+				attribute: 'transformationRule'
+				message: "Transformation rule must be assigned"
+		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is ""
+			errors.push
+				attribute: 'normalizationRule'
+				message: "Normalization rule must be assigned"
+		if errors.length > 0
+			return errors
+		else
+			return null
 
 class window.PrimaryScreenExperiment extends Experiment
 	getAnalysisParameters: ->
@@ -52,11 +107,13 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_transformationRule": "updateModel"
 		"change .bv_hitEfficacyThreshold": "updateModel"
 		"change .bv_hitSDThreshold": "updateModel"
-		"change .bv_posControlBatch": "updateModel"
-		"change .bv_posControlConc": "updateModel"
-		"change .bv_negControlBatch": "updateModel"
-		"change .bv_negControlConc": "updateModel"
-		"change .bv_vehControlBatch": "updateModel"
+		"change .bv_positiveControlBatch": "updateModel"
+		"change .bv_positiveControlConc": "updateModel"
+		"change .bv_negativeControlBatch": "updateModel"
+		"change .bv_negativeControlConc": "updateModel"
+		"change .bv_vehicleControlBatch": "updateModel"
+		"change .bv_agonistControlBatch": "updateModel"
+		"change .bv_agonistControlConc": "updateModel"
 		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
 
@@ -65,9 +122,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		super()
 
 	render: =>
-		console.log "got to render"
 		@$('.bv_autofillSection').empty()
-		console.log @model
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
 		@$('.bv_transformationRule').val(@model.get('transformationRule'))
 		@$('.bv_normalizationRule').val(@model.get('normalizationRule'))
@@ -81,14 +136,17 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			hitEfficacyThreshold: @getTrimmedInput('.bv_hitEfficacyThreshold')
 			hitSDThreshold: @getTrimmedInput('.bv_hitSDThreshold')
 		@model.get('positiveControl').set
-			batchCode: @getTrimmedInput('.bv_posControlBatch')
-			concentration: @getTrimmedInput('.bv_posControlConc')
+			batchCode: @getTrimmedInput('.bv_positiveControlBatch')
+			concentration: @getTrimmedInput('.bv_positiveControlConc')
 		@model.get('negativeControl').set
-			batchCode: @getTrimmedInput('.bv_negControlBatch')
-			concentration: @getTrimmedInput('.bv_negControlConc')
+			batchCode: @getTrimmedInput('.bv_negativeControlBatch')
+			concentration: @getTrimmedInput('.bv_negativeControlConc')
 		@model.get('vehicleControl').set
-			batchCode: @getTrimmedInput('.bv_vehControlBatch')
+			batchCode: @getTrimmedInput('.bv_vehicleControlBatch')
 			concentration: null
+		@model.get('agonistControl').set
+			batchCode: @getTrimmedInput('.bv_agonistControlBatch')
+			concentration: @getTrimmedInput('.bv_agonistControlConc')
 
 	handleThresholdTypeChanged: =>
 		thresholdType = @$("input[name='bv_thresholdType']:checked").val()

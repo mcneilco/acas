@@ -7,13 +7,13 @@
                 <li><a href="#tab5" data-toggle="tab">Curve Fit Analysis</a></li>
             </ul>
 
-            <div class="tab-content span7.5">
+            <div class="tab-content span12">
 
                 <!-- GENERAL INFORMATION TAB -->
                 <div class="tab-pane active bv_experimentBase" id="tab1"></div>
 
                 <!-- DATA ANALYSIS TAB -->
-                <div class="tab-pane bv_primaryScreenDataAnalysis" id="tab3"></div>
+                <div class="tab-pane bv_primaryScreenDataAnalysis" id="tab3" style="overflow:hidden;"></div>
 
                 <!-- CURVE FIT ANALYSIS TAB -->
                 <div class="tab-pane bv_doseResponseAnalysis" id="tab5"></div>
@@ -24,6 +24,8 @@
 
 
 </script>
+
+		<!--STYLING TO FIX: bv_moduleTitle needs to be smaller; padding below module loader needs to be reduced. -->
 
 
 <script type="text/template" id="PrimaryScreenAnalysisParametersView" xmlns="http://www.w3.org/1999/html">
@@ -38,10 +40,10 @@
         <div class="pull-left">
             <p>*Positive Control</p>
             <form class="form-inline">
-                <input class="input-medium pull-left bv_posControlBatch bv_group_posControlBatch" value="<%=positiveControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
+                <input class="input-medium pull-left bv_positiveControlBatch bv_group_positiveControlBatch" value="<%=positiveControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
                 <form>
                     <fieldset style="padding-left:10px;">
-                        <input class="input-small pull-right bv_posControlConc bv_group_posControlConc" value="<%=positiveControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
+                        <input class="input-small pull-right bv_positiveControlConc bv_group_positiveControlConc" value="<%=positiveControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
 
                     </fieldset>
                 </form>
@@ -51,27 +53,43 @@
         <div class="pull-right">
             <p style="padding-left:40px;">*Negative Control</p>
             <form class="form-inline" style="padding-left:40px;">
-                <input class="input-medium pull-left bv_negControlBatch bv_group_negControlBatch" value="<%=negativeControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
+                <input class="input-medium pull-left bv_negativeControlBatch bv_group_negativeControlBatch" value="<%=negativeControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
                 <form>
                     <fieldset style="padding-left:10px;">
-                        <input class="input-small pull-right bv_negControlConc bv_group_negControlConc" value="<%=negativeControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
+                        <input class="input-small pull-right bv_negativeControlConc bv_group_negativeControlConc" value="<%=negativeControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
                     </fieldset>
                 </form>
             </form>
         </div>
     </div>
 
-    <form class="form-horizontal">
-        <div class="control-group">
-            <label class="control-label">*Vehicle Control</label>
-            <div class="controls">
-                <input class="input-xlarge bv_vehControlBatch bv_group_vehControlBatch" value="<%=vehicleControl.get('batchCode')%>" type="text">
-            </div>
-        </div>
+    <div>
+	    <div class="pull-left">
+		    <p>*Agonist</p>
+		    <form class="form-inline">
+			    <input class="input-medium pull-left bv_agonistControlBatch bv_group_agonistControlBatch" value="<%=agonistControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
+			    <form>
+				    <fieldset style="padding-left:10px;">
+					    <input class="input-small pull-right bv_agonistControlConc bv_group_agonistControlConc" value="<%=agonistControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
+
+				    </fieldset>
+			    </form>
+		    </form>
+	    </div>
+
+	    <div class="pull-right">
+		    <p style="padding-left:45px;">*Vehicle Control</p>
+		    <form class="form-inline" style="padding-left:45px;">
+			    <input class="pull-left bv_vehicleControlBatch bv_group_vehicleControlBatch" style="width:265px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="">
+		    </form>
+	    </div>
+    </div>
+
+    <form class="form-horizontal span12">
         <div class="control-group bv_group_transformationRule">
             <label class="control-label">*Transformation</label>
             <div class="controls">
-                <select class="bv_transformationRule" style="width:285px;">
+                <select class="bv_transformationRule span9">
                     <option value="unassigned">Select Rule</option>
                     <option value="(maximum-minimum)/minimum">(Max-Min)/Min</option>
                 </select>
@@ -80,41 +98,45 @@
         <div class="control-group bv_group_normalizationRule">
             <label class="control-label">Normalization</label>
             <div class="controls">
-                <select class="bv_normalizationRule" value="<%=normalizationRule%>" style="width:285px;" placeholder="Plate Order">
+                <select class="bv_normalizationRule span9" value="<%=normalizationRule%>" placeholder="Plate Order">
                     <option value="unassigned">Select Rule</option>
                     <option value="plate order">Plate Order</option>
                     <option value="none">None</option>
                 </select>
             </div>
         </div>
-        <div class="control-group bv_group_hitEfficacyThreshold">
-            <input type="radio" name="bv_thresholdType" value="efficacy" class="bv_thresholdTypeEfficacy" <% if (thresholdType=="efficacy") { %> checked="checked"<% }%> />
-            <label class="control-label">*Hit Efficacy Threshold</label>
-            <div class="controls">
-                <input class="input-xlarge bv_hitEfficacyThreshold" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% }%>>
-            </div>
-        </div>
-        <div class="control-group bv_group_hitSDThreshold">
-            <input type="radio" name="bv_thresholdType" value="sd" class="bv_thresholdTypeSD" <% if (thresholdType=="sd") { %> checked="checked"<% }%> />
-            <label class="control-label">*Hit SD Threshold</label>
-            <div class="controls">
-                <input class="input-xlarge bv_hitSDThreshold" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
-            </div>
-        </div>
-
-
+	    <div class="control-group bv_group_hitEfficacyThreshold">
+		    <label class="control-label radio" style="width:144px;padding-left:0;">
+			    <input type="radio" name="bv_thresholdType" value="efficacy" class="bv_thresholdTypeEfficacy" <% if (thresholdType=="efficacy") { %> checked="checked"<% }%> />*Hit Efficacy Threshold
+		    </label>
+		    <div class="controls" style="padding-left:0;">
+			    <input class="span9 bv_hitEfficacyThreshold" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% }%>>
+		    </div>
+	    </div>
+	    <div class="control-group bv_group_hitSDThreshold">
+		    <label class="control-label radio" style="width:115px;padding-left:26px;">
+			    <input type="radio" name="bv_thresholdType" value="sd" class="bv_thresholdTypeSD" <% if (thresholdType=="sd") { %> checked="checked"<% }%> />*Hit SD Threshold
+		    </label>
+		    <div class="controls" style="padding-left:0;">
+			    <input class="span9 bv_hitSDThreshold" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
+		    </div>
+	    </div>
     </form>
 
 </script>
 <script type="text/template" id="PrimaryScreenAnalysisView" xmlns="http://www.w3.org/1999/html">
-    <h5>Data Analysis</h5>
+
+	<div class="span12">
+	<h5>Data Analysis</h5>
 
     <hr>
 
+		</div>
+
     <!-- DATA ANALYSIS SUBSECTION STARTS HERE -->
-    <div class="bv_analysisResults">
+    <div class="bv_analysisResults span10 well well-small" style="padding-left:20px;">
         <div>
-            <span><b>Analysis Status:</b></span>
+            <span><h5>Analysis Status:</h5></span>
             <span class="bv_analysisStatus"></span>
         </div>
         <div class="bv_analysisResultsHTML"></div>
