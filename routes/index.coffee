@@ -106,10 +106,10 @@ exports.specRunner = (req, res) ->
 		'javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		'javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
 		#Primary Screen module
+		'javascripts/spec/testFixtures/PrimaryScreenTestJSON.js'
 		'javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js'
 		'javascripts/spec/PrimaryScreenExperimentSpec.js'
 		'javascripts/spec/DoseResponseAnalysisSpec.js'
-		'javascripts/spec/testFixtures/PrimaryScreenTestJSON.js'
 		#Curve Analysis module
 		'javascripts/spec/CurveCuratorServiceSpec.js'
 		'javascripts/spec/CurveCuratorSpec.js'

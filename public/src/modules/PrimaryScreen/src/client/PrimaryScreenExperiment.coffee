@@ -11,7 +11,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		thresholdType: "sd"
 
 	initialize: ->
-		console.log @attributes
 		@fixCompositeClasses()
 
 
@@ -28,7 +27,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			@set vehicleControl: new Backbone.Model(@get('vehicleControl'))
 		@get('vehicleControl').on "change", =>
 			@trigger 'change'
-		console.log @get('agonistControl')
 		if @get('agonistControl') not instanceof Backbone.Model
 			@set agonistControl: new Backbone.Model(@get('agonistControl'))
 		@get('agonistControl').on "change", =>
@@ -92,24 +90,30 @@ class window.PrimaryScreenExperiment extends Experiment
 		else
 			return new PrimaryScreenAnalysisParameters()
 
+	getAnalysisStatus: ->
+		@get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+
+	getAnalysisResultHTML: ->
+		@get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
+
 
 class window.PrimaryScreenAnalysisParametersController extends AbstractParserFormController
 	template: _.template($("#PrimaryScreenAnalysisParametersView").html())
 	autofillTemplate: _.template($("#PrimaryScreenAnalysisParametersAutofillView").html())
 
 	events:
-		"change .bv_transformationRule": "handleInputChanged"
-		"change .bv_normalizationRule": "handleInputChanged"
-		"change .bv_transformationRule": "handleInputChanged"
-		"change .bv_hitEfficacyThreshold": "handleInputChanged"
-		"change .bv_hitSDThreshold": "handleInputChanged"
-		"change .bv_positiveControlBatch": "handleInputChanged"
-		"change .bv_positiveControlConc": "handleInputChanged"
-		"change .bv_negativeControlBatch": "handleInputChanged"
-		"change .bv_negativeControlConc": "handleInputChanged"
-		"change .bv_vehicleControlBatch": "handleInputChanged"
-		"change .bv_agonistControlBatch": "handleInputChanged"
-		"change .bv_agonistControlConc": "handleInputChanged"
+		"change .bv_transformationRule": "updateModel"
+		"change .bv_normalizationRule": "updateModel"
+		"change .bv_transformationRule": "updateModel"
+		"change .bv_hitEfficacyThreshold": "updateModel"
+		"change .bv_hitSDThreshold": "updateModel"
+		"change .bv_positiveControlBatch": "updateModel"
+		"change .bv_positiveControlConc": "updateModel"
+		"change .bv_negativeControlBatch": "updateModel"
+		"change .bv_negativeControlConc": "updateModel"
+		"change .bv_vehicleControlBatch": "updateModel"
+		"change .bv_agonistControlBatch": "updateModel"
+		"change .bv_agonistControlConc": "updateModel"
 		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
 
@@ -125,7 +129,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 		@
 
-	handleInputChanged: =>
+	updateModel: =>
 		@model.set
 			transformationRule: @$('.bv_transformationRule').val()
 			normalizationRule: @$('.bv_normalizationRule').val()
@@ -166,19 +170,18 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@showExistingResults()
-		#if not @model.isNew()
-		if true
+		if not @model.isNew()
 			@handleExperimentSaved()
 		@
 
 	showExistingResults: ->
-		analysisStatus = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+		analysisStatus = @model.getAnalysisStatus()
 		if analysisStatus != null
-			@analysisStatus = analysisStatus.get('stringValue')
-			@$('.bv_analysisStatus').html(@analysisStatus)
+			analysisStatus = analysisStatus.get('stringValue')
 		else
-			@analysisStatus = "not started"
-		resultValue = @model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
+			analysisStatus = "not started"
+		@$('.bv_analysisStatus').html(analysisStatus)
+		resultValue = @model.getAnalysisResultHTML()
 		if resultValue != null
 			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
 
@@ -188,8 +191,6 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			paramsFromExperiment:	@model.getAnalysisParameters()
 		@dataAnalysisController.setUser(@model.get('recordedBy'))
 		@dataAnalysisController.setExperimentId(@model.id)
-		if @analysisStatus is "complete"
-			@dataAnalysisController.psapc.disableAllInputs()
 
 class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 	initialize: ->
@@ -201,7 +202,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		super()
 		@$('.bv_moduleTitle').html("Upload Data and Analyze")
 		@psapc = new PrimaryScreenAnalysisParametersController
-			model: new PrimaryScreenAnalysisParameters(@options.paramsFromExperiment)
+			model: @options.paramsFromExperiment
 			el: @$('.bv_additionalValuesForm')
 		@psapc.on 'valid', @handleMSFormValid
 		@psapc.on 'invalid', @handleMSFormInvalid

@@ -21,12 +21,10 @@
       positiveControl: new Backbone.Model(),
       negativeControl: new Backbone.Model(),
       vehicleControl: new Backbone.Model(),
-      agonistControl: new Backbone.Model(),
       thresholdType: "sd"
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
-      console.log(this.attributes);
       return this.fixCompositeClasses();
     };
 
@@ -53,89 +51,9 @@
           vehicleControl: new Backbone.Model(this.get('vehicleControl'))
         });
       }
-      this.get('vehicleControl').on("change", function() {
+      return this.get('vehicleControl').on("change", function() {
         return _this.trigger('change');
       });
-      console.log(this.get('agonistControl'));
-      if (!(this.get('agonistControl') instanceof Backbone.Model)) {
-        this.set({
-          agonistControl: new Backbone.Model(this.get('agonistControl'))
-        });
-      }
-      return this.get('agonistControl').on("change", function() {
-        return _this.trigger('change');
-      });
-    };
-
-    PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
-      var agonistControl, errors, negativeControl, positiveControl, vehicleControl;
-      errors = [];
-      positiveControl = this.get('positiveControl').get('batchCode');
-      if (positiveControl === "" || positiveControl === void 0) {
-        errors.push({
-          attribute: 'positiveControlBatch',
-          message: "Positive control batch much be set"
-        });
-      }
-      positiveControl = this.get('positiveControl').get('concentration');
-      if (positiveControl === "" || positiveControl === void 0) {
-        errors.push({
-          attribute: 'positiveControlConc',
-          message: "Positive control conc much be set"
-        });
-      }
-      negativeControl = this.get('negativeControl').get('batchCode');
-      if (negativeControl === "" || negativeControl === void 0) {
-        errors.push({
-          attribute: 'negativeControlBatch',
-          message: "Negative control batch much be set"
-        });
-      }
-      negativeControl = this.get('negativeControl').get('concentration');
-      if (negativeControl === "" || negativeControl === void 0) {
-        errors.push({
-          attribute: 'negativeControlConc',
-          message: "Negative control conc much be set"
-        });
-      }
-      agonistControl = this.get('agonistControl').get('batchCode');
-      if (agonistControl === "" || agonistControl === void 0) {
-        errors.push({
-          attribute: 'agonistControlBatch',
-          message: "Agonist control batch much be set"
-        });
-      }
-      agonistControl = this.get('agonistControl').get('concentration');
-      if (agonistControl === "" || agonistControl === void 0) {
-        errors.push({
-          attribute: 'agonistControlConc',
-          message: "Agonist control conc much be set"
-        });
-      }
-      vehicleControl = this.get('vehicleControl').get('batchCode');
-      if (vehicleControl === "" || vehicleControl === void 0) {
-        errors.push({
-          attribute: 'vehicleControlBatch',
-          message: "Vehicle control must be set"
-        });
-      }
-      if (attrs.transformationRule === "unassigned" || attrs.transformationRule === "") {
-        errors.push({
-          attribute: 'transformationRule',
-          message: "Transformation rule must be assigned"
-        });
-      }
-      if (attrs.normalizationRule === "unassigned" || attrs.normalizationRule === "") {
-        errors.push({
-          attribute: 'normalizationRule',
-          message: "Normalization rule must be assigned"
-        });
-      }
-      if (errors.length > 0) {
-        return errors;
-      } else {
-        return null;
-      }
     };
 
     return PrimaryScreenAnalysisParameters;
@@ -160,6 +78,14 @@
       }
     };
 
+    PrimaryScreenExperiment.prototype.getAnalysisStatus = function() {
+      return this.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
+    };
+
+    PrimaryScreenExperiment.prototype.getAnalysisResultHTML = function() {
+      return this.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
+    };
+
     return PrimaryScreenExperiment;
 
   })(Experiment);
@@ -169,7 +95,7 @@
 
     function PrimaryScreenAnalysisParametersController() {
       this.handleThresholdTypeChanged = __bind(this.handleThresholdTypeChanged, this);
-      this.handleInputChanged = __bind(this.handleInputChanged, this);
+      this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       _ref2 = PrimaryScreenAnalysisParametersController.__super__.constructor.apply(this, arguments);
       return _ref2;
@@ -180,18 +106,16 @@
     PrimaryScreenAnalysisParametersController.prototype.autofillTemplate = _.template($("#PrimaryScreenAnalysisParametersAutofillView").html());
 
     PrimaryScreenAnalysisParametersController.prototype.events = {
-      "change .bv_transformationRule": "handleInputChanged",
-      "change .bv_normalizationRule": "handleInputChanged",
-      "change .bv_transformationRule": "handleInputChanged",
-      "change .bv_hitEfficacyThreshold": "handleInputChanged",
-      "change .bv_hitSDThreshold": "handleInputChanged",
-      "change .bv_positiveControlBatch": "handleInputChanged",
-      "change .bv_positiveControlConc": "handleInputChanged",
-      "change .bv_negativeControlBatch": "handleInputChanged",
-      "change .bv_negativeControlConc": "handleInputChanged",
-      "change .bv_vehicleControlBatch": "handleInputChanged",
-      "change .bv_agonistControlBatch": "handleInputChanged",
-      "change .bv_agonistControlConc": "handleInputChanged",
+      "change .bv_transformationRule": "updateModel",
+      "change .bv_normalizationRule": "updateModel",
+      "change .bv_transformationRule": "updateModel",
+      "change .bv_hitEfficacyThreshold": "updateModel",
+      "change .bv_hitSDThreshold": "updateModel",
+      "change .bv_posControlBatch": "updateModel",
+      "change .bv_posControlConc": "updateModel",
+      "change .bv_negControlBatch": "updateModel",
+      "change .bv_negControlConc": "updateModel",
+      "change .bv_vehControlBatch": "updateModel",
       "change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged",
       "change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
     };
@@ -202,14 +126,16 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
+      console.log("got to render");
       this.$('.bv_autofillSection').empty();
+      console.log(this.model);
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
       this.$('.bv_transformationRule').val(this.model.get('transformationRule'));
       this.$('.bv_normalizationRule').val(this.model.get('normalizationRule'));
       return this;
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.handleInputChanged = function() {
+    PrimaryScreenAnalysisParametersController.prototype.updateModel = function() {
       this.model.set({
         transformationRule: this.$('.bv_transformationRule').val(),
         normalizationRule: this.$('.bv_normalizationRule').val(),
@@ -217,20 +143,16 @@
         hitSDThreshold: this.getTrimmedInput('.bv_hitSDThreshold')
       });
       this.model.get('positiveControl').set({
-        batchCode: this.getTrimmedInput('.bv_positiveControlBatch'),
-        concentration: this.getTrimmedInput('.bv_positiveControlConc')
+        batchCode: this.getTrimmedInput('.bv_posControlBatch'),
+        concentration: this.getTrimmedInput('.bv_posControlConc')
       });
       this.model.get('negativeControl').set({
-        batchCode: this.getTrimmedInput('.bv_negativeControlBatch'),
-        concentration: this.getTrimmedInput('.bv_negativeControlConc')
+        batchCode: this.getTrimmedInput('.bv_negControlBatch'),
+        concentration: this.getTrimmedInput('.bv_negControlConc')
       });
-      this.model.get('vehicleControl').set({
-        batchCode: this.getTrimmedInput('.bv_vehicleControlBatch'),
+      return this.model.get('vehicleControl').set({
+        batchCode: this.getTrimmedInput('.bv_vehControlBatch'),
         concentration: null
-      });
-      return this.model.get('agonistControl').set({
-        batchCode: this.getTrimmedInput('.bv_agonistControlBatch'),
-        concentration: this.getTrimmedInput('.bv_agonistControlConc')
       });
     };
 
@@ -273,7 +195,7 @@
       $(this.el).empty();
       $(this.el).html(this.template());
       this.showExistingResults();
-      if (true) {
+      if (!this.model.isNew()) {
         this.handleExperimentSaved();
       }
       return this;
@@ -281,14 +203,14 @@
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
       var analysisStatus, resultValue;
-      analysisStatus = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
+      analysisStatus = this.model.getAnalysisStatus();
       if (analysisStatus !== null) {
-        this.analysisStatus = analysisStatus.get('stringValue');
-        this.$('.bv_analysisStatus').html(this.analysisStatus);
+        analysisStatus = analysisStatus.get('stringValue');
       } else {
-        this.analysisStatus = "not started";
+        analysisStatus = "not started";
       }
-      resultValue = this.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
+      this.$('.bv_analysisStatus').html(analysisStatus);
+      resultValue = this.model.getAnalysisResultHTML();
       if (resultValue !== null) {
         return this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
       }
@@ -300,10 +222,7 @@
         paramsFromExperiment: this.model.getAnalysisParameters()
       });
       this.dataAnalysisController.setUser(this.model.get('recordedBy'));
-      this.dataAnalysisController.setExperimentId(this.model.id);
-      if (this.analysisStatus === "complete") {
-        return this.dataAnalysisController.psapc.disableAllInputs();
-      }
+      return this.dataAnalysisController.setExperimentId(this.model.id);
     };
 
     return PrimaryScreenAnalysisController;
@@ -333,7 +252,7 @@
       UploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
       this.$('.bv_moduleTitle').html("Upload Data and Analyze");
       this.psapc = new PrimaryScreenAnalysisParametersController({
-        model: new PrimaryScreenAnalysisParameters(this.options.paramsFromExperiment),
+        model: this.options.paramsFromExperiment,
         el: this.$('.bv_additionalValuesForm')
       });
       this.psapc.on('valid', this.handleMSFormValid);
