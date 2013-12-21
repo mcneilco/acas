@@ -13,7 +13,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "default", lsType:{id:1, version:0}},
-{kindName: "galileo etl", lsType:{id:1, version:0}}
+{kindName: "galileo etl", lsType:{id:1, version:0}},
+{kindName: "gx depot", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAME":8080/acas/experimentkinds/jsonArray
 
 
@@ -62,7 +63,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "treatment", lsType:{id:2, version:0}},
 {kindName: "raw data", lsType:{id:2, version:0}},
 {kindName: "calculated data", lsType:{id:2, version:0}},
-{kindName: "report locations", lsType:{id:1, version:0}}
+{kindName: "report locations", lsType:{id:1, version:0}},
+{kindName: "adapter sequences", lsType:{id:2, version:0}}
 ]' http://"$HOSTNAME":8080/acas/statekinds/jsonArray
 
 

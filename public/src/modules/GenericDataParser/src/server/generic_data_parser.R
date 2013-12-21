@@ -46,218 +46,6 @@ source("public/src/conf/genericDataParserConfiguration.R")
 
 #####
 # Define Functions
-getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
-  # Retrieves a section of the generic excel file
-  #
-  # Args:
-  #   genericDataFileDataFrame: A data frame of lines 
-  #    lookFor: A string identifier to user as regext for the line before the start of the seciton
-  #    transpose: a boolean to set if the data should be transposed
-  # Returns:
-  #   A dataframe of the of section in the generic excel file
-  
-  require('gdata')
-  
-  # Get the first line matching the section
-  listMatch <- sapply(genericDataFileDataFrame,grep,pattern = lookFor,ignore.case = TRUE, perl = TRUE)
-  firstInstanceInEachColumn <- suppressWarnings(unlist(lapply(listMatch, min)))
-  startSection <- firstInstanceInEachColumn[is.finite(firstInstanceInEachColumn)][1]
-  if(is.na(startSection) && lookFor =="Raw Results") {
-    return(NULL)
-  }
-  if(is.na(startSection)) {
-    stop("The spreadsheet appears to be missing an important section header. The loader needs '",lookFor,"' to be somewhere in the spreadsheet.",sep="")
-  }
-  
-  if((startSection+2)>length(genericDataFileDataFrame[[1]])) {
-    stop(paste0("There must be at least two rows filled in after '", lookFor, 
-                "'. Either there is extra data that you need to fill in, or you may wish to remove '", 
-                lookFor, "' entirely."))
-  }
-  
-  # Get the indexes of columns in the section, using the longest of either of the first two rows
-  sectionHeaderRow <- genericDataFileDataFrame[startSection + 1,]
-  secondRow <- genericDataFileDataFrame[startSection + 2,]
-  sectionHeaderColumns <- grepl(pattern="\\S", sapply(sectionHeaderRow,as.character))
-  secondHeaderColumns <- grepl(pattern="\\S", sapply(secondRow,as.character))
-  if (all(!c(sectionHeaderColumns, secondHeaderColumns))) {
-    stop(paste0("There must be at least two rows filled in after '", lookFor, "'."))
-  }
-  if (any(!secondHeaderColumns & !sectionHeaderColumns)) {
-    dataColumnIndexes <- 1:(min(which(!secondHeaderColumns & !sectionHeaderColumns)) - 1)
-  } else {
-    dataColumnIndexes <- 1:length(sectionHeaderRow)
-  }
-  
-  # Get the last line matching the section
-  sectionColumn <- genericDataFileDataFrame[,names(startSection)]
-  sectionColumnSubset <- subset(sectionColumn, 1:length(sectionColumn) > startSection)
-  sectionLength <- which(is.na(sectionColumnSubset) | sectionColumnSubset %in% "")[1]
-  if(is.na(sectionLength)) {
-    sectionLength <- length(sectionColumnSubset) + 1
-  }
-  endSection <- startSection + sectionLength
-  
-  #Use the start and end variables to grab the data frame
-  startSectionColumnNumber <- match(names(startSection),names(genericDataFileDataFrame))
-  foundData <- subset(x = genericDataFileDataFrame, subset = 1:nrow(genericDataFileDataFrame) > startSection & 1:nrow(genericDataFileDataFrame) < endSection, select = dataColumnIndexes)
-  
-  # Transpose the data frame if option is set
-  if(transpose == TRUE) {
-    row.names(foundData) <- foundData[,1]
-    foundData <- subset(foundData,select = 2:length(foundData))
-    foundData <- as.data.frame(t(foundData), stringsAsFactors=FALSE)
-  }
-  
-  foundData <- as.data.frame(lapply(foundData, trim), optional=TRUE, stringsAsFactors=FALSE)
-  
-  return(foundData)
-}
-validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryFormat = "%m/%d/%Y") {
-  # Validates and/or coerces a given string to a specified date format
-  #
-  # Args:
-  #   inputValue: A string representing a date 
-  #  expectedFormat: A character string representing the desired date format. (see ?format.POSIXct)
-  # Returns:
-  #   A date coerced or maintained to be in the expectedFormat
-  
-  returnDate <- ""
-  
-  if (is.na(inputValue) | inputValue == "") {return (NA)}
-  
-  # Function to attempt to coerce the date into a given format
-  coerceToDate <- function(format, inputValue) {
-    # Coerces a string to a given format
-    #
-    # Args:
-    #	format: A character string representing the desired date format. (see ?format.POSIXct)
-    #	inputValue: A string representing a date
-    # Returns:
-    #	A coerced date object or an NA if unable to coerce properly
-    return(as.Date(as.character(inputValue), format))
-  }
-  isInFormat <- function(format, inputValue) {
-    # Coerces a string to a given format, and then evaluates whether it is reasonable or not
-    #
-    # Args:
-    #	format: A character string representing the desired date format. (see ?format.POSIXct)
-    #	inputValue: A string representing a date
-    # Returns:
-    #	A boolean as to whether the date is correctly coercible to the given format
-    
-    # Coerce the date
-    coercedDate <- coerceToDate(format, inputValue)
-    if(!is.na(coercedDate)) {
-      # If the value was coerced then evaluate how many years into the future or in the paste it is
-      numYearsFromToday <- as.numeric(format(coercedDate, "%Y")) - as.numeric(format(Sys.Date(), "%Y"))
-      if(numYearsFromToday > -50 && numYearsFromToday < 1) {
-        # If the date is less than 50 years in the paste or less than 1 year in the future, then it is somewhat reasonable
-        return(TRUE)
-      }
-    }
-    return(FALSE)
-  }
-  
-  # Check if can be coerced to the expected format
-  if(!isInFormat(expectedFormat, inputValue )) {
-    
-    # Let the secondary format pass through
-    if(isInFormat(secondaryFormat, inputValue)) {
-      return(coerceToDate(secondaryFormat, inputValue))
-    }
-    
-    # Return an error for Excel Date formats
-    if(inputValue == "A_date_was_in_Excel_Date_format") {
-      errorList <<- c(errorList, paste0("A date was has a Number Format of 'Date' or 'General' in Excel rather than 'Text'. ",
-                                        "Please format the dates as Excel 'Text' and use the format YYYY-MM-DD. ",
-                                        "Excel stores dates in a format we cannot accept."))
-      return(NA)       
-    }
-    
-    #First try substituting out the seperators in the inputValue for those in the expected format
-    expectedSeperator <- ifelse(grepl("-",expectedFormat),"-", "/")
-    inputValueWExpectedSeperator <- gsub("-|/",expectedSeperator,inputValue)
-    
-    #Test again with new seperators
-    if(!isInFormat(expectedFormat, inputValueWExpectedSeperator)) {
-      #This means the value is still not in the expected format, now check for other common formats to see if any of them are reasonable
-      commonFormats <- c("%Y-%m-%d","%y-%M-%d","%d-%m-%y","%m-%d-%y","%m-%d-%Y","%b-%d-%Y","%b-%d-%Y")
-      formatsAbleToCoerce <- commonFormats[unlist(lapply(commonFormats,isInFormat, inputValue = inputValueWExpectedSeperator))]
-      if(length(formatsAbleToCoerce) > 0) {
-        # If any of the formats were coercible then we will attempt to pick the best one by getting the one value closest to today
-        possibleDates <- do.call("c",lapply(formatsAbleToCoerce, coerceToDate, inputValueWExpectedSeperator))
-        possibleDatesInExpectedFormat <- as.Date(format(possibleDates, expectedFormat))
-        daysFromToday <- abs(as.Date(format(Sys.Date(), expectedFormat)) - possibleDates)
-        minDaysFromToday <- min(daysFromToday)
-        bestMatchingDate <- possibleDatesInExpectedFormat[daysFromToday == minDaysFromToday][1]
-        
-        # Add to the warnings that we coerced the date to a "Best Match"
-        warning(paste0("A date is not in the proper format. Found: \"",inputValue,"\" This was interpreted as \"",bestMatchingDate, 
-                       "\". Please enter dates as YYYY-MM-DD, or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>  for more information."))
-        returnDate <- bestMatchingDate
-      } else {
-        # If we couldn't parse the data into any of the formats, then we add this to the erorrs and return no date
-        errorList <<- c(errorList,paste0("The loader was unable to change the date '", inputValue, 
-                                         "' to the proper format. Please change it to the format YYYY-MM-DD, ",
-                                         " or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a> for more information."))
-      }
-    } else {
-      # If the change in the seperators fixed the issue, then we add this to the warnings and return the coerced date
-      warning(paste0("A date is not in the proper format. Found: \"",inputValue,"\" This was interpreted as \"",
-                     inputValueWExpectedSeperator, 
-                     "\". Please enter dates as YYYY-MM-DD."))
-      returnDate <- inputValueWExpectedSeperator
-    }
-  } else {
-    # If the date was coercible to the given format with no changes, then good, just return what they gave us as a date
-    returnDate <- coerceToDate(expectedFormat, inputValue)
-  }
-  # Return the date
-  return(returnDate)	
-}
-validateCharacter <- function(inputValue) {
-  # Validates and/or coerces an input to a character format
-  #
-  # Args:
-  #   inputValue: A string representing a character 
-  #
-  # Returns:
-  #   A character string
-  
-  # Checks if the entry is NULL
-  if (is.null(inputValue)) {
-    errorList <<- c(errorList,paste("An entry was expected to be a set of characters but the entry was: NULL"))
-    return (NULL)
-  }
-  
-  
-  #Checks if the input is similar enough as a character to be interpreted as one
-  if (as.character(inputValue)!=inputValue) {
-    # If it cannot be coerced to character, throw an error
-    if (is.na(as.character(inputValue))) {
-      errorList <<- c(errorList,paste("An entry was expected to be a set of characters but the entry was:", inputValue))
-    }
-    warning(paste("An entry was expected to be a set of characters but the entry was:", inputValue))
-  }
-  # Returns the input as a character
-  return(as.character(inputValue))
-}
-validateNumeric <- function(inputValue) {
-  # Validates and/or coerces an input to a numeric format
-  #
-  # Args:
-  #   inputValue: A value representing a number
-  #
-  # Returns:
-  #   A numeric value
-  
-  isCoercibleToNumeric <- !is.na(suppressWarnings(as.numeric(gsub(",", "", as.character(inputValue)))))
-  if(!isCoercibleToNumeric) {
-    errorList <<- c(errorList,paste0("An entry was expected to be a number but was: '", inputValue, "'. Please enter a number instead."))
-  }
-  return(suppressWarnings(as.numeric(gsub(",", "", as.character(inputValue)))))
-}
 validateMetaData <- function(metaData, configList, formatSettings = list()) {
   # Valides the meta data section
   #
@@ -276,18 +64,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   metaDataNames <- names(metaData)
   metaData <- as.data.frame(lapply(metaData, function(x) if(is.na(x)) "NA" else x), stringsAsFactors=FALSE)
   names(metaData) <- metaDataNames
-  
-  # Check if extra data was picked up that should not be
-  if (length(metaData[[1]])>1) {
-    extraData <- c(as.character(metaData[[1]][2:length(metaData[[1]])]),
-                   as.character(metaData[[2]][2:length(metaData[[2]])]))
-    extraData <- extraData[extraData!=""]
-    errorList <<- c(errorList, paste0("Extra data were found next to the Experiment Meta Data ",
-                                      "and should be removed: '",
-                                      paste(extraData, collapse="', '"), "'"))
-    metaData <- metaData[1,]
-  }
-  
+
   if (is.null(metaData$Format)) {
     stop("A Format must be entered in the Experiment Meta Data.")
   }
@@ -310,59 +87,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
     names(metaData)[names(metaData) == "Assay Completion Date"] <- "Assay Date"
   }
   
-  # Extract the expected headers from the input variable
-  expectedHeaders <- expectedDataFormat$headers
-  
-  # Validate that there are no missing required columns, add errors for any expected fields that are missing
-  missingColumns <- expectedHeaders[is.na(match(toupper(expectedHeaders),toupper(names(metaData)))) 
-                                    & !(expectedDataFormat$isNullable)]
-  for(m in missingColumns) {
-    errorList <<- c(errorList,paste("The loader could not find required Experiment Meta Data row:",m))
-  }
-  
-  # Validate that the matched columns are of the same data type and non-nullable fields are not null
-  # return modified metaData with results of the validation of each field
-  matchedColumns <- metaData[,!is.na(match(toupper(names(metaData)), toupper(expectedHeaders)))]
-  validatedMetaData <- metaData
-  for(m in 1:length(matchedColumns)) {
-    # Get the name of the column
-    column <- names(matchedColumns)[m]
-    
-    # Find if it is Nullable
-    nullable <- expectedDataFormat$isNullable[expectedDataFormat$headers == column]
-    
-    
-    
-    expectedDataType <- as.character(expectedDataFormat$class[expectedDataFormat$headers == column])
-    receivedValue <- matchedColumns[1,m]
-    
-    if(!nullable && (is.null(receivedValue) | receivedValue==""  | receivedValue=="")) {
-      errorList <<- c(errorList,paste0("The loader could not find an entry for '", column, "' in the Experiment Meta Data"))
-    }
-    
-    validationFunction <- switch(expectedDataType, 
-                                 "Date" = validateDate, 
-                                 "Number" = validateNumeric, 
-                                 "Text" = validateCharacter,  
-                                 stop(paste("Internal Error: unrecognized class required by the loader:",expectedDataType))
-    )
-    validatedData <- validationFunction(receivedValue)
-    validatedMetaData[,column] <- validatedData
-  }
-  
-  # Add warnings for additional columns sent that are not expected
-  additionalColumns <- names(metaData)[is.na(match(names(metaData),expectedHeaders))]
-  if (length(additionalColumns)>0) {
-    if (length(additionalColumns)==1) {
-      warning(paste0("The loader found an extra Experiment Meta Data row that will be ignored: '", 
-                     additionalColumns, 
-                     "'. Please remove this row."))
-    } else {
-      warning(paste0("The loader found extra Experiment Meta Data rows that will be ignored: '", 
-                     paste(additionalColumns,collapse="' ,'"), 
-                     "'. Please remove these rows."))
-    }
-  }
+  validatedMetaData <- validateSharedMetaData(metaData, expectedDataFormat)
   
   if (!is.null(metaData$Project)) {
     validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList) 
@@ -618,34 +343,23 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     stop(paste0(sqliz(internalReservedWords[usedReservedWords]), " is reserved and cannot be used as a column header."))
   }
   
-  currentValueKindsList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds")))
-  if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
-  currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
-  matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
+  outputList <- checkValueKinds(neededValueKinds, neededValueKindTypes)
+  newValueKinds <- outputList$newValueKinds
+  wrongTypeKindFrame <- outputList$wrongTypeKindFrame
+  oldValueKindTypes <- wrongTypeKindFrame$oldValueKindTypes
   
-  newValueKinds <- setdiff(neededValueKinds, currentValueKinds)
-  oldValueKinds <- intersect(neededValueKinds, currentValueKinds)
-  
-  # Check that the value kinds that have been entered before have the correct Datatype (valueType)
-  oldValueKindTypes <- neededValueKindTypes[match(oldValueKinds, neededValueKinds)]
   oldValueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(oldValueKindTypes, c("Number", "Text", "Date", "Clob"))]
-  currentValueKindTypeFrame <- data.frame(currentValueKinds,  matchingValueTypes, stringsAsFactors=FALSE)
-  oldValueKindTypeFrame <- data.frame(oldValueKinds, oldValueKindTypes, stringsAsFactors=FALSE)
-  
-  comparisonFrame <- merge(oldValueKindTypeFrame, currentValueKindTypeFrame, by.x = "oldValueKinds", by.y = "currentValueKinds")
-  wrongValueTypes <- comparisonFrame$oldValueKindTypes != comparisonFrame$matchingValueTypes
   
   # Throw errors if any values are of types that cannot be entered in SEL
-  reservedValueKinds <- comparisonFrame$oldValueKinds[comparisonFrame$matchingValueTypes %in% c("codeValue", "fileValue", "urlValue", "blobValue")]
+  reservedValueKinds <- wrongTypeKindFrame$oldValueKinds[wrongTypeKindFrame$oldValueKindTypes %in% c("codeValue", "fileValue", "urlValue", "blobValue")]
   if (length(reservedValueKinds) > 0) {
     stop(paste0("The column header ", sqliz(reservedValueKinds), " is reserved and cannot be used"))
   }
   
-  if(any(wrongValueTypes)) {
-    problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
-    problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
-    problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
-    problemFrame <- problemFrame[wrongValueTypes, ]
+  if(nrow(wrongTypeKindFrame) > 0) {
+    problemFrame <- wrongTypeKindFrame
+    problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(wrongTypeKindFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
+    problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(wrongTypeKindFrame$enteredValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
     
     for (row in 1:nrow(problemFrame)) {
       errorList <<- c(errorList, paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
@@ -661,27 +375,13 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
                    " headers that were used previously. If this is a new protocol, you can proceed without worry."))
     if (!dryRun) {
       # Create the new valueKinds, using the correct valueType
-      # TODO: also check that valueKinds have the correct valueType when being loaded a second time
-      valueTypesList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuetypes")))
-      valueTypes <- sapply(valueTypesList, getElement, "typeName")
       valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
       valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob"))]
       
       # This is for the curveNames, but would catch other added values as well
       valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
       
-      newValueTypesList <- valueTypesList[match(valueKindTypes, valueTypes)]
-      newValueKindsUpload <- mapply(function(x, y) list(kindName=x, lsType=y), newValueKinds, newValueTypesList,
-                                    SIMPLIFY = F, USE.NAMES = F)
-      tryCatch({
-        response <- getURL(
-          paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds/jsonArray"),
-          customrequest='POST',
-          httpheader=c('Content-Type'='application/json'),
-          postfields=toJSON(newValueKindsUpload))
-      }, error = function(e) {
-        errorList <<- c(errorList,paste("Error in saving new column headers:", e$message))
-      })
+      saveValueKinds(valueKinds, valueKindTypes)
     }
   }
   return(NULL)
@@ -1098,51 +798,6 @@ organizeRawResults <- function(rawResults, calculatedResults) {
   # Return
   return(list(subjectData = longResults, xLabel = xLabel, yLabel = yLabel, tempIdLabel = tempIdLabel,
               treatmentGroupData = longTreatmentGroupResults))
-}
-getProtocolByName <- function(protocolName, configList, formFormat) {
-  # Gets the protocol entered as an input
-  # 
-  # Args:
-  #   protocolName:     	    A string name of the protocol
-  #   lsTransaction:          A list that is a lsTransaction tag
-  #   recordedBy:             A string that is the scientist name
-  #   dryRun:                 A boolean that marks if information should be saved to the server
-  #
-  # Returns:
-  #  A list that is a protocol
-  
-  require('RCurl')
-  require('rjson')
-  require('gdata')
-  
-  forceProtocolCreation <- grepl("CREATETHISPROTOCOL", protocolName)
-  if(forceProtocolCreation) {
-    protocolName <- trim(gsub("CREATETHISPROTOCOL", "", protocolName))
-  }
-  
-  tryCatch({
-    protocolList <- fromJSON(getURL(paste0(configList$client.service.persistence.fullpath, "protocols?FindByProtocolName&protocolName=", URLencode(protocolName, reserved = TRUE))))
-  }, error = function(e) {
-    stop("There was an error in accessing the protocol. Please contact your system administrator.")
-  })
-  
-  # If no protocol with the given name exists, warn the user
-  if (length(protocolList)==0) {
-    allowedCreationFormats <- configList$server.allow.protocol.creation.formats
-    allowedCreationFormats <- unlist(strsplit(allowedCreationFormats, ","))
-    if (formFormat %in% allowedCreationFormats || forceProtocolCreation) {
-      warning(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
-    } else {
-      errorList <<- c(errorList, paste0("Protocol '", protocolName, "' does not exist. Please enter a protocol name that exists. Contact your system administrator if you would like to create a new protocol."))
-    }
-    # A flag for when the protocol will be created new
-    protocol <- NA
-  } else {
-    # If the protocol does exist, get the full version
-    protocol <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "protocols/", protocolList[[1]]$id))))
-  }
-  return(protocol)
-  
 }
 getExperimentByName <- function(experimentName, protocol, configList, duplicateNamesAllowed = FALSE) {
   # Gets the experiment entered as an input, warns if it does exist, and throws an error if it is in the wrong protocol
@@ -2038,7 +1693,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   
-  require('XLConnect')
   require('RCurl')
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
@@ -2156,7 +1810,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   # Get the protocol and experiment and, when not on a dry run, create them if they do not exist
-  protocol <- getProtocolByName(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
+  protocol <- getProtocolByName(protocolName = validatedMetaData$'Protocol Name'[1], inputFormat)
   newProtocol <- is.na(protocol[[1]])
   if (!newProtocol) {
     metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
