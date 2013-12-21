@@ -3,6 +3,7 @@ source("public/src/conf/customFunctions.R")
 parseGXFileListMain <- function(pathToSourceFile, recordedBy, dryRun = TRUE, developmentMode = FALSE, testMode = FALSE, 
                                 errorEnv = NULL) {
   library(plyr)
+  library(racas)
   inputDataFrame <- readExcelOrCsv(pathToSourceFile)
   
   #Remove later
@@ -183,7 +184,7 @@ parseGXFileListMain <- function(pathToSourceFile, recordedBy, dryRun = TRUE, dev
   
   savedSubjectValues <- saveValuesFromLongFormat(allData, "subject", stateGroups, lsTransaction, recordedBy)
   
-  return(list(info = list("Finished" = "TRUE!")))
+  return(list(info = list("Finished" = TRUE, "Experiment codename" = experiment$codeName)))
 }
 createNewExperiment <- function(metaData, protocol, lsTransaction, recordedBy, replacedExperimentCodes = NULL) {
   # creates an experiment using the metaData

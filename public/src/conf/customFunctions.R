@@ -7,6 +7,7 @@ calculateTreatmemtGroupID <- function(results, inputFormat, stateGroups, resultT
   } else {
     # Standard code
     treatmentGrouping <- which(lapply(stateGroups, getElement, "stateKind") == "treatment")
+    if(length(treatmentGrouping) == 0) return(NA)
     groupingColumns <- stateGroups[[treatmentGrouping]]$valueKinds
     groupingColumns <- resultTypes$DataColumn[resultTypes$Type %in% groupingColumns]
     if(stateGroups[[treatmentGrouping]]$includesCorpName) {
@@ -312,7 +313,8 @@ customSourceFileMove <- function(fileStartLocation, fileName, fileService, exper
   tryCatch({
     response <- postForm(fileService,
                          FILE = fileUpload(filename = fileStartLocation),
-                         OWNING_URL = paste0(racas::applicationSettings$serverPath, "experiments/codename/", experiment$codeName),
+                         OWNING_URL = paste0(racas::applicationSettings$client.service.persistence.fullpath, 
+                                             "experiments/codename/", experiment$codeName),
                          CREATED_BY_LOGIN = recordedBy)
     parsedXML <- xmlParse(response)
     serverFileLocation <- xmlValue(xmlChildren(xmlChildren(parsedXML)$dnsFile)$corpFileName)

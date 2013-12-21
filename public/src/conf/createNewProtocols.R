@@ -11,6 +11,11 @@ protocolNameList <- c("Rat IVPO PK noavg", "Mouse IVPO PK noavg", "Dog IVPO PK n
 shortDescription <- "dmpk protocol"
 extraProtocolsFrame1 <- data.frame(protocolName = protocolNameList, shortDescription)
 
+
+protocolNameList <- c("Mouse SC CNS penetration")
+shortDescription <- "dmpk protocol"
+extraProtocolsFrame1 <- data.frame(protocolName = protocolNameList, shortDescription)
+
 protocolNameList <- c("Mouse Novel Object Recognition Task", "Rat Novel Object Recognition Task", "Mouse Contextual Fear Conditioning", "Rat Contextual Fear Conditioning")
 shortDescription <- "behavior protocol"
 extraProtocolsFrame2 <- data.frame(protocolName = protocolNameList, shortDescription)
@@ -36,8 +41,10 @@ shortDescription <- "dmpk permeability protocol"
 
 #protocolsFrame <- rbind(extraProtocolsFrame3)
 #protocolsFrame <- rbind(protocolsFrame, extraProtocolsFrame1, extraProtocolsFrame2, extraProtocolsFrame3, extraProtocolsFrame4) #testOnlyProtocol)
-protocolsFrame <- data.frame(protocolName = "Rat Rotarod v.1.0", shortDescription = "behavior protocol")
+#protocolsFrame <- data.frame(protocolName = "Rat Rotarod v.1.0", shortDescription = "behavior protocol")
 #protocolsFrame <- data.frame(protocolName = "PDE2A Biacore Kinetics", shortDescription = "Ka: on-rate of interaction, concentration dependent\nKd: off-rate of interaction, concentration independent\nKD: affinity of interaction\nt1/2: half-life of interaction (offrate)\nU: estimate of uniqueness of values, if U <15, constants are not significant")
+protocolsFrame <- data.frame(protocolName = "Mouse SC CNS penetration", shortDescription = "dmpk protocol")
+
 recordedBy = "smeyer"
 
 for (row in 1:nrow(protocolsFrame)) {
@@ -60,5 +67,12 @@ for (row in 1:nrow(protocolsFrame)) {
                              protocolLabels=protocolLabels)
   
   protocol <- saveProtocol(protocol)
+  
+  protocolState <- createProtocolState(protocol=protocol, recordedBy="smeyer", lsType="metadata", 
+                                       lsKind="name modifier", lsTransaction=lsTransaction)
+  protocolStateSaved <- saveAcasEntity(protocolState, "protocolstates")
+  protocolValue <- createStateValue(lsType="stringValue", lsKind="postfix", lsTransaction=lsTransaction, 
+                                    recordedBy="smeyer", lsState=protocolStateSaved, stringValue=" noavg")
+  protocolValueSaved <- saveAcasEntity(protocolValue, "protocolvalues")
   print("protocol saved")
 }

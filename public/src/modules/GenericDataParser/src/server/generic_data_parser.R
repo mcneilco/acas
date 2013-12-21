@@ -60,24 +60,15 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   
   require('gdata')
   
-  # Turn NA into "NA"
-  metaDataNames <- names(metaData)
-  metaData <- as.data.frame(lapply(metaData, function(x) if(is.na(x)) "NA" else x), stringsAsFactors=FALSE)
-  names(metaData) <- metaDataNames
-
-  if (is.null(metaData$Format)) {
-    stop("A Format must be entered in the Experiment Meta Data.")
-  }
-  
   expectedDataFormat <- data.frame(
     headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", 
                 "Short Description", "Experiment Keywords", "Page","Assay Date"),
-    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+    class = c("stringValue", "stringValue", "stringValue", "stringValue", "stringValue", "stringValue", "stringValue", "stringValue", "stringValue", "dateValue"),
     isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
   )
   
   if (!is.null(configList$client.include.project) && configList$client.include.project == "TRUE") {
-    expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
+    expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "stringValue", isNullable = FALSE))
   }
   if (length(formatSettings) > 0) {
     expectedDataFormat <- rbind(expectedDataFormat, formatSettings[[as.character(metaData$Format)]]$extraHeaders)
@@ -85,6 +76,10 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   
   if ("Assay Completion Date" %in% names(metaData)) {
     names(metaData)[names(metaData) == "Assay Completion Date"] <- "Assay Date"
+  }
+  
+  if (is.null(metaData$Format)) {
+    stop("A Format must be entered in the Experiment Meta Data.")
   }
   
   validatedMetaData <- validateSharedMetaData(metaData, expectedDataFormat)
@@ -343,6 +338,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     stop(paste0(sqliz(internalReservedWords[usedReservedWords]), " is reserved and cannot be used as a column header."))
   }
   
+  neededValueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(neededValueKindTypes, c("Number", "Text", "Date", "Clob"))]
   outputList <- checkValueKinds(neededValueKinds, neededValueKindTypes)
   newValueKinds <- outputList$newValueKinds
   wrongTypeKindFrame <- outputList$wrongTypeKindFrame
@@ -355,7 +351,6 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   if (length(reservedValueKinds) > 0) {
     stop(paste0("The column header ", sqliz(reservedValueKinds), " is reserved and cannot be used"))
   }
-  
   if(nrow(wrongTypeKindFrame) > 0) {
     problemFrame <- wrongTypeKindFrame
     problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(wrongTypeKindFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
@@ -435,11 +430,11 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
       dataColumns <- c(dataColumns,column)
     }
   }
-  returnDataFrame <- data.frame("DataColumn" = array(dim = length(dataColumns)), "Type" = array(dim = length(dataColumns)), "Units" = array(dim = length(dataColumns)), "Conc" = array(dim = length(dataColumns)), "ConcUnits" = array(dim = length(dataColumns)))
+  returnDataFrame <- data.frame("DataColumn" = array(dim = length(dataColumns)), "Kind" = array(dim = length(dataColumns)), "Units" = array(dim = length(dataColumns)), "Conc" = array(dim = length(dataColumns)), "ConcUnits" = array(dim = length(dataColumns)))
   returnDataFrame$DataColumn <- dataColumns
-  returnDataFrame$Type <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
+  returnDataFrame$Kind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
   # This removes "Reported" from all columns
-  returnDataFrame$Type <- trim(gsub("Reported","",returnDataFrame$Type))
+  returnDataFrame$Kind <- trim(gsub("Reported","",returnDataFrame$Kind))
   returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
   returnDataFrame$Conc <- as.numeric(gsub("[^0-9\\.]", "", concAndUnits))
@@ -462,7 +457,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   #
   # Returns:
   #	  a data frame containing the organized calculated data
-  
+
   require('reshape')
   require('gdata')
   
@@ -505,7 +500,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   }
   
   # These columns are not result types and should not be pivoted into long format
-  ignoreTheseAsResultTypes <- c("Corporate Batch ID","originalCorporateBatchID")
+  ignoreTheseAsResultTypes <- c("Corporate Batch ID", "originalCorporateBatchID")
   
   # Call the function that extracts result type names, units, conc, concunits from the headers
   resultTypes <- extractResultTypes(calculatedResultsResultTypeRow, ignoreTheseAsResultTypes)
@@ -522,108 +517,31 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   results$"Corporate Batch ID" <- as.character(results$"Corporate Batch ID")
   results$originalCorporateBatchID <- results$"Corporate Batch ID"
   if (!is.null(replaceFakeCorpBatchId)) {
-    replacementRows <- results$"Corporate Batch ID"==replaceFakeCorpBatchId
+    replacementRows <- results$"Corporate Batch ID" == replaceFakeCorpBatchId
     results$"Corporate Batch ID"[replacementRows] <- as.character(results[replacementRows,replaceFakeCorpBatchId])
   }
   
-  # Add a temporary analysisGroupID to keep track of how rows match up
-  results$analysisGroupID <- seq(1,length(results[[1]]))
+  # calculateTreatmentGroupID is in customFunctions.R
+  organizedData <- meltWideData(results, resultTypes, stateGroups, splitSubjects, calculateTreatmemtGroupID)
   
-  #Temp for treatment groups
-  if (rawOnlyFormat) {
-    if (!is.null(splitSubjects)) {
-      results$subjectID <- as.numeric(as.factor(do.call(paste0, args=as.list(results[splitSubjects]))))
-    } else {
-      results$subjectID <- NA
-    }
-    # calculateTreatmentGroupID is in customFunctions.R
-    results$treatmentGroupID <- calculateTreatmemtGroupID(results, inputFormat, stateGroups, resultTypes)
-  } else {
-    results$treatmentGroupID <- NA
-    results$subjectID <- NA
-  }
+  nameChange <- c('batchCode'='Corporate Batch ID', 'valueKind'='Result Type', 'valueUnit'='Result Units', 'concentration'='Conc', 
+                  'concentrationUnit'='Conc Units', 'time'='time', 'timeUnit'='timeUnit', 'numericValue'='Result Value', 
+                  'stringValue'='Result Desc', 'valueOperator'='Result Operator', 'subjectStateID'='subjectStateID', 
+                  'dateValue'='Result Date', 'clobValue'='clobValue', 'valueType'='Class', 'resultTypeAndUnit'='resultTypeAndUnit', 
+                  'publicData'='Hidden', 'originalBatchCode'='originalCorporateBatchID', 'splitFunctionID'='treatmentGroupID', 
+                  'splitColumnID'='subjectID', 'rowID'='analysisGroupID')
   
-  # Remove blank columns
-  blankSpaces <- lapply(as.list(results),function(x) return (x != ""))
-  emptyColumns <- unlist(lapply(blankSpaces, sum) == 0)
-  resultTypes <- resultTypes[!(resultTypes$DataColumn %in% names(results)[emptyColumns]),]
+  names(organizedData)[names(organizedData) %in% names(nameChange)] <- nameChange[names(organizedData)[names(organizedData) %in% names(nameChange)]]
+  organizedData$Hidden <- !organizedData$Hidden
   
-  #Convert the results to long format
-  longResults <- reshape(results, idvar=c("id"), ids=row.names(results), v.names="UnparsedValue",
-                         times=resultTypes$DataColumn, timevar="resultTypeAndUnit",
-                         varying=list(resultTypes$DataColumn), direction="long", drop = names(results)[emptyColumns])
-  
-  # Add the extract result types information to the long format
-  longResults$"Result Units" <- resultTypes$Units[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$"Conc" <- resultTypes$Conc[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$"Conc Units" <- resultTypes$concUnits[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  #longResults$"Result Units" <- resultTypes$Units[match(longResults$"Result Type",resultTypes$Type)]
-  longResults$Class <- resultTypes$dataClass[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$"Result Type" <- resultTypes$Type[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$Hidden <- resultTypes$hidden[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$time <- resultTypes$time[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$timeUnit <- resultTypes$timeUnit[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  
-  longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
-  
-  # Parse numeric data from the unparsed values
-  matches <- is.na(suppressWarnings(as.numeric(gsub("^(>|<)(.*)", "\\2", gsub(",","",longResults$"UnparsedValue")))))
-  longResults$"Result Value" <- longResults$"UnparsedValue"
-  longResults$"Result Value"[matches] <- ""
-  
-  # Parse string values from the unparsed values
-  longResults$"Result Desc" <- as.character(longResults$"UnparsedValue")
-  longResults$"Result Desc"[!matches & longResults$Class != "Text"] <- ""
-  
-  longResults$clobValue <- as.character(longResults$"UnparsedValue")
-  longResults$clobValue[!longResults$Class=="Clob"] <- NA
-  longResults$"Result Desc"[longResults$Class=="Clob"] <- ""
-  
-  # Parse Operators from the unparsed value
-  matchExpression <- ">|<"
-  longResults$"Result Operator" <- longResults$"Result Value"
-  matches <- gregexpr(matchExpression,longResults$"Result Value")
-  regmatches(longResults$"Result Operator",matches, invert = TRUE) <- ""
-  
-  # Turn result values to numeric values
-  longResults$"Result Value" <-  as.numeric(gsub(",","",gsub(matchExpression,"",longResults$"Result Value")))
-  
-  # For the results marked as "Text":
-  #   Set the Result Desc to the original value
-  #   Clear the other categories
-  longResults$"Result Value"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
-  longResults$"Result Operator"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
-  
-  # For the results marked as "Date":
-  #   Apply the function validateDate to each entry
-  longResults$"Result Date" <- rep(NA, length(longResults$analysisGroupID))
-  if (length(which(longResults$Class=="Date")) > 0) {
-    dateTranslation <- lapply(unique(longResults$UnparsedValue[which(longResults$Class=="Date")]), validateDate)
-    names(dateTranslation) <- unique(longResults$UnparsedValue[which(longResults$Class=="Date")])
-    longResults$"Result Date"[which(longResults$Class=="Date" & 
-                                      !is.na(longResults$UnparsedValue) &
-                                      longResults$UnparsedValue != "")] <- unlist(dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date" & 
-                                                                                                !is.na(longResults$UnparsedValue))]])
-  }
-  longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
-  longResults$"Result Operator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
-  longResults$"Result Desc"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
+  # Right now, extractResultTypes already returns Number, Text, etc.
+  #organizedData$Class <- c("Number","Text","Date", "Clob")[match(organizedData$Class,c("numericValue","stringValue","dateValue", "clobValue"))]
   
   # Clean up the data frame to look nice (remove extra columns)
-  row.names(longResults) <- 1:nrow(longResults)
-  organizedData <- longResults[c("Corporate Batch ID","Result Type","Result Units","Conc","Conc Units", "time", "timeUnit", "Result Value",
-                                 "Result Desc","Result Operator","analysisGroupID","Result Date","clobValue","Class",
-                                 "resultTypeAndUnit","Hidden", "originalCorporateBatchID", "treatmentGroupID", "subjectID")]
-  
-  # Turn empty string into NA
-  organizedData[organizedData==" " | organizedData=="" | is.na(organizedData)] <- NA
-  
-  # Remove rows
-  organizedData <-organizedData[!(is.na(organizedData$"Result Value") 
-                                  & is.na(organizedData$"Result Desc") 
-                                  & is.na(organizedData$"Result Operator")
-                                  & is.na(organizedData$"Result Date")
-                                  & is.na(organizedData$clobValue)), ]
+  row.names(organizedData) <- 1:nrow(organizedData)
+#   organizedData <- organizedData[c("Corporate Batch ID","Result Type","Result Units","Conc","Conc Units", "time", "timeUnit", "numericValue",
+#                                  "stringValue","valueOperator","rowID","dateValue","clobValue","valueType",
+#                                  "resultTypeAndUnit","Hidden", "originalCorporateBatchID", "treatmentGroupID", "splitColumnID")]
   
   return(organizedData)
 }
@@ -698,8 +616,8 @@ organizeRawResults <- function(rawResults, calculatedResults) {
   resultTypes <- extractResultTypes(rawResultsTypeRow)
   
   # Get the x and y labels without units
-  xLabel <- resultTypes$Type[match(xLabelWithUnit,resultTypes$DataColumn)]
-  yLabel <- resultTypes$Type[match(yLabelWithUnit,resultTypes$DataColumn)]
+  xLabel <- resultTypes$Kind[match(xLabelWithUnit,resultTypes$DataColumn)]
+  yLabel <- resultTypes$Kind[match(yLabelWithUnit,resultTypes$DataColumn)]
   
   # Force them to use Dose and Response (would add a flag later for other similar formats that are not Dose Respose)
   if (xLabel != "Dose") {
@@ -767,7 +685,7 @@ organizeRawResults <- function(rawResults, calculatedResults) {
   longTreatmentGroupResults$"Result Units" <- resultTypes$Units[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
   longTreatmentGroupResults$"Conc" <- resultTypes$Conc[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
   longTreatmentGroupResults$"Conc Units" <- resultTypes$concUnits[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
-  longTreatmentGroupResults$ResultType <- resultTypes$Type[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
+  longTreatmentGroupResults$ResultType <- resultTypes$Kind[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
   
   # Get Subject data
   
@@ -785,7 +703,7 @@ organizeRawResults <- function(rawResults, calculatedResults) {
   longResults$"Result Units" <- resultTypes$Units[match(longResults$"ResultType",resultTypes$DataColumn)]
   longResults$"Conc" <- resultTypes$Conc[match(longResults$"ResultType",resultTypes$DataColumn)]
   longResults$"Conc Units" <- resultTypes$concUnits[match(longResults$"ResultType",resultTypes$DataColumn)]
-  longResults$ResultType <- resultTypes$Type[match(longResults$"ResultType",resultTypes$DataColumn)]
+  longResults$ResultType <- resultTypes$Kind[match(longResults$"ResultType",resultTypes$DataColumn)]
   
   # Remove blank spaces from the data
   longTreatmentGroupResults[longTreatmentGroupResults==" " | longTreatmentGroupResults=="" | is.na(longTreatmentGroupResults)] <- NA
@@ -1050,6 +968,17 @@ validateScientist <- function(scientistName, configList) {
   }
   
   return(username)
+}
+getExpectedMetaDataFormat <- function() {
+  # Has settings for expected metadata format
+  expectedDataFormat <- data.frame(
+    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", 
+                "Short Description", "Experiment Keywords", "Page","Assay Date"),
+    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
+  )
+  
+  
 }
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
@@ -1697,37 +1626,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
   
-  # Validate Input Parameters
-  if (is.na(pathToGenericDataFormatExcelFile)) {
-    stop("Need Excel file path as input")
-  }
-  if (!file.exists(pathToGenericDataFormatExcelFile)) {
-    stop("Cannot find input file")
-  }
-  
-  if (grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
-    tryCatch({
-      wb <- loadWorkbook(pathToGenericDataFormatExcelFile)
-      genericDataFileDataFrame <- readWorksheet(wb, sheet=1, header = FALSE, dateTimeFormat="A_date_was_in_Excel_Date_format")
-    }, error = function(e) {
-      stop("Cannot read input excel file")
-    })
-  } else if (grepl("\\.csv$",pathToGenericDataFormatExcelFile)){
-    tryCatch({
-      genericDataFileDataFrame <- read.csv(pathToGenericDataFormatExcelFile, header = FALSE, stringsAsFactors=FALSE)
-    }, error = function(e) {
-      stop("Cannot read input csv file")
-    })
-  } else {
-    stop("The input file must have extension .xls, .xlsx, or .csv")
-  }
+  genericDataFileDataFrame <- readExcelOrCsv(pathToGenericDataFormatExcelFile)
   
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
   
   formatSettings <- getFormatSettings()
   
-  validatedMetaDataList <- validateMetaData(metaData, configList, formatSettings)
+  validatedMetaDataList <- validateMetaData(metaData, configList, formatSettings = formatSettings)
   validatedMetaData <- validatedMetaDataList$validatedMetaData
   duplicateExperimentNamesAllowed <- validatedMetaDataList$duplicateExperimentNamesAllowed
   
@@ -1862,7 +1768,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   # Add name modifier to protocol name for viewer
-  protocolPostfixStates <- protocol$lsStates[lapply(protocol$lsStates, getElement, "lsTypeAndKind") == "metadata_name modifier"]
+  if (length(protocol) == 0 && !is.na(protocol)) {
+    protocolPostfixStates <- protocol$lsStates[lapply(protocol$lsStates, getElement, "lsTypeAndKind") == "metadata_name modifier"]
+  } else {
+    protocolPostfixStates <- list()
+  }
   if (length(protocolPostfixStates) > 0) {
     protocolPostfixState <- protocolPostfixStates[[1]]
     protocolPostfixValues <- protocolPostfixState$lsValues[lapply(protocolPostfixState$lsValues, getElement, "lsTypeAndKind") == "stringValue_postfix"]
@@ -1917,73 +1827,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   summaryInfo$experimentEntity <- experiment
   
   return(summaryInfo)
-}
-moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy, lsTransaction, fileServiceType, fileService) {
-  # Creates a folder for the excel file that was parsed and puts the file there. Returns the new location.
-  # 
-  # Args:
-  #   fileStartLocation:            A character vector of the original location of the file
-  #   experimentCodeName:           A character vector of the experiment code name
-  #
-  # Returns:
-  #  The new file location
-  
-  fileName <- basename(fileStartLocation)
-  
-  experimentCodeName <- experiment$codeName
-  
-  if (fileServiceType == "blueimp") {
-    experimentFolderLocation <- file.path(dirname(fileStartLocation), "experiments")
-    dir.create(experimentFolderLocation, showWarnings = FALSE)
-    
-    fullFolderLocation <- file.path(experimentFolderLocation, experimentCodeName)
-    dir.create(fullFolderLocation, showWarnings = FALSE)
-    
-    # Move the file
-    file.rename(from=fileStartLocation, to=file.path(fullFolderLocation, fileName))
-    
-    serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
-  } else if (fileServiceType == "custom") {
-    serverFileLocation <- customSourceFileMove(fileStartLocation, fileName, fileService, experiment, recordedBy)
-  } else {
-    stop("Invalid file service type")
-  }
-
-  locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
-  
-  # Record the location
-  if (length(locationState)> 0) {
-    locationState <- locationState[[1]]
-  } else {
-    locationState <- createExperimentState(
-      recordedBy=recordedBy,
-      experiment = experiment,
-      lsType="metadata",
-      lsKind="raw results locations",
-      lsTransaction=lsTransaction)
-    
-    tryCatch({
-    locationState <- saveExperimentState(locationState)
-    }, error = function(e) {
-      stop("Internal Error: Could not save the source file state")
-    })
-  }
-  
-  tryCatch({
-    locationValue <- createStateValue(
-      recordedBy = recordedBy,
-      lsType = "fileValue",
-      lsKind = "source file",
-      fileValue = serverFileLocation,
-      lsState = locationState,
-      lsTransaction = lsTransaction)
-    
-    saveExperimentValues(list(locationValue))
-  }, error = function(e) {
-    stop("Internal Error: Could not save the source file location")
-  })
-  
-  return(serverFileLocation)
 }
 getStateGroups <- function(formatSettings) {
   #Gets stateGroups from configuration list
