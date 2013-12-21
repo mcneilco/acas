@@ -102,29 +102,29 @@ describe "Primary Screen Experiment module testing", ->
 	describe "Primary Screen Experiment model testing", ->
 		describe "When loaded from existing", ->
 			beforeEach ->
-              @pse = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
+				@pse = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
 			describe "Existence and Defaults", ->
-              it "should be defined", ->
-                  expect(@pse).toBeDefined()
+				it "should be defined", ->
+					expect(@pse).toBeDefined()
 			describe "special getters", ->
-              describe "analysis parameters", ->
-                it 'Should be able to get analysis parameters', ->
-                    expect(@pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy()
-                it 'Should parse analysis parameters', ->
-                    expect(@pse.getAnalysisParameters().get('hitSDThreshold')).toEqual 5
-                it 'Should parse pos control into backbone models', ->
-                    expect(@pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual "CMPD-12345678-01"
-                it 'Should parse neg control into backbone models', ->
-                    expect(@pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual "CMPD-87654321-01"
-                it 'Should parse veh control into backbone models', ->
-                    expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
-                it 'Should parse agonist control into backbone models', ->
-                    expect(@pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual "CMPD-87654399-01"
-              describe "others", ->
-                  it "should be able to get the analysis status", ->
-                      expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
-                  it "should be able to get the analysis result html", ->
-                      expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
+				describe "analysis parameters", ->
+					it 'Should be able to get analysis parameters', ->
+							expect(@pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy()
+					it 'Should parse analysis parameters', ->
+							expect(@pse.getAnalysisParameters().get('hitSDThreshold')).toEqual 5
+					it 'Should parse pos control into backbone models', ->
+							expect(@pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual "CMPD-12345678-01"
+					it 'Should parse neg control into backbone models', ->
+							expect(@pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual "CMPD-87654321-01"
+					it 'Should parse veh control into backbone models', ->
+							expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
+					it 'Should parse agonist control into backbone models', ->
+							expect(@pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual "CMPD-87654399-01"
+				describe "others", ->
+					it "should be able to get the analysis status", ->
+							expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
+					it "should be able to get the analysis result html", ->
+							expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->

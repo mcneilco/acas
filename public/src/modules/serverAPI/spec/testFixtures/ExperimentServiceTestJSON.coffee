@@ -1195,6 +1195,37 @@
 				comments: null
 				dateValue: null
 				fileValue: null
+				id: 422
+				ignored: false
+				lsKind: "analysis status"
+				lsTransaction: 2
+				lsType: "stringValue"
+				lsTypeAndKind: "clobValue_analysis status"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: "not started"
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
 				id: 5
 				ignored: false
 				lsKind: "notebook"
