@@ -10,7 +10,7 @@
 
   describe("Primary Screen Experiment module testing", function() {
     describe("Analysis Parameter model testing", function() {
-      return describe("When loaded from new", function() {
+      describe("When loaded from new", function() {
         beforeEach(function() {
           return this.psap = new PrimaryScreenAnalysisParameters();
         });
@@ -26,8 +26,116 @@
             expect(this.psap.get('positiveControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('negativeControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('vehicleControl') instanceof Backbone.Model).toBeTruthy();
+            expect(this.psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy();
             return expect(this.psap.get('thresholdType')).toEqual("sd");
           });
+        });
+      });
+      return describe("model validation tests", function() {
+        beforeEach(function() {
+          return this.psap = new PrimaryScreenAnalysisParameters(window.primaryScreenTestJSON.primaryScreenAnalysisParameters);
+        });
+        it("should be valid as initialized", function() {
+          return expect(this.psap.isValid()).toBeTruthy();
+        });
+        it("should be invalid when positive control batch is empty", function() {
+          var filtErrors;
+          this.psap.get('positiveControl').set({
+            batchCode: ""
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'positiveControlBatch';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when positive control conc is empty", function() {
+          var filtErrors;
+          this.psap.get('positiveControl').set({
+            concentration: ""
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'positiveControlConc';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when negative control batch is empty", function() {
+          var filtErrors;
+          this.psap.get('negativeControl').set({
+            batchCode: ""
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'negativeControlBatch';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when negative control conc is empty", function() {
+          var filtErrors;
+          this.psap.get('negativeControl').set({
+            concentration: ""
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'negativeControlConc';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when agonist control batch is empty", function() {
+          var filtErrors;
+          this.psap.get('agonistControl').set({
+            batchCode: ""
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'agonistControlBatch';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when agonist control conc is empty", function() {
+          var filtErrors;
+          this.psap.get('agonistControl').set({
+            concentration: ""
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'agonistControlConc';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when vehicle control is empty", function() {
+          var filtErrors;
+          this.psap.get('vehicleControl').set({
+            batchCode: ""
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'vehicleControlBatch';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when transformation rule is unassigned", function() {
+          var filtErrors;
+          this.psap.set({
+            transformationRule: "unassigned"
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'transformationRule';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it("should be invalid when normalization rule is unassigned", function() {
+          var filtErrors;
+          this.psap.set({
+            normalizationRule: "unassigned"
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'normalizationRule';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
         });
       });
     });
@@ -44,8 +152,7 @@
         return describe("special getters", function() {
           describe("analysis parameters", function() {
             it('Should be able to get analysis parameters', function() {
-              expect(this.pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy();
-              return console.log(this.pse.getAnalysisParameters());
+              return expect(this.pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy();
             });
             it('Should parse analysis parameters', function() {
               return expect(this.pse.getAnalysisParameters().get('hitSDThreshold')).toEqual(5);
@@ -56,8 +163,11 @@
             it('Should parse neg control into backbone models', function() {
               return expect(this.pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual("CMPD-87654321-01");
             });
-            return it('Should parse veh control into backbone models', function() {
+            it('Should parse veh control into backbone models', function() {
               return expect(this.pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual("CMPD-00000001-01");
+            });
+            return it('Should parse agonist control into backbone models', function() {
+              return expect(this.pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual("CMPD-87654399-01");
             });
           });
           return describe("others", function() {
@@ -72,7 +182,7 @@
       });
     });
     describe('PrimaryScreenAnalysisParameters Controller', function() {
-      return describe('when instantiated', function() {
+      describe('when instantiated', function() {
         beforeEach(function() {
           this.psapc = new PrimaryScreenAnalysisParametersController({
             model: new PrimaryScreenAnalysisParameters(window.primaryScreenTestJSON.primaryScreenAnalysisParameters),
@@ -107,20 +217,26 @@
           it('should start with thresholdType radio set', function() {
             return expect(this.psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual('sd');
           });
-          it('should show the posControlBatch', function() {
-            return expect(this.psapc.$('.bv_posControlBatch').val()).toEqual('CMPD-12345678-01');
+          it('should show the positiveControlBatch', function() {
+            return expect(this.psapc.$('.bv_positiveControlBatch').val()).toEqual('CMPD-12345678-01');
           });
-          it('should show the posControlConc', function() {
-            return expect(this.psapc.$('.bv_posControlConc').val()).toEqual('10');
+          it('should show the positiveControlConc', function() {
+            return expect(this.psapc.$('.bv_positiveControlConc').val()).toEqual('10');
           });
-          it('should show the negControlBatch', function() {
-            return expect(this.psapc.$('.bv_negControlBatch').val()).toEqual('CMPD-87654321-01');
+          it('should show the negativeControlBatch', function() {
+            return expect(this.psapc.$('.bv_negativeControlBatch').val()).toEqual('CMPD-87654321-01');
           });
-          it('should show the negControlConc', function() {
-            return expect(this.psapc.$('.bv_negControlConc').val()).toEqual('1');
+          it('should show the negativeControlConc', function() {
+            return expect(this.psapc.$('.bv_negativeControlConc').val()).toEqual('1');
           });
-          return it('should show the vehControlBatch', function() {
-            return expect(this.psapc.$('.bv_vehControlBatch').val()).toEqual('CMPD-00000001-01');
+          it('should show the vehControlBatch', function() {
+            return expect(this.psapc.$('.bv_vehicleControlBatch').val()).toEqual('CMPD-00000001-01');
+          });
+          it('should show the agonistControlBatch', function() {
+            return expect(this.psapc.$('.bv_agonistControlBatch').val()).toEqual('CMPD-87654399-01');
+          });
+          return it('should show the agonistControlConc', function() {
+            return expect(this.psapc.$('.bv_agonistControlConc').val()).toEqual('2');
           });
         });
         describe("model updates", function() {
@@ -145,29 +261,39 @@
             return expect(this.psapc.model.get('hitEfficacyThreshold')).toEqual("25");
           });
           it("should update the positiveControl ", function() {
-            this.psapc.$('.bv_posControlBatch').val(' pos cont ');
-            this.psapc.$('.bv_posControlBatch').change();
+            this.psapc.$('.bv_positiveControlBatch').val(' pos cont ');
+            this.psapc.$('.bv_positiveControlBatch').change();
             return expect(this.psapc.model.get('positiveControl').get('batchCode')).toEqual("pos cont");
           });
           it("should update the positiveControl conc ", function() {
-            this.psapc.$('.bv_posControlConc').val(' 61 ');
-            this.psapc.$('.bv_posControlConc').change();
+            this.psapc.$('.bv_positiveControlConc').val(' 61 ');
+            this.psapc.$('.bv_positiveControlConc').change();
             return expect(this.psapc.model.get('positiveControl').get('concentration')).toEqual("61");
           });
           it("should update the negativeControl ", function() {
-            this.psapc.$('.bv_negControlBatch').val(' neg cont ');
-            this.psapc.$('.bv_negControlBatch').change();
+            this.psapc.$('.bv_negativeControlBatch').val(' neg cont ');
+            this.psapc.$('.bv_negativeControlBatch').change();
             return expect(this.psapc.model.get('negativeControl').get('batchCode')).toEqual("neg cont");
           });
           it("should update the negativeControl conc ", function() {
-            this.psapc.$('.bv_negControlConc').val(' 62 ');
-            this.psapc.$('.bv_negControlConc').change();
+            this.psapc.$('.bv_negativeControlConc').val(' 62 ');
+            this.psapc.$('.bv_negativeControlConc').change();
             return expect(this.psapc.model.get('negativeControl').get('concentration')).toEqual("62");
           });
           it("should update the vehicleControl ", function() {
-            this.psapc.$('.bv_vehControlBatch').val(' veh cont ');
-            this.psapc.$('.bv_vehControlBatch').change();
+            this.psapc.$('.bv_vehicleControlBatch').val(' veh cont ');
+            this.psapc.$('.bv_vehicleControlBatch').change();
             return expect(this.psapc.model.get('vehicleControl').get('batchCode')).toEqual("veh cont");
+          });
+          it("should update the agonistControl", function() {
+            this.psapc.$('.bv_agonistControlBatch').val(' ag cont ');
+            this.psapc.$('.bv_agonistControlBatch').change();
+            return expect(this.psapc.model.get('agonistControl').get('batchCode')).toEqual("ag cont");
+          });
+          it("should update the agonistControl conc", function() {
+            this.psapc.$('bv_agonistControlConc').val(' 2 ');
+            this.psapc.$('.bv_agonistControlConc').change();
+            return expect(this.psapc.model.get('agonistControl').get('concentration')).toEqual("2");
           });
           return it("should update the thresholdType ", function() {
             this.psapc.$('.bv_thresholdTypeEfficacy').click();
@@ -185,6 +311,62 @@
             this.psapc.$('.bv_thresholdTypeSD').click();
             expect(this.psapc.$('.bv_hitEfficacyThreshold').attr("disabled")).toEqual("disabled");
             return expect(this.psapc.$('.bv_hitSDThreshold').attr("disabled")).toBeUndefined();
+          });
+        });
+      });
+      return describe("valiation testing", function() {
+        beforeEach(function() {
+          this.psapc = new PrimaryScreenExperimentController({
+            model: new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer),
+            el: $('#fixture')
+          });
+          return this.psapc.render();
+        });
+        return describe("error notification", function() {
+          it("should show error if positiveControl batch is not set", function() {
+            this.psapc.$('.bv_positiveControlBatch').val("");
+            this.psapc.$('.bv_positiveControlBatch').change();
+            return expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if positiveControl conc is not set", function() {
+            this.psapc.$('.bv_positiveControlConc').val("");
+            this.psapc.$('.bv_positiveControlConc').change();
+            return expect(this.psapc.$('.bv_group_positiveControlConc').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if negativeControl batch is not set", function() {
+            this.psapc.$('.bv_negativeControlBatch').val("");
+            this.psapc.$('.bv_negativeControlBatch').change();
+            return expect(this.psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if negativeControl conc is not set", function() {
+            this.psapc.$('.bv_negativeControlConc').val("");
+            this.psapc.$('.bv_negativeControlConc').change();
+            return expect(this.psapc.$('.bv_group_negativeControlConc').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if agonistControl batch is not set", function() {
+            this.psapc.$('.bv_agonistControlBatch').val("");
+            this.psapc.$('.bv_agonistControlBatch').change();
+            return expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if agonistControl conc is not set", function() {
+            this.psapc.$('.bv_agonistControlConc').val("");
+            this.psapc.$('.bv_agonistControlConc').change();
+            return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if vehicleControl is not set", function() {
+            this.psapc.$('.bv_vehicleControlBatch').val("");
+            this.psapc.$('.bv_vehicleControlBatch').change();
+            return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if transformationRule is unassigned", function() {
+            this.psapc.$('.bv_transformationRule').val("unassigned");
+            this.psapc.$('.bv_transformationRule').change();
+            return expect(this.psapc.$('.bv_group_transformationRule').hasClass("error")).toBeTruthy();
+          });
+          return it("should show error if normaliationRule is unassigned", function() {
+            this.psapc.$('.bv_normalizationRule').val("unassigned");
+            this.psapc.$('.bv_normalizationRule').change();
+            return expect(this.psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy();
           });
         });
       });

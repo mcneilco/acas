@@ -21,6 +21,7 @@
       positiveControl: new Backbone.Model(),
       negativeControl: new Backbone.Model(),
       vehicleControl: new Backbone.Model(),
+      agonistControl: new Backbone.Model(),
       thresholdType: "sd"
     };
 
@@ -51,9 +52,88 @@
           vehicleControl: new Backbone.Model(this.get('vehicleControl'))
         });
       }
-      return this.get('vehicleControl').on("change", function() {
+      this.get('vehicleControl').on("change", function() {
         return _this.trigger('change');
       });
+      if (!(this.get('agonistControl') instanceof Backbone.Model)) {
+        this.set({
+          agonistControl: new Backbone.Model(this.get('agonistControl'))
+        });
+      }
+      return this.get('agonistControl').on("change", function() {
+        return _this.trigger('change');
+      });
+    };
+
+    PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
+      var agonistControl, errors, negativeControl, positiveControl, vehicleControl;
+      errors = [];
+      positiveControl = this.get('positiveControl').get('batchCode');
+      if (positiveControl === "" || positiveControl === void 0) {
+        errors.push({
+          attribute: 'positiveControlBatch',
+          message: "Positive control batch much be set"
+        });
+      }
+      positiveControl = this.get('positiveControl').get('concentration');
+      if (positiveControl === "" || positiveControl === void 0) {
+        errors.push({
+          attribute: 'positiveControlConc',
+          message: "Positive control conc much be set"
+        });
+      }
+      negativeControl = this.get('negativeControl').get('batchCode');
+      if (negativeControl === "" || negativeControl === void 0) {
+        errors.push({
+          attribute: 'negativeControlBatch',
+          message: "Negative control batch much be set"
+        });
+      }
+      negativeControl = this.get('negativeControl').get('concentration');
+      if (negativeControl === "" || negativeControl === void 0) {
+        errors.push({
+          attribute: 'negativeControlConc',
+          message: "Negative control conc much be set"
+        });
+      }
+      agonistControl = this.get('agonistControl').get('batchCode');
+      if (agonistControl === "" || agonistControl === void 0) {
+        errors.push({
+          attribute: 'agonistControlBatch',
+          message: "Agonist control batch much be set"
+        });
+      }
+      agonistControl = this.get('agonistControl').get('concentration');
+      if (agonistControl === "" || agonistControl === void 0) {
+        errors.push({
+          attribute: 'agonistControlConc',
+          message: "Agonist control conc much be set"
+        });
+      }
+      vehicleControl = this.get('vehicleControl').get('batchCode');
+      if (vehicleControl === "" || vehicleControl === void 0) {
+        errors.push({
+          attribute: 'vehicleControlBatch',
+          message: "Vehicle control must be set"
+        });
+      }
+      if (attrs.transformationRule === "unassigned" || attrs.transformationRule === "") {
+        errors.push({
+          attribute: 'transformationRule',
+          message: "Transformation rule must be assigned"
+        });
+      }
+      if (attrs.normalizationRule === "unassigned" || attrs.normalizationRule === "") {
+        errors.push({
+          attribute: 'normalizationRule',
+          message: "Normalization rule must be assigned"
+        });
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
     };
 
     return PrimaryScreenAnalysisParameters;
@@ -111,11 +191,13 @@
       "change .bv_transformationRule": "updateModel",
       "change .bv_hitEfficacyThreshold": "updateModel",
       "change .bv_hitSDThreshold": "updateModel",
-      "change .bv_posControlBatch": "updateModel",
-      "change .bv_posControlConc": "updateModel",
-      "change .bv_negControlBatch": "updateModel",
-      "change .bv_negControlConc": "updateModel",
-      "change .bv_vehControlBatch": "updateModel",
+      "change .bv_positiveControlBatch": "updateModel",
+      "change .bv_positiveControlConc": "updateModel",
+      "change .bv_negativeControlBatch": "updateModel",
+      "change .bv_negativeControlConc": "updateModel",
+      "change .bv_vehicleControlBatch": "updateModel",
+      "change .bv_agonistControlBatch": "updateModel",
+      "change .bv_agonistControlConc": "updateModel",
       "change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged",
       "change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
     };
@@ -126,9 +208,7 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
-      console.log("got to render");
       this.$('.bv_autofillSection').empty();
-      console.log(this.model);
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
       this.$('.bv_transformationRule').val(this.model.get('transformationRule'));
       this.$('.bv_normalizationRule').val(this.model.get('normalizationRule'));
@@ -143,16 +223,20 @@
         hitSDThreshold: this.getTrimmedInput('.bv_hitSDThreshold')
       });
       this.model.get('positiveControl').set({
-        batchCode: this.getTrimmedInput('.bv_posControlBatch'),
-        concentration: this.getTrimmedInput('.bv_posControlConc')
+        batchCode: this.getTrimmedInput('.bv_positiveControlBatch'),
+        concentration: this.getTrimmedInput('.bv_positiveControlConc')
       });
       this.model.get('negativeControl').set({
-        batchCode: this.getTrimmedInput('.bv_negControlBatch'),
-        concentration: this.getTrimmedInput('.bv_negControlConc')
+        batchCode: this.getTrimmedInput('.bv_negativeControlBatch'),
+        concentration: this.getTrimmedInput('.bv_negativeControlConc')
       });
-      return this.model.get('vehicleControl').set({
-        batchCode: this.getTrimmedInput('.bv_vehControlBatch'),
+      this.model.get('vehicleControl').set({
+        batchCode: this.getTrimmedInput('.bv_vehicleControlBatch'),
         concentration: null
+      });
+      return this.model.get('agonistControl').set({
+        batchCode: this.getTrimmedInput('.bv_agonistControlBatch'),
+        concentration: this.getTrimmedInput('.bv_agonistControlConc')
       });
     };
 
