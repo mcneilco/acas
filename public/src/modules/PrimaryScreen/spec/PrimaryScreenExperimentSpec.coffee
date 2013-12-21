@@ -21,7 +21,83 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('positiveControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('negativeControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('vehicleControl') instanceof Backbone.Model).toBeTruthy()
+					expect(@psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('thresholdType')).toEqual "sd"
+		describe "model validation tests", ->
+			beforeEach ->
+				@psap = new PrimaryScreenAnalysisParameters window.primaryScreenTestJSON.primaryScreenAnalysisParameters
+			it "should be valid as initialized", ->
+				expect(@psap.isValid()).toBeTruthy()
+			it "should be invalid when positive control batch is empty", ->
+				@psap.get('positiveControl').set
+					batchCode: ""
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='positiveControlBatch'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when positive control conc is empty", ->
+				@psap.get('positiveControl').set
+					concentration: ""
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='positiveControlConc'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when negative control batch is empty", ->
+				@psap.get('negativeControl').set
+					batchCode: ""
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='negativeControlBatch'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when negative control conc is empty", ->
+				@psap.get('negativeControl').set
+					concentration: ""
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='negativeControlConc'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when agonist control batch is empty", ->
+				@psap.get('agonistControl').set
+					batchCode: ""
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='agonistControlBatch'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when agonist control conc is empty", ->
+				@psap.get('agonistControl').set
+					concentration: ""
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='agonistControlConc'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when vehicle control is empty", ->
+				@psap.get('vehicleControl').set
+					batchCode: ""
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='vehicleControlBatch'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when transformation rule is unassigned", ->
+				@psap.set transformationRule: "unassigned"
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='transformationRule'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when normalization rule is unassigned", ->
+				@psap.set normalizationRule: "unassigned"
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='normalizationRule'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Primary Screen Experiment model testing", ->
 		describe "When loaded from existing", ->
@@ -40,6 +116,9 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual "CMPD-87654321-01"
 				it 'Should parse veh control into backbone models', ->
 					expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
+				it 'Should parse agonist control into backbone models', ->
+					console.log @pse.getAnalysisParameters().get('agonistControl')
+					expect(@pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual "CMPD-87654399-01"
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->
@@ -66,16 +145,20 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psapc.$('.bv_hitEfficacyThreshold').val()).toEqual '42'
 				it 'should start with thresholdType radio set', ->
 					expect(@psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual 'sd'
-				it 'should show the posControlBatch', ->
-					expect(@psapc.$('.bv_posControlBatch').val()).toEqual 'CMPD-12345678-01'
-				it 'should show the posControlConc', ->
-					expect(@psapc.$('.bv_posControlConc').val()).toEqual '10'
-				it 'should show the negControlBatch', ->
-					expect(@psapc.$('.bv_negControlBatch').val()).toEqual 'CMPD-87654321-01'
-				it 'should show the negControlConc', ->
-					expect(@psapc.$('.bv_negControlConc').val()).toEqual '1'
+				it 'should show the positiveControlBatch', ->
+					expect(@psapc.$('.bv_positiveControlBatch').val()).toEqual 'CMPD-12345678-01'
+				it 'should show the positiveControlConc', ->
+					expect(@psapc.$('.bv_positiveControlConc').val()).toEqual '10'
+				it 'should show the negativeControlBatch', ->
+					expect(@psapc.$('.bv_negativeControlBatch').val()).toEqual 'CMPD-87654321-01'
+				it 'should show the negativeControlConc', ->
+					expect(@psapc.$('.bv_negativeControlConc').val()).toEqual '1'
 				it 'should show the vehControlBatch', ->
-					expect(@psapc.$('.bv_vehControlBatch').val()).toEqual 'CMPD-00000001-01'
+					expect(@psapc.$('.bv_vehicleControlBatch').val()).toEqual 'CMPD-00000001-01'
+				it 'should show the agonistControlBatch', ->
+					expect(@psapc.$('.bv_agonistControlBatch').val()).toEqual 'CMPD-87654399-01'
+				it 'should show the agonistControlConc', ->
+					expect(@psapc.$('.bv_agonistControlConc').val()).toEqual '2'
 			describe "model updates", ->
 				it "should update the transformation rule", ->
 					@psapc.$('.bv_transformationRule').val('unassigned')
@@ -94,25 +177,33 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_hitEfficacyThreshold').change()
 					expect(@psapc.model.get('hitEfficacyThreshold')).toEqual "25"
 				it "should update the positiveControl ", ->
-					@psapc.$('.bv_posControlBatch').val(' pos cont ')
-					@psapc.$('.bv_posControlBatch').change()
+					@psapc.$('.bv_positiveControlBatch').val(' pos cont ')
+					@psapc.$('.bv_positiveControlBatch').change()
 					expect(@psapc.model.get('positiveControl').get('batchCode')).toEqual "pos cont"
 				it "should update the positiveControl conc ", ->
-					@psapc.$('.bv_posControlConc').val(' 61 ')
-					@psapc.$('.bv_posControlConc').change()
+					@psapc.$('.bv_positiveControlConc').val(' 61 ')
+					@psapc.$('.bv_positiveControlConc').change()
 					expect(@psapc.model.get('positiveControl').get('concentration')).toEqual "61"
 				it "should update the negativeControl ", ->
-					@psapc.$('.bv_negControlBatch').val(' neg cont ')
-					@psapc.$('.bv_negControlBatch').change()
+					@psapc.$('.bv_negativeControlBatch').val(' neg cont ')
+					@psapc.$('.bv_negativeControlBatch').change()
 					expect(@psapc.model.get('negativeControl').get('batchCode')).toEqual "neg cont"
 				it "should update the negativeControl conc ", ->
-					@psapc.$('.bv_negControlConc').val(' 62 ')
-					@psapc.$('.bv_negControlConc').change()
+					@psapc.$('.bv_negativeControlConc').val(' 62 ')
+					@psapc.$('.bv_negativeControlConc').change()
 					expect(@psapc.model.get('negativeControl').get('concentration')).toEqual "62"
 				it "should update the vehicleControl ", ->
-					@psapc.$('.bv_vehControlBatch').val(' veh cont ')
-					@psapc.$('.bv_vehControlBatch').change()
+					@psapc.$('.bv_vehicleControlBatch').val(' veh cont ')
+					@psapc.$('.bv_vehicleControlBatch').change()
 					expect(@psapc.model.get('vehicleControl').get('batchCode')).toEqual "veh cont"
+				it "should update the agonistControl", ->
+					@psapc.$('.bv_agonistControlBatch').val(' ag cont ')
+					@psapc.$('.bv_agonistControlBatch').change()
+					expect(@psapc.model.get('agonistControl').get('batchCode')).toEqual "ag cont"
+				it "should update the agonistControl conc", ->
+					@psapc.$('bv_agonistControlConc').val(' 2 ')
+					@psapc.$('.bv_agonistControlConc').change()
+					expect(@psapc.model.get('agonistControl').get('concentration')).toEqual "2"
 				it "should update the thresholdType ", ->
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
 					expect(@psapc.model.get('thresholdType')).toEqual "efficacy"
@@ -126,8 +217,49 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_thresholdTypeSD').click()
 					expect(@psapc.$('.bv_hitEfficacyThreshold').attr("disabled")).toEqual "disabled"
 					expect(@psapc.$('.bv_hitSDThreshold').attr("disabled")).toBeUndefined()
-
-
+		describe "valiation testing", ->
+			beforeEach ->
+				@psapc = new PrimaryScreenExperimentController
+					model: new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
+					el: $('#fixture')
+				@psapc.render()
+			describe "error notification", ->
+				it "should show error if positiveControl batch is not set", ->
+					@psapc.$('.bv_positiveControlBatch').val ""
+					@psapc.$('.bv_positiveControlBatch').change()
+					expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
+				it "should show error if positiveControl conc is not set", ->
+					@psapc.$('.bv_positiveControlConc').val ""
+					@psapc.$('.bv_positiveControlConc').change()
+					expect(@psapc.$('.bv_group_positiveControlConc').hasClass("error")).toBeTruthy()
+				it "should show error if negativeControl batch is not set", ->
+					@psapc.$('.bv_negativeControlBatch').val ""
+					@psapc.$('.bv_negativeControlBatch').change()
+					expect(@psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy()
+				it "should show error if negativeControl conc is not set", ->
+					@psapc.$('.bv_negativeControlConc').val ""
+					@psapc.$('.bv_negativeControlConc').change()
+					expect(@psapc.$('.bv_group_negativeControlConc').hasClass("error")).toBeTruthy()
+				it "should show error if agonistControl batch is not set", ->
+					@psapc.$('.bv_agonistControlBatch').val ""
+					@psapc.$('.bv_agonistControlBatch').change()
+					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
+				it "should show error if agonistControl conc is not set", ->
+					@psapc.$('.bv_agonistControlConc').val ""
+					@psapc.$('.bv_agonistControlConc').change()
+					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy()
+				it "should show error if vehicleControl is not set", ->
+					@psapc.$('.bv_vehicleControlBatch').val ""
+					@psapc.$('.bv_vehicleControlBatch').change()
+					expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy()
+				it "should show error if transformationRule is unassigned", ->
+					@psapc.$('.bv_transformationRule').val "unassigned"
+					@psapc.$('.bv_transformationRule').change()
+					expect(@psapc.$('.bv_group_transformationRule').hasClass("error")).toBeTruthy()
+				it "should show error if normaliationRule is unassigned", ->
+					@psapc.$('.bv_normalizationRule').val "unassigned"
+					@psapc.$('.bv_normalizationRule').change()
+					expect(@psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy()
 
 
 	xdescribe "Primary Screen Experiment Controller testing", ->
@@ -145,7 +277,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "Should load a base experiment controller", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
-					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_posControlBatch').length).toNotEqual 0
+					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_positiveControlBatch').length).toNotEqual 0
 				it "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual 0
 			describe "saving to server", ->
