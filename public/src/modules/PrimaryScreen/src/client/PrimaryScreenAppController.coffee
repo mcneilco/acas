@@ -2,6 +2,7 @@ class window.PrimaryScreenAppRouter extends Backbone.Router
 
 	routes:
 		":expId": "existingExperiment"
+		"/codeName/:code": "existingExperimentByCode"
 		"": "newExperiment"
 
 	initialize: (options) ->
@@ -14,6 +15,10 @@ class window.PrimaryScreenAppRouter extends Backbone.Router
 	existingExperiment: (expId) =>
 		#console.log 'existign expt'+expId
 		@appController.existingExperiment(expId)
+
+	existingExperimentByCode: (expId) =>
+		console.log 'existign expt code'+code
+		@appController.existingExperimentByCode(code)
 
 
 class window.PrimaryScreenAppController extends Backbone.View
@@ -42,9 +47,11 @@ class window.PrimaryScreenAppController extends Backbone.View
 			el: $('.bv_primaryScreenExperimentController')
 		@primaryScreenExperimentController.render()
 
+	existingExperimentByCode: (code) =>
+
 	existingExperiment: (expId) =>
 		#console.log expId
-		exp = new Experiment id: expId
+		exp = new PrimaryScreenExperiment id: expId
 		exp.fetch success: =>
 			#console.log "fetched experiment"
 			exp.fixCompositeClasses()

@@ -35,6 +35,7 @@ applicationScripts = [
 	'/javascripts/src/AnalysisGroup.js'
 	'/javascripts/src/Protocol.js'
 	'/javascripts/src/Experiment.js'
+	'/javascripts/src/DoseResponseAnalysis.js'
 	#Primary Screen module
 	'/javascripts/src/PrimaryScreenExperiment.js'
 	'/javascripts/src/DoseResponseAnalysis.js'
@@ -57,8 +58,6 @@ applicationScripts = [
 	'/javascripts/src/BulkLoadContainersFromSDF.js'
 	# For BulkLoadSampleTransfers module
 	'/javascripts/src/BulkLoadSampleTransfers.js'
-	#Primary Screen module
-	'/javascripts/src/PrimaryScreenExperiment.js'
 	# For ExperimentBrowser module
 	'/javascripts/src/ExperimentBrowser.js'
 

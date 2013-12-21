@@ -8,6 +8,7 @@
     __extends(PrimaryScreenAppRouter, _super);
 
     function PrimaryScreenAppRouter() {
+      this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
       this.existingExperiment = __bind(this.existingExperiment, this);
       this.newExperiment = __bind(this.newExperiment, this);
       _ref = PrimaryScreenAppRouter.__super__.constructor.apply(this, arguments);
@@ -16,6 +17,7 @@
 
     PrimaryScreenAppRouter.prototype.routes = {
       ":expId": "existingExperiment",
+      "/codeName/:code": "existingExperimentByCode",
       "": "newExperiment"
     };
 
@@ -31,6 +33,11 @@
       return this.appController.existingExperiment(expId);
     };
 
+    PrimaryScreenAppRouter.prototype.existingExperimentByCode = function(expId) {
+      console.log('existign expt code' + code);
+      return this.appController.existingExperimentByCode(code);
+    };
+
     return PrimaryScreenAppRouter;
 
   })(Backbone.Router);
@@ -40,6 +47,7 @@
 
     function PrimaryScreenAppController() {
       this.existingExperiment = __bind(this.existingExperiment, this);
+      this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
       this.newExperiment = __bind(this.newExperiment, this);
       this.render = __bind(this.render, this);
       _ref1 = PrimaryScreenAppController.__super__.constructor.apply(this, arguments);
@@ -72,10 +80,12 @@
       return this.primaryScreenExperimentController.render();
     };
 
+    PrimaryScreenAppController.prototype.existingExperimentByCode = function(code) {};
+
     PrimaryScreenAppController.prototype.existingExperiment = function(expId) {
       var exp,
         _this = this;
-      exp = new Experiment({
+      exp = new PrimaryScreenExperiment({
         id: expId
       });
       return exp.fetch({

@@ -27,6 +27,7 @@ requiredScripts = [
 	'/src/lib/underscore.js'
 	'/src/lib/backbone-min.js'
 	'/src/lib/bootstrap/bootstrap-tooltip.js'
+	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js'
 	'/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js'
 	'/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js'
 	'/src/lib/bootstrap/bootstrap.min.js'
@@ -46,23 +47,26 @@ applicationScripts = [
 	'/javascripts/src/LSFileChooser.js'
 	'/javascripts/src/LSErrorNotification.js'
 	'/javascripts/src/AbstractFormController.js'
+	'/javascripts/src/AbstractParserFormController.js'
 	'/javascripts/src/BasicFileValidateAndSave.js'
 	'/javascripts/src/PickList.js'
+	'/javascripts/src/TagList.js'
 	# For serverAPI module
 	'/javascripts/src/Label.js'
 	'/javascripts/src/AnalysisGroup.js'
-	'/javascripts/src/Experiment.js'
 	'/javascripts/src/Protocol.js'
+	'/javascripts/src/Experiment.js'
 	'/javascripts/src/DoseResponseAnalysis.js'
 	#Primary Screen module
 	'/javascripts/src/PrimaryScreenExperiment.js'
 	'/javascripts/src/PrimaryScreenAppController.js'
+	'/javascripts/src/DoseResponseAnalysis.js'
 
 ]
 
 exports.primaryScreenExperimentIndex = (request, response) ->
 	scriptsToLoad = requiredScripts.concat applicationScripts
-	global.specRunnerTestmode = false
+	global.specRunnerTestmode = true
 
 	return response.render 'PrimaryScreenExperiment',
 	                       title: 'Primary Screen Experiment'
