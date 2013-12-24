@@ -26,9 +26,9 @@ describe 'Experiment CRUD testing', ->
 		it 'should return a experiment stub', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn[0].codeName).toEqual "EXPT-00000046"
+				expect(@serviceReturn.codeName).toEqual "EXPT-00000046"
 
-	describe 'when fetching Experiment stubs by ptotocol code', ->
+	describe 'when fetching Experiment stubs by protocol code', ->
 		beforeEach ->
 			self = @
 			$.ajax

@@ -17,7 +17,7 @@
 
     PrimaryScreenAppRouter.prototype.routes = {
       ":expId": "existingExperiment",
-      "/codeName/:code": "existingExperimentByCode",
+      "codeName/:code": "existingExperimentByCode",
       "": "newExperiment"
     };
 
@@ -30,11 +30,12 @@
     };
 
     PrimaryScreenAppRouter.prototype.existingExperiment = function(expId) {
+      console.log('existing expt id' + expId);
       return this.appController.existingExperiment(expId);
     };
 
-    PrimaryScreenAppRouter.prototype.existingExperimentByCode = function(expId) {
-      console.log('existign expt code' + code);
+    PrimaryScreenAppRouter.prototype.existingExperimentByCode = function(code) {
+      console.log('existing expt code ' + code);
       return this.appController.existingExperimentByCode(code);
     };
 
@@ -74,17 +75,32 @@
 
     PrimaryScreenAppController.prototype.newExperiment = function() {
       this.primaryScreenExperimentController = new PrimaryScreenExperimentController({
-        model: new Experiment(),
+        model: new PrimaryScreenExperiment(),
         el: $('.bv_primaryScreenExperimentController')
       });
       return this.primaryScreenExperimentController.render();
     };
 
-    PrimaryScreenAppController.prototype.existingExperimentByCode = function(code) {};
+    PrimaryScreenAppController.prototype.existingExperimentByCode = function(code) {
+      var _this = this;
+      console.log("Fetching expt by code: " + code);
+      return $.ajax({
+        type: 'GET',
+        url: "/api/experiments/codename/" + code,
+        dataType: 'json',
+        error: function(err) {
+          return alert('Could not get experiment for code in this URL');
+        },
+        success: function(json) {
+          return _this.existingExperiment(json.id);
+        }
+      });
+    };
 
     PrimaryScreenAppController.prototype.existingExperiment = function(expId) {
       var exp,
         _this = this;
+      console.log("Fetching expt by id: " + expId);
       exp = new PrimaryScreenExperiment({
         id: expId
       });

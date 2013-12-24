@@ -267,6 +267,21 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_normalizationRule').change()
 					expect(@psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy()
 
+	describe "Upload and Run Primary Analysis Controller testing", ->
+		beforeEach ->
+			@exp = new PrimaryScreenExperiment()
+			@uarpac = new UploadAndRunPrimaryAnalsysisController
+				el: $('#fixture')
+				paramsFromExperiment:	@exp.getAnalysisParameters()
+			@uarpac.render()
+
+		describe "Basic loading", ->
+			it "Class should exist", ->
+				expect(@uarpac).toBeDefined()
+			it "Should load the template", ->
+				expect(@uarpac.$('.bv_parseFile').length).toNotEqual 0
+
+
 	describe "Primary Screen Experiment Controller testing", ->
 		describe "basic plumbing checks with new experiment", ->
 			beforeEach ->
@@ -305,25 +320,18 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psac.$('.bv_analysisStatus').html()).toEqual "not started"
 				it "should not show analysis results becuase this is a new experiment", ->
 					expect(@psac.$('.bv_analysisResultsHTML').html()).toEqual ""
-
-
-
-	describe "Upload and Run Primary Analysis Controller testing", ->
-		beforeEach ->
-			@exp = new PrimaryScreenExperiment()
-			@uarpac = new UploadAndRunPrimaryAnalsysisController
-				el: $('#fixture')
-				paramsFromExperiment:	@exp.getAnalysisParameters()
-			@uarpac.render()
-
-		describe "Basic loading", ->
-			it "Class should exist", ->
-				expect(@uarpac).toBeDefined()
-			it "Should load the template", ->
-				expect(@uarpac.$('.bv_parseFile').length).toNotEqual 0
+				it "should be able to hide data analysis controller", ->
+					@psac.setExperimentNotSaved()
+					expect(@psac.$('.bv_fileUploadWrapper')).toBeHidden()
+					expect(@psac.$('.bv_saveExperimentToAnalyze')).toBeVisible()
+				it "should be able to show data analysis controller", ->
+					@psac.setExperimentSaved()
+					expect(@psac.$('.bv_fileUploadWrapper')).toBeVisible()
+					expect(@psac.$('.bv_saveExperimentToAnalyze')).toBeHidden()
 
 
 
 
-#TODO analysis parameter validation
-# change eval of analaysis params to $.parseJSON
+
+
+#TODO Validation rules for different threshold modes

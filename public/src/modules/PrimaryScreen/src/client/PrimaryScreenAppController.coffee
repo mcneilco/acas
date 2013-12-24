@@ -2,7 +2,7 @@ class window.PrimaryScreenAppRouter extends Backbone.Router
 
 	routes:
 		":expId": "existingExperiment"
-		"/codeName/:code": "existingExperimentByCode"
+		"codeName/:code": "existingExperimentByCode"
 		"": "newExperiment"
 
 	initialize: (options) ->
@@ -13,11 +13,11 @@ class window.PrimaryScreenAppRouter extends Backbone.Router
 		@appController.newExperiment()
 
 	existingExperiment: (expId) =>
-		#console.log 'existign expt'+expId
+		console.log 'existing expt id'+expId
 		@appController.existingExperiment(expId)
 
-	existingExperimentByCode: (expId) =>
-		console.log 'existign expt code'+code
+	existingExperimentByCode: (code) =>
+		console.log 'existing expt code '+code
 		@appController.existingExperimentByCode(code)
 
 
@@ -43,14 +43,23 @@ class window.PrimaryScreenAppController extends Backbone.View
 	newExperiment: =>
 		#console.log "got to new experiment route"
 		@primaryScreenExperimentController = new PrimaryScreenExperimentController
-			model: new Experiment()
+			model: new PrimaryScreenExperiment()
 			el: $('.bv_primaryScreenExperimentController')
 		@primaryScreenExperimentController.render()
 
 	existingExperimentByCode: (code) =>
+		console.log "Fetching expt by code: "+code
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/codename/"+code
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get experiment for code in this URL'
+			success: (json) =>
+				@existingExperiment json.id
 
 	existingExperiment: (expId) =>
-		#console.log expId
+		console.log "Fetching expt by id: "+expId
 		exp = new PrimaryScreenExperiment id: expId
 		exp.fetch success: =>
 			#console.log "fetched experiment"

@@ -45,6 +45,7 @@ app.post '/api/primaryAnalysis/runPrimaryAnalysis', runPrimaryAnalysisRoutes.run
   exports.runPrimaryAnalysis = function(request, response) {
     var serverUtilityFunctions;
     request.connection.setTimeout(600000);
+    request.connection.setTimeout(1000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     console.log(request.body);
     response.writeHead(200, {

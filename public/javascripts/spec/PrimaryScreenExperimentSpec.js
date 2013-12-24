@@ -371,6 +371,24 @@
         });
       });
     });
+    describe("Upload and Run Primary Analysis Controller testing", function() {
+      beforeEach(function() {
+        this.exp = new PrimaryScreenExperiment();
+        this.uarpac = new UploadAndRunPrimaryAnalsysisController({
+          el: $('#fixture'),
+          paramsFromExperiment: this.exp.getAnalysisParameters()
+        });
+        return this.uarpac.render();
+      });
+      return describe("Basic loading", function() {
+        it("Class should exist", function() {
+          return expect(this.uarpac).toBeDefined();
+        });
+        return it("Should load the template", function() {
+          return expect(this.uarpac.$('.bv_parseFile').length).toNotEqual(0);
+        });
+      });
+    });
     describe("Primary Screen Experiment Controller testing", function() {
       return describe("basic plumbing checks with new experiment", function() {
         beforeEach(function() {
@@ -399,7 +417,7 @@
         });
       });
     });
-    describe("Primary Screen Analysis Controller testing", function() {
+    return describe("Primary Screen Analysis Controller testing", function() {
       return describe("basic plumbing checks with experiment copied from template", function() {
         beforeEach(function() {
           this.exp = new PrimaryScreenExperiment();
@@ -422,27 +440,19 @@
           it("should show analysis status not started becuase this is a new experiment", function() {
             return expect(this.psac.$('.bv_analysisStatus').html()).toEqual("not started");
           });
-          return it("should not show analysis results becuase this is a new experiment", function() {
+          it("should not show analysis results becuase this is a new experiment", function() {
             return expect(this.psac.$('.bv_analysisResultsHTML').html()).toEqual("");
           });
-        });
-      });
-    });
-    return describe("Upload and Run Primary Analysis Controller testing", function() {
-      beforeEach(function() {
-        this.exp = new PrimaryScreenExperiment();
-        this.uarpac = new UploadAndRunPrimaryAnalsysisController({
-          el: $('#fixture'),
-          paramsFromExperiment: this.exp.getAnalysisParameters()
-        });
-        return this.uarpac.render();
-      });
-      return describe("Basic loading", function() {
-        it("Class should exist", function() {
-          return expect(this.uarpac).toBeDefined();
-        });
-        return it("Should load the template", function() {
-          return expect(this.uarpac.$('.bv_parseFile').length).toNotEqual(0);
+          it("should be able to hide data analysis controller", function() {
+            this.psac.setExperimentNotSaved();
+            expect(this.psac.$('.bv_fileUploadWrapper')).toBeHidden();
+            return expect(this.psac.$('.bv_saveExperimentToAnalyze')).toBeVisible();
+          });
+          return it("should be able to show data analysis controller", function() {
+            this.psac.setExperimentSaved();
+            expect(this.psac.$('.bv_fileUploadWrapper')).toBeVisible();
+            return expect(this.psac.$('.bv_saveExperimentToAnalyze')).toBeHidden();
+          });
         });
       });
     });

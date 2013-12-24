@@ -34,7 +34,7 @@
           lsTypeAndKind: "metadata_experiment controls",
           lsValues: [
             {
-              clobValue: 'fred={  positiveControl: {    batchCode: "CMPD-12345678-01",    concentratation: 10,    conentrationUnits: "uM"  },  negativeControl: {    batchCode: "CMPD-87654321-01",    concentratation: 1,    conentrationUnits: "uM"  },  vehicleControl: {    batchCode: "CMPD-00000001-01",    concentratation: null,    conentrationUnits: null  },  transformationRule: "(maximum-minimum)/minimum",  normalizationRule: "plate order",  hitEfficacyThreshold: null,  hitSDThreshold: 5.0};',
+              clobValue: '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "conentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 2,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd"}',
               codeValue: null,
               comments: null,
               dateValue: null,
