@@ -193,6 +193,11 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		super(json)
 		@psapc.disableAllInputs()
 
+	handleSaveReturnSuccess: (json) =>
+		super(json)
+		@$('.bv_loadAnother').html("Re-Analyze")
+		@trigger 'analysis-completed'
+
 	showFileSelectPhase: ->
 		super()
 		if @psapc?
@@ -239,9 +244,12 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		resultValue = @model.getAnalysisResultHTML()
 		if resultValue != null
 			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
+			@$('.bv_resultsContainer').show()
+
 
 	setExperimentNotSaved: ->
 		@$('.bv_fileUploadWrapper').hide()
+		@$('.bv_resultsContainer').hide()
 		@$('.bv_saveExperimentToAnalyze').show()
 
 	setExperimentSaved: =>
@@ -253,12 +261,19 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@setupDataAnalysisController()
 		@setExperimentSaved()
 
+	handleAnalysisComplete: =>
+		console.log "got analysis complete"
+		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
+		@$('.bv_resultsContainer').hide()
+
+
 	setupDataAnalysisController: ->
 		@dataAnalysisController = new UploadAndRunPrimaryAnalsysisController
 			el: @$('.bv_fileUploadWrapper')
 			paramsFromExperiment:	@model.getAnalysisParameters()
 		@dataAnalysisController.setUser(@model.get('recordedBy'))
 		@dataAnalysisController.setExperimentId(@model.id)
+		@dataAnalysisController.on 'analysis-completed', @handleAnalysisComplete
 
 # This wraps all the tabs
 class window.PrimaryScreenExperimentController extends Backbone.View

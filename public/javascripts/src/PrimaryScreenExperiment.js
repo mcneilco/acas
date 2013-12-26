@@ -264,6 +264,7 @@
 
     function UploadAndRunPrimaryAnalsysisController() {
       this.validateParseFile = __bind(this.validateParseFile, this);
+      this.handleSaveReturnSuccess = __bind(this.handleSaveReturnSuccess, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
       this.handleMSFormValid = __bind(this.handleMSFormValid, this);
@@ -315,6 +316,12 @@
       return this.psapc.disableAllInputs();
     };
 
+    UploadAndRunPrimaryAnalsysisController.prototype.handleSaveReturnSuccess = function(json) {
+      UploadAndRunPrimaryAnalsysisController.__super__.handleSaveReturnSuccess.call(this, json);
+      this.$('.bv_loadAnother').html("Re-Analyze");
+      return this.trigger('analysis-completed');
+    };
+
     UploadAndRunPrimaryAnalsysisController.prototype.showFileSelectPhase = function() {
       UploadAndRunPrimaryAnalsysisController.__super__.showFileSelectPhase.call(this);
       if (this.psapc != null) {
@@ -350,6 +357,7 @@
     __extends(PrimaryScreenAnalysisController, _super);
 
     function PrimaryScreenAnalysisController() {
+      this.handleAnalysisComplete = __bind(this.handleAnalysisComplete, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.setExperimentSaved = __bind(this.setExperimentSaved, this);
       this.render = __bind(this.render, this);
@@ -386,12 +394,14 @@
       this.$('.bv_analysisStatus').html(analysisStatus);
       resultValue = this.model.getAnalysisResultHTML();
       if (resultValue !== null) {
-        return this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
+        this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
+        return this.$('.bv_resultsContainer').show();
       }
     };
 
     PrimaryScreenAnalysisController.prototype.setExperimentNotSaved = function() {
       this.$('.bv_fileUploadWrapper').hide();
+      this.$('.bv_resultsContainer').hide();
       return this.$('.bv_saveExperimentToAnalyze').show();
     };
 
@@ -407,13 +417,19 @@
       return this.setExperimentSaved();
     };
 
+    PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
+      console.log("got analysis complete");
+      return this.$('.bv_resultsContainer').hide();
+    };
+
     PrimaryScreenAnalysisController.prototype.setupDataAnalysisController = function() {
       this.dataAnalysisController = new UploadAndRunPrimaryAnalsysisController({
         el: this.$('.bv_fileUploadWrapper'),
         paramsFromExperiment: this.model.getAnalysisParameters()
       });
       this.dataAnalysisController.setUser(this.model.get('recordedBy'));
-      return this.dataAnalysisController.setExperimentId(this.model.id);
+      this.dataAnalysisController.setExperimentId(this.model.id);
+      return this.dataAnalysisController.on('analysis-completed', this.handleAnalysisComplete);
     };
 
     return PrimaryScreenAnalysisController;
