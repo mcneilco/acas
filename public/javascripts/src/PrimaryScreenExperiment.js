@@ -152,7 +152,7 @@
       var ap;
       ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
       if (ap.get('clobValue') != null) {
-        return new PrimaryScreenAnalysisParameters(eval(ap.get('clobValue')));
+        return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
       } else {
         return new PrimaryScreenAnalysisParameters();
       }
@@ -259,76 +259,20 @@
 
   })(AbstractParserFormController);
 
-  window.PrimaryScreenAnalysisController = (function(_super) {
-    __extends(PrimaryScreenAnalysisController, _super);
-
-    function PrimaryScreenAnalysisController() {
-      this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
-      this.render = __bind(this.render, this);
-      _ref3 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
-      return _ref3;
-    }
-
-    PrimaryScreenAnalysisController.prototype.template = _.template($("#PrimaryScreenAnalysisView").html());
-
-    PrimaryScreenAnalysisController.prototype.initialize = function() {
-      return this.model.on("synced_and_repaired", this.handleExperimentSaved);
-    };
-
-    PrimaryScreenAnalysisController.prototype.render = function() {
-      $(this.el).empty();
-      $(this.el).html(this.template());
-      this.showExistingResults();
-      if (!this.model.isNew()) {
-        this.handleExperimentSaved();
-      }
-      return this;
-    };
-
-    PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
-      var analysisStatus, resultValue;
-      analysisStatus = this.model.getAnalysisStatus();
-      if (analysisStatus !== null) {
-        analysisStatus = analysisStatus.get('stringValue');
-      } else {
-        analysisStatus = "not started";
-      }
-      this.$('.bv_analysisStatus').html(analysisStatus);
-      resultValue = this.model.getAnalysisResultHTML();
-      if (resultValue !== null) {
-        return this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
-      }
-    };
-
-    PrimaryScreenAnalysisController.prototype.handleExperimentSaved = function() {
-      this.dataAnalysisController = new UploadAndRunPrimaryAnalsysisController({
-        el: this.$('.bv_fileUploadWrapper'),
-        paramsFromExperiment: this.model.getAnalysisParameters()
-      });
-      this.dataAnalysisController.setUser(this.model.get('recordedBy'));
-      return this.dataAnalysisController.setExperimentId(this.model.id);
-    };
-
-    return PrimaryScreenAnalysisController;
-
-  })(Backbone.View);
-
   window.UploadAndRunPrimaryAnalsysisController = (function(_super) {
     __extends(UploadAndRunPrimaryAnalsysisController, _super);
 
     function UploadAndRunPrimaryAnalsysisController() {
       this.validateParseFile = __bind(this.validateParseFile, this);
-      this.validateParseFile = __bind(this.validateParseFile, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
       this.handleMSFormValid = __bind(this.handleMSFormValid, this);
-      _ref4 = UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      _ref3 = UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
+      return _ref3;
     }
 
     UploadAndRunPrimaryAnalsysisController.prototype.initialize = function() {
       var _this = this;
-      UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(this, arguments);
       this.fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis";
       this.errorOwnerName = 'UploadAndRunPrimaryAnalsysisController';
       this.allowedFileTypes = ['zip'];
@@ -346,7 +290,8 @@
       this.psapc.on('amDirty', function() {
         return _this.trigger('amDirty');
       });
-      return this.psapc.render();
+      this.psapc.render();
+      return this.handleMSFormInvalid();
     };
 
     UploadAndRunPrimaryAnalsysisController.prototype.handleMSFormValid = function() {
@@ -381,17 +326,7 @@
       this.psapc.updateModel();
       if (!!this.psapc.isValid()) {
         this.additionalData = {
-          inputParameters: this.psapc.model.toJSON()
-        };
-        return UploadAndRunPrimaryAnalsysisController.__super__.validateParseFile.call(this);
-      }
-    };
-
-    UploadAndRunPrimaryAnalsysisController.prototype.validateParseFile = function() {
-      this.psapc.updateModel();
-      if (!!this.psapc.isValid()) {
-        this.additionalData = {
-          inputParameters: this.psapc.model.toJSON(),
+          inputParameters: JSON.stringify(this.psapc.model),
           primaryAnalysisExperimentId: this.experimentId,
           testMode: false
         };
@@ -410,6 +345,80 @@
     return UploadAndRunPrimaryAnalsysisController;
 
   })(BasicFileValidateAndSaveController);
+
+  window.PrimaryScreenAnalysisController = (function(_super) {
+    __extends(PrimaryScreenAnalysisController, _super);
+
+    function PrimaryScreenAnalysisController() {
+      this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
+      this.setExperimentSaved = __bind(this.setExperimentSaved, this);
+      this.render = __bind(this.render, this);
+      _ref4 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
+      return _ref4;
+    }
+
+    PrimaryScreenAnalysisController.prototype.template = _.template($("#PrimaryScreenAnalysisView").html());
+
+    PrimaryScreenAnalysisController.prototype.initialize = function() {
+      this.model.on("sync", this.handleExperimentSaved);
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      if (this.model.isNew()) {
+        return this.setExperimentNotSaved();
+      } else {
+        this.setupDataAnalysisController();
+        return this.setExperimentSaved();
+      }
+    };
+
+    PrimaryScreenAnalysisController.prototype.render = function() {
+      return this.showExistingResults();
+    };
+
+    PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
+      var analysisStatus, resultValue;
+      analysisStatus = this.model.getAnalysisStatus();
+      if (analysisStatus !== null) {
+        analysisStatus = analysisStatus.get('stringValue');
+      } else {
+        analysisStatus = "not started";
+      }
+      this.$('.bv_analysisStatus').html(analysisStatus);
+      resultValue = this.model.getAnalysisResultHTML();
+      if (resultValue !== null) {
+        return this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
+      }
+    };
+
+    PrimaryScreenAnalysisController.prototype.setExperimentNotSaved = function() {
+      this.$('.bv_fileUploadWrapper').hide();
+      return this.$('.bv_saveExperimentToAnalyze').show();
+    };
+
+    PrimaryScreenAnalysisController.prototype.setExperimentSaved = function() {
+      this.$('.bv_saveExperimentToAnalyze').hide();
+      return this.$('.bv_fileUploadWrapper').show();
+    };
+
+    PrimaryScreenAnalysisController.prototype.handleExperimentSaved = function() {
+      if (this.dataAnalysisController == null) {
+        this.setupDataAnalysisController();
+      }
+      return this.setExperimentSaved();
+    };
+
+    PrimaryScreenAnalysisController.prototype.setupDataAnalysisController = function() {
+      this.dataAnalysisController = new UploadAndRunPrimaryAnalsysisController({
+        el: this.$('.bv_fileUploadWrapper'),
+        paramsFromExperiment: this.model.getAnalysisParameters()
+      });
+      this.dataAnalysisController.setUser(this.model.get('recordedBy'));
+      return this.dataAnalysisController.setExperimentId(this.model.id);
+    };
+
+    return PrimaryScreenAnalysisController;
+
+  })(Backbone.View);
 
   window.PrimaryScreenExperimentController = (function(_super) {
     __extends(PrimaryScreenExperimentController, _super);

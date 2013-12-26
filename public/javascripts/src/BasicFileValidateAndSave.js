@@ -122,17 +122,19 @@
     };
 
     BasicFileValidateAndSaveController.prototype.validateParseFile = function() {
-      var _this = this;
+      var dataToPost,
+        _this = this;
       if (this.parseFileUploaded && !this.$(".bv_next").attr('disabled')) {
         this.notificationController.clearAllNotificiations();
         this.$('.bv_validateStatusDropDown').modal({
           backdrop: "static"
         });
         this.$('.bv_validateStatusDropDown').modal("show");
+        dataToPost = this.prepareDataToPost(true);
         return $.ajax({
           type: 'POST',
           url: this.fileProcessorURL,
-          data: this.prepareDataToPost(true),
+          data: dataToPost,
           success: this.handleValidationReturnSuccess,
           error: function(err) {
             return _this.$('.bv_validateStatusDropDown').modal("hide");
@@ -143,16 +145,18 @@
     };
 
     BasicFileValidateAndSaveController.prototype.parseAndSave = function() {
+      var dataToPost;
       if (this.parseFileUploaded && this.filePassedValidation) {
         this.notificationController.clearAllNotificiations();
         this.$('.bv_saveStatusDropDown').modal({
           backdrop: "static"
         });
         this.$('.bv_saveStatusDropDown').modal("show");
+        dataToPost = this.prepareDataToPost(false);
         return $.ajax({
           type: 'POST',
           url: this.fileProcessorURL,
-          data: this.prepareDataToPost(false),
+          data: dataToPost,
           success: this.handleSaveReturnSuccess,
           dataType: 'json'
         });

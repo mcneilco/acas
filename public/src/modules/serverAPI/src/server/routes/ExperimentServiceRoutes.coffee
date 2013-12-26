@@ -14,9 +14,9 @@ exports.experimentByCodename = (request, response) ->
 	console.log request.params.code
 	console.log request.query.testMode
 
-	if request.query.testMode
+	if request.query.testMode or global.specRunnerTestmode
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
-		response.end JSON.stringify experimentServiceTestJSON.stubSavedExperiment
+		response.end JSON.stringify experimentServiceTestJSON.stubSavedExperiment[0]
 	else
 		config = require '../public/src/conf/configurationNode.js'
 		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments/codename/"+request.params.code
@@ -27,7 +27,7 @@ exports.experimentByProtocolCodename = (request, response) ->
 	console.log request.params.code
 	console.log request.query.testMode
 
-	if request.query.testMode
+	if request.query.testMode or global.specRunnerTestmode
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		response.end JSON.stringify experimentServiceTestJSON.stubSavedExperiment
 	else

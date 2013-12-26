@@ -76,14 +76,14 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	validateParseFile: =>
 		if @parseFileUploaded and not @$(".bv_next").attr('disabled')
 			@notificationController.clearAllNotificiations()
-
 			@$('.bv_validateStatusDropDown').modal
 				backdrop: "static"
 			@$('.bv_validateStatusDropDown').modal "show"
+			dataToPost = @prepareDataToPost(true)
 			$.ajax
 				type: 'POST'
 				url: @fileProcessorURL
-				data: @prepareDataToPost(true)
+				data: dataToPost
 				success: @handleValidationReturnSuccess
 				error: (err) =>
 					@$('.bv_validateStatusDropDown').modal("hide")
@@ -95,10 +95,11 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@$('.bv_saveStatusDropDown').modal
 				backdrop: "static"
 			@$('.bv_saveStatusDropDown').modal("show")
+			dataToPost = @prepareDataToPost(false)
 			$.ajax
 				type: 'POST'
 				url: @fileProcessorURL,
-				data: @prepareDataToPost(false)
+				data: dataToPost
 				success: @handleSaveReturnSuccess
 				dataType: 'json',
 

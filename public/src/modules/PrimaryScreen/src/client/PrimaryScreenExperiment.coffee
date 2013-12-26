@@ -86,7 +86,7 @@ class window.PrimaryScreenExperiment extends Experiment
 	getAnalysisParameters: ->
 		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
 		if ap.get('clobValue')?
-			return new PrimaryScreenAnalysisParameters eval(ap.get('clobValue'))
+			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
 		else
 			return new PrimaryScreenAnalysisParameters()
 
@@ -158,43 +158,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_hitEfficacyThreshold').attr('disabled','disabled')
 			@$('.bv_hitSDThreshold').removeAttr('disabled')
 
-
-
-class window.PrimaryScreenAnalysisController extends Backbone.View
-	template: _.template($("#PrimaryScreenAnalysisView").html())
-
-	initialize: ->
-		@model.on "synced_and_repaired", @handleExperimentSaved
-
-	render: =>
-		$(@el).empty()
-		$(@el).html @template()
-		@showExistingResults()
-		if not @model.isNew()
-			@handleExperimentSaved()
-		@
-
-	showExistingResults: ->
-		analysisStatus = @model.getAnalysisStatus()
-		if analysisStatus != null
-			analysisStatus = analysisStatus.get('stringValue')
-		else
-			analysisStatus = "not started"
-		@$('.bv_analysisStatus').html(analysisStatus)
-		resultValue = @model.getAnalysisResultHTML()
-		if resultValue != null
-			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
-
-	handleExperimentSaved: =>
-		@dataAnalysisController = new UploadAndRunPrimaryAnalsysisController
-			el: @$('.bv_fileUploadWrapper')
-			paramsFromExperiment:	@model.getAnalysisParameters()
-		@dataAnalysisController.setUser(@model.get('recordedBy'))
-		@dataAnalysisController.setExperimentId(@model.id)
-
 class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 	initialize: ->
-		UploadAndRunPrimaryAnalsysisController.__super__.initialize.apply(@, arguments)
 		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
 		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
 		@allowedFileTypes = ['zip']
@@ -211,6 +176,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@psapc.on 'amDirty', =>
 			@trigger 'amDirty'
 		@psapc.render()
+		@handleMSFormInvalid() #start invalid since file won't be loaded
 
 	handleMSFormValid: =>
 		if @parseFileUploaded
@@ -236,14 +202,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@psapc.updateModel()
 		unless !@psapc.isValid()
 			@additionalData =
-				inputParameters: @psapc.model.toJSON()
-			super()
-
-	validateParseFile: =>
-		@psapc.updateModel()
-		unless !@psapc.isValid()
-			@additionalData =
-				inputParameters: @psapc.model.toJSON()
+				inputParameters: JSON.stringify @psapc.model
 				primaryAnalysisExperimentId: @experimentId
 				testMode: false
 			super()
@@ -254,9 +213,52 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 	setExperimentId: (expId) ->
 		@experimentId = expId
 
+class window.PrimaryScreenAnalysisController extends Backbone.View
+	template: _.template($("#PrimaryScreenAnalysisView").html())
 
+	initialize: ->
+		@model.on "sync", @handleExperimentSaved
+		$(@el).empty()
+		$(@el).html @template()
+		if @model.isNew()
+			@setExperimentNotSaved()
+		else
+			@setupDataAnalysisController()
+			@setExperimentSaved()
 
+	render: =>
+		@showExistingResults()
 
+	showExistingResults: ->
+		analysisStatus = @model.getAnalysisStatus()
+		if analysisStatus != null
+			analysisStatus = analysisStatus.get('stringValue')
+		else
+			analysisStatus = "not started"
+		@$('.bv_analysisStatus').html(analysisStatus)
+		resultValue = @model.getAnalysisResultHTML()
+		if resultValue != null
+			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
+
+	setExperimentNotSaved: ->
+		@$('.bv_fileUploadWrapper').hide()
+		@$('.bv_saveExperimentToAnalyze').show()
+
+	setExperimentSaved: =>
+		@$('.bv_saveExperimentToAnalyze').hide()
+		@$('.bv_fileUploadWrapper').show()
+
+	handleExperimentSaved: =>
+		unless @dataAnalysisController?
+			@setupDataAnalysisController()
+		@setExperimentSaved()
+
+	setupDataAnalysisController: ->
+		@dataAnalysisController = new UploadAndRunPrimaryAnalsysisController
+			el: @$('.bv_fileUploadWrapper')
+			paramsFromExperiment:	@model.getAnalysisParameters()
+		@dataAnalysisController.setUser(@model.get('recordedBy'))
+		@dataAnalysisController.setExperimentId(@model.id)
 
 # This wraps all the tabs
 class window.PrimaryScreenExperimentController extends Backbone.View
