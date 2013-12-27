@@ -174,7 +174,7 @@
       var bestName, cDate, errors, nameError, notebook, projectCode;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
-      nameError = false;
+      nameError = true;
       if (bestName != null) {
         nameError = true;
         if (bestName.get('labelText') !== "") {
@@ -351,7 +351,14 @@
     };
 
     ExperimentBaseController.prototype.initialize = function() {
-      this.model.on('sync', this.render);
+      var _this = this;
+      this.model.on('sync', function() {
+        _this.trigger('amClean');
+        return _this.render();
+      });
+      this.model.on('change', function() {
+        return _this.trigger('amDirty');
+      });
       this.errorOwnerName = 'ExperimentBaseController';
       this.setBindings();
       $(this.el).empty();
@@ -393,8 +400,8 @@
       } else {
         this.$('.bv_save').html("Update");
       }
-      this;
-      return this.updateEditable();
+      this.updateEditable();
+      return this;
     };
 
     ExperimentBaseController.prototype.setupProtocolSelect = function() {
@@ -496,12 +503,13 @@
     ExperimentBaseController.prototype.handleNameChanged = function() {
       var newName;
       newName = this.getTrimmedInput('.bv_experimentName');
-      return this.model.get('lsLabels').setBestName(new Label({
+      this.model.get('lsLabels').setBestName(new Label({
         labelKind: "experiment name",
         labelText: newName,
         recordedBy: this.model.get('recordedBy'),
         recordedDate: new Date().getTime()
       }));
+      return this.model.trigger('change');
     };
 
     ExperimentBaseController.prototype.handleDateChanged = function() {

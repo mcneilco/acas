@@ -198,18 +198,18 @@
     PrimaryScreenAnalysisParametersController.prototype.autofillTemplate = _.template($("#PrimaryScreenAnalysisParametersAutofillView").html());
 
     PrimaryScreenAnalysisParametersController.prototype.events = {
-      "change .bv_transformationRule": "updateModel",
-      "change .bv_normalizationRule": "updateModel",
-      "change .bv_transformationRule": "updateModel",
-      "change .bv_hitEfficacyThreshold": "updateModel",
-      "change .bv_hitSDThreshold": "updateModel",
-      "change .bv_positiveControlBatch": "updateModel",
-      "change .bv_positiveControlConc": "updateModel",
-      "change .bv_negativeControlBatch": "updateModel",
-      "change .bv_negativeControlConc": "updateModel",
-      "change .bv_vehicleControlBatch": "updateModel",
-      "change .bv_agonistControlBatch": "updateModel",
-      "change .bv_agonistControlConc": "updateModel",
+      "change .bv_transformationRule": "attributeChanged",
+      "change .bv_normalizationRule": "attributeChanged",
+      "change .bv_transformationRule": "attributeChanged",
+      "change .bv_hitEfficacyThreshold": "attributeChanged",
+      "change .bv_hitSDThreshold": "attributeChanged",
+      "change .bv_positiveControlBatch": "attributeChanged",
+      "change .bv_positiveControlConc": "attributeChanged",
+      "change .bv_negativeControlBatch": "attributeChanged",
+      "change .bv_negativeControlConc": "attributeChanged",
+      "change .bv_vehicleControlBatch": "attributeChanged",
+      "change .bv_agonistControlBatch": "attributeChanged",
+      "change .bv_agonistControlConc": "attributeChanged",
       "change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged",
       "change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
     };
@@ -260,11 +260,12 @@
       });
       if (thresholdType === "efficacy") {
         this.$('.bv_hitSDThreshold').attr('disabled', 'disabled');
-        return this.$('.bv_hitEfficacyThreshold').removeAttr('disabled');
+        this.$('.bv_hitEfficacyThreshold').removeAttr('disabled');
       } else {
         this.$('.bv_hitEfficacyThreshold').attr('disabled', 'disabled');
-        return this.$('.bv_hitSDThreshold').removeAttr('disabled');
+        this.$('.bv_hitSDThreshold').removeAttr('disabled');
       }
+      return this.attributeChanged();
     };
 
     return PrimaryScreenAnalysisParametersController;

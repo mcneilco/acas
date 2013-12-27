@@ -102,7 +102,7 @@ class window.Experiment extends Backbone.Model
 	validate: (attrs) ->
 		errors = []
 		bestName = attrs.lsLabels.pickBestName()
-		nameError = false
+		nameError = true
 		if bestName?
 			nameError = true
 			if bestName.get('labelText') != ""
@@ -202,7 +202,11 @@ class window.ExperimentBaseController extends AbstractFormController
 		"click .bv_save": "handleSaveClicked"
 
 	initialize: ->
-		@model.on 'sync', @render
+		@model.on 'sync', =>
+			@trigger 'amClean'
+			@render()
+		@model.on 'change', =>
+			@trigger 'amDirty'
 		@errorOwnerName = 'ExperimentBaseController'
 		@setBindings()
 		$(@el).empty()
@@ -226,7 +230,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@$('.bv_experimentCode').html(@model.get('codeName'))
 		@getAndShowProtocolName()
 		@setUseProtocolParametersDisabledState()
-		@$('.bv_completionDate').datepicker( );
+		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCompletionDate().get('dateValue')?
 			date = new Date(@model.getCompletionDate().get('dateValue'))
@@ -238,9 +242,9 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_save').html("Save")
 		else
 			@$('.bv_save').html("Update")
+		@updateEditable()
 
 		@
-		@updateEditable()
 
 
 	setupProtocolSelect: ->
@@ -317,6 +321,8 @@ class window.ExperimentBaseController extends AbstractFormController
 			labelText: newName
 			recordedBy: @model.get 'recordedBy'
 			recordedDate: new Date().getTime()
+		#TODO label change propagation isn't really working, so this is the work-around
+		@model.trigger 'change'
 
 	handleDateChanged: =>
 		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
