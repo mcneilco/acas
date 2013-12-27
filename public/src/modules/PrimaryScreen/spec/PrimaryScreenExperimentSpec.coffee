@@ -36,9 +36,9 @@ describe "Primary Screen Experiment module testing", ->
 					err.attribute=='positiveControlBatch'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when positive control conc is empty", ->
+			it "should be invalid when positive control conc is NaN", ->
 				@psap.get('positiveControl').set
-					concentration: ""
+					concentration: NaN
 				expect(@psap.isValid()).toBeFalsy()
 				filtErrors = _.filter(@psap.validationError, (err) ->
 					err.attribute=='positiveControlConc'
@@ -52,9 +52,9 @@ describe "Primary Screen Experiment module testing", ->
 					err.attribute=='negativeControlBatch'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when negative control conc is empty", ->
+			it "should be invalid when negative control conc is NaN", ->
 				@psap.get('negativeControl').set
-					concentration: ""
+					concentration: NaN
 				expect(@psap.isValid()).toBeFalsy()
 				filtErrors = _.filter(@psap.validationError, (err) ->
 					err.attribute=='negativeControlConc'
@@ -68,9 +68,9 @@ describe "Primary Screen Experiment module testing", ->
 					err.attribute=='agonistControlBatch'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when agonist control conc is empty", ->
+			it "should be invalid when agonist control conc is NaN", ->
 				@psap.get('agonistControl').set
-					concentration: ""
+					concentration: NaN
 				expect(@psap.isValid()).toBeFalsy()
 				filtErrors = _.filter(@psap.validationError, (err) ->
 					err.attribute=='agonistControlConc'
@@ -96,6 +96,22 @@ describe "Primary Screen Experiment module testing", ->
 				expect(@psap.isValid()).toBeFalsy()
 				filtErrors = _.filter(@psap.validationError, (err) ->
 					err.attribute=='normalizationRule'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when thresholdType is sd and hitSDThreshold is not a number", ->
+				@psap.set thresholdType: "sd"
+				@psap.set hitSDThreshold: NaN
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='hitSDThreshold'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when thresholdType is efficacy and hitEfficacyThreshold is not a number", ->
+				@psap.set thresholdType: "efficacy"
+				@psap.set hitEfficacyThreshold: NaN
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='hitEfficacyThreshold'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
@@ -177,11 +193,11 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the hitSDThreshold ", ->
 					@psapc.$('.bv_hitSDThreshold').val(' 24 ')
 					@psapc.$('.bv_hitSDThreshold').change()
-					expect(@psapc.model.get('hitSDThreshold')).toEqual "24"
+					expect(@psapc.model.get('hitSDThreshold')).toEqual 24
 				it "should update the hitEfficacyThreshold ", ->
 					@psapc.$('.bv_hitEfficacyThreshold').val(' 25 ')
 					@psapc.$('.bv_hitEfficacyThreshold').change()
-					expect(@psapc.model.get('hitEfficacyThreshold')).toEqual "25"
+					expect(@psapc.model.get('hitEfficacyThreshold')).toEqual 25
 				it "should update the positiveControl ", ->
 					@psapc.$('.bv_positiveControlBatch').val(' pos cont ')
 					@psapc.$('.bv_positiveControlBatch').change()
@@ -189,7 +205,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the positiveControl conc ", ->
 					@psapc.$('.bv_positiveControlConc').val(' 61 ')
 					@psapc.$('.bv_positiveControlConc').change()
-					expect(@psapc.model.get('positiveControl').get('concentration')).toEqual "61"
+					expect(@psapc.model.get('positiveControl').get('concentration')).toEqual 61
 				it "should update the negativeControl ", ->
 					@psapc.$('.bv_negativeControlBatch').val(' neg cont ')
 					@psapc.$('.bv_negativeControlBatch').change()
@@ -197,7 +213,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the negativeControl conc ", ->
 					@psapc.$('.bv_negativeControlConc').val(' 62 ')
 					@psapc.$('.bv_negativeControlConc').change()
-					expect(@psapc.model.get('negativeControl').get('concentration')).toEqual "62"
+					expect(@psapc.model.get('negativeControl').get('concentration')).toEqual 62
 				it "should update the vehicleControl ", ->
 					@psapc.$('.bv_vehicleControlBatch').val(' veh cont ')
 					@psapc.$('.bv_vehicleControlBatch').change()
@@ -209,7 +225,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the agonistControl conc", ->
 					@psapc.$('bv_agonistControlConc').val(' 2 ')
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.model.get('agonistControl').get('concentration')).toEqual "2"
+					expect(@psapc.model.get('agonistControl').get('concentration')).toEqual 2
 				it "should update the thresholdType ", ->
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
 					expect(@psapc.model.get('thresholdType')).toEqual "efficacy"
@@ -262,10 +278,20 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_transformationRule').val "unassigned"
 					@psapc.$('.bv_transformationRule').change()
 					expect(@psapc.$('.bv_group_transformationRule').hasClass("error")).toBeTruthy()
-				it "should show error if normaliationRule is unassigned", ->
+				it "should show error if normalizationRule is unassigned", ->
 					@psapc.$('.bv_normalizationRule').val "unassigned"
 					@psapc.$('.bv_normalizationRule').change()
 					expect(@psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy()
+				it "should show error if threshold type is efficacy and efficacy threshold not a number", ->
+					@psapc.$('.bv_thresholdTypeEfficacy').click()
+					@psapc.$('.bv_hitEfficacyThreshold').val ""
+					@psapc.$('.bv_hitEfficacyThreshold').change()
+					expect(@psapc.$('.bv_group_hitEfficacyThreshold').hasClass("error")).toBeTruthy()
+				it "should show error if threshold type is sd and sd threshold not a number", ->
+					@psapc.$('.bv_sdTypeEfficacy').click()
+					@psapc.$('.bv_hitSDThreshold').val ""
+					@psapc.$('.bv_hitSDThreshold').change()
+					expect(@psapc.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy()
 
 	describe "Upload and Run Primary Analysis Controller testing", ->
 		beforeEach ->

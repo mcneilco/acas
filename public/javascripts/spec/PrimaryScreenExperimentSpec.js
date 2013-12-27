@@ -49,10 +49,10 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        it("should be invalid when positive control conc is empty", function() {
+        it("should be invalid when positive control conc is NaN", function() {
           var filtErrors;
           this.psap.get('positiveControl').set({
-            concentration: ""
+            concentration: NaN
           });
           expect(this.psap.isValid()).toBeFalsy();
           filtErrors = _.filter(this.psap.validationError, function(err) {
@@ -71,10 +71,10 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        it("should be invalid when negative control conc is empty", function() {
+        it("should be invalid when negative control conc is NaN", function() {
           var filtErrors;
           this.psap.get('negativeControl').set({
-            concentration: ""
+            concentration: NaN
           });
           expect(this.psap.isValid()).toBeFalsy();
           filtErrors = _.filter(this.psap.validationError, function(err) {
@@ -93,10 +93,10 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        it("should be invalid when agonist control conc is empty", function() {
+        it("should be invalid when agonist control conc is NaN", function() {
           var filtErrors;
           this.psap.get('agonistControl').set({
-            concentration: ""
+            concentration: NaN
           });
           expect(this.psap.isValid()).toBeFalsy();
           filtErrors = _.filter(this.psap.validationError, function(err) {
@@ -126,7 +126,7 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        return it("should be invalid when normalization rule is unassigned", function() {
+        it("should be invalid when normalization rule is unassigned", function() {
           var filtErrors;
           this.psap.set({
             normalizationRule: "unassigned"
@@ -134,6 +134,34 @@
           expect(this.psap.isValid()).toBeFalsy();
           filtErrors = _.filter(this.psap.validationError, function(err) {
             return err.attribute === 'normalizationRule';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when thresholdType is sd and hitSDThreshold is not a number", function() {
+          var filtErrors;
+          this.psap.set({
+            thresholdType: "sd"
+          });
+          this.psap.set({
+            hitSDThreshold: NaN
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'hitSDThreshold';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it("should be invalid when thresholdType is efficacy and hitEfficacyThreshold is not a number", function() {
+          var filtErrors;
+          this.psap.set({
+            thresholdType: "efficacy"
+          });
+          this.psap.set({
+            hitEfficacyThreshold: NaN
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'hitEfficacyThreshold';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -253,12 +281,12 @@
           it("should update the hitSDThreshold ", function() {
             this.psapc.$('.bv_hitSDThreshold').val(' 24 ');
             this.psapc.$('.bv_hitSDThreshold').change();
-            return expect(this.psapc.model.get('hitSDThreshold')).toEqual("24");
+            return expect(this.psapc.model.get('hitSDThreshold')).toEqual(24);
           });
           it("should update the hitEfficacyThreshold ", function() {
             this.psapc.$('.bv_hitEfficacyThreshold').val(' 25 ');
             this.psapc.$('.bv_hitEfficacyThreshold').change();
-            return expect(this.psapc.model.get('hitEfficacyThreshold')).toEqual("25");
+            return expect(this.psapc.model.get('hitEfficacyThreshold')).toEqual(25);
           });
           it("should update the positiveControl ", function() {
             this.psapc.$('.bv_positiveControlBatch').val(' pos cont ');
@@ -268,7 +296,7 @@
           it("should update the positiveControl conc ", function() {
             this.psapc.$('.bv_positiveControlConc').val(' 61 ');
             this.psapc.$('.bv_positiveControlConc').change();
-            return expect(this.psapc.model.get('positiveControl').get('concentration')).toEqual("61");
+            return expect(this.psapc.model.get('positiveControl').get('concentration')).toEqual(61);
           });
           it("should update the negativeControl ", function() {
             this.psapc.$('.bv_negativeControlBatch').val(' neg cont ');
@@ -278,7 +306,7 @@
           it("should update the negativeControl conc ", function() {
             this.psapc.$('.bv_negativeControlConc').val(' 62 ');
             this.psapc.$('.bv_negativeControlConc').change();
-            return expect(this.psapc.model.get('negativeControl').get('concentration')).toEqual("62");
+            return expect(this.psapc.model.get('negativeControl').get('concentration')).toEqual(62);
           });
           it("should update the vehicleControl ", function() {
             this.psapc.$('.bv_vehicleControlBatch').val(' veh cont ');
@@ -293,7 +321,7 @@
           it("should update the agonistControl conc", function() {
             this.psapc.$('bv_agonistControlConc').val(' 2 ');
             this.psapc.$('.bv_agonistControlConc').change();
-            return expect(this.psapc.model.get('agonistControl').get('concentration')).toEqual("2");
+            return expect(this.psapc.model.get('agonistControl').get('concentration')).toEqual(2);
           });
           return it("should update the thresholdType ", function() {
             this.psapc.$('.bv_thresholdTypeEfficacy').click();
@@ -363,10 +391,22 @@
             this.psapc.$('.bv_transformationRule').change();
             return expect(this.psapc.$('.bv_group_transformationRule').hasClass("error")).toBeTruthy();
           });
-          return it("should show error if normaliationRule is unassigned", function() {
+          it("should show error if normalizationRule is unassigned", function() {
             this.psapc.$('.bv_normalizationRule').val("unassigned");
             this.psapc.$('.bv_normalizationRule').change();
             return expect(this.psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if threshold type is efficacy and efficacy threshold not a number", function() {
+            this.psapc.$('.bv_thresholdTypeEfficacy').click();
+            this.psapc.$('.bv_hitEfficacyThreshold').val("");
+            this.psapc.$('.bv_hitEfficacyThreshold').change();
+            return expect(this.psapc.$('.bv_group_hitEfficacyThreshold').hasClass("error")).toBeTruthy();
+          });
+          return it("should show error if threshold type is sd and sd threshold not a number", function() {
+            this.psapc.$('.bv_sdTypeEfficacy').click();
+            this.psapc.$('.bv_hitSDThreshold').val("");
+            this.psapc.$('.bv_hitSDThreshold').change();
+            return expect(this.psapc.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy();
           });
         });
       });

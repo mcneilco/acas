@@ -66,7 +66,7 @@
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
-      var agonistControl, errors, negativeControl, positiveControl, vehicleControl;
+      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, vehicleControl;
       errors = [];
       positiveControl = this.get('positiveControl').get('batchCode');
       if (positiveControl === "" || positiveControl === void 0) {
@@ -75,8 +75,8 @@
           message: "Positive control batch much be set"
         });
       }
-      positiveControl = this.get('positiveControl').get('concentration');
-      if (positiveControl === "" || positiveControl === void 0) {
+      positiveControlConc = this.get('positiveControl').get('concentration');
+      if (_.isNaN(positiveControlConc) || positiveControlConc === void 0) {
         errors.push({
           attribute: 'positiveControlConc',
           message: "Positive control conc much be set"
@@ -89,8 +89,8 @@
           message: "Negative control batch much be set"
         });
       }
-      negativeControl = this.get('negativeControl').get('concentration');
-      if (negativeControl === "" || negativeControl === void 0) {
+      negativeControlConc = this.get('negativeControl').get('concentration');
+      if (_.isNaN(negativeControlConc) || negativeControlConc === void 0) {
         errors.push({
           attribute: 'negativeControlConc',
           message: "Negative control conc much be set"
@@ -103,8 +103,8 @@
           message: "Agonist control batch much be set"
         });
       }
-      agonistControl = this.get('agonistControl').get('concentration');
-      if (agonistControl === "" || agonistControl === void 0) {
+      agonistControlConc = this.get('agonistControl').get('concentration');
+      if (_.isNaN(agonistControlConc) || agonistControlConc === void 0) {
         errors.push({
           attribute: 'agonistControlConc',
           message: "Agonist control conc much be set"
@@ -127,6 +127,18 @@
         errors.push({
           attribute: 'normalizationRule',
           message: "Normalization rule must be assigned"
+        });
+      }
+      if (attrs.thresholdType === "sd" && _.isNaN(attrs.hitSDThreshold)) {
+        errors.push({
+          attribute: 'hitSDThreshold',
+          message: "SD threshold must be assigned"
+        });
+      }
+      if (attrs.thresholdType === "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)) {
+        errors.push({
+          attribute: 'hitEfficacyThreshold',
+          message: "Efficacy threshold must be assigned"
         });
       }
       if (errors.length > 0) {
@@ -219,16 +231,16 @@
       this.model.set({
         transformationRule: this.$('.bv_transformationRule').val(),
         normalizationRule: this.$('.bv_normalizationRule').val(),
-        hitEfficacyThreshold: this.getTrimmedInput('.bv_hitEfficacyThreshold'),
-        hitSDThreshold: this.getTrimmedInput('.bv_hitSDThreshold')
+        hitEfficacyThreshold: parseFloat(this.getTrimmedInput('.bv_hitEfficacyThreshold')),
+        hitSDThreshold: parseFloat(this.getTrimmedInput('.bv_hitSDThreshold'))
       });
       this.model.get('positiveControl').set({
         batchCode: this.getTrimmedInput('.bv_positiveControlBatch'),
-        concentration: this.getTrimmedInput('.bv_positiveControlConc')
+        concentration: parseFloat(this.getTrimmedInput('.bv_positiveControlConc'))
       });
       this.model.get('negativeControl').set({
         batchCode: this.getTrimmedInput('.bv_negativeControlBatch'),
-        concentration: this.getTrimmedInput('.bv_negativeControlConc')
+        concentration: parseFloat(this.getTrimmedInput('.bv_negativeControlConc'))
       });
       this.model.get('vehicleControl').set({
         batchCode: this.getTrimmedInput('.bv_vehicleControlBatch'),
@@ -236,7 +248,7 @@
       });
       return this.model.get('agonistControl').set({
         batchCode: this.getTrimmedInput('.bv_agonistControlBatch'),
-        concentration: this.getTrimmedInput('.bv_agonistControlConc')
+        concentration: parseFloat(this.getTrimmedInput('.bv_agonistControlConc'))
       });
     };
 

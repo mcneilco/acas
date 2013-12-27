@@ -39,8 +39,8 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'positiveControlBatch'
 				message: "Positive control batch much be set"
-		positiveControl = @get('positiveControl').get('concentration')
-		if positiveControl is "" or positiveControl is undefined
+		positiveControlConc = @get('positiveControl').get('concentration')
+		if _.isNaN(positiveControlConc) || positiveControlConc is undefined
 			errors.push
 				attribute: 'positiveControlConc'
 				message: "Positive control conc much be set"
@@ -49,8 +49,8 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'negativeControlBatch'
 				message: "Negative control batch much be set"
-		negativeControl = @get('negativeControl').get('concentration')
-		if negativeControl is "" or negativeControl is undefined
+		negativeControlConc = @get('negativeControl').get('concentration')
+		if _.isNaN(negativeControlConc) || negativeControlConc is undefined
 			errors.push
 				attribute: 'negativeControlConc'
 				message: "Negative control conc much be set"
@@ -59,8 +59,8 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'agonistControlBatch'
 				message: "Agonist control batch much be set"
-		agonistControl = @get('agonistControl').get('concentration')
-		if agonistControl is "" or agonistControl is undefined
+		agonistControlConc = @get('agonistControl').get('concentration')
+		if _.isNaN(agonistControlConc) || agonistControlConc is undefined
 			errors.push
 				attribute: 'agonistControlConc'
 				message: "Agonist control conc much be set"
@@ -77,6 +77,15 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'normalizationRule'
 				message: "Normalization rule must be assigned"
+		if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
+			errors.push
+				attribute: 'hitSDThreshold'
+				message: "SD threshold must be assigned"
+		if attrs.thresholdType == "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)
+			errors.push
+				attribute: 'hitEfficacyThreshold'
+				message: "Efficacy threshold must be assigned"
+
 		if errors.length > 0
 			return errors
 		else
@@ -133,20 +142,20 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@model.set
 			transformationRule: @$('.bv_transformationRule').val()
 			normalizationRule: @$('.bv_normalizationRule').val()
-			hitEfficacyThreshold: @getTrimmedInput('.bv_hitEfficacyThreshold')
-			hitSDThreshold: @getTrimmedInput('.bv_hitSDThreshold')
+			hitEfficacyThreshold: parseFloat(@getTrimmedInput('.bv_hitEfficacyThreshold'))
+			hitSDThreshold: parseFloat(@getTrimmedInput('.bv_hitSDThreshold'))
 		@model.get('positiveControl').set
 			batchCode: @getTrimmedInput('.bv_positiveControlBatch')
-			concentration: @getTrimmedInput('.bv_positiveControlConc')
+			concentration: parseFloat(@getTrimmedInput('.bv_positiveControlConc'))
 		@model.get('negativeControl').set
 			batchCode: @getTrimmedInput('.bv_negativeControlBatch')
-			concentration: @getTrimmedInput('.bv_negativeControlConc')
+			concentration: parseFloat(@getTrimmedInput('.bv_negativeControlConc'))
 		@model.get('vehicleControl').set
 			batchCode: @getTrimmedInput('.bv_vehicleControlBatch')
 			concentration: null
 		@model.get('agonistControl').set
 			batchCode: @getTrimmedInput('.bv_agonistControlBatch')
-			concentration: @getTrimmedInput('.bv_agonistControlConc')
+			concentration: parseFloat(@getTrimmedInput('.bv_agonistControlConc'))
 
 	handleThresholdTypeChanged: =>
 		thresholdType = @$("input[name='bv_thresholdType']:checked").val()
@@ -211,7 +220,6 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@$('.bv_saveControlContainer').hide()
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_notifications').hide()
-
 
 	enableAll: ->
 		@psapc.enableAllInputs()
