@@ -313,6 +313,11 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@dataAnalysisController.setUser(@model.get('recordedBy'))
 		@dataAnalysisController.setExperimentId(@model.id)
 		@dataAnalysisController.on 'analysis-completed', @handleAnalysisComplete
+		@dataAnalysisController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@dataAnalysisController.on 'amClean', =>
+			@trigger 'amClean'
+
 
 # This wraps all the tabs
 class window.PrimaryScreenExperimentController extends Backbone.View
@@ -327,12 +332,24 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 		@experimentBaseController = new ExperimentBaseController
 			model: @model
 			el: @$('.bv_experimentBase')
+		@experimentBaseController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@experimentBaseController.on 'amClean', =>
+			@trigger 'amClean'
 		@analysisController = new PrimaryScreenAnalysisController
 			model: @model
 			el: @$('.bv_primaryScreenDataAnalysis')
+		@analysisController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@analysisController.on 'amClean', =>
+			@trigger 'amClean'
 		@doseRespController = new DoseResponseAnalysisController
 			model: @model
 			el: @$('.bv_doseResponseAnalysis')
+		@doseRespController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@doseRespController.on 'amClean', =>
+			@trigger 'amClean'
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 
 	render: ->

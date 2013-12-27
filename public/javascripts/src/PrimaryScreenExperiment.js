@@ -475,6 +475,7 @@
     };
 
     PrimaryScreenAnalysisController.prototype.setupDataAnalysisController = function() {
+      var _this = this;
       this.dataAnalysisController = new UploadAndRunPrimaryAnalsysisController({
         el: this.$('.bv_fileUploadWrapper'),
         paramsFromExperiment: this.model.getAnalysisParameters(),
@@ -482,7 +483,13 @@
       });
       this.dataAnalysisController.setUser(this.model.get('recordedBy'));
       this.dataAnalysisController.setExperimentId(this.model.id);
-      return this.dataAnalysisController.on('analysis-completed', this.handleAnalysisComplete);
+      this.dataAnalysisController.on('analysis-completed', this.handleAnalysisComplete);
+      this.dataAnalysisController.on('amDirty', function() {
+        return _this.trigger('amDirty');
+      });
+      return this.dataAnalysisController.on('amClean', function() {
+        return _this.trigger('amClean');
+      });
     };
 
     return PrimaryScreenAnalysisController;
@@ -502,6 +509,7 @@
     PrimaryScreenExperimentController.prototype.template = _.template($("#PrimaryScreenExperimentView").html());
 
     PrimaryScreenExperimentController.prototype.initialize = function() {
+      var _this = this;
       if (this.model == null) {
         this.model = new PrimaryScreenExperiment();
       }
@@ -511,13 +519,31 @@
         model: this.model,
         el: this.$('.bv_experimentBase')
       });
+      this.experimentBaseController.on('amDirty', function() {
+        return _this.trigger('amDirty');
+      });
+      this.experimentBaseController.on('amClean', function() {
+        return _this.trigger('amClean');
+      });
       this.analysisController = new PrimaryScreenAnalysisController({
         model: this.model,
         el: this.$('.bv_primaryScreenDataAnalysis')
       });
+      this.analysisController.on('amDirty', function() {
+        return _this.trigger('amDirty');
+      });
+      this.analysisController.on('amClean', function() {
+        return _this.trigger('amClean');
+      });
       this.doseRespController = new DoseResponseAnalysisController({
         model: this.model,
         el: this.$('.bv_doseResponseAnalysis')
+      });
+      this.doseRespController.on('amDirty', function() {
+        return _this.trigger('amDirty');
+      });
+      this.doseRespController.on('amClean', function() {
+        return _this.trigger('amClean');
       });
       return this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
     };
