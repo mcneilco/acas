@@ -281,26 +281,6 @@ describe "Primary Screen Experiment module testing", ->
 			it "Should load the template", ->
 				expect(@uarpac.$('.bv_parseFile').length).toNotEqual 0
 
-
-	describe "Primary Screen Experiment Controller testing", ->
-		describe "basic plumbing checks with new experiment", ->
-			beforeEach ->
-				@psec = new PrimaryScreenExperimentController
-					model: new PrimaryScreenExperiment()
-					el: $('#fixture')
-				@psec.render()
-			describe "Basic loading", ->
-				it "Class should exist", ->
-					expect(@psec).toBeDefined()
-				it "Should load the template", ->
-					expect(@psec.$('.bv_experimentBase').length).toNotEqual 0
-				it "Should load a base experiment controller", ->
-					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
-				it "Should load an analysis controller", ->
-					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual 0
-				it "Should load a dose response controller", ->
-					expect(@psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual 0
-
 	describe "Primary Screen Analysis Controller testing", ->
 		describe "basic plumbing checks with experiment copied from template", ->
 			beforeEach ->
@@ -328,6 +308,39 @@ describe "Primary Screen Experiment module testing", ->
 					@psac.setExperimentSaved()
 					expect(@psac.$('.bv_fileUploadWrapper')).toBeVisible()
 					expect(@psac.$('.bv_saveExperimentToAnalyze')).toBeHidden()
+		describe "experiment status locks analysis", ->
+			beforeEach ->
+				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
+				@psac = new PrimaryScreenAnalysisController
+					model: @exp
+					el: $('#fixture')
+				@psac.render()
+			it "Should disable analsyis parameter editing if status is Finalized", ->
+				@psac.model.getStatus().set stringValue: "Finalized"
+				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toEqual 'disabled'
+			it "Should enable analsyis parameter editing if status is Finalized", ->
+				@psac.model.getStatus().set stringValue: "Finalized"
+				@psac.model.getStatus().set stringValue: "Started"
+				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined()
+
+	describe "Primary Screen Experiment Controller testing", ->
+		describe "basic plumbing checks with new experiment", ->
+			beforeEach ->
+				@psec = new PrimaryScreenExperimentController
+					model: new PrimaryScreenExperiment()
+					el: $('#fixture')
+				@psec.render()
+			describe "Basic loading", ->
+				it "Class should exist", ->
+					expect(@psec).toBeDefined()
+				it "Should load the template", ->
+					expect(@psec.$('.bv_experimentBase').length).toNotEqual 0
+				it "Should load a base experiment controller", ->
+					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
+				it "Should load an analysis controller", ->
+					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual 0
+				it "Should load a dose response controller", ->
+					expect(@psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual 0
 
 
 

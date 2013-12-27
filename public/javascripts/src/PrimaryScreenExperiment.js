@@ -329,6 +329,21 @@
       }
     };
 
+    UploadAndRunPrimaryAnalsysisController.prototype.disableAll = function() {
+      this.psapc.disableAllInputs();
+      this.$('.bv_htmlSummary').hide();
+      this.$('.bv_fileUploadWrapper').hide();
+      this.$('.bv_nextControlContainer').hide();
+      this.$('.bv_saveControlContainer').hide();
+      this.$('.bv_completeControlContainer').hide();
+      return this.$('.bv_notifications').hide();
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.enableAll = function() {
+      this.psapc.enableAllInputs();
+      return this.showFileSelectPhase();
+    };
+
     UploadAndRunPrimaryAnalsysisController.prototype.validateParseFile = function() {
       this.psapc.updateModel();
       if (!!this.psapc.isValid()) {
@@ -357,6 +372,7 @@
     __extends(PrimaryScreenAnalysisController, _super);
 
     function PrimaryScreenAnalysisController() {
+      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.handleAnalysisComplete = __bind(this.handleAnalysisComplete, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.setExperimentSaved = __bind(this.setExperimentSaved, this);
@@ -369,6 +385,7 @@
 
     PrimaryScreenAnalysisController.prototype.initialize = function() {
       this.model.on("sync", this.handleExperimentSaved);
+      this.model.getStatus().on('change', this.handleStatusChanged);
       $(this.el).empty();
       $(this.el).html(this.template());
       if (this.model.isNew()) {
@@ -420,6 +437,15 @@
     PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
       console.log("got analysis complete");
       return this.$('.bv_resultsContainer').hide();
+    };
+
+    PrimaryScreenAnalysisController.prototype.handleStatusChanged = function() {
+      console.log("got status change");
+      if (this.model.isEditable()) {
+        return this.dataAnalysisController.enableAll();
+      } else {
+        return this.dataAnalysisController.disableAll();
+      }
     };
 
     PrimaryScreenAnalysisController.prototype.setupDataAnalysisController = function() {

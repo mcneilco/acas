@@ -389,36 +389,8 @@
         });
       });
     });
-    describe("Primary Screen Experiment Controller testing", function() {
-      return describe("basic plumbing checks with new experiment", function() {
-        beforeEach(function() {
-          this.psec = new PrimaryScreenExperimentController({
-            model: new PrimaryScreenExperiment(),
-            el: $('#fixture')
-          });
-          return this.psec.render();
-        });
-        return describe("Basic loading", function() {
-          it("Class should exist", function() {
-            return expect(this.psec).toBeDefined();
-          });
-          it("Should load the template", function() {
-            return expect(this.psec.$('.bv_experimentBase').length).toNotEqual(0);
-          });
-          it("Should load a base experiment controller", function() {
-            return expect(this.psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual(0);
-          });
-          it("Should load an analysis controller", function() {
-            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual(0);
-          });
-          return it("Should load a dose response controller", function() {
-            return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual(0);
-          });
-        });
-      });
-    });
-    return describe("Primary Screen Analysis Controller testing", function() {
-      return describe("basic plumbing checks with experiment copied from template", function() {
+    describe("Primary Screen Analysis Controller testing", function() {
+      describe("basic plumbing checks with experiment copied from template", function() {
         beforeEach(function() {
           this.exp = new PrimaryScreenExperiment();
           this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
@@ -452,6 +424,59 @@
             this.psac.setExperimentSaved();
             expect(this.psac.$('.bv_fileUploadWrapper')).toBeVisible();
             return expect(this.psac.$('.bv_saveExperimentToAnalyze')).toBeHidden();
+          });
+        });
+      });
+      return describe("experiment status locks analysis", function() {
+        beforeEach(function() {
+          this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
+          this.psac = new PrimaryScreenAnalysisController({
+            model: this.exp,
+            el: $('#fixture')
+          });
+          return this.psac.render();
+        });
+        it("Should disable analsyis parameter editing if status is Finalized", function() {
+          this.psac.model.getStatus().set({
+            stringValue: "Finalized"
+          });
+          return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toEqual('disabled');
+        });
+        return it("Should enable analsyis parameter editing if status is Finalized", function() {
+          this.psac.model.getStatus().set({
+            stringValue: "Finalized"
+          });
+          this.psac.model.getStatus().set({
+            stringValue: "Started"
+          });
+          return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined();
+        });
+      });
+    });
+    return describe("Primary Screen Experiment Controller testing", function() {
+      return describe("basic plumbing checks with new experiment", function() {
+        beforeEach(function() {
+          this.psec = new PrimaryScreenExperimentController({
+            model: new PrimaryScreenExperiment(),
+            el: $('#fixture')
+          });
+          return this.psec.render();
+        });
+        return describe("Basic loading", function() {
+          it("Class should exist", function() {
+            return expect(this.psec).toBeDefined();
+          });
+          it("Should load the template", function() {
+            return expect(this.psec.$('.bv_experimentBase').length).toNotEqual(0);
+          });
+          it("Should load a base experiment controller", function() {
+            return expect(this.psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual(0);
+          });
+          it("Should load an analysis controller", function() {
+            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual(0);
+          });
+          return it("Should load a dose response controller", function() {
+            return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual(0);
           });
         });
       });

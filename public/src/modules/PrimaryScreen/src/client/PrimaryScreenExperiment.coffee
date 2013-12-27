@@ -203,6 +203,20 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		if @psapc?
 			@psapc.enableAllInputs()
 
+	disableAll: ->
+		@psapc.disableAllInputs()
+		@$('.bv_htmlSummary').hide()
+		@$('.bv_fileUploadWrapper').hide()
+		@$('.bv_nextControlContainer').hide()
+		@$('.bv_saveControlContainer').hide()
+		@$('.bv_completeControlContainer').hide()
+		@$('.bv_notifications').hide()
+
+
+	enableAll: ->
+		@psapc.enableAllInputs()
+		@showFileSelectPhase()
+
 	validateParseFile: =>
 		@psapc.updateModel()
 		unless !@psapc.isValid()
@@ -223,6 +237,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 
 	initialize: ->
 		@model.on "sync", @handleExperimentSaved
+		@model.getStatus().on 'change', @handleStatusChanged
 		$(@el).empty()
 		$(@el).html @template()
 		if @model.isNew()
@@ -246,7 +261,6 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
 			@$('.bv_resultsContainer').show()
 
-
 	setExperimentNotSaved: ->
 		@$('.bv_fileUploadWrapper').hide()
 		@$('.bv_resultsContainer').hide()
@@ -265,6 +279,14 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		console.log "got analysis complete"
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
 		@$('.bv_resultsContainer').hide()
+
+	handleStatusChanged: =>
+		console.log "got status change"
+		if @model.isEditable()
+			@dataAnalysisController.enableAll()
+		else
+			@dataAnalysisController.disableAll()
+
 
 
 	setupDataAnalysisController: ->
