@@ -184,7 +184,10 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@psapc.on 'clearErrors', @notificationController.clearAllNotificiations
 		@psapc.on 'amDirty', =>
 			@trigger 'amDirty'
+		@analyzedPreviously = @options.analyzedPreviously
 		@psapc.render()
+		if @analyzedPreviously
+			@$('.bv_save').html("Re-Analyze")
 		@handleMSFormInvalid() #start invalid since file won't be loaded
 
 	handleMSFormValid: =>
@@ -197,6 +200,13 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 	handleFormValid: ->
 		if @psapc.isValid()
 			super()
+
+	parseAndSave: =>
+		if @analyzedPreviously
+			if !confirm("Re-analyzing the data will delete the previously saved results")
+				return
+		super()
+
 
 	handleValidationReturnSuccess: (json) =>
 		super(json)
@@ -295,12 +305,11 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		else
 			@dataAnalysisController.disableAll()
 
-
-
 	setupDataAnalysisController: ->
 		@dataAnalysisController = new UploadAndRunPrimaryAnalsysisController
 			el: @$('.bv_fileUploadWrapper')
 			paramsFromExperiment:	@model.getAnalysisParameters()
+			analyzedPreviously: @model.getAnalysisStatus().get('stringValue')!="not started"
 		@dataAnalysisController.setUser(@model.get('recordedBy'))
 		@dataAnalysisController.setExperimentId(@model.id)
 		@dataAnalysisController.on 'analysis-completed', @handleAnalysisComplete

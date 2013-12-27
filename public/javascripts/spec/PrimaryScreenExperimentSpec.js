@@ -467,7 +467,7 @@
           });
         });
       });
-      return describe("experiment status locks analysis", function() {
+      describe("experiment status locks analysis", function() {
         beforeEach(function() {
           this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
           this.psac = new PrimaryScreenAnalysisController({
@@ -482,7 +482,7 @@
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toEqual('disabled');
         });
-        return it("Should enable analsyis parameter editing if status is Finalized", function() {
+        it("Should enable analsyis parameter editing if status is Finalized", function() {
           this.psac.model.getStatus().set({
             stringValue: "Finalized"
           });
@@ -490,6 +490,25 @@
             stringValue: "Started"
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined();
+        });
+        return it("should show upload button as upload data since status is 'not started'", function() {
+          return expect(this.psac.$('.bv_save').html()).toEqual("Upload Data");
+        });
+      });
+      return describe("handling re-analysis", function() {
+        beforeEach(function() {
+          this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
+          this.exp.getAnalysisStatus().set({
+            stringValue: "analsysis complete"
+          });
+          this.psac = new PrimaryScreenAnalysisController({
+            model: this.exp,
+            el: $('#fixture')
+          });
+          return this.psac.render();
+        });
+        return it("should show upload button as re-analyze since status is not 'not started'", function() {
+          return expect(this.psac.$('.bv_save').html()).toEqual("Re-Analyze");
         });
       });
     });

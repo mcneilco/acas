@@ -348,6 +348,18 @@ describe "Primary Screen Experiment module testing", ->
 				@psac.model.getStatus().set stringValue: "Finalized"
 				@psac.model.getStatus().set stringValue: "Started"
 				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined()
+			it "should show upload button as upload data since status is 'not started'", ->
+				expect(@psac.$('.bv_save').html()).toEqual "Upload Data"
+		describe "handling re-analysis", ->
+			beforeEach ->
+				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
+				@exp.getAnalysisStatus().set stringValue: "analsysis complete"
+				@psac = new PrimaryScreenAnalysisController
+					model: @exp
+					el: $('#fixture')
+				@psac.render()
+			it "should show upload button as re-analyze since status is not 'not started'", ->
+				expect(@psac.$('.bv_save').html()).toEqual "Re-Analyze"
 
 	describe "Primary Screen Experiment Controller testing", ->
 		describe "basic plumbing checks with new experiment", ->

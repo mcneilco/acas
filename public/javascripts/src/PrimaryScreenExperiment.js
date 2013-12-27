@@ -278,6 +278,7 @@
       this.validateParseFile = __bind(this.validateParseFile, this);
       this.handleSaveReturnSuccess = __bind(this.handleSaveReturnSuccess, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
+      this.parseAndSave = __bind(this.parseAndSave, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
       this.handleMSFormValid = __bind(this.handleMSFormValid, this);
       _ref3 = UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
@@ -303,7 +304,11 @@
       this.psapc.on('amDirty', function() {
         return _this.trigger('amDirty');
       });
+      this.analyzedPreviously = this.options.analyzedPreviously;
       this.psapc.render();
+      if (this.analyzedPreviously) {
+        this.$('.bv_save').html("Re-Analyze");
+      }
       return this.handleMSFormInvalid();
     };
 
@@ -321,6 +326,15 @@
       if (this.psapc.isValid()) {
         return UploadAndRunPrimaryAnalsysisController.__super__.handleFormValid.call(this);
       }
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.parseAndSave = function() {
+      if (this.analyzedPreviously) {
+        if (!confirm("Re-analyzing the data will delete the previously saved results")) {
+          return;
+        }
+      }
+      return UploadAndRunPrimaryAnalsysisController.__super__.parseAndSave.call(this);
     };
 
     UploadAndRunPrimaryAnalsysisController.prototype.handleValidationReturnSuccess = function(json) {
@@ -463,7 +477,8 @@
     PrimaryScreenAnalysisController.prototype.setupDataAnalysisController = function() {
       this.dataAnalysisController = new UploadAndRunPrimaryAnalsysisController({
         el: this.$('.bv_fileUploadWrapper'),
-        paramsFromExperiment: this.model.getAnalysisParameters()
+        paramsFromExperiment: this.model.getAnalysisParameters(),
+        analyzedPreviously: this.model.getAnalysisStatus().get('stringValue') !== "not started"
       });
       this.dataAnalysisController.setUser(this.model.get('recordedBy'));
       this.dataAnalysisController.setExperimentId(this.model.id);
