@@ -625,13 +625,10 @@ describe "Experiment module testing", ->
 							expect(@ebc.$('.bv_save').html()).toEqual "Update"
 				describe "Experiment status behavior", ->
 					it "should disable all fields if experiment is Finalized", ->
-						runs ->
-							@ebc.$('.bv_status').val('Finalized')
-							@ebc.$('.bv_status').change()
-						waits 1000
-						runs ->
-							expect(@ebc.$('.bv_notebook').attr('disabled')).toEqual 'disabled'
-							expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
+						@ebc.$('.bv_status').val('Finalized')
+						@ebc.$('.bv_status').change()
+						expect(@ebc.$('.bv_notebook').attr('disabled')).toEqual 'disabled'
+						expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
 					it "should enable all fields if experiment is Started", ->
 						@ebc.$('.bv_status').val('Finalized')
 						@ebc.$('.bv_status').change()

@@ -66,7 +66,7 @@
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
-      var agonistControl, errors, negativeControl, positiveControl, vehicleControl;
+      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, vehicleControl;
       errors = [];
       positiveControl = this.get('positiveControl').get('batchCode');
       if (positiveControl === "" || positiveControl === void 0) {
@@ -75,8 +75,8 @@
           message: "Positive control batch much be set"
         });
       }
-      positiveControl = this.get('positiveControl').get('concentration');
-      if (positiveControl === "" || positiveControl === void 0) {
+      positiveControlConc = this.get('positiveControl').get('concentration');
+      if (_.isNaN(positiveControlConc) || positiveControlConc === void 0) {
         errors.push({
           attribute: 'positiveControlConc',
           message: "Positive control conc much be set"
@@ -89,8 +89,8 @@
           message: "Negative control batch much be set"
         });
       }
-      negativeControl = this.get('negativeControl').get('concentration');
-      if (negativeControl === "" || negativeControl === void 0) {
+      negativeControlConc = this.get('negativeControl').get('concentration');
+      if (_.isNaN(negativeControlConc) || negativeControlConc === void 0) {
         errors.push({
           attribute: 'negativeControlConc',
           message: "Negative control conc much be set"
@@ -103,8 +103,8 @@
           message: "Agonist control batch much be set"
         });
       }
-      agonistControl = this.get('agonistControl').get('concentration');
-      if (agonistControl === "" || agonistControl === void 0) {
+      agonistControlConc = this.get('agonistControl').get('concentration');
+      if (_.isNaN(agonistControlConc) || agonistControlConc === void 0) {
         errors.push({
           attribute: 'agonistControlConc',
           message: "Agonist control conc much be set"
@@ -127,6 +127,18 @@
         errors.push({
           attribute: 'normalizationRule',
           message: "Normalization rule must be assigned"
+        });
+      }
+      if (attrs.thresholdType === "sd" && _.isNaN(attrs.hitSDThreshold)) {
+        errors.push({
+          attribute: 'hitSDThreshold',
+          message: "SD threshold must be assigned"
+        });
+      }
+      if (attrs.thresholdType === "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)) {
+        errors.push({
+          attribute: 'hitEfficacyThreshold',
+          message: "Efficacy threshold must be assigned"
         });
       }
       if (errors.length > 0) {
@@ -219,16 +231,16 @@
       this.model.set({
         transformationRule: this.$('.bv_transformationRule').val(),
         normalizationRule: this.$('.bv_normalizationRule').val(),
-        hitEfficacyThreshold: this.getTrimmedInput('.bv_hitEfficacyThreshold'),
-        hitSDThreshold: this.getTrimmedInput('.bv_hitSDThreshold')
+        hitEfficacyThreshold: parseFloat(this.getTrimmedInput('.bv_hitEfficacyThreshold')),
+        hitSDThreshold: parseFloat(this.getTrimmedInput('.bv_hitSDThreshold'))
       });
       this.model.get('positiveControl').set({
         batchCode: this.getTrimmedInput('.bv_positiveControlBatch'),
-        concentration: this.getTrimmedInput('.bv_positiveControlConc')
+        concentration: parseFloat(this.getTrimmedInput('.bv_positiveControlConc'))
       });
       this.model.get('negativeControl').set({
         batchCode: this.getTrimmedInput('.bv_negativeControlBatch'),
-        concentration: this.getTrimmedInput('.bv_negativeControlConc')
+        concentration: parseFloat(this.getTrimmedInput('.bv_negativeControlConc'))
       });
       this.model.get('vehicleControl').set({
         batchCode: this.getTrimmedInput('.bv_vehicleControlBatch'),
@@ -236,7 +248,7 @@
       });
       return this.model.get('agonistControl').set({
         batchCode: this.getTrimmedInput('.bv_agonistControlBatch'),
-        concentration: this.getTrimmedInput('.bv_agonistControlConc')
+        concentration: parseFloat(this.getTrimmedInput('.bv_agonistControlConc'))
       });
     };
 
@@ -264,7 +276,9 @@
 
     function UploadAndRunPrimaryAnalsysisController() {
       this.validateParseFile = __bind(this.validateParseFile, this);
+      this.handleSaveReturnSuccess = __bind(this.handleSaveReturnSuccess, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
+      this.parseAndSave = __bind(this.parseAndSave, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
       this.handleMSFormValid = __bind(this.handleMSFormValid, this);
       _ref3 = UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
@@ -290,7 +304,11 @@
       this.psapc.on('amDirty', function() {
         return _this.trigger('amDirty');
       });
+      this.analyzedPreviously = this.options.analyzedPreviously;
       this.psapc.render();
+      if (this.analyzedPreviously) {
+        this.$('.bv_save').html("Re-Analyze");
+      }
       return this.handleMSFormInvalid();
     };
 
@@ -310,9 +328,24 @@
       }
     };
 
+    UploadAndRunPrimaryAnalsysisController.prototype.parseAndSave = function() {
+      if (this.analyzedPreviously) {
+        if (!confirm("Re-analyzing the data will delete the previously saved results")) {
+          return;
+        }
+      }
+      return UploadAndRunPrimaryAnalsysisController.__super__.parseAndSave.call(this);
+    };
+
     UploadAndRunPrimaryAnalsysisController.prototype.handleValidationReturnSuccess = function(json) {
       UploadAndRunPrimaryAnalsysisController.__super__.handleValidationReturnSuccess.call(this, json);
       return this.psapc.disableAllInputs();
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.handleSaveReturnSuccess = function(json) {
+      UploadAndRunPrimaryAnalsysisController.__super__.handleSaveReturnSuccess.call(this, json);
+      this.$('.bv_loadAnother').html("Re-Analyze");
+      return this.trigger('analysis-completed');
     };
 
     UploadAndRunPrimaryAnalsysisController.prototype.showFileSelectPhase = function() {
@@ -320,6 +353,21 @@
       if (this.psapc != null) {
         return this.psapc.enableAllInputs();
       }
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.disableAll = function() {
+      this.psapc.disableAllInputs();
+      this.$('.bv_htmlSummary').hide();
+      this.$('.bv_fileUploadWrapper').hide();
+      this.$('.bv_nextControlContainer').hide();
+      this.$('.bv_saveControlContainer').hide();
+      this.$('.bv_completeControlContainer').hide();
+      return this.$('.bv_notifications').hide();
+    };
+
+    UploadAndRunPrimaryAnalsysisController.prototype.enableAll = function() {
+      this.psapc.enableAllInputs();
+      return this.showFileSelectPhase();
     };
 
     UploadAndRunPrimaryAnalsysisController.prototype.validateParseFile = function() {
@@ -350,6 +398,8 @@
     __extends(PrimaryScreenAnalysisController, _super);
 
     function PrimaryScreenAnalysisController() {
+      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
+      this.handleAnalysisComplete = __bind(this.handleAnalysisComplete, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.setExperimentSaved = __bind(this.setExperimentSaved, this);
       this.render = __bind(this.render, this);
@@ -361,6 +411,7 @@
 
     PrimaryScreenAnalysisController.prototype.initialize = function() {
       this.model.on("sync", this.handleExperimentSaved);
+      this.model.getStatus().on('change', this.handleStatusChanged);
       $(this.el).empty();
       $(this.el).html(this.template());
       if (this.model.isNew()) {
@@ -386,12 +437,14 @@
       this.$('.bv_analysisStatus').html(analysisStatus);
       resultValue = this.model.getAnalysisResultHTML();
       if (resultValue !== null) {
-        return this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
+        this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
+        return this.$('.bv_resultsContainer').show();
       }
     };
 
     PrimaryScreenAnalysisController.prototype.setExperimentNotSaved = function() {
       this.$('.bv_fileUploadWrapper').hide();
+      this.$('.bv_resultsContainer').hide();
       return this.$('.bv_saveExperimentToAnalyze').show();
     };
 
@@ -407,13 +460,29 @@
       return this.setExperimentSaved();
     };
 
+    PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
+      console.log("got analysis complete");
+      return this.$('.bv_resultsContainer').hide();
+    };
+
+    PrimaryScreenAnalysisController.prototype.handleStatusChanged = function() {
+      console.log("got status change");
+      if (this.model.isEditable()) {
+        return this.dataAnalysisController.enableAll();
+      } else {
+        return this.dataAnalysisController.disableAll();
+      }
+    };
+
     PrimaryScreenAnalysisController.prototype.setupDataAnalysisController = function() {
       this.dataAnalysisController = new UploadAndRunPrimaryAnalsysisController({
         el: this.$('.bv_fileUploadWrapper'),
-        paramsFromExperiment: this.model.getAnalysisParameters()
+        paramsFromExperiment: this.model.getAnalysisParameters(),
+        analyzedPreviously: this.model.getAnalysisStatus().get('stringValue') !== "not started"
       });
       this.dataAnalysisController.setUser(this.model.get('recordedBy'));
-      return this.dataAnalysisController.setExperimentId(this.model.id);
+      this.dataAnalysisController.setExperimentId(this.model.id);
+      return this.dataAnalysisController.on('analysis-completed', this.handleAnalysisComplete);
     };
 
     return PrimaryScreenAnalysisController;

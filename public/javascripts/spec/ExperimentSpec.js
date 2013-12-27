@@ -910,15 +910,10 @@
           });
           return describe("Experiment status behavior", function() {
             it("should disable all fields if experiment is Finalized", function() {
-              runs(function() {
-                this.ebc.$('.bv_status').val('Finalized');
-                return this.ebc.$('.bv_status').change();
-              });
-              waits(1000);
-              return runs(function() {
-                expect(this.ebc.$('.bv_notebook').attr('disabled')).toEqual('disabled');
-                return expect(this.ebc.$('.bv_status').attr('disabled')).toBeUndefined();
-              });
+              this.ebc.$('.bv_status').val('Finalized');
+              this.ebc.$('.bv_status').change();
+              expect(this.ebc.$('.bv_notebook').attr('disabled')).toEqual('disabled');
+              return expect(this.ebc.$('.bv_status').attr('disabled')).toBeUndefined();
             });
             it("should enable all fields if experiment is Started", function() {
               this.ebc.$('.bv_status').val('Finalized');
