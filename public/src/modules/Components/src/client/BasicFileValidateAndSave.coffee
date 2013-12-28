@@ -27,7 +27,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@parseFileController = new LSFileInputController
 			el: @$('.bv_parseFile')
 			inputTitle: ''
-			url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
+			url: "http://"+window.conf.host+":"+window.conf.service.file.port
 			fieldIsRequired: false
 			allowedFileTypes: @allowedFileTypes
 		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
@@ -38,7 +38,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@reportFileController = new LSFileInputController
 				el: @$('.bv_reportFile')
 				inputTitle: ''
-				url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL
+				url: "http://"+window.conf.host+":"+window.conf.service.file.port
 				fieldIsRequired: false
 				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
 			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)
@@ -134,6 +134,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		if json.results?.htmlSummary?
 			@$('.bv_htmlSummary').html(json.results.htmlSummary)
 		@$('.bv_validateStatusDropDown').modal("hide")
+		if json.results.csvDataPreview?
+			@showCSVPreview json.results.csvDataPreview
 
 	handleSaveReturnSuccess: (json) =>
 		summaryStr = "Upload Results: "
@@ -167,6 +169,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_saveControlContainer').hide()
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_notifications').hide()
+		@$('.bv_csvPreviewContainer').hide()
 
 	showFileUploadPhase: ->
 		@$('.bv_htmlSummary').show()
@@ -178,6 +181,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 
 	showFileUploadCompletePhase: ->
 		@$('.bv_htmlSummary').show()
+		@$('.bv_csvPreviewContainer').hide()
 		@$('.bv_fileUploadWrapper').hide()
 		@$('.bv_nextControlContainer').hide()
 		@$('.bv_saveControlContainer').hide()
@@ -192,3 +196,21 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	handleFormValid: =>
 		@$(".bv_next").removeAttr 'disabled'
 		@$(".bv_save").removeAttr 'disabled'
+
+	showCSVPreview: (csv) ->
+		@$('.csvPreviewTHead').empty()
+		@$('.csvPreviewTBody').empty()
+
+		csvRows = csv.split('\n')
+		if csvRows.length > 1
+			headCells = csvRows[0].split(',')
+			if headCells.length > 1
+				@$('.csvPreviewTHead').append "<tr></tr>"
+				for val in  headCells
+					@$('.csvPreviewTHead tr').append "<th>"+val+"</th>"
+				for r in [1..csvRows.length-2]
+					@$('.csvPreviewTBody').append "<tr></tr>"
+					rowCells = csvRows[r].split(',')
+					for val in rowCells
+						@$('.csvPreviewTBody tr:last').append "<td>"+val+"</td>"
+				@$('.bv_csvPreviewContainer').show()

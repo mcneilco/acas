@@ -1,23 +1,23 @@
-
+csUtilities = require "./public/src/conf/CustomerSpecificServerFunctions.js"
 
 startApp = ->
 # Regular system startup
-	config = require './public/src/conf/configurationNode.js'
+	config = require './conf/compiled/conf.js'
 	express = require('express')
 	user = require('./routes/user')
-
 	http = require('http')
 	path = require('path')
 
-	# Added for login support
+	# Added for logging support
 	flash = require 'connect-flash'
 	passport = require 'passport'
 	util = require 'util'
 	LocalStrategy = require('passport-local').Strategy
+	global.deployMode = config.all.client.deployMode
 
-	app = express()
+	global.app = express()
 	app.configure( ->
-		app.set('port', process.env.PORT || config.serverConfigurationParams.configuration.portNumber)
+		app.set('port', config.all.client.port)
 		app.set('views', __dirname + '/views')
 		app.set('view engine', 'jade')
 		app.use(express.favicon())
@@ -37,19 +37,22 @@ startApp = ->
 	)
 	loginRoutes = require './routes/loginRoutes'
 
+	#TODO Do we need these next three lines? What do they do?
 	app.configure('development', ->
 		app.use(express.errorHandler())
+		console.log "node dev mode set"
 	)
 
 	# main routes
 	routes = require('./routes')
-	if config.serverConfigurationParams.configuration.requireLogin
+	if config.all.client.require.login
 		app.get '/', loginRoutes.ensureAuthenticated, routes.index
 		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, routes.autoLaunchWithCode
 	else
 		app.get '/:moduleName/codeName/:code', routes.autoLaunchWithCode
 		app.get '/', routes.index
-	if config.serverConfigurationParams.configuration.enableSpecRunner
+
+	if config.all.server.enableSpecRunner
 		app.get '/SpecRunner', routes.specRunner
 		app.get '/LiveServiceSpecRunner', routes.liveServiceSpecRunner
 
@@ -58,9 +61,9 @@ startApp = ->
 	passport.serializeUser (user, done) ->
 		done null, user.username
 	passport.deserializeUser (username, done) ->
-		loginRoutes.findByUsername username, (err, user) ->
+		csUtilities.findByUsername username, (err, user) ->
 			done err, user
-	passport.use new LocalStrategy loginRoutes.loginStrategy
+	passport.use new LocalStrategy csUtilities.loginStrategy
 
 	app.get '/login', loginRoutes.loginPage
 	app.post '/login',
@@ -92,7 +95,6 @@ startApp = ->
 	#Components routes
 	projectServiceRoutes = require './routes/ProjectServiceRoutes.js'
 	app.get '/api/projects', projectServiceRoutes.getProjects
-
 
 	# DocForBatches routes
 	docForBatchesRoutes = require './routes/DocForBatchesRoutes.js'
@@ -131,6 +133,6 @@ startApp = ->
 	http.createServer(app).listen(app.get('port'), ->
 		console.log("Express server listening on port " + app.get('port'))
 	)
+	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 startApp()
-

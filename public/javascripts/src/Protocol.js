@@ -1,16 +1,99 @@
 (function() {
-  var _ref,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var _ref, _ref1, _ref2, _ref3, _ref4,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  window.ProtocolValue = (function(_super) {
+    __extends(ProtocolValue, _super);
+
+    function ProtocolValue() {
+      _ref = ProtocolValue.__super__.constructor.apply(this, arguments);
+      return _ref;
+    }
+
+    return ProtocolValue;
+
+  })(Backbone.Model);
+
+  window.ProtocolValueList = (function(_super) {
+    __extends(ProtocolValueList, _super);
+
+    function ProtocolValueList() {
+      _ref1 = ProtocolValueList.__super__.constructor.apply(this, arguments);
+      return _ref1;
+    }
+
+    ProtocolValueList.prototype.model = ProtocolValue;
+
+    return ProtocolValueList;
+
+  })(Backbone.Collection);
+
+  window.ProtocolState = (function(_super) {
+    __extends(ProtocolState, _super);
+
+    function ProtocolState() {
+      _ref2 = ProtocolState.__super__.constructor.apply(this, arguments);
+      return _ref2;
+    }
+
+    ProtocolState.prototype.defaults = {
+      protocolValues: new ProtocolValueList()
+    };
+
+    ProtocolState.prototype.initialize = function() {
+      var _this = this;
+      if (this.has('protocolValues')) {
+        if (!(this.get('protocolValues') instanceof ProtocolValueList)) {
+          this.set({
+            protocolValues: new ProtocolValueList(this.get('protocolValues'))
+          });
+        }
+      }
+      return this.get('protocolValues').on('change', function() {
+        return _this.trigger('change');
+      });
+    };
+
+    ProtocolState.prototype.parse = function(resp) {
+      var _this = this;
+      if (resp.protocolValues != null) {
+        if (!(resp.protocolValues instanceof ProtocolValueList)) {
+          resp.protocolValues = new ProtocolValueList(resp.protocolValues);
+          resp.protocolValues.on('change', function() {
+            return _this.trigger('change');
+          });
+        }
+      }
+      return resp;
+    };
+
+    return ProtocolState;
+
+  })(Backbone.Model);
+
+  window.ProtocolStateList = (function(_super) {
+    __extends(ProtocolStateList, _super);
+
+    function ProtocolStateList() {
+      _ref3 = ProtocolStateList.__super__.constructor.apply(this, arguments);
+      return _ref3;
+    }
+
+    ProtocolStateList.prototype.model = ProtocolState;
+
+    return ProtocolStateList;
+
+  })(Backbone.Collection);
 
   window.Protocol = (function(_super) {
     __extends(Protocol, _super);
 
     function Protocol() {
       this.parse = __bind(this.parse, this);
-      _ref = Protocol.__super__.constructor.apply(this, arguments);
-      return _ref;
+      _ref4 = Protocol.__super__.constructor.apply(this, arguments);
+      return _ref4;
     }
 
     Protocol.prototype.urlRoot = "/api/protocols";
@@ -19,8 +102,8 @@
       kind: "",
       recordedBy: "",
       shortDescription: "",
-      lsLabels: new LabelList(),
-      lsStates: new StateList()
+      protocolLabels: new LabelList(),
+      protocolStates: new ProtocolStateList()
     };
 
     Protocol.prototype.initialize = function() {
@@ -30,18 +113,18 @@
 
     Protocol.prototype.parse = function(resp) {
       var _this = this;
-      if (resp.lsLabels != null) {
-        if (!(resp.lsLabels instanceof LabelList)) {
-          resp.lsLabels = new LabelList(resp.lsLabels);
-          resp.lsLabels.on('change', function() {
+      if (resp.protocolLabels != null) {
+        if (!(resp.protocolLabels instanceof LabelList)) {
+          resp.protocolLabels = new LabelList(resp.protocolLabels);
+          resp.protocolLabels.on('change', function() {
             return _this.trigger('change');
           });
         }
       }
-      if (resp.lsStates != null) {
-        if (!(resp.lsStates instanceof StateList)) {
-          resp.lsStates = new StateList(resp.lsStates);
-          resp.lsStates.on('change', function() {
+      if (resp.protocolStates != null) {
+        if (!(resp.protocolStates instanceof ProtocolStateList)) {
+          resp.protocolStates = new ProtocolStateList(resp.protocolStates);
+          resp.protocolStates.on('change', function() {
             return _this.trigger('change');
           });
         }
@@ -50,17 +133,17 @@
     };
 
     Protocol.prototype.fixCompositeClasses = function() {
-      if (this.has('lsLabels')) {
-        if (!(this.get('lsLabels') instanceof LabelList)) {
+      if (this.has('protocolLabels')) {
+        if (!(this.get('protocolLabels') instanceof LabelList)) {
           this.set({
-            lsLabels: new LabelList(this.get('lsLabels'))
+            protocolLabels: new LabelList(this.get('protocolLabels'))
           });
         }
       }
-      if (this.has('lsStates')) {
-        if (!(this.get('lsStates') instanceof StateList)) {
+      if (this.has('protocolStates')) {
+        if (!(this.get('protocolStates') instanceof ProtocolStateList)) {
           return this.set({
-            lsStates: new StateList(this.get('lsStates'))
+            protocolStates: new ProtocolStateList(this.get('protocolStates'))
           });
         }
       }
@@ -68,16 +151,16 @@
 
     Protocol.prototype.setupCompositeChangeTriggers = function() {
       var _this = this;
-      this.get('lsLabels').on('change', function() {
+      this.get('protocolLabels').on('change', function() {
         return _this.trigger('change');
       });
-      return this.get('lsStates').on('change', function() {
+      return this.get('protocolStates').on('change', function() {
         return _this.trigger('change');
       });
     };
 
     Protocol.prototype.isStub = function() {
-      return this.get('lsLabels').length === 0;
+      return this.get('protocolLabels').length === 0;
     };
 
     return Protocol;

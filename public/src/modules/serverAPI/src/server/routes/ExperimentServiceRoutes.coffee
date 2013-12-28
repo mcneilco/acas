@@ -18,8 +18,8 @@ exports.experimentByCodename = (request, response) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		response.end JSON.stringify experimentServiceTestJSON.stubSavedExperiment[0]
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments/codename/"+request.params.code
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+request.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, response)
 
@@ -31,8 +31,8 @@ exports.experimentByProtocolCodename = (request, response) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		response.end JSON.stringify experimentServiceTestJSON.stubSavedExperiment
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments/protocolCodename/"+request.params.code
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/protocolCodename/"+request.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, response)
 
@@ -42,8 +42,8 @@ exports.experimentById = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments/"+req.params.id
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+req.params.id
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -52,10 +52,9 @@ exports.postExperiment = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments"
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments"
 		request = require 'request'
-		console.log req.body
 		request(
 				method: 'POST'
 				url: baseurl
@@ -78,8 +77,8 @@ exports.putExperiment = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
-		config = require '../public/src/conf/configurationNode.js'
-		baseurl = config.serverConfigurationParams.configuration.serverPath+"experiments/"+req.params.id
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments"
 		request = require 'request'
 		request(
 			method: 'PUT'

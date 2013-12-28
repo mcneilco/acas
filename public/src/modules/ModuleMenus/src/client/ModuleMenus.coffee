@@ -14,7 +14,7 @@ class window.ModuleMenusController extends Backbone.View
 			el: @$('.bv_mainModuleWrapper')
 			collection: @moduleLauncherList
 
-		if window.configurationNode.serverConfigurationParams.configuration.requireLogin
+		if window.conf.require.login
 			@$('.bv_loginUserFirstName').html window.AppLaunchParams.loginUser.firstName
 			@$('.bv_loginUserLastName').html window.AppLaunchParams.loginUser.lastName
 		else
@@ -22,6 +22,10 @@ class window.ModuleMenusController extends Backbone.View
 
 		@moduleLauncherMenuListController.render()
 		@moduleLauncherListController.render()
+
+		if window.AppLaunchParams.deployMode?
+			unless window.AppLaunchParams.deployMode.toUpperCase() =="PROD"
+				@$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase())
 
 		if window.AppLaunchParams.moduleLaunchParams?
 			@moduleLauncherMenuListController.launchModule window.AppLaunchParams.moduleLaunchParams.moduleName

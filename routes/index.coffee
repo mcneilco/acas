@@ -19,8 +19,7 @@ requiredScripts = [
 ]
 
 applicationScripts = [
-	'/src/conf/configurationNode.js'
-	#'/src/conf/configuration.js'
+	'/src/conf/conf.js'
 	# For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'
@@ -35,7 +34,6 @@ applicationScripts = [
 	'/javascripts/src/AnalysisGroup.js'
 	'/javascripts/src/Protocol.js'
 	'/javascripts/src/Experiment.js'
-	'/javascripts/src/DoseResponseAnalysis.js'
 	#Primary Screen module
 	'/javascripts/src/PrimaryScreenExperiment.js'
 	'/javascripts/src/DoseResponseAnalysis.js'
@@ -72,18 +70,31 @@ exports.autoLaunchWithCode = (req, res) ->
 
 exports.index = (req, res, moduleLaunchParams) ->
 	#"use strict"
-	if moduleLaunchParams?
-		console.log moduleLaunchParams
-	global.specRunnerTestmode = true
+	config = require '../conf/compiled/conf.js'
+	global.specRunnerTestmode = false
 	scriptsToLoad = requiredScripts.concat(applicationScripts)
+	if config.all.client.require.login
+		loginUserName = req.user.username
+		loginUser = req.user
+	else
+		loginUserName = "nouser"
+		loginUser =
+			id: 0,
+			username: "nouser",
+			email: "nouser@nowhere.com",
+			firstName: "no",
+			lastName: "user"
+
 	return res.render 'index',
 		title: "ACAS Home"
 		scripts: scriptsToLoad
 		AppLaunchParams:
-			loginUserName: if req.user? then req.user.username else ""
-			loginUser: if req.user? then req.user else ""
+			loginUserName: loginUserName
+			loginUser: loginUser
 			testMode: false
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
+			deployMode: global.deployMode
+#			deployMode: "Test"
 
 
 exports.specRunner = (req, res) ->
@@ -169,6 +180,7 @@ exports.specRunner = (req, res) ->
 				lastName: "McNeil"
 			testMode: true
 			liveServiceTest: false
+			deployMode: global.deployMode
 	})
 
 exports.liveServiceSpecRunner = (req, res) ->

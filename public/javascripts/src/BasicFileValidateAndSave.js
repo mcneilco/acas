@@ -5,8 +5,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.BasicFileValidateAndSaveController = (function(_super) {
-    var allowedFileTypes;
-
     __extends(BasicFileValidateAndSaveController, _super);
 
     function BasicFileValidateAndSaveController() {
@@ -48,8 +46,6 @@
       otherparam: "fred"
     };
 
-    allowedFileTypes = ['xls', 'xlsx', 'csv'];
-
     BasicFileValidateAndSaveController.prototype.template = _.template($("#BasicFileValidateAndSaveView").html());
 
     BasicFileValidateAndSaveController.prototype.events = {
@@ -68,9 +64,9 @@
       this.parseFileController = new LSFileInputController({
         el: this.$('.bv_parseFile'),
         inputTitle: '',
-        url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
+        url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
         fieldIsRequired: false,
-        allowedFileTypes: this.allowedFileTypes
+        allowedFileTypes: ['xls', 'xlsx', 'csv']
       });
       this.parseFileController.on('fileInput:uploadComplete', this.handleParseFileUploaded);
       this.parseFileController.on('fileInput:removedFile', this.handleParseFileRemoved);
@@ -79,7 +75,7 @@
         this.reportFileController = new LSFileInputController({
           el: this.$('.bv_reportFile'),
           inputTitle: '',
-          url: window.configurationNode.serverConfigurationParams.configuration.fileServiceURL,
+          url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
           fieldIsRequired: false,
           allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
         });
@@ -122,19 +118,17 @@
     };
 
     BasicFileValidateAndSaveController.prototype.validateParseFile = function() {
-      var dataToPost,
-        _this = this;
+      var _this = this;
       if (this.parseFileUploaded && !this.$(".bv_next").attr('disabled')) {
         this.notificationController.clearAllNotificiations();
         this.$('.bv_validateStatusDropDown').modal({
           backdrop: "static"
         });
         this.$('.bv_validateStatusDropDown').modal("show");
-        dataToPost = this.prepareDataToPost(true);
         return $.ajax({
           type: 'POST',
           url: this.fileProcessorURL,
-          data: dataToPost,
+          data: this.prepareDataToPost(true),
           success: this.handleValidationReturnSuccess,
           error: function(err) {
             return _this.$('.bv_validateStatusDropDown').modal("hide");
@@ -145,18 +139,16 @@
     };
 
     BasicFileValidateAndSaveController.prototype.parseAndSave = function() {
-      var dataToPost;
       if (this.parseFileUploaded && this.filePassedValidation) {
         this.notificationController.clearAllNotificiations();
         this.$('.bv_saveStatusDropDown').modal({
           backdrop: "static"
         });
         this.$('.bv_saveStatusDropDown').modal("show");
-        dataToPost = this.prepareDataToPost(false);
         return $.ajax({
           type: 'POST',
           url: this.fileProcessorURL,
-          data: dataToPost,
+          data: this.prepareDataToPost(false),
           success: this.handleSaveReturnSuccess,
           dataType: 'json'
         });
@@ -201,7 +193,10 @@
       if (((_ref1 = json.results) != null ? _ref1.htmlSummary : void 0) != null) {
         this.$('.bv_htmlSummary').html(json.results.htmlSummary);
       }
-      return this.$('.bv_validateStatusDropDown').modal("hide");
+      this.$('.bv_validateStatusDropDown').modal("hide");
+      if (json.results.csvDataPreview != null) {
+        return this.showCSVPreview(json.results.csvDataPreview);
+      }
     };
 
     BasicFileValidateAndSaveController.prototype.handleSaveReturnSuccess = function(json) {
@@ -241,7 +236,8 @@
       this.$('.bv_nextControlContainer').show();
       this.$('.bv_saveControlContainer').hide();
       this.$('.bv_completeControlContainer').hide();
-      return this.$('.bv_notifications').hide();
+      this.$('.bv_notifications').hide();
+      return this.$('.bv_csvPreviewContainer').hide();
     };
 
     BasicFileValidateAndSaveController.prototype.showFileUploadPhase = function() {
@@ -255,6 +251,7 @@
 
     BasicFileValidateAndSaveController.prototype.showFileUploadCompletePhase = function() {
       this.$('.bv_htmlSummary').show();
+      this.$('.bv_csvPreviewContainer').hide();
       this.$('.bv_fileUploadWrapper').hide();
       this.$('.bv_nextControlContainer').hide();
       this.$('.bv_saveControlContainer').hide();
@@ -271,6 +268,32 @@
     BasicFileValidateAndSaveController.prototype.handleFormValid = function() {
       this.$(".bv_next").removeAttr('disabled');
       return this.$(".bv_save").removeAttr('disabled');
+    };
+
+    BasicFileValidateAndSaveController.prototype.showCSVPreview = function(csv) {
+      var csvRows, headCells, r, rowCells, val, _i, _j, _k, _len, _len1, _ref1;
+      this.$('.csvPreviewTHead').empty();
+      this.$('.csvPreviewTBody').empty();
+      csvRows = csv.split('\n');
+      if (csvRows.length > 1) {
+        headCells = csvRows[0].split(',');
+        if (headCells.length > 1) {
+          this.$('.csvPreviewTHead').append("<tr></tr>");
+          for (_i = 0, _len = headCells.length; _i < _len; _i++) {
+            val = headCells[_i];
+            this.$('.csvPreviewTHead tr').append("<th>" + val + "</th>");
+          }
+          for (r = _j = 1, _ref1 = csvRows.length - 2; 1 <= _ref1 ? _j <= _ref1 : _j >= _ref1; r = 1 <= _ref1 ? ++_j : --_j) {
+            this.$('.csvPreviewTBody').append("<tr></tr>");
+            rowCells = csvRows[r].split(',');
+            for (_k = 0, _len1 = rowCells.length; _k < _len1; _k++) {
+              val = rowCells[_k];
+              this.$('.csvPreviewTBody tr:last').append("<td>" + val + "</td>");
+            }
+          }
+          return this.$('.bv_csvPreviewContainer').show();
+        }
+      }
     };
 
     return BasicFileValidateAndSaveController;

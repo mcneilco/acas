@@ -128,11 +128,11 @@ describe 'Protocol CRUD testing', ->
 						dataType: 'json'
 
 			it 'should return an array of protocols', ->
-				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				waitsFor( @waitForServiceReturn, 'service did not return', 5000)
 				runs ->
 					expect(@serviceReturn.length).toBeGreaterThan 0
 			it 'should a hash with code defined', ->
-				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				waitsFor( @waitForServiceReturn, 'service did not return', 5000)
 				runs ->
 					expect(@serviceReturn[0].code).toContain "PROT-"
 			it 'should a hash with name defined', ->
@@ -147,21 +147,45 @@ describe 'Protocol CRUD testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn[@serviceReturn.length-1].name).toNotContain "PK"
-
-		describe 'when protocol code list service called with filtering option', ->
-			beforeEach ->
-				runs ->
-					$.ajax
-						type: 'GET'
-						url: "api/protocolCodes/filter/PK"
-						success: (json) =>
-							@serviceReturn = json
-						error: (err) =>
-							console.log 'got ajax error'
-							@serviceReturn = null
-						dataType: 'json'
-
-			it 'should only return names with PK', ->
+			it 'should not return protocols where protocol itself is set to ignore', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
-					expect(@serviceReturn[@serviceReturn.length-1].name).toContain "PK"
+					console.log @serviceReturn
+					matches = _.filter @serviceReturn, (label) ->
+						label.name == "Ignore this protocol"
+					expect(matches.length).toEqual 0
+		describe 'when protocol code list service called with filtering option', ->
+			describe "With matching case", ->
+				beforeEach ->
+					runs ->
+						$.ajax
+							type: 'GET'
+							url: "api/protocolCodes/filter/PK"
+							success: (json) =>
+								@serviceReturn = json
+							error: (err) =>
+								console.log 'got ajax error'
+								@serviceReturn = null
+							dataType: 'json'
+
+				it 'should only return names with PK', ->
+					waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+					runs ->
+						expect(@serviceReturn[@serviceReturn.length-1].name).toContain "PK"
+			describe "With non-matching case", ->
+				beforeEach ->
+					runs ->
+						$.ajax
+							type: 'GET'
+							url: "api/protocolCodes/filter/pk"
+							success: (json) =>
+								@serviceReturn = json
+							error: (err) =>
+								console.log 'got ajax error'
+								@serviceReturn = null
+							dataType: 'json'
+
+				it 'should only return names with PK', ->
+					waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+					runs ->
+						expect(@serviceReturn[@serviceReturn.length-1].name).toContain "PK"

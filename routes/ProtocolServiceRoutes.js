@@ -19,8 +19,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocols/codename/" + req.params.code;
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocols/codename/" + req.params.code;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -33,8 +33,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.fullSavedProtocol));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocols/" + req.params.id;
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocols/" + req.params.id;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -47,8 +47,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocols";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocols";
       request = require('request');
       return request({
         method: 'POST',
@@ -76,8 +76,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocols";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocols";
       request = require('request');
       return request({
         method: 'PUT',
@@ -104,8 +104,8 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.lsLabels));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocollabels";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocollabels";
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -117,7 +117,9 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
     console.log(req.params);
     if (req.params.str != null) {
       shouldFilter = true;
-      filterString = req.params.str;
+      filterString = req.params.str.toUpperCase();
+    } else {
+      shouldFilter = false;
     }
     translateToCodes = function(labels) {
       var label, match, protCodes, _i, _len;
@@ -125,11 +127,11 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       for (_i = 0, _len = labels.length; _i < _len; _i++) {
         label = labels[_i];
         if (shouldFilter) {
-          match = label.labelText.indexOf(filterString) > -1;
+          match = label.labelText.toUpperCase().indexOf(filterString) > -1;
         } else {
           match = true;
         }
-        if (!label.ignored && label.lsType === "name" && match) {
+        if (!label.ignored && !label.protocol.ignored && label.lsType === "name" && match) {
           protCodes.push({
             code: label.protocol.codeName,
             name: label.labelText,
@@ -144,8 +146,11 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
       labels = protocolServiceTestJSON.lsLabels;
       return resp.json(translateToCodes(labels));
     } else {
-      config = require('../public/src/conf/configurationNode.js');
-      baseurl = config.serverConfigurationParams.configuration.serverPath + "protocollabels";
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocollabels/codetable";
+      if (shouldFilter) {
+        baseurl += "/?protocolName=" + filterString;
+      }
       request = require('request');
       return request({
         method: 'GET',
@@ -153,7 +158,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
         json: true
       }, function(error, response, json) {
         if (!error && response.statusCode === 200) {
-          return resp.json(translateToCodes(json));
+          return resp.json(json);
         } else {
           console.log('got ajax error trying to get protocol labels');
           console.log(error);

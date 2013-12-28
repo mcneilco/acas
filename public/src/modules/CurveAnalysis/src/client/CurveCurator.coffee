@@ -21,7 +21,7 @@ class window.CurveSummaryController extends Backbone.View
 
 	render: =>
 		@$el.empty()
-		curveUrl = configurationNode.serverConfigurationParams.configuration.rapache+"/curve/render/?legend=false&curveIds="
+		curveUrl = window.conf.service.rapache.fullpath+"/curve/render/?legend=false&curveIds="
 		curveUrl += @model.get('curveid')+"&height=200&width=250&axes=false"
 
 		@$el.html @template
@@ -65,7 +65,7 @@ class window.CurveEditorController extends Backbone.View
 		@$el.empty()
 		if @model?
 			if @model.get('curveid') != ""
-				curveUrl = configurationNode.serverConfigurationParams.configuration.rshiny+"/fit/?curveIds="
+				curveUrl = window.conf.service.rshiny.fullpath+"/fit/?curveIds="
 				curveUrl += @model.get('curveid')
 
 		@$el.html @template
