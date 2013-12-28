@@ -1,41 +1,16 @@
 (function() {
-  var _ref, _ref1,
+  var _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-  window.AppRouter = (function(_super) {
-    __extends(AppRouter, _super);
-
-    function AppRouter() {
-      _ref = AppRouter.__super__.constructor.apply(this, arguments);
-      return _ref;
-    }
-
-    AppRouter.prototype.routes = {
-      "fred/:docid": "existingDoc",
-      "fred": "newDoc"
-    };
-
-    AppRouter.prototype.initialize = function(options) {
-      return this.appController = options.appController;
-    };
-
-    AppRouter.prototype.existingDoc = function(val) {};
-
-    AppRouter.prototype.newDoc = function(val) {};
-
-    return AppRouter;
-
-  })(Backbone.Router);
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.ModuleMenusController = (function(_super) {
     __extends(ModuleMenusController, _super);
 
     function ModuleMenusController() {
       this.render = __bind(this.render, this);
-      _ref1 = ModuleMenusController.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      _ref = ModuleMenusController.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     ModuleMenusController.prototype.template = _.template($("#ModuleMenusView").html());
@@ -47,21 +22,25 @@
         el: this.$('.bv_modLaunchMenuWrapper'),
         collection: this.moduleLauncherList
       });
-      return this.moduleLauncherListController = new ModuleLauncherListController({
+      this.moduleLauncherListController = new ModuleLauncherListController({
         el: this.$('.bv_mainModuleWrapper'),
         collection: this.moduleLauncherList
       });
-    };
-
-    ModuleMenusController.prototype.render = function() {
-      this.moduleLauncherMenuListController.render();
-      this.moduleLauncherListController.render();
       if (window.configurationNode.serverConfigurationParams.configuration.requireLogin) {
         this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
         this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
       } else {
         this.$('.bv_userInfo').hide();
       }
+      this.moduleLauncherMenuListController.render();
+      this.moduleLauncherListController.render();
+      if (window.AppLaunchParams.moduleLaunchParams != null) {
+        console.log(window.AppLaunchParams.moduleLaunchParams);
+        return this.moduleLauncherMenuListController.launchModule(window.AppLaunchParams.moduleLaunchParams.moduleName);
+      }
+    };
+
+    ModuleMenusController.prototype.render = function() {
       return this;
     };
 

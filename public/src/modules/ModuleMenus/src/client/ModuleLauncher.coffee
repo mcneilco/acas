@@ -33,6 +33,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html(@template(@model.toJSON()))
+		$(@el).addClass('bv_launch_'+@model.get('autoLaunchName'))
 		if @model.get('isActive') then $(@el).addClass "active"
 		else $(@el).removeClass "active"
 
@@ -98,6 +99,11 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 	selectionUpdated: (who) =>
 		@trigger 'clearSelected', who
 
+	launchModule: (moduleName) ->
+		#Note that if the names don't match, this fails silently
+		selector = '.bv_launch_'+moduleName
+		@$(selector).click()
+
 class window.ModuleLauncherController extends Backbone.View
 	tagName: 'div'
 	template: _.template($("#ModuleLauncherView").html())
@@ -105,9 +111,6 @@ class window.ModuleLauncherController extends Backbone.View
 	initialize: ->
 		@model.bind 'activationRequested', @handleActivation
 		@model.bind 'deactivationRequested', @handleDeactivation
-#		if @model.get('routes')?
-#			_.each @model.get('routes'), (route) =>
-#				window.appRouter.route route.routePath, route.routeCallBackName, @handleRouteRequested
 
 	render: =>
 		$(@el).empty()
@@ -135,9 +138,6 @@ class window.ModuleLauncherController extends Backbone.View
 
 	handleDeactivation:  =>
 		$(@el).hide()
-
-	handleRouteRequested: (params) =>
-		#console.log "got route with params: ", params
 
 class window.ModuleLauncherListController extends Backbone.View
 

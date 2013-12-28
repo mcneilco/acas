@@ -41,7 +41,9 @@
     routes = require('./routes');
     if (config.serverConfigurationParams.configuration.requireLogin) {
       app.get('/', loginRoutes.ensureAuthenticated, routes.index);
+      app.get('/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, routes.autoLaunchWithCode);
     } else {
+      app.get('/:moduleName/codeName/:code', routes.autoLaunchWithCode);
       app.get('/', routes.index);
     }
     if (config.serverConfigurationParams.configuration.enableSpecRunner) {
@@ -96,8 +98,6 @@
     bulkLoadSampleTransfersRoutes = require('./routes/BulkLoadSampleTransfersRoutes.js');
     app.post('/api/bulkLoadSampleTransfers', bulkLoadSampleTransfersRoutes.bulkLoadSampleTransfers);
     runPrimaryAnalysisRoutes = require('./routes/RunPrimaryAnalysisRoutes.js');
-    app.get('/primaryScreenExperiment/*', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex);
-    app.get('/primaryScreenExperiment', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex);
     app.post('/api/primaryAnalysis/runPrimaryAnalysis', runPrimaryAnalysisRoutes.runPrimaryAnalysis);
     curveCuratorRoutes = require('./routes/CurveCuratorRoutes.js');
     app.get('/curveCurator/*', curveCuratorRoutes.curveCuratorIndex);

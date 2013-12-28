@@ -63,17 +63,27 @@ applicationScripts = [
 
 ]
 
-exports.index = (req, res) ->
+
+exports.autoLaunchWithCode = (req, res) ->
+	moduleLaunchParams =
+		moduleName: req.params.moduleName
+		code: req.params.code
+	exports.index req, res, moduleLaunchParams
+
+exports.index = (req, res, moduleLaunchParams) ->
 	#"use strict"
+	if moduleLaunchParams?
+		console.log moduleLaunchParams
 	global.specRunnerTestmode = true
 	scriptsToLoad = requiredScripts.concat(applicationScripts)
 	return res.render 'index',
 		title: "ACAS Home"
 		scripts: scriptsToLoad
-		appParams:
+		AppLaunchParams:
 			loginUserName: if req.user? then req.user.username else ""
 			loginUser: if req.user? then req.user else ""
 			testMode: false
+			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 
 
 exports.specRunner = (req, res) ->

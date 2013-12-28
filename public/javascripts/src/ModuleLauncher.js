@@ -79,6 +79,7 @@
     ModuleLauncherMenuController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template(this.model.toJSON()));
+      $(this.el).addClass('bv_launch_' + this.model.get('autoLaunchName'));
       if (this.model.get('isActive')) {
         $(this.el).addClass("active");
       } else {
@@ -187,6 +188,12 @@
       return this.trigger('clearSelected', who);
     };
 
+    ModuleLauncherMenuListController.prototype.launchModule = function(moduleName) {
+      var selector;
+      selector = '.bv_launch_' + moduleName;
+      return this.$(selector).click();
+    };
+
     return ModuleLauncherMenuListController;
 
   })(Backbone.View);
@@ -195,7 +202,6 @@
     __extends(ModuleLauncherController, _super);
 
     function ModuleLauncherController() {
-      this.handleRouteRequested = __bind(this.handleRouteRequested, this);
       this.handleDeactivation = __bind(this.handleDeactivation, this);
       this.handleActivation = __bind(this.handleActivation, this);
       this.render = __bind(this.render, this);
@@ -253,8 +259,6 @@
     ModuleLauncherController.prototype.handleDeactivation = function() {
       return $(this.el).hide();
     };
-
-    ModuleLauncherController.prototype.handleRouteRequested = function(params) {};
 
     return ModuleLauncherController;
 

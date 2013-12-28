@@ -9,21 +9,9 @@
       mainControllerClassName: "GenericDataParserController"
     }, {
       isHeader: false,
-      menuName: "Annotate Batches with File",
-      mainControllerClassName: "DocForBatchesController",
-      routes: [
-        {
-          routePath: "annotateBatches",
-          routeCallBackName: "loadNewDoc"
-        }, {
-          routePath: "annotateBatches:docId",
-          routeCallBackName: "loadExistingDoc"
-        }
-      ]
-    }, {
-      isHeader: false,
       menuName: "Analyze FLIPR Data",
-      mainControllerClassName: "PrimaryScreenExperimentController"
+      mainControllerClassName: "PrimaryScreenExperimentController",
+      autoLaunchName: "screenExperiment"
     }, {
       isHeader: false,
       menuName: "Experiment Browser",

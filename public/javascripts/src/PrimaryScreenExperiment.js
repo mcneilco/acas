@@ -503,6 +503,7 @@
     function PrimaryScreenExperimentController() {
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
+      this.completeInitialization = __bind(this.completeInitialization, this);
       _ref5 = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
       return _ref5;
     }
@@ -510,6 +511,45 @@
     PrimaryScreenExperimentController.prototype.template = _.template($("#PrimaryScreenExperimentView").html());
 
     PrimaryScreenExperimentController.prototype.initialize = function() {
+      var _this = this;
+      if (this.model != null) {
+        return this.completeInitialization();
+      } else {
+        if (window.AppLaunchParams.moduleLaunchParams != null) {
+          if (window.AppLaunchParams.moduleLaunchParams.moduleName === "screenExperiment") {
+            console.log("Fetching expt by code: " + window.AppLaunchParams.moduleLaunchParams.code);
+            return $.ajax({
+              type: 'GET',
+              url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+              dataType: 'json',
+              error: function(err) {
+                alert('Could not get experiment for code in this URL, creating new one');
+                return this.completeInitialization();
+              },
+              success: function(json) {
+                var exp;
+                exp = new PrimaryScreenExperiment({
+                  id: json.id
+                });
+                return exp.fetch({
+                  success: function() {
+                    exp.fixCompositeClasses();
+                    _this.model = exp;
+                    return _this.completeInitialization();
+                  }
+                });
+              }
+            });
+          } else {
+            return this.completeInitialization();
+          }
+        } else {
+          return this.completeInitialization();
+        }
+      }
+    };
+
+    PrimaryScreenExperimentController.prototype.completeInitialization = function() {
       var _this = this;
       if (this.model == null) {
         this.model = new PrimaryScreenExperiment();
@@ -546,13 +586,13 @@
       this.doseRespController.on('amClean', function() {
         return _this.trigger('amClean');
       });
-      return this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
+      this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
+      this.experimentBaseController.render();
+      this.analysisController.render();
+      return this.doseRespController.render();
     };
 
     PrimaryScreenExperimentController.prototype.render = function() {
-      this.experimentBaseController.render();
-      this.analysisController.render();
-      this.doseRespController.render();
       return this;
     };
 

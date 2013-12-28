@@ -45,11 +45,14 @@ startApp = ->
 	routes = require('./routes')
 	if config.serverConfigurationParams.configuration.requireLogin
 		app.get '/', loginRoutes.ensureAuthenticated, routes.index
+		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, routes.autoLaunchWithCode
 	else
+		app.get '/:moduleName/codeName/:code', routes.autoLaunchWithCode
 		app.get '/', routes.index
 	if config.serverConfigurationParams.configuration.enableSpecRunner
 		app.get '/SpecRunner', routes.specRunner
 		app.get '/LiveServiceSpecRunner', routes.liveServiceSpecRunner
+
 
 	# login routes
 	passport.serializeUser (user, done) ->
@@ -112,8 +115,8 @@ startApp = ->
 
 	# RunPrimaryAnalysisRoutes routes
 	runPrimaryAnalysisRoutes = require './routes/RunPrimaryAnalysisRoutes.js'
-	app.get '/primaryScreenExperiment/*', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex
-	app.get '/primaryScreenExperiment', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex
+#	app.get '/primaryScreenExperiment/*', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex
+#	app.get '/primaryScreenExperiment', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex
 	app.post '/api/primaryAnalysis/runPrimaryAnalysis', runPrimaryAnalysisRoutes.runPrimaryAnalysis
 
 	# CurveCurator routes

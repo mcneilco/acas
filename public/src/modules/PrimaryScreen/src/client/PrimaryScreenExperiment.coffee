@@ -325,6 +325,31 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 	template: _.template($("#PrimaryScreenExperimentView").html())
 
 	initialize: ->
+		if @model?
+			@completeInitialization()
+		else
+			if window.AppLaunchParams.moduleLaunchParams?
+				if window.AppLaunchParams.moduleLaunchParams.moduleName == "screenExperiment"
+					console.log "Fetching expt by code: "+window.AppLaunchParams.moduleLaunchParams.code
+					$.ajax
+						type: 'GET'
+						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+						dataType: 'json'
+						error: (err) ->
+							alert 'Could not get experiment for code in this URL, creating new one'
+							@completeInitialization()
+						success: (json) =>
+							exp = new PrimaryScreenExperiment id: json.id
+							exp.fetch success: =>
+								exp.fixCompositeClasses()
+								@model = exp
+								@completeInitialization()
+				else
+					@completeInitialization()
+			else
+				@completeInitialization()
+
+	completeInitialization: =>
 		unless @model?
 			@model = new PrimaryScreenExperiment()
 
@@ -352,12 +377,12 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 		@doseRespController.on 'amClean', =>
 			@trigger 'amClean'
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
-
-	render: ->
 		@experimentBaseController.render()
 		@analysisController.render()
 		@doseRespController.render()
-		return @
+
+	render: ->
+		@
 
 	handleExperimentSaved: =>
 		@analysisController.render()

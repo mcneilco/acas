@@ -5,17 +5,30 @@
 
   applicationScripts = ['/src/conf/configurationNode.js', '/javascripts/src/LSFileInput.js', '/javascripts/src/LSFileChooser.js', '/javascripts/src/LSErrorNotification.js', '/javascripts/src/AbstractFormController.js', '/javascripts/src/AbstractParserFormController.js', '/javascripts/src/BasicFileValidateAndSave.js', '/javascripts/src/PickList.js', '/javascripts/src/TagList.js', '/javascripts/src/Label.js', '/javascripts/src/AnalysisGroup.js', '/javascripts/src/Protocol.js', '/javascripts/src/Experiment.js', '/javascripts/src/DoseResponseAnalysis.js', '/javascripts/src/PrimaryScreenExperiment.js', '/javascripts/src/DoseResponseAnalysis.js', 'javascripts/src/CurveCurator.js', 'javascripts/src/CurveCuratorAppController.js', '/javascripts/src/ModuleMenus.js', '/javascripts/src/ModuleLauncher.js', '/javascripts/src/ModuleMenusConfiguration.js', '/javascripts/src/BatchListValidator.js', '/javascripts/src/DocUpload.js', '/javascripts/src/DocForBatches.js', '/javascripts/src/DocForBatchesConfiguration.js', '/javascripts/src/GenericDataParser.js', '/javascripts/src/BulkLoadContainersFromSDF.js', '/javascripts/src/BulkLoadSampleTransfers.js', '/javascripts/src/ExperimentBrowser.js'];
 
-  exports.index = function(req, res) {
+  exports.autoLaunchWithCode = function(req, res) {
+    var moduleLaunchParams;
+    moduleLaunchParams = {
+      moduleName: req.params.moduleName,
+      code: req.params.code
+    };
+    return exports.index(req, res, moduleLaunchParams);
+  };
+
+  exports.index = function(req, res, moduleLaunchParams) {
     var scriptsToLoad;
+    if (moduleLaunchParams != null) {
+      console.log(moduleLaunchParams);
+    }
     global.specRunnerTestmode = true;
     scriptsToLoad = requiredScripts.concat(applicationScripts);
     return res.render('index', {
       title: "ACAS Home",
       scripts: scriptsToLoad,
-      appParams: {
+      AppLaunchParams: {
         loginUserName: req.user != null ? req.user.username : "",
         loginUser: req.user != null ? req.user : "",
-        testMode: false
+        testMode: false,
+        moduleLaunchParams: moduleLaunchParams != null ? moduleLaunchParams : null
       }
     });
   };
