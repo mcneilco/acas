@@ -148,6 +148,26 @@ class window.Experiment extends Backbone.Model
 		else
 			return null
 
+	prepareToSave: ->
+		rBy = @get('recordedBy')
+		rDate = new Date().getTime()
+		@set recordedDate: rDate
+		@get('lsLabels').each (lab) ->
+			unless lab.get('recordedBy') != ""
+				lab.set recordedBy: rBy
+			unless lab.get('recordedDate') != null
+				lab.set recordedDate: rDate
+		@get('lsStates').each (state) ->
+			unless state.get('recordedBy') != ""
+				state.set recordedBy: rBy
+			unless state.get('recordedDate') != null
+				state.set recordedDate: rDate
+			state.get('lsValues').each (val) ->
+				unless val.get('recordedBy') != ""
+					val.set recordedBy: rBy
+				unless val.get('recordedDate') != null
+					val.set recordedDate: rDate
+
 	getDescription: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "description"
 
@@ -320,7 +340,6 @@ class window.ExperimentBaseController extends AbstractFormController
 			labelKind: "experiment name"
 			labelText: newName
 			recordedBy: @model.get 'recordedBy'
-			recordedDate: new Date().getTime()
 		#TODO label change propagation isn't really working, so this is the work-around
 		@model.trigger 'change'
 
@@ -375,6 +394,7 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_lock').show()
 
 	handleSaveClicked: =>
+		@model.prepareToSave()
 		@model.save()
 
 	validationError: =>

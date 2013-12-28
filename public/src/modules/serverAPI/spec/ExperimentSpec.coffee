@@ -251,6 +251,36 @@ describe "Experiment module testing", ->
 					err.attribute=='completionDate'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
+		describe "prepare to save", ->
+			beforeEach ->
+				@exp = new Experiment()
+				@exp.set recordedBy: "jmcneil"
+				@exp.set recordedDate: -1
+				console.log @exp.get('lsLabels')
+				console.log @exp.get('lsStates')
+			afterEach ->
+				@exp.get('lsLabels').reset()
+				@exp.get('lsStates').reset()
+			it "should set experiment's set to now", ->
+				@exp.prepareToSave()
+				expect(new Date(@exp.get('recordedDate')).getHours()).toEqual new Date().getHours()
+			it "should have function to add recorded* to all labels", ->
+				@exp.get('lsLabels').setBestName new Label
+					labelKind: "experiment name"
+					labelText: "new name"
+				@exp.prepareToSave()
+				expect(@exp.get('lsLabels').pickBestLabel().get('recordedBy')).toEqual "jmcneil"
+				expect(@exp.get('lsLabels').pickBestLabel().get('recordedDate')).toBeGreaterThan 1
+			it "should have function to add recorded * to values", ->
+				status = @exp.getStatus()
+				@exp.prepareToSave()
+				expect(status.get('recordedBy')).toEqual "jmcneil"
+				expect(status.get('recordedDate')).toBeGreaterThan 1
+			it "should have function to add recorded * to states", ->
+				state = @exp.get('lsStates').getOrCreateStateByTypeAndKind "metadata", "experiment metadata"
+				@exp.prepareToSave()
+				expect(state.get('recordedBy')).toEqual "jmcneil"
+				expect(state.get('recordedDate')).toBeGreaterThan 1
 
 		describe "model composite component conversion", ->
 			beforeEach ->
@@ -284,6 +314,7 @@ describe "Experiment module testing", ->
 			it "should convert tags has to collection of Tags", ->
 				runs ->
 					expect(@exp.get('lsTags')  instanceof TagList).toBeTruthy()
+
 
 	describe "Experiment List testing", ->
 		beforeEach ->

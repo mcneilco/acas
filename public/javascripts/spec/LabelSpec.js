@@ -23,8 +23,8 @@
           expect(this.el.get('labelText')).toEqual('');
           expect(this.el.get('ignored')).toEqual(false);
           expect(this.el.get('preferred')).toEqual(false);
-          expect(this.el.get('recordedDate')).toEqual('');
           expect(this.el.get('recordedBy')).toEqual('');
+          expect(this.el.get('recordedDate')).toBeNull();
           expect(this.el.get('physicallyLabled')).toEqual(false);
           return expect(this.el.get('imageFile')).toBeNull();
         });
@@ -121,8 +121,13 @@
       beforeEach(function() {
         return this.val = new Value();
       });
-      return it("Class should exist", function() {
+      it("Class should exist", function() {
         return expect(this.val).toBeDefined();
+      });
+      return it("Should have defaults", function() {
+        expect(this.val.get('recordedDate')).toBeNull();
+        expect(this.val.get('recordedBy')).toEqual("");
+        return expect(this.val.get('ignored')).toEqual(false);
       });
     });
     describe("Value list testing", function() {
@@ -145,7 +150,10 @@
             return expect(this.es).toBeDefined();
           });
           return it("should have defaults", function() {
-            return expect(this.es.get('lsValues') instanceof Backbone.Collection).toBeTruthy();
+            expect(this.es.get('lsValues') instanceof Backbone.Collection).toBeTruthy();
+            expect(this.es.get('recordedDate')).toBeNull();
+            expect(this.es.get('recordedBy')).toEqual("");
+            return expect(this.es.get('ignored')).toEqual(false);
           });
         });
       });

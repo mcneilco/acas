@@ -239,6 +239,51 @@
       }
     };
 
+    Experiment.prototype.prepareToSave = function() {
+      var rBy, rDate;
+      rBy = this.get('recordedBy');
+      rDate = new Date().getTime();
+      this.set({
+        recordedDate: rDate
+      });
+      this.get('lsLabels').each(function(lab) {
+        if (lab.get('recordedBy') === "") {
+          lab.set({
+            recordedBy: rBy
+          });
+        }
+        if (lab.get('recordedDate') === null) {
+          return lab.set({
+            recordedDate: rDate
+          });
+        }
+      });
+      return this.get('lsStates').each(function(state) {
+        if (state.get('recordedBy') === "") {
+          state.set({
+            recordedBy: rBy
+          });
+        }
+        if (state.get('recordedDate') === null) {
+          state.set({
+            recordedDate: rDate
+          });
+        }
+        return state.get('lsValues').each(function(val) {
+          if (val.get('recordedBy') === "") {
+            val.set({
+              recordedBy: rBy
+            });
+          }
+          if (val.get('recordedDate') === null) {
+            return val.set({
+              recordedDate: rDate
+            });
+          }
+        });
+      });
+    };
+
     Experiment.prototype.getDescription = function() {
       return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "description");
     };
@@ -506,8 +551,7 @@
       this.model.get('lsLabels').setBestName(new Label({
         labelKind: "experiment name",
         labelText: newName,
-        recordedBy: this.model.get('recordedBy'),
-        recordedDate: new Date().getTime()
+        recordedBy: this.model.get('recordedBy')
       }));
       return this.model.trigger('change');
     };
@@ -590,6 +634,7 @@
     };
 
     ExperimentBaseController.prototype.handleSaveClicked = function() {
+      this.model.prepareToSave();
       return this.model.save();
     };
 

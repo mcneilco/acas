@@ -44,8 +44,6 @@ class window.AppController extends Backbone.View
 #			url: "/api/docForBatches/"+docId
 			url: "/api/experiments/"+docId
 			success: (json) =>
-				console.log "success from getting existing doc"
-				console.log json
 				@existingDocReturn(json)
 			error: (err) =>
 				@serviceReturn = null
@@ -58,12 +56,8 @@ class window.AppController extends Backbone.View
 #		@docForBatchesController.render()
 
 		@exp = new Experiment( json )
-		console.log "existing return experiment"
-		console.log @exp
 		@dfb = new DocForBatches
 			experiment: @exp
-		console.log "existing return docForBatches"
-		console.log @dfb
 		@docForBatchesController = new DocForBatchesController
 			el: @$('.docForBatches')
 			model: @dfb

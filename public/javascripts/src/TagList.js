@@ -62,7 +62,6 @@
 
     TagListController.prototype.handleTagsChanged = function() {
       var t, tagStrings, tempTags, _i, _len;
-      console.log(this.collection);
       tagStrings = this.$el.tagsinput('items');
       tempTags = [];
       for (_i = 0, _len = tagStrings.length; _i < _len; _i++) {
@@ -71,8 +70,7 @@
           tagText: t
         });
       }
-      this.collection.set(tempTags);
-      return console.log(this.collection);
+      return this.collection.set(tempTags);
     };
 
     return TagListController;

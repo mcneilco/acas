@@ -30,12 +30,10 @@
     };
 
     PrimaryScreenAppRouter.prototype.existingExperiment = function(expId) {
-      console.log('existing expt id' + expId);
       return this.appController.existingExperiment(expId);
     };
 
     PrimaryScreenAppRouter.prototype.existingExperimentByCode = function(code) {
-      console.log('existing expt code ' + code);
       return this.appController.existingExperimentByCode(code);
     };
 
@@ -83,7 +81,6 @@
 
     PrimaryScreenAppController.prototype.existingExperimentByCode = function(code) {
       var _this = this;
-      console.log("Fetching expt by code: " + code);
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/codename/" + code,
@@ -100,7 +97,6 @@
     PrimaryScreenAppController.prototype.existingExperiment = function(expId) {
       var exp,
         _this = this;
-      console.log("Fetching expt by id: " + expId);
       exp = new PrimaryScreenExperiment({
         id: expId
       });

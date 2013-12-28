@@ -382,6 +382,50 @@
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
       });
+      describe("prepare to save", function() {
+        beforeEach(function() {
+          this.exp = new Experiment();
+          this.exp.set({
+            recordedBy: "jmcneil"
+          });
+          this.exp.set({
+            recordedDate: -1
+          });
+          console.log(this.exp.get('lsLabels'));
+          return console.log(this.exp.get('lsStates'));
+        });
+        afterEach(function() {
+          this.exp.get('lsLabels').reset();
+          return this.exp.get('lsStates').reset();
+        });
+        it("should set experiment's set to now", function() {
+          this.exp.prepareToSave();
+          return expect(new Date(this.exp.get('recordedDate')).getHours()).toEqual(new Date().getHours());
+        });
+        it("should have function to add recorded* to all labels", function() {
+          this.exp.get('lsLabels').setBestName(new Label({
+            labelKind: "experiment name",
+            labelText: "new name"
+          }));
+          this.exp.prepareToSave();
+          expect(this.exp.get('lsLabels').pickBestLabel().get('recordedBy')).toEqual("jmcneil");
+          return expect(this.exp.get('lsLabels').pickBestLabel().get('recordedDate')).toBeGreaterThan(1);
+        });
+        it("should have function to add recorded * to values", function() {
+          var status;
+          status = this.exp.getStatus();
+          this.exp.prepareToSave();
+          expect(status.get('recordedBy')).toEqual("jmcneil");
+          return expect(status.get('recordedDate')).toBeGreaterThan(1);
+        });
+        return it("should have function to add recorded * to states", function() {
+          var state;
+          state = this.exp.get('lsStates').getOrCreateStateByTypeAndKind("metadata", "experiment metadata");
+          this.exp.prepareToSave();
+          expect(state.get('recordedBy')).toEqual("jmcneil");
+          return expect(state.get('recordedDate')).toBeGreaterThan(1);
+        });
+      });
       return describe("model composite component conversion", function() {
         beforeEach(function() {
           runs(function() {

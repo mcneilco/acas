@@ -462,12 +462,10 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
-      console.log("got analysis complete");
       return this.$('.bv_resultsContainer').hide();
     };
 
     PrimaryScreenAnalysisController.prototype.handleStatusChanged = function() {
-      console.log("got status change");
       if (this.model.isEditable()) {
         return this.dataAnalysisController.enableAll();
       } else {
@@ -517,7 +515,6 @@
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === "screenExperiment") {
-            console.log("Fetching expt by code: " + window.AppLaunchParams.moduleLaunchParams.code);
             return $.ajax({
               type: 'GET',
               url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
@@ -576,20 +573,9 @@
       this.analysisController.on('amClean', function() {
         return _this.trigger('amClean');
       });
-      this.doseRespController = new DoseResponseAnalysisController({
-        model: this.model,
-        el: this.$('.bv_doseResponseAnalysis')
-      });
-      this.doseRespController.on('amDirty', function() {
-        return _this.trigger('amDirty');
-      });
-      this.doseRespController.on('amClean', function() {
-        return _this.trigger('amClean');
-      });
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
       this.experimentBaseController.render();
-      this.analysisController.render();
-      return this.doseRespController.render();
+      return this.analysisController.render();
     };
 
     PrimaryScreenExperimentController.prototype.render = function() {

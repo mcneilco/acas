@@ -377,7 +377,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
 					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual 0
-				it "Should load a dose response controller", ->
+				xit "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual 0
 
 

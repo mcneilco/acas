@@ -18,8 +18,8 @@ describe "Label module testing", ->
 				expect(@el.get 'labelText').toEqual ''
 				expect(@el.get 'ignored').toEqual(false)
 				expect(@el.get 'preferred').toEqual(false)
-				expect(@el.get 'recordedDate').toEqual ''
 				expect(@el.get 'recordedBy').toEqual ''
+				expect(@el.get 'recordedDate').toBeNull()
 				expect(@el.get 'physicallyLabled').toEqual(false)
 				expect(@el.get 'imageFile').toBeNull()
 	describe "Label List testing", ->
@@ -89,7 +89,11 @@ describe "Label module testing", ->
 			@val = new Value()
 		it "Class should exist", ->
 			expect(@val).toBeDefined()
-			
+		it "Should have defaults", ->
+			expect(@val.get('recordedDate')).toBeNull()
+			expect(@val.get('recordedBy')).toEqual ""
+			expect(@val.get('ignored')).toEqual(false)
+
 	describe "Value list testing", ->
 		beforeEach ->
 			@vl = new ValueList()
@@ -106,6 +110,9 @@ describe "Label module testing", ->
 					expect(@es).toBeDefined()
 				it "should have defaults", ->
 					expect(@es.get('lsValues') instanceof Backbone.Collection).toBeTruthy()
+					expect(@es.get('recordedDate')).toBeNull()
+					expect(@es.get('recordedBy')).toEqual ""
+					expect(@es.get('ignored')).toEqual(false)
 		describe "When loaded from state json", ->
 			beforeEach ->
 				@es = new State window.experimentServiceTestJSON.fullExperimentFromServer.lsStates[0]

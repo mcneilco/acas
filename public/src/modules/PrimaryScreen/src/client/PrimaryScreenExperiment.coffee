@@ -295,12 +295,10 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@setExperimentSaved()
 
 	handleAnalysisComplete: =>
-		console.log "got analysis complete"
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
 		@$('.bv_resultsContainer').hide()
 
 	handleStatusChanged: =>
-		console.log "got status change"
 		if @model.isEditable()
 			@dataAnalysisController.enableAll()
 		else
@@ -330,7 +328,6 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == "screenExperiment"
-					console.log "Fetching expt by code: "+window.AppLaunchParams.moduleLaunchParams.code
 					$.ajax
 						type: 'GET'
 						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
@@ -369,17 +366,17 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amDirty'
 		@analysisController.on 'amClean', =>
 			@trigger 'amClean'
-		@doseRespController = new DoseResponseAnalysisController
-			model: @model
-			el: @$('.bv_doseResponseAnalysis')
-		@doseRespController.on 'amDirty', =>
-			@trigger 'amDirty'
-		@doseRespController.on 'amClean', =>
-			@trigger 'amClean'
+#		@doseRespController = new DoseResponseAnalysisController
+#			model: @model
+#			el: @$('.bv_doseResponseAnalysis')
+#		@doseRespController.on 'amDirty', =>
+#			@trigger 'amDirty'
+#		@doseRespController.on 'amClean', =>
+#			@trigger 'amClean'
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@experimentBaseController.render()
 		@analysisController.render()
-		@doseRespController.render()
+#		@doseRespController.render()
 
 	render: ->
 		@

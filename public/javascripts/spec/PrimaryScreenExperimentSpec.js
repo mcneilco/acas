@@ -534,7 +534,7 @@
           it("Should load an analysis controller", function() {
             return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual(0);
           });
-          return it("Should load a dose response controller", function() {
+          return xit("Should load a dose response controller", function() {
             return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual(0);
           });
         });

@@ -5,7 +5,7 @@ class window.Label extends Backbone.Model
 		labelText: ''
 		ignored: false
 		preferred: false
-		recordedDate: ""
+		recordedDate: null
 		recordedBy: ""
 		physicallyLabled: false
 		imageFile: null
@@ -71,6 +71,10 @@ class window.LabelList extends Backbone.Collection
 			@add label
 
 class window.Value extends Backbone.Model
+	defaults:
+		ignored: false
+		recordedDate: null
+		recordedBy: ""
 
 class window.ValueList extends Backbone.Collection
 	model: Value
@@ -78,6 +82,9 @@ class window.ValueList extends Backbone.Collection
 class window.State extends Backbone.Model
 	defaults:
 		lsValues: new ValueList()
+		ignored: false
+		recordedDate: null
+		recordedBy: ""
 
 	initialize: ->
 		if @has('lsValues')

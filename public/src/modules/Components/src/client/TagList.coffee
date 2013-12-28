@@ -20,10 +20,8 @@ class window.TagListController extends Backbone.View
 		@
 
 	handleTagsChanged: =>
-		console.log @collection
 		tagStrings = @.$el.tagsinput 'items'
 		tempTags = []
 		for t in tagStrings
 			tempTags.push tagText: t
 		@collection.set tempTags
-		console.log @collection

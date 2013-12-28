@@ -17,7 +17,7 @@
       labelText: '',
       ignored: false,
       preferred: false,
-      recordedDate: "",
+      recordedDate: null,
       recordedBy: "",
       physicallyLabled: false,
       imageFile: null
@@ -151,6 +151,12 @@
       return _ref2;
     }
 
+    Value.prototype.defaults = {
+      ignored: false,
+      recordedDate: null,
+      recordedBy: ""
+    };
+
     return Value;
 
   })(Backbone.Model);
@@ -178,7 +184,10 @@
     }
 
     State.prototype.defaults = {
-      lsValues: new ValueList()
+      lsValues: new ValueList(),
+      ignored: false,
+      recordedDate: null,
+      recordedBy: ""
     };
 
     State.prototype.initialize = function() {

@@ -24,7 +24,6 @@ class window.ModuleMenusController extends Backbone.View
 		@moduleLauncherListController.render()
 
 		if window.AppLaunchParams.moduleLaunchParams?
-			console.log window.AppLaunchParams.moduleLaunchParams
 			@moduleLauncherMenuListController.launchModule window.AppLaunchParams.moduleLaunchParams.moduleName
 
 	render: =>

@@ -79,8 +79,6 @@
         type: 'GET',
         url: "/api/experiments/" + docId,
         success: function(json) {
-          console.log("success from getting existing doc");
-          console.log(json);
           return _this.existingDocReturn(json);
         },
         error: function(err) {
@@ -92,13 +90,9 @@
 
     AppController.prototype.existingDocReturn = function(json) {
       this.exp = new Experiment(json);
-      console.log("existing return experiment");
-      console.log(this.exp);
       this.dfb = new DocForBatches({
         experiment: this.exp
       });
-      console.log("existing return docForBatches");
-      console.log(this.dfb);
       this.docForBatchesController = new DocForBatchesController({
         el: this.$('.docForBatches'),
         model: this.dfb
