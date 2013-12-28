@@ -1,10 +1,11 @@
 <script type="text/template" id="ExperimentBaseView" xmlns="http://www.w3.org/1999/html">
 
+	<div class="span10">
     <form class="form-horizontal">
         <div class="control-group">
             <label class="control-label"><i class="icon-lock bv_lock"></i> Status</label>
             <div class="controls">
-                <select class="bv_status span9 select-picker">
+                <select class="bv_status select-picker" style="width:350px;">
                     <option value="New">New</option>
                     <option value="Started">Started</option>
                     <option value="Complete">Complete</option>
@@ -16,13 +17,13 @@
         <div class="control-group">
             <label class="control-label">Code</label>
             <div class="controls">
-                <span class="uneditable-input bv_experimentCode span5">autofill when saved</span>
+                <span class="uneditable-input bv_experimentCode" style="width:336px;">autofill when saved</span>
             </div>
         </div>
         <div class="control-group bv_group_experimentName">
             <label class="control-label">*Name</label>
             <div class="controls">
-                <input class="bv_experimentName span9" type="text" placeholder="">
+                <input class="bv_experimentName" style="width:336px;" type="text" placeholder="">
             </div>
         </div>
     </form>
@@ -32,18 +33,18 @@
         <div class="control-group bv_group_recordedBy">
             <label class="control-label">*Scientist</label>
             <div class="controls">
-		        <select class="bv_recordedBy span9">
+		        <select class="bv_recordedBy" style="width:350px;">
 	                <option value="">Scientist</option>
 	                <option value="jmcneil">John McNeil</option>
 	                <option value="smeyer">smeyer</option>
 	            </select>
 	        </div>
         </div>
-	    <div class="control-group">
+	    <div class="control-group bv_group_completionDate">
 		    <label class="control-label">*Date</label>
 		    <div class="controls">
-		        <div class="input-append date bv_group_completionDate" id="dp3" data-date="" data-date format="yy-mm-dd">
-		            <input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:412px;">
+		        <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
+		            <input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:310px;">
 		            <span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>
 		        </div>
 		    </div>
@@ -56,7 +57,7 @@
         <div class="control-group bv_¡Code bv_group_protocolCode">
             <label class="control-label ">*Protocol Code</label>
             <div class="controls">
-                <select class="bv_protocolCode span9" style="">
+                <select class="bv_protocolCode" style="width:350px;">
                 </select>
             </div>
             <div class="controls">
@@ -66,7 +67,7 @@
         <div class="control-group">
             <label class="control-label">Protocol Name</label>
             <div class="controls">
-                <span class="uneditable-input bv_protocolName span5"></span>
+                <span class="uneditable-input bv_protocolName" style="width:336px;"></span>
             </div>
         </div>
     </form>
@@ -75,29 +76,31 @@
 	    <div class="control-group bv_group_projectCode">
 	        <label class="control-label">*Project</label>
 	        <div class="controls">
-	            <select class="bv_projectCode span9"></select>
+	            <select class="bv_projectCode" style="width:350px;"></select>
 	        </div>
 	    </div>
 	    <div class="control-group bv_group_notebook">
 	        <label class="control-label">*Notebook</label>
 		    <div class="controls">
-	            <input class="bv_notebook span9" type="text" placeholder="" />
+	            <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
 		    </div>
 	    </div>
         <div class="control-group bv_group_tags">
             <label class="control-label">Key Words</label>
             <div class="controls">
-                <input class="bv_tags span9" type="text" data-role="tagsinput" placeholder="Add tags" />
+                <input class="bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
             </div>
         </div>
 	</form>
 
+	</div>
+
     <div>
-        <textarea rows="3" class="bv_shortDescription" style="width:706px;" placeholder="Short Description"></textarea>
+        <textarea rows="3" class="bv_shortDescription" style="width:650px;" placeholder="Short Description"></textarea>
     </div>
 
     <div>
-        <textarea rows="12" class="bv_description" style="width:706px;" placeholder="Full Description"></textarea>
+        <textarea rows="12" class="bv_description" style="width:650px;" placeholder="Full Description"></textarea>
     </div>
 
     <!-- SAVE AND CANCEL -->
