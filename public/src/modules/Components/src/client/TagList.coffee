@@ -7,7 +7,9 @@ class window.TagList extends Backbone.Collection
 
 class window.TagListController extends Backbone.View
 	events:
+		#TODO this doesn't really work
 		'focusout': 'handleTagsChanged'
+
 
 	render: =>
 		#requesting items will force initialization of the bootstrap-tagsinput

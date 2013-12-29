@@ -21,13 +21,17 @@
   };
 
   exports.getUser = function(username, callback) {
-    return callback(null, {
-      id: "bob",
-      username: "bob",
-      email: "bob@nowwhere.com",
-      firstName: "Bob",
-      lastName: "Bob"
-    });
+    if (username === "bob") {
+      return callback(null, {
+        id: "bob",
+        username: "bob",
+        email: "bob@nowwhere.com",
+        firstName: "Bob",
+        lastName: "Roberts"
+      });
+    } else {
+      return callback("user not found", null);
+    }
   };
 
   exports.findByUsername = function(username, fn) {
@@ -64,9 +68,19 @@
   };
 
   exports.getProjects = function(resp) {
-    var projectServiceTestJSON;
-    projectServiceTestJSON = require('../public/javascripts/spec/testFixtures/projectServiceTestJSON.js');
-    return resp.end(JSON.stringify(projectServiceTestJSON.projects));
+    var projects;
+    projects = exports.projects = [
+      {
+        code: "project1",
+        name: "Project 1",
+        ignored: false
+      }, {
+        code: "project2",
+        name: "Project 2",
+        ignored: false
+      }
+    ];
+    return resp.end(JSON.stringify(projects));
   };
 
 }).call(this);

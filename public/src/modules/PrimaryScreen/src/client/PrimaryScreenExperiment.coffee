@@ -257,6 +257,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	initialize: ->
 		@model.on "sync", @handleExperimentSaved
 		@model.getStatus().on 'change', @handleStatusChanged
+		@dataAnalysisController = null
 		$(@el).empty()
 		$(@el).html @template()
 		if @model.isNew()
@@ -292,6 +293,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	handleExperimentSaved: =>
 		unless @dataAnalysisController?
 			@setupDataAnalysisController()
+		@model.getStatus().on 'change', @handleStatusChanged
 		@setExperimentSaved()
 
 	handleAnalysisComplete: =>
@@ -299,10 +301,12 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_resultsContainer').hide()
 
 	handleStatusChanged: =>
-		if @model.isEditable()
-			@dataAnalysisController.enableAll()
-		else
-			@dataAnalysisController.disableAll()
+		console.log "got status change"
+		if @dataAnalysisController != null
+			if @model.isEditable()
+				@dataAnalysisController.enableAll()
+			else
+				@dataAnalysisController.disableAll()
 
 	setupDataAnalysisController: ->
 		@dataAnalysisController = new UploadAndRunPrimaryAnalsysisController

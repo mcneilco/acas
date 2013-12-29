@@ -41,7 +41,7 @@
           var _this = this;
           return $.ajax({
             type: 'GET',
-            url: "api/users/jmcneil",
+            url: "api/users/bob",
             success: function(json) {
               return _this.serviceReturn = json;
             },
@@ -56,25 +56,25 @@
       it('should return user', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn.username).toEqual("jmcneil");
+          return expect(this.serviceReturn.username).toEqual("bob");
         });
       });
       it('should return firstName', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn.firstName).toEqual("John");
+          return expect(this.serviceReturn.firstName).toEqual("Bob");
         });
       });
       it('should return lastName', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn.lastName).toEqual("McNeil");
+          return expect(this.serviceReturn.lastName).toEqual("Roberts");
         });
       });
       it('should return email', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn.email).toContain("jmcneil");
+          return expect(this.serviceReturn.email).toContain("bob");
         });
       });
       return it('should not return password', function() {

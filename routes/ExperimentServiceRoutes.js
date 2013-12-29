@@ -2,6 +2,7 @@
 1) Add these lines to app.coffee under # serverAPI routes:
 experimentRoutes = require './routes/ExperimentServiceRoutes.js'
 app.get '/api/experiments/codename/:code', experimentRoutes.experimentByCodename
+app.get '/api/experiments/protocolCodename/:code', experimentRoutes.experimentByProtocolCodename
 app.get '/api/experiments/:id', experimentRoutes.experimentById
 app.post '/api/experiments', experimentRoutes.postExperiment
 app.put '/api/experiments', experimentRoutes.putExperiment
@@ -10,12 +11,32 @@ app.put '/api/experiments', experimentRoutes.putExperiment
 
 (function() {
   exports.experimentByCodename = function(request, response) {
-    var experimentServiceTestJSON;
+    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
     console.log(request.params.code);
     console.log(request.query.testMode);
-    if (request.query.testMode) {
+    if (request.query.testMode || global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return response.end(JSON.stringify(experimentServiceTestJSON.stubSavedExperiment[0]));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + request.params.code;
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, response);
+    }
+  };
+
+  exports.experimentByProtocolCodename = function(request, response) {
+    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    console.log(request.params.code);
+    console.log(request.query.testMode);
+    if (request.query.testMode || global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return response.end(JSON.stringify(experimentServiceTestJSON.stubSavedExperiment));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/protocolCodename/" + request.params.code;
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, response);
     }
   };
 

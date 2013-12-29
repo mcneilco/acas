@@ -31,7 +31,7 @@ describe 'User authentication Service testing', ->
 			runs ->
 				$.ajax
 					type: 'GET'
-					url: "api/users/jmcneil"
+					url: "api/users/bob"
 					success: (json) =>
 						@serviceReturn = json
 					error: (err) =>
@@ -42,19 +42,19 @@ describe 'User authentication Service testing', ->
 		it 'should return user', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn.username).toEqual "jmcneil"
+				expect(@serviceReturn.username).toEqual "bob"
 		it 'should return firstName', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn.firstName).toEqual "John"
+				expect(@serviceReturn.firstName).toEqual "Bob"
 		it 'should return lastName', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn.lastName).toEqual "McNeil"
+				expect(@serviceReturn.lastName).toEqual "Roberts"
 		it 'should return email', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn.email).toContain "jmcneil"
+				expect(@serviceReturn.email).toContain "bob"
 		it 'should not return password', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->

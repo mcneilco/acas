@@ -17,12 +17,17 @@ exports.authCheck = (user, pass, retFun) ->
 	retFun "Success"
 
 exports.getUser = (username, callback) ->
-	callback null,
-		id: "bob"
-		username: "bob"
-		email: "bob@nowwhere.com"
-		firstName: "Bob"
-		lastName: "Bob"
+
+	if username == "bob"
+		callback null,
+			id: "bob"
+			username: "bob"
+			email: "bob@nowwhere.com"
+			firstName: "Bob"
+			lastName: "Roberts"
+	else
+		callback "user not found", null
+
 
 
 exports.findByUsername = (username, fn) ->
@@ -48,6 +53,15 @@ exports.loginStrategy = (username, password, done) ->
 					)
 
 exports.getProjects = (resp) ->
-	projectServiceTestJSON = require '../public/javascripts/spec/testFixtures/projectServiceTestJSON.js'
-	resp.end JSON.stringify projectServiceTestJSON.projects
+	projects = 	exports.projects = [
+		code: "project1"
+		name: "Project 1"
+		ignored: false
+	,
+		code: "project2"
+		name: "Project 2"
+		ignored: false
+	]
+
+	resp.end JSON.stringify projects
 

@@ -394,6 +394,7 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_lock').show()
 
 	handleSaveClicked: =>
+		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
 		@model.save()
 

@@ -25,6 +25,8 @@
           docUpload: new DocUpload(js.docUpload),
           batchNameList: new BatchNameList(js.batchNameList)
         });
+      } else if (this.has('experiment')) {
+        return this.updateDocForBatches();
       } else {
         this._fetchStubProtocol();
         if (!this.has('docUpload')) {
@@ -84,21 +86,63 @@
     };
 
     DocForBatches.prototype.asExperiment = function() {
-      var analysisGroup, analysisGroups, eName, exp, recBy, recDate;
+      var analysisGroup, analysisGroupState, analysisGroups, eName, exp, lsStates, lsValues, recBy, recDate, stateValue_1, stateValue_2;
       if (!this.isValid()) {
         return null;
       }
       recBy = window.AppLaunchParams.loginUserName;
       recDate = new Date().getTime();
-      analysisGroup = new AnalysisGroup({
-        id: 123456
-      });
+      analysisGroup = new AnalysisGroup();
       analysisGroups = new AnalysisGroupList(analysisGroup);
       if (this.get('docUpload').get('docType') === "file") {
         eName = this.get('docUpload').get('currentFileName');
+        stateValue_1 = new Value({
+          lsType: 'fileValue',
+          lsKind: 'annotation',
+          value: eName,
+          ignored: false
+        });
       } else {
         eName = this.get('docUpload').get('url');
+        stateValue_1 = new Value({
+          lsType: 'urlValue',
+          lsKind: 'annotation',
+          value: eName,
+          ignored: false
+        });
       }
+      stateValue_2 = new Value({
+        lsType: 'stringValue',
+        lsKind: 'document kind',
+        value: this.get('docUpload').get('documentKind'),
+        ignored: false
+      });
+      lsValues = new ValueList();
+      lsValues.add(stateValue_1);
+      lsValues.add(stateValue_2);
+      this.get('batchNameList').each(function(batchName) {
+        var stateValue;
+        stateValue = new Value({
+          lsType: 'codeValue',
+          lsKind: 'batch code',
+          comments: batchName.get('comment'),
+          value: batchName.get('preferredName'),
+          ignored: false
+        });
+        return lsValues.add(stateValue);
+      });
+      analysisGroupState = new State({
+        lsValues: lsValues,
+        lsKind: 'Document for Batch',
+        lsType: 'results',
+        recordedBy: this.protocol.get('recordedBy')
+      });
+      lsStates = new StateList();
+      lsStates.add(analysisGroupState);
+      analysisGroup = new AnalysisGroup({
+        lsStates: lsStates
+      });
+      analysisGroups = new AnalysisGroupList(analysisGroup);
       exp = new Experiment({
         protocol: this.protocol,
         kind: "ACAS doc for batches",
@@ -107,13 +151,69 @@
         shortDescription: this.get('docUpload').get('description'),
         analysisGroups: analysisGroups
       });
-      exp.get('experimentLabels').setBestName(new Label({
-        labelKind: "experiment name",
+      exp.get('lsLabels').setBestName(new Label({
+        lsKind: "experiment name",
         labelText: eName,
         recordedBy: recBy,
         recordedDate: recDate
       }));
       return exp;
+    };
+
+    DocForBatches.prototype.updateDocForBatches = function() {
+      var newBatchNameList, newDocUpload;
+      newDocUpload = new DocUpload({
+        id: 1
+      });
+      newBatchNameList = new BatchNameList();
+      this.get('experiment').get('analysisGroups').at(0).get('lsStates').each(function(analysisGroupState) {
+        return analysisGroupState.get('lsValues').each(function(analysisGroupValue) {
+          var lsType, newBatchName, value;
+          lsType = analysisGroupValue.get('lsType');
+          value = analysisGroupValue.get(lsType);
+          switch (lsType) {
+            case "fileValue":
+              if (value !== null) {
+                return newDocUpload.set({
+                  id: analysisGroupValue.get('id'),
+                  currentFileName: value,
+                  docType: "file"
+                });
+              }
+              break;
+            case "urlValue":
+              if (value !== null) {
+                return newDocUpload.set({
+                  id: analysisGroupValue.get('id'),
+                  url: value,
+                  docType: "url"
+                });
+              }
+              break;
+            case "stringValue":
+              if (value !== null) {
+                return newDocUpload.set({
+                  documentKind: value
+                });
+              }
+              break;
+            case "codeValue":
+              if (value !== null) {
+                newBatchName = new BatchName({
+                  id: analysisGroupValue.id,
+                  preferredName: value,
+                  comment: analysisGroupValue.get('comments')
+                });
+                return newBatchNameList.add(newBatchName);
+              }
+          }
+        });
+      });
+      this.set({
+        batchNameList: newBatchNameList,
+        docUpload: newDocUpload
+      });
+      return this;
     };
 
     return DocForBatches;

@@ -23,14 +23,13 @@ class window.ModuleMenusController extends Backbone.View
 		@moduleLauncherMenuListController.render()
 		@moduleLauncherListController.render()
 
-		if window.AppLaunchParams.deployMode?
-			unless window.AppLaunchParams.deployMode.toUpperCase() =="PROD"
-				@$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase())
-
 		if window.AppLaunchParams.moduleLaunchParams?
 			@moduleLauncherMenuListController.launchModule window.AppLaunchParams.moduleLaunchParams.moduleName
 
 	render: =>
+		if window.AppLaunchParams.deployMode?
+			unless window.AppLaunchParams.deployMode.toUpperCase() =="PROD"
+				@$('.bv_deployMode h1').html(window.AppLaunchParams.deployMode.toUpperCase())
 
 		@
 

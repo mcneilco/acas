@@ -45,7 +45,9 @@
     routes = require('./routes');
     if (config.all.client.require.login) {
       app.get('/', loginRoutes.ensureAuthenticated, routes.index);
+      app.get('/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, routes.autoLaunchWithCode);
     } else {
+      app.get('/:moduleName/codeName/:code', routes.autoLaunchWithCode);
       app.get('/', routes.index);
     }
     if (config.all.server.enableSpecRunner) {
@@ -77,14 +79,15 @@
     app.get('/api/protocols/:id', protocolRoutes.protocolById);
     app.post('/api/protocols', protocolRoutes.postProtocol);
     app.put('/api/protocols', protocolRoutes.putProtocol);
-    app.get('/api/protocollabels', protocolRoutes.protocolLabels);
+    app.get('/api/protocollabels', protocolRoutes.lsLabels);
     app.get('/api/protocolCodes', protocolRoutes.protocolCodeList);
     app.get('/api/protocolCodes/filter/:str', protocolRoutes.protocolCodeList);
     experimentRoutes = require('./routes/ExperimentServiceRoutes.js');
     app.get('/api/experiments/codename/:code', experimentRoutes.experimentByCodename);
+    app.get('/api/experiments/protocolCodename/:code', experimentRoutes.experimentByProtocolCodename);
     app.get('/api/experiments/:id', experimentRoutes.experimentById);
     app.post('/api/experiments', experimentRoutes.postExperiment);
-    app.put('/api/experiments', experimentRoutes.putExperiment);
+    app.put('/api/experiments/:id', experimentRoutes.putExperiment);
     projectServiceRoutes = require('./routes/ProjectServiceRoutes.js');
     app.get('/api/projects', projectServiceRoutes.getProjects);
     docForBatchesRoutes = require('./routes/DocForBatchesRoutes.js');
@@ -99,8 +102,6 @@
     bulkLoadSampleTransfersRoutes = require('./routes/BulkLoadSampleTransfersRoutes.js');
     app.post('/api/bulkLoadSampleTransfers', bulkLoadSampleTransfersRoutes.bulkLoadSampleTransfers);
     runPrimaryAnalysisRoutes = require('./routes/RunPrimaryAnalysisRoutes.js');
-    app.get('/primaryScreenExperiment/*', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex);
-    app.get('/primaryScreenExperiment', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex);
     app.post('/api/primaryAnalysis/runPrimaryAnalysis', runPrimaryAnalysisRoutes.runPrimaryAnalysis);
     curveCuratorRoutes = require('./routes/CurveCuratorRoutes.js');
     app.get('/curveCurator/*', curveCuratorRoutes.curveCuratorIndex);

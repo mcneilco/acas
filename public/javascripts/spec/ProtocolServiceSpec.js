@@ -20,7 +20,7 @@ See ProtocolServiceTestJSON.coffee for examples
         self = this;
         return $.ajax({
           type: 'GET',
-          url: "api/protocols/codename/PROT-00000002",
+          url: "api/protocols/codename/PROT-00000001",
           success: function(json) {
             return self.serviceReturn = json;
           },
@@ -61,7 +61,7 @@ See ProtocolServiceTestJSON.coffee for examples
         if (!window.AppLaunchParams.liveServiceTest) {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
-            return expect(this.serviceReturn.codeName).toEqual("PROT-00000033");
+            return expect(this.serviceReturn.codeName).toEqual("PROT-00000001");
           });
         }
       });
@@ -143,7 +143,7 @@ See ProtocolServiceTestJSON.coffee for examples
             });
           });
         });
-        it('should return an array of protocolLabels', function() {
+        it('should return an array of lsLabels', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
             return expect(this.serviceReturn.length).toBeGreaterThan(0);

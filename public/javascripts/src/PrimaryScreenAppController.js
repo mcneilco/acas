@@ -8,6 +8,7 @@
     __extends(PrimaryScreenAppRouter, _super);
 
     function PrimaryScreenAppRouter() {
+      this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
       this.existingExperiment = __bind(this.existingExperiment, this);
       this.newExperiment = __bind(this.newExperiment, this);
       _ref = PrimaryScreenAppRouter.__super__.constructor.apply(this, arguments);
@@ -16,6 +17,7 @@
 
     PrimaryScreenAppRouter.prototype.routes = {
       ":expId": "existingExperiment",
+      "codeName/:code": "existingExperimentByCode",
       "": "newExperiment"
     };
 
@@ -31,6 +33,10 @@
       return this.appController.existingExperiment(expId);
     };
 
+    PrimaryScreenAppRouter.prototype.existingExperimentByCode = function(code) {
+      return this.appController.existingExperimentByCode(code);
+    };
+
     return PrimaryScreenAppRouter;
 
   })(Backbone.Router);
@@ -40,6 +46,7 @@
 
     function PrimaryScreenAppController() {
       this.existingExperiment = __bind(this.existingExperiment, this);
+      this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
       this.newExperiment = __bind(this.newExperiment, this);
       this.render = __bind(this.render, this);
       _ref1 = PrimaryScreenAppController.__super__.constructor.apply(this, arguments);
@@ -66,16 +73,31 @@
 
     PrimaryScreenAppController.prototype.newExperiment = function() {
       this.primaryScreenExperimentController = new PrimaryScreenExperimentController({
-        model: new Experiment(),
+        model: new PrimaryScreenExperiment(),
         el: $('.bv_primaryScreenExperimentController')
       });
       return this.primaryScreenExperimentController.render();
     };
 
+    PrimaryScreenAppController.prototype.existingExperimentByCode = function(code) {
+      var _this = this;
+      return $.ajax({
+        type: 'GET',
+        url: "/api/experiments/codename/" + code,
+        dataType: 'json',
+        error: function(err) {
+          return alert('Could not get experiment for code in this URL');
+        },
+        success: function(json) {
+          return _this.existingExperiment(json.id);
+        }
+      });
+    };
+
     PrimaryScreenAppController.prototype.existingExperiment = function(expId) {
       var exp,
         _this = this;
-      exp = new Experiment({
+      exp = new PrimaryScreenExperiment({
         id: expId
       });
       return exp.fetch({

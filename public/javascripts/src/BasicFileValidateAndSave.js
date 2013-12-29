@@ -5,6 +5,8 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.BasicFileValidateAndSaveController = (function(_super) {
+    var allowedFileTypes;
+
     __extends(BasicFileValidateAndSaveController, _super);
 
     function BasicFileValidateAndSaveController() {
@@ -46,6 +48,8 @@
       otherparam: "fred"
     };
 
+    allowedFileTypes = ['xls', 'xlsx', 'csv'];
+
     BasicFileValidateAndSaveController.prototype.template = _.template($("#BasicFileValidateAndSaveView").html());
 
     BasicFileValidateAndSaveController.prototype.events = {
@@ -66,7 +70,7 @@
         inputTitle: '',
         url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
         fieldIsRequired: false,
-        allowedFileTypes: ['xls', 'xlsx', 'csv']
+        allowedFileTypes: this.allowedFileTypes
       });
       this.parseFileController.on('fileInput:uploadComplete', this.handleParseFileUploaded);
       this.parseFileController.on('fileInput:removedFile', this.handleParseFileRemoved);
@@ -118,17 +122,19 @@
     };
 
     BasicFileValidateAndSaveController.prototype.validateParseFile = function() {
-      var _this = this;
+      var dataToPost,
+        _this = this;
       if (this.parseFileUploaded && !this.$(".bv_next").attr('disabled')) {
         this.notificationController.clearAllNotificiations();
         this.$('.bv_validateStatusDropDown').modal({
           backdrop: "static"
         });
         this.$('.bv_validateStatusDropDown').modal("show");
+        dataToPost = this.prepareDataToPost(true);
         return $.ajax({
           type: 'POST',
           url: this.fileProcessorURL,
-          data: this.prepareDataToPost(true),
+          data: dataToPost,
           success: this.handleValidationReturnSuccess,
           error: function(err) {
             return _this.$('.bv_validateStatusDropDown').modal("hide");
@@ -139,16 +145,18 @@
     };
 
     BasicFileValidateAndSaveController.prototype.parseAndSave = function() {
+      var dataToPost;
       if (this.parseFileUploaded && this.filePassedValidation) {
         this.notificationController.clearAllNotificiations();
         this.$('.bv_saveStatusDropDown').modal({
           backdrop: "static"
         });
         this.$('.bv_saveStatusDropDown').modal("show");
+        dataToPost = this.prepareDataToPost(false);
         return $.ajax({
           type: 'POST',
           url: this.fileProcessorURL,
-          data: this.prepareDataToPost(false),
+          data: dataToPost,
           success: this.handleSaveReturnSuccess,
           dataType: 'json'
         });
