@@ -71,7 +71,7 @@ exports.autoLaunchWithCode = (req, res) ->
 exports.index = (req, res, moduleLaunchParams) ->
 	#"use strict"
 	config = require '../conf/compiled/conf.js'
-	global.specRunnerTestmode = true
+	global.specRunnerTestmode = false
 	scriptsToLoad = requiredScripts.concat(applicationScripts)
 	if config.all.client.require.login
 		loginUserName = req.user.username
