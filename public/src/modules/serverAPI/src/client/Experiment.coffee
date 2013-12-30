@@ -169,7 +169,11 @@ class window.Experiment extends Backbone.Model
 					val.set recordedDate: rDate
 
 	getDescription: ->
-		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "description"
+		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
+		if description.get('clobValue') is undefined or description.get('clobValue') is ""
+			description.set clobValue: ""
+
+		description
 
 	getNotebook: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
@@ -248,14 +252,14 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_experimentName').val bestName.get('labelText')
 		@$('.bv_recordedBy').val(@model.get('recordedBy'))
 		@$('.bv_experimentCode').html(@model.get('codeName'))
-		@getAndShowProtocolName()
+		@getFullProtocol()
 		@setUseProtocolParametersDisabledState()
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCompletionDate().get('dateValue')?
 			date = new Date(@model.getCompletionDate().get('dateValue'))
 			@$('.bv_completionDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
-		@$('.bv_description').html(@model.getDescription().get('stringValue'))
+		@$('.bv_description').html(@model.getDescription().get('clobValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('stringValue'))
 		if @model.isNew()
@@ -306,21 +310,14 @@ class window.ExperimentBaseController extends AbstractFormController
 		else
 			@$('.bv_useProtocolParameters').removeAttr("disabled")
 
-	getAndShowProtocolName: ->
+	getFullProtocol: ->
 		if @model.get('protocol') != null
 			if @model.get('protocol').isStub()
 				@model.get('protocol').fetch success: =>
 					newProtName = @model.get('protocol').get('lsLabels').pickBestLabel().get('labelText')
-					@updateProtocolNameField(newProtName)
 					@setUseProtocolParametersDisabledState()
 			else
-				@updateProtocolNameField(@model.get('protocol').get('lsLabels').pickBestLabel().get('labelText'))
 				@setUseProtocolParametersDisabledState()
-		else
-			@updateProtocolNameField "no protocol selected yet"
-
-	updateProtocolNameField: (protocolName) ->
-		@$('.bv_protocolName').html(protocolName)
 
 	handleRecordedByChanged: =>
 		@model.set recordedBy: @$('.bv_recordedBy').val()
@@ -331,7 +328,7 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	handleDescriptionChanged: =>
 		@model.getDescription().set
-			stringValue: @getTrimmedInput('.bv_description')
+			clobValue: @getTrimmedInput('.bv_description')
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
@@ -353,7 +350,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		code = @$('.bv_protocolCode').val()
 		if code == "" || code == "unassigned"
 			@model.set 'protocol': null
-			@getAndShowProtocolName()
+			@getFullProtocol()
 			@setUseProtocolParametersDisabledState()
 		else
 			$.ajax
@@ -361,10 +358,10 @@ class window.ExperimentBaseController extends AbstractFormController
 				url: "/api/protocols/codename/"+code
 				success: (json) =>
 					if json.length == 0
-						@updateProtocolNameField("could not find selected protocol in database")
+						alert("Could not find selected protocol in database, please get help")
 					else
 						@model.set protocol: new Protocol(json[0])
-						@getAndShowProtocolName() # this will fetch full protocol
+						@getFullProtocol() # this will fetch full protocol
 				error: (err) ->
 					alert 'got ajax error from api/protocols/codename/ in Exeriment.coffee'
 				dataType: 'json'

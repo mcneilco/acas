@@ -34,19 +34,19 @@ experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction
                           stringValue = "active")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "stringValue",
-                                                                   valueKind = "analysis status",
-                                                                   stringValue = "not started")
+                           valueType = "stringValue",
+                           valueKind = "analysis status",
+                           stringValue = "not started")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "clobValue",
-                                                                   valueKind = "analysis result html",
-                                                                   stringValue = "<p>not started</p>")
+                           valueType = "clobValue",
+                           valueKind = "analysis result html",
+                           stringValue = "<p>not started</p>")
 
 experimentValues[[length(experimentValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                                   valueType = "dateValue",
-                                                                   valueKind = "completion date",
-                                                                   dateValue = as.numeric(format(Sys.time(), "%s"))*1000)
+                           valueType = "dateValue",
+                           valueKind = "completion date",
+                           dateValue = as.numeric(format(Sys.time(), "%s"))*1000)
 
 experimentStates[[length(experimentStates)+1]] <- createExperimentState(lsTransaction = lsTransaction, 
                           experimentValues=experimentValues, 

@@ -136,11 +136,19 @@ describe "Primary Screen Experiment module testing", ->
 							expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
 					it 'Should parse agonist control into backbone models', ->
 							expect(@pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual "CMPD-87654399-01"
-				describe "others", ->
+				describe "special states", ->
 					it "should be able to get the analysis status", ->
 							expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
 					it "should be able to get the analysis result html", ->
 							expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
+		describe "When loaded from new", ->
+			beforeEach ->
+				@pse2 = new PrimaryScreenExperiment()
+			describe "special states", ->
+				it "should be able to get the analysis status", ->
+						expect(@pse2.getAnalysisStatus().get('stringValue')).toEqual "not started"
+				it "should be able to get the analysis result html", ->
+						expect(@pse2.getAnalysisResultHTML().get('clobValue')).toEqual ""
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->

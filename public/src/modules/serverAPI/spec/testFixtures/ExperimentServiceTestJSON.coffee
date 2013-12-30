@@ -1314,7 +1314,7 @@
 				urlValue: null
 				version: 0
 			,
-				clobValue: null
+				clobValue: "long description goes here"
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -1331,13 +1331,13 @@
 				publicData: true
 				recordedDate: 1363388477000
 				sigFigs: null
-				stringValue: "long description goes here"
+				stringValue: null
 				uncertainty: null
 				urlValue: null
 				lsKind: "description"
 				valueOperator: null
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_description"
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_description"
 				valueUnit: null
 				version: 0
 			,
@@ -1358,7 +1358,7 @@
 				publicData: true
 				recordedDate: 1363388477000
 				sigFigs: null
-				stringValue: "long description goes here"
+				stringValue: null
 				uncertainty: null
 				urlValue: null
 				lsKind: "project"
@@ -1593,7 +1593,7 @@
 				publicData: true
 				recordedDate: 1363388477000
 				sigFigs: null
-				stringValue: "long description goes here"
+				stringValue: null
 				uncertainty: null
 				urlValue: null
 				lsKind: "project"
@@ -1665,7 +1665,7 @@
 				urlValue: null
 				version: 0
 			,
-				clobValue: null
+				clobValue: "long description goes here"
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -1682,13 +1682,13 @@
 				publicData: true
 				recordedDate: 1363388477000
 				sigFigs: null
-				stringValue: "long description goes here"
+				stringValue: null
 				uncertainty: null
 				urlValue: null
 				lsKind: "description"
 				valueOperator: null
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_description"
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_description"
 				valueUnit: null
 				version: 0
 			]

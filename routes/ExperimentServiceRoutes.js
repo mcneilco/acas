@@ -2,7 +2,7 @@
 1) Add these lines to app.coffee under # serverAPI routes:
 experimentRoutes = require './routes/ExperimentServiceRoutes.js'
 app.get '/api/experiments/codename/:code', experimentRoutes.experimentByCodename
-app.get '/api/experiments/protocolCodename/:code', experimentRoutes.experimentByProtocolCodename
+app.get '/api/experiments/protocolCodename/:code', experimentRoutes.experimentsByProtocolCodename
 app.get '/api/experiments/:id', experimentRoutes.experimentById
 app.post '/api/experiments', experimentRoutes.postExperiment
 app.put '/api/experiments', experimentRoutes.putExperiment
@@ -25,7 +25,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
     }
   };
 
-  exports.experimentByProtocolCodename = function(request, response) {
+  exports.experimentsByProtocolCodename = function(request, response) {
     var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
     console.log(request.params.code);
     console.log(request.query.testMode);
@@ -84,14 +84,15 @@ app.put '/api/experiments', experimentRoutes.putExperiment
   };
 
   exports.putExperiment = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, request,
+    var baseurl, config, experimentServiceTestJSON, putId, request,
       _this = this;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "experiments";
+      putId = req.body.id;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/" + putId;
       request = require('request');
       return request({
         method: 'PUT',
@@ -99,13 +100,13 @@ app.put '/api/experiments', experimentRoutes.putExperiment
         body: req.body,
         json: true
       }, function(error, response, json) {
-        if (!error && response.statusCode === 201) {
+        console.log(response.statusCode);
+        if (!error && response.statusCode === 200) {
           console.log(JSON.stringify(json));
           return resp.end(JSON.stringify(json));
         } else {
           console.log('got ajax error trying to save new experiment');
           console.log(error);
-          console.log(json);
           return console.log(response);
         }
       });

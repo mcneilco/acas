@@ -17,7 +17,7 @@
   exports.index = function(req, res, moduleLaunchParams) {
     var config, loginUser, loginUserName, scriptsToLoad;
     config = require('../conf/compiled/conf.js');
-    global.specRunnerTestmode = true;
+    global.specRunnerTestmode = false;
     scriptsToLoad = requiredScripts.concat(applicationScripts);
     if (config.all.client.require.login) {
       loginUserName = req.user.username;

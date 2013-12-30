@@ -100,11 +100,18 @@ class window.PrimaryScreenExperiment extends Experiment
 			return new PrimaryScreenAnalysisParameters()
 
 	getAnalysisStatus: ->
-		@get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+		if !status.has('stringValue')
+			status.set stringValue: "not started"
+
+		status
 
 	getAnalysisResultHTML: ->
-		@get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
+		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
+		if !result.has('clobValue')
+			result.set clobValue: ""
 
+		result
 
 class window.PrimaryScreenAnalysisParametersController extends AbstractParserFormController
 	template: _.template($("#PrimaryScreenAnalysisParametersView").html())
@@ -301,7 +308,6 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_resultsContainer').hide()
 
 	handleStatusChanged: =>
-		console.log "got status change"
 		if @dataAnalysisController != null
 			if @model.isEditable()
 				@dataAnalysisController.enableAll()
@@ -340,11 +346,15 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 							alert 'Could not get experiment for code in this URL, creating new one'
 							@completeInitialization()
 						success: (json) =>
-							exp = new PrimaryScreenExperiment id: json.id
-							exp.fetch success: =>
-								exp.fixCompositeClasses()
-								@model = exp
+							if json.length == 0
+								alert 'Could not get experiment for code in this URL, creating new one'
 								@completeInitialization()
+							else
+								exp = new PrimaryScreenExperiment id: json[0].id
+								exp.fetch success: =>
+									exp.fixCompositeClasses()
+									@model = exp
+									@completeInitialization()
 				else
 					@completeInitialization()
 			else

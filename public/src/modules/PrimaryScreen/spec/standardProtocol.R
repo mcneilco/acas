@@ -4,7 +4,7 @@
 #source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
 require(racas)
 require(RCurl)
-lsServerURL <- racas::applicationSettings$serverPath
+lsServerURL <- racas::applicationSettings$client.service.persistence.fullpath
 
 ## example of creating a protocol with discrete parts 
 
@@ -30,150 +30,29 @@ protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = l
                           lsKind = "assay format",
                           stringValue = "biochemical")
 
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "stringValue",
-                          lsKind = "experiment status",
-                          stringValue = "active")
-
-protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction = lsTransaction, 
+protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction = lsTransaction,
                           protocolValues=protocolValues, 
                           recordedBy="userName", 
                           lsType="metadata", 
-                          lsKind="experiment metadata", 
+                          lsKind="protocol metadata",
                           comments="")
 #################################################################################################
-############################# BEGIN block of protocol experimental parameters - controls #######################
+
+############################# BEGIN block of experiment meta data #######################
 protocolValues <- list()
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "stringValue",
-                          lsKind = "control type",
-                          stringValue = "positive control")
 
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "codeValue",
-                          lsKind = "batch code",
-                          codeValue = "CRA-000399-1")
 
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "numericValue",
-                          lsKind = "tested concentration",
-                          numericValue = 10,
-                          valueUnit = "uM")
+protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction,
+                          lsType = "clobValue",
+                          lsKind = "data analysis parameters",
+                          clobValue = '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "conentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 2,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd"}'
+                          )
 
-protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction = lsTransaction, 
-                          protocolValues=protocolValues, 
-                          recordedBy="userName", 
-                          lsType="metadata", 
-                          lsKind="experiment controls", 
-                          comments="")                   
-#################################################################################################
-############################# BEGIN block of protocol experimental parameters - controls #######################
-protocolValues <- list()
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "stringValue",
-                          lsKind = "control type",
-                          stringValue = "negative control")
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "codeValue",
-                          lsKind = "batch code",
-                          codeValue = "CRA-000396-1")
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "numericValue",
-                          lsKind = "tested concentration",
-                          numericValue = 1,
-                          valueUnit = "uM")
-
-protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction = lsTransaction, 
-                          protocolValues=protocolValues, 
-                          recordedBy="userName", 
-                          lsType="metadata", 
-                          lsKind="experiment controls", 
-                          comments="")                   
-#################################################################################################
-############################# BEGIN block of protocol experimental parameters - controls #######################
-protocolValues <- list()
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "stringValue",
-                          lsKind = "control type",
-                          stringValue = "vehicle control")
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "codeValue",
-                          lsKind = "batch code",
-                          codeValue = "CMPD0000001-1")
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "numericValue",
-                          lsKind = "tested concentration",
-                          numericValue = 0,
-                          valueUnit = "uM")
-
-protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction = lsTransaction, 
-                          protocolValues=protocolValues, 
-                          recordedBy="userName", 
-                          lsType="metadata", 
-                          lsKind="experiment controls", 
-                          comments="")                   
-#################################################################################################
-
-############################# BEGIN block of protocol analysis parameters #######################
-protocolValues <- list()
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "stringValue",
-                          lsKind = "reader instrument",
-                          stringValue = "Molecular Dynamics FLIPR")
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "stringValue",
-                          lsKind = "data source",
-                          stringValue = "FLIPR Min Max")
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "stringValue",
-                          lsKind = "data transformation rule",
-                          stringValue = "(maximum-minimum)/minimum")
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "stringValue",
-                          lsKind = "normalization rule",
-                          stringValue = "none")
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "numericValue",
-                          lsKind = "active efficacy threshold",
-                          numericValue = 0.7,
-                          sigFigs = 1)
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "numericValue",
-                          lsKind = "active SD threshold",
-                          numericValue = -5,
-                          sigFigs = 1)
-                                                    
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "numericValue",
-                          lsKind = "curve min",
-                          numericValue = 0,
-                          sigFigs = 2)
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                          lsType = "numericValue",
-                          lsKind = "curve max",
-                          numericValue = 100,
-                          sigFigs = 2)
-
-protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction, 
-                                                               lsType = "stringValue",
-                                                               lsKind = "replicate aggregation",
-                                                               stringValue = "no")
-
-protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction = lsTransaction, 
-                          protocolValues=protocolValues, 
-                          recordedBy="userName", 
-                          lsType="metadata", 
-                          lsKind="experiment analysis parameters", 
+protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction = lsTransaction,
+                          protocolValues=protocolValues,
+                          recordedBy="userName",
+                          lsType="metadata",
+                          lsKind="experiment metadata",
                           comments="")
 #################################################################################################
 
@@ -194,7 +73,8 @@ protocol <- createProtocol(	lsTransaction = lsTransaction,
 							shortDescription="primary analysis",  
 							recordedBy="username", 
 							protocolLabels=protocolLabels,
-							protocolStates=protocolStates)
+							protocolStates=protocolStates,
+							lsKind="flipr screening assay")
 
 ## to view protocol JSON before save 
 #cat(toJSON(protocol))

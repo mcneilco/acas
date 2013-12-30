@@ -94,7 +94,6 @@ exports.index = (req, res, moduleLaunchParams) ->
 			testMode: false
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
-#			deployMode: "Test"
 
 
 exports.specRunner = (req, res) ->

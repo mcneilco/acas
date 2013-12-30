@@ -171,11 +171,25 @@
     };
 
     PrimaryScreenExperiment.prototype.getAnalysisStatus = function() {
-      return this.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
+      var status;
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
+      if (!status.has('stringValue')) {
+        status.set({
+          stringValue: "not started"
+        });
+      }
+      return status;
     };
 
     PrimaryScreenExperiment.prototype.getAnalysisResultHTML = function() {
-      return this.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
+      var result;
+      result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
+      if (!result.has('clobValue')) {
+        result.set({
+          clobValue: ""
+        });
+      }
+      return result;
     };
 
     return PrimaryScreenExperiment;
@@ -468,7 +482,6 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleStatusChanged = function() {
-      console.log("got status change");
       if (this.dataAnalysisController !== null) {
         if (this.model.isEditable()) {
           return this.dataAnalysisController.enableAll();
@@ -530,16 +543,21 @@
               },
               success: function(json) {
                 var exp;
-                exp = new PrimaryScreenExperiment({
-                  id: json.id
-                });
-                return exp.fetch({
-                  success: function() {
-                    exp.fixCompositeClasses();
-                    _this.model = exp;
-                    return _this.completeInitialization();
-                  }
-                });
+                if (json.length === 0) {
+                  alert('Could not get experiment for code in this URL, creating new one');
+                  return _this.completeInitialization();
+                } else {
+                  exp = new PrimaryScreenExperiment({
+                    id: json[0].id
+                  });
+                  return exp.fetch({
+                    success: function() {
+                      exp.fixCompositeClasses();
+                      _this.model = exp;
+                      return _this.completeInitialization();
+                    }
+                  });
+                }
               }
             });
           } else {

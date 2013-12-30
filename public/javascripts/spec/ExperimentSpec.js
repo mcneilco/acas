@@ -49,7 +49,8 @@
         });
         describe("required states and values", function() {
           it('Should have a description value', function() {
-            return expect(this.exp.getDescription() instanceof Value).toBeTruthy();
+            expect(this.exp.getDescription() instanceof Value).toBeTruthy();
+            return expect(this.exp.getDescription().get('clobValue')).toEqual("");
           });
           it('Should have a notebook value', function() {
             return expect(this.exp.getNotebook() instanceof Value).toBeTruthy();
@@ -171,7 +172,7 @@
             return expect(this.exp.get('lsLabels').at(0).get('lsKind')).toEqual("experiment name");
           });
           it('Should have a description value', function() {
-            return expect(this.exp.getDescription().get('stringValue')).toEqual("long description goes here");
+            return expect(this.exp.getDescription().get('clobValue')).toEqual("long description goes here");
           });
           it('Should have a notebook value', function() {
             return expect(this.exp.getNotebook().get('stringValue')).toEqual("911");
@@ -224,7 +225,7 @@
             return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
           });
           it('Should have a description value', function() {
-            return expect(this.exp.getDescription().get('stringValue')).toEqual("long description goes here");
+            return expect(this.exp.getDescription().get('clobValue')).toEqual("long description goes here");
           });
           it('Should not override set notebook value', function() {
             return expect(this.exp.getNotebook().get('stringValue')).toEqual("spec test NB");
@@ -388,11 +389,9 @@
           this.exp.set({
             recordedBy: "jmcneil"
           });
-          this.exp.set({
+          return this.exp.set({
             recordedDate: -1
           });
-          console.log(this.exp.get('lsLabels'));
-          return console.log(this.exp.get('lsStates'));
         });
         afterEach(function() {
           this.exp.get('lsLabels').reset();
@@ -564,9 +563,6 @@
               return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
             });
           });
-          it("should show the protocol name", function() {
-            return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
-          });
           it("should fill the short description field", function() {
             return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
           });
@@ -595,10 +591,10 @@
             this.ebc.$('.bv_description').change();
             states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
             expect(states.length).toEqual(1);
-            values = states[0].getValuesByTypeAndKind("stringValue", "description");
-            desc = values[0].get('stringValue');
+            values = states[0].getValuesByTypeAndKind("clobValue", "description");
+            desc = values[0].get('clobValue');
             expect(desc).toEqual("New long description");
-            return expect(this.ebc.model.getDescription().get('stringValue')).toEqual("New long description");
+            return expect(this.ebc.model.getDescription().get('clobValue')).toEqual("New long description");
           });
           it("should update model when name is changed", function() {
             this.ebc.$('.bv_experimentName').val(" Updated experiment name   ");
@@ -676,12 +672,6 @@
           }, 1000);
           return runs(function() {
             return expect(this.ebc.$('.bv_projectCode').val()).toEqual("project1");
-          });
-        });
-        it("should show the protocol name", function() {
-          waits(200);
-          return runs(function() {
-            return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
           });
         });
         it("should show the save button text as Update", function() {
@@ -771,16 +761,10 @@
                 return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000001");
               });
             });
-            it("should enable use protocol params", function() {
+            return it("should enable use protocol params", function() {
               waits(200);
               return runs(function() {
                 return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toBeUndefined();
-              });
-            });
-            return it("should show the protocol name", function() {
-              waits(200);
-              return runs(function() {
-                return expect(this.ebc.$('.bv_protocolName').html()).toEqual("FLIPR target A biochemical");
               });
             });
           });

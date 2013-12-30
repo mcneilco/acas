@@ -36,6 +36,7 @@ describe "Experiment module testing", ->
 			describe "required states and values", ->
 				it 'Should have a description value', ->
 					expect(@exp.getDescription() instanceof Value).toBeTruthy()
+					expect(@exp.getDescription().get('clobValue')).toEqual ""
 				it 'Should have a notebook value', ->
 					expect(@exp.getNotebook() instanceof Value).toBeTruthy()
 				it 'Should have a project value', ->
@@ -111,7 +112,7 @@ describe "Experiment module testing", ->
 				it "should have labels", ->
 					expect(@exp.get('lsLabels').at(0).get('lsKind')).toEqual "experiment name"
 				it 'Should have a description value', ->
-					expect(@exp.getDescription().get('stringValue')).toEqual "long description goes here"
+					expect(@exp.getDescription().get('clobValue')).toEqual "long description goes here"
 				it 'Should have a notebook value', ->
 					expect(@exp.getNotebook().get('stringValue')).toEqual "911"
 				it 'Should have a project value', ->
@@ -143,7 +144,7 @@ describe "Experiment module testing", ->
 				it "should have the states copied", ->
 					expect(@exp.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 				it 'Should have a description value', ->
-					expect(@exp.getDescription().get('stringValue')).toEqual "long description goes here"
+					expect(@exp.getDescription().get('clobValue')).toEqual "long description goes here"
 				it 'Should not override set notebook value', ->
 					expect(@exp.getNotebook().get('stringValue')).toEqual "spec test NB"
 				it 'Should not override completionDate value', ->
@@ -256,8 +257,6 @@ describe "Experiment module testing", ->
 				@exp = new Experiment()
 				@exp.set recordedBy: "jmcneil"
 				@exp.set recordedDate: -1
-				console.log @exp.get('lsLabels')
-				console.log @exp.get('lsStates')
 			afterEach ->
 				@exp.get('lsLabels').reset()
 				@exp.get('lsStates').reset()
@@ -381,8 +380,6 @@ describe "Experiment module testing", ->
 					, 1000
 					runs ->
 						expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
-				it "should show the protocol name", ->
-					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
 				it "should fill the short description field", ->
 					expect(@ebc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 				it "should fill the description field", ->
@@ -404,10 +401,10 @@ describe "Experiment module testing", ->
 					@ebc.$('.bv_description').change()
 					states = @ebc.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 					expect(states.length).toEqual 1
-					values = states[0].getValuesByTypeAndKind("stringValue", "description")
-					desc = values[0].get('stringValue')
+					values = states[0].getValuesByTypeAndKind("clobValue", "description")
+					desc = values[0].get('clobValue')
 					expect(desc).toEqual "New long description"
-					expect(@ebc.model.getDescription().get('stringValue')).toEqual "New long description"
+					expect(@ebc.model.getDescription().get('clobValue')).toEqual "New long description"
 				it "should update model when name is changed", ->
 					@ebc.$('.bv_experimentName').val(" Updated experiment name   ")
 					@ebc.$('.bv_experimentName').change()
@@ -470,10 +467,6 @@ describe "Experiment module testing", ->
 				, 1000
 				runs ->
 					expect(@ebc.$('.bv_projectCode').val()).toEqual "project1"
-			it "should show the protocol name", ->
-				waits(200) # needs to fill out stub protocol
-				runs ->
-					expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
 			it "should show the save button text as Update", ->
 				expect(@ebc.$('.bv_save').html()).toEqual "Update"
 			it "should have use protocol parameters disabled", ->
@@ -540,10 +533,6 @@ describe "Experiment module testing", ->
 						waits(200) # needs to fill out stub protocol
 						runs ->
 							expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toBeUndefined()
-					it "should show the protocol name", ->
-						waits(200) # needs to fill out stub protocol
-						runs ->
-							expect(@ebc.$('.bv_protocolName').html()).toEqual "FLIPR target A biochemical"
 				describe "When user and asks to clone attributes should populate fields", ->
 					beforeEach ->
 						waits(200)

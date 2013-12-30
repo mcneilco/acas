@@ -6,16 +6,34 @@
             <select class="bv_protocolCode" style="width:417px;"></select>
         </div>
     </div>
+    <div class="control-group">
+        <label class="control-label">Experiment Code</label>
+        <div class="controls">
+            <input class="bv_experimentCode" type="text" placeholder="EXPT-00000000" style="width:336px;"/>
+        </div>
+    </div>
+    <div>
+        <button type="button" class="btn bv_find">Find</button>
+    </div>
+
+
+</script>
+
+<script type="text/template" id="ExperimentRowSummaryView" xmlns="http://www.w3.org/1999/html">
+    <td class='bv_experimentName'><%=experimentName%></td>
+    <td class='bv_experimentCode'><%=experimentCode%></td>
+    <td class='bv_protocolName'></td>
+    <td class='bv_recordedBy'></td>
 
 </script>
 
 <script type="text/template" id="ExperimentBrowserView" xmlns="http://www.w3.org/1999/html">
 
-    <h3>Find Experiments</h3>
+    <h5>Find Experiments</h5>
     <div class="bv_experimentSearchController"></div>
-    <h3>Matching Experiments</h3>
+    <h5>Matching Experiments</h5>
     <div class="bv_experimentTableController"></div>
-    <h3>Experiment Details</h3>
+    <h5>Selected Experiment Details</h5>
     <div class="bv_experimentBaseController"></div>
 
 </script>

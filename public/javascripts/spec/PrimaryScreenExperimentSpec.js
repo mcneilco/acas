@@ -168,7 +168,7 @@
       });
     });
     describe("Primary Screen Experiment model testing", function() {
-      return describe("When loaded from existing", function() {
+      describe("When loaded from existing", function() {
         beforeEach(function() {
           return this.pse = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
         });
@@ -198,13 +198,26 @@
               return expect(this.pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual("CMPD-87654399-01");
             });
           });
-          return describe("others", function() {
+          return describe("special states", function() {
             it("should be able to get the analysis status", function() {
               return expect(this.pse.getAnalysisStatus().get('stringValue')).toEqual("not started");
             });
             return it("should be able to get the analysis result html", function() {
               return expect(this.pse.getAnalysisResultHTML().get('clobValue')).toEqual("<p>Analysis not yet completed</p>");
             });
+          });
+        });
+      });
+      return describe("When loaded from new", function() {
+        beforeEach(function() {
+          return this.pse2 = new PrimaryScreenExperiment();
+        });
+        return describe("special states", function() {
+          it("should be able to get the analysis status", function() {
+            return expect(this.pse2.getAnalysisStatus().get('stringValue')).toEqual("not started");
+          });
+          return it("should be able to get the analysis result html", function() {
+            return expect(this.pse2.getAnalysisResultHTML().get('clobValue')).toEqual("");
           });
         });
       });

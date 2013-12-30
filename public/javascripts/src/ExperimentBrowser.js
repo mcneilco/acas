@@ -1,5 +1,5 @@
 (function() {
-  var _ref, _ref1, _ref2,
+  var _ref, _ref1, _ref2, _ref3,
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -25,6 +25,8 @@
     __extends(ExperimentSearchController, _super);
 
     function ExperimentSearchController() {
+      this.handleFindClicked = __bind(this.handleFindClicked, this);
+      this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       _ref1 = ExperimentSearchController.__super__.constructor.apply(this, arguments);
       return _ref1;
@@ -32,10 +34,27 @@
 
     ExperimentSearchController.prototype.template = _.template($("#ExperimentSearchView").html());
 
+    ExperimentSearchController.prototype.events = {
+      'change .bv_protocolCode': 'updateModel',
+      'change .bv_experimentCode': 'updateModel',
+      'click .bv_find': 'handleFindClicked'
+    };
+
     ExperimentSearchController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
       return this.setupProtocolSelect();
+    };
+
+    ExperimentSearchController.prototype.updateModel = function() {
+      return this.model.set({
+        protocolCode: this.$('.bv_protocolCode').val(),
+        experimentCode: this.getTrimmedInput('.bv_experimentCode')
+      });
+    };
+
+    ExperimentSearchController.prototype.handleFindClicked = function() {
+      return this.trigger('find');
     };
 
     ExperimentSearchController.prototype.setupProtocolSelect = function() {
@@ -54,6 +73,34 @@
 
     return ExperimentSearchController;
 
+  })(AbstractFormController);
+
+  window.ExperimentRowSummaryController = (function(_super) {
+    __extends(ExperimentRowSummaryController, _super);
+
+    function ExperimentRowSummaryController() {
+      this.render = __bind(this.render, this);
+      _ref2 = ExperimentRowSummaryController.__super__.constructor.apply(this, arguments);
+      return _ref2;
+    }
+
+    ExperimentRowSummaryController.prototype.tagName = 'tr';
+
+    ExperimentRowSummaryController.prototype.initialize = function() {
+      return this.template = _.template($('#ExperimentRowSummaryView').html());
+    };
+
+    ExperimentRowSummaryController.prototype.render = function() {
+      var toDisplay;
+      toDisplay = {
+        experimentName: this.model.get('lsLabels').pickBestName().get('labelText'),
+        experimentCode: this.model.get('codeName')
+      };
+      return $(this.el).html(this.template(toDisplay));
+    };
+
+    return ExperimentRowSummaryController;
+
   })(Backbone.View);
 
   window.ExperimentBrowserController = (function(_super) {
@@ -61,15 +108,24 @@
 
     function ExperimentBrowserController() {
       this.render = __bind(this.render, this);
-      _ref2 = ExperimentBrowserController.__super__.constructor.apply(this, arguments);
-      return _ref2;
+      _ref3 = ExperimentBrowserController.__super__.constructor.apply(this, arguments);
+      return _ref3;
     }
 
     ExperimentBrowserController.prototype.template = _.template($("#ExperimentBrowserView").html());
 
-    ExperimentBrowserController.prototype.render = function() {
+    ExperimentBrowserController.prototype.initialize = function() {
       $(this.el).empty();
-      return $(this.el).html(this.template());
+      $(this.el).html(this.template());
+      this.searchController = new ExperimentSearchController({
+        model: new ExperimentSearch(),
+        el: this.$('.bv_experimentSearchController')
+      });
+      return this.searchController.render();
+    };
+
+    ExperimentBrowserController.prototype.render = function() {
+      return this;
     };
 
     return ExperimentBrowserController;

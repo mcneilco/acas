@@ -285,7 +285,14 @@
     };
 
     Experiment.prototype.getDescription = function() {
-      return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "description");
+      var description;
+      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "description");
+      if (description.get('clobValue') === void 0 || description.get('clobValue') === "") {
+        description.set({
+          clobValue: ""
+        });
+      }
+      return description;
     };
 
     Experiment.prototype.getNotebook = function() {
@@ -429,7 +436,7 @@
       }
       this.$('.bv_recordedBy').val(this.model.get('recordedBy'));
       this.$('.bv_experimentCode').html(this.model.get('codeName'));
-      this.getAndShowProtocolName();
+      this.getFullProtocol();
       this.setUseProtocolParametersDisabledState();
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
@@ -437,7 +444,7 @@
         date = new Date(this.model.getCompletionDate().get('dateValue'));
         this.$('.bv_completionDate').val(date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate());
       }
-      this.$('.bv_description').html(this.model.getDescription().get('stringValue'));
+      this.$('.bv_description').html(this.model.getDescription().get('clobValue'));
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
       this.$('.bv_status').val(this.model.getStatus().get('stringValue'));
       if (this.model.isNew()) {
@@ -500,7 +507,7 @@
       }
     };
 
-    ExperimentBaseController.prototype.getAndShowProtocolName = function() {
+    ExperimentBaseController.prototype.getFullProtocol = function() {
       var _this = this;
       if (this.model.get('protocol') !== null) {
         if (this.model.get('protocol').isStub()) {
@@ -508,21 +515,13 @@
             success: function() {
               var newProtName;
               newProtName = _this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText');
-              _this.updateProtocolNameField(newProtName);
               return _this.setUseProtocolParametersDisabledState();
             }
           });
         } else {
-          this.updateProtocolNameField(this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText'));
           return this.setUseProtocolParametersDisabledState();
         }
-      } else {
-        return this.updateProtocolNameField("no protocol selected yet");
       }
-    };
-
-    ExperimentBaseController.prototype.updateProtocolNameField = function(protocolName) {
-      return this.$('.bv_protocolName').html(protocolName);
     };
 
     ExperimentBaseController.prototype.handleRecordedByChanged = function() {
@@ -540,7 +539,7 @@
 
     ExperimentBaseController.prototype.handleDescriptionChanged = function() {
       return this.model.getDescription().set({
-        stringValue: this.getTrimmedInput('.bv_description'),
+        clobValue: this.getTrimmedInput('.bv_description'),
         recordedBy: this.model.get('recordedBy')
       });
     };
@@ -574,7 +573,7 @@
         this.model.set({
           'protocol': null
         });
-        this.getAndShowProtocolName();
+        this.getFullProtocol();
         return this.setUseProtocolParametersDisabledState();
       } else {
         return $.ajax({
@@ -582,12 +581,12 @@
           url: "/api/protocols/codename/" + code,
           success: function(json) {
             if (json.length === 0) {
-              return _this.updateProtocolNameField("could not find selected protocol in database");
+              return alert("Could not find selected protocol in database, please get help");
             } else {
               _this.model.set({
                 protocol: new Protocol(json[0])
               });
-              return _this.getAndShowProtocolName();
+              return _this.getFullProtocol();
             }
           },
           error: function(err) {
