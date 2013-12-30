@@ -26,7 +26,7 @@ app.post '/api/bulkLoadSampleTransfers', bulkLoadSampleTransfersRoutes.bulkLoadS
         return response.end(rReturn);
       });
     } else {
-      return serverUtilityFunctions.runRFunction(request, "public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfersStub.R", "bulkLoadSampleTransfers", function(rReturn) {
+      return serverUtilityFunctions.runRFunction(request, "public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfers.R", "bulkLoadSampleTransfers", function(rReturn) {
         return response.end(rReturn);
       });
     }

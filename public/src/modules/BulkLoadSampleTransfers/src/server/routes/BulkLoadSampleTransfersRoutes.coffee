@@ -38,7 +38,7 @@ exports.bulkLoadSampleTransfers = (request, response)  ->
 	else
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfersStub.R",
+			"public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfers.R",
 			"bulkLoadSampleTransfers",
 			(rReturn) ->
 				response.end rReturn

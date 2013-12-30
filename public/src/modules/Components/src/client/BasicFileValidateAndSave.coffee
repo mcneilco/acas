@@ -29,7 +29,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			inputTitle: ''
 			url: "http://"+window.conf.host+":"+window.conf.service.file.port
 			fieldIsRequired: false
-			allowedFileTypes: @allowedFileTypes
+			allowedFileTypes: ['xls', 'xlsx', 'csv']
 		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
 		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved)
 		@parseFileController.render()
