@@ -10,8 +10,7 @@
     function PrimaryScreenAppRouter() {
       this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
       this.existingExperiment = __bind(this.existingExperiment, this);
-      this.newExperiment = __bind(this.newExperiment, this);
-      _ref = PrimaryScreenAppRouter.__super__.constructor.apply(this, arguments);
+      this.newExperiment = __bind(this.newExperiment, this);      _ref = PrimaryScreenAppRouter.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -48,8 +47,7 @@
       this.existingExperiment = __bind(this.existingExperiment, this);
       this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
       this.newExperiment = __bind(this.newExperiment, this);
-      this.render = __bind(this.render, this);
-      _ref1 = PrimaryScreenAppController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref1 = PrimaryScreenAppController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -81,6 +79,7 @@
 
     PrimaryScreenAppController.prototype.existingExperimentByCode = function(code) {
       var _this = this;
+
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/codename/" + code,
@@ -97,6 +96,7 @@
     PrimaryScreenAppController.prototype.existingExperiment = function(expId) {
       var exp,
         _this = this;
+
       exp = new PrimaryScreenExperiment({
         id: expId
       });

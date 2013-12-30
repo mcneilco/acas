@@ -12,6 +12,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
 (function() {
   exports.experimentByCodename = function(request, response) {
     var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+
     console.log(request.params.code);
     console.log(request.query.testMode);
     if (request.query.testMode || global.specRunnerTestmode) {
@@ -27,6 +28,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
 
   exports.experimentByProtocolCodename = function(request, response) {
     var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+
     console.log(request.params.code);
     console.log(request.query.testMode);
     if (request.query.testMode || global.specRunnerTestmode) {
@@ -42,6 +44,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
 
   exports.experimentById = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+
     console.log(req.params.id);
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
@@ -57,6 +60,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
   exports.postExperiment = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
+
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
@@ -86,6 +90,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
   exports.putExperiment = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
+
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));

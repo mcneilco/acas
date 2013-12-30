@@ -15,8 +15,8 @@ exports.preferredBatchId = (req, resp) ->
 	each = require "each"
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-    serverUtilityFunctions = require './ServerUtilityFunctions.js'
-    serviceType = config.serverConfigurationParams.configuration.externalPreferredBatchIdServiceType
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	serviceType = config.all.server.service.external.preferred.batchid.url
 
 
 	requests = req.body.requests
@@ -39,7 +39,7 @@ exports.preferredBatchId = (req, resp) ->
 				next()
 			else if serviceType == "LabSynchCmpdReg"
 				console.log "running LabSynchCmpdReg batch check"
-				baseurl = config.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL
+				baseurl = config.all.server.service.external.preferred.batchid.url
 				request(
 					method: 'GET'
 					url: baseurl+batchName.requestName
@@ -57,7 +57,7 @@ exports.preferredBatchId = (req, resp) ->
 				)
 			else if serviceType == "SingleBatchNameQueryString"
 				console.log "running SingleBatchNameQueryString batch check"
-				baseurl = config.serverConfigurationParams.configuration.externalPreferredBatchIdServiceURL
+				baseurl = config.server.service.external.preferred.batchid.url
 				request(
 					method: 'GET'
 					url: baseurl+batchName.requestName+".csv"

@@ -3,6 +3,7 @@
 
   basicRScriptPreValidation = function(payload) {
     var result;
+
     result = {
       hasError: false,
       hasWarning: false,
@@ -23,6 +24,7 @@
 
   exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
     var Tempfile, child, command, csUtilities, exec, preValErrors, rCommand, rCommandFile, requestJSONFile;
+
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
     csUtilities.logUsage("About to call R function: " + rFunction, JSON.stringify(request.body), request.body.user);
     if (preValidationFunction != null) {
@@ -51,6 +53,7 @@
     command = "Rscript " + rCommandFile.path + " 2> /dev/null";
     return child = exec(command, function(error, stdout, stderr) {
       var message, result;
+
       console.log("stderr: " + stderr);
       console.log("stdout: " + stdout);
       if (stdout.indexOf("R Execution Error") === 0) {
@@ -104,6 +107,7 @@
   exports.getFromACASServer = function(baseurl, resp) {
     var request,
       _this = this;
+
     request = require('request');
     return request({
       method: 'GET',

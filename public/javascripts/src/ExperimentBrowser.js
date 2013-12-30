@@ -25,8 +25,7 @@
     __extends(ExperimentSearchController, _super);
 
     function ExperimentSearchController() {
-      this.render = __bind(this.render, this);
-      _ref1 = ExperimentSearchController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref1 = ExperimentSearchController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -60,8 +59,7 @@
     __extends(ExperimentBrowserController, _super);
 
     function ExperimentBrowserController() {
-      this.render = __bind(this.render, this);
-      _ref2 = ExperimentBrowserController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref2 = ExperimentBrowserController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 

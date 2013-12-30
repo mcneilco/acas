@@ -9,8 +9,7 @@
 
     function Experiment() {
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
-      this.parse = __bind(this.parse, this);
-      _ref = Experiment.__super__.constructor.apply(this, arguments);
+      this.parse = __bind(this.parse, this);      _ref = Experiment.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -35,6 +34,7 @@
 
     Experiment.prototype.parse = function(resp) {
       var _this = this;
+
       if (resp.lsLabels != null) {
         if (!(resp.lsLabels instanceof LabelList)) {
           resp.lsLabels = new LabelList(resp.lsLabels);
@@ -110,6 +110,7 @@
 
     Experiment.prototype.setupCompositeChangeTriggers = function() {
       var _this = this;
+
       this.get('lsLabels').on('change', function() {
         return _this.trigger('change');
       });
@@ -123,6 +124,7 @@
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
       var completionDate, estates, notebook, project, pstates;
+
       notebook = this.getNotebook().get('stringValue');
       completionDate = this.getCompletionDate().get('dateValue');
       project = this.getProjectCode().get('codeValue');
@@ -130,6 +132,7 @@
       pstates = protocol.get('lsStates');
       pstates.each(function(st) {
         var estate, evals, svals;
+
         estate = new State(_.clone(st.attributes));
         estate.unset('id');
         estate.unset('lsTransaction');
@@ -138,6 +141,7 @@
         svals = st.get('lsValues');
         svals.each(function(sv) {
           var evalue;
+
           if (!(sv.get('lsKind') === "notebook" || sv.get('lsKind') === "project" || sv.get('lsKind') === "completion date")) {
             evalue = new Value(sv.attributes);
             evalue.unset('id');
@@ -172,6 +176,7 @@
 
     Experiment.prototype.validate = function(attrs) {
       var bestName, cDate, errors, nameError, notebook, projectCode;
+
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = true;
@@ -241,6 +246,7 @@
 
     Experiment.prototype.prepareToSave = function() {
       var rBy, rDate;
+
       rBy = this.get('recordedBy');
       rDate = new Date().getTime();
       this.set({
@@ -294,6 +300,7 @@
 
     Experiment.prototype.getProjectCode = function() {
       var projectCodeValue;
+
       projectCodeValue = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "project");
       if (projectCodeValue.get('codeValue') === void 0 || projectCodeValue.get('codeValue') === "") {
         projectCodeValue.set({
@@ -309,6 +316,7 @@
 
     Experiment.prototype.getStatus = function() {
       var status;
+
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
@@ -320,6 +328,7 @@
 
     Experiment.prototype.isEditable = function() {
       var status;
+
       status = this.getStatus().get('stringValue');
       switch (status) {
         case "New":
@@ -373,8 +382,7 @@
       this.handleDescriptionChanged = __bind(this.handleDescriptionChanged, this);
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
       this.handleRecordedByChanged = __bind(this.handleRecordedByChanged, this);
-      this.render = __bind(this.render, this);
-      _ref2 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref2 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
@@ -397,6 +405,7 @@
 
     ExperimentBaseController.prototype.initialize = function() {
       var _this = this;
+
       this.model.on('sync', function() {
         _this.trigger('amClean');
         return _this.render();
@@ -417,6 +426,7 @@
 
     ExperimentBaseController.prototype.render = function() {
       var bestName, date;
+
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
@@ -451,6 +461,7 @@
 
     ExperimentBaseController.prototype.setupProtocolSelect = function() {
       var protocolCode;
+
       if (this.model.get('protocol') !== null) {
         protocolCode = this.model.get('protocol').get('codeName');
       } else {
@@ -502,11 +513,13 @@
 
     ExperimentBaseController.prototype.getAndShowProtocolName = function() {
       var _this = this;
+
       if (this.model.get('protocol') !== null) {
         if (this.model.get('protocol').isStub()) {
           return this.model.get('protocol').fetch({
             success: function() {
               var newProtName;
+
               newProtName = _this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText');
               _this.updateProtocolNameField(newProtName);
               return _this.setUseProtocolParametersDisabledState();
@@ -547,6 +560,7 @@
 
     ExperimentBaseController.prototype.handleNameChanged = function() {
       var newName;
+
       newName = this.getTrimmedInput('.bv_experimentName');
       this.model.get('lsLabels').setBestName(new Label({
         labelKind: "experiment name",
@@ -569,6 +583,7 @@
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
       var code,
         _this = this;
+
       code = this.$('.bv_protocolCode').val();
       if (code === "" || code === "unassigned") {
         this.model.set({

@@ -8,8 +8,7 @@
     __extends(PrimaryScreenAnalysisParameters, _super);
 
     function PrimaryScreenAnalysisParameters() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
-      _ref = PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
+      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);      _ref = PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -31,6 +30,7 @@
 
     PrimaryScreenAnalysisParameters.prototype.fixCompositeClasses = function() {
       var _this = this;
+
       if (!(this.get('positiveControl') instanceof Backbone.Model)) {
         this.set({
           positiveControl: new Backbone.Model(this.get('positiveControl'))
@@ -67,6 +67,7 @@
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
       var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, vehicleControl;
+
       errors = [];
       positiveControl = this.get('positiveControl').get('batchCode');
       if (positiveControl === "" || positiveControl === void 0) {
@@ -162,6 +163,7 @@
 
     PrimaryScreenExperiment.prototype.getAnalysisParameters = function() {
       var ap;
+
       ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
       if (ap.get('clobValue') != null) {
         return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
@@ -188,8 +190,7 @@
     function PrimaryScreenAnalysisParametersController() {
       this.handleThresholdTypeChanged = __bind(this.handleThresholdTypeChanged, this);
       this.updateModel = __bind(this.updateModel, this);
-      this.render = __bind(this.render, this);
-      _ref2 = PrimaryScreenAnalysisParametersController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref2 = PrimaryScreenAnalysisParametersController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
@@ -254,6 +255,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.handleThresholdTypeChanged = function() {
       var thresholdType;
+
       thresholdType = this.$("input[name='bv_thresholdType']:checked").val();
       this.model.set({
         thresholdType: thresholdType
@@ -281,13 +283,13 @@
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.parseAndSave = __bind(this.parseAndSave, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
-      this.handleMSFormValid = __bind(this.handleMSFormValid, this);
-      _ref3 = UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
+      this.handleMSFormValid = __bind(this.handleMSFormValid, this);      _ref3 = UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
       return _ref3;
     }
 
     UploadAndRunPrimaryAnalsysisController.prototype.initialize = function() {
       var _this = this;
+
       this.fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis";
       this.errorOwnerName = 'UploadAndRunPrimaryAnalsysisController';
       this.allowedFileTypes = ['zip'];
@@ -403,8 +405,7 @@
       this.handleAnalysisComplete = __bind(this.handleAnalysisComplete, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.setExperimentSaved = __bind(this.setExperimentSaved, this);
-      this.render = __bind(this.render, this);
-      _ref4 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref4 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
       return _ref4;
     }
 
@@ -430,6 +431,7 @@
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
       var analysisStatus, resultValue;
+
       analysisStatus = this.model.getAnalysisStatus();
       if (analysisStatus !== null) {
         analysisStatus = analysisStatus.get('stringValue');
@@ -480,6 +482,7 @@
 
     PrimaryScreenAnalysisController.prototype.setupDataAnalysisController = function() {
       var _this = this;
+
       this.dataAnalysisController = new UploadAndRunPrimaryAnalsysisController({
         el: this.$('.bv_fileUploadWrapper'),
         paramsFromExperiment: this.model.getAnalysisParameters(),
@@ -506,8 +509,7 @@
     function PrimaryScreenExperimentController() {
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
-      this.completeInitialization = __bind(this.completeInitialization, this);
-      _ref5 = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
+      this.completeInitialization = __bind(this.completeInitialization, this);      _ref5 = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
       return _ref5;
     }
 
@@ -515,6 +517,7 @@
 
     PrimaryScreenExperimentController.prototype.initialize = function() {
       var _this = this;
+
       if (this.model != null) {
         return this.completeInitialization();
       } else {
@@ -530,6 +533,7 @@
               },
               success: function(json) {
                 var exp;
+
                 exp = new PrimaryScreenExperiment({
                   id: json.id
                 });
@@ -553,6 +557,7 @@
 
     PrimaryScreenExperimentController.prototype.completeInitialization = function() {
       var _this = this;
+
       if (this.model == null) {
         this.model = new PrimaryScreenExperiment();
       }
