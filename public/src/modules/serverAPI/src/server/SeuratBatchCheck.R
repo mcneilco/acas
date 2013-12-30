@@ -7,8 +7,8 @@ seuratBatchCodeCheck <- function(input) {
 
 	batchCodes <- vapply(batchCodeList$requests, getElement, c(""), "requestName")
 
-	goodBatchCodes <- query(paste0("select c.corporate_id || '-' || l.lot_id from syn_compound c
-	join syn_compound_lot l on c.compound_id=l.compound_id
+	goodBatchCodes <- query(paste0("select c.corporate_id || '-' || l.lot_id from seurat.syn_compound c
+	join seurat.syn_compound_lot l on c.compound_id=l.compound_id
 	where c.corporate_id || '-' || l.lot_id in (", sqliz(batchCodes),")"))[[1]]
 
 	results <- lapply(batchCodes, function(x) list(requestName=x, preferredName=ifelse(x %in% goodBatchCodes, x, "")))

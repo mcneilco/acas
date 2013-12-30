@@ -23,7 +23,7 @@ exports.preferredBatchId = (req, resp) ->
 		req.body.user = "" # to bypass validation function
 		serverUtilityFunctions.runRFunction(
 			req,
-			"public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R",
+			"public/src/modules/serverAPI/src/server/SeuratBatchCheck.R",
 			"seuratBatchCodeCheck",
 			(rReturn) ->
 				resp.end rReturn
