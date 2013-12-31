@@ -38,39 +38,42 @@
 	<div class="span12">
     <div class="">
         <div class="pull-left">
-            <p>*Positive Control</p>
+            <div>*Positive Control</div>
             <form class="bv_group_positiveControlBatch control-group pull-left">
                 <input class="input-medium bv_positiveControlBatch" value="<%=positiveControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
             </form>
 	        <form class="bv_group_positiveControlConc control-group pull-right" style="padding-left:10px;">
-			    <input class="input-small bv_positiveControlConc" value="<%=positiveControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
-	        </form>
+			    <input class="input-mini bv_positiveControlConc" value="<%=positiveControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
+                &micro;M
+            </form>
         </div>
 
         <div class="pull-left" style="">
-            <p style="padding-left:40px;">*Negative Control</p>
+            <div style="padding-left:40px;">*Negative Control</div>
             <form class="bv_group_negativeControlBatch control-group pull-left" style="padding-left:40px;">
                 <input class="input-medium bv_negativeControlBatch" value="<%=negativeControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
             </form>
 	        <form class="bv_group_negativeControlConc control-group pull-right" style="padding-left:10px;">
-		        <input class="input-small bv_negativeControlConc" value="<%=negativeControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
-	        </form>
+		        <input class="input-mini bv_negativeControlConc" value="<%=negativeControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
+                &micro;M
+            </form>
         </div>
     </div>
 
     <div class="">
 	    <div class="pull-left">
-		    <p>*Agonist</p>
+		    <div>*Agonist</div>
 		    <form class="bv_group_agonistControlBatch control-group pull-left">
 			    <input class="input-medium bv_agonistControlBatch" value="<%=agonistControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
 		    </form>
 		    <form class="bv_group_agonistControlConc control-group pull-right" style="padding-left:10px;">
-			    <input class="input-small bv_agonistControlConc" value="<%=agonistControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
-		    </form>
+			    <input class="input-mini bv_agonistControlConc" value="<%=agonistControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
+                &micro;M
+            </form>
 	    </div>
 
 	<div class="pull-left">
-		<p style="padding-left:40px;">*Vehicle Control</p>
+		<div style="padding-left:40px;">*Vehicle Control</div>
 		    <form class="bv_group_vehicleControlBatch control-group" style="padding-left:40px;">
 			    <input class="pull-left bv_vehicleControlBatch" style="width:265px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="enter batch number">
 		    </form>

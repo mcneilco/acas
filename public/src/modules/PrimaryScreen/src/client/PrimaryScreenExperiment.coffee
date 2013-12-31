@@ -215,7 +215,6 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 				return
 		super()
 
-
 	handleValidationReturnSuccess: (json) =>
 		super(json)
 		@psapc.disableAllInputs()

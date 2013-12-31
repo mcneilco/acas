@@ -423,7 +423,7 @@
     };
 
     ExperimentBaseController.prototype.render = function() {
-      var bestName, date;
+      var bestName;
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
@@ -441,8 +441,7 @@
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
       if (this.model.getCompletionDate().get('dateValue') != null) {
-        date = new Date(this.model.getCompletionDate().get('dateValue'));
-        this.$('.bv_completionDate').val(date.getFullYear() + '-' + date.getMonth() + '-' + date.getDate());
+        this.$('.bv_completionDate').val(this.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
       }
       this.$('.bv_description').html(this.model.getDescription().get('clobValue'));
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));

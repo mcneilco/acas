@@ -88,6 +88,13 @@
       return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getTime();
     };
 
+    AbstractFormController.prototype.convertMSToYMDDate = function(ms) {
+      var date, monthNum;
+      date = new Date(ms);
+      monthNum = date.getMonth() + 1;
+      return date.getFullYear() + '-' + monthNum + '-' + date.getDate();
+    };
+
     AbstractFormController.prototype.disableAllInputs = function() {
       this.$('input').attr('disabled', 'disabled');
       return this.$('select').attr('disabled', 'disabled');
