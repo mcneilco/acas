@@ -12,6 +12,7 @@
 
   exports.getConfServiceVars = function(sysEnv, callback) {
     var conf;
+
     conf = {};
     return callback(conf);
   };
@@ -43,6 +44,7 @@
       return exports.findByUsername(username, function(err, user) {
         return exports.authCheck(username, password, function(results) {
           var error;
+
           if (results.indexOf("Success") >= 0) {
             try {
               exports.logUsage("User logged in succesfully: ", "", username);
@@ -69,6 +71,7 @@
 
   exports.getProjects = function(resp) {
     var projects;
+
     projects = exports.projects = [
       {
         code: "project1",

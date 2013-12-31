@@ -8,8 +8,7 @@
     __extends(Protocol, _super);
 
     function Protocol() {
-      this.parse = __bind(this.parse, this);
-      _ref = Protocol.__super__.constructor.apply(this, arguments);
+      this.parse = __bind(this.parse, this);      _ref = Protocol.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
@@ -30,6 +29,7 @@
 
     Protocol.prototype.parse = function(resp) {
       var _this = this;
+
       if (resp.lsLabels != null) {
         if (!(resp.lsLabels instanceof LabelList)) {
           resp.lsLabels = new LabelList(resp.lsLabels);
@@ -68,6 +68,7 @@
 
     Protocol.prototype.setupCompositeChangeTriggers = function() {
       var _this = this;
+
       this.get('lsLabels').on('change', function() {
         return _this.trigger('change');
       });

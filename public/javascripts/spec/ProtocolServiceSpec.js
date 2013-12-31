@@ -17,6 +17,7 @@ See ProtocolServiceTestJSON.coffee for examples
     describe('when fetching Protocol stub by code', function() {
       beforeEach(function() {
         var self;
+
         self = this;
         return $.ajax({
           type: 'GET',
@@ -41,6 +42,7 @@ See ProtocolServiceTestJSON.coffee for examples
     describe('when fetching full Protocol by id', function() {
       beforeEach(function() {
         var self;
+
         if (!window.AppLaunchParams.liveServiceTest) {
           self = this;
           return $.ajax({
@@ -69,6 +71,7 @@ See ProtocolServiceTestJSON.coffee for examples
     describe('when saving new protocol', function() {
       beforeEach(function() {
         var self;
+
         if (!window.AppLaunchParams.liveServiceTest) {
           self = this;
           return $.ajax({
@@ -98,6 +101,7 @@ See ProtocolServiceTestJSON.coffee for examples
     describe('when updating existing protocol', function() {
       beforeEach(function() {
         var self;
+
         if (!window.AppLaunchParams.liveServiceTest) {
           self = this;
           return $.ajax({
@@ -129,6 +133,7 @@ See ProtocolServiceTestJSON.coffee for examples
         beforeEach(function() {
           return runs(function() {
             var _this = this;
+
             return $.ajax({
               type: 'GET',
               url: "api/protocolLabels",
@@ -160,6 +165,7 @@ See ProtocolServiceTestJSON.coffee for examples
         beforeEach(function() {
           return runs(function() {
             var _this = this;
+
             return $.ajax({
               type: 'GET',
               url: "api/protocolCodes",
@@ -208,6 +214,7 @@ See ProtocolServiceTestJSON.coffee for examples
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
             var matches;
+
             console.log(this.serviceReturn);
             matches = _.filter(this.serviceReturn, function(label) {
               return label.name === "Ignore this protocol";
@@ -221,6 +228,7 @@ See ProtocolServiceTestJSON.coffee for examples
           beforeEach(function() {
             return runs(function() {
               var _this = this;
+
               return $.ajax({
                 type: 'GET',
                 url: "api/protocolCodes/filter/PK",
@@ -246,6 +254,7 @@ See ProtocolServiceTestJSON.coffee for examples
           beforeEach(function() {
             return runs(function() {
               var _this = this;
+
               return $.ajax({
                 type: 'GET',
                 url: "api/protocolCodes/filter/pk",

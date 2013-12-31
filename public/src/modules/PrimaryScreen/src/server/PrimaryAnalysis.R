@@ -408,7 +408,14 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   #save(subjectData, experimentId, file="test.Rda")
   originalNames <- names(subjectData)
   subjectData <- as.data.frame(subjectData)
-  names(subjectData) <- c('barcode', 'well name', 'fileName', 'maximum', 'startReadMax', 'endReadMax', 'minimum', 'startReadMin', 'endReadMin', 'fluorescent', 'timePoints', 'fluorescencePoints', 'batchCode', 'Dose', 'DoseUnit','well type', 'transformed efficacy', 'normalized efficacy', 'index', 'max time','over efficacy threshold')
+  
+  # Fix names
+  nameChange <- c(
+    'well'='well name', 'Maximum'='maximum', 'Minimum'='minimum', 'sequence'='fluorescencePoints', 
+    'batchName'='batchCode', 'concentration'='Dose', 'concUnit'='DoseUnit', 'wellType' = 'well type', 
+    'transformed'='transformed efficacy','normalized'='normalized efficacy', 'maxTime' = 'max time', 
+    'latePeak'='late peak', 'threshold'='over efficacy threshold')
+  names(subjectData)[names(subjectData) %in% names(nameChange)] <- nameChange[names(subjectData)[names(subjectData) %in% names(nameChange)]]
   
   stateGroups <- list(list(entityKind = "subject",
                            stateType = "data", 
@@ -425,13 +432,15 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                       list(entityKind = "subject",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", "normalized efficacy", "over efficacy threshold", "fluorescencePoints","timePoints"), #TODO: add "max time"
+                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", 
+                                          "normalized efficacy", "over efficacy threshold", "fluorescencePoints",
+                                          "timePoints","max time", 'late peak'),
                            includesOthers = FALSE,
                            includesCorpName = FALSE),
                       list(entityKind = "analysis group",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("fluorescent", "normalized efficacy"),
+                           valueKinds = c("fluorescent", "normalized efficacy", "over efficacy threshold"),
                            includesOthers = FALSE,
                            includesCorpName = TRUE),
                       list(entityKind = "analysis group",
@@ -444,6 +453,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   
   # Turn logicals into "yes" and "no"
   columnClasses <- lapply(subjectData, class)
+  
   for (i in 1:length(columnClasses)) {
     if (columnClasses[[i]]=="logical") {
       subjectData[[names(columnClasses)[i]]] <- ifelse(subjectData[[names(columnClasses)[i]]],"yes","no")
@@ -454,11 +464,18 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   subjectData <- as.data.frame(lapply(subjectData, as.character), stringsAsFactors=FALSE, optional=TRUE)
   
   # TODO: check that all dose units are same
-  resultTypes <- data.frame(DataColumn = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold'),
-                            Type = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold'),
-                            Units = c(NA, NA, 'rfu', 'rfu', NA, 'sec', 'rfu', subjectData$DoseUnit[1], NA, NA, NA, NA),
-                            valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue','clobValue','clobValue','numericValue','stringValue','numericValue','numericValue','stringValue'),
-                            stringsAsFactors = FALSE)
+  resultTypes <- data.frame(
+    DataColumn = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 
+                   'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
+                   'max time', 'late peak'),
+    Type = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 
+             'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
+             'max time', 'late peak'),
+    Units = c(NA, NA, 'rfu', 'rfu', NA, 'sec', 'rfu', subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA),
+    valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue','clobValue',
+                  'clobValue','numericValue','stringValue','numericValue','numericValue','stringValue',
+                  'numericValue','stringValue'),
+    stringsAsFactors = FALSE)
   
   subjectData$DoseUnit <- NULL
   subjectData$fileName <- NULL
@@ -532,7 +549,6 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     
     return(longResults)
   }
-  
   meltedSubjectData <- makeLongData(subjectData, resultTypes=resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode"))
   experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath,"experiments/",experimentId)))
   
@@ -645,7 +661,6 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
-  savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
   #
   #####  
   # Treatment Group states =========================================================================
@@ -1128,7 +1143,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
   
   if(!dryRun) {
-    setAnalysisStatus(status="running", metadataState)
+    setAnalysisStatus(status="parsing", metadataState)
   }
   
   parameters <- getExperimentParameters(inputParameters)
@@ -1269,10 +1284,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   lsTransaction <- NULL
   
   if (dryRun) {
-    
+    save(experiment, file="experiment.Rda")
   } else {
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
+    
+    
     
     # Get the late peak points
     resultTable$latePeak <- (resultTable$overallMaxTime > 80) & 
@@ -1326,7 +1343,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 }
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
-  
+  save(request, file = "request.Rda")
   require('racas')
   
   request <- as.list(request)

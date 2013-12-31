@@ -109,6 +109,13 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       stop("Some of the concentrations or volumes are not numbers")
     }
     
+    propertyTable$ALIQUOT_CONC[propertyTable$ALIQUOT_CONC_UNIT == "mM"] <- propertyTable$ALIQUOT_CONC[propertyTable$ALIQUOT_CONC_UNIT == "mM"] * 1000
+    propertyTable$ALIQUOT_CONC_UNIT[propertyTable$ALIQUOT_CONC_UNIT == "mM"] <- "uM"
+    
+    if (any(propertyTable$ALIQUOT_CONC_UNIT != "uM")) {
+    	stop("All concentration units must be uM or mM")
+    }
+    
     # Save plate
     if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")) {
       dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")

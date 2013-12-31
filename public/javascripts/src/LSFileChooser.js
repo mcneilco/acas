@@ -71,6 +71,7 @@
 
     LSFileChooserController.prototype.initialize = function() {
       var self;
+
       _.bindAll(this, 'render', 'handleDragOverDocument', 'handleDragLeaveDocument', 'handleDeleteFileUIChanges', 'handleFileAddedEvent', 'fileUploadComplete', 'fileUploadFailed', 'canAcceptAnotherFile', 'filePassedServerValidation');
       self = this;
       $(document).bind('dragover', function(e) {
@@ -151,6 +152,7 @@
 
     LSFileChooserController.prototype.fileUploadComplete = function(e, data) {
       var self;
+
       self = this;
       _.each(data.result, function(result) {
         return self.listOfFileModels.push(new LSFileChooserModel({
@@ -181,6 +183,7 @@
 
     LSFileChooserController.prototype.render = function() {
       var self, template;
+
       self = this;
       $(this.el).html("");
       template = _.template($("#LSFileChooserView").html(), {

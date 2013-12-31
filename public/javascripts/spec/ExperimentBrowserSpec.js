@@ -74,6 +74,7 @@
       return describe("search trigger", function() {
         return it("should trigger find when find pushed", function() {
           var _this = this;
+
           this.findTriggered = false;
           this.esc.on('find', function() {
             return _this.findTriggered = true;

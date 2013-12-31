@@ -40,6 +40,7 @@
         });
         it("should be invalid when positive control batch is empty", function() {
           var filtErrors;
+
           this.psap.get('positiveControl').set({
             batchCode: ""
           });
@@ -51,6 +52,7 @@
         });
         it("should be invalid when positive control conc is NaN", function() {
           var filtErrors;
+
           this.psap.get('positiveControl').set({
             concentration: NaN
           });
@@ -62,6 +64,7 @@
         });
         it("should be invalid when negative control batch is empty", function() {
           var filtErrors;
+
           this.psap.get('negativeControl').set({
             batchCode: ""
           });
@@ -73,6 +76,7 @@
         });
         it("should be invalid when negative control conc is NaN", function() {
           var filtErrors;
+
           this.psap.get('negativeControl').set({
             concentration: NaN
           });
@@ -84,6 +88,7 @@
         });
         it("should be invalid when agonist control batch is empty", function() {
           var filtErrors;
+
           this.psap.get('agonistControl').set({
             batchCode: ""
           });
@@ -95,6 +100,7 @@
         });
         it("should be invalid when agonist control conc is NaN", function() {
           var filtErrors;
+
           this.psap.get('agonistControl').set({
             concentration: NaN
           });
@@ -106,6 +112,7 @@
         });
         it("should be invalid when vehicle control is empty", function() {
           var filtErrors;
+
           this.psap.get('vehicleControl').set({
             batchCode: ""
           });
@@ -117,6 +124,7 @@
         });
         it("should be invalid when transformation rule is unassigned", function() {
           var filtErrors;
+
           this.psap.set({
             transformationRule: "unassigned"
           });
@@ -128,6 +136,7 @@
         });
         it("should be invalid when normalization rule is unassigned", function() {
           var filtErrors;
+
           this.psap.set({
             normalizationRule: "unassigned"
           });
@@ -139,6 +148,7 @@
         });
         it("should be invalid when thresholdType is sd and hitSDThreshold is not a number", function() {
           var filtErrors;
+
           this.psap.set({
             thresholdType: "sd"
           });
@@ -153,6 +163,7 @@
         });
         return it("should be invalid when thresholdType is efficacy and hitEfficacyThreshold is not a number", function() {
           var filtErrors;
+
           this.psap.set({
             thresholdType: "efficacy"
           });

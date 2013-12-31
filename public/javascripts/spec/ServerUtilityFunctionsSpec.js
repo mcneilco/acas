@@ -21,6 +21,7 @@ This tests the basic function and JSON validation features of the Server Utility
     describe('when run with good input file', function() {
       beforeEach(function() {
         var self;
+
         self = this;
         return $.ajax({
           type: 'POST',
@@ -49,6 +50,7 @@ This tests the basic function and JSON validation features of the Server Utility
     return describe('when run with missing username', function() {
       beforeEach(function() {
         var self;
+
         self = this;
         return $.ajax({
           type: 'POST',

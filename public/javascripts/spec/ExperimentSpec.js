@@ -248,6 +248,7 @@
         it("should trigger change when label changed", function() {
           runs(function() {
             var _this = this;
+
             this.exp = new Experiment();
             this.experimentChanged = false;
             this.exp.get('lsLabels').setBestName(new Label({
@@ -277,6 +278,7 @@
         return it("should trigger change when value changed in state", function() {
           runs(function() {
             var _this = this;
+
             this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
             this.experimentChanged = false;
             this.exp.on('change', function() {
@@ -303,6 +305,7 @@
         });
         it("should be invalid when name is empty", function() {
           var filtErrors;
+
           this.exp.get('lsLabels').setBestName(new Label({
             labelKind: "experiment name",
             labelText: "",
@@ -317,6 +320,7 @@
         });
         it("should be invalid when date is empty", function() {
           var filtErrors;
+
           this.exp.set({
             recordedDate: new Date("").getTime()
           });
@@ -328,6 +332,7 @@
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
+
           this.exp.set({
             recordedBy: ""
           });
@@ -338,6 +343,7 @@
         });
         it("should be invalid when protocol not selected", function() {
           var filtErrors;
+
           this.exp.set({
             protocol: null
           });
@@ -349,6 +355,7 @@
         });
         it("should be invalid when notebook is empty", function() {
           var filtErrors;
+
           this.exp.getNotebook().set({
             stringValue: "",
             recordedBy: this.exp.get('recordedBy')
@@ -361,6 +368,7 @@
         });
         it("should be invalid when projectCode is unassigned", function() {
           var filtErrors;
+
           this.exp.getProjectCode().set({
             codeValue: "unassigned",
             recordedBy: this.exp.get('recordedBy')
@@ -373,6 +381,7 @@
         });
         return it('should require that completionDate not be ""', function() {
           var filtErrors;
+
           this.exp.getCompletionDate().set({
             dateValue: new Date("").getTime()
           });
@@ -412,6 +421,7 @@
         });
         it("should have function to add recorded * to values", function() {
           var status;
+
           status = this.exp.getStatus();
           this.exp.prepareToSave();
           expect(status.get('recordedBy')).toEqual("jmcneil");
@@ -419,6 +429,7 @@
         });
         return it("should have function to add recorded * to states", function() {
           var state;
+
           state = this.exp.get('lsStates').getOrCreateStateByTypeAndKind("metadata", "experiment metadata");
           this.exp.prepareToSave();
           expect(state.get('recordedBy')).toEqual("jmcneil");
@@ -429,6 +440,7 @@
         beforeEach(function() {
           runs(function() {
             var _this = this;
+
             this.saveSucessful = false;
             this.saveComplete = false;
             this.exp = new Experiment({
@@ -491,6 +503,7 @@
         beforeEach(function() {
           return runs(function() {
             var _this = this;
+
             this.copied = false;
             this.exp0 = new Experiment();
             this.exp0.getNotebook().set({
@@ -587,6 +600,7 @@
           });
           it("should update model when description is changed", function() {
             var desc, states, values;
+
             this.ebc.$('.bv_description').val(" New long description   ");
             this.ebc.$('.bv_description').change();
             states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");

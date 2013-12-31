@@ -27,8 +27,7 @@
     function ExperimentSearchController() {
       this.handleFindClicked = __bind(this.handleFindClicked, this);
       this.updateModel = __bind(this.updateModel, this);
-      this.render = __bind(this.render, this);
-      _ref1 = ExperimentSearchController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref1 = ExperimentSearchController.__super__.constructor.apply(this, arguments);
       return _ref1;
     }
 
@@ -79,8 +78,7 @@
     __extends(ExperimentRowSummaryController, _super);
 
     function ExperimentRowSummaryController() {
-      this.render = __bind(this.render, this);
-      _ref2 = ExperimentRowSummaryController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref2 = ExperimentRowSummaryController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
@@ -92,6 +90,7 @@
 
     ExperimentRowSummaryController.prototype.render = function() {
       var toDisplay;
+
       toDisplay = {
         experimentName: this.model.get('lsLabels').pickBestName().get('labelText'),
         experimentCode: this.model.get('codeName')
@@ -107,8 +106,7 @@
     __extends(ExperimentBrowserController, _super);
 
     function ExperimentBrowserController() {
-      this.render = __bind(this.render, this);
-      _ref3 = ExperimentBrowserController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref3 = ExperimentBrowserController.__super__.constructor.apply(this, arguments);
       return _ref3;
     }
 

@@ -76,6 +76,7 @@ This service runs a primary data analysis.
     describe('when run with valid input', function() {
       beforeEach(function() {
         var self;
+
         self = this;
         return $.ajax({
           type: 'POST',
@@ -101,6 +102,7 @@ This service runs a primary data analysis.
     return describe('when run with flawed input file', function() {
       beforeEach(function() {
         var self;
+
         goodExampleData.fileToParse += "_with_error";
         self = this;
         return $.ajax({

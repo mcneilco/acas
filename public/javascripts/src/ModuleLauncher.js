@@ -59,8 +59,7 @@
     function ModuleLauncherMenuController() {
       this.clearSelected = __bind(this.clearSelected, this);
       this.handleSelect = __bind(this.handleSelect, this);
-      this.render = __bind(this.render, this);
-      _ref2 = ModuleLauncherMenuController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref2 = ModuleLauncherMenuController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
@@ -105,6 +104,7 @@
 
     ModuleLauncherMenuController.prototype.clearSelected = function(who) {
       var _ref3;
+
       if ((who != null ? (_ref3 = who.model) != null ? _ref3.get("menuName") : void 0 : void 0) !== this.model.get("menuName")) {
         return this.model.requestDeactivation();
       }
@@ -118,8 +118,7 @@
     __extends(ModuleLauncherMenuHeaderController, _super);
 
     function ModuleLauncherMenuHeaderController() {
-      this.render = __bind(this.render, this);
-      _ref3 = ModuleLauncherMenuHeaderController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref3 = ModuleLauncherMenuHeaderController.__super__.constructor.apply(this, arguments);
       return _ref3;
     }
 
@@ -146,8 +145,7 @@
     function ModuleLauncherMenuListController() {
       this.selectionUpdated = __bind(this.selectionUpdated, this);
       this.addOne = __bind(this.addOne, this);
-      this.render = __bind(this.render, this);
-      _ref4 = ModuleLauncherMenuListController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref4 = ModuleLauncherMenuListController.__super__.constructor.apply(this, arguments);
       return _ref4;
     }
 
@@ -164,12 +162,14 @@
 
     ModuleLauncherMenuListController.prototype.addOne = function(menuItem) {
       var menuItemController;
+
       menuItemController = this.makeMenuItemController(menuItem);
       return this.$('.bv_navList').append(menuItemController.render().el);
     };
 
     ModuleLauncherMenuListController.prototype.makeMenuItemController = function(menuItem) {
       var menuItemCont;
+
       if (menuItem.get('isHeader')) {
         menuItemCont = new ModuleLauncherMenuHeaderController({
           model: menuItem
@@ -190,6 +190,7 @@
 
     ModuleLauncherMenuListController.prototype.launchModule = function(moduleName) {
       var selector;
+
       selector = '.bv_launch_' + moduleName;
       return this.$(selector).click();
     };
@@ -204,8 +205,7 @@
     function ModuleLauncherController() {
       this.handleDeactivation = __bind(this.handleDeactivation, this);
       this.handleActivation = __bind(this.handleActivation, this);
-      this.render = __bind(this.render, this);
-      _ref5 = ModuleLauncherController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref5 = ModuleLauncherController.__super__.constructor.apply(this, arguments);
       return _ref5;
     }
 
@@ -232,6 +232,7 @@
 
     ModuleLauncherController.prototype.handleActivation = function() {
       var _this = this;
+
       if (!this.model.get('isLoaded')) {
         if (!window.AppLaunchParams.testMode) {
           this.moduleController = new window[this.model.get('mainControllerClassName')]({
@@ -269,8 +270,7 @@
 
     function ModuleLauncherListController() {
       this.addOne = __bind(this.addOne, this);
-      this.render = __bind(this.render, this);
-      _ref6 = ModuleLauncherListController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);      _ref6 = ModuleLauncherListController.__super__.constructor.apply(this, arguments);
       return _ref6;
     }
 
@@ -286,6 +286,7 @@
 
     ModuleLauncherListController.prototype.addOne = function(moduleLauncher) {
       var modLaunchCont;
+
       if (!moduleLauncher.get('isHeader')) {
         modLaunchCont = new ModuleLauncherController({
           model: moduleLauncher
