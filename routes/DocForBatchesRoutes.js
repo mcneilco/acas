@@ -31,7 +31,6 @@ app.post '/api/docForBatches', docForBatchesRoutes.saveDocForBatches
 
   exports.docForBatchesIndex = function(request, response) {
     var scriptsToLoad;
-
     scriptsToLoad = requiredScripts.concat(applicationScripts);
     global.specRunnerTestmode = false;
     return response.render('docForBatchesIndex', {
@@ -55,7 +54,6 @@ app.post '/api/docForBatches', docForBatchesRoutes.saveDocForBatches
 
   exports.saveDocForBatches = function(request, response) {
     var serverUtilityFunctions;
-
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {
       'Content-Type': 'application/json'

@@ -8,7 +8,8 @@
     __extends(ModuleMenusController, _super);
 
     function ModuleMenusController() {
-      this.render = __bind(this.render, this);      _ref = ModuleMenusController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref = ModuleMenusController.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 

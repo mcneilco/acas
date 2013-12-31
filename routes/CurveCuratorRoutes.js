@@ -30,7 +30,6 @@ In layout.jade
   exports.getCurveStubs = function(req, resp) {
     var baseurl, config, curveCuratorTestData, request,
       _this = this;
-
     if (global.specRunnerTestmode) {
       console.log(req.params);
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
@@ -59,7 +58,6 @@ In layout.jade
 
   exports.curveCuratorIndex = function(request, response) {
     var scriptsToLoad;
-
     global.specRunnerTestmode = false;
     scriptsToLoad = requiredScripts.concat(applicationScripts);
     return response.render('CurveCurator', {

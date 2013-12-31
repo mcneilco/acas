@@ -57,12 +57,10 @@
 
     LabelList.prototype.pickBestLabel = function() {
       var bestLabel, current, names, preferred;
-
       preferred = this.getPreferred();
       if (preferred.length > 0) {
         bestLabel = _.max(preferred, function(lab) {
           var rd;
-
           rd = lab.get('recordedDate');
           if (rd === "") {
             return rd;
@@ -75,7 +73,6 @@
         if (names.length > 0) {
           bestLabel = _.max(names, function(lab) {
             var rd;
-
             rd = lab.get('recordedDate');
             if (rd === "") {
               return rd;
@@ -87,7 +84,6 @@
           current = this.getCurrent();
           bestLabel = _.max(current, function(lab) {
             var rd;
-
             rd = lab.get('recordedDate');
             if (rd === "") {
               return rd;
@@ -102,13 +98,11 @@
 
     LabelList.prototype.pickBestName = function() {
       var bestLabel, preferredNames;
-
       preferredNames = _.filter(this.getCurrent(), function(lab) {
         return lab.get('preferred') && (lab.get('lsType') === "name");
       });
       bestLabel = _.max(preferredNames, function(lab) {
         var rd;
-
         rd = lab.get('recordedDate');
         if (rd === "") {
           return rd;
@@ -121,7 +115,6 @@
 
     LabelList.prototype.setBestName = function(label) {
       var currentName;
-
       label.set({
         lsType: 'name',
         preferred: true,
@@ -199,7 +192,6 @@
 
     State.prototype.initialize = function() {
       var _this = this;
-
       if (this.has('lsValues')) {
         if (!(this.get('lsValues') instanceof ValueList)) {
           this.set({
@@ -214,7 +206,6 @@
 
     State.prototype.parse = function(resp) {
       var _this = this;
-
       if (resp.lsValues != null) {
         if (!(resp.lsValues instanceof ValueList)) {
           resp.lsValues = new ValueList(resp.lsValues);
@@ -254,7 +245,6 @@
 
     StateList.prototype.getStateValueByTypeAndKind = function(stype, skind, vtype, vkind) {
       var states, value, values;
-
       value = null;
       states = this.getStatesByTypeAndKind(stype, skind);
       if (states.length > 0) {
@@ -269,7 +259,6 @@
     StateList.prototype.getOrCreateStateByTypeAndKind = function(sType, sKind) {
       var mState, mStates,
         _this = this;
-
       mStates = this.getStatesByTypeAndKind(sType, sKind);
       mState = mStates[0];
       if (mState == null) {
@@ -288,7 +277,6 @@
     StateList.prototype.getOrCreateValueByTypeAndKind = function(sType, sKind, vType, vKind) {
       var descVal, descVals, metaState,
         _this = this;
-
       metaState = this.getOrCreateStateByTypeAndKind(sType, sKind);
       descVals = metaState.getValuesByTypeAndKind(vType, vKind);
       descVal = descVals[0];

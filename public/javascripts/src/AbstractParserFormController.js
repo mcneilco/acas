@@ -9,7 +9,8 @@
 
     function AbstractParserFormController() {
       this.attributeChanged = __bind(this.attributeChanged, this);
-      this.render = __bind(this.render, this);      _ref = AbstractParserFormController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref = AbstractParserFormController.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 

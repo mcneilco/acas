@@ -39,7 +39,8 @@
 
     function TagListController() {
       this.handleTagsChanged = __bind(this.handleTagsChanged, this);
-      this.render = __bind(this.render, this);      _ref2 = TagListController.__super__.constructor.apply(this, arguments);
+      this.render = __bind(this.render, this);
+      _ref2 = TagListController.__super__.constructor.apply(this, arguments);
       return _ref2;
     }
 
@@ -50,7 +51,6 @@
     TagListController.prototype.render = function() {
       var tagStr,
         _this = this;
-
       this.$el.tagsinput('items');
       tagStr = "";
       this.collection.each(function(tag) {
@@ -62,7 +62,6 @@
 
     TagListController.prototype.handleTagsChanged = function() {
       var t, tagStrings, tempTags, _i, _len;
-
       tagStrings = this.$el.tagsinput('items');
       tempTags = [];
       for (_i = 0, _len = tagStrings.length; _i < _len; _i++) {
