@@ -337,7 +337,7 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 			@completeInitialization()
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
-				if window.AppLaunchParams.moduleLaunchParams.moduleName == "screenExperiment"
+				if window.AppLaunchParams.moduleLaunchParams.moduleName == "flipr_screening_assay"
 					$.ajax
 						type: 'GET'
 						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code

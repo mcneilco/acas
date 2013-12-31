@@ -34,7 +34,6 @@
       }
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
-      console.log(window.AppLaunchParams.moduleLaunchParams.moduleName);
       if (window.AppLaunchParams.moduleLaunchParams != null) {
         return this.moduleLauncherMenuListController.launchModule(window.AppLaunchParams.moduleLaunchParams.moduleName);
       }
