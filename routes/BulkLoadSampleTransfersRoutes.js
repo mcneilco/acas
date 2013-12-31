@@ -16,6 +16,7 @@ app.post '/api/bulkLoadSampleTransfers', bulkLoadSampleTransfersRoutes.bulkLoadS
 (function() {
   exports.bulkLoadSampleTransfers = function(request, response) {
     var serverUtilityFunctions;
+
     request.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {
@@ -26,7 +27,7 @@ app.post '/api/bulkLoadSampleTransfers', bulkLoadSampleTransfersRoutes.bulkLoadS
         return response.end(rReturn);
       });
     } else {
-      return serverUtilityFunctions.runRFunction(request, "public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfersStub.R", "bulkLoadSampleTransfers", function(rReturn) {
+      return serverUtilityFunctions.runRFunction(request, "public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfers.R", "bulkLoadSampleTransfers", function(rReturn) {
         return response.end(rReturn);
       });
     }

@@ -14,6 +14,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
 (function() {
   exports.protocolByCodename = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
+
     console.log(req.params.code);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
@@ -28,6 +29,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
 
   exports.protocolById = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
+
     console.log(req.params.id);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
@@ -43,6 +45,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
   exports.postProtocol = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
+
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
@@ -72,6 +75,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
   exports.putProtocol = function(req, resp) {
     var baseurl, config, experimentServiceTestJSON, request,
       _this = this;
+
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
@@ -100,6 +104,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
 
   exports.lsLabels = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
+
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.lsLabels));
@@ -114,6 +119,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
   exports.protocolCodeList = function(req, resp) {
     var baseurl, config, filterString, labels, protocolServiceTestJSON, request, shouldFilter, translateToCodes,
       _this = this;
+
     console.log(req.params);
     if (req.params.str != null) {
       shouldFilter = true;
@@ -123,6 +129,7 @@ app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
     }
     translateToCodes = function(labels) {
       var label, match, protCodes, _i, _len;
+
       protCodes = [];
       for (_i = 0, _len = labels.length; _i < _len; _i++) {
         label = labels[_i];

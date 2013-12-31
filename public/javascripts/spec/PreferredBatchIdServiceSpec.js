@@ -57,6 +57,34 @@
             }
           ]
         };
+      } else if (serviceType === "SeuratCmpdReg") {
+        this.requestData = {
+          requests: [
+            {
+              requestName: "CRA-025995-1"
+            }, {
+              requestName: "CRA-025995-1"
+            }, {
+              requestName: "none_2222:1"
+            }
+          ]
+        };
+        return this.expectedResponse = {
+          error: false,
+          errorMessages: [],
+          results: [
+            {
+              requestName: "CRA-025995-1",
+              preferredName: "CRA-025995-1"
+            }, {
+              requestName: "CRA-025995-1",
+              preferredName: "CRA-025995-1"
+            }, {
+              requestName: "none_2222:1",
+              preferredName: ""
+            }
+          ]
+        };
       } else if (serviceType === "SingleBatchNameQueryString") {
         this.requestData = {
           requests: [
@@ -108,13 +136,13 @@
           });
         });
         it('should return no error', function() {
-          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          waitsFor(this.waitForServiceReturn, 'service did not return', 5000);
           return runs(function() {
             return expect(this.serviceReturn.error).toBeFalsy();
           });
         });
         return it('full response should match expectedResponse', function() {
-          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          waitsFor(this.waitForServiceReturn, 'service did not return', 5000);
           return runs(function() {
             return expect(this.serviceReturn).toEqual(this.expectedResponse);
           });

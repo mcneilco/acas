@@ -72,6 +72,7 @@
 
     LSFileInputController.prototype.render = function() {
       var self, template;
+
       self = this;
       $(this.el).html("");
       template = _.template($("#LSFileInputView").html(), {

@@ -59,6 +59,26 @@ describe 'PreferredBatchId Service testing', ->
 					requestName: "none_2222:1"
 					preferredName: ""
 				]
+		else if serviceType == "SeuratCmpdReg"
+			@requestData =
+				requests: [
+					{requestName: "CRA-025995-1"} #normal
+					{requestName: "CRA-025995-1"} #alias
+					{requestName: "none_2222:1"} #none
+				]
+			@expectedResponse =
+				error: false
+				errorMessages: []
+				results: [
+					requestName: "CRA-025995-1"
+					preferredName: "CRA-025995-1"
+				,
+					requestName: "CRA-025995-1"
+					preferredName: "CRA-025995-1"
+				,
+					requestName: "none_2222:1"
+					preferredName: ""
+				]
 		else if serviceType == "SingleBatchNameQueryString"
 			@requestData =
 				requests: [
@@ -95,10 +115,10 @@ describe 'PreferredBatchId Service testing', ->
 							@serviceReturn = null
 						dataType: 'json'
 			it 'should return no error', ->
-				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				waitsFor( @waitForServiceReturn, 'service did not return', 5000)
 				runs ->
 					expect(@serviceReturn.error).toBeFalsy()
 			it 'full response should match expectedResponse', ->
-				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				waitsFor( @waitForServiceReturn, 'service did not return', 5000)
 				runs ->
 					expect(@serviceReturn).toEqual @expectedResponse

@@ -2,7 +2,9 @@
 class window.BulkLoadContainersFromSDFController extends BasicFileValidateAndSaveController
 
 	initialize: ->
-		super()
-		@fileProcessorURL = "/api/bulkLoadContainersFromSDF"
-		@errorOwnerName = 'BulkLoadContainersFromSDFController'
-		@$('.bv_moduleTitle').html('Load Containers From SDF')
+    @fileProcessorURL = "/api/bulkLoadContainersFromSDF"
+    @errorOwnerName = 'BulkLoadContainersFromSDFController'
+    @allowedFileTypes = ['sdf']
+    @loadReportFile = false
+    super()
+    @$('.bv_moduleTitle').html('Load Containers From SDF')

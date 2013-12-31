@@ -1,4 +1,4 @@
-# BulkLoadcontainersFromSDF.R
+# BulkLoadContainersFromSDF.R
 #
 #
 # Sam Meyer
@@ -20,7 +20,8 @@
 #   To run: 
 #     bulkLoadContainersFromSDF(list(fileName,dryRun,user))
 #   Example:
-#     bulkLoadContainersFromSDF(request=list(fileToParse="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf", dryRun= "true",user="smeyer"))
+#     bulkLoadContainersFromSDF(request=list(fileToParse="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/Shipment_8242_Update_cutoff.sdf", dryRun= "true",user="smeyer"))
+#     bulkLoadContainersFromSDF(request=list(fileToParse="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/control_cmpds.sdf", dryRun= "true",user="smeyer"))
 #     runMain(fileName="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf", dryRun= TRUE,recordedBy="smeyer")
 
 # Random notes on container and interaction creation:
@@ -38,12 +39,12 @@
 # 7:33 AM   - loaded 4500 records from file
 # Stopped for transport
 
-source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
-source("public/src/modules/sharedFunctions.R")
-
-runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
-  require('rcdk')
-  require('plyr')
+runMain <- function(fileName,dryRun=TRUE,recordedBy) {
+  library('rcdk')
+  library('plyr')
+  library('iterators')
+  
+  testMode <- TRUE
   
   # fileName <- "public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf"
   
@@ -52,7 +53,8 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
   }
   
   tryCatch({
-    moleculeList <- load.molecules(molfiles=fileName)
+    moleculeList <- iload.molecules(fileName, type="sdf")
+    firstMolecule <- nextElem(moleculeList)
   }, error = function(e) {
     stop(paste("Error in loading the file:",e))
   })
@@ -60,7 +62,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
   requiredProperties <- c("ALIQUOT_PLATE_BARCODE","ALIQUOT_WELL_ID","SAMPLE_ID","ALIQUOT_SOLVENT","ALIQUOT_CONC","ALIQUOT_CONC_UNIT",
                           "ALIQUOT_VOLUME","ALIQUOT_VOLUME_UNIT","ALIQUOT_DATE")
   
-  availableProperties <- names(get.properties(moleculeList[[1]]))
+  availableProperties <- names(get.properties(firstMolecule))
   
   differences <- setdiff(requiredProperties,availableProperties)
   
@@ -72,47 +74,67 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
   
   summaryInfo <- list(
     info = list(
-      "Number of wells to load" = length(moleculeList),
       "User name" = recordedBy
     ))
   
   if (!dryRun) {
-    propertyTable <- as.data.frame(lapply(requiredProperties,function(property) sapply(moleculeList,get.property,key=property)))
+    propertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(firstMolecule, key=property)))
     names(propertyTable) <- requiredProperties
+    while(hasNext(moleculeList)) {
+      mol <- nextElem(moleculeList)
+      newPropertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(mol, key=property)))
+      names(newPropertyTable) <- requiredProperties
+      propertyTable <- rbind.fill(propertyTable, newPropertyTable)
+    }
     
-    sampleIdTranslationList <- query("select compound_name, property_value from compound_properties where property_name = 'SAMPLE_ID'",
-                                     configList)
+    summaryInfo$info$"Number of wells loaded" <- nrow(PropertyTable)
     
-    # Only lot 1 is loaded using this loader
-    sampleIdTranslationList$COMPOUND_NAME <- paste0(sampleIdTranslationList$COMPOUND_NAME,"-1")
+    sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
     
     propertyTable$batchName <- sampleIdTranslationList$COMPOUND_NAME[match(propertyTable$"SAMPLE_ID", sampleIdTranslationList$PROPERTY_VALUE)]
     
     if (any(is.na(propertyTable$batchName))) {
       missingCompounds <- propertyTable$"SAMPLE_ID"[!(propertyTable$"SAMPLE_ID" %in% sampleIdTranslationList$PROPERTY_VALUE)]
-      stop(paste0("Could not find compounds: ", paste(missingCompounds, collapse = ', '), ". Make sure that all compounds have already been loaded into Seurat and you are not using a new lot."))
+      if(testMode) {
+        propertyTable <- propertyTable[!is.na(propertyTable$batchName), ]
+      } else {
+        stop(paste0("Could not find compounds: ", paste(missingCompounds, collapse = ', '), ". Make sure that all compounds have already been loaded into Seurat and you are not using a new lot."))
+      }
+    }
+    
+    propertyTable$ALIQUOT_CONC <- as.numeric(propertyTable$ALIQUOT_CONC)
+    propertyTable$ALIQUOT_VOLUME <- as.numeric(propertyTable$ALIQUOT_VOLUME)
+    
+    if (any(is.na(c(propertyTable$ALIQUOT_CONC, propertyTable$ALIQUOT_VOLUME)))) {
+      stop("Some of the concentrations or volumes are not numbers")
     }
     
     # Save plate
-    lsTransaction <- createLsTransaction(comments="Bulk load from .sdf file")
+    if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")) {
+      dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")
+    }
+    newFileName <- paste0("uploadedPlates/", basename(fileName))
+    file.rename(fileName, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", newFileName))
     
-    barcodes <- levels(propertyTable$ALIQUOT_PLATE_BARCODE)
+    lsTransaction <- createLsTransaction(comments="Bulk load from .sdf file")$id
+    
+    barcodes <- unique(propertyTable$ALIQUOT_PLATE_BARCODE)
     plateCodeNameList <- getAutoLabels(thingTypeAndKind="material_container",
                                       labelTypeAndKind="id_codeName", 
                                       numberOfLabels=length(barcodes))
-    plates <- mapply(barcodes, plateCodeNameList, FUN = createPlateWithBarcode, MoreArgs = list(lsTransaction=lsTransaction, recordedBy=recordedBy), USE.NAMES=FALSE)
+    plates <- mapply(barcodes, plateCodeNameList, FUN = createPlateWithBarcode, MoreArgs = list(lsTransaction=lsTransaction, recordedBy=recordedBy, sourceFile=newFileName), USE.NAMES=FALSE)
     plateList <- apply(plates,MARGIN=2,as.list)
     
     savedPlates <- saveContainers(plateList)
     
-    plateIds <- data.frame(barcode=barcodes, plateId=sapply(savedPlates,getId))
+    plateIds <- data.frame(barcode=barcodes, plateId=sapply(savedPlates,getElement, "id"))
     
     propertyTable$plateId <- plateIds$plateId[match(propertyTable$ALIQUOT_PLATE_BARCODE,plateIds$barcode)]
     
     # Save wells
     propertyTable$wellCodeName <- unlist(getAutoLabels(thingTypeAndKind="material_container",
                                                        labelTypeAndKind="id_codeName", 
-                                                       numberOfLabels=length(moleculeList)), 
+                                                       numberOfLabels=nrow(propertyTable)), 
                                          use.names = FALSE)
     
 
@@ -124,7 +146,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
     
     savedWells <- saveContainers(wellList)
     
-    propertyTable$wellId <- sapply(savedWells, getId)
+    propertyTable$wellId <- sapply(savedWells, getElement, "id")
     
     # Save interactions
     propertyTable$interactionCodeName <- unlist(getAutoLabels(thingTypeAndKind="interaction_containerContainer",
@@ -140,103 +162,125 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy,configList) {
     
     savedContainerContainerInteractions <- saveContainerContainerInteractions(interactions)
     
-    summaryInfo$lsTransactionId <- lsTransaction$id
+    summaryInfo$lsTransactionId <- lsTransaction
   }
   return(summaryInfo)
 }
-createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy) {
+createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy, sourceFile) {
   return(createContainer(
     codeName = codeName[[1]],
-    containerType = "plate", 
-    containerKind = "384 well compound plate", 
+    lsType = "plate", 
+    lsKind = "384 well compound plate", 
     recordedBy = recordedBy,
     lsTransaction = lsTransaction,
     containerLabels = list(createContainerLabel(
       labelText = barcode,
       recordedBy = recordedBy,
-      labelType = "barcode",
-      labelKind = "plate",
+      lsType = "barcode",
+      lsKind = "plate barcode",
       lsTransaction = lsTransaction)),
     containerStates = list(createContainerState(
-      stateType="constants",
-      stateKind="plate format",
+      lsType="constants",
+      lsKind="plate format",
       recordedBy=recordedBy,
       lsTransaction=lsTransaction,
       containerValues= list(
         createStateValue(
-          valueType="numericValue",
-          valueKind="rows",
+          lsType="numericValue",
+          lsKind="rows",
           numericValue=16,
-          lsTransaction=lsTransaction),
+          lsTransaction=lsTransaction,
+          recordedBy= recordedBy),
         createStateValue(
-          valueType="numericValue",
-          valueKind="columns",
+          lsType="numericValue",
+          lsKind="columns",
           numericValue=24,
-          lsTransaction=lsTransaction),
+          lsTransaction=lsTransaction,
+          recordedBy= recordedBy),
         createStateValue(
-          valueType="numericValue",
-          valueKind="wells",
+          lsType="numericValue",
+          lsKind="wells",
           numericValue=384,
-          lsTransaction=lsTransaction)
+          lsTransaction=lsTransaction,
+          recordedBy= recordedBy)
       )
+    ), createContainerState(
+      lsType="metadata",
+      lsKind="plate information",
+      recordedBy=recordedBy,
+      lsTransaction=lsTransaction,
+      containerValues= list(
+        createStateValue(
+          lsType="fileValue",
+          lsKind="source file",
+          fileValue=sourceFile,
+          lsTransaction=lsTransaction,
+          recordedBy= recordedBy))
+      ))
     ))
-  ))
 }
 createWellFromSDFtable <- function(propertyTable, lsTransaction, recordedBy) {
   return(createContainer(
-    containerType= "well", 
-    containerKind= "plate well",
+    lsType= "well", 
+    lsKind= "plate well",
     codeName= propertyTable$wellCodeName,
     recordedBy= recordedBy,
     lsTransaction= lsTransaction,
     containerLabels= list(createContainerLabel(
       labelText= propertyTable$"ALIQUOT_WELL_ID",
       recordedBy= recordedBy,
-      labelType= "name",
-      labelKind= "well name",
+      lsType= "name",
+      lsKind= "well name",
       lsTransaction= lsTransaction)),
     containerStates= list(
       createContainerState(
-        stateType= "status",
-        stateKind= "test compound content",
+        lsType= "status",
+        lsKind= "test compound content",
         recordedBy= recordedBy,
         lsTransaction= lsTransaction,
         containerValues= list(
           createStateValue(
-            valueType= "codeValue",
-            valueKind= "batch code",
+            lsType= "codeValue",
+            lsKind= "batch code",
             codeValue= propertyTable$batchName,
-            lsTransaction= lsTransaction),
+            lsTransaction= lsTransaction,
+            recordedBy= recordedBy),
           createStateValue(
-            valueType= "numericValue",
-            valueKind= "concentration",
-            numericValue= propertyTable$"ALIQUOT_CONC",
+            lsType= "numericValue",
+            lsKind= "concentration",
+            stringValue= if (propertyTable$"ALIQUOT_CONC"==Inf) {"infinite"} else {NULL},
+            numericValue= if (propertyTable$"ALIQUOT_CONC"==Inf) {NULL} else {propertyTable$"ALIQUOT_CONC"},
             valueUnit= propertyTable$"ALIQUOT_CONC_UNIT",
-            lsTransaction= lsTransaction),
+            lsTransaction= lsTransaction,
+            recordedBy= recordedBy),
           createStateValue(
-            valueType= "numericValue",
-            valueKind= "volume",
-            numericValue= propertyTable$"ALIQUOT_VOLUME",
+            lsType= "numericValue",
+            lsKind= "volume",
+            stringValue= if (propertyTable$"ALIQUOT_VOLUME"==Inf) {"infinite"} else {NULL},
+            numericValue= if (propertyTable$"ALIQUOT_VOLUME"==Inf) {NULL} else {propertyTable$"ALIQUOT_VOLUME"},
             valueUnit= propertyTable$"ALIQUOT_VOLUME_UNIT",
-            lsTransaction= lsTransaction),
+            lsTransaction= lsTransaction,
+            recordedBy= recordedBy),
           createStateValue(
-            valueType= "dateValue",
-            valueKind= "date prepared",
+            lsType= "dateValue",
+            lsKind= "date prepared",
             dateValue= as.numeric(format(as.Date(propertyTable$ALIQUOT_DATE,format="%d-%b-%y"),"%s"))*1000,
-            lsTransaction= lsTransaction)
+            lsTransaction= lsTransaction,
+            recordedBy= recordedBy)
         )
       ),
       createContainerState(
-        stateType= "status",
-        stateKind= "solvent content",
+        lsType= "status",
+        lsKind= "solvent content",
         recordedBy= recordedBy,
         lsTransaction= lsTransaction,
         containerValues= list(
           createStateValue(
-            valueType= "stringValue",
-            valueKind= "solvent",
+            lsType= "stringValue",
+            lsKind= "solvent",
             stringValue= propertyTable$"ALIQUOT_SOLVENT"[1],
-            lsTransaction= lsTransaction)
+            lsTransaction= lsTransaction,
+            recordedBy= recordedBy)
         )
       )
     )
@@ -244,8 +288,8 @@ createWellFromSDFtable <- function(propertyTable, lsTransaction, recordedBy) {
 }
 createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsTransaction, recordedBy) {
   return(createContainerContainerInteraction(
-    interactionType= "has member",
-    interactionKind= "plate well",
+    lsType= "has member",
+    lsKind= "plate well",
     codeName= interactionCodeName,
     recordedBy= recordedBy,
     lsTransaction= lsTransaction,
@@ -255,6 +299,8 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
 }
 
 bulkLoadContainersFromSDF <- function(request) {
+  require('racas')
+  options(stringsAsFactors = FALSE)
   
   # Collect the information from the request
   request <- as.list(request)
@@ -265,13 +311,8 @@ bulkLoadContainersFromSDF <- function(request) {
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   
-  configList <- readConfigFile("public/src/conf/configurationNode.js")
-  
-  # Set the global for the JSON library
-  lsServerURL <<- configList$serverPath
-  
   # Run the main function with error handling
-  loadResult <- tryCatch.W.E(runMain(fileName,dryRun,recordedBy,configList))
+  loadResult <- tryCatch.W.E(runMain(fileName,dryRun,recordedBy))
   
   # If the output has class simpleError, save it as an error
   errorList <- list()
@@ -282,7 +323,7 @@ bulkLoadContainersFromSDF <- function(request) {
   }
   
   # Save warning messages (but not the function call, as it is only useful while programming)
-  loadResult$warningList <- lapply(loadResult$warningList,getWarningMessage)
+  loadResult$warningList <- lapply(loadResult$warningList, getElement, "message")
   if (length(loadResult$warningList)>0) {
     loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
   }
@@ -292,7 +333,7 @@ bulkLoadContainersFromSDF <- function(request) {
   hasError <- length(errorList) > 0
   hasWarning <- length(loadResult$warningList) > 0
   
-  htmlSummary <- createHTML(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
+  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
   
   errorMessages <- list()
   

@@ -12,8 +12,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 ]' http://"$HOSTNAME":8080/acas/experimenttypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{kindName: "default", lsType:{id:1, version:0}},
-{kindName: "galileo etl", lsType:{id:1, version:0}}
+{kindName: "default", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAME":8080/acas/experimentkinds/jsonArray
 
 
@@ -33,22 +32,29 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 ]' http://"$HOSTNAME":8080/acas/interactiontypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{kindName: "test subject", lsType:{id:6, version:0}}
+{kindName: "test subject", lsType:{id:6, version:0}},
+{kindName: "plate well", lsType:{id:7, version:0}}
 ]' http://"$HOSTNAME":8080/acas/interactionkinds/jsonArray
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{typeName: "material"}
+{typeName: "material"},
+{typeName: "plate"},
+{typeName: "well"}
 ]' http://"$HOSTNAME":8080/acas/containertypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{kindName: "animal", lsType:{id:1, version:0}}
+{kindName: "animal", lsType:{id:1, version:0}},
+{kindName: "384 well compound plate", lsType:{id:2, version:0}},
+{kindName: "plate well", lsType:{id:3, version:0}}
 ]' http://"$HOSTNAME":8080/acas/containerkinds/jsonArray
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {typeName: "metadata"},
-{typeName: "data"}
+{typeName: "data"},
+{typeName: "constants"},
+{typeName: "status"}
 ]' http://"$HOSTNAME":8080/acas/statetypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
@@ -62,7 +68,16 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "treatment", lsType:{id:2, version:0}},
 {kindName: "raw data", lsType:{id:2, version:0}},
 {kindName: "calculated data", lsType:{id:2, version:0}},
-{kindName: "report locations", lsType:{id:1, version:0}}
+{kindName: "report locations", lsType:{id:1, version:0}},
+{kindName: "plate format", lsType:{id:3, version:0}},
+{kindName: "test compound content", lsType:{id:4, version:0}},
+{kindName: "solvent content", lsType:{id:4, version:0}},
+{kindName: "transfer data", lsType:{id:2, version:0}},
+
+{kindName: "experiment analysis parameters", lsType:{id:1, version:0}},
+{kindName: "experiment controls", lsType:{id:1, version:0}},
+
+{kindName: "plate information", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAME":8080/acas/statekinds/jsonArray
 
 
@@ -82,7 +97,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "tested concentration", lsType:{id:7, version:0}},
 {kindName: "source file", lsType:{id:2, version:0}},
 {kindName: "notebook", lsType:{id:1, version:0}},
-{kindName: "notebook page", lsType:{id:7, version:0}},
+{kindName: "notebook page", lsType:{id:1, version:0}},
 {kindName: "completion date", lsType:{id:4, version:0}},
 {kindName: "scientist", lsType:{id:1, version:0}},
 {kindName: "status", lsType:{id:1, version:0}},
@@ -95,18 +110,60 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "Dose", lsType:{id:7, version:0}},
 {kindName: "Response", lsType:{id:7, version:0}},
 {kindName: "flag", lsType:{id:1, version:0}},
-{kindName: "annotation id", lsType:{id:7, version:0}}
+{kindName: "annotation file", lsType:{id:2, version:0}},
+{kindName: "rows", lsType:{id:7, version:0}},
+{kindName: "columns", lsType:{id:7, version:0}},
+{kindName: "wells", lsType:{id:7, version:0}},
+{kindName: "concentration", lsType:{id:7, version:0}},
+{kindName: "volume", lsType:{id:7, version:0}},
+{kindName: "date prepared", lsType:{id:4, version:0}},
+
+{kindName: "target", lsType:{id:1, version:0}},
+{kindName: "assay format", lsType:{id:1, version:0}},
+{kindName: "experiment status", lsType:{id:1, version:0}},
+{kindName: "control type", lsType:{id:1, version:0}},
+{kindName: "reader instrument", lsType:{id:1, version:0}},
+{kindName: "data source", lsType:{id:1, version:0}},
+{kindName: "data transformation rule", lsType:{id:1, version:0}},
+{kindName: "normalization rule", lsType:{id:1, version:0}},
+{kindName: "active efficacy threshold", lsType:{id:7, version:0}},
+{kindName: "active SD threshold", lsType:{id:7, version:0}},
+{kindName: "curve min", lsType:{id:7, version:0}},
+{kindName: "curve max", lsType:{id:7, version:0}},
+{kindName: "replicate aggregation", lsType:{id:1, version:0}},
+
+{kindName: "barcode", lsType:{id:8, version:0}},
+{kindName: "seq file", lsType:{id:2, version:0}},
+{kindName: "min file", lsType:{id:2, version:0}},
+{kindName: "max file", lsType:{id:2, version:0}},
+{kindName: "raw r results location", lsType:{id:2, version:0}},
+{kindName: "data results location", lsType:{id:2, version:0}},
+{kindName: "summary location", lsType:{id:2, version:0}},
+
+{kindName: "well type", lsType:{id:1, version:0}},
+{kindName: "well name", lsType:{id:1, version:0}},
+{kindName: "maximum", lsType:{id:7, version:0}},
+{kindName: "minimum", lsType:{id:7, version:0}},
+{kindName: "fluorescent", lsType:{id:1, version:0}},
+{kindName: "transformed efficacy", lsType:{id:7, version:0}},
+{kindName: "normalized efficacy", lsType:{id:7, version:0}},
+{kindName: "over efficacy threshold", lsType:{id:1, version:0}},
+{kindName: "fluorescencePoints", lsType:{id:5, version:0}},
+{kindName: "timePoints", lsType:{id:5, version:0}}
 ]' http://"$HOSTNAME":8080/acas/valuekinds/jsonArray
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{typeName: "name"}
+{typeName: "name"},
+{typeName: "barcode"}
 ]' http://"$HOSTNAME":8080/acas/labeltypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "protocol name", lsType:{id:1, version:0}},
 {kindName: "experiment name", lsType:{id:1, version:0}},
-{kindName: "container name", lsType:{id:1, version:0}}
+{kindName: "container name", lsType:{id:1, version:0}},
+{kindName: "plate barcode", lsType:{id:2, version:0}},
+{kindName: "well name", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAME":8080/acas/labelkinds/jsonArray
 
 

@@ -1,7 +1,10 @@
 # Code to set up basic experiment
 
 #     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
-source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
+require(RCurl)
+require(rjson)
+require(racas)
+lsServerURL <- racas::applicationSettings$serverPath
 
 
 ## example of creating a experiment with discrete parts 
@@ -269,9 +272,7 @@ exptProtocol <- list(id=protocolObjectArray[[1]]$id)  ## the mininum required is
 
 ### Save the experiment object #########
 experiment <- createExperiment(	lsTransaction = lsTransaction,
-                                kind = "primary analysis",
               protocol=exptProtocol,
-							codeName=codeName, 
 							shortDescription="primary analysis",  
 							recordedBy="smeyer", 
 							experimentLabels=experimentLabels,

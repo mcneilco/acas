@@ -12,9 +12,11 @@
     }
 
     BulkLoadContainersFromSDFController.prototype.initialize = function() {
-      BulkLoadContainersFromSDFController.__super__.initialize.call(this);
       this.fileProcessorURL = "/api/bulkLoadContainersFromSDF";
       this.errorOwnerName = 'BulkLoadContainersFromSDFController';
+      this.allowedFileTypes = ['sdf'];
+      this.loadReportFile = false;
+      BulkLoadContainersFromSDFController.__super__.initialize.call(this);
       return this.$('.bv_moduleTitle').html('Load Containers From SDF');
     };
 
