@@ -5,8 +5,6 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.BasicFileValidateAndSaveController = (function(_super) {
-    var allowedFileTypes;
-
     __extends(BasicFileValidateAndSaveController, _super);
 
     function BasicFileValidateAndSaveController() {
@@ -48,7 +46,7 @@
       otherparam: "fred"
     };
 
-    allowedFileTypes = ['xls', 'xlsx', 'csv'];
+    BasicFileValidateAndSaveController.prototype.allowedFileTypes = ['xls', 'xlsx', 'csv'];
 
     BasicFileValidateAndSaveController.prototype.template = _.template($("#BasicFileValidateAndSaveView").html());
 
@@ -70,7 +68,7 @@
         inputTitle: '',
         url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
         fieldIsRequired: false,
-        allowedFileTypes: ['xls', 'xlsx', 'csv']
+        allowedFileTypes: this.allowedFileTypes
       });
       this.parseFileController.on('fileInput:uploadComplete', this.handleParseFileUploaded);
       this.parseFileController.on('fileInput:removedFile', this.handleParseFileRemoved);
