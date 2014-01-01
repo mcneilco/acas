@@ -19,6 +19,12 @@ Usually done in /opt/node_apps
     ln -s mcneilco-acas-f46a5c67fbd4 acas
     cd acas
     npm install
+    cd conf
+    node PrepareConfigFiles.js
+    /etc/init.d node_apps start
+    
+or
+
     forever start app.js
     forever start serverOnlyModules/blueimp-file-upload-node/server.js
 
