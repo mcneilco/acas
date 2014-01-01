@@ -547,7 +547,7 @@
       var newName;
       newName = this.getTrimmedInput('.bv_experimentName');
       this.model.get('lsLabels').setBestName(new Label({
-        labelKind: "experiment name",
+        lsKind: "experiment name",
         labelText: newName,
         recordedBy: this.model.get('recordedBy')
       }));

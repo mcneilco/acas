@@ -53,6 +53,7 @@ class window.LabelList extends Backbone.Collection
 		return bestLabel
 
 	setBestName: (label) ->
+		console.log label
 		label.set
 			lsType: 'name'
 			preferred: true
@@ -62,6 +63,7 @@ class window.LabelList extends Backbone.Collection
 			if currentName.isNew()
 				currentName.set
 					labelText: label.get 'labelText'
+					lsKind: label.get 'lsKind'
 					recordedBy: label.get 'recordedBy'
 					recordedDate: label.get 'recordedDate'
 			else

@@ -690,7 +690,7 @@
           return expect(this.ebc.$('.bv_experimentName').val()).toEqual("FLIPR target A biochemical");
         });
         it("should fill the date field", function() {
-          return expect(this.ebc.$('.bv_completionDate').val()).toEqual("2012-6-12");
+          return expect(this.ebc.$('.bv_completionDate').val()).toEqual("2012-7-12");
         });
         it("should fill the user field", function() {
           return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("smeyer");

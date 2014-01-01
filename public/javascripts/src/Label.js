@@ -115,6 +115,7 @@
 
     LabelList.prototype.setBestName = function(label) {
       var currentName;
+      console.log(label);
       label.set({
         lsType: 'name',
         preferred: true,
@@ -125,6 +126,7 @@
         if (currentName.isNew()) {
           return currentName.set({
             labelText: label.get('labelText'),
+            lsKind: label.get('lsKind'),
             recordedBy: label.get('recordedBy'),
             recordedDate: label.get('recordedDate')
           });

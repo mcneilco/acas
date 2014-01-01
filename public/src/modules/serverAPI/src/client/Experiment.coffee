@@ -333,7 +333,7 @@ class window.ExperimentBaseController extends AbstractFormController
 	handleNameChanged: =>
 		newName = @getTrimmedInput('.bv_experimentName')
 		@model.get('lsLabels').setBestName new Label
-			labelKind: "experiment name"
+			lsKind: "experiment name"
 			labelText: newName
 			recordedBy: @model.get 'recordedBy'
 		#TODO label change propagation isn't really working, so this is the work-around

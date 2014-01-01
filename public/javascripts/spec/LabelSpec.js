@@ -74,10 +74,12 @@
             oldBestId = this.ell.pickBestLabel().id;
             this.ell.setBestName(new Label({
               labelText: "new best name",
+              lsKind: "some kind",
               recordedBy: "fmcneil",
               recordedDate: 3362435677000
             }));
             expect(this.ell.pickBestLabel().get('labelText')).toEqual("new best name");
+            expect(this.ell.pickBestLabel().get('lsKind')).toEqual("some kind");
             expect(this.ell.pickBestLabel().isNew).toBeTruthy();
             return expect(this.ell.get(oldBestId).get('ignored')).toBeTruthy();
           });
@@ -87,30 +89,36 @@
         beforeEach(function() {
           return this.ell = new LabelList();
         });
-        it("Class should have labels", function() {
-          return expect(this.ell.length).toEqual(0);
+        describe("setup", function() {
+          return it("Class should have no labels", function() {
+            return expect(this.ell.length).toEqual(0);
+          });
         });
         return describe("setBestName functionality", function() {
           beforeEach(function() {
             return this.ell.setBestName(new Label({
-              labelText: "best name",
+              labelText: "best name 2",
+              lsKind: "some kind",
               recordedBy: "jmcneil",
               recordedDate: 2362435677000
             }));
           });
           it("should add new label when best name added for first time", function() {
-            expect(this.ell.pickBestLabel().get('labelText')).toEqual("best name");
+            expect(this.ell.pickBestLabel().get('labelText')).toEqual("best name 2");
+            expect(this.ell.pickBestLabel().get('lsKind')).toEqual("some kind");
             expect(this.ell.pickBestLabel().get('recordedBy')).toEqual("jmcneil");
             return expect(this.ell.pickBestLabel().get('recordedDate')).toEqual(2362435677000);
           });
           return it("should update existing unsaved label when best name changed", function() {
             this.ell.setBestName(new Label({
               labelText: "new best name",
+              lsKind: "some kind 3",
               recordedBy: "fmcneil",
               recordedDate: 3362435677000
             }));
             expect(this.ell.length).toEqual(1);
             expect(this.ell.pickBestLabel().get('labelText')).toEqual("new best name");
+            expect(this.ell.pickBestLabel().get('lsKind')).toEqual("some kind 3");
             expect(this.ell.pickBestLabel().get('recordedBy')).toEqual("fmcneil");
             return expect(this.ell.pickBestLabel().get('recordedDate')).toEqual(3362435677000);
           });
