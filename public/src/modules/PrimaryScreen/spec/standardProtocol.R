@@ -45,7 +45,7 @@ protocolValues <- list()
 protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction,
                           lsType = "clobValue",
                           lsKind = "data analysis parameters",
-                          clobValue = '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "conentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 2,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd"}'
+                          clobValue = '{  "positiveControl": {    "batchCode": "FL0073900-1-1",    "concentration": 10,    "conentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "FL0073895-1-1",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "FL0073897-1-1",    "concentration": 49.5,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd"}'
                           )
 
 protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction = lsTransaction,
@@ -63,7 +63,7 @@ protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction 
 													recordedBy="userName", 
 													lsType="name", 
 													lsKind="protocol name",
-													labelText="FLIPR target A biochemical",
+													labelText="FLIPR test old data",
 													preferred=TRUE)
 
 #################################################################################################
