@@ -21,6 +21,9 @@ Usually done in /opt/node_apps
     npm install
     cd conf
     node PrepareConfigFiles.js
+
+Then start with
+    
     /etc/init.d node_apps start
     
 or
