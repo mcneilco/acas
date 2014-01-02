@@ -53,34 +53,41 @@ describe "Label module testing", ->
 					oldBestId = @ell.pickBestLabel().id
 					@ell.setBestName new Label
 						labelText: "new best name"
+						lsKind: "some kind"
 						recordedBy: "fmcneil"
 						recordedDate: 3362435677000
 					expect(@ell.pickBestLabel().get('labelText')).toEqual "new best name"
+					expect(@ell.pickBestLabel().get('lsKind')).toEqual "some kind"
 					expect(@ell.pickBestLabel().isNew).toBeTruthy()
 					expect(@ell.get(oldBestId).get 'ignored').toBeTruthy()
 		describe "label list features when new and empty", ->
 			beforeEach ->
 				@ell = new LabelList()
-			it "Class should have labels", ->
-				expect(@ell.length).toEqual 0
+			describe "setup", ->
+				it "Class should have no labels", ->
+					expect(@ell.length).toEqual 0
 			describe "setBestName functionality", ->
 				beforeEach ->
 					@ell.setBestName new Label
-						labelText: "best name"
+						labelText: "best name 2"
+						lsKind: "some kind"
 						recordedBy: "jmcneil"
 						recordedDate: 2362435677000
 				it "should add new label when best name added for first time", ->
-					expect(@ell.pickBestLabel().get('labelText')).toEqual "best name"
+					expect(@ell.pickBestLabel().get('labelText')).toEqual "best name 2"
+					expect(@ell.pickBestLabel().get('lsKind')).toEqual "some kind"
 					expect(@ell.pickBestLabel().get('recordedBy')).toEqual "jmcneil"
 					expect(@ell.pickBestLabel().get('recordedDate')).toEqual 2362435677000
 
 				it "should update existing unsaved label when best name changed", ->
 					@ell.setBestName new Label
 						labelText: "new best name"
+						lsKind: "some kind 3"
 						recordedBy: "fmcneil"
 						recordedDate: 3362435677000
 					expect(@ell.length).toEqual 1
 					expect(@ell.pickBestLabel().get('labelText')).toEqual "new best name"
+					expect(@ell.pickBestLabel().get('lsKind')).toEqual "some kind 3"
 					expect(@ell.pickBestLabel().get('recordedBy')).toEqual "fmcneil"
 					expect(@ell.pickBestLabel().get('recordedDate')).toEqual 3362435677000
 

@@ -11,7 +11,7 @@ window.ModuleMenusConfiguration =
 		isHeader: false
 		menuName: "Analyze FLIPR Data"
 		mainControllerClassName: "PrimaryScreenExperimentController"
-		autoLaunchName:"screenExperiment"
+		autoLaunchName:"flipr_screening_assay"
 	,
 		isHeader: false, menuName: "Experiment Browser"
 		mainControllerClassName: "ExperimentBrowserController"

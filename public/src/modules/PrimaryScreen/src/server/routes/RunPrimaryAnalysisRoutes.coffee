@@ -82,7 +82,6 @@ exports.runPrimaryAnalysis = (request, response)  ->
 
 	response.writeHead(200, {'Content-Type': 'application/json'});
 
-
 	if global.specRunnerTestmode
 		serverUtilityFunctions.runRFunction(
 			request,

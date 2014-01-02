@@ -257,8 +257,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCompletionDate().get('dateValue')?
-			date = new Date(@model.getCompletionDate().get('dateValue'))
-			@$('.bv_completionDate').val(date.getFullYear()+'-'+date.getMonth()+'-'+date.getDate())
+			@$('.bv_completionDate').val @convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		@$('.bv_description').html(@model.getDescription().get('clobValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('stringValue'))
@@ -334,7 +333,7 @@ class window.ExperimentBaseController extends AbstractFormController
 	handleNameChanged: =>
 		newName = @getTrimmedInput('.bv_experimentName')
 		@model.get('lsLabels').setBestName new Label
-			labelKind: "experiment name"
+			lsKind: "experiment name"
 			labelText: newName
 			recordedBy: @model.get 'recordedBy'
 		#TODO label change propagation isn't really working, so this is the work-around
