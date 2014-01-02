@@ -537,7 +537,7 @@
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
-          if (window.AppLaunchParams.moduleLaunchParams.moduleName === "screenExperiment") {
+          if (window.AppLaunchParams.moduleLaunchParams.moduleName === "flipr_screening_assay") {
             return $.ajax({
               type: 'GET',
               url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,

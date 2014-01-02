@@ -480,7 +480,7 @@ describe "Experiment module testing", ->
 			xit "should fill the name field", ->
 				expect(@ebc.$('.bv_experimentName').val()).toEqual "FLIPR target A biochemical"
 			it "should fill the date field", ->
-				expect(@ebc.$('.bv_completionDate').val()).toEqual "2012-6-12"
+				expect(@ebc.$('.bv_completionDate').val()).toEqual "2012-7-12"
 			it "should fill the user field", ->
 				expect(@ebc.$('.bv_recordedBy').val()).toEqual "smeyer"
 			it "should fill the code field", ->
