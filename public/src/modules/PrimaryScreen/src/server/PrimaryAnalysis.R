@@ -996,10 +996,10 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
     lapply(valuesToDelete, deleteExperimentValue)
   } else {
     locationState <- createExperimentState(
-      recordedBy=recordedBy,
+      recordedBy = recordedBy,
       experiment = experiment,
-      lsKind="metadata",
-      lsKind="report locations",
+      lsType = "metadata",
+      lsKind = "report locations",
       lsTransaction=lsTransaction)
     
     locationState <- saveExperimentState(locationState)
