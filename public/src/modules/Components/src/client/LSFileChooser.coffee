@@ -22,7 +22,7 @@ class window.LSFileChooserController extends Backbone.View
 	allowMultipleFiles: false
 	maxNumberOfFiles: 3
 	autoUpload: true
-	maxFileSize: 50000000
+	maxFileSize: 200000000
 	listOfFileModels: []
 	currentNumberOfFiles : 0
 	requiresValidation: true
