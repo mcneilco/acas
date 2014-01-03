@@ -87,7 +87,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       propertyTable <- rbind.fill(propertyTable, newPropertyTable)
     }
     
-    summaryInfo$info$"Number of wells loaded" <- nrow(PropertyTable)
+    summaryInfo$info$"Number of wells loaded" <- nrow(propertyTable)
     
     sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
     

@@ -1266,12 +1266,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   summaryInfo <- list(
     info = list(
-      "Sweetener" = parameters$agonist,
+      "Sweetener" = parameters$agonist$batchCode,
       "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
       "Compounds analyzed" = length(unique(resultTable$batchName)),
       "Hits" = sum(analysisGroupData$threshold),
       "Threshold" = signif(efficacyThreshold, 3),
-      "SD Threshold" = parameters[[hitSelection]],
+      "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
       "Fluorescent compounds" = sum(resultTable$fluorescent),
       "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
       "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
@@ -1289,7 +1289,19 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
+    deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath){
+      response <- getURL(
+        paste0(lsServerURL, "experiments/",experiment$id, "?with=analysisgroups"),
+        customrequest='DELETE',
+        httpheader=c('Content-Type'='application/json'),
+        postfields=toJSON(experiment))
+      if(response!="") {
+        stop (paste("The loader was unable to delete the old experiment's analysis groups."))
+      }
+      return(response)
+    }
     
+    deleteExperimentAnalysisGroups(experiment)
     
     # Get the late peak points
     resultTable$latePeak <- (resultTable$overallMaxTime > 80) & 
