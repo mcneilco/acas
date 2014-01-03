@@ -85,7 +85,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     return(summaryInfo)
   }
   
-  output <- transferCompounds(containerTable, logFile, dryRun)
+  output <- transferCompounds(containerTable, logFile)
   containerTable <- output$containerTable
   interactions <- output$interactions
   
@@ -200,22 +200,24 @@ transferCompounds <- function(containerTable, logFile) {
   library('data.table')
   library('plyr')
   
-  #This just needs to get the class correct
-  containerTable$dateChanged <- Sys.time()
-  containerTable$CONCENTRATION_STRING <- as.character(containerTable$CONCENTRATION_STRING)
-  newDataRow <- nrow(containerTable) + 1
-  # This assumes that the average well will have less than five compounds at the end
-  extraRows <- data.frame("Source.Barcode" = rep(NA, 10 * nrow(logFile)), stringsAsFactors=F)
-  containerTable <- rbind.fill(containerTable, extraRows)
-  containerTable$deleted <- FALSE
-  containerTable <- as.data.table(containerTable)
-  interactions <- data.frame()
+  # Preallocate the interactions table
+  repeats <- nrow(logFile)
+  interactions <- data.table(
+    interactionType = rep("", repeats),
+    interactionKind = rep("", repeats),
+    firstContainer = rep(0, repeats),
+    secondContainer = rep(0, repeats),
+    dateTransferred = rep(as.POSIXct(Sys.time()), repeats),
+    volumeTransferred = rep(0, repeats),
+    transferUnit = rep("", repeats),
+    protocol = rep("", repeats)
+  )
   # This is a bit slow... 9.5 seconds for 700 rows
-  for (i in 1:nrow(logFile)) {
+  for (i in 1:repeats) {
     logRow <- logFile[i, ]
     
-    sourceTable <- containerTable[logRow$Source.Id == containerTable$WELL_ID & !containerTable$deleted, ]
-    destinationTable <- containerTable[logRow$Destination.Id == containerTable$WELL_ID & !containerTable$deleted, ]
+    sourceTable <- containerTable[logRow$Source.Id == containerTable$WELL_ID, ]
+    destinationTable <- containerTable[logRow$Destination.Id == containerTable$WELL_ID, ]
     ##################
     # Remove from source
     if (sourceTable$VOLUME_UNIT[1] != logRow$Amount.Units[1]) {
@@ -224,7 +226,6 @@ transferCompounds <- function(containerTable, logFile) {
     }
     newSourceSet <- sourceTable
     newSourceSet$VOLUME <- sourceTable$VOLUME[1] - logRow$Amount.Transferred
-    newSourceSet$dateChanged <- logRow$Date.Time
     if (newSourceSet$VOLUME[1] < 0) {
       stop(paste0("More liquid was removed from well ", sourceTable$WELL_ID, " (", sourceTable$WELL_NAME, ") than was available."))
     } else if (newSourceSet$VOLUME[1] == 0) {
@@ -236,43 +237,25 @@ transferCompounds <- function(containerTable, logFile) {
     destinationWellId <- logRow$Destination.Id
     sourceTable$VOLUME <- logRow$Amount.Transferred
     combinedSet <- rbind.fill(sourceTable, destinationTable)
-    buildResultRows <- function(setFrame, destinationWellId, destinationVolume, logRow) {
+    buildResultRows <- function(setFrame, destinationWellId, destinationVolume) {
       return(data.frame(
-        ID = as.integer(NA),
-        BARCODE = as.character(NA),
-        WELL_ID = as.integer(destinationWellId), 
-        WELL_NAME = as.character(NA),
+        WELL_ID = destinationWellId, 
         BATCH_CODE = setFrame$BATCH_CODE[1], 
         VOLUME = destinationVolume, 
-        VOLUME_STRING = as.character(NA),
         VOLUME_UNIT = setFrame$VOLUME_UNIT[1], 
         CONCENTRATION = sum(setFrame$CONCENTRATION*setFrame$VOLUME, na.rm = TRUE)/destinationVolume,
-        CONCENTRATION_STRING = as.character(NA),
         CONCENTRATION_UNIT = setFrame$CONCENTRATION_UNIT[1],
-        FakeId = as.character(NA),
-        dateChanged = logRow$Date.Time,
-        Source.Barcode = as.character(NA),
-        deleted = FALSE,
-        stringsAsFactors = FALSE))
+        stringsAsFactors=FALSE))
     }
-    newDestinationSet <- ddply(combinedSet, ~BATCH_CODE, buildResultRows, destinationWellId, destinationVolume, logRow)
+    newDestinationSet <- ddply(combinedSet, ~BATCH_CODE, buildResultRows, destinationWellId, destinationVolume)
+    newDestinationSet$dateChanged <- logRow$Date.Time
     
     # Remove old rows
-    containerTable[containerTable$WELL_ID == logRow$Source.Id | containerTable$WELL_ID == logRow$Destination.Id, deleted:=TRUE]
-    #containerTable <- containerTable[!(containerTable$WELL_ID %in% c(logRow$Destination.Id, logRow$Source.Id)), ]
+    containerTable <- containerTable[!(containerTable$WELL_ID %in% c(logRow$Destination.Id, logRow$Source.Id)), ]
     # Add new ones
-    if (nrow(newSourceSet) > 0) {
-      newSourceRows <- newDataRow:(newDataRow + nrow(newSourceSet) - 1)
-      containerTable[newSourceRows, names(containerTable):=newSourceSet]
-    }
-    newDestinationRows <- (newDataRow + nrow(newSourceSet)):(newDataRow + nrow(newDestinationSet) + nrow(newSourceSet) - 1)
-    containerTable[newDestinationRows, names(containerTable):=newDestinationSet]
+    containerTable <- rbind.fill(containerTable, newSourceSet, newDestinationSet)
     
-    
-    # Increment newDataRow
-    newDataRow <- newDataRow + nrow(newDestinationSet) + nrow(newSourceSet)
-    
-    newInteraction <- data.frame(
+    newInteraction <- data.table(
       interactionType = "transferred to",
       interactionKind = "content transfer",
       firstContainer = logRow$Source.Id,
@@ -280,17 +263,11 @@ transferCompounds <- function(containerTable, logFile) {
       dateTransferred = logRow$Date.Time,
       volumeTransferred = logRow$Amount.Transferred,
       transferUnit = logRow$Amount.Units,
-      protocol = logRow$Protocol,
-      stringsAsFactors = FALSE
+      protocol = logRow$Protocol
     )
-    interactions <- rbind.fill(interactions, newInteraction)
+    interactions[i, names(interactions):=newInteraction]
   }
-  containerTable <- as.data.frame(containerTable)
-  containerTable <- containerTable[!containerTable$deleted & !is.na(containerTable$WELL_ID), ]
-  containerTable$deleted <- NULL
-  containerTable$Source.Barcode <- NULL
-  row.names(containerTable) <- NULL
-  
+  interactions <- as.data.frame(interactions)
   return(list(containerTable = containerTable, interactions=interactions))
 }
 createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsTransaction, recordedBy) {
