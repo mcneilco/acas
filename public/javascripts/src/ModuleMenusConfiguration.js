@@ -13,10 +13,6 @@
       mainControllerClassName: "PrimaryScreenExperimentController",
       autoLaunchName: "flipr_screening_assay"
     }, {
-      isHeader: false,
-      menuName: "Experiment Browser",
-      mainControllerClassName: "ExperimentBrowserController"
-    }, {
       isHeader: true,
       menuName: "Inventory"
     }, {
