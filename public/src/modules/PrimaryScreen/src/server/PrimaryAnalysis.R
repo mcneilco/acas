@@ -1320,18 +1320,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
-    lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
+    #lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
     
     saveFileLocations(rawResultsLocation, resultsLocation, pdfLocation, experiment, dryRun, user, lsTransaction)
     
     #TODO: allow saving in an external file service
     summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$client.host, 
-                                         ":", racas::applicationSettingsclient.service.file.port,
+                                         ":", racas::applicationSettings$client.service.file.port,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
                                          
     summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$client.host, 
-                                         ":", racas::applicationSettingsclient.service.file.port,
+                                         ":", racas::applicationSettings$client.service.file.port,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Results.csv" target="_blank">Results</a>')
   }

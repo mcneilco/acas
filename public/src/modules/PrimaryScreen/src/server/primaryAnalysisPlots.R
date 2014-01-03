@@ -76,7 +76,11 @@ createGGComparison <- function(graphTitle, yLimits = NULL,
   well[well=="test - FALSE"] <- "test - not hit"
   well[well=="test - TRUE"] <- "test - hit"
   limitedGraphDataFrame$well <- well
-  #colourPalette <- list() TODO: get rid of unused colors when there are no hits
+  
+  # get rid of unused colors when there are no hits
+  if (all(!(well=="test - hit")) && length(colourPalette) == 4) {
+    colourPalette <- c(colourPalette[1:2], colourPalette[4])
+  }
   
   g <- ggplot(limitedGraphDataFrame, aes(x=xColumn, y=dataRow, colour=well))
   #if (!is.null(hits)) g <- g + aes(shape=isHit)
