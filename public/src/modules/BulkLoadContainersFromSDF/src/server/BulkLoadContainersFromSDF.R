@@ -59,6 +59,9 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     stop(paste("Error in loading the file:",e))
   })
   
+  fileLines <- readLines(fileName)
+  compoundNumber <- sum(fileLines == "$$$$")
+  
   requiredProperties <- c("ALIQUOT_PLATE_BARCODE","ALIQUOT_WELL_ID","SAMPLE_ID","ALIQUOT_SOLVENT","ALIQUOT_CONC","ALIQUOT_CONC_UNIT",
                           "ALIQUOT_VOLUME","ALIQUOT_VOLUME_UNIT","ALIQUOT_DATE")
   
@@ -74,7 +77,8 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   
   summaryInfo <- list(
     info = list(
-      "User name" = recordedBy
+      "User name" = recordedBy,
+      "Number of wells to load" = compoundNumber
     ))
   
   if (!dryRun) {
@@ -121,6 +125,10 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")
     }
     newFileName <- paste0("uploadedPlates/", basename(fileName))
+    
+    if(!file.exists(fileName)) {
+      stop(paste("Missing file", fileName))
+    }
     file.rename(fileName, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", newFileName))
     
     lsTransaction <- createLsTransaction(comments="Bulk load from .sdf file")$id
