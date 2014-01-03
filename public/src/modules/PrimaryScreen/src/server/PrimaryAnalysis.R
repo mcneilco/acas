@@ -1212,13 +1212,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     resultTable <- resultTable[!is.na(resultTable$batchName), ]
   }
   
-  batchDataTable <- data.table(values = resultTable$transformed, 
+  batchDataTable <- data.table(values = resultTable$normalized, 
                                batchName = resultTable$batchName,
                                fluorescent = resultTable$fluorescent,
                                sdScore = resultTable$sdScore,
                                wellType = resultTable$wellType,
                                barcode = resultTable$barcode,
-                               maxTime = resultTable$maxTime)
+                               maxTime = resultTable$maxTime,
+                               overallMaxTime = resultTable$overallMaxTime)
   
   aggregateReplicates <- "no"
   if (aggregateReplicates == "across plates") {
@@ -1240,7 +1241,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                 stDev = NA, 
                                                 n = 1, 
                                                 sdScore = sdScore,
-                                                maxTime = maxTime)]
+                                                maxTime = maxTime,
+                                                overallMaxTime = overallMaxTime)]
   }
   treatmentGroupData$treatmentGroupId <- 1:nrow(treatmentGroupData)
   
@@ -1260,18 +1262,19 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     efficacyThreshold <- parameters$hitEfficacyThreshold
   }
   #analysisGroupData$threshold <- analysisGroupData$sdScore > parameters$hitSDThreshold & !analysisGroupData$fluorescent & analysisGroupData$wellType=="test"
-  analysisGroupData$threshold <- analysisGroupData$groupMean > parameters$hitEfficacyThreshold & !analysisGroupData$fluorescent & analysisGroupData$wellType=="test"
-  
-   
+  analysisGroupData$latePeak <- (analysisGroupData$overallMaxTime > 80) & 
+    (analysisGroupData$groupMean > efficacyThreshold) & !analysisGroupData$fluorescent
+  analysisGroupData$threshold <- analysisGroupData$groupMean > efficacyThreshold & !analysisGroupData$fluorescent & 
+    analysisGroupData$wellType=="test" & !analysisGroupData$latePeak
   
   summaryInfo <- list(
     info = list(
-      "Sweetener" = parameters$agonist,
+      "Sweetener" = parameters$agonist$batchCode,
       "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
       "Compounds analyzed" = length(unique(resultTable$batchName)),
       "Hits" = sum(analysisGroupData$threshold),
       "Threshold" = signif(efficacyThreshold, 3),
-      "SD Threshold" = parameters[[hitSelection]],
+      "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
       "Fluorescent compounds" = sum(resultTable$fluorescent),
       "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
       "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
@@ -1289,7 +1292,19 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
+    deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath){
+      response <- getURL(
+        paste0(lsServerURL, "experiments/",experiment$id, "?with=analysisgroups"),
+        customrequest='DELETE',
+        httpheader=c('Content-Type'='application/json'),
+        postfields=toJSON(experiment))
+      if(response!="") {
+        stop (paste("The loader was unable to delete the old experiment's analysis groups."))
+      }
+      return(response)
+    }
     
+    deleteExperimentAnalysisGroups(experiment)
     
     # Get the late peak points
     resultTable$latePeak <- (resultTable$overallMaxTime > 80) & 
@@ -1320,7 +1335,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
-    #lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
+    lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
     
     saveFileLocations(rawResultsLocation, resultsLocation, pdfLocation, experiment, dryRun, user, lsTransaction)
     
