@@ -301,7 +301,7 @@ saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, log
   oldPlates <- lapply(oldPlates, function(x) {list(labelText=x)})
   
   response <- getURL(
-    paste(racas::applicationSettings$serverPath, "containers/findByLabels/jsonArray", sep=""),
+    paste(racas::applicationSettings$client.service.persistence.fullpath, "containers/findByLabels/jsonArray", sep=""),
     customrequest='POST',
     httpheader=c('Content-Type'='application/json'),
     postfields=toJSON(oldPlates))
@@ -453,7 +453,7 @@ MarkContainersStatusIgnored <- function(idVector) {
   idList <- lapply(idVector, function(x) list(id=x))
   
   response <- getURL(
-    paste0(racas::applicationSettings$serverPath, "containerstates/findValidContainerStates/jsonArray"),
+    paste0(racas::applicationSettings$client.service.persistence.fullpath, "containerstates/findValidContainerStates/jsonArray"),
     customrequest='POST',
     httpheader=c('Content-Type'='application/json'),
     postfields=toJSON(idList))
@@ -471,7 +471,7 @@ MarkContainersStatusIgnored <- function(idVector) {
   
   # Ignore containerStates
   #52.6 sec (700 rows)
-  ignoreContainerStates <- function(entities, acasCategory= "containerstates", lsServerURL = racas::applicationSettings$serverPath) {
+  ignoreContainerStates <- function(entities, acasCategory= "containerstates", lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
     response <- getURL(
       paste(lsServerURL, acasCategory, "/ignore/jsonArray", sep=""),
       customrequest='PUT',
