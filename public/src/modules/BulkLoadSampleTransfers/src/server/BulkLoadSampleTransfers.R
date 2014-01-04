@@ -71,9 +71,11 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   containerTable <- containerTable[containerTable$WELL_ID %in% c(logFile$Source.Id, logFile$Destination.Id), ]
   
   # This is a special addition for Nextval for their broken log files, it removes transfers from A01, B01, etc. that have no source.
+  # Also removes wells with id "@00"
   skipFirstRow <- TRUE
   if (skipFirstRow) {
     logFile <- logFile[!(is.na(logFile$Source.Id) & grepl("\\D01", logFile$Source.Well)), ]
+    logFile <- logFile[logFile$Source.Id != "@00"]
   }
   
   if (testMode || developmentMode) {

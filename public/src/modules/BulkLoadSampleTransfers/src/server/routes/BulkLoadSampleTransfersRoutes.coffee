@@ -15,7 +15,7 @@ app.post '/api/bulkLoadSampleTransfers', bulkLoadSampleTransfersRoutes.bulkLoadS
 
 
 exports.bulkLoadSampleTransfers = (request, response)  ->
-	request.connection.setTimeout 600000
+	request.connection.setTimeout 6000000
 #	console.log "bulkload called"
 #	setTimeout =>
 #		console.log "timeout over"
