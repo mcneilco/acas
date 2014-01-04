@@ -73,7 +73,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   # This is a special addition for Nextval for their broken log files, it removes transfers from A01, B01, etc. that have no source.
   skipFirstRow <- TRUE
   if (skipFirstRow) {
-    logFile <- logFile[!(is.na(logFile$Source.Id) & grepl("\D01", logFile$Source.Well), ]
+    logFile <- logFile[!(is.na(logFile$Source.Id) & grepl("\\D01", logFile$Source.Well)), ]
   }
   
   if (testMode || developmentMode) {
