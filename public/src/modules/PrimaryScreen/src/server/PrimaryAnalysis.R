@@ -1372,9 +1372,6 @@ runPrimaryAnalysis <- function(request) {
   dryRun <- interpretJSONBoolean(dryRun)
   #testMode <- interpretJSONBoolean(testMode)
   
-  #TODO: remove when done testing
-  testMode <- TRUE
-  
   # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
   errorHandlingBox <- list(errorList = list())
   attach(errorHandlingBox)
