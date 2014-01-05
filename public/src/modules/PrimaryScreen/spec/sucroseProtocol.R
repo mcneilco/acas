@@ -53,7 +53,7 @@ protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = l
                                          },
                                          "negativeControl": {
                                            "batchCode": "FL0073895-1",
-                                           "concentration": "infinite",
+                                           "concentration": "Infinity",
                                            "concentrationUnits": "uM"
                                          },
                                          "agonistControl": {
