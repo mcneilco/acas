@@ -96,11 +96,11 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable, ignore=list
   if((length(ignore) > 0) && !(ignore$batchCode %in% wellTable$BATCH_CODE)){
     stop("The agonist was not found in the plates. Have all transfers been loaded?")
   }
-  # TODO: Replace after changing units
-  ignoredRows <- wellTable$BATCH_CODE == ignore$batchCode & 
-    wellTable$CONCENTRATION == ignore$concentration
+  # TODO: Figure out if the <= is correct for the concentration
 #   ignoredRows <- wellTable$BATCH_CODE == ignore$batchCode & 
-#     wellTable$CONCENTRATION == ignore$concentration & wellTable$CONCENTRATION_UNIT == ignore$concentrationUnits
+#     wellTable$CONCENTRATION == ignore$concentration
+  ignoredRows <- wellTable$BATCH_CODE == ignore$batchCode & 
+    wellTable$CONCENTRATION <= ignore$concentration & wellTable$CONCENTRATION_UNIT == ignore$concentrationUnits
   wellTable <- wellTable[!(ignoredRows), ]
   
   wellUniqueId <- paste(barcode, well)
@@ -109,13 +109,23 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable, ignore=list
   names(outputFrame) <- c("batchName","concentration","concUnit")
   return(outputFrame)
 }
-getWellTypes <- function(batchName, positiveControl, negativeControl) {
-  # TODO: use concentrations
+getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl) {
+  # Takes vectors of batchNames, concentrations, and concunits 
+  # and compares to named lists of the same for positive and negative controls
   
-  wellTypes <- rep.int("test",length(batchName))
+  wellTypes <- rep.int("test",length(batchNames))
   
-  wellTypes[batchName==positiveControl$batchCode] <- "PC"
-  wellTypes[batchName==negativeControl$batchCode] <- "NC"
+  if (positiveControl$concentration == "infinite"){
+    positiveControl$concentration <- Inf
+  }
+  if (negativeControl$concentration == "infinite"){
+    negativeControl$concentration <- Inf
+  }
+  
+  wellTypes[batchName==positiveControl$batchCode & concentrations==positiveControl$concentration & 
+              concentrationUnits==positiveControl$concentrationUnits] <- "PC"
+  wellTypes[batchName==negativeControl$batchCode & concentrations==negativeControl$concentration & 
+              concentrationUnits==negativeControl$concentrationUnits] <- "NC"
   
 	return(wellTypes)
 }
@@ -216,6 +226,8 @@ createWellTable <- function(barcodeList, testMode) {
     FROM api_container_contents
     WHERE barcode IN ('", barcodeQuery, "')"))
   }
+  
+  wellTable$CONCENTRATION[wellTable$CONCENTRATION_STRING] <- Inf
   
   return(wellTable)
 }
@@ -1181,7 +1193,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable, parameters$agonistControl)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
   
-  resultTable$wellType <- getWellTypes(resultTable$batchName, parameters$positiveControl, parameters$negativeControl)
+  resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, resultTable$concUnit, parameters$positiveControl, parameters$negativeControl)
   
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformation)
