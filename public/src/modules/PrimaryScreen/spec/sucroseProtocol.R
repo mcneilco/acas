@@ -49,7 +49,7 @@ protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = l
                                          "positiveControl": {
                                            "batchCode": "FL0073900-1",
                                            "concentration": 502.51,
-                                           "conentrationUnits": "uM"
+                                           "concentrationUnits": "uM"
                                          },
                                          "negativeControl": {
                                            "batchCode": "FL0073895-1",
@@ -89,7 +89,7 @@ protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction 
 													recordedBy="userName", 
 													lsType="name", 
 													lsKind="protocol name",
-													labelText="Sucrose FLIPR Primary Screen neg Infinity",
+													labelText="Sucrose FLIPR Primary Screen neg Infinity fixed",
 													preferred=TRUE)
 
 #################################################################################################

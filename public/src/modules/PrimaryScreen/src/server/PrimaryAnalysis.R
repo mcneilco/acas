@@ -123,9 +123,9 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
     negativeControl$concentration <- Inf
   }
   
-  wellTypes[batchName==positiveControl$batchCode & concentrations==positiveControl$concentration & 
+  wellTypes[batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration & 
               concentrationUnits==positiveControl$concentrationUnits] <- "PC"
-  wellTypes[batchName==negativeControl$batchCode & concentrations==negativeControl$concentration & 
+  wellTypes[batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration & 
               concentrationUnits==negativeControl$concentrationUnits] <- "NC"
   
 	return(wellTypes)
@@ -228,7 +228,7 @@ createWellTable <- function(barcodeList, testMode) {
     WHERE barcode IN ('", barcodeQuery, "')"))
   }
   
-  wellTable$CONCENTRATION[wellTable$CONCENTRATION_STRING] <- Inf
+  wellTable$CONCENTRATION[wellTable$CONCENTRATION_STRING == "infinite"] <- Inf
   
   return(wellTable)
 }
@@ -1409,7 +1409,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 }
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
-  save(request, file = "request.Rda")
   require('racas')
   
   request <- as.list(request)
@@ -1421,7 +1420,7 @@ runPrimaryAnalysis <- function(request) {
   inputParameters <- request$inputParameters
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
-  #testMode <- interpretJSONBoolean(testMode)
+  testMode <- interpretJSONBoolean(testMode)
   
   # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
   errorHandlingBox <- list(errorList = list())
