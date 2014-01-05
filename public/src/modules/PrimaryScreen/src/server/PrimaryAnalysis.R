@@ -1064,8 +1064,11 @@ saveInputParameters <- function(inputParameters, experiment, lsTransaction, user
       lsType = "metadata",
       lsKind = "experiment metadata",
       lsTransaction=lsTransaction)
-    
-    metadataState <- saveExperimentState(metadataState)
+    tryCatch({
+      metadataState <- saveExperimentState(metadataState)
+    }, error = function(e) {
+      stop("Could not save the input parameters")
+    })
   }
   
   tryCatch({
