@@ -112,13 +112,14 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable, ignore=list
 getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl) {
   # Takes vectors of batchNames, concentrations, and concunits 
   # and compares to named lists of the same for positive and negative controls
+  # TODO: get client to send "infinite" as text for the negative control
   
   wellTypes <- rep.int("test",length(batchNames))
   
-  if (positiveControl$concentration == "infinite"){
+  if (positiveControl$concentration == "infinite") {
     positiveControl$concentration <- Inf
   }
-  if (negativeControl$concentration == "infinite"){
+  if (is.null(negativeControl$concentration) || negativeControl$concentration == "infinite") {
     negativeControl$concentration <- Inf
   }
   
@@ -1046,6 +1047,42 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
   
   return(NULL)
 }
+saveInputParameters <- function(inputParameters, experiment, lsTransaction, user) {
+  # input: inputParameters a string that is JSON
+  metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"]
+  
+  if (length(metadataState)> 0) {
+    metadataState <- metadataState[[1]]
+    
+    valueKinds <- lapply(metadataState$lsValues,getElement,"lsKind")
+    valuesToDelete <- metadataState$lsValues[valueKinds %in% c("data analysis parameters")]
+    lapply(valuesToDelete, deleteExperimentValue)
+  } else {
+    metadataState <- createExperimentState(
+      recordedBy = recordedBy,
+      experiment = experiment,
+      lsType = "metadata",
+      lsKind = "experiment metadata",
+      lsTransaction=lsTransaction)
+    
+    metadataState <- saveExperimentState(metadataState)
+  }
+  
+  tryCatch({
+    inputParametersValue <- createStateValue(
+      lsType = "clobValue",
+      lsKind = "data analysis parameters",
+      clobValue = inputParameters,
+      lsState = metadataState)
+    saveExperimentValues(list(inputParametersValue))
+  }, error = function(e) {
+    stop("Could not save the input parameters")
+  })
+  
+  
+  
+  return(NULL)
+}
 getExperimentParameters <- function(inputParameters) {
   # Gets experiment parameters
   #
@@ -1348,6 +1385,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
     lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
+    
+    saveInputParameters(inputParameters, experiment, lsTransaction, user)
     
     saveFileLocations(rawResultsLocation, resultsLocation, pdfLocation, experiment, dryRun, user, lsTransaction)
     
