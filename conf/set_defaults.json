@@ -74,8 +74,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "solvent content", lsType:{id:4, version:0}},
 {kindName: "transfer data", lsType:{id:2, version:0}},
 
-{kindName: "experiment analysis parameters", lsType:{id:1, version:0}},
-{kindName: "experiment controls", lsType:{id:1, version:0}},
+{kindName: "protocol metadata", lsType:{id:1, version:0}},
 
 {kindName: "plate information", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAME":8080/acas/statekinds/jsonArray

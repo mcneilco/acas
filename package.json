@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "express": "3.0.2",
-    "jade": "*",
+    "jade": "0.35.0",
 	"grunt": "*",
 	"grunt-contrib-coffee": "*",
 	"grunt-contrib-watch": "*",
@@ -20,7 +20,6 @@
 	"each": ">= 0.0.0",
 	"asyncblock": "*",
 	"properties": "*",
-	"underscoreDeepExtend": "git://github.com/pygy/underscoreDeepExtend.git",
 	"flat": "*"
   }
 }

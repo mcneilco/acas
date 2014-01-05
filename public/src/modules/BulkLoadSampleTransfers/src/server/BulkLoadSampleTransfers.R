@@ -4,6 +4,13 @@
 # bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/shortTransferNew.csv", dryRun=FALSE, user = "smeyer"))
 # bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/IFF Primary Screen Transfer Log 2013_4_18_edited_barcodes.csv", dryRun=TRUE, user = "smeyer"))
 # bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/shortTransfer.csv", dryRun=TRUE, user = "smeyer"))
+#
+# test case
+# library(testthat)
+# load("public/src/modules/BulkLoadSampleTransfers/spec/specFiles/transferCompoundsInput_short.Rda")
+# load("public/src/modules/BulkLoadSampleTransfers/spec/specFiles/transferCompoundsOutput_short.Rda")
+# expect_identical(transferCompounds(containerTable, logFile), output)
+
 
 #containerTable <- fullContainerTable
 #containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME_UNIT), ]
@@ -41,7 +48,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
                 "Check for other files that should be loaded first."))
   }
   
-  # Set infinite volume and concentration to numbers istead of text
+  # Set infinite volume and concentration to numbers instead of text
   containerTable$VOLUME[containerTable$VOLUME_STRING == "infinite"] <- Inf
   containerTable$CONCENTRATION[containerTable$CONCENTRATION_STRING == "infinite"] <- Inf
   
@@ -63,6 +70,19 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   
   containerTable <- containerTable[containerTable$WELL_ID %in% c(logFile$Source.Id, logFile$Destination.Id), ]
   
+  # This is a special addition for Nextval for their broken log files, it removes transfers from A01, B01, etc. that have no source.
+  # Also removes wells with id "@00"
+  skipFirstRow <- TRUE
+  if (skipFirstRow) {
+    logFile <- logFile[!(is.na(logFile$Source.Id) & grepl("\\D01", logFile$Source.Well)), ]
+    logFile <- logFile[logFile$Source.Id != "@00"]
+    if(nrow(logFile) == 0) {
+      stop(paste("Not all source plates have been registered. ",
+                 "It is likely that this file depends on a file that has not yet been loaded. ",
+                 "Check for other files that should be loaded first."))
+    }
+  }
+  
   if (testMode || developmentMode) {
     logFile <- logFile[!is.na(logFile$Source.Id), ]
   } else {
@@ -77,63 +97,9 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     return(summaryInfo)
   }
   
-  interactions <- data.frame()
-  # This is a bit slow... 9.5 seconds for 700 rows
-  for (i in 1:nrow(logFile)) {
-    logRow <- logFile[i, ]
-    
-    sourceTable <- containerTable[logRow$Source.Id == containerTable$WELL_ID, ]
-    destinationTable <- containerTable[logRow$Destination.Id == containerTable$WELL_ID, ]
-    ##################
-    # Remove from source
-    if (sourceTable$VOLUME_UNIT[1] != logRow$Amount.Units[1]) {
-      logRow$Amount.Transferred <- convertVolumes(logRow$Amount.Transferred, logRow$Amount.Units[1], sourceTable$VOLUME_UNIT[1])
-      logRow$Amount.Units <- sourceTable$VOLUME_UNIT[1]
-    }
-    newSourceSet <- sourceTable
-    newSourceSet$VOLUME <- sourceTable$VOLUME[1] - logRow$Amount.Transferred
-    if (newSourceSet$VOLUME[1] < 0) {
-      stop(paste0("More liquid was removed from well ", sourceTable$WELL_ID, " (", sourceTable$WELL_NAME, ") than was available."))
-    } else if (newSourceSet$VOLUME[1] == 0) {
-      newSourceSet <- data.frame()
-    }
-    ##################
-    # Add to destination
-    destinationVolume <- sum(destinationTable$VOLUME[1], logRow$Amount.Transferred, na.rm=TRUE)
-    destinationWellId <- logRow$Destination.Id
-    sourceTable$VOLUME <- logRow$Amount.Transferred
-    combinedSet <- rbind.fill(sourceTable, destinationTable)
-    buildResultRows <- function(setFrame, destinationWellId, destinationVolume) {
-      return(data.frame(
-        WELL_ID = destinationWellId, 
-        BATCH_CODE = setFrame$BATCH_CODE[1], 
-        VOLUME = destinationVolume, 
-        VOLUME_UNIT = setFrame$VOLUME_UNIT[1], 
-        CONCENTRATION = sum(setFrame$CONCENTRATION*setFrame$VOLUME, na.rm = TRUE)/destinationVolume,
-        CONCENTRATION_UNIT = setFrame$CONCENTRATION_UNIT[1],
-        stringsAsFactors=FALSE))
-    }
-    newDestinationSet <- ddply(combinedSet, ~BATCH_CODE, buildResultRows, destinationWellId, destinationVolume)
-    newDestinationSet$dateChanged <- logRow$Date.Time
-    
-    # Remove old rows
-    containerTable <- containerTable[!(containerTable$WELL_ID %in% c(logRow$Destination.Id, logRow$Source.Id)), ]
-    # Add new ones
-    containerTable <- rbind.fill(containerTable, newSourceSet, newDestinationSet)
-    
-    newInteraction <- data.frame(
-      interactionType = "transferred to",
-      interactionKind = "content transfer",
-      firstContainer = logRow$Source.Id,
-      secondContainer = logRow$Destination.Id,
-      dateTransferred = logRow$Date.Time,
-      volumeTransferred = logRow$Amount.Transferred,
-      transferUnit = logRow$Amount.Units,
-      protocol = logRow$Protocol,
-      stringsAsFactors = FALSE
-      )
-    interactions <- rbind.fill(interactions, newInteraction)
-  }
+  output <- transferCompounds(containerTable, logFile)
+  containerTable <- output$containerTable
+  interactions <- output$interactions
   
   # Save things
   lsTransaction <- createLsTransaction(comments="Sample Transfer load")$id
@@ -242,6 +208,80 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   return(summaryInfo)
   
 }
+transferCompounds <- function(containerTable, logFile) {
+  library('data.table')
+  library('plyr')
+  
+  # Preallocate the interactions table
+  repeats <- nrow(logFile)
+  interactions <- data.table(
+    interactionType = rep("", repeats),
+    interactionKind = rep("", repeats),
+    firstContainer = rep(0, repeats),
+    secondContainer = rep(0, repeats),
+    dateTransferred = rep(as.POSIXct(Sys.time()), repeats),
+    volumeTransferred = rep(0, repeats),
+    transferUnit = rep("", repeats),
+    protocol = rep("", repeats)
+  )
+  # This is a bit slow... 9.5 seconds for 700 rows
+  for (i in 1:repeats) {
+    logRow <- logFile[i, ]
+    
+    sourceTable <- containerTable[logRow$Source.Id == containerTable$WELL_ID, ]
+    destinationTable <- containerTable[logRow$Destination.Id == containerTable$WELL_ID, ]
+    ##################
+    # Remove from source
+    if (sourceTable$VOLUME_UNIT[1] != logRow$Amount.Units[1]) {
+      logRow$Amount.Transferred <- convertVolumes(logRow$Amount.Transferred, logRow$Amount.Units[1], sourceTable$VOLUME_UNIT[1])
+      logRow$Amount.Units <- sourceTable$VOLUME_UNIT[1]
+    }
+    newSourceSet <- sourceTable
+    newSourceSet$VOLUME <- sourceTable$VOLUME[1] - logRow$Amount.Transferred
+    if (newSourceSet$VOLUME[1] < 0) {
+      stop(paste0("More liquid was removed from well ", sourceTable$WELL_ID, " (", sourceTable$WELL_NAME, ") than was available."))
+    } else if (newSourceSet$VOLUME[1] == 0) {
+      newSourceSet <- data.frame()
+    }
+    ##################
+    # Add to destination
+    destinationVolume <- sum(destinationTable$VOLUME[1], logRow$Amount.Transferred, na.rm=TRUE)
+    destinationWellId <- logRow$Destination.Id
+    sourceTable$VOLUME <- logRow$Amount.Transferred
+    combinedSet <- rbind.fill(sourceTable, destinationTable)
+    buildResultRows <- function(setFrame, destinationWellId, destinationVolume) {
+      return(data.frame(
+        WELL_ID = destinationWellId, 
+        BATCH_CODE = setFrame$BATCH_CODE[1], 
+        VOLUME = destinationVolume, 
+        VOLUME_UNIT = setFrame$VOLUME_UNIT[1], 
+        CONCENTRATION = sum(setFrame$CONCENTRATION*setFrame$VOLUME, na.rm = TRUE)/destinationVolume,
+        CONCENTRATION_UNIT = setFrame$CONCENTRATION_UNIT[1],
+        stringsAsFactors=FALSE))
+    }
+    newDestinationSet <- ddply(combinedSet, ~BATCH_CODE, buildResultRows, destinationWellId, destinationVolume)
+    newDestinationSet$dateChanged <- logRow$Date.Time
+    
+    # Remove old rows
+    containerTable <- containerTable[!(containerTable$WELL_ID %in% c(logRow$Destination.Id, logRow$Source.Id)), ]
+    # Add new ones
+    containerTable <- rbind.fill(containerTable, newSourceSet, newDestinationSet)
+    
+    newInteraction <- data.table(
+      interactionType = "transferred to",
+      interactionKind = "content transfer",
+      firstContainer = logRow$Source.Id,
+      secondContainer = logRow$Destination.Id,
+      dateTransferred = logRow$Date.Time,
+      volumeTransferred = logRow$Amount.Transferred,
+      transferUnit = logRow$Amount.Units,
+      protocol = logRow$Protocol
+    )
+    interactions[i, names(interactions):=newInteraction]
+  }
+  interactions <- as.data.frame(interactions)
+  return(list(containerTable = containerTable, interactions=interactions))
+}
 createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsTransaction, recordedBy) {
   return(createContainerContainerInteraction(
     lsType= "has member",
@@ -268,7 +308,7 @@ saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, log
   oldPlates <- lapply(oldPlates, function(x) {list(labelText=x)})
   
   response <- getURL(
-    paste(racas::applicationSettings$serverPath, "containers/findByLabels/jsonArray", sep=""),
+    paste(racas::applicationSettings$client.service.persistence.fullpath, "containers/findByLabels/jsonArray", sep=""),
     customrequest='POST',
     httpheader=c('Content-Type'='application/json'),
     postfields=toJSON(oldPlates))
@@ -395,7 +435,7 @@ getCompoundPlateInfo <- function(barcodeList, testMode = FALSE) {
   barcodeQuery <- paste(barcodeList,collapse="','")
   
   if (testMode) {
-    fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export2.csv")
+    fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export2.csv", stringsAsFactors=F)
     wellTable <- fakeAPI
   } else {
     wellTable <- query(paste0("SELECT * FROM api_container_contents WHERE barcode IN ('", barcodeQuery, "')"))
@@ -420,7 +460,7 @@ MarkContainersStatusIgnored <- function(idVector) {
   idList <- lapply(idVector, function(x) list(id=x))
   
   response <- getURL(
-    paste0(racas::applicationSettings$serverPath, "containerstates/findValidContainerStates/jsonArray"),
+    paste0(racas::applicationSettings$client.service.persistence.fullpath, "containerstates/findValidContainerStates/jsonArray"),
     customrequest='POST',
     httpheader=c('Content-Type'='application/json'),
     postfields=toJSON(idList))
@@ -438,7 +478,7 @@ MarkContainersStatusIgnored <- function(idVector) {
   
   # Ignore containerStates
   #52.6 sec (700 rows)
-  ignoreContainerStates <- function(entities, acasCategory= "containerstates", lsServerURL = racas::applicationSettings$serverPath) {
+  ignoreContainerStates <- function(entities, acasCategory= "containerstates", lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
     response <- getURL(
       paste(lsServerURL, acasCategory, "/ignore/jsonArray", sep=""),
       customrequest='PUT',
@@ -481,7 +521,7 @@ bulkLoadSampleTransfers <- function(request) {
     testMode <- FALSE
   }
   
-  developmentMode <- TRUE
+  developmentMode <- FALSE
   # Run the main function with error handling
   loadResult <- tryCatch.W.E(runMain(fileName,dryRun, testMode, developmentMode, recordedBy))
   

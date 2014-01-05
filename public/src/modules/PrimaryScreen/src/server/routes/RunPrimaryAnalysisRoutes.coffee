@@ -76,7 +76,7 @@ exports.primaryScreenExperimentIndex = (request, response) ->
 
 
 exports.runPrimaryAnalysis = (request, response)  ->
-	request.connection.setTimeout 600000
+	request.connection.setTimeout 1800000
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	console.log request.body
 

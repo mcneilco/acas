@@ -59,6 +59,9 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     stop(paste("Error in loading the file:",e))
   })
   
+  fileLines <- readLines(fileName)
+  compoundNumber <- sum(fileLines == "$$$$")
+  
   requiredProperties <- c("ALIQUOT_PLATE_BARCODE","ALIQUOT_WELL_ID","SAMPLE_ID","ALIQUOT_SOLVENT","ALIQUOT_CONC","ALIQUOT_CONC_UNIT",
                           "ALIQUOT_VOLUME","ALIQUOT_VOLUME_UNIT","ALIQUOT_DATE")
   
@@ -74,7 +77,8 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   
   summaryInfo <- list(
     info = list(
-      "User name" = recordedBy
+      "User name" = recordedBy,
+      "Number of wells to load" = compoundNumber
     ))
   
   if (!dryRun) {
@@ -87,7 +91,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       propertyTable <- rbind.fill(propertyTable, newPropertyTable)
     }
     
-    summaryInfo$info$"Number of wells loaded" <- nrow(PropertyTable)
+    summaryInfo$info$"Number of wells loaded" <- nrow(propertyTable)
     
     sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
     
@@ -109,11 +113,22 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       stop("Some of the concentrations or volumes are not numbers")
     }
     
+    propertyTable$ALIQUOT_CONC[propertyTable$ALIQUOT_CONC_UNIT == "mM"] <- propertyTable$ALIQUOT_CONC[propertyTable$ALIQUOT_CONC_UNIT == "mM"] * 1000
+    propertyTable$ALIQUOT_CONC_UNIT[propertyTable$ALIQUOT_CONC_UNIT == "mM"] <- "uM"
+    
+    if (any(propertyTable$ALIQUOT_CONC_UNIT != "uM")) {
+    	stop("All concentration units must be uM or mM")
+    }
+    
     # Save plate
     if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")) {
       dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")
     }
     newFileName <- paste0("uploadedPlates/", basename(fileName))
+    
+    if(!file.exists(fileName)) {
+      stop(paste("Missing file", fileName))
+    }
     file.rename(fileName, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", newFileName))
     
     lsTransaction <- createLsTransaction(comments="Bulk load from .sdf file")$id

@@ -96,11 +96,11 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable, ignore=list
   if((length(ignore) > 0) && !(ignore$batchCode %in% wellTable$BATCH_CODE)){
     stop("The agonist was not found in the plates. Have all transfers been loaded?")
   }
-  # TODO: Replace after changing units
-  ignoredRows <- wellTable$BATCH_CODE == ignore$batchCode & 
-    wellTable$CONCENTRATION == ignore$concentration
+  # TODO: Figure out if the <= is correct for the concentration
 #   ignoredRows <- wellTable$BATCH_CODE == ignore$batchCode & 
-#     wellTable$CONCENTRATION == ignore$concentration & wellTable$CONCENTRATION_UNIT == ignore$concentrationUnits
+#     wellTable$CONCENTRATION == ignore$concentration
+  ignoredRows <- wellTable$BATCH_CODE == ignore$batchCode & 
+    wellTable$CONCENTRATION <= ignore$concentration & wellTable$CONCENTRATION_UNIT == ignore$concentrationUnits
   wellTable <- wellTable[!(ignoredRows), ]
   
   wellUniqueId <- paste(barcode, well)
@@ -109,13 +109,24 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable, ignore=list
   names(outputFrame) <- c("batchName","concentration","concUnit")
   return(outputFrame)
 }
-getWellTypes <- function(batchName, positiveControl, negativeControl) {
-  # TODO: use concentrations
+getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl) {
+  # Takes vectors of batchNames, concentrations, and concunits 
+  # and compares to named lists of the same for positive and negative controls
+  # TODO: get client to send "infinite" as text for the negative control
   
-  wellTypes <- rep.int("test",length(batchName))
+  wellTypes <- rep.int("test",length(batchNames))
   
-  wellTypes[batchName==positiveControl$batchCode] <- "PC"
-  wellTypes[batchName==negativeControl$batchCode] <- "NC"
+  if (positiveControl$concentration == "infinite") {
+    positiveControl$concentration <- Inf
+  }
+  if (is.null(negativeControl$concentration) || negativeControl$concentration == "infinite") {
+    negativeControl$concentration <- Inf
+  }
+  
+  wellTypes[batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration & 
+              concentrationUnits==positiveControl$concentrationUnits] <- "PC"
+  wellTypes[batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration & 
+              concentrationUnits==negativeControl$concentrationUnits] <- "NC"
   
 	return(wellTypes)
 }
@@ -216,6 +227,8 @@ createWellTable <- function(barcodeList, testMode) {
     FROM api_container_contents
     WHERE barcode IN ('", barcodeQuery, "')"))
   }
+  
+  wellTable$CONCENTRATION[wellTable$CONCENTRATION_STRING == "infinite"] <- Inf
   
   return(wellTable)
 }
@@ -408,7 +421,14 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   #save(subjectData, experimentId, file="test.Rda")
   originalNames <- names(subjectData)
   subjectData <- as.data.frame(subjectData)
-  names(subjectData) <- c('barcode', 'well name', 'fileName', 'maximum', 'startReadMax', 'endReadMax', 'minimum', 'startReadMin', 'endReadMin', 'fluorescent', 'timePoints', 'fluorescencePoints', 'batchCode', 'Dose', 'DoseUnit','well type', 'transformed efficacy', 'normalized efficacy', 'index', 'max time','over efficacy threshold')
+  
+  # Fix names
+  nameChange <- c(
+    'well'='well name', 'Maximum'='maximum', 'Minimum'='minimum', 'sequence'='fluorescencePoints', 
+    'batchName'='batchCode', 'concentration'='Dose', 'concUnit'='DoseUnit', 'wellType' = 'well type', 
+    'transformed'='transformed efficacy','normalized'='normalized efficacy', 'maxTime' = 'max time', 
+    'latePeak'='late peak', 'threshold'='over efficacy threshold')
+  names(subjectData)[names(subjectData) %in% names(nameChange)] <- nameChange[names(subjectData)[names(subjectData) %in% names(nameChange)]]
   
   stateGroups <- list(list(entityKind = "subject",
                            stateType = "data", 
@@ -425,13 +445,15 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                       list(entityKind = "subject",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", "normalized efficacy", "over efficacy threshold", "fluorescencePoints","timePoints"), #TODO: add "max time"
+                           valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", 
+                                          "normalized efficacy", "over efficacy threshold", "fluorescencePoints",
+                                          "timePoints","max time", 'late peak'),
                            includesOthers = FALSE,
                            includesCorpName = FALSE),
                       list(entityKind = "analysis group",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("fluorescent", "normalized efficacy"),
+                           valueKinds = c("fluorescent", "normalized efficacy", "over efficacy threshold"),
                            includesOthers = FALSE,
                            includesCorpName = TRUE),
                       list(entityKind = "analysis group",
@@ -444,6 +466,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   
   # Turn logicals into "yes" and "no"
   columnClasses <- lapply(subjectData, class)
+  
   for (i in 1:length(columnClasses)) {
     if (columnClasses[[i]]=="logical") {
       subjectData[[names(columnClasses)[i]]] <- ifelse(subjectData[[names(columnClasses)[i]]],"yes","no")
@@ -454,11 +477,18 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   subjectData <- as.data.frame(lapply(subjectData, as.character), stringsAsFactors=FALSE, optional=TRUE)
   
   # TODO: check that all dose units are same
-  resultTypes <- data.frame(DataColumn = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold'),
-                            Type = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold'),
-                            Units = c(NA, NA, 'rfu', 'rfu', NA, 'sec', 'rfu', subjectData$DoseUnit[1], NA, NA, NA, NA),
-                            valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue','clobValue','clobValue','numericValue','stringValue','numericValue','numericValue','stringValue'),
-                            stringsAsFactors = FALSE)
+  resultTypes <- data.frame(
+    DataColumn = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 
+                   'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
+                   'max time', 'late peak'),
+    Type = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 
+             'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
+             'max time', 'late peak'),
+    Units = c(NA, NA, 'rfu', 'rfu', NA, 'sec', 'rfu', subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA),
+    valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue','clobValue',
+                  'clobValue','numericValue','stringValue','numericValue','numericValue','stringValue',
+                  'numericValue','stringValue'),
+    stringsAsFactors = FALSE)
   
   subjectData$DoseUnit <- NULL
   subjectData$fileName <- NULL
@@ -532,7 +562,6 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     
     return(longResults)
   }
-  
   meltedSubjectData <- makeLongData(subjectData, resultTypes=resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode"))
   experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath,"experiments/",experimentId)))
   
@@ -645,7 +674,6 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
-  savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
   #
   #####  
   # Treatment Group states =========================================================================
@@ -981,10 +1009,10 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
     lapply(valuesToDelete, deleteExperimentValue)
   } else {
     locationState <- createExperimentState(
-      recordedBy=recordedBy,
+      recordedBy = recordedBy,
       experiment = experiment,
-      lsKind="metadata",
-      lsKind="report locations",
+      lsType = "metadata",
+      lsKind = "report locations",
       lsTransaction=lsTransaction)
     
     locationState <- saveExperimentState(locationState)
@@ -1016,6 +1044,45 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
   })
 
 
+  
+  return(NULL)
+}
+saveInputParameters <- function(inputParameters, experiment, lsTransaction, user) {
+  # input: inputParameters a string that is JSON
+  metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"]
+  
+  if (length(metadataState)> 0) {
+    metadataState <- metadataState[[1]]
+    
+    valueKinds <- lapply(metadataState$lsValues,getElement,"lsKind")
+    valuesToDelete <- metadataState$lsValues[valueKinds %in% c("data analysis parameters")]
+    lapply(valuesToDelete, deleteExperimentValue)
+  } else {
+    metadataState <- createExperimentState(
+      recordedBy = recordedBy,
+      experiment = experiment,
+      lsType = "metadata",
+      lsKind = "experiment metadata",
+      lsTransaction=lsTransaction)
+    tryCatch({
+      metadataState <- saveExperimentState(metadataState)
+    }, error = function(e) {
+      stop("Could not save the input parameters")
+    })
+  }
+  
+  tryCatch({
+    inputParametersValue <- createStateValue(
+      lsType = "clobValue",
+      lsKind = "data analysis parameters",
+      clobValue = inputParameters,
+      lsState = metadataState)
+    saveExperimentValues(list(inputParametersValue))
+  }, error = function(e) {
+    stop("Could not save the input parameters")
+  })
+  
+  
   
   return(NULL)
 }
@@ -1128,7 +1195,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
   
   if(!dryRun) {
-    setAnalysisStatus(status="running", metadataState)
+    setAnalysisStatus(status="parsing", metadataState)
   }
   
   parameters <- getExperimentParameters(inputParameters)
@@ -1166,7 +1233,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable, parameters$agonistControl)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
   
-  resultTable$wellType <- getWellTypes(resultTable$batchName, parameters$positiveControl, parameters$negativeControl)
+  resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, resultTable$concUnit, parameters$positiveControl, parameters$negativeControl)
   
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformation)
@@ -1197,13 +1264,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     resultTable <- resultTable[!is.na(resultTable$batchName), ]
   }
   
-  batchDataTable <- data.table(values = resultTable$transformed, 
+  batchDataTable <- data.table(values = resultTable$normalized, 
                                batchName = resultTable$batchName,
                                fluorescent = resultTable$fluorescent,
                                sdScore = resultTable$sdScore,
                                wellType = resultTable$wellType,
                                barcode = resultTable$barcode,
-                               maxTime = resultTable$maxTime)
+                               maxTime = resultTable$maxTime,
+                               overallMaxTime = resultTable$overallMaxTime)
   
   aggregateReplicates <- "no"
   if (aggregateReplicates == "across plates") {
@@ -1225,7 +1293,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                 stDev = NA, 
                                                 n = 1, 
                                                 sdScore = sdScore,
-                                                maxTime = maxTime)]
+                                                maxTime = maxTime,
+                                                overallMaxTime = overallMaxTime)]
   }
   treatmentGroupData$treatmentGroupId <- 1:nrow(treatmentGroupData)
   
@@ -1245,18 +1314,19 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     efficacyThreshold <- parameters$hitEfficacyThreshold
   }
   #analysisGroupData$threshold <- analysisGroupData$sdScore > parameters$hitSDThreshold & !analysisGroupData$fluorescent & analysisGroupData$wellType=="test"
-  analysisGroupData$threshold <- analysisGroupData$groupMean > parameters$hitEfficacyThreshold & !analysisGroupData$fluorescent & analysisGroupData$wellType=="test"
-  
-   
+  analysisGroupData$latePeak <- (analysisGroupData$overallMaxTime > 80) & 
+    (analysisGroupData$groupMean > efficacyThreshold) & !analysisGroupData$fluorescent
+  analysisGroupData$threshold <- analysisGroupData$groupMean > efficacyThreshold & !analysisGroupData$fluorescent & 
+    analysisGroupData$wellType=="test" & !analysisGroupData$latePeak
   
   summaryInfo <- list(
     info = list(
-      "Sweetener" = parameters$agonist,
+      "Sweetener" = parameters$agonist$batchCode,
       "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
       "Compounds analyzed" = length(unique(resultTable$batchName)),
       "Hits" = sum(analysisGroupData$threshold),
       "Threshold" = signif(efficacyThreshold, 3),
-      "SD Threshold" = parameters[[hitSelection]],
+      "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
       "Fluorescent compounds" = sum(resultTable$fluorescent),
       "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
       "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
@@ -1269,10 +1339,24 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   lsTransaction <- NULL
   
   if (dryRun) {
-    
+    save(experiment, file="experiment.Rda")
   } else {
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
+    
+    deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath){
+      response <- getURL(
+        paste0(lsServerURL, "experiments/",experiment$id, "?with=analysisgroups"),
+        customrequest='DELETE',
+        httpheader=c('Content-Type'='application/json'),
+        postfields=toJSON(experiment))
+      if(response!="") {
+        stop (paste("The loader was unable to delete the old experiment's analysis groups."))
+      }
+      return(response)
+    }
+    
+    deleteExperimentAnalysisGroups(experiment)
     
     # Get the late peak points
     resultTable$latePeak <- (resultTable$overallMaxTime > 80) & 
@@ -1305,16 +1389,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
     
+    saveInputParameters(inputParameters, experiment, lsTransaction, user)
+    
     saveFileLocations(rawResultsLocation, resultsLocation, pdfLocation, experiment, dryRun, user, lsTransaction)
     
     #TODO: allow saving in an external file service
     summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$client.host, 
-                                         ":", racas::applicationSettingsclient.service.file.port,
+                                         ":", racas::applicationSettings$client.service.file.port,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
                                          
     summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$client.host, 
-                                         ":", racas::applicationSettingsclient.service.file.port,
+                                         ":", racas::applicationSettings$client.service.file.port,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Results.csv" target="_blank">Results</a>')
   }
@@ -1326,7 +1412,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 }
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
-  
   require('racas')
   
   request <- as.list(request)
@@ -1338,10 +1423,7 @@ runPrimaryAnalysis <- function(request) {
   inputParameters <- request$inputParameters
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
-  #testMode <- interpretJSONBoolean(testMode)
-  
-  #TODO: remove when done testing
-  testMode <- TRUE
+  testMode <- interpretJSONBoolean(testMode)
   
   # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
   errorHandlingBox <- list(errorList = list())
