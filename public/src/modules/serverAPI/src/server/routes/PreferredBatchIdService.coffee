@@ -16,7 +16,7 @@ exports.preferredBatchId = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-	serviceType = config.all.server.service.external.preferred.batchid.url
+	serviceType = config.all.server.service.external.preferred.batchid.type
 
 
 	requests = req.body.requests
