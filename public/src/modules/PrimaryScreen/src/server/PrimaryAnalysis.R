@@ -109,7 +109,7 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable, ignore=list
   names(outputFrame) <- c("batchName","concentration","concUnit")
   return(outputFrame)
 }
-getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl) {
+getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, testMode=F) {
   # Takes vectors of batchNames, concentrations, and concunits 
   # and compares to named lists of the same for positive and negative controls
   # TODO: get client to send "infinite" as text for the negative control
@@ -122,11 +122,16 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
   if (is.null(negativeControl$concentration) || negativeControl$concentration == "infinite") {
     negativeControl$concentration <- Inf
   }
-  
-  wellTypes[batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration & 
-              concentrationUnits==positiveControl$concentrationUnits] <- "PC"
-  wellTypes[batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration & 
-              concentrationUnits==negativeControl$concentrationUnits] <- "NC"
+  if(testMode) {
+    wellTypes[batchNames==positiveControl$batchCode] <- "PC"
+    wellTypes[batchNames==negativeControl$batchCode] <- "NC"
+  } else {
+    wellTypes[batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration & 
+                concentrationUnits==positiveControl$concentrationUnits] <- "PC"
+    wellTypes[batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration & 
+                concentrationUnits==negativeControl$concentrationUnits] <- "NC"
+  }
+
   
 	return(wellTypes)
 }
@@ -233,7 +238,7 @@ createWellTable <- function(barcodeList, testMode) {
   return(wellTable)
 }
 
-createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, threshold, experiment) {
+createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, threshold, experiment, dryRun=F) {
   require('gplots')
   require('gridExtra')
   require('data.table')
@@ -243,11 +248,19 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, t
   allResultTable <- resultTable
   resultTable <- resultTable[!resultTable$fluorescent,]
   
-  pdfLocation <- paste0("experiments/",experiment$codeName,"/analysis/",experiment$codeName,"_Summary.pdf")
+  if(dryRun) {
+    dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/tmp", showWarnings=FALSE, recursive=TRUE)
+    pdfLocation <- paste0("tmp/",experiment$codeName,"_SummaryDRAFT.pdf")
+  } else {
+    pdfLocation <- paste0("experiments/",experiment$codeName,"/analysis/",experiment$codeName,"_Summary.pdf")
+  }
   pdf(file=paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", pdfLocation), width=8.5, height=11)
-  
+  if(dryRun) {
+    textplot("Validation DRAFT")
+  }
   textToShow <- paste0("------------------------------------------------------------------------------------------------\n",
                       paste(paste0(names(summaryInfo$info),": ",summaryInfo$info),collapse="\n"))
+  
   textplot(textToShow, halign="left",valign="top")
   title("Primary Screen")
   
@@ -637,7 +650,6 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   
   subjects <- dlply(.data= subjectData, .variables= .(subjectID), .fun= createRawOnlySubject)
   names(subjects) <- NULL
-  
   savedSubjects <- saveAcasEntities(subjects, "subjects")
   
   subjectIds <- sapply(savedSubjects, getElement, "id")
@@ -1233,7 +1245,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable, parameters$agonistControl)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
   
-  resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, resultTable$concUnit, parameters$positiveControl, parameters$negativeControl)
+  resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, resultTable$concUnit, parameters$positiveControl, parameters$negativeControl, testMode)
   
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformation)
@@ -1319,6 +1331,25 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   analysisGroupData$threshold <- analysisGroupData$groupMean > efficacyThreshold & !analysisGroupData$fluorescent & 
     analysisGroupData$wellType=="test" & !analysisGroupData$latePeak
   
+  # Get the late peak points
+  resultTable$latePeak <- (resultTable$overallMaxTime > 80) & 
+    (resultTable$normalized > efficacyThreshold) & !resultTable$fluorescent
+  # Get individual points that are greater than the threshold
+  resultTable$threshold <- (resultTable$normalized > efficacyThreshold) & !resultTable$fluorescent & 
+    resultTable$wellType=="test" & !resultTable$latePeak
+  
+  if (analysisType == "primary") {
+    # May need to return to using analysisGroupData eventually
+    outputTable <- data.table("Corporate Batch ID" = resultTable$batchName, "Barcode" = resultTable$barcode,
+                              "Well" = resultTable$well, "Hit" = ifelse(resultTable$threshold, "yes", "no"),
+                              "SD Score" = resultTable$sdScore, "Normalized Activity" = resultTable$normalized,
+                              "Activity" = resultTable$transformed, 
+                              "Fluorescent"= ifelse(resultTable$fluorescent, "yes", "no"),
+                              "Max Time (s)" = resultTable$maxTime, "Well Type" = resultTable$wellType,
+                              "Late Peak" = ifelse(resultTable$latePeak, "yes", "no"))
+  }
+  outputTable <- outputTable[order(Hit,Fluorescent,decreasing=TRUE)]
+  
   summaryInfo <- list(
     info = list(
       "Sweetener" = parameters$agonist$batchCode,
@@ -1336,10 +1367,25 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     )
   )
   
-  lsTransaction <- NULL
+  
   
   if (dryRun) {
-    save(experiment, file="experiment.Rda")
+    lsTransaction <- NULL
+    
+    #save(experiment, file="experiment.Rda")
+    pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
+                             threshold = efficacyThreshold, experiment, dryRun)
+    summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$client.host, 
+                                         ":", racas::applicationSettings$client.service.file.port,
+                                         "/files/tmp/", 
+                                         experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
+    
+    resultsLocation <- paste0("tmp/", experiment$codeName, "_ResultsDRAFT.csv")
+    write.csv(outputTable, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", resultsLocation), row.names=FALSE)
+    summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$client.host, 
+                                         ":", racas::applicationSettings$client.service.file.port,
+                                         "/files/tmp/", 
+                                         experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
   } else {
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
@@ -1358,28 +1404,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     deleteExperimentAnalysisGroups(experiment)
     
-    # Get the late peak points
-    resultTable$latePeak <- (resultTable$overallMaxTime > 80) & 
-      (resultTable$normalized > efficacyThreshold) & !resultTable$fluorescent
-    # Get individual points that are greater than the threshold
-    resultTable$threshold <- (resultTable$normalized > efficacyThreshold) & !resultTable$fluorescent & 
-      resultTable$wellType=="test" & !resultTable$latePeak
-    
     rawResultsLocation <- paste0("experiments/",experiment$codeName,"/analysis/rawResults.Rda")
     save(resultTable,parameters,file=paste0("serverOnlyModules/blueimp-file-upload-node/public/files/",rawResultsLocation))
     
     resultsLocation <- paste0("experiments/", experiment$codeName,"/analysis/",experiment$codeName, "_Results.csv")
-    if (analysisType == "primary") {
-      # May need to return to using analysisGroupData eventually
-      outputTable <- data.table("Corporate Batch ID" = resultTable$batchName, "Barcode" = resultTable$barcode,
-                                "Well" = resultTable$well, "Hit" = ifelse(resultTable$threshold, "yes", "no"),
-                                "SD Score" = resultTable$sdScore, "Normalized Activity" = resultTable$normalized,
-                                "Activity" = resultTable$transformed, 
-                                "Fluorescent"= ifelse(resultTable$fluorescent, "yes", "no"),
-                                "Max Time (s)" = resultTable$maxTime, "Well Type" = resultTable$wellType,
-                                "Late Peak" = ifelse(resultTable$latePeak, "yes", "no"))
-    }
-    outputTable <- outputTable[order(Hit,Fluorescent,decreasing=TRUE)]
+
     write.csv(outputTable, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", resultsLocation), row.names=FALSE)
     
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
@@ -1413,7 +1442,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
   require('racas')
-  
+  save(request, file="request.Rda")
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse
@@ -1424,7 +1453,7 @@ runPrimaryAnalysis <- function(request) {
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
-  
+  testMode <- TRUE
   # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
   errorHandlingBox <- list(errorList = list())
   attach(errorHandlingBox)
