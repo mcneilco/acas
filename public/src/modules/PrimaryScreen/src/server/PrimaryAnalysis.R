@@ -1377,14 +1377,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #save(experiment, file="experiment.Rda")
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                              threshold = efficacyThreshold, experiment, dryRun)
-    summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$client.host, 
+    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
                                          ":", racas::applicationSettings$client.service.file.port,
                                          "/files/tmp/", 
                                          experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
     
     resultsLocation <- paste0("tmp/", experiment$codeName, "_ResultsDRAFT.csv")
     write.csv(outputTable, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", resultsLocation), row.names=FALSE)
-    summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$client.host, 
+    summaryInfo$info$"Results" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
                                          ":", racas::applicationSettings$client.service.file.port,
                                          "/files/tmp/", 
                                          experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
@@ -1425,12 +1425,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     saveFileLocations(rawResultsLocation, resultsLocation, pdfLocation, experiment, dryRun, user, lsTransaction)
     
     #TODO: allow saving in an external file service
-    summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$client.host, 
+    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
                                          ":", racas::applicationSettings$client.service.file.port,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
                                          
-    summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$client.host, 
+    summaryInfo$info$"Results" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
                                          ":", racas::applicationSettings$client.service.file.port,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Results.csv" target="_blank">Results</a>')
