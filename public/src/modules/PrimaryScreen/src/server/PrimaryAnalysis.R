@@ -686,6 +686,8 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
+  savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
+  
   #
   #####  
   # Treatment Group states =========================================================================
