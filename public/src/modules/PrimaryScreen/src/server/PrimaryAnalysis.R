@@ -1217,10 +1217,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName), showWarnings = FALSE)
   
   # If the folderToParse is actually a zip file
+  zipFile <- NULL
   if (!file.info(folderToParse)$isdir) {
     if(!grepl("\\.zip$", folderToParse)) {
       stop("The file provided must be a zip file or a directory")
     }
+    zipFile <- folderToParse
     filesLocation <- paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName, "/rawData")
     
     dir.create(filesLocation, showWarnings = FALSE)
@@ -1368,7 +1370,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
     )
   )
-  
+  library('RCurl')
   row.names(outputTable) <- NULL
   outputTableReloadColumns <- as.data.frame(outputTable)[, c("Corporate Batch ID", "Hit")]
   names(outputTableReloadColumns) <- c("Corporate Batch ID", "User Override Hit")
@@ -1420,9 +1422,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          "/files/tmp/", 
                                          experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
   } else {
-    file.rename(folderToParse, 
-                paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/rawData/", 
-                       basename(folderToParse)))
+    if (!is.null(zipFile)) {
+      file.rename(zipFile, 
+                  paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/rawData/", 
+                         basename(zipFile)))
+    }
+
     
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
