@@ -702,9 +702,10 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   treatmentDataStart <- subjectData[subjectData$valueKind %in% treatmentDataValueKinds 
                                     & !(subjectData$subjectID %in% excludedSubjects),]
   
-  createRawOnlyTreatmentGroupData <- function(subjectData) {
+  createRawOnlyTreatmentGroupDataDT <- function(subjectData) {
     isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
     isLessThan <- any(subjectData$valueOperator=="<", na.rm=TRUE)
+    resultValue <- NA
     if(isGreaterThan && isLessThan) {
       resultOperator <- "<>"
       resultValue <- NA
@@ -718,10 +719,9 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       resultOperator <- NA
       resultValue <- mean(subjectData$numericValue)
     }
-    return(data.frame(
-      "batchCode" = subjectData$batchCode[1],
-      "valueKind" = subjectData$valueKind[1],
-      "valueUnit" = subjectData$valueUnit[1],
+    return(list(
+      "stateID" = subjectData$stateID[1],
+      "stateVersion" = subjectData$stateVersion[1],
       "numericValue" = resultValue,
       "stringValue" = if (length(unique(subjectData$stringValue)) == 1) {subjectData$stringValue[1]}
       else if (all(subjectData$stringValue %in% c("yes", "no"))) {"sometimes"}
@@ -730,19 +730,18 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
       "publicData" = subjectData$publicData[1],
-      treatmentGroupID = subjectData$treatmentGroupID[1],
-      analysisGroupID = subjectData$analysisGroupID[1],
-      stateGroupIndex = subjectData$stateGroupIndex[1],
-      stateID = subjectData$stateID[1],
-      stateVersion = subjectData$stateVersion[1],
-      valueType = subjectData$valueType[1],
-      numberOfReplicates = nrow(subjectData),
-      uncertaintyType = if(is.numeric(resultValue)) "standard deviation" else NA,
-      uncertainty = sd(subjectData$numericValue),
-      stringsAsFactors=FALSE))
+      "numberOfReplicates" = nrow(subjectData),
+      "uncertaintyType" = if(is.numeric(resultValue)) "standard deviation" else NA,
+      "uncertainty" = sd(subjectData$numericValue)
+    ))
   }
   
-  treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData)
+  treatmentDataStartDT <- as.data.table(treatmentDataStart)
+  keepValueKinds <- c("maximum", "minimum", "Dose", "transformed efficacy","normalized efficacy","over efficacy threshold","max time","late peak")
+  treatmentGroupDataDT <- treatmentDataStartDT[ valueKind %in% keepValueKinds, createRawOnlyTreatmentGroupDataDT(.SD), by = c("analysisGroupID", "treatmentGroupCodeName", "treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex",
+                                                                                                                              "batchCode", "valueKind", "valueUnit", "valueType")]
+  #setkey(treatmentGroupDataDT, treatmentGroupID)
+  treatmentGroupData <- as.data.frame(treatmentGroupDataDT)
   
   treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
   
@@ -1348,7 +1347,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                               "Activity" = resultTable$transformed, 
                               "Fluorescent"= ifelse(resultTable$fluorescent, "yes", "no"),
                               "Max Time (s)" = resultTable$maxTime, "Well Type" = resultTable$wellType,
-                              "Late Peak" = ifelse(resultTable$latePeak, "yes", "no"))
+                              "Late Peak" = ifelse(resultTable$latePeak, "yes", "no"),
+                              stringsAsFactors=F)
   }
   outputTable <- outputTable[order(Hit,Fluorescent,decreasing=TRUE)]
   
@@ -1369,7 +1369,30 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     )
   )
   
+  row.names(outputTable) <- NULL
+  outputTableReloadColumns <- as.data.frame(outputTable)[, c("Corporate Batch ID", "Hit")]
+  names(outputTableReloadColumns) <- c("Corporate Batch ID", "User Override Hit")
+  protocol <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "protocols/", experiment$protocol$id)))
+  protocolName <- protocol$lsLabels[[1]]$labelText
+  metadataState <- experiment$lsStates[lapply(experiment$lsStates, getElement, "lsKind") == "experiment metadata"][[1]]
+  completionDateValue <- metadataState$lsValues[lapply(metadataState$lsValues, getElement, "lsKind") == "completion date"][[1]]
   
+  dataSection <- cbind(outputTableReloadColumns, data.frame("removeMe"=rep(NA, nrow(outputTable))), outputTable)
+  headerRow <- names(dataSection)
+  columnNamesSection <- as.data.frame(t(headerRow), stringsAsFactors=F)
+  names(columnNamesSection) <- as.character(seq(1, length(columnNamesSection)))
+  columnNamesSection[1, 3] <- NA
+  columnTypeSection <- data.frame(c(NA, "Calculated Results", "Datatype"), c(NA, NA, "Text"), stringsAsFactors=F)
+  names(columnTypeSection) <- as.character(seq(1, length(columnTypeSection)))
+  names(dataSection) <- as.character(seq(1, length(dataSection)))
+  headerSection <- data.frame(c("Format", "Protocol Name", "Experiment Name", "Scientist", "Notebook", "Page", "Assay Date"),
+                              c("Generic", protocolName, paste(experiment$lsLabels[[1]]$labelText, "user override"), experiment$lsLabels[[1]]$recordedBy, "", "", 
+                                format(as.POSIXct(completionDateValue$dateValue/1000, origin="1970-01-01"), "%Y-%m-%d")))
+  names(headerSection) <- as.character(seq(1, length(headerSection)))
+  
+  library('plyr')
+  userOverrideFrame <- rbind.fill(headerSection, columnTypeSection, columnNamesSection, dataSection)
+  names(userOverrideFrame) <- c("Experiment Meta Data", rep("", length(userOverrideFrame) - 1))
   
   if (dryRun) {
     lsTransaction <- NULL
@@ -1382,6 +1405,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          "/files/tmp/", 
                                          experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
     
+    overrideLocation <- paste0("tmp/", experiment$codeName, "_OverrideDRAFT.csv")
+    write.csv(userOverrideFrame, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", overrideLocation), 
+              na = "", row.names=FALSE)
+    summaryInfo$info$"QC Entry" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
+                                         ":", racas::applicationSettings$client.service.file.port,
+                                         "/files/tmp/", 
+                                         experiment$codeName,'_OverrideDRAFT.csv" target="_blank">QC Entry</a>')
+    
     resultsLocation <- paste0("tmp/", experiment$codeName, "_ResultsDRAFT.csv")
     write.csv(outputTable, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", resultsLocation), row.names=FALSE)
     summaryInfo$info$"Results" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
@@ -1389,6 +1420,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          "/files/tmp/", 
                                          experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
   } else {
+    file.rename(folderToParse, 
+                paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/rawData/", 
+                       basename(folderToParse)))
+    
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
@@ -1429,11 +1464,25 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          ":", racas::applicationSettings$client.service.file.port,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
-                                         
+           
+    overrideLocation <- paste0("tmp/", experiment$codeName, "_Override.csv")
+    write.csv(userOverrideFrame, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", overrideLocation), 
+              na = "", row.names=FALSE)
+    summaryInfo$info$"QC Entry" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
+                                                ":", racas::applicationSettings$client.service.file.port,
+                                                "/files/tmp/", 
+                                                experiment$codeName,'_Override.csv" target="_blank">QC Entry</a>')
+    
     summaryInfo$info$"Results" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
                                          ":", racas::applicationSettings$client.service.file.port,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Results.csv" target="_blank">Results</a>')
+    
+    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, 
+                         URLencode(paste0(validatedMetaData$"Protocol Name", protocolPostfix), reserved=TRUE), 
+                         configList$client.service.result.viewer.experimentPrefix,
+                         URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
+    summaryInfo$viewerLink <- viewerLink
   }
   
   summaryInfo$lsTransactionId <- lsTransaction
