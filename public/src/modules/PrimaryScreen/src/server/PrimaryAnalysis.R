@@ -1343,14 +1343,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   if (analysisType == "primary") {
     # May need to return to using analysisGroupData eventually
-    outputTable <- data.table("Corporate Batch ID" = resultTable$batchName, "Barcode" = resultTable$barcode,
-                              "Well" = resultTable$well, "Hit" = ifelse(resultTable$threshold, "yes", "no"),
+    outputTable <- data.table("Corporate Batch ID" = resultTable$batchName, "Barcode" = as.character(resultTable$barcode),
+                              "Well" = as.character(resultTable$well), "Hit" = ifelse(resultTable$threshold, "yes", "no"),
                               "SD Score" = resultTable$sdScore, "Normalized Activity" = resultTable$normalized,
                               "Activity" = resultTable$transformed, 
                               "Fluorescent"= ifelse(resultTable$fluorescent, "yes", "no"),
                               "Max Time (s)" = resultTable$maxTime, "Well Type" = resultTable$wellType,
-                              "Late Peak" = ifelse(resultTable$latePeak, "yes", "no"),
-                              stringsAsFactors=F)
+                              "Late Peak" = ifelse(resultTable$latePeak, "yes", "no"))
   }
   outputTable <- outputTable[order(Hit,Fluorescent,decreasing=TRUE)]
   
