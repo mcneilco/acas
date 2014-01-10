@@ -1478,10 +1478,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Results.csv" target="_blank">Results</a>')
     
-    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, 
-                         URLencode(paste0(validatedMetaData$"Protocol Name", protocolPostfix), reserved=TRUE), 
-                         configList$client.service.result.viewer.experimentPrefix,
-                         URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
+    viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
+                         URLencode(protocolName, reserved=TRUE), 
+                         racas::applicationSettings$client.service.result.viewer.experimentPrefix,
+                         URLencode(experiment$lsLabels[[1]]$labelText, reserved=TRUE))
     summaryInfo$viewerLink <- viewerLink
   }
   
