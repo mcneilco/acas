@@ -75,7 +75,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   skipFirstRow <- TRUE
   if (skipFirstRow) {
     logFile <- logFile[!(is.na(logFile$Source.Id) & grepl("\\D01", logFile$Source.Well)), ]
-    logFile <- logFile[logFile$Source.Id != "@00"]
+    logFile <- logFile[logFile$Source.Id != "@00", ]
     if(nrow(logFile) == 0) {
       stop(paste("Not all source plates have been registered. ",
                  "It is likely that this file depends on a file that has not yet been loaded. ",
