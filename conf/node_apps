@@ -1,0 +1,67 @@
+﻿#!/bin/sh
+#
+#
+#
+### BEGIN INIT INFO
+# Provides:          node
+# Required-Start:    $local_fs
+# Should-Start:
+# Required-Stop:
+# Should-Stop:
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Short-Description: starts node apps
+# Description:       Starts node apps including acas
+### END INIT INFO
+
+source /etc/profile
+
+NODEAPPS_HOME=/opt/node_apps
+NODELOG_DIR=$NODEAPPS_HOME/log
+ACAS_USER=acas
+
+case $1 in
+start)
+        for dir in `find $NODEAPPS_HOME -maxdepth 1 -type l`
+        do
+		if [ -e $dir/app.js ]; then
+			app=app.js
+		fi
+		if [ -e $dir/server.js ]; then
+			app=server.js
+		fi
+
+		dirname=`basename $dir`
+		logname=$NODELOG_DIR/${dirname}.log
+		logout=$NODELOG_DIR/${dirname}_stdout.log
+		logerr=$NODELOG_DIR/${dirname}_stderr.log
+
+        	echo "starting $dirname/$app"
+
+        	su - $ACAS_USER -c "(cd $dir && forever start --append -l $logname -o $logout -e $logerr $app)"
+
+        	echo "$dirname/$app started"
+        done
+	;;
+stop)
+        for dir in `find /opt/node_apps/ -maxdepth 1 -type l`
+        do
+		if [ -e $dir/app.js ]; then
+			app=app.js
+		fi
+		if [ -e $dir/server.js ]; then
+			app=server.js
+		fi
+
+		dirname=`basename $dir`
+
+        	echo "stopping $dirname/$app"
+
+        	su - $ACAS_USER -c "(cd $dir && forever stop $app)"
+        	#su - $ACAS_USER -c "killall node"
+
+        	echo "$dirname/$app stopped"
+        done
+	;;
+esac
+
