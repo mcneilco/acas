@@ -11,6 +11,10 @@
 # load("public/src/modules/BulkLoadSampleTransfers/spec/specFiles/transferCompoundsOutput_short.Rda")
 # expect_identical(transferCompounds(containerTable, logFile), output)
 
+# For barcodes that should be removed:
+# container <- appendToContainerName("AP0001", "_fail")
+# container$ignored <- TRUE
+# updateAcasEntity(container, "containers")
 
 #containerTable <- fullContainerTable
 #containerTable <- containerTable[!is.na(containerTable$WELL_ID) & !is.na(containerTable$VOLUME_UNIT), ]
