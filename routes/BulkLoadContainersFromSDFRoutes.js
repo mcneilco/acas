@@ -16,7 +16,6 @@ app.post '/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkL
 (function() {
   exports.bulkLoadContainersFromSDF = function(request, response) {
     var serverUtilityFunctions;
-
     request.connection.setTimeout(6000000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {
