@@ -191,14 +191,14 @@ class window.Experiment extends Backbone.Model
 	getStatus: ->
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "New"
+			status.set stringValue: "Created"
 
 		status
 
 	isEditable: ->
 		status = @getStatus().get 'stringValue'
 		switch status
-			when "New" then return true
+			when "Created" then return true
 			when "Started" then return true
 			when "Complete" then return true
 			when "Finalized" then return false
@@ -399,8 +399,10 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_lock').show()
 		if @model.isNew()
 			@$('.bv_protocolCode').removeAttr("disabled")
+			@$('.bv_status').attr("disabled", "disabled")
 		else
 			@$('.bv_protocolCode').attr("disabled", "disabled")
+			@$('.bv_status').removeAttr("disabled")
 
 
 	handleSaveClicked: =>

@@ -319,7 +319,7 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
-          stringValue: "New"
+          stringValue: "Created"
         });
       }
       return status;
@@ -329,7 +329,7 @@
       var status;
       status = this.getStatus().get('stringValue');
       switch (status) {
-        case "New":
+        case "Created":
           return true;
         case "Started":
           return true;
@@ -644,9 +644,11 @@
         this.$('.bv_lock').show();
       }
       if (this.model.isNew()) {
-        return this.$('.bv_protocolCode').removeAttr("disabled");
+        this.$('.bv_protocolCode').removeAttr("disabled");
+        return this.$('.bv_status').attr("disabled", "disabled");
       } else {
-        return this.$('.bv_protocolCode').attr("disabled", "disabled");
+        this.$('.bv_protocolCode').attr("disabled", "disabled");
+        return this.$('.bv_status').removeAttr("disabled");
       }
     };
 
