@@ -61,7 +61,7 @@
 
     LSFileChooserController.prototype.autoUpload = true;
 
-    LSFileChooserController.prototype.maxFileSize = 50000000;
+    LSFileChooserController.prototype.maxFileSize = 200000000;
 
     LSFileChooserController.prototype.listOfFileModels = [];
 

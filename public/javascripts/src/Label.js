@@ -115,7 +115,6 @@
 
     LabelList.prototype.setBestName = function(label) {
       var currentName;
-      console.log(label);
       label.set({
         lsType: 'name',
         preferred: true,

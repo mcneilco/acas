@@ -53,7 +53,6 @@ class window.LabelList extends Backbone.Collection
 		return bestLabel
 
 	setBestName: (label) ->
-		console.log label
 		label.set
 			lsType: 'name'
 			preferred: true
