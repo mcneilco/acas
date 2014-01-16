@@ -406,10 +406,12 @@
       var _this = this;
       this.model.on('sync', function() {
         _this.trigger('amClean');
+        _this.$('.bv_updateComplete').show();
         return _this.render();
       });
       this.model.on('change', function() {
-        return _this.trigger('amDirty');
+        _this.trigger('amDirty');
+        return _this.$('.bv_updateComplete').hide();
       });
       this.errorOwnerName = 'ExperimentBaseController';
       this.setBindings();
@@ -651,6 +653,11 @@
     ExperimentBaseController.prototype.handleSaveClicked = function() {
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
+      if (this.model.isNew()) {
+        this.$('.bv_updateComplete').html("Save Complete");
+      } else {
+        this.$('.bv_updateComplete').html("Update Complete");
+      }
       return this.model.save();
     };
 

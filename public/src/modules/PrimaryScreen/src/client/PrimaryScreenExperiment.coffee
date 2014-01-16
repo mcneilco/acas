@@ -352,13 +352,11 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 						success: (json) =>
 							if json.length == 0
 								alert 'Could not get experiment for code in this URL, creating new one'
-								@completeInitialization()
 							else
-								exp = new PrimaryScreenExperiment id: json[0].id
-								exp.fetch success: =>
-									exp.fixCompositeClasses()
-									@model = exp
-									@completeInitialization()
+								exp = new PrimaryScreenExperiment json[0]
+								exp.fixCompositeClasses()
+								@model = exp
+							@completeInitialization()
 				else
 					@completeInitialization()
 			else

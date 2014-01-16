@@ -551,19 +551,12 @@
                 var exp;
                 if (json.length === 0) {
                   alert('Could not get experiment for code in this URL, creating new one');
-                  return _this.completeInitialization();
                 } else {
-                  exp = new PrimaryScreenExperiment({
-                    id: json[0].id
-                  });
-                  return exp.fetch({
-                    success: function() {
-                      exp.fixCompositeClasses();
-                      _this.model = exp;
-                      return _this.completeInitialization();
-                    }
-                  });
+                  exp = new PrimaryScreenExperiment(json[0]);
+                  exp.fixCompositeClasses();
+                  _this.model = exp;
                 }
+                return _this.completeInitialization();
               }
             });
           } else {

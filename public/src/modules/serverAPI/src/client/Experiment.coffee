@@ -228,9 +228,11 @@ class window.ExperimentBaseController extends AbstractFormController
 	initialize: ->
 		@model.on 'sync', =>
 			@trigger 'amClean'
+			@$('.bv_updateComplete').show()
 			@render()
 		@model.on 'change', =>
 			@trigger 'amDirty'
+			@$('.bv_updateComplete').hide()
 		@errorOwnerName = 'ExperimentBaseController'
 		@setBindings()
 		$(@el).empty()
@@ -384,7 +386,7 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	handleStatusChanged: =>
 		@model.getStatus().set stringValue: @getTrimmedInput('.bv_status')
-		# this is required in addtion to model change event watcher only for spec. real app works without it
+		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
 
 	updateEditable: =>
@@ -404,6 +406,10 @@ class window.ExperimentBaseController extends AbstractFormController
 	handleSaveClicked: =>
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
+		if @model.isNew()
+			@$('.bv_updateComplete').html "Save Complete"
+		else
+			@$('.bv_updateComplete').html "Update Complete"
 		@model.save()
 
 	validationError: =>
