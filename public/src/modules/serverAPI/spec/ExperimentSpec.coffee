@@ -27,8 +27,8 @@ describe "Experiment module testing", ->
 					expect(@exp.get('recordedBy')).toEqual ""
 				it 'Should have an recordedDate set to now', ->
 					expect(new Date(@exp.get('recordedDate')).getHours()).toEqual new Date().getHours()
-				it 'Should have an empty short description', ->
-					expect(@exp.get('shortDescription')).toEqual ""
+				it 'Should have an empty short description with a space as an oracle work-around', ->
+					expect(@exp.get('shortDescription')).toEqual " "
 				it 'Should have no protocol', ->
 					expect(@exp.get('protocol')).toBeNull()
 				it 'Should have an empty analysisGroups', ->
@@ -396,6 +396,10 @@ describe "Experiment module testing", ->
 					@ebc.$('.bv_shortDescription').val(" New short description   ")
 					@ebc.$('.bv_shortDescription').change()
 					expect(@ebc.model.get 'shortDescription').toEqual "New short description"
+				it "should set model shortDescription to a space when shortDescription is set to empty", ->
+					@ebc.$('.bv_shortDescription').val("")
+					@ebc.$('.bv_shortDescription').change()
+					expect(@ebc.model.get 'shortDescription').toEqual " "
 				it "should update model when description is changed", ->
 					@ebc.$('.bv_description').val(" New long description   ")
 					@ebc.$('.bv_description').change()

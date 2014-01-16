@@ -21,7 +21,7 @@
       lsKind: "default",
       recordedBy: "",
       recordedDate: new Date().getTime(),
-      shortDescription: "",
+      shortDescription: " ",
       lsLabels: new LabelList(),
       lsStates: new StateList(),
       protocol: null,
@@ -531,9 +531,17 @@
     };
 
     ExperimentBaseController.prototype.handleShortDescriptionChanged = function() {
-      return this.model.set({
-        shortDescription: this.getTrimmedInput('.bv_shortDescription')
-      });
+      var trimmedDesc;
+      trimmedDesc = this.getTrimmedInput('.bv_shortDescription');
+      if (trimmedDesc !== "") {
+        return this.model.set({
+          shortDescription: trimmedDesc
+        });
+      } else {
+        return this.model.set({
+          shortDescription: " "
+        });
+      }
     };
 
     ExperimentBaseController.prototype.handleDescriptionChanged = function() {

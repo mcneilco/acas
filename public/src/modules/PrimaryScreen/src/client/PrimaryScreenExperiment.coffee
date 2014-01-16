@@ -180,7 +180,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
 		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
 		@allowedFileTypes = ['zip']
-		@maxFileSize: 200000000
+		@maxFileSize = 200000000
 		@loadReportFile = false
 		super()
 		@$('.bv_moduleTitle').html("Upload Data and Analyze")

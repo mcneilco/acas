@@ -5,7 +5,7 @@ class window.Experiment extends Backbone.Model
 		lsKind: "default"
 		recordedBy: ""
 		recordedDate: new Date().getTime()
-		shortDescription: ""
+		shortDescription: " "
 		lsLabels: new LabelList()
 		lsStates: new StateList()
 		protocol: null
@@ -323,7 +323,11 @@ class window.ExperimentBaseController extends AbstractFormController
 		@handleNameChanged()
 
 	handleShortDescriptionChanged: =>
-		@model.set shortDescription: @getTrimmedInput('.bv_shortDescription')
+		trimmedDesc = @getTrimmedInput('.bv_shortDescription')
+		if trimmedDesc != ""
+			@model.set shortDescription: trimmedDesc
+		else
+			@model.set shortDescription: " " #fix for oracle persistance bug
 
 	handleDescriptionChanged: =>
 		@model.getDescription().set

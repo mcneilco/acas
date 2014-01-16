@@ -37,8 +37,8 @@
           it('Should have an recordedDate set to now', function() {
             return expect(new Date(this.exp.get('recordedDate')).getHours()).toEqual(new Date().getHours());
           });
-          it('Should have an empty short description', function() {
-            return expect(this.exp.get('shortDescription')).toEqual("");
+          it('Should have an empty short description with a space as an oracle work-around', function() {
+            return expect(this.exp.get('shortDescription')).toEqual(" ");
           });
           it('Should have no protocol', function() {
             return expect(this.exp.get('protocol')).toBeNull();
@@ -584,6 +584,11 @@
             this.ebc.$('.bv_shortDescription').val(" New short description   ");
             this.ebc.$('.bv_shortDescription').change();
             return expect(this.ebc.model.get('shortDescription')).toEqual("New short description");
+          });
+          it("should set model shortDescription to a space when shortDescription is set to empty", function() {
+            this.ebc.$('.bv_shortDescription').val("");
+            this.ebc.$('.bv_shortDescription').change();
+            return expect(this.ebc.model.get('shortDescription')).toEqual(" ");
           });
           it("should update model when description is changed", function() {
             var desc, states, values;

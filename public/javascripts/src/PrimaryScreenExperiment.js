@@ -305,6 +305,7 @@
       this.fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis";
       this.errorOwnerName = 'UploadAndRunPrimaryAnalsysisController';
       this.allowedFileTypes = ['zip'];
+      this.maxFileSize = 200000000;
       this.loadReportFile = false;
       UploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
       this.$('.bv_moduleTitle').html("Upload Data and Analyze");
