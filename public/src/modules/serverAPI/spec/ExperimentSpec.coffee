@@ -483,8 +483,8 @@ describe "Experiment module testing", ->
 			# then setting model attribites changes the hash
 			xit "should fill the name field", ->
 				expect(@ebc.$('.bv_experimentName').val()).toEqual "FLIPR target A biochemical"
-			it "should fill the date field", ->
-				expect(@ebc.$('.bv_completionDate').val()).toEqual "2012-7-12"
+			it "should fill the date field in the same format is the date picker", ->
+				expect(@ebc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 			it "should fill the user field", ->
 				expect(@ebc.$('.bv_recordedBy').val()).toEqual "smeyer"
 			it "should fill the code field", ->

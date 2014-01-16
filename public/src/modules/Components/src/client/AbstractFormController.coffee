@@ -58,7 +58,7 @@ class window.AbstractFormController extends Backbone.View
 	convertMSToYMDDate: (ms) ->
 		date = new Date ms
 		monthNum = date.getMonth()+1
-		date.getFullYear()+'-'+monthNum+'-'+date.getDate()
+		date.getFullYear()+'-'+("0" + monthNum).slice(-2)+'-'+("0" + date.getDate()).slice(-2)
 
 	disableAllInputs: ->
 		@$('input').attr 'disabled', 'disabled'
