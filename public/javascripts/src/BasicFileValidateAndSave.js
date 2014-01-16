@@ -48,6 +48,8 @@
 
     BasicFileValidateAndSaveController.prototype.allowedFileTypes = ['xls', 'xlsx', 'csv'];
 
+    BasicFileValidateAndSaveController.prototype.maxFileSize = 200000000;
+
     BasicFileValidateAndSaveController.prototype.template = _.template($("#BasicFileValidateAndSaveView").html());
 
     BasicFileValidateAndSaveController.prototype.events = {
@@ -68,7 +70,8 @@
         inputTitle: '',
         url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
         fieldIsRequired: false,
-        allowedFileTypes: this.allowedFileTypes
+        allowedFileTypes: this.allowedFileTypes,
+        maxFileSize: this.maxFileSize
       });
       this.parseFileController.on('fileInput:uploadComplete', this.handleParseFileUploaded);
       this.parseFileController.on('fileInput:removedFile', this.handleParseFileRemoved);

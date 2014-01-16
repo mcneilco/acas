@@ -305,6 +305,7 @@
       this.fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis";
       this.errorOwnerName = 'UploadAndRunPrimaryAnalsysisController';
       this.allowedFileTypes = ['zip'];
+      this.maxFileSize = 200000000;
       this.loadReportFile = false;
       UploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
       this.$('.bv_moduleTitle').html("Upload Data and Analyze");
@@ -443,7 +444,7 @@
     };
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
-      var analysisStatus, resultValue;
+      var analysisStatus, res, resultValue;
       analysisStatus = this.model.getAnalysisStatus();
       if (analysisStatus !== null) {
         analysisStatus = analysisStatus.get('stringValue');
@@ -453,8 +454,13 @@
       this.$('.bv_analysisStatus').html(analysisStatus);
       resultValue = this.model.getAnalysisResultHTML();
       if (resultValue !== null) {
-        this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
-        return this.$('.bv_resultsContainer').show();
+        res = resultValue.get('clobValue');
+        if (res === "") {
+          return this.$('.bv_resultsContainer').hide();
+        } else {
+          this.$('.bv_analysisResultsHTML').html(res);
+          return this.$('.bv_resultsContainer').show();
+        }
       }
     };
 
@@ -545,19 +551,12 @@
                 var exp;
                 if (json.length === 0) {
                   alert('Could not get experiment for code in this URL, creating new one');
-                  return _this.completeInitialization();
                 } else {
-                  exp = new PrimaryScreenExperiment({
-                    id: json[0].id
-                  });
-                  return exp.fetch({
-                    success: function() {
-                      exp.fixCompositeClasses();
-                      _this.model = exp;
-                      return _this.completeInitialization();
-                    }
-                  });
+                  exp = new PrimaryScreenExperiment(json[0]);
+                  exp.fixCompositeClasses();
+                  _this.model = exp;
                 }
+                return _this.completeInitialization();
               }
             });
           } else {

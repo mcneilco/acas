@@ -46,11 +46,17 @@ describe 'User authentication Service testing', ->
 		it 'should return firstName', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn.firstName).toEqual "Bob"
+				if window.conf.require.login
+					expect(@serviceReturn.firstName).toEqual "Bob"
+				else
+					expect(@serviceReturn.firstName).toEqual ""
 		it 'should return lastName', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn.lastName).toEqual "Roberts"
+				if window.conf.require.login
+					expect(@serviceReturn.lastName).toEqual "Roberts"
+				else
+					expect(@serviceReturn.lastName).toEqual "bob"
 		it 'should return email', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
@@ -79,5 +85,7 @@ describe 'User authentication Service testing', ->
 		it 'should return 204', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn).toEqual "got 204"
-#TODO make work with DNS services
+				if window.conf.require.login
+					expect(@serviceReturn).toEqual "got 204"
+				else
+					expect(@serviceReturn).toEqual "got 200"

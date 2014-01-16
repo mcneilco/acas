@@ -5,7 +5,7 @@ class window.Experiment extends Backbone.Model
 		lsKind: "default"
 		recordedBy: ""
 		recordedDate: new Date().getTime()
-		shortDescription: ""
+		shortDescription: " "
 		lsLabels: new LabelList()
 		lsStates: new StateList()
 		protocol: null
@@ -191,14 +191,14 @@ class window.Experiment extends Backbone.Model
 	getStatus: ->
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "New"
+			status.set stringValue: "Created"
 
 		status
 
 	isEditable: ->
 		status = @getStatus().get 'stringValue'
 		switch status
-			when "New" then return true
+			when "Created" then return true
 			when "Started" then return true
 			when "Complete" then return true
 			when "Finalized" then return false
@@ -228,9 +228,11 @@ class window.ExperimentBaseController extends AbstractFormController
 	initialize: ->
 		@model.on 'sync', =>
 			@trigger 'amClean'
+			@$('.bv_updateComplete').show()
 			@render()
 		@model.on 'change', =>
 			@trigger 'amDirty'
+			@$('.bv_updateComplete').hide()
 		@errorOwnerName = 'ExperimentBaseController'
 		@setBindings()
 		$(@el).empty()
@@ -252,7 +254,7 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_experimentName').val bestName.get('labelText')
 		@$('.bv_recordedBy').val(@model.get('recordedBy'))
 		@$('.bv_experimentCode').html(@model.get('codeName'))
-		@getFullProtocol()
+		#@getFullProtocol()
 		@setUseProtocolParametersDisabledState()
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
@@ -268,7 +270,6 @@ class window.ExperimentBaseController extends AbstractFormController
 		@updateEditable()
 
 		@
-
 
 	setupProtocolSelect: ->
 		if @model.get('protocol') != null
@@ -315,15 +316,23 @@ class window.ExperimentBaseController extends AbstractFormController
 				@model.get('protocol').fetch success: =>
 					newProtName = @model.get('protocol').get('lsLabels').pickBestLabel().get('labelText')
 					@setUseProtocolParametersDisabledState()
+					unless !@model.isNew()
+						@handleUseProtocolParametersClicked()
 			else
 				@setUseProtocolParametersDisabledState()
+				unless !@model.isNew()
+					@handleUseProtocolParametersClicked()
 
 	handleRecordedByChanged: =>
 		@model.set recordedBy: @$('.bv_recordedBy').val()
 		@handleNameChanged()
 
 	handleShortDescriptionChanged: =>
-		@model.set shortDescription: @getTrimmedInput('.bv_shortDescription')
+		trimmedDesc = @getTrimmedInput('.bv_shortDescription')
+		if trimmedDesc != ""
+			@model.set shortDescription: trimmedDesc
+		else
+			@model.set shortDescription: " " #fix for oracle persistance bug
 
 	handleDescriptionChanged: =>
 		@model.getDescription().set
@@ -349,7 +358,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		code = @$('.bv_protocolCode').val()
 		if code == "" || code == "unassigned"
 			@model.set 'protocol': null
-			@getFullProtocol()
+			#@getFullProtocol()
 			@setUseProtocolParametersDisabledState()
 		else
 			$.ajax
@@ -377,7 +386,7 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	handleStatusChanged: =>
 		@model.getStatus().set stringValue: @getTrimmedInput('.bv_status')
-		# this is required in addtion to model change event watcher only for spec. real app works without it
+		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
 
 	updateEditable: =>
@@ -388,10 +397,21 @@ class window.ExperimentBaseController extends AbstractFormController
 			@disableAllInputs()
 			@$('.bv_status').removeAttr('disabled')
 			@$('.bv_lock').show()
+		if @model.isNew()
+			@$('.bv_protocolCode').removeAttr("disabled")
+			@$('.bv_status').attr("disabled", "disabled")
+		else
+			@$('.bv_protocolCode').attr("disabled", "disabled")
+			@$('.bv_status').removeAttr("disabled")
+
 
 	handleSaveClicked: =>
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
+		if @model.isNew()
+			@$('.bv_updateComplete').html "Save Complete"
+		else
+			@$('.bv_updateComplete').html "Update Complete"
 		@model.save()
 
 	validationError: =>

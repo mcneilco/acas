@@ -334,6 +334,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psac.$('.bv_analysisStatus').html()).toEqual "not started"
 				it "should not show analysis results becuase this is a new experiment", ->
 					expect(@psac.$('.bv_analysisResultsHTML').html()).toEqual ""
+					expect(@psac.$('.bv_resultsContainer')).toBeHidden()
 				it "should be able to hide data analysis controller", ->
 					@psac.setExperimentNotSaved()
 					expect(@psac.$('.bv_fileUploadWrapper')).toBeHidden()

@@ -21,16 +21,28 @@
   };
 
   exports.getUser = function(username, callback) {
-    if (username === "bob") {
-      return callback(null, {
-        id: "bob",
-        username: "bob",
-        email: "bob@nowwhere.com",
-        firstName: "Bob",
-        lastName: "Roberts"
-      });
+    var config;
+    config = require('../../../conf/compiled/conf.js');
+    if (config.all.client.require.login) {
+      if (username === "bob") {
+        return callback(null, {
+          id: "bob",
+          username: "bob",
+          email: "bob@nowwhere.com",
+          firstName: "Bob",
+          lastName: "Roberts"
+        });
+      } else {
+        return callback("user not found", null);
+      }
     } else {
-      return callback("user not found", null);
+      return callback(null, {
+        id: 0,
+        username: username,
+        email: username + "@nowhere.com",
+        firstName: "",
+        lastName: username
+      });
     }
   };
 

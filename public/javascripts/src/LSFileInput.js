@@ -21,6 +21,8 @@
 
     LSFileInputController.prototype.maxNumberOfFiles = 1;
 
+    LSFileInputController.prototype.maxFileSize = 200000000;
+
     LSFileInputController.prototype.defaultMessage = "Drop a file here to upload it";
 
     LSFileInputController.prototype.dragOverMessage = "Drop the file here to upload it";
@@ -53,7 +55,10 @@
         this.dragOverMessage = this.options.dragOverMessage;
       }
       if (this.options.allowedFileTypes != null) {
-        return this.allowedFileTypes = this.options.allowedFileTypes;
+        this.allowedFileTypes = this.options.allowedFileTypes;
+      }
+      if (this.options.maxFileSize != null) {
+        return this.maxFileSize = this.options.maxFileSize;
       }
     };
 

@@ -9,6 +9,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	filePath: "serverOnlyModules/blueimp-file-upload-node/public/files/"
 	additionalData: {experimentId: 1234, otherparam: "fred"}
 	allowedFileTypes: ['xls', 'xlsx', 'csv']
+	maxFileSize: 200000000
+
 
 	template: _.template($("#BasicFileValidateAndSaveView").html())
 
@@ -30,6 +32,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			url: "http://"+window.conf.host+":"+window.conf.service.file.port
 			fieldIsRequired: false
 			allowedFileTypes: @allowedFileTypes
+			maxFileSize: @maxFileSize
+
 		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
 		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved)
 		@parseFileController.render()

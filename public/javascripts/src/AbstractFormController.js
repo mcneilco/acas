@@ -92,7 +92,7 @@
       var date, monthNum;
       date = new Date(ms);
       monthNum = date.getMonth() + 1;
-      return date.getFullYear() + '-' + monthNum + '-' + date.getDate();
+      return date.getFullYear() + '-' + ("0" + monthNum).slice(-2) + '-' + ("0" + date.getDate()).slice(-2);
     };
 
     AbstractFormController.prototype.disableAllInputs = function() {
