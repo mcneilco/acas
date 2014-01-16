@@ -180,6 +180,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
 		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
 		@allowedFileTypes = ['zip']
+		@maxFileSize: 200000000
 		@loadReportFile = false
 		super()
 		@$('.bv_moduleTitle').html("Upload Data and Analyze")
@@ -284,8 +285,12 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_analysisStatus').html(analysisStatus)
 		resultValue = @model.getAnalysisResultHTML()
 		if resultValue != null
-			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
-			@$('.bv_resultsContainer').show()
+			res = resultValue.get('clobValue')
+			if res == ""
+				@$('.bv_resultsContainer').hide()
+			else
+				@$('.bv_analysisResultsHTML').html(res)
+				@$('.bv_resultsContainer').show()
 
 	setExperimentNotSaved: ->
 		@$('.bv_fileUploadWrapper').hide()

@@ -443,7 +443,7 @@
     };
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
-      var analysisStatus, resultValue;
+      var analysisStatus, res, resultValue;
       analysisStatus = this.model.getAnalysisStatus();
       if (analysisStatus !== null) {
         analysisStatus = analysisStatus.get('stringValue');
@@ -453,8 +453,13 @@
       this.$('.bv_analysisStatus').html(analysisStatus);
       resultValue = this.model.getAnalysisResultHTML();
       if (resultValue !== null) {
-        this.$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'));
-        return this.$('.bv_resultsContainer').show();
+        res = resultValue.get('clobValue');
+        if (res === "") {
+          return this.$('.bv_resultsContainer').hide();
+        } else {
+          this.$('.bv_analysisResultsHTML').html(res);
+          return this.$('.bv_resultsContainer').show();
+        }
       }
     };
 
