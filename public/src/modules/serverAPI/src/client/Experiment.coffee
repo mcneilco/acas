@@ -252,7 +252,7 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_experimentName').val bestName.get('labelText')
 		@$('.bv_recordedBy').val(@model.get('recordedBy'))
 		@$('.bv_experimentCode').html(@model.get('codeName'))
-		@getFullProtocol()
+		#@getFullProtocol()
 		@setUseProtocolParametersDisabledState()
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
@@ -268,7 +268,6 @@ class window.ExperimentBaseController extends AbstractFormController
 		@updateEditable()
 
 		@
-
 
 	setupProtocolSelect: ->
 		if @model.get('protocol') != null
@@ -315,8 +314,12 @@ class window.ExperimentBaseController extends AbstractFormController
 				@model.get('protocol').fetch success: =>
 					newProtName = @model.get('protocol').get('lsLabels').pickBestLabel().get('labelText')
 					@setUseProtocolParametersDisabledState()
+					unless !@model.isNew()
+						@handleUseProtocolParametersClicked()
 			else
 				@setUseProtocolParametersDisabledState()
+				unless !@model.isNew()
+					@handleUseProtocolParametersClicked()
 
 	handleRecordedByChanged: =>
 		@model.set recordedBy: @$('.bv_recordedBy').val()
@@ -353,7 +356,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		code = @$('.bv_protocolCode').val()
 		if code == "" || code == "unassigned"
 			@model.set 'protocol': null
-			@getFullProtocol()
+			#@getFullProtocol()
 			@setUseProtocolParametersDisabledState()
 		else
 			$.ajax
@@ -392,6 +395,11 @@ class window.ExperimentBaseController extends AbstractFormController
 			@disableAllInputs()
 			@$('.bv_status').removeAttr('disabled')
 			@$('.bv_lock').show()
+		if @model.isNew()
+			@$('.bv_protocolCode').removeAttr("disabled")
+		else
+			@$('.bv_protocolCode').attr("disabled", "disabled")
+
 
 	handleSaveClicked: =>
 		@tagListController.handleTagsChanged()

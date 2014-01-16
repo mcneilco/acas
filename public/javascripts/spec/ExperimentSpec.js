@@ -682,8 +682,14 @@
         it("should show the save button text as Update", function() {
           return expect(this.ebc.$('.bv_save').html()).toEqual("Update");
         });
+        it("should hide the protocol parameters button because we are chaning the behaviopr and may eliminate it", function() {
+          return expect(this.ebc.$('.bv_useProtocolParameters')).toBeHidden();
+        });
         it("should have use protocol parameters disabled", function() {
           return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual("disabled");
+        });
+        it("should have protocol select disabled", function() {
+          return expect(this.ebc.$('.bv_protocolCode').attr("disabled")).toEqual("disabled");
         });
         it("should fill the short description field", function() {
           return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("experiment created by generic data parser");
@@ -742,6 +748,9 @@
           it("should have use protocol parameters disabled", function() {
             return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual("disabled");
           });
+          it("should have protocol select enabled", function() {
+            return expect(this.ebc.$('.bv_protocolCode').attr("disabled")).toBeUndefined();
+          });
           it("should not fill the date field", function() {
             return expect(this.ebc.$('.bv_completionDate').val()).toEqual("");
           });
@@ -766,6 +775,12 @@
                 return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000001");
               });
             });
+            it("should fill the short description field because the protocol attrobutes are automatically copied", function() {
+              waits(200);
+              return runs(function() {
+                return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
+              });
+            });
             return it("should enable use protocol params", function() {
               waits(200);
               return runs(function() {
@@ -773,7 +788,7 @@
               });
             });
           });
-          return describe("When user and asks to clone attributes should populate fields", function() {
+          return xdescribe("When user and asks to clone attributes should populate fields", function() {
             beforeEach(function() {
               waits(200);
               return runs(function() {
@@ -805,7 +820,6 @@
             });
             waits(200);
             runs(function() {
-              this.ebc.$('.bv_useProtocolParameters').click();
               this.ebc.$('.bv_projectCode').val("project1");
               this.ebc.$('.bv_projectCode').change();
               this.ebc.$('.bv_notebook').val("my notebook");

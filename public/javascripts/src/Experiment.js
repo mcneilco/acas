@@ -436,7 +436,6 @@
       }
       this.$('.bv_recordedBy').val(this.model.get('recordedBy'));
       this.$('.bv_experimentCode').html(this.model.get('codeName'));
-      this.getFullProtocol();
       this.setUseProtocolParametersDisabledState();
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
@@ -514,11 +513,17 @@
             success: function() {
               var newProtName;
               newProtName = _this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText');
-              return _this.setUseProtocolParametersDisabledState();
+              _this.setUseProtocolParametersDisabledState();
+              if (!!_this.model.isNew()) {
+                return _this.handleUseProtocolParametersClicked();
+              }
             }
           });
         } else {
-          return this.setUseProtocolParametersDisabledState();
+          this.setUseProtocolParametersDisabledState();
+          if (!!this.model.isNew()) {
+            return this.handleUseProtocolParametersClicked();
+          }
         }
       }
     };
@@ -580,7 +585,6 @@
         this.model.set({
           'protocol': null
         });
-        this.getFullProtocol();
         return this.setUseProtocolParametersDisabledState();
       } else {
         return $.ajax({
@@ -631,11 +635,16 @@
     ExperimentBaseController.prototype.updateEditable = function() {
       if (this.model.isEditable()) {
         this.enableAllInputs();
-        return this.$('.bv_lock').hide();
+        this.$('.bv_lock').hide();
       } else {
         this.disableAllInputs();
         this.$('.bv_status').removeAttr('disabled');
-        return this.$('.bv_lock').show();
+        this.$('.bv_lock').show();
+      }
+      if (this.model.isNew()) {
+        return this.$('.bv_protocolCode').removeAttr("disabled");
+      } else {
+        return this.$('.bv_protocolCode').attr("disabled", "disabled");
       }
     };
 

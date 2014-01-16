@@ -473,8 +473,12 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_projectCode').val()).toEqual "project1"
 			it "should show the save button text as Update", ->
 				expect(@ebc.$('.bv_save').html()).toEqual "Update"
+			it "should hide the protocol parameters button because we are chaning the behaviopr and may eliminate it", ->
+				expect(@ebc.$('.bv_useProtocolParameters')).toBeHidden()
 			it "should have use protocol parameters disabled", ->
 				expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual "disabled"
+			it "should have protocol select disabled", ->
+				expect(@ebc.$('.bv_protocolCode').attr("disabled")).toEqual "disabled"
 			it "should fill the short description field", ->
 				expect(@ebc.$('.bv_shortDescription').html()).toEqual "experiment created by generic data parser"
 			it "should fill the long description field", ->
@@ -517,6 +521,8 @@ describe "Experiment module testing", ->
 						expect(@ebc.$('.bv_projectCode').val()).toEqual "unassigned"
 				it "should have use protocol parameters disabled", ->
 					expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toEqual "disabled"
+				it "should have protocol select enabled", ->
+					expect(@ebc.$('.bv_protocolCode').attr("disabled")).toBeUndefined()
 				it "should not fill the date field", ->
 					expect(@ebc.$('.bv_completionDate').val()).toEqual ""
 				it "should show the save button text as Save", ->
@@ -533,11 +539,15 @@ describe "Experiment module testing", ->
 						waits(200) # needs to fetch stub protocol
 						runs ->
 							expect(@ebc.model.get('protocol').get('codeName')).toEqual "PROT-00000001"
+					it "should fill the short description field because the protocol attrobutes are automatically copied", ->
+						waits(200)
+						runs ->
+							expect(@ebc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 					it "should enable use protocol params", ->
 						waits(200) # needs to fill out stub protocol
 						runs ->
 							expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toBeUndefined()
-				describe "When user and asks to clone attributes should populate fields", ->
+				xdescribe "When user and asks to clone attributes should populate fields", ->
 					beforeEach ->
 						waits(200)
 						runs ->
@@ -562,7 +572,7 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_experimentName').change()
 					waits(200)
 					runs ->
-						@ebc.$('.bv_useProtocolParameters').click()
+						#@ebc.$('.bv_useProtocolParameters').click()
 						# must set notebook and project after copying protocol params because those are rest
 						@ebc.$('.bv_projectCode').val("project1")
 						@ebc.$('.bv_projectCode').change()
