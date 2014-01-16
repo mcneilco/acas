@@ -17,16 +17,24 @@ exports.authCheck = (user, pass, retFun) ->
 	retFun "Success"
 
 exports.getUser = (username, callback) ->
-
-	if username == "bob"
-		callback null,
-			id: "bob"
-			username: "bob"
-			email: "bob@nowwhere.com"
-			firstName: "Bob"
-			lastName: "Roberts"
+	config = require '../../../conf/compiled/conf.js'
+	if config.all.client.require.login
+		if username == "bob"
+			callback null,
+				id: "bob"
+				username: "bob"
+				email: "bob@nowwhere.com"
+				firstName: "Bob"
+				lastName: "Roberts"
+		else
+			callback "user not found", null
 	else
-		callback "user not found", null
+		callback null,
+			id: 0,
+			username: username,
+			email: username+"@nowhere.com",
+			firstName: "",
+			lastName: username
 
 
 

@@ -180,6 +180,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
 		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
 		@allowedFileTypes = ['zip']
+		@maxFileSize = 200000000
 		@loadReportFile = false
 		super()
 		@$('.bv_moduleTitle').html("Upload Data and Analyze")
@@ -284,8 +285,12 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_analysisStatus').html(analysisStatus)
 		resultValue = @model.getAnalysisResultHTML()
 		if resultValue != null
-			@$('.bv_analysisResultsHTML').html(resultValue.get('clobValue'))
-			@$('.bv_resultsContainer').show()
+			res = resultValue.get('clobValue')
+			if res == ""
+				@$('.bv_resultsContainer').hide()
+			else
+				@$('.bv_analysisResultsHTML').html(res)
+				@$('.bv_resultsContainer').show()
 
 	setExperimentNotSaved: ->
 		@$('.bv_fileUploadWrapper').hide()
@@ -347,13 +352,11 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 						success: (json) =>
 							if json.length == 0
 								alert 'Could not get experiment for code in this URL, creating new one'
-								@completeInitialization()
 							else
-								exp = new PrimaryScreenExperiment id: json[0].id
-								exp.fetch success: =>
-									exp.fixCompositeClasses()
-									@model = exp
-									@completeInitialization()
+								exp = new PrimaryScreenExperiment json[0]
+								exp.fixCompositeClasses()
+								@model = exp
+							@completeInitialization()
 				else
 					@completeInitialization()
 			else

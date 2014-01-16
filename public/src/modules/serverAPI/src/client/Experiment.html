@@ -6,7 +6,7 @@
             <label class="control-label"><i class="icon-lock bv_lock"></i> Status</label>
             <div class="controls">
                 <select class="bv_status select-picker" style="width:350px;">
-                    <option value="New">New</option>
+                    <option value="Created">Created</option>
                     <option value="Started">Started</option>
                     <option value="Complete">Complete</option>
                     <option value="Finalized">Finalized</option>
@@ -61,7 +61,7 @@
                 </select>
             </div>
             <div class="controls">
-                <button type="button" class="btn bv_useProtocolParameters" style="margin-top:5px;">Use Parameters</button>
+                <button type="button" class="btn bv_useProtocolParameters hide" style="margin-top:5px;">Use Parameters</button>
             </div>
         </div>
     </form>
@@ -101,6 +101,8 @@
 
     <!-- SAVE AND CANCEL -->
     <div>
-        <button type="button" class="btn bv_save">Save</button>
+        <button type="button" class="btn bv_save pull-left" style="margin-right:10px;">Save</button>
+        <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;"></div>
     </div>
+
 </script>

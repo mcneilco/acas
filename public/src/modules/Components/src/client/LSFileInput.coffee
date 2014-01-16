@@ -5,6 +5,7 @@ class window.LSFileInputController extends Backbone.View
 	lsFileChooser: null
 	requiresValidation: false
 	maxNumberOfFiles: 1
+	maxFileSize: 200000000
 	defaultMessage: "Drop a file here to upload it"
 	dragOverMessage: "Drop the file here to upload it"
 	nameOnServer: ""
@@ -33,6 +34,8 @@ class window.LSFileInputController extends Backbone.View
 			@dragOverMessage = @.options.dragOverMessage
 		if @options.allowedFileTypes?
 			@allowedFileTypes = @options.allowedFileTypes
+		if @options.maxFileSize?
+			@maxFileSize = @options.maxFileSize
 
 	handleFileChooserUploadComplete: (nameOnServer) ->
 		#@$('.bv_status').addClass('icon-ok-sign')

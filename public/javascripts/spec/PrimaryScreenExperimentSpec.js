@@ -466,7 +466,8 @@
             return expect(this.psac.$('.bv_analysisStatus').html()).toEqual("not started");
           });
           it("should not show analysis results becuase this is a new experiment", function() {
-            return expect(this.psac.$('.bv_analysisResultsHTML').html()).toEqual("");
+            expect(this.psac.$('.bv_analysisResultsHTML').html()).toEqual("");
+            return expect(this.psac.$('.bv_resultsContainer')).toBeHidden();
           });
           it("should be able to hide data analysis controller", function() {
             this.psac.setExperimentNotSaved();

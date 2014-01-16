@@ -21,7 +21,7 @@
       lsKind: "default",
       recordedBy: "",
       recordedDate: new Date().getTime(),
-      shortDescription: "",
+      shortDescription: " ",
       lsLabels: new LabelList(),
       lsStates: new StateList(),
       protocol: null,
@@ -319,7 +319,7 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
-          stringValue: "New"
+          stringValue: "Created"
         });
       }
       return status;
@@ -329,7 +329,7 @@
       var status;
       status = this.getStatus().get('stringValue');
       switch (status) {
-        case "New":
+        case "Created":
           return true;
         case "Started":
           return true;
@@ -406,10 +406,12 @@
       var _this = this;
       this.model.on('sync', function() {
         _this.trigger('amClean');
+        _this.$('.bv_updateComplete').show();
         return _this.render();
       });
       this.model.on('change', function() {
-        return _this.trigger('amDirty');
+        _this.trigger('amDirty');
+        return _this.$('.bv_updateComplete').hide();
       });
       this.errorOwnerName = 'ExperimentBaseController';
       this.setBindings();
@@ -436,7 +438,6 @@
       }
       this.$('.bv_recordedBy').val(this.model.get('recordedBy'));
       this.$('.bv_experimentCode').html(this.model.get('codeName'));
-      this.getFullProtocol();
       this.setUseProtocolParametersDisabledState();
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
@@ -514,11 +515,17 @@
             success: function() {
               var newProtName;
               newProtName = _this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText');
-              return _this.setUseProtocolParametersDisabledState();
+              _this.setUseProtocolParametersDisabledState();
+              if (!!_this.model.isNew()) {
+                return _this.handleUseProtocolParametersClicked();
+              }
             }
           });
         } else {
-          return this.setUseProtocolParametersDisabledState();
+          this.setUseProtocolParametersDisabledState();
+          if (!!this.model.isNew()) {
+            return this.handleUseProtocolParametersClicked();
+          }
         }
       }
     };
@@ -531,9 +538,17 @@
     };
 
     ExperimentBaseController.prototype.handleShortDescriptionChanged = function() {
-      return this.model.set({
-        shortDescription: this.getTrimmedInput('.bv_shortDescription')
-      });
+      var trimmedDesc;
+      trimmedDesc = this.getTrimmedInput('.bv_shortDescription');
+      if (trimmedDesc !== "") {
+        return this.model.set({
+          shortDescription: trimmedDesc
+        });
+      } else {
+        return this.model.set({
+          shortDescription: " "
+        });
+      }
     };
 
     ExperimentBaseController.prototype.handleDescriptionChanged = function() {
@@ -572,7 +587,6 @@
         this.model.set({
           'protocol': null
         });
-        this.getFullProtocol();
         return this.setUseProtocolParametersDisabledState();
       } else {
         return $.ajax({
@@ -623,17 +637,29 @@
     ExperimentBaseController.prototype.updateEditable = function() {
       if (this.model.isEditable()) {
         this.enableAllInputs();
-        return this.$('.bv_lock').hide();
+        this.$('.bv_lock').hide();
       } else {
         this.disableAllInputs();
         this.$('.bv_status').removeAttr('disabled');
-        return this.$('.bv_lock').show();
+        this.$('.bv_lock').show();
+      }
+      if (this.model.isNew()) {
+        this.$('.bv_protocolCode').removeAttr("disabled");
+        return this.$('.bv_status').attr("disabled", "disabled");
+      } else {
+        this.$('.bv_protocolCode').attr("disabled", "disabled");
+        return this.$('.bv_status').removeAttr("disabled");
       }
     };
 
     ExperimentBaseController.prototype.handleSaveClicked = function() {
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
+      if (this.model.isNew()) {
+        this.$('.bv_updateComplete').html("Save Complete");
+      } else {
+        this.$('.bv_updateComplete').html("Update Complete");
+      }
       return this.model.save();
     };
 

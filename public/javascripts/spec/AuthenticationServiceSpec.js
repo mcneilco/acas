@@ -62,13 +62,21 @@
       it('should return firstName', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn.firstName).toEqual("Bob");
+          if (window.conf.require.login) {
+            return expect(this.serviceReturn.firstName).toEqual("Bob");
+          } else {
+            return expect(this.serviceReturn.firstName).toEqual("");
+          }
         });
       });
       it('should return lastName', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn.lastName).toEqual("Roberts");
+          if (window.conf.require.login) {
+            return expect(this.serviceReturn.lastName).toEqual("Roberts");
+          } else {
+            return expect(this.serviceReturn.lastName).toEqual("bob");
+          }
         });
       });
       it('should return email', function() {
@@ -110,7 +118,11 @@
       return it('should return 204', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn).toEqual("got 204");
+          if (window.conf.require.login) {
+            return expect(this.serviceReturn).toEqual("got 204");
+          } else {
+            return expect(this.serviceReturn).toEqual("got 200");
+          }
         });
       });
     });
