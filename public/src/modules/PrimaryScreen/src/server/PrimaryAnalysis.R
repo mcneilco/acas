@@ -1482,10 +1482,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Results.csv" target="_blank">Results</a>')
     
+    if (configList$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
+      experimentName <- paste0(experiment$codeName, "::", experiment$lsLabels[[1]]$labelText)
+    } else {
+      experimentName <- experiment$lsLabels[[1]]$labelText
+    }
     viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
                          URLencode(protocolName, reserved=TRUE), 
                          racas::applicationSettings$client.service.result.viewer.experimentPrefix,
-                         URLencode(experiment$lsLabels[[1]]$labelText, reserved=TRUE))
+                         URLencode(experimentName, reserved=TRUE))
     summaryInfo$viewerLink <- viewerLink
   }
   

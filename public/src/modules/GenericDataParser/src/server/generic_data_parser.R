@@ -618,7 +618,11 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     stop(paste0(sqliz(internalReservedWords[usedReservedWords]), " is reserved and cannot be used as a column header."))
   }
   
-  currentValueKindsList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds")))
+  tryCatch({
+    currentValueKindsList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds/")))
+  }, error = function(e) {
+    stop("Internal Error: Could not get current value kinds")
+  })
   if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
@@ -2223,10 +2227,16 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   if (!is.null(configList$client.service.result.viewer.protocolPrefix)) {
+    protocolName <- paste0(validatedMetaData$"Protocol Name", protocolPostfix)
+    if (is.list(experiment) && configList$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
+      experimentName <- paste0(experiment$codeName, "::", validatedMetaData$"Experiment Name")
+    } else {
+      experimentName <- validatedMetaData$"Experiment Name"
+    }
     viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, 
-                         URLencode(paste0(validatedMetaData$"Protocol Name", protocolPostfix), reserved=TRUE), 
+                         URLencode(protocolName, reserved=TRUE), 
                          configList$client.service.result.viewer.experimentPrefix,
-                         URLencode(validatedMetaData$"Experiment Name", reserved=TRUE))
+                         URLencode(experimentName, reserved=TRUE))
   } else {
     viewerLink <- NULL
   }
@@ -2365,7 +2375,7 @@ parseGenericData <- function(request) {
   require('compiler')
   enableJIT(3)
   options("scipen"=15)
-  
+  save(request, file="request.Rda")
   # This is used for outputting the JSON rather than sending it to the server
   developmentMode <- FALSE
   
