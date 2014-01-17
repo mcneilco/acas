@@ -32,13 +32,14 @@ AND pl.ignored  ='0';
 CREATE OR REPLACE VIEW api_experiment
 AS
   SELECT e.id AS id,
+    e.code_name || '::' || el.label_text as experiment_name,
     e.code_name,
+    el.label_text,
     e.Ls_Type_And_Kind as kind,
     e.recorded_by,
     e.recorded_date,
     e.short_description,
     e.protocol_id,
-    el.label_text,
     MAX( CASE ev.ls_kind WHEN 'analysis result html' THEN ev.clob_value ELSE null END ) AS analysis_result_html,
     MAX( CASE ev.ls_kind WHEN 'analysis status' THEN ev.string_value ELSE null END ) AS analysis_status,
     MAX( CASE ev.ls_kind WHEN 'completion date' THEN ev.date_value ELSE null END ) AS completion_date,
@@ -631,13 +632,3 @@ GRANT SELECT on p_api_analysis_group_results TO seurat;
 GRANT select on api_curve_params to seurat;
 GRANT SELECT on api_dose_response TO seurat;
 
------------------------------
--- Run all of these as seurat
------------------------------
-
-CREATE OR REPLACE SYNONYM "SEURAT"."API_PROTOCOL" FOR "ACAS"."API_PROTOCOL";
-CREATE OR REPLACE SYNONYM "SEURAT"."API_EXPERIMENT" FOR "ACAS"."API_EXPERIMENT";
-CREATE OR REPLACE SYNONYM "SEURAT"."API_ANALYSIS_GROUP_RESULTS" FOR "ACAS"."API_ANALYSIS_GROUP_RESULTS";
-CREATE OR REPLACE SYNONYM "SEURAT"."P_API_ANALYSIS_GROUP_RESULTS" FOR "ACAS"."P_API_ANALYSIS_GROUP_RESULTS";
-CREATE OR REPLACE SYNONYM "SEURAT"."API_CURVE_PARAMS" FOR "ACAS"."API_CURVE_PARAMS";
-CREATE OR REPLACE SYNONYM "SEURAT"."API_DOSE_RESPONSE" FOR "ACAS"."API_DOSE_RESPONSE";

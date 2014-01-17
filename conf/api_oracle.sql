@@ -32,13 +32,14 @@ AND pl.ignored  ='0';
 CREATE OR REPLACE VIEW api_experiment
 AS
   SELECT e.id AS id,
+    e.code_name || '::' || el.label_text as experiment_name,
     e.code_name,
+    el.label_text,
     e.Ls_Type_And_Kind as kind,
     e.recorded_by,
     e.recorded_date,
     e.short_description,
     e.protocol_id,
-    el.label_text,
     MAX( CASE ev.ls_kind WHEN 'analysis result html' THEN DBMS_LOB.substr(ev.clob_value, 3000) ELSE null END ) AS analysis_result_html,
     MAX( CASE ev.ls_kind WHEN 'analysis status' THEN ev.string_value ELSE null END ) AS analysis_status,
     MAX( CASE ev.ls_kind WHEN 'completion date' THEN ev.date_value ELSE null END ) AS completion_date,
