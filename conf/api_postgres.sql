@@ -20,7 +20,7 @@ SELECT p.id AS protocol_id,
   p.recorded_by,
   p.recorded_date,
   p.short_description,
-  pl.label_text || pv.string_value AS label_text
+  pl.label_text || COALESCE(pv.string_value, '') AS label_text
 FROM protocol p
 JOIN protocol_label pl ON p.id=pl.protocol_id
 LEFT JOIN protocol_state ps ON p.id = ps.protocol_id AND ps.ls_kind = 'name modifier'
