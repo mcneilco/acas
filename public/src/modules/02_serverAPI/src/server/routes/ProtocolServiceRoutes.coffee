@@ -1,22 +1,24 @@
 ### To install this Module
-1) Add these lines to app.coffee under # serverAPI routes:
-protocolRoutes = require './routes/ProtocolServiceRoutes.js'
-app.get '/api/protocols/codename/:code', protocolRoutes.protocolByCodename
-app.get '/api/protocols/:id', protocolRoutes.protocolById
-app.post '/api/protocols', protocolRoutes.postProtocol
-app.put '/api/protocols', protocolRoutes.putProtocol
-app.get '/api/protocollabels', protocolRoutes.protocolLabels
-app.get '/api/protocolCodeList', protocolRoutes.protocolCodeList
-app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
+1) Add these lines to app.coffee:
+	protocolRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ProtocolServiceRoutes.js'
+	protocolRoutes.setupRoutes(app)
 
 
 ###
+exports.setupRoutes = (app) ->
+	app.get '/api/protocols/codename/:code', exports.protocolByCodename
+	app.get '/api/protocols/:id', exports.protocolById
+	app.post '/api/protocols', exports.postProtocol
+	app.put '/api/protocols', exports.putProtocol
+	app.get '/api/protocollabels', exports.lsLabels
+	app.get '/api/protocolCodes', exports.protocolCodeList
+	app.get '/api/protocolCodes/filter/:str', exports.protocolCodeList
 
 exports.protocolByCodename = (req, resp) ->
 	console.log req.params.code
 
 	if global.specRunnerTestmode
-		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		protocolServiceTestJSON = require '../../../spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify protocolServiceTestJSON.stubSavedProtocol
 	else
 		config = require '../conf/compiled/conf.js'
@@ -28,20 +30,20 @@ exports.protocolById = (req, resp) ->
 	console.log req.params.id
 
 	if global.specRunnerTestmode
-		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		protocolServiceTestJSON = require '../../..//spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify protocolServiceTestJSON.fullSavedProtocol
 	else
-		config = require '../conf/compiled/conf.js'
+		config = require '../../../../../../../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/"+req.params.id
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.postProtocol = (req, resp) ->
 	if global.specRunnerTestmode
-		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		experimentServiceTestJSON = require '../../../spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullSavedProtocol
 	else
-		config = require '../conf/compiled/conf.js'
+		config = require '../../../../../../../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols"
 		request = require 'request'
 		request(
@@ -62,10 +64,10 @@ exports.postProtocol = (req, resp) ->
 
 exports.putProtocol = (req, resp) ->
 	if global.specRunnerTestmode
-		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		experimentServiceTestJSON = require '../../../spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullSavedProtocol
 	else
-		config = require '../conf/compiled/conf.js'
+		config = require '../../../../../../../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols"
 		request = require 'request'
 		request(
@@ -86,10 +88,10 @@ exports.putProtocol = (req, resp) ->
 
 exports.lsLabels = (req, resp) ->
 	if global.specRunnerTestmode
-		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		protocolServiceTestJSON = require '../../../spec/testFixtures/ProtocolServiceTestJSON.js'
 		resp.end JSON.stringify protocolServiceTestJSON.lsLabels
 	else
-		config = require '../conf/compiled/conf.js'
+		config = require '../../../../../../../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocollabels"
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
@@ -117,12 +119,12 @@ exports.protocolCodeList = (req, resp) ->
 		protCodes
 
 	if global.specRunnerTestmode
-		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		protocolServiceTestJSON = require '../../../spec/testFixtures/ProtocolServiceTestJSON.js'
 		labels = protocolServiceTestJSON.lsLabels
 		resp.json translateToCodes(labels)
 
 	else
-		config = require '../conf/compiled/conf.js'
+		config = require '../../../../../../../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocollabels/codetable"
 		if shouldFilter
 			baseurl += "/?protocolName="+filterString
@@ -140,5 +142,6 @@ exports.protocolCodeList = (req, resp) ->
 				console.log json
 				console.log response
 		)
+
 
 

@@ -19,5 +19,4 @@
 ) (if (typeof process is "undefined" or not process.versions) then window.curveCuratorTestJSON = window.curveCuratorTestJSON or {} else exports)
 
 
-
 #remember to keep requested and actual/overriden by algorithm#

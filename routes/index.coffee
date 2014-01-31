@@ -1,5 +1,19 @@
 scriptPaths = require './RequiredClientScripts.js'
 
+exports.setupRoutes = (app, loginRoutes) ->
+	config = require '../conf/compiled/conf.js'
+	if config.all.client.require.login
+		app.get '/', loginRoutes.ensureAuthenticated, exports.index
+		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode
+	else
+	app.get '/:moduleName/codeName/:code', exports.autoLaunchWithCode
+	app.get '/', exports.index
+
+	if config.all.server.enableSpecRunner
+		app.get '/SpecRunner', exports.specRunner
+		app.get '/LiveServiceSpecRunner', exports.liveServiceSpecRunner
+
+
 exports.autoLaunchWithCode = (req, res) ->
 	moduleLaunchParams =
 		moduleName: req.params.moduleName

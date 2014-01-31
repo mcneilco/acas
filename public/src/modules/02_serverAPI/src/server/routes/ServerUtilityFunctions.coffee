@@ -16,7 +16,7 @@ basicRScriptPreValidation = (payload) ->
 	return result
 
 exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
-	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities = require '../../../../../conf/CustomerSpecificServerFunctions.js'
 	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(request.body), request.body.user
 	if preValidationFunction?
 		preValErrors = preValidationFunction.call @, request.body
@@ -81,6 +81,8 @@ serverUtilityFunctions = require './routes/serverUtilityFunctions.js'
 app.post '/api/runRFunctionTest', serverUtilityFunctions.runRFunctionTest
 
 ###
+exports.setupRoutes = (app) ->
+	app.post '/api/runRFunctionTest', exports.runRFunctionTest
 
 exports.runRFunctionTest = (request, response)  ->
 

@@ -33,3 +33,4 @@ class window.CurveCuratorAppController extends Backbone.View
 
 	loadCurvesForExptCode: (exptCode) =>
 		@ccc.getCurvesFromExperimentCode(exptCode)
+

@@ -24,7 +24,7 @@
 
   exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
     var Tempfile, child, command, csUtilities, exec, preValErrors, rCommand, rCommandFile, requestJSONFile;
-    csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+    csUtilities = require('../../../../../conf/CustomerSpecificServerFunctions.js');
     csUtilities.logUsage("About to call R function: " + rFunction, JSON.stringify(request.body), request.body.user);
     if (preValidationFunction != null) {
       preValErrors = preValidationFunction.call(this, request.body);
@@ -92,6 +92,10 @@
   app.post '/api/runRFunctionTest', serverUtilityFunctions.runRFunctionTest
   */
 
+
+  exports.setupRoutes = function(app) {
+    return app.post('/api/runRFunctionTest', exports.runRFunctionTest);
+  };
 
   exports.runRFunctionTest = function(request, response) {
     response.writeHead(200, {

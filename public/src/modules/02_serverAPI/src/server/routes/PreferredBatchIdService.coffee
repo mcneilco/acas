@@ -7,14 +7,23 @@
 #########################################################################
 # For API docs see spec: PreferredBatchIdServiceSpec.coffee
 #########################################################################
+# serverAPI routes
+### To install this Module
+1) Add these lines to app.coffee:
+preferredBatchIdRoutes = require './public/src/modules/02_serverAPI/src/server/routes/PreferredBatchIdService.js'
+preferredBatchIdRoutes.setupRoutes(app)
+###
 
+exports.setupRoutes = (app) ->
+	app.post '/api/preferredBatchId', exports.preferredBatchId
+	app.post '/api/testRoute', exports.testRoute
 
 exports.preferredBatchId = (req, resp) ->
 	#oracle = require "db-oracle"
 	_ = require "underscore"
 	each = require "each"
 	request = require 'request'
-	config = require '../conf/compiled/conf.js'
+	config = require '../../../../../../../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serviceType = config.all.client.service.external.preferred.batchid.type
 

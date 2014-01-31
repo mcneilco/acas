@@ -1,21 +1,20 @@
 ### To install this Module
 1) Add these lines to app.coffee:
-# GenericDataParser routes
-genericDataParserRoutes = require './routes/GenericDataParserRoutes.js'
-app.post '/api/genericDataParser', genericDataParserRoutes.parseGenericData
+	# GenericDataParser routes
+	genericDataParserRoutes = require './public/src/modules/GenericDataParser/src/server/routes/GenericDataParserRoutes.js'
+	genericDataParserRoutes.setupRoutes(app)
 
 2) Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Load From Generic Format", mainControllerClassName: "GenericDataParserController"}
 
-3) Add these lines to routes/index.coffee under applicationScripts = [
-	# For Generic Data Parser module
-	'/javascripts/src/GenericDataParser.js'
-
 ###
+exports.setupRoutes = (app) ->
+	app.post '/api/genericDataParser', exports.parseGenericData
+
 
 exports.parseGenericData = (request, response)  ->
 	request.connection.setTimeout 600000
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	serverUtilityFunctions = require '../../../../02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
 
 	response.writeHead(200, {'Content-Type': 'application/json'});
 	if global.specRunnerTestmode
