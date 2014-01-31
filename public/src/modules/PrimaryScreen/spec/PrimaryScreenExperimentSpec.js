@@ -308,7 +308,7 @@
             return expect(this.psapc.model.get('positiveControl').get('batchCode')).toEqual("pos cont");
           });
           it("should update the positiveControl conc ", function() {
-            this.psapc.$('.bv_positiveControlConc').val(' 61 ');
+            this.psapc.$('.bv_positiveControlConc').val(' 250753.77 ');
             this.psapc.$('.bv_positiveControlConc').change();
             return expect(this.psapc.model.get('positiveControl').get('concentration')).toEqual(61);
           });

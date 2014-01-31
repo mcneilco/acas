@@ -36,7 +36,7 @@
       include: true,
       vars: substitutions
     };
-    configDir = "./";
+    configDir = "../public/src/conf/";
     return properties.parse(configDir + "config.properties", options, function(error, conf) {
       if (error != null) {
         return console.log("Problem parsing config.properties: " + error);

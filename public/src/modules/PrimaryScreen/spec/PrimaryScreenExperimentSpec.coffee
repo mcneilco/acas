@@ -211,7 +211,7 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_positiveControlBatch').change()
 					expect(@psapc.model.get('positiveControl').get('batchCode')).toEqual "pos cont"
 				it "should update the positiveControl conc ", ->
-					@psapc.$('.bv_positiveControlConc').val(' 61 ')
+					@psapc.$('.bv_positiveControlConc').val(' 250753.77 ')
 					@psapc.$('.bv_positiveControlConc').change()
 					expect(@psapc.model.get('positiveControl').get('concentration')).toEqual 61
 				it "should update the negativeControl ", ->
@@ -395,3 +395,4 @@ describe "Primary Screen Experiment module testing", ->
 
 
 #TODO Validation rules for different threshold modes
+

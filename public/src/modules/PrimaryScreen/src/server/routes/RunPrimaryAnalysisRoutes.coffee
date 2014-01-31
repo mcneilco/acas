@@ -21,63 +21,26 @@ app.post '/api/primaryAnalysis/runPrimaryAnalysis', runPrimaryAnalysisRoutes.run
   include ../public/src/modules/serverAPI/src/client/Experiment.html
 
 ###
-requiredScripts = [
-	'/src/lib/jquery.min.js'
-	'/src/lib/json2.js'
-	'/src/lib/underscore.js'
-	'/src/lib/backbone-min.js'
-	'/src/lib/bootstrap/bootstrap-tooltip.js'
-	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js'
-	'/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js'
-	'/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js'
-	'/src/lib/bootstrap/bootstrap.min.js'
-	'/src/lib/jqueryFileUpload/tmpl.min.js'
-	'/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js'
-	'/src/lib/jqueryFileUpload/js/jquery.fileupload.js'
-	'/src/lib/jqueryFileUpload/js/jquery.fileupload-fp.js'
-	'/src/lib/jqueryFileUpload/js/jquery.fileupload-ui.js'
-	'/src/lib/jqueryFileUpload/js/locale.js'
-	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js'
-]
+exports.setupRoutes = (app) ->
+	#	app.get '/primaryScreenExperiment/*', exports.primaryScreenExperimentIndex
+	#	app.get '/primaryScreenExperiment', exports.primaryScreenExperimentIndex
+	app.post '/api/primaryAnalysis/runPrimaryAnalysis', exports.runPrimaryAnalysis
 
-applicationScripts = [
-	'/src/conf/configurationNode.js'
-	# For Components module
-	'/javascripts/src/LSFileInput.js'
-	'/javascripts/src/LSFileChooser.js'
-	'/javascripts/src/LSErrorNotification.js'
-	'/javascripts/src/AbstractFormController.js'
-	'/javascripts/src/AbstractParserFormController.js'
-	'/javascripts/src/BasicFileValidateAndSave.js'
-	'/javascripts/src/PickList.js'
-	'/javascripts/src/TagList.js'
-	# For serverAPI module
-	'/javascripts/src/Label.js'
-	'/javascripts/src/AnalysisGroup.js'
-	'/javascripts/src/Protocol.js'
-	'/javascripts/src/Experiment.js'
-	'/javascripts/src/DoseResponseAnalysis.js'
-	#Primary Screen module
-	'/javascripts/src/PrimaryScreenExperiment.js'
-	'/javascripts/src/PrimaryScreenAppController.js'
-	'/javascripts/src/DoseResponseAnalysis.js'
 
-]
-
-exports.primaryScreenExperimentIndex = (request, response) ->
-	scriptsToLoad = requiredScripts.concat applicationScripts
-	global.specRunnerTestmode = true
-
-	return response.render 'PrimaryScreenExperiment',
-	                       title: 'Primary Screen Experiment'
-	                       scripts: scriptsToLoad
-	                       appParams:
-		                       exampleParam: null
+#exports.primaryScreenExperimentIndex = (request, response) ->
+#	scriptsToLoad = requiredScripts.concat applicationScripts
+#	global.specRunnerTestmode = true
+#
+#	return response.render 'PrimaryScreenExperiment',
+#	                       title: 'Primary Screen Experiment'
+#	                       scripts: scriptsToLoad
+#	                       appParams:
+#		                       exampleParam: null
 
 
 exports.runPrimaryAnalysis = (request, response)  ->
 	request.connection.setTimeout 1800000
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	serverUtilityFunctions = require '../../../../02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
 	console.log request.body
 
 	response.writeHead(200, {'Content-Type': 'application/json'});

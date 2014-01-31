@@ -114,3 +114,4 @@ class window.CurveCuratorController extends Backbone.View
 
 	curveSelectionUpdated: (who) =>
 		@curveEditorController.setModel who.model
+

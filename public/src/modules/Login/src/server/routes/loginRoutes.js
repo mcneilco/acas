@@ -22,7 +22,18 @@ app.get '/api/users/:username', loginRoutes.getUsers
 (function() {
   var csUtilities;
 
-  csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+  exports.setupRoutes = function(app, passport) {
+    app.get('/login', exports.loginPage);
+    app.post('/login', passport.authenticate('local', {
+      failureRedirect: '/login',
+      failureFlash: true
+    }), exports.loginPost);
+    app.get('/logout', exports.logout);
+    app.post('/api/userAuthentication', exports.authenticationService);
+    return app.get('/api/users/:username', exports.getUsers);
+  };
+
+  csUtilities = require('../../../../../conf/CustomerSpecificServerFunctions.js');
 
   exports.loginPage = function(req, res) {
     var error, errorMsg, user;

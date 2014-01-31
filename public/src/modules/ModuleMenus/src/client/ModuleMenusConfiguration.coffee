@@ -27,3 +27,4 @@ window.ModuleMenusConfiguration =
 		menuName: "Load Sample Transfer Log"
 		mainControllerClassName: "BulkLoadSampleTransfersController"
 	]
+
