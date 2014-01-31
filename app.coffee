@@ -98,11 +98,6 @@ startApp = ->
 	curveCuratorRoutes = require './public/src/modules/CurveAnalysis/src/server/routes/CurveCuratorRoutes.js'
 	curveCuratorRoutes.setupRoutes(app)
 
-
-# AUTO-INSERT-ROUTES-HERE
-
-# END-AUTO-INSERT-ROUTES-HERE
-
 	http.createServer(app).listen(app.get('port'), ->
 		console.log("Express server listening on port " + app.get('port'))
 	)
