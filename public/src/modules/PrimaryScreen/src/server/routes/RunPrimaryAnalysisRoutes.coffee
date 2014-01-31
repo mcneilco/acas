@@ -51,11 +51,11 @@ applicationScripts = [
 	'/javascripts/src/BasicFileValidateAndSave.js'
 	'/javascripts/src/PickList.js'
 	'/javascripts/src/TagList.js'
-	# For serverAPI module
+	# For 02_serverAPI module
 	'/javascripts/src/Label.js'
 	'/javascripts/src/AnalysisGroup.js'
 	'/javascripts/src/Protocol.js'
-	'/javascripts/src/Experiment.js'
+	'/javascripts/src/02_Experiment.js'
 	'/javascripts/src/DoseResponseAnalysis.js'
 	#Primary Screen module
 	'/javascripts/src/PrimaryScreenExperiment.js'

@@ -16,7 +16,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
     console.log(request.query.testMode);
     if (request.query.testMode || global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return response.end(JSON.stringify(experimentServiceTestJSON.stubSavedExperiment[0]));
+      return response.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + request.params.code;
@@ -31,7 +31,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
     console.log(request.query.testMode);
     if (request.query.testMode || global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return response.end(JSON.stringify(experimentServiceTestJSON.stubSavedExperiment));
+      return response.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/protocolCodename/" + request.params.code;

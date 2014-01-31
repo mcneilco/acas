@@ -96,7 +96,7 @@
     response.writeHead(200, {
       'Content-Type': 'application/json'
     });
-    return exports.runRFunction(request, "public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
+    return exports.runRFunction(request, "public/src/modules/02_serverAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
       return response.end(rReturn);
     });
   };

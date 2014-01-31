@@ -45,7 +45,7 @@ applicationScripts = [
 	'/javascripts/src/Protocol.js'
 	'/javascripts/src/AnalysisGroup.js'
 	'/javascripts/src/AbstractFormController.js'
-	'/javascripts/src/Experiment.js'
+	'/javascripts/src/02_Experiment.js'
 	#For Components module
 	'/javascripts/src/LSFileInput.js'
 	'/javascripts/src/LSFileChooser.js'

@@ -13,7 +13,7 @@
       },
       agonistControl: {
         batchCode: "CMPD-87654399-01",
-        concentration: 2,
+        concentration: 250753.77,
         concentrationUnits: "uM"
       },
       vehicleControl: {
