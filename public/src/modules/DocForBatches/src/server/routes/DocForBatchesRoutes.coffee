@@ -15,7 +15,7 @@ exports.setupRoutes = (app) ->
 	app.post '/api/docForBatches', exports.saveDocForBatches
 
 
-fixturesData = require '../../../spec/testFixtures/testJSON.js'
+fixturesData = require '../public/src/modules/DocForBatches/spec/testFixtures/testJSON.js'
 
 #exports.docForBatchesIndex = (request, response) ->
 #	scriptsToLoad = requiredScripts.concat applicationScripts
@@ -39,7 +39,7 @@ exports.getDocForBatches = (request, response) ->
 
 
 exports.saveDocForBatches = (request, response)  ->
-	serverUtilityFunctions = require '../../../../02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 	response.writeHead(200, {'Content-Type': 'application/json'});
 

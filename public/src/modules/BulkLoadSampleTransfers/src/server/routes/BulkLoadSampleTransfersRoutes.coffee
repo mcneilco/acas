@@ -21,7 +21,7 @@ exports.bulkLoadSampleTransfers = (request, response)  ->
 #	,
 #		125000
 
-	serverUtilityFunctions = require '../../../../02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 	response.writeHead(200, {'Content-Type': 'application/json'});
 

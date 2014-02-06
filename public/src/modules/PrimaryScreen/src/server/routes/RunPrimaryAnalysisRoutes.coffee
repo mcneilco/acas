@@ -40,7 +40,7 @@ exports.setupRoutes = (app) ->
 
 exports.runPrimaryAnalysis = (request, response)  ->
 	request.connection.setTimeout 1800000
-	serverUtilityFunctions = require '../../../../02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	console.log request.body
 
 	response.writeHead(200, {'Content-Type': 'application/json'});

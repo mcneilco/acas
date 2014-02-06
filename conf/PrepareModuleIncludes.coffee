@@ -22,14 +22,20 @@ prepIncludes = ->
 
 insertToLayoutTemplate = (replaceRegex, includeLines, templateFileName, outputFileName) ->
 	fs = require("fs")
-	fs.readFile templateFileName, "utf8", (err, data) ->
+	data = fs.readFileSync templateFileName, "utf8", (err) ->
 		return console.log(err) if err
-		result = data.replace(replaceRegex, includeLines)
-		fs.writeFile outputFileName, result, "utf8", (err) ->
-			console.log err if err
+	result = data.replace(replaceRegex, includeLines)
+	fs.writeFileSync outputFileName, result, "utf8", (err) ->
+		console.log err if err
+
 
 includeLines = prepIncludes()
 insertToLayoutTemplate /TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES/, includeLines, "../views/layout.jade_template", "../views/layout.jade"
+
+
+##### prep scripts to load ##
+
+scriptPaths = require '../routes/RequiredClientScripts_template.js'
 
 getFileNameFromPath = (path) ->
 	path.replace(/^.*[\\\/]/, '')
@@ -49,18 +55,12 @@ makeScriptLines = (scripts) ->
 		scriptLines += script
 	scriptLines.replace /,([^,]*)$/, "" #kill last comma and newline
 
-insertToLayoutTemplate = (replaceRegex, includeLines, templateFileName, outputFileName) ->
-	fs = require("fs")
-	data = fs.readFileSync templateFileName, "utf8", (err) ->
-		return console.log(err) if err
-	result = data.replace(replaceRegex, includeLines)
-	fs.writeFileSync outputFileName, result, "utf8", (err) ->
-		console.log err if err
-
 prepAppScripts = ->
 	appScriptsInModules = makeFileNameHash glob.sync('../public/src/modules/*/src/client/*.js')
 	appScriptsInJavascripts = makeFileNameHash glob.sync('../public/javascripts/src/*.js')
 	appScriptsInJavascripts = _.omit appScriptsInJavascripts, _.keys(appScriptsInModules)
+	templateAppScripts = makeFileNameHash scriptPaths.applicationScripts
+	appScriptsInJavascripts = _.omit appScriptsInJavascripts, _.keys(templateAppScripts)
 	allScripts = _.extend appScriptsInModules, appScriptsInJavascripts
 	makeScriptLines allScripts
 
@@ -73,12 +73,14 @@ prepSpecScripts = ->
 	specScriptsInModules = makeFileNameHash glob.sync('../public/src/modules/*/spec/*.js')
 	specScriptsInJavascripts = makeFileNameHash glob.sync('../public/javascripts/spec/*.js')
 	specScriptsInJavascripts = _.omit specScriptsInJavascripts, _.keys(specScriptsInModules)
+	templateSpecScripts = makeFileNameHash scriptPaths.specScripts
+	specScriptsInJavascripts = _.omit specScriptsInJavascripts, _.keys(templateSpecScripts)
 	allSpecScripts = _.extend specScriptsInModules, specScriptsInJavascripts
 	allScripts = _.extend testJSONScripts, allSpecScripts
 	makeScriptLines allScripts
 
 appScriptLines = prepAppScripts()
-insertToLayoutTemplate /APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES/, appScriptLines, "../routes/RequiredClientScripts.js_template", "../routes/RequiredClientScripts.js"
+insertToLayoutTemplate "//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES", ",\n"+appScriptLines, "../routes/RequiredClientScripts_template.js", "../routes/RequiredClientScripts.js"
 specScriptLines = prepSpecScripts()
-insertToLayoutTemplate /SPECSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES/, specScriptLines, "../routes/RequiredClientScripts.js", "../routes/RequiredClientScripts.js"
+insertToLayoutTemplate "//SPECSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES", ",\n"+specScriptLines, "../routes/RequiredClientScripts.js", "../routes/RequiredClientScripts.js"
 
