@@ -3,7 +3,7 @@ This suite of services provides CRUD operations on Experiment Objects
 
 ###
 
-describe 'Experiment CRUD testing', ->
+describe 'Experiment Service testing', ->
 	beforeEach ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
@@ -26,7 +26,7 @@ describe 'Experiment CRUD testing', ->
 		it 'should return a experiment stub', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn.codeName).toEqual "EXPT-00000046"
+				expect(@serviceReturn.codeName).toEqual "EXPT-00000001"
 
 	describe 'when fetching Experiment stubs by protocol code', ->
 		beforeEach ->
@@ -46,7 +46,7 @@ describe 'Experiment CRUD testing', ->
 		it 'should return an array of experiment stubs', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn[0].codeName).toEqual "EXPT-00000046"
+				expect(@serviceReturn.codeName).toEqual "EXPT-00000001"
 
 
 	describe 'when fetching full Experiment by id', ->
