@@ -26,7 +26,7 @@ exports.setupRoutes = (app, passport) ->
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/api/users/:username', exports.getUsers
 
-csUtilities = require '../../../../../conf/CustomerSpecificServerFunctions.js'
+csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 
 exports.loginPage = (req, res) ->
 	user = null

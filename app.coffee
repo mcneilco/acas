@@ -49,7 +49,7 @@ startApp = ->
 			done err, user
 	passport.use new LocalStrategy csUtilities.loginStrategy
 
-	loginRoutes = require './public/src/modules/Login/src/server/routes/loginRoutes'
+	loginRoutes = require './routes/loginRoutes'
 	loginRoutes.setupRoutes(app, passport)
 
 	# index routes
@@ -57,45 +57,45 @@ startApp = ->
 	indexRoutes.setupRoutes(app, loginRoutes)
 
 	# serverAPI routes
-	preferredBatchIdRoutes = require './public/src/modules/02_serverAPI/src/server/routes/PreferredBatchIdService.js'
+	preferredBatchIdRoutes = require './routes/PreferredBatchIdService.js'
 	preferredBatchIdRoutes.setupRoutes(app)
 
 	# ServerUtility function testing routes
-	serverUtilityFunctions = require './public/src/modules/02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
+	serverUtilityFunctions = require './routes/ServerUtilityFunctions.js'
 	serverUtilityFunctions.setupRoutes(app)
 
-	protocolRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ProtocolServiceRoutes.js'
+	protocolRoutes = require './routes/ProtocolServiceRoutes.js'
 	protocolRoutes.setupRoutes(app)
 
-	experimentRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ExperimentServiceRoutes.js'
+	experimentRoutes = require './routes/ExperimentServiceRoutes.js'
 	experimentRoutes.setupRoutes(app)
 
 	#Components routes
-	projectServiceRoutes = require './public/src/modules/01_Components/src/server/routes/ProjectServiceRoutes.js'
+	projectServiceRoutes = require './routes/ProjectServiceRoutes.js'
 	projectServiceRoutes.setupRoutes(app)
 
 	# DocForBatches routes
-	docForBatchesRoutes = require './public/src/modules/DocForBatches/src/server/routes/DocForBatchesRoutes.js'
+	docForBatchesRoutes = require './routes/DocForBatchesRoutes.js'
 	docForBatchesRoutes.setupRoutes(app)
 
 	# GenericDataParser routes
-	genericDataParserRoutes = require './public/src/modules/GenericDataParser/src/server/routes/GenericDataParserRoutes.js'
+	genericDataParserRoutes = require './routes/GenericDataParserRoutes.js'
 	genericDataParserRoutes.setupRoutes(app)
 
 	# BulkLoadContainersFromSDF routes
-	bulkLoadContainersFromSDFRoutes = require './public/src/modules/BulkLoadContainersFromSDF/src/server/routes/BulkLoadContainersFromSDFRoutes.js'
+	bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
 	bulkLoadContainersFromSDFRoutes.setupRoutes(app)
 
 	# BulkLoadSampleTransfers routes
-	bulkLoadSampleTransfersRoutes = require './public/src/modules/BulkLoadSampleTransfers/src/server/routes/BulkLoadSampleTransfersRoutes.js'
+	bulkLoadSampleTransfersRoutes = require './routes/BulkLoadSampleTransfersRoutes.js'
 	bulkLoadSampleTransfersRoutes.setupRoutes(app)
 
 	# RunPrimaryAnalysisRoutes routes
-	runPrimaryAnalysisRoutes = require './public/src/modules/PrimaryScreen/src/server/routes/RunPrimaryAnalysisRoutes.js'
+	runPrimaryAnalysisRoutes = require './routes/RunPrimaryAnalysisRoutes.js'
 	runPrimaryAnalysisRoutes.setupRoutes(app)
 
 	# CurveCurator routes
-	curveCuratorRoutes = require './public/src/modules/CurveAnalysis/src/server/routes/CurveCuratorRoutes.js'
+	curveCuratorRoutes = require './routes/CurveCuratorRoutes.js'
 	curveCuratorRoutes.setupRoutes(app)
 
 	http.createServer(app).listen(app.get('port'), ->

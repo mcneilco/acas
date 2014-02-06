@@ -28,17 +28,17 @@ requiredScripts = [
 applicationScripts = [
 	'/src/conf/conf.js'
 	#Curve Analysis module
-	'/src/modules/CurveAnalysis/src/client/CurveCurator.js'
-	'/src/modules/CurveAnalysis/src/client/CurveCuratorAppController.js'
+	'/javascripts/src/CurveCurator.js'
+	'/javascripts/src/CurveCuratorAppController.js'
 ]
 
 exports.getCurveStubs = (req, resp) ->
 	if global.specRunnerTestmode
 		console.log req.params
-		curveCuratorTestData = require '../../../spec/testFixtures/curveCuratorTestFixtures.js'
+		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveStubs
 	else
-		config = require '../../../../../../../conf/compiled/conf.js'
+		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.rapache.fullpath+"/experimentcode/curvids/?experimentcode="
 		request = require 'request'
 		request(
