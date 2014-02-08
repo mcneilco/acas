@@ -1,0 +1,64 @@
+###
+# install.R
+# Installs racas and depencies
+## 
+args <- commandArgs(TRUE)
+if(length(args) < 2) {
+  cat("Usage: Rscript install.R ref auth_user password (Ex. Rscript install.R master mcneilco mcneilco_pass)\n")
+  quit("no")
+} else {
+  ref <- args[1]
+  auth_user <- args[2]
+  password <- args[3]
+  if(is.na(password)) {
+    cat("password: ")
+    password <- readLines(con="stdin", 1)
+  }
+}
+acasHome <- Sys.getenv("ACAS_HOME")
+if(acasHome == "") {
+  installDirectory <- .libPaths()[1]
+  warning(paste0("ACAS_HOME environment variable not set"))
+  altInstall <- "?"
+  while(!altInstall %in% c("y","n")) {
+    cat(paste0("Attempt to install racas in '", installDirectory,"'? (y or n):"))
+    altInstall <- readLines(con="stdin", 1)
+  }
+  if(altInstall == "n") {
+    quit("no")
+  }
+} else {
+  installDirectory <- file.path(acasHome,"r_libs")
+  dir.create(installDirectory, recursive = TRUE, showWarnings = FALSE)
+}
+
+repos <- "http://cran.rstudio.com/"
+options(repos = "http://cran.rstudio.com/")
+if(!require('devtools')){
+  install.packages('devtools', repos = repos)
+}
+library(devtools)
+#Need to load methods because of a bug in dev tools can remove when bug is fixed
+library(methods)
+options(racasInstallDep = TRUE)
+install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password)
+
+#After the install include the bitbucket repoNumber
+if(!require('RCurl')){
+  install.packages('RCurl', repos = repos)
+}
+require(RCurl)
+branchCommitsJSON <- getURL(paste0("https://bitbucket.org/api/2.0/repositories/mcneilco/racas/commits?include=",ref),.opts=list(userpwd=paste0(auth_user,":",password)))
+
+if(!require('rjson')){
+  install.packages('RCurl', repos = repos)
+}
+require(rjson)
+branchCommits <- fromJSON(branchCommitsJSON)
+
+hash <- paste0("hash: ",branchCommits$values[[1]]$hash)
+href <- paste0("href: ",branchCommits$values[[1]]$links$self$href)
+date <- paste0("date: ",branchCommits$values[[1]]$date)
+message <- paste0("message: ",branchCommits$values[[1]]$message)
+
+writeLines(c(hash,href,date,message),file.path(installDirectory,"racas","install_info.txt"))
