@@ -1,5 +1,17 @@
+/* To install this Module
+1) Add these lines to app.coffee:
+preferredBatchIdRoutes = require './public/src/modules/02_serverAPI/src/server/routes/PreferredBatchIdService.js'
+preferredBatchIdRoutes.setupRoutes(app)
+*/
+
+
 (function() {
   var checkBatch_TestMode;
+
+  exports.setupRoutes = function(app) {
+    app.post('/api/preferredBatchId', exports.preferredBatchId);
+    return app.post('/api/testRoute', exports.testRoute);
+  };
 
   exports.preferredBatchId = function(req, resp) {
     var config, each, request, requests, serverUtilityFunctions, serviceType, _;
@@ -12,7 +24,7 @@
     requests = req.body.requests;
     if (serviceType === "SeuratCmpdReg" && !global.specRunnerTestmode) {
       req.body.user = "";
-      return serverUtilityFunctions.runRFunction(req, "public/src/modules/serverAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
+      return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
         return resp.end(rReturn);
       });
     } else {

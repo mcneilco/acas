@@ -37,3 +37,4 @@ class window.AbstractParserFormController extends AbstractFormController
 	enableAllInputs: ->
 		super()
 		@$('.bv_csvPreviewContainer').hide()
+

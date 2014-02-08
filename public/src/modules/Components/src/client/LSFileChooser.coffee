@@ -1,4 +1,3 @@
-
 class window.LSFileChooserModel extends Backbone.Model
 	defaults:
 		fileName: ''
@@ -6,8 +5,9 @@ class window.LSFileChooserModel extends Backbone.Model
 		fileType: ''
 		
 	initialize: ->
-		_.bindAll(@, 
+		_.bindAll(@,
 			'isDirty')
+
 	
 	isDirty: ->
 		return @.get('fileNameOnServer') == ''
@@ -152,5 +152,4 @@ class window.LSFileChooserController extends Backbone.View
 		@$('.fileupload').bind('fileuploaddestroyed', @handleDeleteFileUIChanges)
 		#@$('.fileupload').bind('fileuploadstopped', @handleDeleteFileUIChanges)
 
-		
 		

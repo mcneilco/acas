@@ -10,35 +10,30 @@ html
         link(rel='stylesheet', href='/stylesheets/base.css')
         link(rel='stylesheet', href='/src/lib/jquery-ui-1.10.2.custom/css/smoothness/jquery-ui-1.10.2.custom.min.css')
         link(rel='stylesheet', href='/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.css')
-        // for ModuleMenus module
-        include ../public/src/modules/ModuleMenus/src/client/ModuleMenusView.html
-        include ../public/src/modules/ModuleMenus/src/client/ModuleLauncherView.html
-        link(rel='stylesheet', href='/src/modules/ModuleMenus/src/client/style.css')
-        // for DocForBatches module
-        link(rel='stylesheet', href='/src/modules/DocForBatches/src/client/style.css')
-        include ../public/src/modules/DocForBatches/src/client/BatchListValidatorView.html
-        include ../public/src/modules/DocForBatches/src/client/DocUploadView.html
-        include ../public/src/modules/DocForBatches/src/client/DocForBatchesView.html
-        include ../public/src/modules/DocForBatches/src/client/DocForBatchesAppControllerView.html
-        // for Components module
-        include ../public/src/modules/Components/src/client/LSFileInputView.html
-        include ../public/src/modules/Components/src/client/LSFileChooserView.html
-        include ../public/src/modules/Components/src/client/LSNotificationView.html
+        // inserted by PrepareModuleIncludes
+        link(rel="stylesheet", href="/src/modules/Components/src/client/style.css")
+        link(rel="stylesheet", href="/src/modules/CurveAnalysis/src/client/style.css")
+        link(rel="stylesheet", href="/src/modules/DocForBatches/src/client/style.css")
+        link(rel="stylesheet", href="/src/modules/ModuleMenus/src/client/style.css")
         include ../public/src/modules/Components/src/client/BasicFileValidateAndSaveView.html
-        // for PrimaryScreen module
-        include ../public/src/modules/PrimaryScreen/src/client/PrimaryScreenExperiment.html
+        include ../public/src/modules/Components/src/client/LSFileChooserView.html
+        include ../public/src/modules/Components/src/client/LSFileInputView.html
+        include ../public/src/modules/Components/src/client/LSNotificationView.html
+        include ../public/src/modules/CurveAnalysis/src/client/CurveCuratorAppView.html
+        include ../public/src/modules/CurveAnalysis/src/client/CurveCuratorView.html
+        include ../public/src/modules/DocForBatches/src/client/BatchListValidatorView.html
+        include ../public/src/modules/DocForBatches/src/client/DocForBatchesAppControllerView.html
+        include ../public/src/modules/DocForBatches/src/client/DocForBatchesView.html
+        include ../public/src/modules/DocForBatches/src/client/DocUploadView.html
+        include ../public/src/modules/ExperimentBrowser/src/client/ExperimentBrowserView.html
+        include ../public/src/modules/ModuleMenus/src/client/ModuleLauncherView.html
+        include ../public/src/modules/ModuleMenus/src/client/ModuleMenusView.html
         include ../public/src/modules/PrimaryScreen/src/client/DoseResponseAnalysisView.html
         include ../public/src/modules/PrimaryScreen/src/client/PrimaryScreenAppControllerView.html
-        // for CurveAnalysis module
-        include ../public/src/modules/CurveAnalysis/src/client/CurveCuratorView.html
-        include ../public/src/modules/CurveAnalysis/src/client/CurveCuratorAppView.html
-        // for ExperimentBrowser module
-        include ../public/src/modules/ExperimentBrowser/src/client/ExperimentBrowserView.html
-        // for serverAPI module
-        include ../public/src/modules/serverAPI/src/client/Experiment.html
+        include ../public/src/modules/PrimaryScreen/src/client/PrimaryScreenExperiment.html
+        include ../public/src/modules/ServerAPI/src/client/Experiment.html
 
-        link(rel='stylesheet', href='/src/modules/Components/src/client/style.css')
-        link(rel='stylesheet', href='/src/modules/CurveAnalysis/src/client/style.css')
+        // end inserted by PrepareModuleIncludes
         -each script in scripts
             script(type='text/javascript', src= script)
 

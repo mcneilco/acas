@@ -1,26 +1,16 @@
 ### To install this module this module
-In index.coffee:
-  #Curve Analysis module
-	'javascripts/src/CurveCurator.js'
-	'javascripts/src/CurveCuratorAppController.js'
 
-	#Curve Analysis module
-	'javascripts/spec/CurveCuratorServiceSpec.js'
-	'javascripts/spec/CurveCuratorSpec.js'
-	'javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
 In app.coffee
 	# CurveCurator routes
-	curveCuratorRoutes = require './routes/CurveCuratorRoutes.js'
-	app.get '/api/curves/stub/:exptCode', curveCuratorRoutes.getCurveStubs
-	app.get '/curveCurator/*', curveCuratorRoutes.curveCuratorIndex
-
-In layout.jade
-      // for CurveAnalysis module
-      include ../public/src/modules/CurveAnalysis/src/client/CurveCuratorView.html
-
+	curveCuratorRoutes = require './public/src/modules/CurveAnalysis/src/server/routes/CurveCuratorRoutes.js'
+	curveCuratorRoutes.setupRoutes(app)
 
 
 ###
+exports.setupRoutes = (app) ->
+	app.get '/curveCurator/*', exports.curveCuratorIndex
+	app.get '/api/curves/stub/:exptCode', exports.getCurveStubs
+
 
 requiredScripts = [
 	'/src/lib/jquery.min.js'

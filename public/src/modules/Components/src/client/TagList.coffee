@@ -27,3 +27,4 @@ class window.TagListController extends Backbone.View
 		for t in tagStrings
 			tempTags.push tagText: t
 		@collection.set tempTags
+

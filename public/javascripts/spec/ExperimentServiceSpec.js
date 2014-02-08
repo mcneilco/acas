@@ -4,7 +4,7 @@ This suite of services provides CRUD operations on Experiment Objects
 
 
 (function() {
-  describe('Experiment CRUD testing', function() {
+  describe('Experiment Service testing', function() {
     beforeEach(function() {
       return this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
@@ -33,7 +33,7 @@ This suite of services provides CRUD operations on Experiment Objects
       return it('should return a experiment stub', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn.codeName).toEqual("EXPT-00000046");
+          return expect(this.serviceReturn.codeName).toEqual("EXPT-00000001");
         });
       });
     });
@@ -60,7 +60,7 @@ This suite of services provides CRUD operations on Experiment Objects
       return it('should return an array of experiment stubs', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn[0].codeName).toEqual("EXPT-00000046");
+          return expect(this.serviceReturn.codeName).toEqual("EXPT-00000001");
         });
       });
     });

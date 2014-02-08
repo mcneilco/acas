@@ -1,10 +1,12 @@
 ### To install this Module
-1) Add these lines to app.coffee under # serverAPI routes:
-#Components routes
-projectServiceRoutes = require './routes/ProjectServiceRoutes.js'
-app.get '/api/projects', projectServiceRoutes.getProjects
+1) Add these lines to app.coffee
+	#Components routes
+	projectServiceRoutes = require './public/src/modules/01_Components/src/server/routes/ProjectServiceRoutes.js'
+	projectServiceRoutes.setupRoutes(app)
 ###
 
+exports.setupRoutes = (app) ->
+	app.get '/api/projects', exports.getProjects
 
 exports.getProjects = (req, resp) ->
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
@@ -13,4 +15,5 @@ exports.getProjects = (req, resp) ->
 		resp.end JSON.stringify projectServiceTestJSON.projects
 	else
 		csUtilities.getProjects resp
+
 

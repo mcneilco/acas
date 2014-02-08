@@ -85,18 +85,21 @@
   };
 
   /* To allow following test routes to work, install this Module
-  1) Add these lines to app.coffee:
-  # ServerUtility function testing routes
-  serverUtilityFunctions = require './routes/serverUtilityFunctions.js'
-  app.post '/api/runRFunctionTest', serverUtilityFunctions.runRFunctionTest
+  	# ServerUtility function testing routes
+  	serverUtilityFunctions = require './public/src/modules/02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
+  	serverUtilityFunctions.setupRoutes(app)
   */
 
+
+  exports.setupRoutes = function(app) {
+    return app.post('/api/runRFunctionTest', exports.runRFunctionTest);
+  };
 
   exports.runRFunctionTest = function(request, response) {
     response.writeHead(200, {
       'Content-Type': 'application/json'
     });
-    return exports.runRFunction(request, "public/src/modules/serverAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
+    return exports.runRFunction(request, "public/src/modules/ServerAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
       return response.end(rReturn);
     });
   };

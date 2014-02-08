@@ -1,17 +1,21 @@
 /* To install this Module
-1) Add these lines to app.coffee under # serverAPI routes:
-protocolRoutes = require './routes/ProtocolServiceRoutes.js'
-app.get '/api/protocols/codename/:code', protocolRoutes.protocolByCodename
-app.get '/api/protocols/:id', protocolRoutes.protocolById
-app.post '/api/protocols', protocolRoutes.postProtocol
-app.put '/api/protocols', protocolRoutes.putProtocol
-app.get '/api/protocollabels', protocolRoutes.protocolLabels
-app.get '/api/protocolCodeList', protocolRoutes.protocolCodeList
-app.get '/api/protocolCodeList/:filter', protocolRoutes.protocolCodeList
+1) Add these lines to app.coffee:
+	protocolRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ProtocolServiceRoutes.js'
+	protocolRoutes.setupRoutes(app)
 */
 
 
 (function() {
+  exports.setupRoutes = function(app) {
+    app.get('/api/protocols/codename/:code', exports.protocolByCodename);
+    app.get('/api/protocols/:id', exports.protocolById);
+    app.post('/api/protocols', exports.postProtocol);
+    app.put('/api/protocols', exports.putProtocol);
+    app.get('/api/protocollabels', exports.lsLabels);
+    app.get('/api/protocolCodes', exports.protocolCodeList);
+    return app.get('/api/protocolCodes/filter/:str', exports.protocolCodeList);
+  };
+
   exports.protocolByCodename = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
     console.log(req.params.code);

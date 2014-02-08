@@ -10,7 +10,7 @@
 			concentrationUnits: "uM"
 		agonistControl:
 			batchCode: "CMPD-87654399-01"
-			concentration: 2
+			concentration: 250753.77
 			concentrationUnits: "uM"
 		vehicleControl:
 			batchCode: "CMPD-00000001-01"
@@ -23,3 +23,4 @@
 		thresholdType: "sd" #or "efficacy"
 
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenTestJSON = window.primaryScreenTestJSON or {} else exports)
+

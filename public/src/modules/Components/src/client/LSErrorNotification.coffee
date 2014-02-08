@@ -1,4 +1,3 @@
-
 class window.LSNotificationMessageModel extends Backbone.Model
 	defaults:
 		content: ''

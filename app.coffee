@@ -35,27 +35,11 @@ startApp = ->
 		app.use(app.router)
 
 	)
-	loginRoutes = require './routes/loginRoutes'
-
 	#TODO Do we need these next three lines? What do they do?
 	app.configure('development', ->
 		app.use(express.errorHandler())
 		console.log "node dev mode set"
 	)
-
-	# main routes
-	routes = require('./routes')
-	if config.all.client.require.login
-		app.get '/', loginRoutes.ensureAuthenticated, routes.index
-		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, routes.autoLaunchWithCode
-	else
-		app.get '/:moduleName/codeName/:code', routes.autoLaunchWithCode
-		app.get '/', routes.index
-
-	if config.all.server.enableSpecRunner
-		app.get '/SpecRunner', routes.specRunner
-		app.get '/LiveServiceSpecRunner', routes.liveServiceSpecRunner
-
 
 	# login routes
 	passport.serializeUser (user, done) ->
@@ -65,70 +49,54 @@ startApp = ->
 			done err, user
 	passport.use new LocalStrategy csUtilities.loginStrategy
 
-	app.get '/login', loginRoutes.loginPage
-	app.post '/login',
-		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
-		loginRoutes.loginPost
-	app.get '/logout', loginRoutes.logout
-	app.post '/api/userAuthentication', loginRoutes.authenticationService
-	app.get '/api/users/:username', loginRoutes.getUsers
+	loginRoutes = require './routes/loginRoutes'
+	loginRoutes.setupRoutes(app, passport)
+
+	# index routes
+	indexRoutes = require('./routes/index.js')
+	indexRoutes.setupRoutes(app, loginRoutes)
 
 	# serverAPI routes
 	preferredBatchIdRoutes = require './routes/PreferredBatchIdService.js'
-	app.post '/api/preferredBatchId', preferredBatchIdRoutes.preferredBatchId
-	app.post '/api/testRoute', preferredBatchIdRoutes.testRoute
-	protocolRoutes = require './routes/ProtocolServiceRoutes.js'
-	app.get '/api/protocols/codename/:code', protocolRoutes.protocolByCodename
-	app.get '/api/protocols/:id', protocolRoutes.protocolById
-	app.post '/api/protocols', protocolRoutes.postProtocol
-	app.put '/api/protocols', protocolRoutes.putProtocol
-	app.get '/api/protocollabels', protocolRoutes.lsLabels
-	app.get '/api/protocolCodes', protocolRoutes.protocolCodeList
-	app.get '/api/protocolCodes/filter/:str', protocolRoutes.protocolCodeList
-	experimentRoutes = require './routes/ExperimentServiceRoutes.js'
-	app.get '/api/experiments/codename/:code', experimentRoutes.experimentByCodename
-	app.get '/api/experiments/protocolCodename/:code', experimentRoutes.experimentsByProtocolCodename
-	app.get '/api/experiments/:id', experimentRoutes.experimentById
-	app.post '/api/experiments', experimentRoutes.postExperiment
-	app.put '/api/experiments/:id', experimentRoutes.putExperiment
-
-	#Components routes
-	projectServiceRoutes = require './routes/ProjectServiceRoutes.js'
-	app.get '/api/projects', projectServiceRoutes.getProjects
-
-	# DocForBatches routes
-	docForBatchesRoutes = require './routes/DocForBatchesRoutes.js'
-	app.get '/docForBatches/*', docForBatchesRoutes.docForBatchesIndex
-	app.get '/docForBatches', docForBatchesRoutes.docForBatchesIndex
-	app.get '/api/docForBatches/:id', docForBatchesRoutes.getDocForBatches
-	app.post '/api/docForBatches', docForBatchesRoutes.saveDocForBatches
-
-	# GenericDataParser routes
-	genericDataParserRoutes = require './routes/GenericDataParserRoutes.js'
-	app.post '/api/genericDataParser', genericDataParserRoutes.parseGenericData
-
-	# BulkLoadContainersFromSDF routes
-	bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
-	app.post '/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF
-
-	# BulkLoadSampleTransfers routes
-	bulkLoadSampleTransfersRoutes = require './routes/BulkLoadSampleTransfersRoutes.js'
-	app.post '/api/bulkLoadSampleTransfers', bulkLoadSampleTransfersRoutes.bulkLoadSampleTransfers
-
-	# RunPrimaryAnalysisRoutes routes
-	runPrimaryAnalysisRoutes = require './routes/RunPrimaryAnalysisRoutes.js'
-#	app.get '/primaryScreenExperiment/*', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex
-#	app.get '/primaryScreenExperiment', runPrimaryAnalysisRoutes.primaryScreenExperimentIndex
-	app.post '/api/primaryAnalysis/runPrimaryAnalysis', runPrimaryAnalysisRoutes.runPrimaryAnalysis
-
-	# CurveCurator routes
-	curveCuratorRoutes = require './routes/CurveCuratorRoutes.js'
-	app.get '/curveCurator/*', curveCuratorRoutes.curveCuratorIndex
-	app.get '/api/curves/stub/:exptCode', curveCuratorRoutes.getCurveStubs
+	preferredBatchIdRoutes.setupRoutes(app)
 
 	# ServerUtility function testing routes
 	serverUtilityFunctions = require './routes/ServerUtilityFunctions.js'
-	app.post '/api/runRFunctionTest', serverUtilityFunctions.runRFunctionTest
+	serverUtilityFunctions.setupRoutes(app)
+
+	protocolRoutes = require './routes/ProtocolServiceRoutes.js'
+	protocolRoutes.setupRoutes(app)
+
+	experimentRoutes = require './routes/ExperimentServiceRoutes.js'
+	experimentRoutes.setupRoutes(app)
+
+	#Components routes
+	projectServiceRoutes = require './routes/ProjectServiceRoutes.js'
+	projectServiceRoutes.setupRoutes(app)
+
+	# DocForBatches routes
+	docForBatchesRoutes = require './routes/DocForBatchesRoutes.js'
+	docForBatchesRoutes.setupRoutes(app)
+
+	# GenericDataParser routes
+	genericDataParserRoutes = require './routes/GenericDataParserRoutes.js'
+	genericDataParserRoutes.setupRoutes(app)
+
+	# BulkLoadContainersFromSDF routes
+	bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
+	bulkLoadContainersFromSDFRoutes.setupRoutes(app)
+
+	# BulkLoadSampleTransfers routes
+	bulkLoadSampleTransfersRoutes = require './routes/BulkLoadSampleTransfersRoutes.js'
+	bulkLoadSampleTransfersRoutes.setupRoutes(app)
+
+	# RunPrimaryAnalysisRoutes routes
+	runPrimaryAnalysisRoutes = require './routes/RunPrimaryAnalysisRoutes.js'
+	runPrimaryAnalysisRoutes.setupRoutes(app)
+
+	# CurveCurator routes
+	curveCuratorRoutes = require './routes/CurveCuratorRoutes.js'
+	curveCuratorRoutes.setupRoutes(app)
 
 	http.createServer(app).listen(app.get('port'), ->
 		console.log("Express server listening on port " + app.get('port'))
@@ -136,3 +104,4 @@ startApp = ->
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 startApp()
+

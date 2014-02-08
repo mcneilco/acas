@@ -277,7 +277,7 @@
             return expect(this.psapc.$('.bv_agonistControlBatch').val()).toEqual('CMPD-87654399-01');
           });
           return it('should show the agonistControlConc', function() {
-            return expect(this.psapc.$('.bv_agonistControlConc').val()).toEqual('2');
+            return expect(this.psapc.$('.bv_agonistControlConc').val()).toEqual('250753.77');
           });
         });
         describe("model updates", function() {
@@ -289,6 +289,7 @@
           it("should update the normalizationRule rule", function() {
             this.psapc.$('.bv_normalizationRule').val('unassigned');
             this.psapc.$('.bv_normalizationRule').change();
+            expect(this.psapc.model.get('normalizationRule')).toEqual("unassigned");
             return expect(this.psapc.model.get('normalizationRule')).toEqual("unassigned");
           });
           it("should update the hitSDThreshold ", function() {
@@ -307,9 +308,9 @@
             return expect(this.psapc.model.get('positiveControl').get('batchCode')).toEqual("pos cont");
           });
           it("should update the positiveControl conc ", function() {
-            this.psapc.$('.bv_positiveControlConc').val(' 61 ');
+            this.psapc.$('.bv_positiveControlConc').val(' 250753.77 ');
             this.psapc.$('.bv_positiveControlConc').change();
-            return expect(this.psapc.model.get('positiveControl').get('concentration')).toEqual(61);
+            return expect(this.psapc.model.get('positiveControl').get('concentration')).toEqual(250753.77);
           });
           it("should update the negativeControl ", function() {
             this.psapc.$('.bv_negativeControlBatch').val(' neg cont ');
@@ -334,7 +335,7 @@
           it("should update the agonistControl conc", function() {
             this.psapc.$('bv_agonistControlConc').val(' 2 ');
             this.psapc.$('.bv_agonistControlConc').change();
-            return expect(this.psapc.model.get('agonistControl').get('concentration')).toEqual(2);
+            return expect(this.psapc.model.get('agonistControl').get('concentration')).toEqual(250753.77);
           });
           return it("should update the thresholdType ", function() {
             this.psapc.$('.bv_thresholdTypeEfficacy').click();

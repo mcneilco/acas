@@ -188,7 +188,7 @@ describe "Primary Screen Experiment module testing", ->
 				it 'should show the agonistControlBatch', ->
 					expect(@psapc.$('.bv_agonistControlBatch').val()).toEqual 'CMPD-87654399-01'
 				it 'should show the agonistControlConc', ->
-					expect(@psapc.$('.bv_agonistControlConc').val()).toEqual '2'
+					expect(@psapc.$('.bv_agonistControlConc').val()).toEqual '250753.77'
 			describe "model updates", ->
 				it "should update the transformation rule", ->
 					@psapc.$('.bv_transformationRule').val('unassigned')
@@ -197,6 +197,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the normalizationRule rule", ->
 					@psapc.$('.bv_normalizationRule').val('unassigned')
 					@psapc.$('.bv_normalizationRule').change()
+					expect(@psapc.model.get('normalizationRule')).toEqual "unassigned"
 					expect(@psapc.model.get('normalizationRule')).toEqual "unassigned"
 				it "should update the hitSDThreshold ", ->
 					@psapc.$('.bv_hitSDThreshold').val(' 24 ')
@@ -211,9 +212,9 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_positiveControlBatch').change()
 					expect(@psapc.model.get('positiveControl').get('batchCode')).toEqual "pos cont"
 				it "should update the positiveControl conc ", ->
-					@psapc.$('.bv_positiveControlConc').val(' 61 ')
+					@psapc.$('.bv_positiveControlConc').val(' 250753.77 ')
 					@psapc.$('.bv_positiveControlConc').change()
-					expect(@psapc.model.get('positiveControl').get('concentration')).toEqual 61
+					expect(@psapc.model.get('positiveControl').get('concentration')).toEqual 250753.77
 				it "should update the negativeControl ", ->
 					@psapc.$('.bv_negativeControlBatch').val(' neg cont ')
 					@psapc.$('.bv_negativeControlBatch').change()
@@ -233,7 +234,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the agonistControl conc", ->
 					@psapc.$('bv_agonistControlConc').val(' 2 ')
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.model.get('agonistControl').get('concentration')).toEqual 2
+					expect(@psapc.model.get('agonistControl').get('concentration')).toEqual 250753.77
 				it "should update the thresholdType ", ->
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
 					expect(@psapc.model.get('thresholdType')).toEqual "efficacy"
@@ -395,3 +396,4 @@ describe "Primary Screen Experiment module testing", ->
 
 
 #TODO Validation rules for different threshold modes
+

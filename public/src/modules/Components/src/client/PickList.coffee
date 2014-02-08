@@ -72,3 +72,4 @@ class window.PickListSelectController extends Backbone.View
 
 	getSelectedModel: ->
 		@collection.getModelWithCode @getSelectedCode()
+

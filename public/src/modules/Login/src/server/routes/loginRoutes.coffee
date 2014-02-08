@@ -17,6 +17,14 @@ app.post '/api/userAuthentication', loginRoutes.authenticationService
 app.get '/api/users/:username', loginRoutes.getUsers
 
 ###
+exports.setupRoutes = (app, passport) ->
+	app.get '/login', exports.loginPage
+	app.post '/login',
+		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
+		exports.loginPost
+	app.get '/logout', exports.logout
+	app.post '/api/userAuthentication', exports.authenticationService
+	app.get '/api/users/:username', exports.getUsers
 
 csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 

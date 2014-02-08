@@ -1,22 +1,26 @@
 /* To install this Module
-1) Add these lines to app.coffee under # serverAPI routes:
-experimentRoutes = require './routes/ExperimentServiceRoutes.js'
-app.get '/api/experiments/codename/:code', experimentRoutes.experimentByCodename
-app.get '/api/experiments/protocolCodename/:code', experimentRoutes.experimentsByProtocolCodename
-app.get '/api/experiments/:id', experimentRoutes.experimentById
-app.post '/api/experiments', experimentRoutes.postExperiment
-app.put '/api/experiments', experimentRoutes.putExperiment
+1) Add these lines to app.coffee:
+	experimentRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ExperimentServiceRoutes.js'
+	experimentRoutes.setupRoutes(app)
 */
 
 
 (function() {
+  exports.setupRoutes = function(app) {
+    app.get('/api/experiments/codename/:code', exports.experimentByCodename);
+    app.get('/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename);
+    app.get('/api/experiments/:id', exports.experimentById);
+    app.post('/api/experiments', exports.postExperiment);
+    return app.put('/api/experiments/:id', exports.putExperiment);
+  };
+
   exports.experimentByCodename = function(request, response) {
     var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
     console.log(request.params.code);
     console.log(request.query.testMode);
     if (request.query.testMode || global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return response.end(JSON.stringify(experimentServiceTestJSON.stubSavedExperiment[0]));
+      return response.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + request.params.code;
@@ -31,7 +35,7 @@ app.put '/api/experiments', experimentRoutes.putExperiment
     console.log(request.query.testMode);
     if (request.query.testMode || global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return response.end(JSON.stringify(experimentServiceTestJSON.stubSavedExperiment));
+      return response.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/protocolCodename/" + request.params.code;

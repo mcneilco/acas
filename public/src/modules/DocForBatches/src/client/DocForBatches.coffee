@@ -112,9 +112,8 @@ class window.DocForBatches extends Backbone.Model
 			labelText: eName
 			recordedBy: recBy
 			recordedDate: recDate
-
-
 		exp
+
 	updateDocForBatches: ->
 		newDocUpload = new DocUpload
 			id:1

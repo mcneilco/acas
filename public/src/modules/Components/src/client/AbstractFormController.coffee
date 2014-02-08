@@ -4,7 +4,6 @@ class window.AbstractFormController extends Backbone.View
 # 		@errorOwnerName = 'MyControllerName'
 #   	@setBindings()
 
-
 	show: ->
 		$(@el).show()
 

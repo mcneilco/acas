@@ -70,3 +70,4 @@ class window.LSFileInputController extends Backbone.View
 		@lsFileChooser.on('fileUploader:uploadFailed', @handleFileChooserUploadFailed)
 		@lsFileChooser.on('fileUploader:removedFile', @handleFileChooserRemovedFile)
 		@
+

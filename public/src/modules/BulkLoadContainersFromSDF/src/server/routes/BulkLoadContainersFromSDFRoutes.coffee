@@ -1,17 +1,17 @@
 ### To install this Module
-1) Add these lines to app.coffee:
-# BulkLoadContainersFromSDF routes
-bulkLoadContainersFromSDFRoutes = require './routes/BulkLoadContainersFromSDFRoutes.js'
-app.post '/api/bulkLoadContainersFromSDF', bulkLoadContainersFromSDFRoutes.bulkLoadContainersFromSDF
+1) add to app.coffee
+  # BulkLoadContainersFromSDF routes
+	bulkLoadContainersFromSDFRoutes = require './public/src/modules/BulkLoadContainersFromSDF/src/server/routes/BulkLoadContainersFromSDFRoutes.js'
+	bulkLoadContainersFromSDFRoutes.setupRoutes(app)
 
 2) Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Load Containers From SDF", mainControllerClassName: "BulkLoadContainersFromSDFController"}
 
-3) Add these lines to routes/index.coffee under applicationScripts = [
-# For BulkLoadContainersFromSDF module
-'javascripts/src/BulkLoadContainersFromSDF.js'
-
 ###
+
+exports.setupRoutes = (app) ->
+	app.post '/api/bulkLoadContainersFromSDF', exports.bulkLoadContainersFromSDF
+
 
 exports.bulkLoadContainersFromSDF = (request, response)  ->
 	request.connection.setTimeout 6000000
