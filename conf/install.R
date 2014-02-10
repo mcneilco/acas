@@ -11,7 +11,7 @@ if(length(args) < 2 | length(args) > 3) {
   auth_user <- args[2]
   password <- args[3]
   if(is.na(password)) {
-    cat("password: ")
+    cat(paste0("password for ",auth_user,": "))
     system("stty -echo")
     password <- readLines(con="stdin", 1)
     system("stty echo")
@@ -32,9 +32,9 @@ if(acasHome == "") {
   }
 } else {
   installDirectory <- file.path(acasHome,"r_libs")
-  Sys.setenv(R_LIBS=installDirectory)
   dir.create(installDirectory, recursive = TRUE, showWarnings = FALSE)
 }
+Sys.setenv(R_LIBS=installDirectory)
 
 #Rstudio repos apparently redirects to the best server
 repos <- "http://cran.rstudio.com/"
@@ -66,7 +66,7 @@ require(rjson)
 branchCommits <- fromJSON(branchCommitsJSON)
 hash <- paste0("hash: ",branchCommits$values[[1]]$hash)
 href <- paste0("href: ",branchCommits$values[[1]]$links$self$href)
-date <- paste0("date: ",branchCommits$values[[1]]$date)
-message <- paste0("commit message: ",branchCommits$values[[1]]$message)
-installDate <- paste0("install date: ", Sys.time())
-writeLines(c(hash,href,date,message),file.path(installDirectory,"racas","install_info.txt"))
+date <- paste0("commitdate: ",branchCommits$values[[1]]$date)
+message <- paste0("commitmessage: ",branchCommits$values[[1]]$message)
+installDate <- paste0("installdate: ", Sys.time())
+writeLines(c(installDate,hash,href,date,message),file.path(installDirectory,"racas","install_info.txt"))
