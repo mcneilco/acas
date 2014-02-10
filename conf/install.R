@@ -32,6 +32,7 @@ if(acasHome == "") {
   }
 } else {
   installDirectory <- file.path(acasHome,"r_libs")
+  Sys.setenv(R_LIBS=installDirectory)
   dir.create(installDirectory, recursive = TRUE, showWarnings = FALSE)
 }
 
@@ -44,7 +45,7 @@ if(!require('devtools')){
 library(devtools)
 #Need to load methods because of a bug in dev tools can remove when bug is fixed
 library(methods)
-install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password, args = paste0("--library ",installDirectory))
+install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password)
 
 #When racas loads it attempts to load the package specified for database connectons
 #The following option will make it so it automatically installs this package when loaded
