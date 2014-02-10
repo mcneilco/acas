@@ -3,7 +3,7 @@
 # Installs racas and depencies
 ## 
 args <- commandArgs(TRUE)
-if(length(args) < 2) {
+if(length(args) < 2 | length(args) > 3) {
   cat("Usage: Rscript install.R ref auth_user password (Ex. Rscript install.R master mcneilco mcneilco_pass)\n")
   quit("no")
 } else {
@@ -12,7 +12,10 @@ if(length(args) < 2) {
   password <- args[3]
   if(is.na(password)) {
     cat("password: ")
+    system("stty -echo")
     password <- readLines(con="stdin", 1)
+    system("stty echo")
+    cat("\n")
   }
 }
 acasHome <- Sys.getenv("ACAS_HOME")
@@ -32,16 +35,21 @@ if(acasHome == "") {
   dir.create(installDirectory, recursive = TRUE, showWarnings = FALSE)
 }
 
+#Rstudio repos apparently redirects to the best server
 repos <- "http://cran.rstudio.com/"
 options(repos = "http://cran.rstudio.com/")
 if(!require('devtools')){
-  install.packages('devtools', repos = repos)
+  install.packages('devtools', lib = installDirectory, repos = repos)
 }
 library(devtools)
 #Need to load methods because of a bug in dev tools can remove when bug is fixed
 library(methods)
+install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password, args = paste0("--library ",installDirectory))
+
+#When racas loads it attempts to load the package specified for database connectons
+#The following option will make it so it automatically installs this package when loaded
 options(racasInstallDep = TRUE)
-install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password)
+library(racas)
 
 #After the install include the bitbucket repoNumber
 if(!require('RCurl')){
@@ -55,10 +63,9 @@ if(!require('rjson')){
 }
 require(rjson)
 branchCommits <- fromJSON(branchCommitsJSON)
-
 hash <- paste0("hash: ",branchCommits$values[[1]]$hash)
 href <- paste0("href: ",branchCommits$values[[1]]$links$self$href)
 date <- paste0("date: ",branchCommits$values[[1]]$date)
-message <- paste0("message: ",branchCommits$values[[1]]$message)
-
+message <- paste0("commit message: ",branchCommits$values[[1]]$message)
+installDate <- paste0("install date: ", Sys.time())
 writeLines(c(hash,href,date,message),file.path(installDirectory,"racas","install_info.txt"))
