@@ -42,12 +42,12 @@ Sys.setenv(R_LIBS=installDirectory)
 #Rstudio repos apparently redirects to the best server
 repos <- "http://cran.rstudio.com/"
 options(repos = "http://cran.rstudio.com/")
-if(!require('devtools')){
+if(!require('devtools', lib.loc = installDirectory)){
   install.packages('devtools', lib = installDirectory, repos = repos)
 }
 library(devtools, lib.loc = installDirectory)
 #Need to load methods because of a bug in dev tools can remove when bug is fixed
-if(!require('methods')){
+if(!require('methods', lib.loc = installDirectory)){
   install.packages('methods', lib = installDirectory, repos = repos)
 }
 library(methods, lib.loc = installDirectory)
@@ -56,7 +56,7 @@ install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = 
 #When racas loads it attempts to load the package specified for database connectons
 #The following option will make it so it automatically installs this package when loaded
 options(racasInstallDep = TRUE)
-library(racas)
+library(racas, lib.loc = installDirectory)
 
 #After the install include the bitbucket repoNumber
 if(!require('RCurl')){
