@@ -24,7 +24,7 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 		include: true
 		vars: substitutions
 
-	configDir = "../public/src/conf/"
+	configDir = "./"
 
 	properties.parse configDir+"config.properties", options, (error, conf) ->
 		if error?
