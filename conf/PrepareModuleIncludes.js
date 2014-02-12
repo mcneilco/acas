@@ -1,5 +1,5 @@
 (function() {
-  var appScriptLines, fs, getFileNameFromPath, glob, includeLines, insertToLayoutTemplate, makeFileNameHash, makeScriptLines, prepAppScripts, prepIncludes, prepSpecScripts, scriptPaths, specScriptLines, _;
+  var appScriptLines, fs, getFileNameFromPath, glob, includeLines, insertToLayoutTemplate, makeFileNameHash, makeScriptLines, prepAppScripts, prepIncludes, prepRouteIncludes, prepSpecScripts, routeLines, scriptPaths, specScriptLines, _;
 
   fs = require('fs');
 
@@ -112,5 +112,27 @@
   specScriptLines = prepSpecScripts();
 
   insertToLayoutTemplate("//SPECSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES", ",\n" + specScriptLines, "../routes/RequiredClientScripts.js", "../routes/RequiredClientScripts.js");
+
+  prepRouteIncludes = function() {
+    var fname, includeStr, path, routeFiles, routeLines, routeNum;
+    routeFiles = makeFileNameHash(glob.sync('../routes/*.js'));
+    routeFiles = _.omit(routeFiles, ["index.js", "loginRoutes.js", "RequiredClientScripts.js", "RequiredClientScripts_template.js", "ServerUtilityFunctions.js", "user.js"]);
+    routeLines = "";
+    routeNum = 1;
+    for (fname in routeFiles) {
+      path = routeFiles[fname];
+      includeStr = '\trouteSet_' + routeNum + ' = require("./routes/' + fname + '");\n';
+      includeStr += '\trouteSet_' + routeNum + '.setupRoutes(app);\n';
+      routeLines += includeStr;
+      routeNum++;
+    }
+    return routeLines;
+  };
+
+  routeLines = prepRouteIncludes();
+
+  console.log(routeLines);
+
+  insertToLayoutTemplate("  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "../app_template.js", "../app.js");
 
 }).call(this);
