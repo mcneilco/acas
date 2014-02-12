@@ -18,45 +18,34 @@ if(length(args) < 2 | length(args) > 3) {
     cat("\n")
   }
 }
-acasHome <- Sys.getenv("ACAS_HOME")
-if(acasHome == "") {
-  installDirectory <- .libPaths()[1]
-  warning(paste0("ACAS_HOME environment variable not set"))
-  altInstall <- "?"
-  while(!altInstall %in% c("y","n")) {
-    cat(paste0("Attempt to install racas in '", installDirectory,"'? (y or n):"))
-    altInstall <- readLines(con="stdin", 1)
-  }
-  if(altInstall == "n") {
-    quit("no")
-  }
-} else {
-  installDirectory <- file.path(acasHome,"r_libs")
-  dir.create(installDirectory, recursive = TRUE, showWarnings = FALSE)
-}
 
 #Setting common lib path items to make sure we are always hitting the correct lib directory
-Sys.setenv(R_LIBS=installDirectory)
-.libPaths(installDirectory)
+rLibPath <- "../r_libs"
+dir.create(rLibPath, recursive = TRUE, showWarnings = FALSE)
+rLibs <- normalizePath(rLibPath)
+.libPaths(rLibs)
+Sys.setenv(ACAS_HOME=normalizePath(".."))
+Sys.setenv(R_LIBS=rLibs)
+
 
 #Rstudio repos apparently redirects to the best server
 repos <- "http://cran.rstudio.com/"
 options(repos = "http://cran.rstudio.com/")
-if(!require('devtools', lib.loc = installDirectory)){
-  install.packages('devtools', lib = installDirectory, repos = repos)
+if(!require('devtools', lib.loc = rLibs)){
+  install.packages('devtools', lib = rLibs, repos = repos)
 }
-library(devtools, lib.loc = installDirectory)
+library(devtools, lib.loc = rLibs)
 #Need to load methods because of a bug in dev tools can remove when bug is fixed
-if(!require('methods', lib.loc = installDirectory)){
-  install.packages('methods', lib = installDirectory, repos = repos)
+if(!require('methods', lib.loc = rLibs)){
+  install.packages('methods', lib = rLibs, repos = repos)
 }
-library(methods, lib.loc = installDirectory)
+library(methods, lib.loc = rLibs)
 install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password)
 
 #When racas loads it attempts to load the package specified for database connectons
 #The following option will make it so it automatically installs this package when loaded
 options(racasInstallDep = TRUE)
-library(racas, lib.loc = installDirectory)
+library(racas, lib.loc = rLibs)
 
 #After the install include the bitbucket repoNumber
 if(!require('RCurl')){
@@ -75,4 +64,4 @@ href <- paste0("href: ",branchCommits$values[[1]]$links$self$href)
 date <- paste0("commitdate: ",branchCommits$values[[1]]$date)
 message <- paste0("commitmessage: ",branchCommits$values[[1]]$message)
 installDate <- paste0("installdate: ", Sys.time())
-writeLines(c(installDate,hash,href,date,message),file.path(installDirectory,"racas","install_info.txt"))
+writeLines(c(installDate,hash,href,date,message),file.path(rLibs,"racas","install_info.txt"))
