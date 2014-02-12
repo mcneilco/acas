@@ -34,7 +34,10 @@ if(acasHome == "") {
   installDirectory <- file.path(acasHome,"r_libs")
   dir.create(installDirectory, recursive = TRUE, showWarnings = FALSE)
 }
+
+#Setting common lib path items to make sure we are always hitting the correct lib directory
 Sys.setenv(R_LIBS=installDirectory)
+.libPaths(installDirectory)
 
 #Rstudio repos apparently redirects to the best server
 repos <- "http://cran.rstudio.com/"
@@ -42,9 +45,12 @@ options(repos = "http://cran.rstudio.com/")
 if(!require('devtools')){
   install.packages('devtools', lib = installDirectory, repos = repos)
 }
-library(devtools)
+library(devtools, lib.loc = installDirectory)
 #Need to load methods because of a bug in dev tools can remove when bug is fixed
-library(methods)
+if(!require('methods')){
+  install.packages('methods', lib = installDirectory, repos = repos)
+}
+library(methods, lib.loc = installDirectory)
 install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password)
 
 #When racas loads it attempts to load the package specified for database connectons
