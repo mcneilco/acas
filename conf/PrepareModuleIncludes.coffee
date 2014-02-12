@@ -84,3 +84,19 @@ insertToLayoutTemplate "//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCL
 specScriptLines = prepSpecScripts()
 insertToLayoutTemplate "//SPECSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES", ",\n"+specScriptLines, "../routes/RequiredClientScripts.js", "../routes/RequiredClientScripts.js"
 
+prepRouteIncludes = ->
+	routeFiles = makeFileNameHash glob.sync('../routes/*.js')
+	routeFiles = _.omit routeFiles, ["index.js", "loginRoutes.js", "RequiredClientScripts.js", "RequiredClientScripts_template.js", "user.js"]
+	routeLines = ""
+	routeNum = 1
+	for fname, path of routeFiles
+		includeStr = '\trouteSet_'+routeNum+' = require("./routes/'+fname+'");\n'
+		includeStr += '\trouteSet_'+routeNum+'.setupRoutes(app);\n'
+		routeLines += includeStr
+		routeNum++
+
+	routeLines
+
+routeLines = prepRouteIncludes()
+console.log routeLines
+insertToLayoutTemplate "  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "../app_template.js", "../app.js"

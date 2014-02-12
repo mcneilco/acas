@@ -18,3 +18,5 @@
     include ../public/src/modules/ExperimentBrowser/src/client/ExperimentBrowserView.html
 
 ###
+
+exports.setupRoutes = (app) ->
