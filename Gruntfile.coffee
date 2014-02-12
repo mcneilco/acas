@@ -19,7 +19,6 @@ module.exports = (grunt) ->
 						dest: "public/javascripts/src/"
 						ext: '.js'
 					]
-
 			spec:
 				files: [
 					expand: true
@@ -28,7 +27,6 @@ module.exports = (grunt) ->
 					dest: "public/javascripts/spec/"
 					ext: '.js'
 				]
-
 			compileTestFixtures:
 				files: [
 					expand: true
@@ -37,7 +35,6 @@ module.exports = (grunt) ->
 					dest: "public/javascripts/spec/testFixtures/"
 					ext: '.js'
 				]
-
 			compileApp:
 				files: [
 					expand: true
@@ -46,7 +43,6 @@ module.exports = (grunt) ->
 					dest: "./"
 					ext: '.js'
 				]
-
 			compileConf:
 				files: [
 					expand: true
@@ -55,7 +51,6 @@ module.exports = (grunt) ->
 					dest: "conf/"
 					ext: '.js'
 				]
-
 			compilePublicConf:
 				files: [
 					expand: true
@@ -64,7 +59,6 @@ module.exports = (grunt) ->
 					dest: "public/src/conf/"
 					ext: '.js'
 				]
-
 			compileRoutes:
 				files: [
 					expand: true
@@ -73,7 +67,6 @@ module.exports = (grunt) ->
 					dest: "routes/"
 					ext: '.js'
 				]
-
 			moduleRoutes:
 				files: [
 					expand: true
@@ -82,47 +75,170 @@ module.exports = (grunt) ->
 					dest: "routes/"
 					ext: '.js'
 				]
+			#these compilers are for the custom coffee scripts before they get copied
+			custom_app:
+				files: [
+						expand: true
+						flatten: true
+						src: ["acas_custom/modules/**/src/client/*.coffee"]
+						dest: "acas_custom/javascripts/src/"
+						ext: '.js'
+					]
+			custom_spec:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/modules/**/spec/*.coffee"]
+					dest: "acas_custom/javascripts/spec/"
+					ext: '.js'
+				]
+			custom_compileTestFixtures:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/modules/**/spec/testFixtures/*.coffee"]
+					dest: "acas_custom/javascripts/spec/testFixtures/"
+					ext: '.js'
+				]
+			custom_compileApp:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/*.coffee"]
+					dest: "acas_custom/"
+					ext: '.js'
+				]
+			custom_compileConf:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/conf/*.coffee"]
+					dest: "acas_custom/conf/"
+					ext: '.js'
+				]
+			custom_compilePublicConf:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/public_conf/*.coffee"]
+					dest: "acas_custom/public_conf/"
+					ext: '.js'
+				]
+			custom_compileRoutes:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/routes/*.coffee"]
+					dest: "acas_custom/routes/"
+					ext: '.js'
+				]
+			custom_moduleRoutes:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/modules/**/src/server/routes/*.coffee"]
+					dest: "acas_custom/routes/"
+					ext: '.js'
+				]
 
+		copy:
+			custom_routes:
+				files: [
+					expand: true
+					cwd: "acas_custom/routes/"
+					src: ["**"]
+					dest: "./routes"
+				]
+			custom_conf:
+				files: [
+					expand: true
+					cwd: "acas_custom/conf/"
+					src: ["**"]
+					dest: "./conf"
+				]
+			custom_public_conf:
+				files: [
+					expand: true
+					cwd: "acas_custom/public_conf/"
+					src: ["**"]
+					dest: "./public/src/conf"
+				]
+			custom_javascripts:
+				files: [
+					expand: true
+					cwd: "acas_custom/javascripts/"
+					src: ["**"]
+					dest: "./public/javascripts"
+				]
+			custom_views:
+				files: [
+					expand: true
+					cwd: "acas_custom/views/"
+					src: ["**"]
+					dest: "./views"
+				]
+			custom_modules:
+				files: [
+					expand: true
+					cwd: "acas_custom/modules/"
+					src: ["**"]
+					dest: "./public/src/modules"
+				]
 		watch:
 			coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
 				tasks: 'coffee:app'
-
 			compileSpec:
 				files: "public/src/modules/**/spec/*.coffee"
 				tasks: "coffee:spec"
-
 			compileTestFixtures:
 				files: "public/src/modules/**/spec/testFixtures/*.coffee"
 				tasks: "coffee:compileTestFixtures"
-
 			compileApp:
 				files: "./*.coffee"
 				tasks: "coffee:compileApp"
-
 			compileConf:
 				files: "conf/*.coffee"
 				tasks: "coffee:compileConf"
-
 			compilePublicConf:
 				files: "public/src/conf/*.coffee"
 				tasks: "coffee:compilePublicConf"
-
 			compileRoutes:
 				files: "routes/*.coffee"
 				tasks: "coffee:compileRoutes"
-
 			moduleRoutes:
 				files: "public/src/modules/**/src/server/routes/*.coffee"
 				tasks: "coffee:moduleRoutes"
+			#watchers on the custom folder
+			custom_coffee:
+				files: 'acas_custom/modules/**/src/client/*.coffee'
+				tasks: 'coffee:custom_app'
+			custom_compileSpec:
+				files: "acas_custom/modules/**/spec/*.coffee"
+				tasks: "coffee:custom_spec"
+			custom_compileTestFixtures:
+				files: "acas_custom/modules/**/spec/testFixtures/*.coffee"
+				tasks: "coffee:custom_compileTestFixtures"
+			custom_compileApp:
+				files: "acas_custom/*.coffee"
+				tasks: "coffee:custom_compileApp"
+			custom_compileConf:
+				files: "acas_custom/conf/*.coffee"
+				tasks: "coffee:custom_compileConf"
+			custom_compilePublicConf:
+				files: "acas_custom/public_conf/*.coffee"
+				tasks: "coffee:custom_compilePublicConf"
+			custom_compileRoutes:
+				files: "acas_custom/routes/*.coffee"
+				tasks: "coffee:custom_compileRoutes"
+			custom_moduleRoutes:
+				files: "acas_custom/modules/**/src/server/routes/*.coffee"
+				tasks: "coffee:custom_moduleRoutes"
 
-		concat:
-			dist:
-				src: ["public/javascripts/src/*.js"]
-				dest: "public/src/built.js"
 
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-contrib-watch"
+	grunt.loadNpmTasks "grunt-contrib-copy"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]
