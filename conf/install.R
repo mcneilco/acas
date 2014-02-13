@@ -2,21 +2,38 @@
 # install.R
 # Installs racas and depencies
 ## 
-args <- commandArgs(TRUE)
-if(length(args) < 2 | length(args) > 3) {
-  cat("Usage: Rscript install.R ref auth_user password (Ex. Rscript install.R master mcneilco mcneilco_pass)\n")
-  quit("no")
-} else {
-  ref <- args[1]
-  auth_user <- args[2]
-  password <- args[3]
-  if(is.na(password)) {
-    cat(paste0("bitbucket password for ",auth_user,": "))
+
+passwordPrompt <- function(auth_user, appName = "") {
+    cat(paste0(appName, " password for ",auth_user,": "))
     system("stty -echo")
     password <- readLines(con="stdin", 1)
     system("stty echo")
     cat("\n")
-  }
+    return(password)
+}
+userPrompt <- function(userTypeName = "user", appName = "") {
+    cat(paste0(appName," ", userTypeName,": "))
+    username <- readLines(con="stdin", 1)
+    cat("\n")
+    return(username)
+}
+if(!interactive()) {
+	args <- commandArgs(TRUE)
+	if(length(args) < 2 | length(args) > 3) {
+	  cat("Usage: Rscript install.R ref auth_user password (Ex. Rscript install.R master mcneilco mcneilco_pass)\n")
+	  quit("no")
+	} else {
+	  ref <- args[1]
+	  auth_user <- args[2]
+	  password <- args[3]
+	  if(is.na(password)) {
+		password <- passwordPrompt(auth_user, "bitbucket")
+	  }
+	}
+} else {
+	ref <- userPrompt("branch","bitbucket")
+	auth_user <- userPrompt("username","bitbucket")
+	password <- passwordPrompt(auth_user,"bitbucket")
 }
 
 #Setting common lib path items to make sure we are always hitting the correct lib directory
@@ -27,10 +44,12 @@ Sys.setenv(ACAS_HOME=acasHome)
 Sys.setenv(R_LIBS=rLibs)
 .libPaths(rLibs)
 
-
 #Rstudio repos apparently redirects to the best server
 repos <- "http://cran.rstudio.com/"
 options(repos = "http://cran.rstudio.com/")
+
+
+#Package Installs
 if(!require('devtools', lib.loc = rLibs)){
   install.packages('devtools', lib = rLibs, repos = repos)
 }
@@ -40,7 +59,25 @@ if(!require('methods', lib.loc = rLibs)){
   install.packages('methods', lib = rLibs, repos = repos)
 }
 library(methods, lib.loc = rLibs)
-install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password)
+
+
+tryBitbucket <- function(ref, auth_user, password, repo = "racas", username = "mcneilco", attempts = 3) {
+	for(i in 1:attempts) {
+		outcome <- try(install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password))
+		if(class(outcome) == "try-error") {
+			passwordFailed <- grepl("Maximum.*redirects followed",outcome[1])
+			if(passwordFailed & i < attempts) {
+				auth_user <- userPrompt("username", "bitbucket")
+				password <- passwordPrompt(auth_user,"bitbucket")
+			} else {
+				stop(outcome)
+			}
+		} else {
+			break
+		}
+	}
+}
+tryBitbucket(ref = ref, auth_user = auth_user, password = password, attempts = 3, repo = "racas", username = "mcneilco")
 
 #When racas loads it attempts to load the package specified for database connectons
 #The following option will make it so it automatically installs this package when loaded
