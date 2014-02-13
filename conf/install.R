@@ -11,7 +11,7 @@ if(length(args) < 2 | length(args) > 3) {
   auth_user <- args[2]
   password <- args[3]
   if(is.na(password)) {
-    cat(paste0("password for ",auth_user,": "))
+    cat(paste0("bitbucket password for ",auth_user,": "))
     system("stty -echo")
     password <- readLines(con="stdin", 1)
     system("stty echo")
@@ -20,12 +20,12 @@ if(length(args) < 2 | length(args) > 3) {
 }
 
 #Setting common lib path items to make sure we are always hitting the correct lib directory
-rLibPath <- "../r_libs"
-dir.create(rLibPath, recursive = TRUE, showWarnings = FALSE)
-rLibs <- normalizePath(rLibPath)
-.libPaths(rLibs)
-Sys.setenv(ACAS_HOME=normalizePath(".."))
+acasHome <- normalizePath("..")
+rLibs <- file.path(acasHome,"r_libs")
+dir.create(rLibs, recursive = TRUE, showWarnings = FALSE)
+Sys.setenv(ACAS_HOME=acasHome)
 Sys.setenv(R_LIBS=rLibs)
+.libPaths(rLibs)
 
 
 #Rstudio repos apparently redirects to the best server
