@@ -116,7 +116,7 @@
   prepRouteIncludes = function() {
     var fname, includeStr, path, routeFiles, routeLines, routeNum;
     routeFiles = makeFileNameHash(glob.sync('../routes/*.js'));
-    routeFiles = _.omit(routeFiles, ["index.js", "loginRoutes.js", "RequiredClientScripts.js", "RequiredClientScripts_template.js", "ServerUtilityFunctions.js", "user.js"]);
+    routeFiles = _.omit(routeFiles, ["index.js", "loginRoutes.js", "RequiredClientScripts.js", "RequiredClientScripts_template.js", "user.js"]);
     routeLines = "";
     routeNum = 1;
     for (fname in routeFiles) {

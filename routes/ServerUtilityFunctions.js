@@ -41,6 +41,7 @@
     requestJSONFile = new Tempfile;
     requestJSONFile.writeFileSync(JSON.stringify(request.body));
     rCommand = 'tryCatch({ ';
+    rCommand += '	out <- capture.output(.libPaths("r_libs")); ';
     rCommand += '	out <- capture.output(require("rjson")); ';
     rCommand += '	out <- capture.output(source("' + rScript + '")); ';
     rCommand += '	out <- capture.output(request <- fromJSON(file=' + JSON.stringify(requestJSONFile.path) + '));';
