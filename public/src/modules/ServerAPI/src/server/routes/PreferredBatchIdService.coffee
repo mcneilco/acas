@@ -66,7 +66,7 @@ exports.preferredBatchId = (req, resp) ->
 				)
 			else if serviceType == "SingleBatchNameQueryString"
 				console.log "running SingleBatchNameQueryString batch check"
-				baseurl = config.server.service.external.preferred.batchid.url
+				baseurl = config.all.server.service.external.preferred.batchid.url
 				request(
 					method: 'GET'
 					url: baseurl+batchName.requestName+".csv"

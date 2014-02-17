@@ -58,7 +58,7 @@ preferredBatchIdRoutes.setupRoutes(app)
           });
         } else if (serviceType === "SingleBatchNameQueryString") {
           console.log("running SingleBatchNameQueryString batch check");
-          baseurl = config.server.service.external.preferred.batchid.url;
+          baseurl = config.all.server.service.external.preferred.batchid.url;
           return request({
             method: 'GET',
             url: baseurl + batchName.requestName + ".csv",
