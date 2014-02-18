@@ -1,109 +1,86 @@
-<script type="text/template" id="DoseResponseAnalysisView" xmlns="http://www.w3.org/1999/html">
+<script type="text/template" id="DoseResponseAnalysisParametersView" xmlns="http://www.w3.org/1999/html">
 
-    <div>
-        <h5>Curve Fit Analysis</h5>
-    </div>
-
-    <div>
-        <h5>Group Curves By Batch</h5>
-    </div>
+    <div class="bv_autofillSection"></div>
+</script>
 
 
-    <div class="span5 pull-left">
-        <table class="table table-striped table-bordered">
-            <tr>
-                <th>Autofit</th>
-                <th>Parameter</th>
-                <th>Set Value</th>
-            </tr>
-            <tr class="bv_group_curveMin">
-                <td>
-                    <label class="checkbox">
-                        <input type="checkbox" class="bv_fixCurveMin" value="">
-                    </label>
-                </td>
-                <td>curve min</td>
-                <td>
-                    <fieldset>
-                        <input class="input-mini bv_curveMin" type="text">
-                    </fieldset>
-                </td>
-            </tr>
-            <tr class="bv_group_curveMax">
-                <td>
-                    <label class="checkbox">
-                        <input type="checkbox" class="bv_fixCurveMax" value="0">
-                    </label>
-                </td>
-                <td>curve max</td>
-                <td>
-                    <fieldset>
-                        <input class="input-mini bv_curveMax" type="text">
-                    </fieldset>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <label class="checkbox">
-                        <input type="checkbox" value="">
-                    </label>
-                </td>
-                <td>hill slope</td>
-                <td>
-                    <fieldset>
-                        <input class="input-mini" type="text" placeholder="">
-                    </fieldset>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <label class="checkbox">
-                        <input type="checkbox" value="">
-                    </label>
-                </td>
-                <td>EC/IC 50</td>
-                <td>
-                    <fieldset>
-                        <input class="input-mini" type="text" placeholder="">
-                    </fieldset>
-                </td>
-            </tr>
-        </table>
+<script type="text/template" id="DoseResponseAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:450px;background-color:#ffffff;">
+        <form class="form-inline" style="margin-bottom:10px;">
+            <strong style="font-size:18px;">Global Fit Criteria</strong>
+            <label class="checkbox bv_group_inverseAgonistMode" style="margin-left:135px;">
+                <input type="checkbox" class="bv_inverseAgonistMode" style="margin-right:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%>  /> Inverse Agonist Mode
+            </label>
+        </form>
+
+        <div class="well well-small" style="background-color:#ffffff;margin-bottom:10px;">
+
+            <form class="form-inline bv_group_max" style="margin-bottom:10px;">
+                <strong>Max:</strong>
+                <label class="radio" style="padding-left:25px;">
+                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_none" value="none" style="margin-right:5px;" <%if (max.limitType=="none"){%>checked="checked"<%}%>  />None
+                </label>
+                <label class="radio" style="padding-left:25px;">
+                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_pin" value="pin" style="margin-right:5px;" <%if (max.limitType=="pin"){%>checked="checked"<%}%>  />Pin
+                </label>
+                <label class="radio" style="padding-left:25px;">
+                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_limit" value="limit" style="margin-right:5px;" <%if (max.limitType=="limit"){%>checked="checked"<%}%>  />Limit
+                </label>
+            </form>
+            <input type="text" class="bv_group_max_value bv_max_value" style="width:415px;" value="<%= max.value%>" />
+
+            <form class="form-inline bv_group_min" style="margin-bottom:10px;">
+                <strong>Min:</strong>
+                <label class="radio" style="padding-left:30px;">
+                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_none" value="none" style="margin-right:5px;" <%if (min.limitType=="none"){%>checked="checked"<%}%>  />None
+                </label>
+                <label class="radio" style="padding-left:25px;">
+                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_pin" value="pin" style="margin-right:5px;" <%if (min.limitType=="pin"){%>checked="checked"<%}%>  />Pin
+                </label>
+                <label class="radio" style="padding-left:25px;">
+                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_limit" value="limit" style="margin-right:5px;" <%if (min.limitType=="limit"){%>checked="checked"<%}%>  />Limit
+                </label>
+            </form>
+            <input type="text" class="bv_group_min_value bv_min_value" style="width:415px;" value="<%= min.value%>" />
+
+            <form class="form-inline bv_group_slope" style="margin-bottom:10px;">
+                <strong>Slope:</strong>
+                <label class="radio"  style="padding-left:15px;">
+                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_none" value="none" style="margin-right:5px;" <%if (slope.limitType=="none"){%>checked="checked"<%}%>  />None
+                </label>
+                <label class="radio"  style="padding-left:25px;">
+                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_pin" value="pin" style="margin-right:5px;" <%if (slope.limitType=="pin"){%>checked="checked"<%}%>  />Pin
+                </label>
+                <label class="radio"  style="padding-left:25px;">
+                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_limit" value="limit" style="margin-right:5px;" <%if (slope.limitType=="limit"){%>checked="checked"<%}%>  />Limit
+                </label>
+            </form>
+            <input type="text" class="bv_group_slope_value bv_slope_value" style="width:415px;" value="<%= slope.value%>" />
+
+        </div>
+
+        <h5>Inactive Threshold</h5>
+        <div class="bv_group_inactiveThreshold">
+
+	        <div class="bv_inactiveThreshold"></div>
+
+        </div>
 
     </div>
 
-    <!--    <h5 class="pull-right">Group Curves By Batch</h5> -->
+    <div class="bv_group_fitStatus span6">
+        <p class="bv_fitStatus span3" style="margin-left:0;margin-top:5px;"><strong>Fit Status:</strong> Curves not fit</p>
+        <button class="btn btn-default pull-right bv_fitButton" type="button">Fit</button>
+    </div>
 
-    <div class="pull-left offset1">
-        <label class="radio">
-            <input type="radio" name="optionsRadio" value="option1" checked />
-            across all plates
-        </label></a>
-
-        <label class="radio">
-            <input type="radio" name="optionsRadio" value="option2" />
-            restrict by plate
-        </label>
-
-        <label class="radio">
-            <input type="radio" name="optionsRadio" value="option3" />
-            restrict by row
-        </label>
-
-        <label class="radio">
-            <input type="radio" name="optionsRadio" value="option2" />
-            restrict by row and plate
-        </label>
-
-        <label class="radio">
-            <input type="radio" name="optionsRadio" value="option3" />
-            restrict by column
-        </label>
-
-        <label class="radio">
-            <input type="radio" name="optionsRadio" value="option3" />
-            restrict by column and plate
-        </label>
+    <div class="span6 bv_group_fitResults" style="margin-left:10px;margin-top:5px;width:470px;">
+        <div class="well well-small bv_fitResults" style="margin-bottom:10px;">
+            122 Curves Fit<br/>
+            22 Inactive<br/>
+            Fit parameters, etc.....
+        </div>
+        <button class="btn btn-default pull-right bv_curateCurvesButton" type="button">Curate Curves</button>
     </div>
 
 </script>

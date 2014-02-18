@@ -198,7 +198,6 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_normalizationRule').val('unassigned')
 					@psapc.$('.bv_normalizationRule').change()
 					expect(@psapc.model.get('normalizationRule')).toEqual "unassigned"
-					expect(@psapc.model.get('normalizationRule')).toEqual "unassigned"
 				it "should update the hitSDThreshold ", ->
 					@psapc.$('.bv_hitSDThreshold').val(' 24 ')
 					@psapc.$('.bv_hitSDThreshold').change()
@@ -248,7 +247,7 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_thresholdTypeSD').click()
 					expect(@psapc.$('.bv_hitEfficacyThreshold').attr("disabled")).toEqual "disabled"
 					expect(@psapc.$('.bv_hitSDThreshold').attr("disabled")).toBeUndefined()
-		describe "valiation testing", ->
+		describe "validation testing", ->
 			beforeEach ->
 				@psapc = new PrimaryScreenExperimentController
 					model: new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer

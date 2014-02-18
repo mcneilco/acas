@@ -1,16 +1,16 @@
 (function() {
   (function(exports) {
-    return exports.doseResponseBulkFitOptions = {
+    exports.doseResponseBulkFitOptions = {
       fixedParameters: {
-        curveMin: {
+        min: {
           parameter: "min",
-          value: 0.0
+          value: 0
         },
-        curveMax: {
+        max: {
           parameter: "max",
-          value: 100.0
+          value: 100
         },
-        hillSlope: {
+        slope: {
           parameter: "slope",
           value: null
         },
@@ -19,46 +19,70 @@
           value: null
         }
       },
-      groupBy: "across all plates",
-      inactiveThreshold: {
+      inactiveRule: {
         type: "threshold",
         value: 20,
         activeDoses: 1
       },
-      failSettings: {
-        maxUncertaintyRule: {
-          parameter: "max",
-          type: "stdErr",
-          value: 3,
-          operator: ">",
-          displayName: "Max uncertainty exceeded"
+      parameterRules: {
+        goodnessOfFits: {
+          maxUncertaintyRule: {
+            parameter: "max",
+            type: "stdErr",
+            value: 5,
+            operator: ">",
+            displayName: "Max uncertainty exceeded"
+          },
+          ec50PValue: {
+            parameter: "ec50",
+            type: "pValue",
+            value: 1,
+            operator: ">",
+            displayName: "EC50 uncertainty exceeded"
+          }
         },
-        ec50PValue: {
-          parameter: "ec50",
-          type: "pValue",
-          value: 0.05,
-          operator: "<",
-          displayName: "EC50 p-value too low"
-        }
-      },
-      overriddenValues: {
-        maxThreshold: {
-          parameter: "max",
-          type: "threshold",
-          value: 100,
-          operator: ">",
-          displayName: "Max threshold exceeded"
-        },
-        ec50Threshold: {
-          parameter: "ec50",
-          type: "logAboveReference",
-          reference: "dose.max",
-          value: 0.5,
-          operator: ">",
-          displayName: "EC50 threshold exceeded"
+        limits: {
+          maxThreshold: {
+            parameter: "max",
+            type: "threshold",
+            value: 100,
+            operator: ">",
+            displayName: "Max threshold exceeded"
+          },
+          minThreshold: {
+            parameter: "min",
+            type: "threshold",
+            value: 0,
+            operator: "<",
+            displayName: "Min threshold exceeded"
+          },
+          ec50Threshold: {
+            parameter: "ec50",
+            type: "logAboveReference",
+            reference: "dose.max",
+            value: 0.5,
+            operator: ">",
+            displayName: "EC50 threshold exceeded"
+          }
         }
       }
     };
-  })((typeof process === "undefined" || !process.versions ? window.primaryScreenTestJSON = window.primaryScreenTestJSON || {} : exports));
+    return exports.doseResponseSimpleBulkFitOptions = {
+      max: {
+        limitType: "pin",
+        value: 100
+      },
+      min: {
+        limitType: "none",
+        value: null
+      },
+      slope: {
+        limitType: "limit",
+        value: 1.5
+      },
+      inactiveThreshold: 20,
+      inverseAgonistMode: true
+    };
+  })((typeof process === "undefined" || !process.versions ? window.CurveFitTestJSON = window.CurveFitTestJSON || {} : exports));
 
 }).call(this);

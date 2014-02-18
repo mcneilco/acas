@@ -402,3 +402,4 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 
 	handleProtocolAttributesCopied: =>
 		@analysisController.render()
+

@@ -289,7 +289,6 @@
           it("should update the normalizationRule rule", function() {
             this.psapc.$('.bv_normalizationRule').val('unassigned');
             this.psapc.$('.bv_normalizationRule').change();
-            expect(this.psapc.model.get('normalizationRule')).toEqual("unassigned");
             return expect(this.psapc.model.get('normalizationRule')).toEqual("unassigned");
           });
           it("should update the hitSDThreshold ", function() {
@@ -356,7 +355,7 @@
           });
         });
       });
-      return describe("valiation testing", function() {
+      return describe("validation testing", function() {
         beforeEach(function() {
           this.psapc = new PrimaryScreenExperimentController({
             model: new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer),
