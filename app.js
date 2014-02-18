@@ -4,7 +4,7 @@
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, bulkLoadContainersFromSDFRoutes, bulkLoadSampleTransfersRoutes, config, curveCuratorRoutes, docForBatchesRoutes, experimentRoutes, express, flash, genericDataParserRoutes, http, indexRoutes, loginRoutes, passport, path, preferredBatchIdRoutes, projectServiceRoutes, protocolRoutes, runPrimaryAnalysisRoutes, serverUtilityFunctions, user, util;
+    var LocalStrategy, config, express, flash, http, indexRoutes, loginRoutes, passport, path, user, util;
     config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
@@ -54,28 +54,32 @@
     loginRoutes.setupRoutes(app, passport);
     indexRoutes = require('./routes/index.js');
     indexRoutes.setupRoutes(app, loginRoutes);
-    preferredBatchIdRoutes = require('./routes/PreferredBatchIdService.js');
-    preferredBatchIdRoutes.setupRoutes(app);
-    serverUtilityFunctions = require('./routes/ServerUtilityFunctions.js');
-    serverUtilityFunctions.setupRoutes(app);
-    protocolRoutes = require('./routes/ProtocolServiceRoutes.js');
-    protocolRoutes.setupRoutes(app);
-    experimentRoutes = require('./routes/ExperimentServiceRoutes.js');
-    experimentRoutes.setupRoutes(app);
-    projectServiceRoutes = require('./routes/ProjectServiceRoutes.js');
-    projectServiceRoutes.setupRoutes(app);
-    docForBatchesRoutes = require('./routes/DocForBatchesRoutes.js');
-    docForBatchesRoutes.setupRoutes(app);
-    genericDataParserRoutes = require('./routes/GenericDataParserRoutes.js');
-    genericDataParserRoutes.setupRoutes(app);
-    bulkLoadContainersFromSDFRoutes = require('./routes/BulkLoadContainersFromSDFRoutes.js');
-    bulkLoadContainersFromSDFRoutes.setupRoutes(app);
-    bulkLoadSampleTransfersRoutes = require('./routes/BulkLoadSampleTransfersRoutes.js');
-    bulkLoadSampleTransfersRoutes.setupRoutes(app);
-    runPrimaryAnalysisRoutes = require('./routes/RunPrimaryAnalysisRoutes.js');
-    runPrimaryAnalysisRoutes.setupRoutes(app);
-    curveCuratorRoutes = require('./routes/CurveCuratorRoutes.js');
-    curveCuratorRoutes.setupRoutes(app);
+
+  	routeSet_1 = require("./routes/BulkLoadContainersFromSDFRoutes.js");
+	routeSet_1.setupRoutes(app);
+	routeSet_2 = require("./routes/BulkLoadSampleTransfersRoutes.js");
+	routeSet_2.setupRoutes(app);
+	routeSet_3 = require("./routes/CurveCuratorRoutes.js");
+	routeSet_3.setupRoutes(app);
+	routeSet_4 = require("./routes/DocForBatchesRoutes.js");
+	routeSet_4.setupRoutes(app);
+	routeSet_5 = require("./routes/ExperimentBrowserRoutes.js");
+	routeSet_5.setupRoutes(app);
+	routeSet_6 = require("./routes/ExperimentServiceRoutes.js");
+	routeSet_6.setupRoutes(app);
+	routeSet_7 = require("./routes/GenericDataParserRoutes.js");
+	routeSet_7.setupRoutes(app);
+	routeSet_8 = require("./routes/PreferredBatchIdService.js");
+	routeSet_8.setupRoutes(app);
+	routeSet_9 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_9.setupRoutes(app);
+	routeSet_10 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_10.setupRoutes(app);
+	routeSet_11 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_11.setupRoutes(app);
+	routeSet_12 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_12.setupRoutes(app);
+
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("Express server listening on port " + app.get('port'));
     });

@@ -1,6 +1,5 @@
 (function() {
-  var _ref, _ref1, _ref2, _ref3, _ref4,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -8,8 +7,7 @@
     __extends(BatchName, _super);
 
     function BatchName() {
-      _ref = BatchName.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return BatchName.__super__.constructor.apply(this, arguments);
     }
 
     BatchName.prototype.defaults = {
@@ -81,8 +79,7 @@
 
     function BatchNameList() {
       this.isValid = __bind(this.isValid, this);
-      _ref1 = BatchNameList.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      return BatchNameList.__super__.constructor.apply(this, arguments);
     }
 
     BatchNameList.prototype.model = BatchName;
@@ -94,12 +91,13 @@
     };
 
     BatchNameList.prototype.add = function(model, options) {
-      var isDupe,
-        _this = this;
+      var isDupe;
       if (model instanceof Array) {
-        return _.each(model, function(mdl) {
-          return _this.add(mdl, options);
-        });
+        return _.each(model, (function(_this) {
+          return function(mdl) {
+            return _this.add(mdl, options);
+          };
+        })(this));
       } else {
         isDupe = this.any(function(tmod) {
           return tmod.isSame(new BatchName(model));
@@ -128,8 +126,7 @@
 
     function BatchNameController() {
       this.render = __bind(this.render, this);
-      _ref2 = BatchNameController.__super__.constructor.apply(this, arguments);
-      return _ref2;
+      return BatchNameController.__super__.constructor.apply(this, arguments);
     }
 
     BatchNameController.prototype.template = _.template($("#BatchNameView").html());
@@ -185,8 +182,7 @@
 
     function BatchNameListController() {
       this.add = __bind(this.add, this);
-      _ref3 = BatchNameListController.__super__.constructor.apply(this, arguments);
-      return _ref3;
+      return BatchNameListController.__super__.constructor.apply(this, arguments);
     }
 
     BatchNameListController.prototype.initialize = function() {
@@ -194,13 +190,14 @@
     };
 
     BatchNameListController.prototype.render = function() {
-      var _this = this;
       $(this.el).empty();
-      this.collection.each(function(bName) {
-        return $(_this.el).append(new BatchNameController({
-          model: bName
-        }).render().el);
-      });
+      this.collection.each((function(_this) {
+        return function(bName) {
+          return $(_this.el).append(new BatchNameController({
+            model: bName
+          }).render().el);
+        };
+      })(this));
       return this;
     };
 
@@ -220,8 +217,7 @@
       this.updateValidCount = __bind(this.updateValidCount, this);
       this.itemRemoved = __bind(this.itemRemoved, this);
       this.itemChanged = __bind(this.itemChanged, this);
-      _ref4 = BatchListValidatorController.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      return BatchListValidatorController.__super__.constructor.apply(this, arguments);
     }
 
     BatchListValidatorController.prototype.template = _.template($("#BatchListValidatorView").html());
@@ -274,8 +270,7 @@
     };
 
     BatchListValidatorController.prototype.getPreferredIdReturn = function(data) {
-      var i, results,
-        _this = this;
+      var i, results;
       if (data.error) {
         alert("Preferred Batch ID service had this error: " + JSON.stringify(data.errorMessages));
         this.$(".bv_addButton").removeAttr("disabled");
@@ -288,9 +283,11 @@
         return;
       }
       i = 0;
-      _.each(data.results, function(result) {
-        return _this.batchNameListController.collection.add(result);
-      });
+      _.each(data.results, (function(_this) {
+        return function(result) {
+          return _this.batchNameListController.collection.add(result);
+        };
+      })(this));
       this.currentReqArray = null;
       this.updateValidCount();
       this.$(".bv_pasteListArea").val("");

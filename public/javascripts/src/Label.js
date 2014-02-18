@@ -1,14 +1,12 @@
 (function() {
-  var _ref, _ref1, _ref2, _ref3, _ref4, _ref5,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.Label = (function(_super) {
     __extends(Label, _super);
 
     function Label() {
-      _ref = Label.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return Label.__super__.constructor.apply(this, arguments);
     }
 
     Label.prototype.defaults = {
@@ -31,8 +29,7 @@
     __extends(LabelList, _super);
 
     function LabelList() {
-      _ref1 = LabelList.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      return LabelList.__super__.constructor.apply(this, arguments);
     }
 
     LabelList.prototype.model = Label;
@@ -148,8 +145,7 @@
     __extends(Value, _super);
 
     function Value() {
-      _ref2 = Value.__super__.constructor.apply(this, arguments);
-      return _ref2;
+      return Value.__super__.constructor.apply(this, arguments);
     }
 
     Value.prototype.defaults = {
@@ -166,8 +162,7 @@
     __extends(ValueList, _super);
 
     function ValueList() {
-      _ref3 = ValueList.__super__.constructor.apply(this, arguments);
-      return _ref3;
+      return ValueList.__super__.constructor.apply(this, arguments);
     }
 
     ValueList.prototype.model = Value;
@@ -180,8 +175,7 @@
     __extends(State, _super);
 
     function State() {
-      _ref4 = State.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      return State.__super__.constructor.apply(this, arguments);
     }
 
     State.prototype.defaults = {
@@ -192,7 +186,6 @@
     };
 
     State.prototype.initialize = function() {
-      var _this = this;
       if (this.has('lsValues')) {
         if (!(this.get('lsValues') instanceof ValueList)) {
           this.set({
@@ -200,19 +193,22 @@
           });
         }
       }
-      return this.get('lsValues').on('change', function() {
-        return _this.trigger('change');
-      });
+      return this.get('lsValues').on('change', (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
     };
 
     State.prototype.parse = function(resp) {
-      var _this = this;
       if (resp.lsValues != null) {
         if (!(resp.lsValues instanceof ValueList)) {
           resp.lsValues = new ValueList(resp.lsValues);
-          resp.lsValues.on('change', function() {
-            return _this.trigger('change');
-          });
+          resp.lsValues.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
       }
       return resp;
@@ -232,8 +228,7 @@
     __extends(StateList, _super);
 
     function StateList() {
-      _ref5 = StateList.__super__.constructor.apply(this, arguments);
-      return _ref5;
+      return StateList.__super__.constructor.apply(this, arguments);
     }
 
     StateList.prototype.model = State;
@@ -258,8 +253,7 @@
     };
 
     StateList.prototype.getOrCreateStateByTypeAndKind = function(sType, sKind) {
-      var mState, mStates,
-        _this = this;
+      var mState, mStates;
       mStates = this.getStatesByTypeAndKind(sType, sKind);
       mState = mStates[0];
       if (mState == null) {
@@ -268,16 +262,17 @@
           lsKind: sKind
         });
         this.add(mState);
-        mState.on('change', function() {
-          return _this.trigger('change');
-        });
+        mState.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       return mState;
     };
 
     StateList.prototype.getOrCreateValueByTypeAndKind = function(sType, sKind, vType, vKind) {
-      var descVal, descVals, metaState,
-        _this = this;
+      var descVal, descVals, metaState;
       metaState = this.getOrCreateStateByTypeAndKind(sType, sKind);
       descVals = metaState.getValuesByTypeAndKind(vType, vKind);
       descVal = descVals[0];
@@ -287,9 +282,11 @@
           lsKind: vKind
         });
         metaState.get('lsValues').add(descVal);
-        descVal.on('change', function() {
-          return _this.trigger('change');
-        });
+        descVal.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       return descVal;
     };

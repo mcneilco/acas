@@ -247,7 +247,6 @@
       describe("model change propogation", function() {
         it("should trigger change when label changed", function() {
           runs(function() {
-            var _this = this;
             this.exp = new Experiment();
             this.experimentChanged = false;
             this.exp.get('lsLabels').setBestName(new Label({
@@ -256,9 +255,11 @@
               recordedBy: this.exp.get('recordedBy'),
               recordedDate: this.exp.get('recordedDate')
             }));
-            this.exp.on('change', function() {
-              return _this.experimentChanged = true;
-            });
+            this.exp.on('change', (function(_this) {
+              return function() {
+                return _this.experimentChanged = true;
+              };
+            })(this));
             this.experimentChanged = false;
             return this.exp.get('lsLabels').setBestName(new Label({
               labelKind: "experiment name",
@@ -276,12 +277,13 @@
         });
         return it("should trigger change when value changed in state", function() {
           runs(function() {
-            var _this = this;
             this.exp = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
             this.experimentChanged = false;
-            this.exp.on('change', function() {
-              return _this.experimentChanged = true;
-            });
+            this.exp.on('change', (function(_this) {
+              return function() {
+                return _this.experimentChanged = true;
+              };
+            })(this));
             return this.exp.get('lsStates').at(0).get('lsValues').at(0).set({
               codeValue: 'fred'
             });
@@ -428,19 +430,22 @@
       return describe("model composite component conversion", function() {
         beforeEach(function() {
           runs(function() {
-            var _this = this;
             this.saveSucessful = false;
             this.saveComplete = false;
             this.exp = new Experiment({
               id: 1
             });
-            this.exp.on('sync', function() {
-              _this.saveSucessful = true;
-              return _this.saveComplete = true;
-            });
-            this.exp.on('invalid', function() {
-              return _this.saveComplete = true;
-            });
+            this.exp.on('sync', (function(_this) {
+              return function() {
+                _this.saveSucessful = true;
+                return _this.saveComplete = true;
+              };
+            })(this));
+            this.exp.on('invalid', (function(_this) {
+              return function() {
+                return _this.saveComplete = true;
+              };
+            })(this));
             return this.exp.fetch();
           });
           return waitsFor(function() {
@@ -490,7 +495,6 @@
       describe("When created with an unsaved experiment that has protocol attributes copied in", function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             this.copied = false;
             this.exp0 = new Experiment();
             this.exp0.getNotebook().set({
@@ -502,9 +506,11 @@
             this.exp0.getProjectCode().set({
               codeValue: null
             });
-            this.exp0.on("protocol_attributes_copied", function() {
-              return _this.copied = true;
-            });
+            this.exp0.on("protocol_attributes_copied", (function(_this) {
+              return function() {
+                return _this.copied = true;
+              };
+            })(this));
             this.exp0.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
             this.ebc = new ExperimentBaseController({
               model: this.exp0,

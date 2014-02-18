@@ -1,6 +1,5 @@
 (function() {
-  var _ref, _ref1, _ref2,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -10,8 +9,7 @@
     function Experiment() {
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       this.parse = __bind(this.parse, this);
-      _ref = Experiment.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return Experiment.__super__.constructor.apply(this, arguments);
     }
 
     Experiment.prototype.urlRoot = "/api/experiments";
@@ -34,21 +32,24 @@
     };
 
     Experiment.prototype.parse = function(resp) {
-      var _this = this;
       if (resp.lsLabels != null) {
         if (!(resp.lsLabels instanceof LabelList)) {
           resp.lsLabels = new LabelList(resp.lsLabels);
-          resp.lsLabels.on('change', function() {
-            return _this.trigger('change');
-          });
+          resp.lsLabels.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
       }
       if (resp.lsStates != null) {
         if (!(resp.lsStates instanceof StateList)) {
           resp.lsStates = new StateList(resp.lsStates);
-          resp.lsStates.on('change', function() {
-            return _this.trigger('change');
-          });
+          resp.lsStates.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
       }
       if (resp.analysisGroups != null) {
@@ -63,9 +64,11 @@
       }
       if (!(resp.lsTags instanceof TagList)) {
         resp.lsTags = new TagList(resp.lsTags);
-        resp.lsTags.on('change', function() {
-          return _this.trigger('change');
-        });
+        resp.lsTags.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       return resp;
     };
@@ -109,16 +112,21 @@
     };
 
     Experiment.prototype.setupCompositeChangeTriggers = function() {
-      var _this = this;
-      this.get('lsLabels').on('change', function() {
-        return _this.trigger('change');
-      });
-      this.get('lsStates').on('change', function() {
-        return _this.trigger('change');
-      });
-      return this.get('lsTags').on('change', function() {
-        return _this.trigger('change');
-      });
+      this.get('lsLabels').on('change', (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
+      this.get('lsStates').on('change', (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
+      return this.get('lsTags').on('change', (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
     };
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
@@ -351,8 +359,7 @@
     __extends(ExperimentList, _super);
 
     function ExperimentList() {
-      _ref1 = ExperimentList.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      return ExperimentList.__super__.constructor.apply(this, arguments);
     }
 
     ExperimentList.prototype.model = Experiment;
@@ -381,8 +388,7 @@
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
       this.handleRecordedByChanged = __bind(this.handleRecordedByChanged, this);
       this.render = __bind(this.render, this);
-      _ref2 = ExperimentBaseController.__super__.constructor.apply(this, arguments);
-      return _ref2;
+      return ExperimentBaseController.__super__.constructor.apply(this, arguments);
     }
 
     ExperimentBaseController.prototype.template = _.template($("#ExperimentBaseView").html());
@@ -403,16 +409,19 @@
     };
 
     ExperimentBaseController.prototype.initialize = function() {
-      var _this = this;
-      this.model.on('sync', function() {
-        _this.trigger('amClean');
-        _this.$('.bv_updateComplete').show();
-        return _this.render();
-      });
-      this.model.on('change', function() {
-        _this.trigger('amDirty');
-        return _this.$('.bv_updateComplete').hide();
-      });
+      this.model.on('sync', (function(_this) {
+        return function() {
+          _this.trigger('amClean');
+          _this.$('.bv_updateComplete').show();
+          return _this.render();
+        };
+      })(this));
+      this.model.on('change', (function(_this) {
+        return function() {
+          _this.trigger('amDirty');
+          return _this.$('.bv_updateComplete').hide();
+        };
+      })(this));
       this.errorOwnerName = 'ExperimentBaseController';
       this.setBindings();
       $(this.el).empty();
@@ -508,18 +517,19 @@
     };
 
     ExperimentBaseController.prototype.getFullProtocol = function() {
-      var _this = this;
       if (this.model.get('protocol') !== null) {
         if (this.model.get('protocol').isStub()) {
           return this.model.get('protocol').fetch({
-            success: function() {
-              var newProtName;
-              newProtName = _this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText');
-              _this.setUseProtocolParametersDisabledState();
-              if (!!_this.model.isNew()) {
-                return _this.handleUseProtocolParametersClicked();
-              }
-            }
+            success: (function(_this) {
+              return function() {
+                var newProtName;
+                newProtName = _this.model.get('protocol').get('lsLabels').pickBestLabel().get('labelText');
+                _this.setUseProtocolParametersDisabledState();
+                if (!!_this.model.isNew()) {
+                  return _this.handleUseProtocolParametersClicked();
+                }
+              };
+            })(this)
           });
         } else {
           this.setUseProtocolParametersDisabledState();
@@ -580,8 +590,7 @@
     };
 
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
-      var code,
-        _this = this;
+      var code;
       code = this.$('.bv_protocolCode').val();
       if (code === "" || code === "unassigned") {
         this.model.set({
@@ -592,16 +601,18 @@
         return $.ajax({
           type: 'GET',
           url: "/api/protocols/codename/" + code,
-          success: function(json) {
-            if (json.length === 0) {
-              return alert("Could not find selected protocol in database, please get help");
-            } else {
-              _this.model.set({
-                protocol: new Protocol(json[0])
-              });
-              return _this.getFullProtocol();
-            }
-          },
+          success: (function(_this) {
+            return function(json) {
+              if (json.length === 0) {
+                return alert("Could not find selected protocol in database, please get help");
+              } else {
+                _this.model.set({
+                  protocol: new Protocol(json[0])
+                });
+                return _this.getFullProtocol();
+              }
+            };
+          })(this),
           error: function(err) {
             return alert('got ajax error from api/protocols/codename/ in Exeriment.coffee');
           },

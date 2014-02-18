@@ -1,13 +1,13 @@
+
 /* To install this Module
 1) add to app.coffee
-# BulkLoadSampleTransfers routes
+ * BulkLoadSampleTransfers routes
 	bulkLoadSampleTransfersRoutes = require './public/src/modules/BulkLoadSampleTransfers/src/server/routes/BulkLoadSampleTransfersRoutes.js'
 	bulkLoadSampleTransfersRoutes.setupRoutes(app)
 
 2) Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Load Sample Transfer Log", mainControllerClassName: "BulkLoadSampleTransfersController"}
-*/
-
+ */
 
 (function() {
   exports.setupRoutes = function(app) {

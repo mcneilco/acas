@@ -98,5 +98,4 @@ prepRouteIncludes = ->
 	routeLines
 
 routeLines = prepRouteIncludes()
-console.log routeLines
 insertToLayoutTemplate "  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "../app_template.js", "../app.js"

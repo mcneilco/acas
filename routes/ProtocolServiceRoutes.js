@@ -1,9 +1,9 @@
+
 /* To install this Module
 1) Add these lines to app.coffee:
 	protocolRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ProtocolServiceRoutes.js'
 	protocolRoutes.setupRoutes(app)
-*/
-
+ */
 
 (function() {
   exports.setupRoutes = function(app) {
@@ -45,8 +45,7 @@
   };
 
   exports.postProtocol = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, request,
-      _this = this;
+    var baseurl, config, experimentServiceTestJSON, request;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
@@ -59,23 +58,24 @@
         url: baseurl,
         body: req.body,
         json: true
-      }, function(error, response, json) {
-        if (!error && response.statusCode === 201) {
-          console.log(JSON.stringify(json));
-          return resp.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to save new experiment');
-          console.log(error);
-          console.log(json);
-          return console.log(response);
-        }
-      });
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 201) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to save new experiment');
+            console.log(error);
+            console.log(json);
+            return console.log(response);
+          }
+        };
+      })(this));
     }
   };
 
   exports.putProtocol = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, request,
-      _this = this;
+    var baseurl, config, experimentServiceTestJSON, request;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
@@ -88,17 +88,19 @@
         url: baseurl,
         body: req.body,
         json: true
-      }, function(error, response, json) {
-        if (!error && response.statusCode === 201) {
-          console.log(JSON.stringify(json));
-          return resp.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to save new experiment');
-          console.log(error);
-          console.log(json);
-          return console.log(response);
-        }
-      });
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 201) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to save new experiment');
+            console.log(error);
+            console.log(json);
+            return console.log(response);
+          }
+        };
+      })(this));
     }
   };
 
@@ -116,8 +118,7 @@
   };
 
   exports.protocolCodeList = function(req, resp) {
-    var baseurl, config, filterString, labels, protocolServiceTestJSON, request, shouldFilter, translateToCodes,
-      _this = this;
+    var baseurl, config, filterString, labels, protocolServiceTestJSON, request, shouldFilter, translateToCodes;
     console.log(req.params);
     if (req.params.str != null) {
       shouldFilter = true;
@@ -160,16 +161,18 @@
         method: 'GET',
         url: baseurl,
         json: true
-      }, function(error, response, json) {
-        if (!error && response.statusCode === 200) {
-          return resp.json(json);
-        } else {
-          console.log('got ajax error trying to get protocol labels');
-          console.log(error);
-          console.log(json);
-          return console.log(response);
-        }
-      });
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return resp.json(json);
+          } else {
+            console.log('got ajax error trying to get protocol labels');
+            console.log(error);
+            console.log(json);
+            return console.log(response);
+          }
+        };
+      })(this));
     }
   };
 
