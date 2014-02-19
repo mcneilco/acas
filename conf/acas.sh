@@ -66,8 +66,8 @@ stop)
 
         	echo "stopping $dirname/$app"
 
-        	#su - svc_node -c "(cd $dir && forever stop $app)"
-        	su - $ACAS_USER -c "killall node"
+        	su - $ACAS_USER $suAdd -c "(cd $dir && forever stop $app)"
+        	#su - $ACAS_USER -c "killall node"
 
         	echo "$dirname/$app stopped"
         done
