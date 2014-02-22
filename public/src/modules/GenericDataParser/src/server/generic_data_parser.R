@@ -431,8 +431,8 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="") {
-  # Valides the calculated results (for now, this only validates the Corporate Batch Ids)
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode) {
+  # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
   #	  calculatedResuluts:	      A "data.frame" of the calculated results
@@ -445,8 +445,8 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #   a "data.frame" of the validated calculated results
   
   # Get the current batch Ids
-  batchesToCheck <- calculatedResults$originalCorporateBatchID != replaceFakeCorpBatchId
-  batchIds <- unique(calculatedResults$"Corporate Batch ID"[batchesToCheck])
+  batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
+  batchIds <- unique(calculatedResults[[mainCode]][batchesToCheck])
   newBatchIds <- getPreferredId(batchIds, testMode=testMode)
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
@@ -457,22 +457,28 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   # Give warning and error messages for changed or missing id's
   for (batchId in newBatchIds) {
     if (batchId["preferredName"] == "") {
-      errorList <<- c(errorList, paste0("Corporate Batch Id '", batchId["requestName"], 
+      errorList <<- c(errorList, paste0(mainCode, " '", batchId["requestName"], 
                                         "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
-      warning(paste0("A Corporate Batch ID that you entered, '", batchId["requestName"], 
-                     "', was replaced by preferred Corporate Batch ID '", batchId["preferredName"], 
-                     "'. If this is not what you intended, replace the Corporate Batch ID with the correct ID."))
+      warning(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
+                     "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
+                     "'. If this is not what you intended, replace the ", maincode, " with the correct ID."))
     }
   }
-  
+
   # Put the batch id's into a useful format
   preferredIdFrame <- as.data.frame(do.call("rbind",newBatchIds), stringsAsFactors=FALSE)
   names(preferredIdFrame) <- names(newBatchIds[[1]])
   preferredIdFrame <- as.data.frame(lapply(preferredIdFrame,unlist), stringsAsFactors=FALSE)
-  
+
+  require(data.table)
+  prefDT <- as.data.table(preferredIdFrame)
+  prefDT[ referenceName == "", referenceName := preferredName ]
+  preferredIdFrame <- as.data.frame(prefDT)
+
+
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
-  calculatedResults$"Corporate Batch ID"[batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults$"Corporate Batch ID"[batchesToCheck],preferredIdFrame$requestName)]
+  calculatedResults[[mainCode]][batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults[[mainCode]][batchesToCheck],preferredIdFrame$requestName)]
   
   #### ================= Check the value kinds =======================================================
   neededValueKinds <- c(calculatedResults$"Result Type", curveNames)
@@ -755,13 +761,13 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   # Return the validated Meta Data
   return(returnDataFrame)
 }
-organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, rawOnlyFormat = FALSE, stateGroups = NULL, splitSubjects = NULL, inputFormat) {
+organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, rawOnlyFormat = FALSE, stateGroups = NULL, splitSubjects = NULL, inputFormat, mainCode) {
   # Organizes the calculated results section
   #
   # Args:
   #   calculatedResults: 			A "data.frame" of the columns containing the calculated results for the experiment
-  #   lockCorpBatchId:        A boolean which marks if the corporate batch id is locked as the left column
-  #   replaceFakeCorpBatchId: A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
+  #   lockCorpBatchId:        A boolean which marks if the mainCode is locked as the left column
+  #   replaceFakeCorpBatchId: A string that is not a mainCode, will be ignored by the batch check, and will be replaced by a column of the same name
   #   rawOnlyFormat:          A boolean that describes the data format, subject based or analysis group based
   #
   # Returns:
@@ -771,7 +777,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   require('gdata')
   
   if(ncol(calculatedResults)==1) {
-    stop("The rows below Calculated Results must have at least two columns filled: one for Corporate Batch ID's and one for data.")
+    stop("The rows below Calculated Results must have at least two columns filled: one for ", mainCode, "'s and one for data.")
   }
   
   # Check the Datatype row and get information from it
@@ -791,14 +797,14 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   # Get the line containing the result types
   calculatedResultsResultTypeRow <- calculatedResults[1:nrow(calculatedResults)==1,]
   
-  # Make sure the Corporate Batch Id is included
+  # Make sure the mainCode is included
   if (lockCorpBatchId) {
-    if(calculatedResultsResultTypeRow[1]!="Corporate Batch ID") {
-      stop("Could not find 'Corporate Batch ID' column. The Corporate Batch ID column should be the first column of the Calculated Results")
+    if(calculatedResultsResultTypeRow[1]!=mainCode) {
+      stop(paste0("Could not find '", mainCode, "' column. The ", mainCode, " column should be the first column of the Calculated Results"))
     }
   } else {
-    if(!("Corporate Batch ID" %in% unlist(calculatedResultsResultTypeRow))) {
-      stop("Could not find 'Corporate Batch ID' column.")
+    if(!(mainCode %in% unlist(calculatedResultsResultTypeRow))) {
+      stop(paste0("Could not find '", mainCode, "' column."))
     }
   }
   
@@ -809,25 +815,25 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   }
   
   # These columns are not result types and should not be pivoted into long format
-  ignoreTheseAsResultTypes <- c("Corporate Batch ID","originalCorporateBatchID")
+  ignoreTheseAsResultTypes <- c(mainCode, "originalMainID")
   
   # Call the function that extracts result type names, units, conc, concunits from the headers
   resultTypes <- extractResultTypes(calculatedResultsResultTypeRow, ignoreTheseAsResultTypes)
   
   # Add data class and hidden/shown to the resultTypes
-  resultTypes$dataClass <- classRow[calculatedResultsResultTypeRow!="Corporate Batch ID"]
-  resultTypes$hidden <- hiddenColumns[calculatedResultsResultTypeRow!="Corporate Batch ID"]
+  resultTypes$dataClass <- classRow[calculatedResultsResultTypeRow!=mainCode]
+  resultTypes$hidden <- hiddenColumns[calculatedResultsResultTypeRow!=mainCode]
   
   # Grab the rows of the calculated data 
   results <- subset(calculatedResults,1:nrow(calculatedResults) > 1)
   names(results) <- unlist(calculatedResultsResultTypeRow)
   
-  # Replace fake corporate batch ids with the column that holds replacements (the column must have the same name that is entered in Corporate Batch ID)
-  results$"Corporate Batch ID" <- as.character(results$"Corporate Batch ID")
-  results$originalCorporateBatchID <- results$"Corporate Batch ID"
+  # Replace fake mainCodes with the column that holds replacements (the column must have the same name that is entered in mainCode)
+  results[[mainCode]] <- as.character(results[[mainCode]])
+  results$originalMainID <- results[[mainCode]]
   if (!is.null(replaceFakeCorpBatchId)) {
-    replacementRows <- results$"Corporate Batch ID"==replaceFakeCorpBatchId
-    results$"Corporate Batch ID"[replacementRows] <- as.character(results[replacementRows,replaceFakeCorpBatchId])
+    replacementRows <- results[[mainCode]]==replaceFakeCorpBatchId
+    results[[mainCode]][replacementRows] <- as.character(results[replacementRows,replaceFakeCorpBatchId])
   }
   
   # Add a temporary analysisGroupID to keep track of how rows match up
@@ -915,9 +921,9 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   # Clean up the data frame to look nice (remove extra columns)
   row.names(longResults) <- 1:nrow(longResults)
-  organizedData <- longResults[c("Corporate Batch ID","Result Type","Result Units","Conc","Conc Units", "time", "timeUnit", "Result Value",
+  organizedData <- longResults[c(mainCode,"Result Type","Result Units","Conc","Conc Units", "time", "timeUnit", "Result Value",
                                  "Result Desc","Result Operator","analysisGroupID","Result Date","clobValue","Class",
-                                 "resultTypeAndUnit","Hidden", "originalCorporateBatchID", "treatmentGroupID", "subjectID")]
+                                 "resultTypeAndUnit","Hidden", "originalMainID", "treatmentGroupID", "subjectID")]
   
   # Turn empty string into NA
   organizedData[organizedData==" " | organizedData=="" | is.na(organizedData)] <- NA
@@ -931,13 +937,13 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   return(organizedData)
 }
-organizeRawResults <- function(rawResults, calculatedResults) {
+organizeRawResults <- function(rawResults, calculatedResults, mainCode) {
   # Valides and organizes the calculated results section
   #
   # Args:
   #   rawResults: 			  A "data.frame" of the columns containing the raw results for the experiment
   #   calculatedResults:  A "data.frame" of the columns containing the calculated results for the experiment
-  #                         It is here used to connect the Corporate Batch ID's
+  #                         It is here used to connect the mainCodes
   #
   # Returns:
   #  A list containting:
@@ -1067,7 +1073,7 @@ organizeRawResults <- function(rawResults, calculatedResults) {
   
   # Break results into multiple columns
   tempIdTable <- calculatedResults[calculatedResults$"Result Type" == tempIdLabel,]
-  longTreatmentGroupResults$"Corporate Batch ID" <- tempIdTable$"Corporate Batch ID"[match(longTreatmentGroupResults[,tempIdLabel],tempIdTable$"Result Value")]
+  longTreatmentGroupResults[[mainCode]] <- tempIdTable[[mainCode]][match(longTreatmentGroupResults[,tempIdLabel],tempIdTable$"Result Value")]
   longTreatmentGroupResults$"Result Units" <- resultTypes$Units[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
   longTreatmentGroupResults$"Conc" <- resultTypes$Conc[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
   longTreatmentGroupResults$"Conc Units" <- resultTypes$concUnits[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
@@ -1083,7 +1089,7 @@ organizeRawResults <- function(rawResults, calculatedResults) {
   
   # Connect Batch ID's
   tempIdTable <- calculatedResults[calculatedResults$"Result Type" == tempIdLabel,]
-  longResults$"Corporate Batch ID" <- tempIdTable$"Corporate Batch ID"[match(longResults[,tempIdLabel],tempIdTable$"Result Value")]
+  longResults[[mainCode]] <- tempIdTable[[mainCode]][match(longResults[,tempIdLabel],tempIdTable$"Result Value")]
   
   # Add units
   longResults$"Result Units" <- resultTypes$Units[match(longResults$"ResultType",resultTypes$DataColumn)]
@@ -1329,6 +1335,13 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                           lsKind="experiment name",
                                                                           labelText=experimentName <- trim(gsub("CREATETHISEXPERIMENT$", "", metaData$"Experiment Name"[1])),
                                                                           preferred=TRUE)
+  
+  # Create LS Tags
+  tagList <- strsplit(metaData$"Experiment Keywords", ";")
+  tagList <- trim(tagList)
+  
+  lsTags <- lapply(tagList, createTag)
+  
   # Create the experiment
   experiment <- createExperiment(lsTransaction = lsTransaction, 
                                  protocol = protocol,
@@ -1340,7 +1353,8 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                      },  
                                  recordedBy=recordedBy, 
                                  experimentLabels=experimentLabels,
-                                 experimentStates=experimentStates)
+                                 experimentStates=experimentStates,
+                                 lsTags=lsTags)
   
   # Save the experiment to the server
   experiment <- saveExperiment(experiment)
@@ -1361,13 +1375,15 @@ validateProject <- function(projectName, configList) {
     errorList <<- c(errorList, paste("There was an error in validating your project:", projectList))
     return("")
   })
-  projectCodes <- sapply(projectList, function(x) x$code)
-  if(length(projectCodes) == 0) {errorList <<- c(errorList, "No projects are available, contact your system administrator")}
-  if (toupper(projectName) %in% projectCodes) {
-    return(toupper(projectName))
+  #projectCodes <- sapply(projectList, function(x) x$code)
+  projectNames <- sapply(projectList, function(x) x$name)
+  if(length(projectNames) == 0) {errorList <<- c(errorList, "No projects are available, contact your system administrator")}
+  if (projectName %in% projectNames) {
+    return(projectName)
   } else {
+    configText <- toJSON(configList)
     errorList <<- c(errorList, paste0("The project you entered is not an available project. Please enter one of these projects: '",
-                                      paste(projectCodes, collapse = "', '"), "'."))
+                                      paste(projectNames, collapse = "', '"), "'."))
     return("")
   }
 }
@@ -1403,7 +1419,7 @@ validateScientist <- function(scientistName, configList) {
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
                               recordedBy, replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning="subject", 
-                              includeTreatmentGroupData, inputFormat) {
+                              includeTreatmentGroupData, inputFormat, mainCode) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
   require('plyr')
@@ -1431,7 +1447,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   
   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$server.service.external.file.type, configList$server.service.external.file.service.url)
   if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(subjectData$"Corporate Batch ID")
+    batchNameList <- unique(subjectData[[mainCode]])
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
@@ -1457,11 +1473,11 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   subjectData$treatmentGroupID <- treatmentGroupIds[match(subjectData$treatmentGroupID,1:length(treatmentGroupIds))]
   
   # Reorganization to match formats
-  nameChange <- c('Corporate Batch ID'='batchCode','Result Type'='valueKind','Result Units'='valueUnit','Conc'='concentration',
+  nameChange <- c(mainCode='batchCode','Result Type'='valueKind','Result Units'='valueUnit','Conc'='concentration',
                   'Conc Units'='concentrationUnit','time'='time','timeUnit'='timeUnit','Result Value'='numericValue',
                   'Result Desc'='stringValue','Result Operator'='valueOperator','subjectStateID'='subjectStateID',
                   'Result Date'='dateValue','clobValue'='clobValue','Class'='valueType','resultTypeAndUnit'='resultTypeAndUnit',
-                  'Hidden'='publicData','originalCorporateBatchID'='originalBatchCode','treatmentGroupID'='treatmentGroupID',
+                  'Hidden'='publicData','originalMainID'='originalBatchCode','treatmentGroupID'='treatmentGroupID',
                   'subjectID'='subjectID')
   names(subjectData)[names(subjectData) %in% names(nameChange)] <- nameChange[names(subjectData)]
   subjectData$publicData <- !subjectData$publicData
@@ -1736,7 +1752,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
 uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
                        protocol,experiment, fileStartLocation, configList, reportFilePath, 
-                       reportFileSummary, recordedBy, annotationType) {
+                       reportFileSummary, recordedBy, annotationType, mainCode) {
   # Uploads all the data to the server
   # 
   # Args:
@@ -1777,7 +1793,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
                                                    configList$server.service.external.file.type, 
                                                    configList$server.service.external.file.service.url)
   if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(calculatedResults$"Corporate Batch ID")
+    batchNameList <- unique(calculatedResults[[mainCode]])
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
@@ -1831,11 +1847,11 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
         }
         
         if(!is.null(i)) {
-          # Adds a value for the batchCode (Corporate Batch ID)
+          # Adds a value for the batchCode (mainCode (Corporate Batch ID/Gene ID))
           analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
                                                                                    lsType = "codeValue",
                                                                                    lsKind = "batch code",
-                                                                                   codeValue = as.character(calculatedResults$"Corporate Batch ID"[analysisGroupID == calculatedResults$analysisGroupID][1]),
+                                                                                   codeValue = as.character(calculatedResults[[mainCode]][analysisGroupID == calculatedResults$analysisGroupID][1]),
                                                                                    publicData = !calculatedResults$Hidden[i],
                                                                                    lsTransaction = lsTransaction)
           
@@ -1876,7 +1892,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     if(!is.null(rawResults)) {
       # Gets the temp and batch Id's for the current analysis group
       tempID <- calculatedResults$"Result Desc"[calculatedResults$analysisGroupID == analysisGroupID & calculatedResults$"Result Type" == tempIdLabel][1]
-      batchID <- as.character(calculatedResults$"Corporate Batch ID"[calculatedResults$analysisGroupID == analysisGroupID][1])
+      batchID <- as.character(calculatedResults[[mainCode]][calculatedResults$analysisGroupID == analysisGroupID][1])
       if (!is.na(tempID) & tempID!="") {
         for (group in unique(treatmentGroupData$treatmentBatch[treatmentGroupData[,tempIdLabel]==tempID])) {
           treatmentGroupStates <- list()
@@ -2084,6 +2100,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   inputFormat <- as.character(validatedMetaData$Format)
   
+  if (inputFormat == "Gene ID Data") {
+    mainCode <- "Gene ID"
+  } else {
+    mainCode <- "Corporate Batch ID"
+  }
+  
   rawOnlyFormat <- inputFormat %in% names(formatSettings)
   if (rawOnlyFormat) {
     lookFor <- "Raw Data"
@@ -2105,7 +2127,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     }
   } else {
     # TODO: generate the list dynamically
-    if(!(inputFormat %in% c("Generic", "Dose Response"))) {
+    if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data"))) {
       stop("The Format must be 'Generic', 'Dose Response', or some custom format that you have been given.")
     }
     lookFor <- "Calculated Results"
@@ -2122,12 +2144,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
-  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, rawOnlyFormat, stateGroups, splitSubjects, inputFormat)
+  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, rawOnlyFormat, stateGroups, splitSubjects, inputFormat, mainCode)
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(calculatedResults,
                                                  dryRun, curveNames, testMode=testMode, 
-                                                 replaceFakeCorpBatchId=replaceFakeCorpBatchId)
+                                                 replaceFakeCorpBatchId=replaceFakeCorpBatchId, mainCode)
   
   # Grab the Raw Results Section
   rawResults <- getSection(genericDataFileDataFrame, "Raw Results", transpose = FALSE)
@@ -2138,7 +2160,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   treatmentGroupData <- NULL
   tempIdLabel <- ""
   if(!is.null(rawResults)) {
-    rawResults <- organizeRawResults(rawResults,calculatedResults)
+    rawResults <- organizeRawResults(rawResults, calculatedResults, mainCode)
     # TODO: Should have a validation step to check raw results valueKinds
     xLabel <- rawResults$xLabel
     yLabel <- rawResults$yLabel
@@ -2172,6 +2194,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
   
+  # Checks if we have a new experiment
   newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
   
   # If there are errors, do not allow an upload (yes, this is needed a second time)
@@ -2203,12 +2226,13 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
                         stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
-                        replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning, includeTreatmentGroupData, inputFormat)
+                        replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning, includeTreatmentGroupData, 
+                        inputFormat, mainCode)
     } else {
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
-                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType)
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType, mainCode)
     }
   }
   
@@ -2264,7 +2288,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   summaryInfo$info$"Assay Date" = as.character(validatedMetaData$"Assay Date")
   summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
   summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$resultTypeAndUnit))
-  summaryInfo$info$"Unique Corporate Batch ID's" = length(unique(calculatedResults$"Corporate Batch ID"))
+  summaryInfo$info[[paste0("Unique ",mainCode,"'s")]] = length(unique(calculatedResults[[mainCode]]))
   if (!is.null(subjectData)) {
     summaryInfo$info$"Raw Results Data Points" <- max(subjectData$pointID)
     summaryInfo$info$"Flagged Data Points" <- length(subjectData$value[subjectData$ResultType=="flag" & !is.na(subjectData$value)])
