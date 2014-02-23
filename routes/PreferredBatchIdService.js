@@ -27,6 +27,11 @@ preferredBatchIdRoutes.setupRoutes(app)
       return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
         return resp.end(rReturn);
       });
+    } else if (serviceType === "GeneCodeCheckByR" && !global.specRunnerTestmode) {
+      req.body.user = "";
+      return serverUtilityFunctions.runRFunction(req, "public/src/modules/serverAPI/src/server/AcasGeneBatchCheck.R", "acasGeneCodeCheck", function(rReturn) {
+        return resp.end(rReturn);
+      });
     } else {
       return each(requests).parallel(1).on("item", function(batchName, next) {
         var baseurl;
