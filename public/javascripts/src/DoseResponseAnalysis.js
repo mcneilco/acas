@@ -130,6 +130,12 @@
       "change .bv_slope_value": "attributeChanged"
     };
 
+    DoseResponseAnalysisParametersController.prototype.initialize = function() {
+      $(this.el).html(this.template());
+      this.errorOwnerName = 'DoseResponseAnalysisParametersController';
+      return this.setBindings();
+    };
+
     DoseResponseAnalysisParametersController.prototype.render = function() {
       DoseResponseAnalysisParametersController.__super__.render.call(this);
       this.$('.bv_autofillSection').empty();
@@ -178,6 +184,167 @@
 
     return DoseResponseAnalysisParametersController;
 
-  })(AbstractParserFormController);
+  })(AbstractFormController);
+
+  window.DoseResponseAnalysisController = (function(_super) {
+    __extends(DoseResponseAnalysisController, _super);
+
+    function DoseResponseAnalysisController() {
+      this.fitReturnSuccess = __bind(this.fitReturnSuccess, this);
+      this.launchFit = __bind(this.launchFit, this);
+      this.paramsInvalid = __bind(this.paramsInvalid, this);
+      this.paramsValid = __bind(this.paramsValid, this);
+      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
+      this.setReadyForFit = __bind(this.setReadyForFit, this);
+      this.testReadyForFit = __bind(this.testReadyForFit, this);
+      this.render = __bind(this.render, this);
+      return DoseResponseAnalysisController.__super__.constructor.apply(this, arguments);
+    }
+
+    DoseResponseAnalysisController.prototype.template = _.template($("#DoseResponseAnalysisView").html());
+
+    DoseResponseAnalysisController.prototype.events = {
+      "click .bv_fitModelButton": "launchFit"
+    };
+
+    DoseResponseAnalysisController.prototype.initialize = function() {
+      this.model.on("sync", this.handleExperimentSaved);
+      this.model.getStatus().on('change', this.handleStatusChanged);
+      this.parameterController = null;
+      this.analyzedPreviously = this.model.getModelFitStatus().get('stringValue') === "not started" ? false : true;
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      return this.testReadyForFit();
+    };
+
+    DoseResponseAnalysisController.prototype.render = function() {
+      var buttonText;
+      this.showExistingResults();
+      buttonText = this.analyzedPreviously ? "Re-Fit" : "Fit Data";
+      return this.$('.bv_fitModelButton').html(buttonText);
+    };
+
+    DoseResponseAnalysisController.prototype.showExistingResults = function() {
+      var fitStatus, res, resultValue;
+      fitStatus = this.model.getModelFitStatus().get('stringValue');
+      this.$('.bv_modelFitStatus').html(fitStatus);
+      resultValue = this.model.getModelFitResultHTML();
+      if (!!this.analyzedPreviously) {
+        if (resultValue !== null) {
+          res = resultValue.get('clobValue');
+          if (res === "") {
+            return this.$('.bv_resultsContainer').hide();
+          } else {
+            this.$('.bv_modelFitResultsHTML').html(res);
+            return this.$('.bv_resultsContainer').show();
+          }
+        }
+      }
+    };
+
+    DoseResponseAnalysisController.prototype.testReadyForFit = function() {
+      if (this.model.getAnalysisStatus().get('stringValue') === "not started") {
+        return this.setNotReadyForFit();
+      } else {
+        return this.setReadyForFit();
+      }
+    };
+
+    DoseResponseAnalysisController.prototype.setNotReadyForFit = function() {
+      this.$('.bv_fitOptionWrapper').hide();
+      this.$('.bv_resultsContainer').hide();
+      return this.$('.bv_analyzeExperimentToFit').show();
+    };
+
+    DoseResponseAnalysisController.prototype.setReadyForFit = function() {
+      if (!this.parameterController) {
+        this.setupCurveFitAnalysisParameterController();
+      }
+      this.$('.bv_fitOptionWrapper').show();
+      this.$('.bv_analyzeExperimentToFit').hide();
+      return this.handleStatusChanged();
+    };
+
+    DoseResponseAnalysisController.prototype.primaryAnalysisCompleted = function() {
+      return this.testReadyForFit();
+    };
+
+    DoseResponseAnalysisController.prototype.handleStatusChanged = function() {
+      if (this.parameterController !== null) {
+        if (this.model.isEditable()) {
+          return this.parameterController.enableAllInputs();
+        } else {
+          return this.parameterController.disableAllInputs();
+        }
+      }
+    };
+
+    DoseResponseAnalysisController.prototype.setupCurveFitAnalysisParameterController = function() {
+      this.parameterController = new DoseResponseAnalysisParametersController({
+        el: this.$('.bv_analysisParameterForm'),
+        model: new DoseResponseAnalysisParameters(this.model.getModelFitParameters())
+      });
+      this.parameterController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.parameterController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      this.parameterController.on('valid', this.paramsValid);
+      this.parameterController.on('invalid', this.paramsInvalid);
+      return this.parameterController.render();
+    };
+
+    DoseResponseAnalysisController.prototype.paramsValid = function() {
+      console.log("got valid");
+      return this.$('.bv_fitModelButton').removeAttr('disabled');
+    };
+
+    DoseResponseAnalysisController.prototype.paramsInvalid = function() {
+      console.log("got invalid");
+      return this.$('.bv_fitModelButton').attr('disabled', 'disabled');
+    };
+
+    DoseResponseAnalysisController.prototype.launchFit = function() {
+      var fitData;
+      console.log("got to launch fit");
+      fitData = {
+        inputParameters: JSON.stringify(this.parameterController.model),
+        user: window.AppLaunchParams.loginUserName,
+        experimentCode: this.model.get('codeName'),
+        testMode: false
+      };
+      return $.ajax({
+        type: 'POST',
+        url: "/api/doseResponseCurveFit",
+        data: fitData,
+        success: this.fitReturnSuccess,
+        error: (function(_this) {
+          return function(err) {
+            console.log('got ajax error');
+            return _this.serviceReturn = null;
+          };
+        })(this),
+        dataType: 'json'
+      });
+    };
+
+    DoseResponseAnalysisController.prototype.fitReturnSuccess = function(json) {
+      if (!json.hasError) {
+        this.analyzedPreviously = true;
+        this.$('.bv_fitModelButton').html("Re-Fit");
+      }
+      this.$('.bv_modelFitResultsHTML').html(json.results.htmlSummary);
+      this.$('.bv_modelFitStatus').html(json.results.status);
+      return this.$('.bv_resultsContainer').show();
+    };
+
+    return DoseResponseAnalysisController;
+
+  })(Backbone.View);
 
 }).call(this);

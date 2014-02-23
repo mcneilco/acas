@@ -1128,6 +1128,37 @@
 				urlValue: null
 				version: 0
 			,
+				clobValue: '{ "max": { "limitType": "pin", "value": 100 }, "min": { "limitType": "none", "value": null }, "slope": { "limitType": "limit", "value": 1.5 }, "inactiveThreshold": 20, "inverseAgonistMode": true}'
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 3331
+				ignored: false
+				lsKind: "model fit parameters"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_model fit parameters"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
 				clobValue: null
 				codeValue: null
 				comments: null
@@ -1190,6 +1221,38 @@
 				urlValue: null
 				version: 0
 			,
+				clobValue: "<p>Model fit not yet completed</p>"
+#				clobValue: "<p>Model fit completed</p>"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 444
+				ignored: false
+				lsKind: "model fit result html"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_model fit result html"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
 				clobValue: null
 				codeValue: null
 				comments: null
@@ -1200,7 +1263,39 @@
 				lsKind: "analysis status"
 				lsTransaction: 2
 				lsType: "stringValue"
-				lsTypeAndKind: "clobValue_analysis status"
+				lsTypeAndKind: "stringValue_analysis status"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: "complete"
+#				stringValue: "not started"
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 4225
+				ignored: false
+				lsKind: "model fit status"
+				lsTransaction: 2
+				lsType: "stringValue"
+				lsTypeAndKind: "stringValue_model fit status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -1213,6 +1308,7 @@
 				recordedDate: 1375889487000
 				sigFigs: null
 				stringValue: "not started"
+#				stringValue: "complete"
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -1525,6 +1621,37 @@
 				lsTransaction: 2
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_analysis result html"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: "<p>Model fit not yet completed</p>"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 454
+				ignored: false
+				lsKind: "model fit result html"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_model fit result html"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null

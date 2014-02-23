@@ -30,14 +30,6 @@ exports.applicationScripts = [
 	'/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',
 	'/javascripts/src/Protocol.js',
-	"/src/modules/Components/src/client/AbstractFormController.js",
-	"/src/modules/Components/src/client/AbstractParserFormController.js",
-	"/src/modules/Components/src/client/BasicFileValidateAndSave.js",
-	"/src/modules/Components/src/client/LSErrorNotification.js",
-	"/src/modules/Components/src/client/LSFileChooser.js",
-	"/src/modules/Components/src/client/LSFileInput.js",
-	"/src/modules/Components/src/client/PickList.js",
-	"/src/modules/Components/src/client/TagList.js",
 	"/javascripts/src/AppController.js",
 	"/javascripts/src/BatchListValidator.js",
 	"/javascripts/src/BulkLoadContainersFromSDF.js",
@@ -54,7 +46,8 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenus.js",
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
-	"/javascripts/src/PrimaryScreenExperiment.js"
+	"/javascripts/src/PrimaryScreenExperiment.js",
+	"/javascripts/src/TagList.js"
 ];
 
 exports.jasmineScripts = [
@@ -101,6 +94,7 @@ exports.specScripts = [
 	"/javascripts/spec/CurveCuratorSpec.js",
 	"/javascripts/spec/DocForBatchesServiceSpec.js",
 	"/javascripts/spec/DoseResponseAnalysisSpec.js",
+	"/javascripts/spec/DoseResponseFitServiceSpec.js",
 	"/javascripts/spec/ExperimentBrowserSpec.js",
 	"/javascripts/spec/ExperimentServiceSpec.js",
 	"/javascripts/spec/GenericDataParserServiceSpec.js",

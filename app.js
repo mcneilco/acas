@@ -63,22 +63,24 @@
 	routeSet_3.setupRoutes(app);
 	routeSet_4 = require("./routes/DocForBatchesRoutes.js");
 	routeSet_4.setupRoutes(app);
-	routeSet_5 = require("./routes/ExperimentBrowserRoutes.js");
+	routeSet_5 = require("./routes/DoseResponseFitRoutes.js");
 	routeSet_5.setupRoutes(app);
-	routeSet_6 = require("./routes/ExperimentServiceRoutes.js");
+	routeSet_6 = require("./routes/ExperimentBrowserRoutes.js");
 	routeSet_6.setupRoutes(app);
-	routeSet_7 = require("./routes/GenericDataParserRoutes.js");
+	routeSet_7 = require("./routes/ExperimentServiceRoutes.js");
 	routeSet_7.setupRoutes(app);
-	routeSet_8 = require("./routes/PreferredBatchIdService.js");
+	routeSet_8 = require("./routes/GenericDataParserRoutes.js");
 	routeSet_8.setupRoutes(app);
-	routeSet_9 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_9 = require("./routes/PreferredBatchIdService.js");
 	routeSet_9.setupRoutes(app);
-	routeSet_10 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_10 = require("./routes/ProjectServiceRoutes.js");
 	routeSet_10.setupRoutes(app);
-	routeSet_11 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_11 = require("./routes/ProtocolServiceRoutes.js");
 	routeSet_11.setupRoutes(app);
-	routeSet_12 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_12 = require("./routes/RunPrimaryAnalysisRoutes.js");
 	routeSet_12.setupRoutes(app);
+	routeSet_13 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_13.setupRoutes(app);
 
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("Express server listening on port " + app.get('port'));

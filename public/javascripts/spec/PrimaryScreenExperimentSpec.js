@@ -198,12 +198,23 @@
               return expect(this.pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual("CMPD-87654399-01");
             });
           });
+          describe("model fit parameters", function() {
+            return it('Should be able to get model parameters', function() {
+              return expect(this.pse.getModelFitParameters().inverseAgonistMode).toBeTruthy();
+            });
+          });
           return describe("special states", function() {
             it("should be able to get the analysis status", function() {
               return expect(this.pse.getAnalysisStatus().get('stringValue')).toEqual("not started");
             });
-            return it("should be able to get the analysis result html", function() {
+            it("should be able to get the analysis result html", function() {
               return expect(this.pse.getAnalysisResultHTML().get('clobValue')).toEqual("<p>Analysis not yet completed</p>");
+            });
+            it("should be able to get the model fit status", function() {
+              return expect(this.pse.getModelFitStatus().get('stringValue')).toEqual("not started");
+            });
+            return it("should be able to get the model result html", function() {
+              return expect(this.pse.getModelFitResultHTML().get('clobValue')).toEqual("<p>Model fit not yet completed</p>");
             });
           });
         });
@@ -216,8 +227,14 @@
           it("should be able to get the analysis status", function() {
             return expect(this.pse2.getAnalysisStatus().get('stringValue')).toEqual("not started");
           });
-          return it("should be able to get the analysis result html", function() {
+          it("should be able to get the analysis result html", function() {
             return expect(this.pse2.getAnalysisResultHTML().get('clobValue')).toEqual("");
+          });
+          it("should be able to get the model fit status", function() {
+            return expect(this.pse2.getModelFitStatus().get('stringValue')).toEqual("not started");
+          });
+          return it("should be able to get the model result html", function() {
+            return expect(this.pse2.getModelFitResultHTML().get('clobValue')).toEqual("");
           });
         });
       });
@@ -548,8 +565,8 @@
           it("Should load an analysis controller", function() {
             return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual(0);
           });
-          return xit("Should load a dose response controller", function() {
-            return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual(0);
+          return it("Should load a dose response controller", function() {
+            return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual(0);
           });
         });
       });

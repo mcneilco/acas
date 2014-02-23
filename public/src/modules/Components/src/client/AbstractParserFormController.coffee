@@ -7,9 +7,6 @@ class window.AbstractParserFormController extends AbstractFormController
 	render: =>
 		@
 
-	attributeChanged: =>
-		@trigger 'amDirty'
-		@updateModel()
 
 	setupProjectSelect: ->
 		@projectList = new PickListList()

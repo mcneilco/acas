@@ -10,6 +10,7 @@
       this.handleModelChange = __bind(this.handleModelChange, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
+      this.attributeChanged = __bind(this.attributeChanged, this);
       return AbstractFormController.__super__.constructor.apply(this, arguments);
     }
 
@@ -30,6 +31,11 @@
       this.model = model;
       this.setBindings();
       return this.render();
+    };
+
+    AbstractFormController.prototype.attributeChanged = function() {
+      this.trigger('amDirty');
+      return this.updateModel();
     };
 
     AbstractFormController.prototype.setBindings = function() {

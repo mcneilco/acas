@@ -28,7 +28,11 @@
                     <input type="radio" name="bv_max_limitType" class="bv_max_limitType_limit" value="limit" style="margin-right:5px;" <%if (max.limitType=="limit"){%>checked="checked"<%}%>  />Limit
                 </label>
             </form>
-            <input type="text" class="bv_group_max_value bv_max_value" style="width:415px;" value="<%= max.value%>" />
+            <div class="bv_group_max_value">
+                <label>need a label</label>
+                <input type="text" class=" bv_max_value" style="width:415px;" value="<%= max.value%>" />
+            </div>
+
 
             <form class="form-inline bv_group_min" style="margin-bottom:10px;">
                 <strong>Min:</strong>
@@ -68,19 +72,25 @@
         </div>
 
     </div>
+</script>
 
-    <div class="bv_group_fitStatus span6">
-        <p class="bv_fitStatus span3" style="margin-left:0;margin-top:5px;"><strong>Fit Status:</strong> Curves not fit</p>
-        <button class="btn btn-default pull-right bv_fitButton" type="button">Fit</button>
+<script type="text/template" id="DoseResponseAnalysisView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="bv_group_modelFitStatus span6">
+        <strong>Fit Status:</strong>
+        <p class="bv_modelFitStatus span3" style="margin-left:0;margin-top:5px;"> Curves not fit</p>
+    </div>
+    <div class="bv_fitOptionWrapper">
+        <div class="bv_analysisParameterForm"></div>
     </div>
 
-    <div class="span6 bv_group_fitResults" style="margin-left:10px;margin-top:5px;width:470px;">
-        <div class="well well-small bv_fitResults" style="margin-bottom:10px;">
-            122 Curves Fit<br/>
-            22 Inactive<br/>
-            Fit parameters, etc.....
+
+    <div class="span6 bv_group_resultsContainer" style="margin-left:10px;margin-top:5px;width:470px;">
+        <div class="well well-small bv_resultsContainer" style="margin-bottom:10px;">
+            <div class="bv_modelFitResultsHTML"></div>
         </div>
-        <button class="btn btn-default pull-right bv_curateCurvesButton" type="button">Curate Curves</button>
     </div>
+    <button class="btn btn-default pull-right bv_fitModelButton" type="button">Fit Data</button>
+    <div class="bv_analyzeExperimentToFit span10">To fit data, save and analyze the experiment</div>
 
 </script>

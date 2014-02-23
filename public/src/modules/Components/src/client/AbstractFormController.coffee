@@ -19,6 +19,10 @@ class window.AbstractFormController extends Backbone.View
 		@setBindings()
 		@render()
 
+	attributeChanged: =>
+		@trigger 'amDirty'
+		@updateModel()
+
 	setBindings: ->
 		@model.on 'invalid', @validationError
 		@model.on 'change', @handleModelChange

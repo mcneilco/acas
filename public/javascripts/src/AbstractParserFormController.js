@@ -7,7 +7,6 @@
     __extends(AbstractParserFormController, _super);
 
     function AbstractParserFormController() {
-      this.attributeChanged = __bind(this.attributeChanged, this);
       this.render = __bind(this.render, this);
       return AbstractParserFormController.__super__.constructor.apply(this, arguments);
     }
@@ -19,11 +18,6 @@
 
     AbstractParserFormController.prototype.render = function() {
       return this;
-    };
-
-    AbstractParserFormController.prototype.attributeChanged = function() {
-      this.trigger('amDirty');
-      return this.updateModel();
     };
 
     AbstractParserFormController.prototype.setupProjectSelect = function() {

@@ -99,6 +99,13 @@ class window.PrimaryScreenExperiment extends Experiment
 		else
 			return new PrimaryScreenAnalysisParameters()
 
+	getModelFitParameters: ->
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
+		if ap.get('clobValue')?
+			return $.parseJSON(ap.get('clobValue'))
+		else
+			return {}
+
 	getAnalysisStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
 		if !status.has('stringValue')
@@ -108,6 +115,20 @@ class window.PrimaryScreenExperiment extends Experiment
 
 	getAnalysisResultHTML: ->
 		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
+		if !result.has('clobValue')
+			result.set clobValue: ""
+
+		result
+
+	getModelFitStatus: ->
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "model fit status"
+		if !status.has('stringValue')
+			status.set stringValue: "not started"
+
+		status
+
+	getModelFitResultHTML: ->
+		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit result html"
 		if !result.has('clobValue')
 			result.set clobValue: ""
 
@@ -310,6 +331,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	handleAnalysisComplete: =>
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
 		@$('.bv_resultsContainer').hide()
+		@trigger 'analysis-completed'
 
 	handleStatusChanged: =>
 		if @dataAnalysisController != null
@@ -323,7 +345,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			el: @$('.bv_fileUploadWrapper')
 			paramsFromExperiment:	@model.getAnalysisParameters()
 			analyzedPreviously: @model.getAnalysisStatus().get('stringValue')!="not started"
-		@dataAnalysisController.setUser(@model.get('recordedBy'))
+		@dataAnalysisController.setUser(window.AppLaunchParams.loginUserName)
 		@dataAnalysisController.setExperimentId(@model.id)
 		@dataAnalysisController.on 'analysis-completed', @handleAnalysisComplete
 		@dataAnalysisController.on 'amDirty', =>
@@ -353,7 +375,7 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 							if json.length == 0
 								alert 'Could not get experiment for code in this URL, creating new one'
 							else
-								exp = new PrimaryScreenExperiment json[0]
+								exp = new PrimaryScreenExperiment json
 								exp.fixCompositeClasses()
 								@model = exp
 							@completeInitialization()
@@ -382,17 +404,19 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amDirty'
 		@analysisController.on 'amClean', =>
 			@trigger 'amClean'
-#		@doseRespController = new DoseResponseAnalysisController
-#			model: @model
-#			el: @$('.bv_doseResponseAnalysis')
-#		@doseRespController.on 'amDirty', =>
-#			@trigger 'amDirty'
-#		@doseRespController.on 'amClean', =>
-#			@trigger 'amClean'
+		@doseRespController = new DoseResponseAnalysisController
+			model: @model
+			el: @$('.bv_doseResponseAnalysis')
+		@doseRespController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@doseRespController.on 'amClean', =>
+			@trigger 'amClean'
+		@analysisController.on 'analysis-completed', =>
+			@doseRespController.primaryAnalysisCompleted()
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@experimentBaseController.render()
 		@analysisController.render()
-#		@doseRespController.render()
+		@doseRespController.render()
 
 	render: ->
 		@

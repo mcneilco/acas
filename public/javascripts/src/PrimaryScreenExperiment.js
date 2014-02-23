@@ -174,6 +174,16 @@
       }
     };
 
+    PrimaryScreenExperiment.prototype.getModelFitParameters = function() {
+      var ap;
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
+      if (ap.get('clobValue') != null) {
+        return $.parseJSON(ap.get('clobValue'));
+      } else {
+        return {};
+      }
+    };
+
     PrimaryScreenExperiment.prototype.getAnalysisStatus = function() {
       var status;
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
@@ -188,6 +198,28 @@
     PrimaryScreenExperiment.prototype.getAnalysisResultHTML = function() {
       var result;
       result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
+      if (!result.has('clobValue')) {
+        result.set({
+          clobValue: ""
+        });
+      }
+      return result;
+    };
+
+    PrimaryScreenExperiment.prototype.getModelFitStatus = function() {
+      var status;
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "model fit status");
+      if (!status.has('stringValue')) {
+        status.set({
+          stringValue: "not started"
+        });
+      }
+      return status;
+    };
+
+    PrimaryScreenExperiment.prototype.getModelFitResultHTML = function() {
+      var result;
+      result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit result html");
       if (!result.has('clobValue')) {
         result.set({
           clobValue: ""
@@ -486,7 +518,8 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
-      return this.$('.bv_resultsContainer').hide();
+      this.$('.bv_resultsContainer').hide();
+      return this.trigger('analysis-completed');
     };
 
     PrimaryScreenAnalysisController.prototype.handleStatusChanged = function() {
@@ -505,7 +538,7 @@
         paramsFromExperiment: this.model.getAnalysisParameters(),
         analyzedPreviously: this.model.getAnalysisStatus().get('stringValue') !== "not started"
       });
-      this.dataAnalysisController.setUser(this.model.get('recordedBy'));
+      this.dataAnalysisController.setUser(window.AppLaunchParams.loginUserName);
       this.dataAnalysisController.setExperimentId(this.model.id);
       this.dataAnalysisController.on('analysis-completed', this.handleAnalysisComplete);
       this.dataAnalysisController.on('amDirty', (function(_this) {
@@ -556,7 +589,7 @@
                   if (json.length === 0) {
                     alert('Could not get experiment for code in this URL, creating new one');
                   } else {
-                    exp = new PrimaryScreenExperiment(json[0]);
+                    exp = new PrimaryScreenExperiment(json);
                     exp.fixCompositeClasses();
                     _this.model = exp;
                   }
@@ -607,9 +640,29 @@
           return _this.trigger('amClean');
         };
       })(this));
+      this.doseRespController = new DoseResponseAnalysisController({
+        model: this.model,
+        el: this.$('.bv_doseResponseAnalysis')
+      });
+      this.doseRespController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.doseRespController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      this.analysisController.on('analysis-completed', (function(_this) {
+        return function() {
+          return _this.doseRespController.primaryAnalysisCompleted();
+        };
+      })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
       this.experimentBaseController.render();
-      return this.analysisController.render();
+      this.analysisController.render();
+      return this.doseRespController.render();
     };
 
     PrimaryScreenExperimentController.prototype.render = function() {

@@ -136,19 +136,31 @@ describe "Primary Screen Experiment module testing", ->
 							expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
 					it 'Should parse agonist control into backbone models', ->
 							expect(@pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual "CMPD-87654399-01"
+				describe "model fit parameters", ->
+					it 'Should be able to get model parameters', ->
+						# this is not hydrated into a specific model type at this level, it is passed to the specific curve fit class for that
+						expect(@pse.getModelFitParameters().inverseAgonistMode ).toBeTruthy()
 				describe "special states", ->
 					it "should be able to get the analysis status", ->
 							expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
 					it "should be able to get the analysis result html", ->
 							expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
+					it "should be able to get the model fit status", ->
+							expect(@pse.getModelFitStatus().get('stringValue')).toEqual "not started"
+					it "should be able to get the model result html", ->
+							expect(@pse.getModelFitResultHTML().get('clobValue')).toEqual "<p>Model fit not yet completed</p>"
 		describe "When loaded from new", ->
 			beforeEach ->
 				@pse2 = new PrimaryScreenExperiment()
 			describe "special states", ->
 				it "should be able to get the analysis status", ->
-						expect(@pse2.getAnalysisStatus().get('stringValue')).toEqual "not started"
+					expect(@pse2.getAnalysisStatus().get('stringValue')).toEqual "not started"
 				it "should be able to get the analysis result html", ->
-						expect(@pse2.getAnalysisResultHTML().get('clobValue')).toEqual ""
+					expect(@pse2.getAnalysisResultHTML().get('clobValue')).toEqual ""
+				it "should be able to get the model fit status", ->
+					expect(@pse2.getModelFitStatus().get('stringValue')).toEqual "not started"
+				it "should be able to get the model result html", ->
+					expect(@pse2.getModelFitResultHTML().get('clobValue')).toEqual ""
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->
@@ -386,8 +398,8 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
 					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual 0
-				xit "Should load a dose response controller", ->
-					expect(@psec.$('.bv_doseResponseAnalysis .bv_fixCurveMin').length).toNotEqual 0
+				it "Should load a dose response controller", ->
+					expect(@psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual 0
 
 
 

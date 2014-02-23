@@ -202,3 +202,77 @@ describe "Dose Response Analysis Module Testing", ->
 						@drapc.$('.bv_slope_value').val ""
 						@drapc.$('.bv_slope_value').change()
 						expect(@drapc.$('.bv_group_slope_value').hasClass("error")).toBeTruthy()
+
+	describe "DoseResponseAnalysisController testing", ->
+		describe "basic plumbing checks with experiment copied from template", ->
+			beforeEach ->
+				@exp = new PrimaryScreenExperiment()
+				@exp.copyProtocolAttributes new Protocol(window.protocolServiceTestJSON.fullSavedProtocol)
+				@drac = new DoseResponseAnalysisController
+					model: @exp
+					el: $('#fixture')
+				@drac.render()
+			describe "Basic loading", ->
+				it "Class should exist", ->
+					expect(@drac).toBeDefined
+				it "Should load the template", ->
+					expect(@drac.$('.bv_modelFitStatus').length).toNotEqual 0
+			describe "display logic not ready to fit", ->
+				it "should show model fit status not started becuase this is a new experiment", ->
+					expect(@drac.$('.bv_modelFitStatus').html()).toEqual "not started"
+				it "should not show model fit results becuase this is a new experiment", ->
+					expect(@drac.$('.bv_modelFitResultsHTML').html()).toEqual ""
+					expect(@drac.$('.bv_resultsContainer')).toBeHidden()
+				it "should be able to hide model fit controller", ->
+					@drac.setNotReadyForFit()
+					expect(@drac.$('.bv_fitOptionWrapper')).toBeHidden()
+					expect(@drac.$('.bv_analyzeExperimentToFit')).toBeVisible()
+			describe "display logic after ready to fit", ->
+				beforeEach ->
+					@drac.setReadyForFit()
+				it "Should load the fit parameter form", ->
+					expect(@drac.$('.bv_max_limitType_none').length).toNotEqual 0
+				it "should be able to show model controller", ->
+					expect(@drac.$('.bv_fitOptionWrapper')).toBeVisible()
+					expect(@drac.$('.bv_analyzeExperimentToFit')).toBeHidden()
+		describe "experiment status locks analysis", ->
+			beforeEach ->
+				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
+				@drac = new DoseResponseAnalysisController
+					model: @exp
+					el: $('#fixture')
+				@drac.model.getAnalysisStatus().set stringValue: "analsysis complete"
+				@drac.primaryAnalysisCompleted()
+				@drac.render()
+			describe "experiment status change handling", ->
+				it "Should disable model fit parameter editing if status is Finalized", ->
+					@drac.model.getStatus().set stringValue: "Finalized"
+					expect(@drac.$('.bv_max_limitType_none').attr('disabled')).toEqual 'disabled'
+				it "Should enable analsyis parameter editing if status is Finalized", ->
+					@drac.model.getStatus().set stringValue: "Finalized"
+					@drac.model.getStatus().set stringValue: "Started"
+					expect(@drac.$('.bv_max_limitType').attr('disabled')).toBeUndefined()
+				it "should show fit button as Fit Data since status is 'not started'", ->
+					expect(@drac.$('.bv_fitModelButton').html()).toEqual "Fit Data"
+			describe "Form valid change handling", ->
+				it "should show button enabled since form loaded with valid values from test fixture", ->
+					expect(@drac.$('.bv_fitModelButton').attr('disabled')).toBeUndefined()
+				it "should show button disabled when form is invalid", ->
+					@drac.$('.bv_max_value').val ""
+					@drac.$('.bv_max_value').change()
+					expect(@drac.$('.bv_fitModelButton').attr('disabled')).toEqual 'disabled'
+		describe "handling re-fit", ->
+			beforeEach ->
+				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
+				@exp.getAnalysisStatus().set stringValue: "analsysis complete"
+				@exp.getModelFitStatus().set stringValue: "model fit complete"
+				@drac = new DoseResponseAnalysisController
+					model: @exp
+					el: $('#fixture')
+				@drac.render()
+			describe "upon render", ->
+				it "should show fit button as re-analyze when fit status is not 'not started'", ->
+					expect(@drac.$('.bv_fitModelButton').html()).toEqual "Re-Fit"
+
+			#TODO show a button to open curve curator when fit is done
+			# (either return from fit with no error, or reload with model fit status = "complete"
