@@ -122,7 +122,7 @@
     for (fname in routeFiles) {
       path = routeFiles[fname];
       includeStr = '\trouteSet_' + routeNum + ' = require("./routes/' + fname + '");\n';
-      includeStr += '\trouteSet_' + routeNum + '.setupRoutes(app);\n';
+      includeStr += '\trouteSet_' + routeNum + '.setupRoutes(app, loginRoutes);\n';
       routeLines += includeStr;
       routeNum++;
     }
@@ -130,8 +130,6 @@
   };
 
   routeLines = prepRouteIncludes();
-
-  console.log(routeLines);
 
   insertToLayoutTemplate("  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "../app_template.js", "../app.js");
 

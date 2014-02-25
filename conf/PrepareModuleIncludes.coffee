@@ -91,7 +91,7 @@ prepRouteIncludes = ->
 	routeNum = 1
 	for fname, path of routeFiles
 		includeStr = '\trouteSet_'+routeNum+' = require("./routes/'+fname+'");\n'
-		includeStr += '\trouteSet_'+routeNum+'.setupRoutes(app);\n'
+		includeStr += '\trouteSet_'+routeNum+'.setupRoutes(app, loginRoutes);\n'
 		routeLines += includeStr
 		routeNum++
 

@@ -39,6 +39,15 @@ exports.preferredBatchId = (req, resp) ->
 			(rReturn) ->
 				resp.end rReturn
 		)
+	else if serviceType == "GeneCodeCheckByR" && !global.specRunnerTestmode
+		req.body.user = "" # to bypass validation function
+		serverUtilityFunctions.runRFunction(
+			req,
+			"public/src/modules/serverAPI/src/server/AcasGeneBatchCheck.R",
+			"acasGeneCodeCheck",
+		(rReturn) ->
+			resp.end rReturn
+		)
 	else
 		each(requests
 		).parallel(1).on("item", (batchName, next) ->
