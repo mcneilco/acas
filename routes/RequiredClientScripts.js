@@ -14,7 +14,8 @@ exports.requiredScripts = [
 	'/src/lib/jqueryFileUpload/js/jquery.fileupload-fp.js',
 	'/src/lib/jqueryFileUpload/js/jquery.fileupload-ui.js',
 	'/src/lib/jqueryFileUpload/js/locale.js',
-	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js'
+	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
+	'/src/lib/dataTables/js/jquery.dataTables.js'
 ];
 
 exports.applicationScripts = [
@@ -49,6 +50,7 @@ exports.applicationScripts = [
 	"/javascripts/src/DocUpload.js",
 	"/javascripts/src/DoseResponseAnalysis.js",
 	"/javascripts/src/ExperimentBrowser.js",
+	"/javascripts/src/GeneDataQueries.js",
 	"/javascripts/src/GenericDataParser.js",
 	"/javascripts/src/ModuleLauncher.js",
 	"/javascripts/src/ModuleMenus.js",
@@ -77,6 +79,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/CurveFitTestJSON.js",
 	"/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/FullPKTestJSON.js",
+	"/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js",
 	"/javascripts/spec/testFixtures/MetStabTestJSON.js",
 	"/javascripts/spec/testFixtures/MicroSolTestJSON.js",
 	"/javascripts/spec/testFixtures/PampaTestJSON.js",
@@ -103,6 +106,8 @@ exports.specScripts = [
 	"/javascripts/spec/DoseResponseAnalysisSpec.js",
 	"/javascripts/spec/ExperimentBrowserSpec.js",
 	"/javascripts/spec/ExperimentServiceSpec.js",
+	"/javascripts/spec/GeneDataQueriesServiceSpec.js",
+	"/javascripts/spec/GeneDataQueriesSpec.js",
 	"/javascripts/spec/GenericDataParserServiceSpec.js",
 	"/javascripts/spec/GenericDataParserSpec.js",
 	"/javascripts/spec/LabelSpec.js",
