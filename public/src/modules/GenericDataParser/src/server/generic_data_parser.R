@@ -478,7 +478,11 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
 
 
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
-  calculatedResults[[mainCode]][batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults[[mainCode]][batchesToCheck],preferredIdFrame$requestName)]
+  if (!is.null(preferredIdFrame$referenceName)) {
+    calculatedResults[[mainCode]][batchesToCheck] <- preferredIdFrame$referenceName[match(calculatedResults[[mainCode]][batchesToCheck],preferredIdFrame$requestName)]
+  } else {
+    calculatedResults[[mainCode]][batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults[[mainCode]][batchesToCheck],preferredIdFrame$requestName)]
+  }
   
   #### ================= Check the value kinds =======================================================
   neededValueKinds <- c(calculatedResults$"Result Type", curveNames)
@@ -1337,7 +1341,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                           preferred=TRUE)
   
   # Create LS Tags
-  tagList <- strsplit(metaData$"Experiment Keywords", ";")
+  tagList <- strsplit(metaData$"Experiment Keywords", ";")[[1]]
   tagList <- trim(tagList)
   
   lsTags <- lapply(tagList, createTag)
