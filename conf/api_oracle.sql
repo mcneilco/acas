@@ -165,12 +165,15 @@ select s.id AS S_ID,
 	'Dose' as doseType,
 	 max(CASE sv.ls_kind WHEN 'Dose' then sv.unit_kind else null end) as DoseUnits,
 	 max(CASE sv.ls_kind WHEN 'Response' then sv.numeric_value else null end) as Response,
-	 'Response' as ResponseType,
 	 max(CASE sv.ls_kind WHEN 'Response' then sv.unit_kind else null end) as ResponseUnits,
+	 'Response' as ResponseType,
 	 max(CASE sv.ls_kind WHEN 'flag' then sv.string_value else null end) as Flag,
-	 	 max(CASE sv.ls_kind WHEN 'Response' then sv.subject_state_id else null end) as response_ss_id,
-	 	 max(CASE sv.ls_kind WHEN 'Response' then s.treatment_group_id else null end) as tg_id,
-	 	 max(api_agsvb.AG_ID) AS ag_id
+	 max(CASE sv.ls_kind WHEN 'Response' then sv.subject_state_id else null end) as response_ss_id,
+	 max(CASE sv.ls_kind WHEN 'Response' then ss.version else null end) as response_ss_version,
+	 max(CASE sv.ls_kind WHEN 'Response' then sv.id else null end) as response_sv_id,
+     max(CASE sv.ls_kind WHEN 'flag' then sv.id else null end) as flag_sv_id,
+	 max(CASE sv.ls_kind WHEN 'Response' then s.treatment_group_id else null end) as tg_id,
+	 max(api_agsvb.AG_ID) AS ag_id
 FROM api_analysis_group_results api_agsvb JOIN treatment_GROUP tg on api_agsvb.ag_id=tg.analysis_GROUP_id
 	JOIN subject s on tg.id=s.treatment_GROUP_id
 	JOIN subject_state ss ON ss.subject_id = s.id
