@@ -69,6 +69,7 @@
       $(this.el).empty();
       $(this.el).html(this.template());
       this.$('.bv_search').attr('disabled', 'disabled');
+      this.$('.bv_gidACASBadgeTop').hide();
       return this;
     };
 
@@ -192,12 +193,22 @@
     };
 
     GeneIDQuerySearchController.prototype.handleSearchReturn = function(json) {
-      console.log(json);
       this.resultController = new GeneIDQueryResultController({
         model: new Backbone.Model(json.results),
         el: $('.bv_resultsView')
       });
       this.resultController.render();
+      $('.bv_searchForm').appendTo('.bv_toolbar');
+      this.$('.bv_gidSearchStart').hide();
+      this.$('.bv_gidACASBadge').hide();
+      this.$('.bv_gidACASBadgeTop').show();
+      this.$('.bv_gidNavAdvancedSearchButton').removeClass('gidNavAdvancedSearchButtonBottom');
+      this.$('.bv_gidNavHelpButton').addClass('pull-right');
+      this.$('.bv_gidNavAdvancedSearchButton').addClass('gidNavAdvancedSearchButtonTop');
+      this.$('.bv_toolbar').removeClass('gidNavWellBottom');
+      this.$('.bv_toolbar').addClass('gidNavWellTop');
+      this.$('.bv_group_toolbar').removeClass('navbar-fixed-bottom');
+      this.$('.bv_group_toolbar').addClass('navbar-fixed-top');
       return this.setShowResultsMode();
     };
 

@@ -138,13 +138,59 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqsc.$('.bv_gidListString').length).toEqual 1
 				it "should hide result table", ->
 					expect(@gidqsc.$('.bv_resultsView')).toBeHidden()
+				it "should show search in center at start", ->
+					expect(@gidqsc.$('.bv_gidSearchStart .bv_searchForm').length).toEqual 1
+				it "should show gidSearchStart", ->
+					expect(@gidqsc.$('.bv_gidSearchStart')).toBeVisible()
+				it "should show ACAS badge at start", ->
+					expect(@gidqsc.$('.bv_gidACASBadge')).toBeVisible()
+				it "should hide ACAS inline badge at start", ->
+					expect(@gidqsc.$('.bv_gidACASBadgeTop')).toBeHidden()
+				it "should have the gidNavAdvancedSearchButton start class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeTruthy()
+				it "should not have the gidNavHelpButton pull-right class", ->
+					expect(@gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeFalsy()
+				it "should add the gidNavAdvancedSearchButton end class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeFalsy()
+				it "should have the gidNavWellBottom class at start", ->
+					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeTruthy()
+				it "should not have the gidNavWellTop class at start", ->
+					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeFalsy()
+				it "should have the toolbar fixed bottom class at start", ->
+					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeTruthy()
+				it "should not have the toolbar fixed top class at start", ->
+					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeFalsy()
+
 			describe "search return handling", ->
+				beforeEach ->
+					@gidqsc.handleSearchReturn
+						results: window.geneDataQueriesTestJSON.geneIDQueryResults
 				it "should have a function to call when search returns", ->
 					expect(@gidqsc.handleSearchReturn).toBeDefined()
 				it "should show result view", ->
-					@gidqsc.handleSearchReturn
-						results: window.geneDataQueriesTestJSON.geneIDQueryResults
 					expect(@gidqsc.$('.bv_resultsView')).toBeVisible()
+				it "should move search to top navbar", ->
+					expect(@gidqsc.$('.bv_toolbar .bv_searchForm').length).toEqual 1
+				it "should hide gidSearchStart", ->
+					expect(@gidqsc.$('.bv_gidSearchStart')).toBeHidden()
+				it "should hide ACAS badge", ->
+					expect(@gidqsc.$('.bv_gidACASBadge')).toBeHidden()
+				it "should show ACAS inline badge", ->
+					expect(@gidqsc.$('.bv_gidACASBadgeTop')).toBeVisible()
+				it "should remove the gidNavAdvancedSearchButton start class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeFalsy()
+				it "should add the gidNavHelpButton pull-right class", ->
+					expect(@gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeTruthy()
+				it "should add the gidNavAdvancedSearchButton end class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeTruthy()
+				it "should remove the gidNavWellBottom class", ->
+					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeFalsy()
+				it "should add the gidNavWellTop class", ->
+					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeTruthy()
+				it "should remove the toolbar fixed bottom class", ->
+					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeFalsy()
+				it "should add the toolbar fixed top class", ->
+					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeTruthy()
 
 	describe "Gene ID Query App Controller", ->
 		describe 'when instantiated', ->

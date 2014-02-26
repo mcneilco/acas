@@ -201,19 +201,87 @@
           it('should load and show the input controller', function() {
             return expect(this.gidqsc.$('.bv_gidListString').length).toEqual(1);
           });
-          return it("should hide result table", function() {
+          it("should hide result table", function() {
             return expect(this.gidqsc.$('.bv_resultsView')).toBeHidden();
+          });
+          it("should show search in center at start", function() {
+            return expect(this.gidqsc.$('.bv_gidSearchStart .bv_searchForm').length).toEqual(1);
+          });
+          it("should show gidSearchStart", function() {
+            return expect(this.gidqsc.$('.bv_gidSearchStart')).toBeVisible();
+          });
+          it("should show ACAS badge at start", function() {
+            return expect(this.gidqsc.$('.bv_gidACASBadge')).toBeVisible();
+          });
+          it("should hide ACAS inline badge at start", function() {
+            return expect(this.gidqsc.$('.bv_gidACASBadgeTop')).toBeHidden();
+          });
+          it("should have the gidNavAdvancedSearchButton start class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeTruthy();
+          });
+          it("should not have the gidNavHelpButton pull-right class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeFalsy();
+          });
+          it("should add the gidNavAdvancedSearchButton end class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeFalsy();
+          });
+          it("should have the gidNavWellBottom class at start", function() {
+            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeTruthy();
+          });
+          it("should not have the gidNavWellTop class at start", function() {
+            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeFalsy();
+          });
+          it("should have the toolbar fixed bottom class at start", function() {
+            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeTruthy();
+          });
+          return it("should not have the toolbar fixed top class at start", function() {
+            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeFalsy();
           });
         });
         return describe("search return handling", function() {
+          beforeEach(function() {
+            return this.gidqsc.handleSearchReturn({
+              results: window.geneDataQueriesTestJSON.geneIDQueryResults
+            });
+          });
           it("should have a function to call when search returns", function() {
             return expect(this.gidqsc.handleSearchReturn).toBeDefined();
           });
-          return it("should show result view", function() {
-            this.gidqsc.handleSearchReturn({
-              results: window.geneDataQueriesTestJSON.geneIDQueryResults
-            });
+          it("should show result view", function() {
             return expect(this.gidqsc.$('.bv_resultsView')).toBeVisible();
+          });
+          it("should move search to top navbar", function() {
+            return expect(this.gidqsc.$('.bv_toolbar .bv_searchForm').length).toEqual(1);
+          });
+          it("should hide gidSearchStart", function() {
+            return expect(this.gidqsc.$('.bv_gidSearchStart')).toBeHidden();
+          });
+          it("should hide ACAS badge", function() {
+            return expect(this.gidqsc.$('.bv_gidACASBadge')).toBeHidden();
+          });
+          it("should show ACAS inline badge", function() {
+            return expect(this.gidqsc.$('.bv_gidACASBadgeTop')).toBeVisible();
+          });
+          it("should remove the gidNavAdvancedSearchButton start class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeFalsy();
+          });
+          it("should add the gidNavHelpButton pull-right class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeTruthy();
+          });
+          it("should add the gidNavAdvancedSearchButton end class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeTruthy();
+          });
+          it("should remove the gidNavWellBottom class", function() {
+            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeFalsy();
+          });
+          it("should add the gidNavWellTop class", function() {
+            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeTruthy();
+          });
+          it("should remove the toolbar fixed bottom class", function() {
+            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeFalsy();
+          });
+          return it("should add the toolbar fixed top class", function() {
+            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeTruthy();
           });
         });
       });

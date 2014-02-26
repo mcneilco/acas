@@ -25,6 +25,8 @@ class window.GeneIDQueryInputController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_search').attr('disabled','disabled')
+		@$('.bv_gidACASBadgeTop').hide()
+
 
 		@
 
@@ -110,11 +112,22 @@ class window.GeneIDQuerySearchController extends Backbone.View
 
 
 	handleSearchReturn: (json) =>
-		console.log json
 		@resultController = new GeneIDQueryResultController
 			model: new Backbone.Model json.results
 			el: $('.bv_resultsView')
 		@resultController.render()
+		$('.bv_searchForm')
+			.appendTo('.bv_toolbar')
+		@$('.bv_gidSearchStart').hide()
+		@$('.bv_gidACASBadge').hide()
+		@$('.bv_gidACASBadgeTop').show()
+		@$('.bv_gidNavAdvancedSearchButton').removeClass 'gidNavAdvancedSearchButtonBottom'
+		@$('.bv_gidNavHelpButton').addClass 'pull-right'
+		@$('.bv_gidNavAdvancedSearchButton').addClass 'gidNavAdvancedSearchButtonTop'
+		@$('.bv_toolbar').removeClass 'gidNavWellBottom'
+		@$('.bv_toolbar').addClass 'gidNavWellTop'
+		@$('.bv_group_toolbar').removeClass 'navbar-fixed-bottom'
+		@$('.bv_group_toolbar').addClass 'navbar-fixed-top'
 
 		@setShowResultsMode()
 

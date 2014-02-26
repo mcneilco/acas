@@ -1,49 +1,50 @@
 <script type="text/template" id="GeneIDQueryInputView" xmlns="http://www.w3.org/1999/html">
 
     <div class="span11">
-        <div class="span5 offset3" style="padding-top:200px;">
-            <p class="lead" style="margin-bottom:5px;">ACAS</p>
-            <form class="form-inline">
-                <input type="text" class="span4 bv_gidListString" placeholder="Search by gene IDs..." />
+        <div class="span6 offset3 bv_gidSearchStart" style="padding-top:200px;">
+	        <p class="lead bv_gidACASBadge">ACAS</p>
+	        <form class="form-inline bv_searchForm">
+		        <div class="lead pull-left bv_gidACASBadgeTop">ACAS</div>
+	            <input type="text" class="span4 bv_gidListString" placeholder="Search by gene IDs..." />
                 <button type="button" class="btn btn-primary bv_search">Search</button>
             </form>
         </div>
     </div>
 
-    <div class="navbar navbar-fixed-bottom">
-        <div class="well well-small" style="margin-bottom:0px!important;">
-            <button class="btn" style="margin-top:0px!important;"><i class="icon-question-sign"></i></button>
-            <button class="btn pull-right" style="margin-top:0px!important;"><i class="icon-wrench"></i></button>
+    <div class="navbar bv_group_toolbar navbar-fixed-bottom">
+        <div class="well well-small bv_toolbar gidNavWellBottom">
+            <button class="btn bv_gidNavHelpButton gidNavHelpButtonBottom"><i class="icon-question-sign"></i></button>
+            <button class="btn pull-right bv_gidNavAdvancedSearchButton gidNavAdvancedSearchButtonBottom"><i class="icon-wrench"></i></button>
         </div>
     </div>
 </script>
 
 <script type="text/template" id="GeneIDQueryResultView" xmlns="http://www.w3.org/1999/html">
-    <table cellpadding="0" cellspacing="0" border="0" class="display bv_resultTable">
-        <thead>
-            <tr class="bv_experimentNamesHeader" style="border-top:solid;border-top-width:1px;border-top-color:#000000;">
-            </tr>
-            <tr class="bv_columnNamesHeader">
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <div class="bv_noResultsFound">No results found for this query</div>
+    <div class="resultsWell">
+		<table cellpadding="0" cellspacing="0" border="0" class="display bv_resultTable">
+	        <thead>
+	            <tr class="bv_experimentNamesHeader gidNamesHeader">
+	            </tr>
+	            <tr class="bv_columnNamesHeader">
+	            </tr>
+	        </thead>
+	        <tbody></tbody>
+	    </table>
+    </div>
+    <div class="span5 offset3 bv_noResultsFound">
+	    <div class="well well-small noResultsWell">
+	        <h5>No results found for this query.</h5>
+	    </div>
+    </div>
 </script>
 
 <script type="text/template" id="GeneIDQuerySearchView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_inputView"></div>
     <div class="bv_resultsView"></div>
-    <div class="navbar navbar-fixed-bottom">
-        <div class="well well-small" style="margin-bottom:0px!important;">
-            <button class="btn" style="margin-top:0px!important;"><i class="icon-question-sign"></i></button>
-            <button class="btn pull-right" style="margin-top:0px!important;"><i class="icon-wrench"></i></button>
-        </div>
-    </div>
 </script>
 
 <script type="text/template" id="GeneIDQueryAppView" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar navbar-static-top navbar-inverse" style="margin-top:-60px!important;">
+    <div class="navbar navbar-static-top navbar-inverse bv_gidMainNavbar">
         <div class="navbar-inner">
             <a class="brand">Chanda ACAS</a>
             <ul class="nav">
