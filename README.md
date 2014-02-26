@@ -1,7 +1,78 @@
 # ACAS Project
+
+Scroll down for previous deploy instructions
+
+## Deploying a development environment
+
+### Remove old links
+
+    if [ -h "acas" ]; then
+	    rm acas
+    fi
+    if [ -h "blueimp" ]; then
+	    rm blueimp
+    fi
+    if [ ! -d "log" ]; then
+	    mkdir log
+    fi
+
+### Create a super-acas folder 
+Often node_apps at customer locations
+
+    mkdir super-acas
+    cd super-acas
+
+### Create a folder for this deploy 
+Others deploys can be created next to this one. The name may be acas-host3 or acas-local
+
+    date=$(date +%Y-%m-%d-%H-%M-%S)
+    mkdir acas-$date
+    ln -s acas-$date acas
+    cd acas-$date
+
+    git clone git@bitbucket.org:mcneilco/acas.git .
+
+### Get custom folder
+
+    git clone git@bitbucket.org:mcneilco/acas_custom_host3 acas_custom
+    
+or
+
+    svn checkout http://smeyer@customer_repo/............. acas_custom
+
+### Install dependencies
+
+    npm install
+    cd conf
+    node PrepareConfigFiles.js 
+    node PrepareModuleIncludes.js
+    Rscript install.R master mcneilco
+
+And... if it exists
+
+    Rscript config.R smeyer
+
+Set environment variables (do in .bash_profile later)
+
+    export ACAS_HOME=$(pwd)/..
+    export R_LIBS=$ACAS_HOME/r_libs
+    cd ..
+   
+### Test
+
+    R -e "library(racas);query('select * from api_protocol')"
+
+Point browser at these
+    
+    http://host3.labsynch.com:3000/specRunner
+    http://host3.labsynch.com:3000/liveServiceSpecRunner
+
+### Start
+
+    node app.js
+    node serverOnlyModules/blueimp-file-upload-node/server.js
  
- 
-## Deploying a customer branch
+## Deploying a customer branch (to be deprecated)
 
 ### Stopping a previous deploy
 
