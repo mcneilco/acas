@@ -57,7 +57,7 @@ then
 	stty echo
 	printf '\n'
 fi
-if [ "$CUSTOM_REPO" = "" ]
+if [ "$CUSTOM_REPO" != "" ]
 then
     if [ "$CUSTOM_BRANCH" = "" ]
 	then
