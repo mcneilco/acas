@@ -122,7 +122,7 @@
     for (fname in routeFiles) {
       path = routeFiles[fname];
       includeStr = '\trouteSet_' + routeNum + ' = require("./routes/' + fname + '");\n';
-      includeStr += '\trouteSet_' + routeNum + '.setupRoutes(app);\n';
+      includeStr += '\trouteSet_' + routeNum + '.setupRoutes(app, loginRoutes);\n';
       routeLines += includeStr;
       routeNum++;
     }

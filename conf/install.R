@@ -50,12 +50,12 @@ options(repos = "http://cran.rstudio.com/")
 
 
 #Package Installs
-if(!require('devtools', lib.loc = rLibs)){
+if(!'devtools' %in% row.names(installed.packages(lib.loc = rLibs))){
   install.packages('devtools', lib = rLibs, repos = repos)
 }
 library(devtools, lib.loc = rLibs)
 #Need to load methods because of a bug in dev tools can remove when bug is fixed
-if(!require('methods', lib.loc = rLibs)){
+if(!'methods' %in% row.names(installed.packages(lib.loc = rLibs))){
   install.packages('methods', lib = rLibs, repos = repos)
 }
 library(methods, lib.loc = rLibs)
@@ -85,15 +85,16 @@ options(racasInstallDep = TRUE)
 library(racas, lib.loc = rLibs)
 
 #After the install include the bitbucket repoNumber
-if(!require('RCurl')){
+if(!'RCurl' %in% row.names(installed.packages(lib.loc = rLibs))){
   install.packages('RCurl', repos = repos)
 }
 require(RCurl)
 branchCommitsJSON <- getURL(paste0("https://bitbucket.org/api/2.0/repositories/mcneilco/racas/commits?include=",ref),.opts=list(userpwd=paste0(auth_user,":",password)))
 
-if(!require('rjson')){
-  install.packages('RCurl', repos = repos)
+if(!'rjson' %in% row.names(installed.packages(lib.loc = rLibs))){
+  install.packages('rjson', repos = repos)
 }
+
 require(rjson)
 branchCommits <- fromJSON(branchCommitsJSON)
 hash <- paste0("hash: ",branchCommits$values[[1]]$hash)

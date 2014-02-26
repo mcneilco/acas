@@ -26,11 +26,21 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 
 	configDir = "./"
 
-	properties.parse configDir+"config.properties", options, (error, conf) ->
+	configSuffix=process.argv[2]
+	if typeof configSuffix == "undefined"
+		configFile = "config.properties"
+		configFileAdvanced = "config_advanced.properties"
+	else
+		configFile = "config-"+configSuffix+".properties"
+		configFileAdvanced = "config_advanced-"+configSuffix+".properties"
+
+	console.log "Using "+configFile
+	console.log "Using "+configFileAdvanced
+	properties.parse configDir+configFile, options, (error, conf) ->
 		if error?
 			console.log "Problem parsing config.properties: "+error
 		else
-			properties.parse configDir+"config_advanced.properties", options, (error, confAdv) ->
+			properties.parse configDir+configFileAdvanced, options, (error, confAdv) ->
 				if errors?
 					console.log "Problem parsing config_advanced.properties: "+error
 				else

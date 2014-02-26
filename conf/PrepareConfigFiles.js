@@ -22,7 +22,7 @@
   sysEnv = process.env;
 
   csUtilities.getConfServiceVars(sysEnv, function(confVars) {
-    var configDir, options, substitutions;
+    var configDir, configFile, configFileAdvanced, configSuffix, options, substitutions;
     substitutions = {
       env: sysEnv,
       conf: confVars
@@ -36,11 +36,21 @@
       vars: substitutions
     };
     configDir = "./";
-    return properties.parse(configDir + "config.properties", options, function(error, conf) {
+    configSuffix = process.argv[2];
+    if (typeof configSuffix === "undefined") {
+      configFile = "config.properties";
+      configFileAdvanced = "config_advanced.properties";
+    } else {
+      configFile = "config-" + configSuffix + ".properties";
+      configFileAdvanced = "config_advanced-" + configSuffix + ".properties";
+    }
+    console.log("Using " + configFile);
+    console.log("Using " + configFileAdvanced);
+    return properties.parse(configDir + configFile, options, function(error, conf) {
       if (error != null) {
         return console.log("Problem parsing config.properties: " + error);
       } else {
-        return properties.parse(configDir + "config_advanced.properties", options, function(error, confAdv) {
+        return properties.parse(configDir + configFileAdvanced, options, function(error, confAdv) {
           var allConf;
           if (typeof errors !== "undefined" && errors !== null) {
             return console.log("Problem parsing config_advanced.properties: " + error);

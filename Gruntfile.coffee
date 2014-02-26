@@ -234,6 +234,25 @@ module.exports = (grunt) ->
 			custom_moduleRoutes:
 				files: "acas_custom/modules/**/src/server/routes/*.coffee"
 				tasks: "coffee:custom_moduleRoutes"
+			copy_custom_routes:
+				files: "acas_custom/routes/**"
+				tasks: "copy:custom_routes"
+			copy_custom_conf:
+				files: "acas_custom/conf/**"
+				tasks: "copy:custom_conf"
+			copy_custom_public_conf:
+				files: "acas_custom/public_conf/**"
+				tasks: "copy:custom_public_conf"
+			copy_custom_javascripts:
+				files: "acas_custom/javascripts/**"
+				tasks: "copy:custom_javascripts"
+			copy_custom_views:
+				files: "acas_custom/views/**"
+				tasks: "copy:custom_views"
+			copy_custom_modules:
+				files: "acas_custom/modules/**"
+				tasks: "copy:custom_modules"
+
 
 
 	grunt.loadNpmTasks "grunt-contrib-coffee"
