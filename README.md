@@ -1,10 +1,10 @@
 # ACAS Project
-
+  
 Scroll down for previous deploy instructions
+asdfa
+## Deploying in a development environment
 
-## Deploying a development environment
-
-### Remove old links
+### If in existing directory - Remove old links
 
     if [ -h "acas" ]; then
 	    rm acas
@@ -31,6 +31,8 @@ Others deploys can be created next to this one. The name may be acas-host3 or ac
     cd acas-$date
 
     git clone git@bitbucket.org:mcneilco/acas.git .
+    
+    ln -s serverOnlyModules/blueimp-file-upload-node/ ../blueimp
 
 ### Get custom folder
 
@@ -43,6 +45,8 @@ or
 ### Install dependencies
 
     npm install
+    grunt coffee
+    grunt copy
     cd conf
     node PrepareConfigFiles.js 
     node PrepareModuleIncludes.js
