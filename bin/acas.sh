@@ -17,6 +17,7 @@ export client_service_rapache_port=$client_service_rapache_port
 export client_host=$client_host
 export client_port=$client_port
 export server_log_path=$server_log_path
+export server_log_suffix=$server_log_suffix
 export server_log_level=$(echo $server_log_level | awk '{print tolower($0)}')
 
 unamestr=$(uname)
@@ -37,15 +38,20 @@ start)
 		fi
 
 		dirname=`basename $dir`
-		logname=$server_log_path/${dirname}.log
-		logout=$server_log_path/${dirname}_stdout.log
-		logerr=$server_log_path/${dirname}_stderr.log
+		logname=$server_log_path/${dirname}-${server_log_suffix}.log
+		logout=$server_log_path/${dirname}-${server_log_suffix}_stdout.log
+		logerr=$server_log_path/${dirname}-${server_log_suffix}_stderr.log
 
-        	echo "starting $dirname/$app"
+        echo "starting $dirname/$app"
+		startCommand="cd $dir && forever start --append -l $logname -o $logout -e $logerr $app"
+		if [ $(whoami) == $ACAS_USER ]; then
+			eval $startCommand
+		else
+			command="su - $ACAS_USER $suAdd -c \"($startCommand)\""
+			eval $command
+		fi
 
-        	su - $ACAS_USER $suAdd -c "(cd $dir && forever start --append -l $logname -o $logout -e $logerr $app)"
-
-        	echo "$dirname/$app started"
+        echo "$dirname/$app started"
         done
         
 		echo "starting apache instance $ACAS_HOME/conf/$apacheConfFile"
@@ -66,7 +72,8 @@ stop)
 
         	echo "stopping $dirname/$app"
 
-        	su - $ACAS_USER $suAdd -c "(cd $dir && forever stop $app)"
+        	#su - $ACAS_USER $suAdd -c "(cd $dir && forever stop $app)"
+		cd $dir && forever stop $app
         	#su - $ACAS_USER -c "killall node"
 
         	echo "$dirname/$app stopped"
