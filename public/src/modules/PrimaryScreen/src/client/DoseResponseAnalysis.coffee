@@ -80,6 +80,27 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		super()
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate($.parseJSON(JSON.stringify(@model)))
+		@$('.bv_inactiveThreshold').slider
+			value: @model.get('inactiveThreshold')
+			min: 0
+			max: 100
+		@$('.bv_inactiveThreshold').on 'slide', @handleInactiveThresholdChanged
+		@updateThresholdDisplay()
+		@setThresholdEnabledState()
+
+		@
+
+	updateThresholdDisplay: ->
+		@$('.bv_inactiveThresholdDisplay').html @model.get('inactiveThreshold')
+
+	setThresholdEnabledState: ->
+		if @model.get 'inverseAgonistMode'
+			console.log "setting disabled state"
+			@$('.bv_inactiveThreshold').slider('disable')
+		else
+			console.log "setting enabled state"
+			@$('.bv_inactiveThreshold').slider('enable')
+
 
 	updateModel: =>
 		@model.get('max').set
@@ -89,8 +110,15 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@model.get('slope').set
 			value: parseFloat(@getTrimmedInput('.bv_slope_value'))
 
+	handleInactiveThresholdChanged: (event, ui) =>
+		@model.set 'inactiveThreshold': ui.value
+		@updateThresholdDisplay()
+		@attributeChanged
+
 	handleInverseAgonistModeChanged: =>
-		@model.set inverseAgonistMode: @$('.bv_inverseAgonist').is(":checked")
+		console.log @$('.bv_inverseAgonistMode').is(":checked")
+		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked")
+		@setThresholdEnabledState()
 		@attributeChanged()
 
 	handleMaxLimitTypeChanged: =>
@@ -104,7 +132,6 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 	handleSlopeLimitTypeChanged: =>
 		@model.get('slope').set limitType: @$("input[name='bv_slope_limitType']:checked").val()
 		@attributeChanged()
-
 
 class window.DoseResponseAnalysisController extends Backbone.View
 	template: _.template($("#DoseResponseAnalysisView").html())
@@ -179,15 +206,16 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@parameterController.render()
 
 	paramsValid: =>
-		console.log "got valid"
 		@$('.bv_fitModelButton').removeAttr('disabled')
 
 	paramsInvalid: =>
-		console.log "got invalid"
 		@$('.bv_fitModelButton').attr('disabled','disabled')
 
 	launchFit: =>
-		console.log "got to launch fit"
+		if @analyzedPreviously
+			if !confirm("Re-fitting the data will delete the previously fitted results")
+				return
+
 		fitData =
 			inputParameters: JSON.stringify @parameterController.model
 			user: window.AppLaunchParams.loginUserName
@@ -201,7 +229,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			data: fitData
 			success: @fitReturnSuccess
 			error: (err) =>
-				console.log 'got ajax error'
+				alert 'got ajax error'
 				@serviceReturn = null
 			dataType: 'json'
 
@@ -213,8 +241,3 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_modelFitStatus').html(json.results.status)
 		@$('.bv_resultsContainer').show()
 
-
-#TODO code to actually launch fit and show results
-			#TODO setup alert to warn about re-fitting wiping out old results
-#TODO make the threshold slider work
-#TODO add notification component

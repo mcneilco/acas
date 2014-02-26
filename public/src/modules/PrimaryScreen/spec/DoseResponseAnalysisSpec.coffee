@@ -116,12 +116,17 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.$(".bv_min_value").val()).toEqual ""
 				it 'should set the slope_value to the number', ->
 					expect(@drapc.$(".bv_slope_value").val()).toEqual "1.5"
+				it 'should show the inactive threshold', ->
+					expect(@drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual "20"
 			describe "model update", ->
 				it 'should update the inverse agonist mode', ->
 					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
 					@drapc.$('.bv_inverseAgonistMode').click()
 					expect(@drapc.model.get('inverseAgonistMode')).toBeFalsy()
+					@drapc.$('.bv_inverseAgonistMode').click()
+					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
 				it 'should update the max_limitType radio to none', ->
+					@drapc.$(".bv_max_limitType_pin").click()
 					@drapc.$(".bv_max_limitType_none").click()
 					expect(@drapc.model.get('max').get('limitType')).toEqual 'none'
 				it 'should update the max_limitType radio to pin', ->
@@ -131,7 +136,7 @@ describe "Dose Response Analysis Module Testing", ->
 					@drapc.$(".bv_max_limitType_limit").click()
 					expect(@drapc.model.get('max').get('limitType')).toEqual 'limit'
 				it 'should update the min_limitType radio to none', ->
-					@drapc.model.get('min').set limitType: 'pin'
+					@drapc.$(".bv_min_limitType_pin").click()
 					@drapc.$(".bv_min_limitType_none").click()
 					expect(@drapc.model.get('min').get('limitType')).toEqual 'none'
 				it 'should update the min_limitType radio to pin', ->
@@ -147,7 +152,7 @@ describe "Dose Response Analysis Module Testing", ->
 					@drapc.$(".bv_slope_limitType_pin").click()
 					expect(@drapc.model.get('slope').get('limitType')).toEqual 'pin'
 				it 'should update the slope_limitType radio to limit', ->
-					@drapc.model.get('slope').set limitType: 'pin'
+					@drapc.$(".bv_slope_limitType_none").click()
 					@drapc.$(".bv_slope_limitType_limit").click()
 					expect(@drapc.model.get('slope').get('limitType')).toEqual 'limit'
 				it 'should update the max_value', ->
@@ -162,14 +167,28 @@ describe "Dose Response Analysis Module Testing", ->
 					@drapc.$('.bv_slope_value').val(" 16.5 ")
 					@drapc.$('.bv_slope_value').change()
 					expect(@drapc.model.get('slope').get('value')).toEqual 16.5
-				it 'should update the inactiveThreshold', ->
-					@drapc.$('.bv_inactiveTreshold').val(" 30 ")
-					@drapc.$('.bv_inactiveTreshold').change()
-					expect(@drapc.model.get('inactiveThreshold').get('value')).toEqual 30
-				describe "behavior and validation", ->
-#					it "should disable the inactive threshold if inverse agonist mode is not selected", ->
-#						@drapc.$('.bv_inverseAgonistMode').click()
-#						expect(@drapc.$('.bv_inactiveTreshold').attr("disabled")).toBeUndefined()
+#				it 'should update the inactiveThreshold', ->
+#					#TODO figure out how to test the slider
+#					@drapc.$('.bv_inactiveThreshold').slider( "option", "values", [ 30 ] )
+#					expect(@drapc.model.get('inactiveThreshold')).toEqual 30
+#					expect(@drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual "30"
+			describe "behavior and validation", ->
+				#TODO figure out how to test if slider is in disabled or enabled stated
+#				it "should enable the inactive threshold if inverse agonist mode is not selected", ->
+#					@drapc.$('.bv_inverseAgonistMode').click()
+#					expect(@drapc.model.get('inverseAgonistMode')).toBeFalsy()
+#					expect(@drapc.$('.bv_inactiveTreshold').attr("disabled")).toBeUndefined()
+#				it "should disable the inactive threshold if inverse agonist mode is selected", ->
+#					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
+#					expect(@drapc.$('.bv_inactiveTreshold').attr("disabled")).toEqual "disabled"
+#				it "should disable the inactive threshold if inverse agonist mode is selected after deselection", ->
+#					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
+#					@drapc.$('.bv_inverseAgonistMode').click()
+#					expect(@drapc.model.get('inverseAgonistMode')).toBeFalsy()
+#					@drapc.$('.bv_inverseAgonistMode').click()
+#					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
+#					expect(@drapc.$('.bv_inactiveTreshold').attr("disabled")).toEqual "disabled"
+#					@drapc.$('.bv_inverseAgonistMode').click()
 			describe "validation testing", ->
 				describe "error notification", ->
 					it "should show error if max_limitType is set to pin and max_value is not set", ->
@@ -274,5 +293,6 @@ describe "Dose Response Analysis Module Testing", ->
 				it "should show fit button as re-analyze when fit status is not 'not started'", ->
 					expect(@drac.$('.bv_fitModelButton').html()).toEqual "Re-Fit"
 
-			#TODO show a button to open curve curator when fit is done
-			# (either return from fit with no error, or reload with model fit status = "complete"
+#TODO show a button to open curve curator when fit is done
+	# (either return from fit with no error, or reload with model fit status = "complete"
+#TODO add notification component

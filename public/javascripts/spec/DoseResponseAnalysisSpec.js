@@ -180,17 +180,23 @@
           it('should set the min_value to the number', function() {
             return expect(this.drapc.$(".bv_min_value").val()).toEqual("");
           });
-          return it('should set the slope_value to the number', function() {
+          it('should set the slope_value to the number', function() {
             return expect(this.drapc.$(".bv_slope_value").val()).toEqual("1.5");
+          });
+          return it('should show the inactive threshold', function() {
+            return expect(this.drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual("20");
           });
         });
         describe("model update", function() {
           it('should update the inverse agonist mode', function() {
             expect(this.drapc.model.get('inverseAgonistMode')).toBeTruthy();
             this.drapc.$('.bv_inverseAgonistMode').click();
-            return expect(this.drapc.model.get('inverseAgonistMode')).toBeFalsy();
+            expect(this.drapc.model.get('inverseAgonistMode')).toBeFalsy();
+            this.drapc.$('.bv_inverseAgonistMode').click();
+            return expect(this.drapc.model.get('inverseAgonistMode')).toBeTruthy();
           });
           it('should update the max_limitType radio to none', function() {
+            this.drapc.$(".bv_max_limitType_pin").click();
             this.drapc.$(".bv_max_limitType_none").click();
             return expect(this.drapc.model.get('max').get('limitType')).toEqual('none');
           });
@@ -203,9 +209,7 @@
             return expect(this.drapc.model.get('max').get('limitType')).toEqual('limit');
           });
           it('should update the min_limitType radio to none', function() {
-            this.drapc.model.get('min').set({
-              limitType: 'pin'
-            });
+            this.drapc.$(".bv_min_limitType_pin").click();
             this.drapc.$(".bv_min_limitType_none").click();
             return expect(this.drapc.model.get('min').get('limitType')).toEqual('none');
           });
@@ -226,9 +230,7 @@
             return expect(this.drapc.model.get('slope').get('limitType')).toEqual('pin');
           });
           it('should update the slope_limitType radio to limit', function() {
-            this.drapc.model.get('slope').set({
-              limitType: 'pin'
-            });
+            this.drapc.$(".bv_slope_limitType_none").click();
             this.drapc.$(".bv_slope_limitType_limit").click();
             return expect(this.drapc.model.get('slope').get('limitType')).toEqual('limit');
           });
@@ -242,18 +244,13 @@
             this.drapc.$('.bv_min_value').change();
             return expect(this.drapc.model.get('min').get('value')).toEqual(22.3);
           });
-          it('should update the slope_value', function() {
+          return it('should update the slope_value', function() {
             this.drapc.$('.bv_slope_value').val(" 16.5 ");
             this.drapc.$('.bv_slope_value').change();
             return expect(this.drapc.model.get('slope').get('value')).toEqual(16.5);
           });
-          it('should update the inactiveThreshold', function() {
-            this.drapc.$('.bv_inactiveTreshold').val(" 30 ");
-            this.drapc.$('.bv_inactiveTreshold').change();
-            return expect(this.drapc.model.get('inactiveThreshold').get('value')).toEqual(30);
-          });
-          return describe("behavior and validation", function() {});
         });
+        describe("behavior and validation", function() {});
         return describe("validation testing", function() {
           return describe("error notification", function() {
             it("should show error if max_limitType is set to pin and max_value is not set", function() {
