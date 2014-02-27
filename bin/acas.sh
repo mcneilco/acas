@@ -11,9 +11,14 @@ source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $
 
 #Export these variables so that the apache config can pick them up
 export ACAS_USER=${server_run_user}
+if [ $ACAS_USER="" ]; then
+    export ACAS_USER=$(whoami)
+fi
+
 export ACAS_GROUP=$(id -g -n $ACAS_USER)
 export ACAS_HOME=$ACAS_HOME
 export client_service_rapache_port=$client_service_rapache_port
+export client_service_rapache_path=$client_service_rapache_path
 export client_host=$client_host
 export client_port=$client_port
 export server_log_path=$server_log_path
