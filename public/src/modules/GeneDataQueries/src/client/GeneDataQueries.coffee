@@ -18,8 +18,7 @@ class window.GeneIDQueryInputController extends Backbone.View
 	events:
 		"click .bv_search": "handleSearchClicked"
 		"change .bv_gidListString": "handleInputFieldChanged"
-		"keypress .bv_gidListString": "handleInputFieldChanged"
-#		"keypress .bv_gidListString": "handleKeyInInputField"
+		"keydown .bv_gidListString": "handleKeyInInputField"
 
 	render: =>
 		$(@el).empty()
@@ -34,18 +33,18 @@ class window.GeneIDQueryInputController extends Backbone.View
 		@collection.reset()
 		@collection.addGIDsFromString @$('.bv_gidListString').val()
 
-	handleInputFieldChanged: =>
+	handleInputFieldChanged: (e) =>
+		console.log "in handleInputFieldChanged"
+		console.log e
 		@updateGIDsFromField()
 		if @collection.length == 0
 			@$('.bv_search').attr('disabled','disabled')
 		else
 			@$('.bv_search').removeAttr('disabled')
 
-#	handleKeyInInputField: (e) =>
-#		console.log "got a key press"
-#		if e.keyCode == 13
-#			console.log "got enter press"
-#			@handleSearchClicked()
+	handleKeyInInputField: (e) =>
+		if e.keyCode == 13
+			@handleSearchClicked()
 
 	handleSearchClicked: =>
 		@updateGIDsFromField()

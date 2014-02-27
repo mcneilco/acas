@@ -52,6 +52,7 @@
 
     function GeneIDQueryInputController() {
       this.handleSearchClicked = __bind(this.handleSearchClicked, this);
+      this.handleKeyInInputField = __bind(this.handleKeyInInputField, this);
       this.handleInputFieldChanged = __bind(this.handleInputFieldChanged, this);
       this.render = __bind(this.render, this);
       return GeneIDQueryInputController.__super__.constructor.apply(this, arguments);
@@ -62,7 +63,7 @@
     GeneIDQueryInputController.prototype.events = {
       "click .bv_search": "handleSearchClicked",
       "change .bv_gidListString": "handleInputFieldChanged",
-      "keypress .bv_gidListString": "handleInputFieldChanged"
+      "keydown .bv_gidListString": "handleKeyInInputField"
     };
 
     GeneIDQueryInputController.prototype.render = function() {
@@ -78,12 +79,20 @@
       return this.collection.addGIDsFromString(this.$('.bv_gidListString').val());
     };
 
-    GeneIDQueryInputController.prototype.handleInputFieldChanged = function() {
+    GeneIDQueryInputController.prototype.handleInputFieldChanged = function(e) {
+      console.log("in handleInputFieldChanged");
+      console.log(e);
       this.updateGIDsFromField();
       if (this.collection.length === 0) {
         return this.$('.bv_search').attr('disabled', 'disabled');
       } else {
         return this.$('.bv_search').removeAttr('disabled');
+      }
+    };
+
+    GeneIDQueryInputController.prototype.handleKeyInInputField = function(e) {
+      if (e.keyCode === 13) {
+        return this.handleSearchClicked();
       }
     };
 
