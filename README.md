@@ -1,7 +1,7 @@
 # ACAS Project
   
 Scroll down for previous deploy instructions
-asdfa
+
 ## Deploying in a development environment
 
 ### If in existing directory - Remove old links
