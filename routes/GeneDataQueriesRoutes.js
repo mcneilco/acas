@@ -10,18 +10,19 @@
     }
   };
 
-  exports.getExperimentDataForGenes = function(request, response) {
-    var geneDataQueriesTestJSON, requestError, responseObj, results, serverUtilityFunctions;
-    request.connection.setTimeout(600000);
+  exports.getExperimentDataForGenes = function(req, resp) {
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions,
+      _this = this;
+    req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-    response.writeHead(200, {
+    resp.writeHead(200, {
       'Content-Type': 'application/json'
     });
     if (global.specRunnerTestmode) {
       console.log("test mode: " + global.specRunnerTestmode);
       geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
-      requestError = request.body.maxRowsToReturn < 0 ? true : false;
-      if (request.body.geneIDs[0].gid === "fiona") {
+      requestError = req.body.maxRowsToReturn < 0 ? true : false;
+      if (req.body.geneIDs[0].gid === "fiona") {
         results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound;
       } else {
         results = geneDataQueriesTestJSON.geneIDQueryResults;
@@ -43,34 +44,27 @@
           message: "start offset outside allowed range, please speake to an administrator"
         });
       }
-      return response.end(JSON.stringify(responseObj));
+      return resp.end(JSON.stringify(responseObj));
     } else {
-      console.log("test mode: " + global.specRunnerTestmode);
-      geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
-      requestError = request.body.maxRowsToReturn < 0 ? true : false;
-      if (request.body.geneIDs[0].gid === "fiona") {
-        results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound;
-      } else {
-        results = geneDataQueriesTestJSON.geneIDQueryResults;
-      }
-      responseObj = {
-        results: results,
-        hasError: requestError,
-        hasWarning: true,
-        errorMessages: [
-          {
-            errorLevel: "warning",
-            message: "some genes not found"
-          }
-        ]
-      };
-      if (requestError) {
-        responseObj.errorMessages.push({
-          errorLevel: "error",
-          message: "start offset outside allowed range, please speake to an administrator"
-        });
-      }
-      return response.end(JSON.stringify(responseObj));
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "getGeneData/";
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: req.body,
+        json: true
+      }, function(error, response, json) {
+        console.log(response.statusCode);
+        if (!error) {
+          console.log(JSON.stringify(json));
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to query gene data');
+          console.log(error);
+          return console.log(resp);
+        }
+      });
     }
   };
 

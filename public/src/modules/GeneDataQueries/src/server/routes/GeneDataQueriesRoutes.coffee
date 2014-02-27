@@ -7,16 +7,16 @@ exports.setupRoutes = (app, loginRoutes) ->
 	else
 		app.get '/geneIDQuery', exports.geneIDQueryIndex
 
-exports.getExperimentDataForGenes = (request, response)  ->
-	request.connection.setTimeout 600000
+exports.getExperimentDataForGenes = (req, resp)  ->
+	req.connection.setTimeout 600000
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
-	response.writeHead(200, {'Content-Type': 'application/json'});
+	resp.writeHead(200, {'Content-Type': 'application/json'});
 	if global.specRunnerTestmode
 		console.log "test mode: "+global.specRunnerTestmode
 		geneDataQueriesTestJSON = require '../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js'
-		requestError = if request.body.maxRowsToReturn < 0 then true else false
-		if request.body.geneIDs[0].gid == "fiona"
+		requestError = if req.body.maxRowsToReturn < 0 then true else false
+		if req.body.geneIDs[0].gid == "fiona"
 			results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound
 		else
 			results = geneDataQueriesTestJSON.geneIDQueryResults
@@ -28,25 +28,26 @@ exports.getExperimentDataForGenes = (request, response)  ->
 				{errorLevel: "warning", message: "some genes not found"},
 			]
 		if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "start offset outside allowed range, please speake to an administrator"}
-		response.end JSON.stringify responseObj
+		resp.end JSON.stringify responseObj
 	else
-		#TODO replace with call to RApache
-		console.log "test mode: "+global.specRunnerTestmode
-		geneDataQueriesTestJSON = require '../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js'
-		requestError = if request.body.maxRowsToReturn < 0 then true else false
-		if request.body.geneIDs[0].gid == "fiona"
-			results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound
-		else
-			results = geneDataQueriesTestJSON.geneIDQueryResults
-		responseObj =
-			results: results
-			hasError: requestError
-			hasWarning: true
-			errorMessages: [
-				{errorLevel: "warning", message: "some genes not found"},
-			]
-		if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "start offset outside allowed range, please speake to an administrator"}
-		response.end JSON.stringify responseObj
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.rapache.fullpath+"getGeneData/"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			if !error
+				console.log JSON.stringify json
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to query gene data'
+				console.log error
+				console.log resp
+		)
 
 
 
