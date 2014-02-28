@@ -6,7 +6,8 @@
 
 <script type="text/template" id="DoseResponseAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:450px;background-color:#ffffff;">
+	<div class="span12">
+    <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:450px;height:370px;background-color:#ffffff;">
         <form class="form-inline" style="margin-bottom:10px;">
             <strong style="font-size:18px;">Global Fit Criteria</strong>
             <label class="checkbox bv_group_inverseAgonistMode" style="margin-left:135px;">
@@ -28,9 +29,8 @@
                     <input type="radio" name="bv_max_limitType" class="bv_max_limitType_limit" value="limit" style="margin-right:5px;" <%if (max.limitType=="limit"){%>checked="checked"<%}%>  />Limit
                 </label>
             </form>
-            <div class="bv_group_max_value">
-                <label>need a label</label>
-                <input type="text" class=" bv_max_value" style="width:415px;" value="<%= max.value%>" />
+            <div class="control-group bv_group_max_value">
+                <input type="text" class=" bv_max_value" style="width:415px;" value="<%= max.value%>" <% if (max.limitType=="none"){ %> disabled="disabled"<% }%> />
             </div>
 
 
@@ -46,7 +46,9 @@
                     <input type="radio" name="bv_min_limitType" class="bv_min_limitType_limit" value="limit" style="margin-right:5px;" <%if (min.limitType=="limit"){%>checked="checked"<%}%>  />Limit
                 </label>
             </form>
-            <input type="text" class="bv_group_min_value bv_min_value" style="width:415px;" value="<%= min.value%>" />
+	        <div class="control-group bv_group_min_value">
+	            <input type="text" class="bv_group_min_value bv_min_value" style="width:415px;" value="<%= min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
+		    </div>
 
             <form class="form-inline bv_group_slope" style="margin-bottom:10px;">
                 <strong>Slope:</strong>
@@ -60,38 +62,43 @@
                     <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_limit" value="limit" style="margin-right:5px;" <%if (slope.limitType=="limit"){%>checked="checked"<%}%>  />Limit
                 </label>
             </form>
-            <input type="text" class="bv_group_slope_value bv_slope_value" style="width:415px;" value="<%= slope.value%>" />
+	        <div class="control-group bv_group_slope_value">
+		        <input type="text" class="bv_group_slope_value bv_slope_value" style="width:415px;" value="<%= slope.value%>" <% if (slope.limitType=="none"){ %> disabled="disabled"<% }%> />
+		    </div>
 
         </div>
 
         <h5>Inactive Threshold</h5>
         <div class="bv_group_inactiveThreshold">
 
-	        <div class="bv_inactiveThreshold"></div>
-            <div class="bv_inactiveThresholdDisplay"></div>
+	        <div class="bv_inactiveThreshold pull-left" style="width:380px;margin-top:8px;margin-left:10px;"></div>
+	        <div class="bv_inactiveThresholdDisplay well well-small pull-right" style="margin-bottom:5px;padding-top:5px;padding-right:7px;padding-bottom:5px;padding-left:7px;width:25px;"></div>
 
         </div>
 
     </div>
+	</div>
 </script>
 
 <script type="text/template" id="DoseResponseAnalysisView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="bv_group_modelFitStatus span6">
-        <strong>Fit Status:</strong>
-        <p class="bv_modelFitStatus span3" style="margin-left:0;margin-top:5px;"> Curves not fit</p>
-    </div>
     <div class="bv_fitOptionWrapper">
         <div class="bv_analysisParameterForm"></div>
     </div>
 
+    <div class="bv_group_modelFitStatus span8" style="margin-left:20px;">
+	    <div class="span9" style="margin-left:0;margin-top:5px;"><strong>Fit Status:</strong>
+		    <span class="bv_modelFitStatus"> Curves not fit</span>
+	    </div>
+	    <button class="btn btn-default pull-right bv_fitModelButton" type="button" style="margin-right:47px;">Fit Data</button>
+    </div>
 
     <div class="span6 bv_group_resultsContainer" style="margin-left:10px;margin-top:5px;width:470px;">
         <div class="well well-small bv_resultsContainer" style="margin-bottom:10px;">
             <div class="bv_modelFitResultsHTML"></div>
         </div>
     </div>
-    <button class="btn btn-default pull-right bv_fitModelButton" type="button">Fit Data</button>
     <div class="bv_analyzeExperimentToFit span10">To fit data, save and analyze the experiment</div>
+
 
 </script>

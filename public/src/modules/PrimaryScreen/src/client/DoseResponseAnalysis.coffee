@@ -95,10 +95,8 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 
 	setThresholdEnabledState: ->
 		if @model.get 'inverseAgonistMode'
-			console.log "setting disabled state"
 			@$('.bv_inactiveThreshold').slider('disable')
 		else
-			console.log "setting enabled state"
 			@$('.bv_inactiveThreshold').slider('enable')
 
 
@@ -116,21 +114,35 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@attributeChanged
 
 	handleInverseAgonistModeChanged: =>
-		console.log @$('.bv_inverseAgonistMode').is(":checked")
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked")
 		@setThresholdEnabledState()
 		@attributeChanged()
 
 	handleMaxLimitTypeChanged: =>
-		@model.get('max').set limitType: @$("input[name='bv_max_limitType']:checked").val()
+		radioValue = @$("input[name='bv_max_limitType']:checked").val()
+		@model.get('max').set limitType: radioValue
+		if radioValue == 'none'
+			@$('.bv_max_value').attr('disabled','disabled')
+		else
+			@$('.bv_max_value').removeAttr('disabled')
 		@attributeChanged()
 
 	handleMinLimitTypeChanged: =>
-		@model.get('min').set limitType: @$("input[name='bv_min_limitType']:checked").val()
+		radioValue = @$("input[name='bv_min_limitType']:checked").val()
+		@model.get('min').set limitType: radioValue
+		if radioValue == 'none'
+			@$('.bv_min_value').attr('disabled','disabled')
+		else
+			@$('.bv_min_value').removeAttr('disabled')
 		@attributeChanged()
 
 	handleSlopeLimitTypeChanged: =>
-		@model.get('slope').set limitType: @$("input[name='bv_slope_limitType']:checked").val()
+		radioValue = @$("input[name='bv_slope_limitType']:checked").val()
+		@model.get('slope').set limitType: radioValue
+		if radioValue == 'none'
+			@$('.bv_slope_value').attr('disabled','disabled')
+		else
+			@$('.bv_slope_value').removeAttr('disabled')
 		@attributeChanged()
 
 class window.DoseResponseAnalysisController extends Backbone.View

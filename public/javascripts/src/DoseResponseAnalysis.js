@@ -158,10 +158,8 @@
 
     DoseResponseAnalysisParametersController.prototype.setThresholdEnabledState = function() {
       if (this.model.get('inverseAgonistMode')) {
-        console.log("setting disabled state");
         return this.$('.bv_inactiveThreshold').slider('disable');
       } else {
-        console.log("setting enabled state");
         return this.$('.bv_inactiveThreshold').slider('enable');
       }
     };
@@ -187,7 +185,6 @@
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInverseAgonistModeChanged = function() {
-      console.log(this.$('.bv_inverseAgonistMode').is(":checked"));
       this.model.set({
         inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
       });
@@ -196,23 +193,44 @@
     };
 
     DoseResponseAnalysisParametersController.prototype.handleMaxLimitTypeChanged = function() {
+      var radioValue;
+      radioValue = this.$("input[name='bv_max_limitType']:checked").val();
       this.model.get('max').set({
-        limitType: this.$("input[name='bv_max_limitType']:checked").val()
+        limitType: radioValue
       });
+      if (radioValue === 'none') {
+        this.$('.bv_max_value').attr('disabled', 'disabled');
+      } else {
+        this.$('.bv_max_value').removeAttr('disabled');
+      }
       return this.attributeChanged();
     };
 
     DoseResponseAnalysisParametersController.prototype.handleMinLimitTypeChanged = function() {
+      var radioValue;
+      radioValue = this.$("input[name='bv_min_limitType']:checked").val();
       this.model.get('min').set({
-        limitType: this.$("input[name='bv_min_limitType']:checked").val()
+        limitType: radioValue
       });
+      if (radioValue === 'none') {
+        this.$('.bv_min_value').attr('disabled', 'disabled');
+      } else {
+        this.$('.bv_min_value').removeAttr('disabled');
+      }
       return this.attributeChanged();
     };
 
     DoseResponseAnalysisParametersController.prototype.handleSlopeLimitTypeChanged = function() {
+      var radioValue;
+      radioValue = this.$("input[name='bv_slope_limitType']:checked").val();
       this.model.get('slope').set({
-        limitType: this.$("input[name='bv_slope_limitType']:checked").val()
+        limitType: radioValue
       });
+      if (radioValue === 'none') {
+        this.$('.bv_slope_value').attr('disabled', 'disabled');
+      } else {
+        this.$('.bv_slope_value').removeAttr('disabled');
+      }
       return this.attributeChanged();
     };
 

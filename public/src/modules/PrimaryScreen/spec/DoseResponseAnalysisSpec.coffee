@@ -112,10 +112,19 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual 'limit'
 				it 'should set the max_value to the number', ->
 					expect(@drapc.$(".bv_max_value").val()).toEqual "100"
+				it 'should start with max_value input enabled', ->
+					expect(@drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual 'pin'
+					expect(@drapc.$(".bv_max_value").attr("disabled")).toBeUndefined()
 				it 'should set the min_value to the number', ->
 					expect(@drapc.$(".bv_min_value").val()).toEqual ""
+				it 'should start with min_value input disabled', ->
+					expect(@drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual 'none'
+					expect(@drapc.$(".bv_min_value").attr("disabled")).toEqual "disabled"
 				it 'should set the slope_value to the number', ->
 					expect(@drapc.$(".bv_slope_value").val()).toEqual "1.5"
+				it 'should start with slope_value input enabled', ->
+					expect(@drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual 'limit'
+					expect(@drapc.$(".bv_slope_value").attr("disabled")).toBeUndefined()
 				it 'should show the inactive threshold', ->
 					expect(@drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual "20"
 			describe "model update", ->
@@ -129,32 +138,82 @@ describe "Dose Response Analysis Module Testing", ->
 					@drapc.$(".bv_max_limitType_pin").click()
 					@drapc.$(".bv_max_limitType_none").click()
 					expect(@drapc.model.get('max').get('limitType')).toEqual 'none'
+				it 'should update the max_value input to disabled when none', ->
+					@drapc.$(".bv_max_limitType_none").click()
+					expect(@drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual 'none'
+					expect(@drapc.$(".bv_max_value").attr("disabled")).toEqual "disabled"
 				it 'should update the max_limitType radio to pin', ->
 					@drapc.$(".bv_max_limitType_pin").click()
 					expect(@drapc.model.get('max').get('limitType')).toEqual 'pin'
+				it 'should update the max_value input to enabled when pin', ->
+					@drapc.$(".bv_max_limitType_none").click()
+					expect(@drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual 'none'
+					@drapc.$(".bv_max_limitType_pin").click()
+					expect(@drapc.model.get('max').get('limitType')).toEqual 'pin'
+					expect(@drapc.$(".bv_max_value").attr("disabled")).toBeUndefined()
 				it 'should update the max_limitType radio to limit', ->
 					@drapc.$(".bv_max_limitType_limit").click()
 					expect(@drapc.model.get('max').get('limitType')).toEqual 'limit'
+				it 'should update the max_value input to enabled when limit', ->
+					@drapc.$(".bv_max_limitType_none").click()
+					expect(@drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual 'none'
+					@drapc.$(".bv_max_limitType_limit").click()
+					expect(@drapc.model.get('max').get('limitType')).toEqual 'limit'
+					expect(@drapc.$(".bv_max_value").attr("disabled")).toBeUndefined()
 				it 'should update the min_limitType radio to none', ->
 					@drapc.$(".bv_min_limitType_pin").click()
 					@drapc.$(".bv_min_limitType_none").click()
 					expect(@drapc.model.get('min').get('limitType')).toEqual 'none'
+				it 'should update the min_value input to disabled when none', ->
+					@drapc.$(".bv_min_limitType_pin").click()
+					expect(@drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual 'pin'
+					@drapc.$(".bv_min_limitType_none").click()
+					expect(@drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual 'none'
+					expect(@drapc.$(".bv_min_value").attr("disabled")).toEqual "disabled"
 				it 'should update the min_limitType radio to pin', ->
 					@drapc.$(".bv_min_limitType_pin").click()
 					expect(@drapc.model.get('min').get('limitType')).toEqual 'pin'
+				it 'should update the min_value input to enabled when pin', ->
+					@drapc.$(".bv_min_limitType_none").click()
+					expect(@drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual 'none'
+					@drapc.$(".bv_min_limitType_pin").click()
+					expect(@drapc.model.get('min').get('limitType')).toEqual 'pin'
+					expect(@drapc.$(".bv_min_value").attr("disabled")).toBeUndefined()
 				it 'should update the min_limitType radio to limit', ->
 					@drapc.$(".bv_min_limitType_limit").click()
 					expect(@drapc.model.get('min').get('limitType')).toEqual 'limit'
+				it 'should update the min_value input to enabled when limit', ->
+					@drapc.$(".bv_min_limitType_none").click()
+					expect(@drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual 'none'
+					@drapc.$(".bv_min_limitType_limit").click()
+					expect(@drapc.model.get('min').get('limitType')).toEqual 'limit'
+					expect(@drapc.$(".bv_min_value").attr("disabled")).toBeUndefined()
 				it 'should update the slope_limitType radio to none', ->
 					@drapc.$(".bv_slope_limitType_none").click()
 					expect(@drapc.model.get('slope').get('limitType')).toEqual 'none'
+				it 'should update the slope_value input to disabled when none', ->
+					@drapc.$(".bv_slope_limitType_none").click()
+					expect(@drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual 'none'
+					expect(@drapc.$(".bv_slope_value").attr("disabled")).toEqual "disabled"
 				it 'should update the slope_limitType radio to pin', ->
 					@drapc.$(".bv_slope_limitType_pin").click()
 					expect(@drapc.model.get('slope').get('limitType')).toEqual 'pin'
+				it 'should update the slope_value input to enabled when pin', ->
+					@drapc.$(".bv_slope_limitType_none").click()
+					expect(@drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual 'none'
+					@drapc.$(".bv_slope_limitType_pin").click()
+					expect(@drapc.model.get('slope').get('limitType')).toEqual 'pin'
+					expect(@drapc.$(".bv_slope_value").attr("disabled")).toBeUndefined()
 				it 'should update the slope_limitType radio to limit', ->
 					@drapc.$(".bv_slope_limitType_none").click()
 					@drapc.$(".bv_slope_limitType_limit").click()
 					expect(@drapc.model.get('slope').get('limitType')).toEqual 'limit'
+				it 'should update the slope_value input to enabled when limit', ->
+					@drapc.$(".bv_slope_limitType_none").click()
+					expect(@drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual 'none'
+					@drapc.$(".bv_slope_limitType_limit").click()
+					expect(@drapc.model.get('slope').get('limitType')).toEqual 'limit'
+					expect(@drapc.$(".bv_slope_value").attr("disabled")).toBeUndefined()
 				it 'should update the max_value', ->
 					@drapc.$('.bv_max_value').val(" 7.5 ")
 					@drapc.$('.bv_max_value').change()

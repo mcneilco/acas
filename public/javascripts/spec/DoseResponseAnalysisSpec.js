@@ -177,11 +177,23 @@
           it('should set the max_value to the number', function() {
             return expect(this.drapc.$(".bv_max_value").val()).toEqual("100");
           });
+          it('should start with max_value input enabled', function() {
+            expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('pin');
+            return expect(this.drapc.$(".bv_max_value").attr("disabled")).toBeUndefined();
+          });
           it('should set the min_value to the number', function() {
             return expect(this.drapc.$(".bv_min_value").val()).toEqual("");
           });
+          it('should start with min_value input disabled', function() {
+            expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('none');
+            return expect(this.drapc.$(".bv_min_value").attr("disabled")).toEqual("disabled");
+          });
           it('should set the slope_value to the number', function() {
             return expect(this.drapc.$(".bv_slope_value").val()).toEqual("1.5");
+          });
+          it('should start with slope_value input enabled', function() {
+            expect(this.drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual('limit');
+            return expect(this.drapc.$(".bv_slope_value").attr("disabled")).toBeUndefined();
           });
           return it('should show the inactive threshold', function() {
             return expect(this.drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual("20");
@@ -200,39 +212,98 @@
             this.drapc.$(".bv_max_limitType_none").click();
             return expect(this.drapc.model.get('max').get('limitType')).toEqual('none');
           });
+          it('should update the max_value input to disabled when none', function() {
+            this.drapc.$(".bv_max_limitType_none").click();
+            expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('none');
+            return expect(this.drapc.$(".bv_max_value").attr("disabled")).toEqual("disabled");
+          });
           it('should update the max_limitType radio to pin', function() {
             this.drapc.$(".bv_max_limitType_pin").click();
             return expect(this.drapc.model.get('max').get('limitType')).toEqual('pin');
           });
+          it('should update the max_value input to enabled when pin', function() {
+            this.drapc.$(".bv_max_limitType_none").click();
+            expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_max_limitType_pin").click();
+            expect(this.drapc.model.get('max').get('limitType')).toEqual('pin');
+            return expect(this.drapc.$(".bv_max_value").attr("disabled")).toBeUndefined();
+          });
           it('should update the max_limitType radio to limit', function() {
             this.drapc.$(".bv_max_limitType_limit").click();
             return expect(this.drapc.model.get('max').get('limitType')).toEqual('limit');
+          });
+          it('should update the max_value input to enabled when limit', function() {
+            this.drapc.$(".bv_max_limitType_none").click();
+            expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_max_limitType_limit").click();
+            expect(this.drapc.model.get('max').get('limitType')).toEqual('limit');
+            return expect(this.drapc.$(".bv_max_value").attr("disabled")).toBeUndefined();
           });
           it('should update the min_limitType radio to none', function() {
             this.drapc.$(".bv_min_limitType_pin").click();
             this.drapc.$(".bv_min_limitType_none").click();
             return expect(this.drapc.model.get('min').get('limitType')).toEqual('none');
           });
+          it('should update the min_value input to disabled when none', function() {
+            this.drapc.$(".bv_min_limitType_pin").click();
+            expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('pin');
+            this.drapc.$(".bv_min_limitType_none").click();
+            expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('none');
+            return expect(this.drapc.$(".bv_min_value").attr("disabled")).toEqual("disabled");
+          });
           it('should update the min_limitType radio to pin', function() {
             this.drapc.$(".bv_min_limitType_pin").click();
             return expect(this.drapc.model.get('min').get('limitType')).toEqual('pin');
+          });
+          it('should update the min_value input to enabled when pin', function() {
+            this.drapc.$(".bv_min_limitType_none").click();
+            expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_min_limitType_pin").click();
+            expect(this.drapc.model.get('min').get('limitType')).toEqual('pin');
+            return expect(this.drapc.$(".bv_min_value").attr("disabled")).toBeUndefined();
           });
           it('should update the min_limitType radio to limit', function() {
             this.drapc.$(".bv_min_limitType_limit").click();
             return expect(this.drapc.model.get('min').get('limitType')).toEqual('limit');
           });
+          it('should update the min_value input to enabled when limit', function() {
+            this.drapc.$(".bv_min_limitType_none").click();
+            expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_min_limitType_limit").click();
+            expect(this.drapc.model.get('min').get('limitType')).toEqual('limit');
+            return expect(this.drapc.$(".bv_min_value").attr("disabled")).toBeUndefined();
+          });
           it('should update the slope_limitType radio to none', function() {
             this.drapc.$(".bv_slope_limitType_none").click();
             return expect(this.drapc.model.get('slope').get('limitType')).toEqual('none');
+          });
+          it('should update the slope_value input to disabled when none', function() {
+            this.drapc.$(".bv_slope_limitType_none").click();
+            expect(this.drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual('none');
+            return expect(this.drapc.$(".bv_slope_value").attr("disabled")).toEqual("disabled");
           });
           it('should update the slope_limitType radio to pin', function() {
             this.drapc.$(".bv_slope_limitType_pin").click();
             return expect(this.drapc.model.get('slope').get('limitType')).toEqual('pin');
           });
+          it('should update the slope_value input to enabled when pin', function() {
+            this.drapc.$(".bv_slope_limitType_none").click();
+            expect(this.drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_slope_limitType_pin").click();
+            expect(this.drapc.model.get('slope').get('limitType')).toEqual('pin');
+            return expect(this.drapc.$(".bv_slope_value").attr("disabled")).toBeUndefined();
+          });
           it('should update the slope_limitType radio to limit', function() {
             this.drapc.$(".bv_slope_limitType_none").click();
             this.drapc.$(".bv_slope_limitType_limit").click();
             return expect(this.drapc.model.get('slope').get('limitType')).toEqual('limit');
+          });
+          it('should update the slope_value input to enabled when limit', function() {
+            this.drapc.$(".bv_slope_limitType_none").click();
+            expect(this.drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_slope_limitType_limit").click();
+            expect(this.drapc.model.get('slope').get('limitType')).toEqual('limit');
+            return expect(this.drapc.$(".bv_slope_value").attr("disabled")).toBeUndefined();
           });
           it('should update the max_value', function() {
             this.drapc.$('.bv_max_value').val(" 7.5 ");
