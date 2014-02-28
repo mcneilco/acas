@@ -10,6 +10,7 @@ DROP VIEW api_curve_params;
 DROP VIEW api_dose_response;
 DROP VIEW api_analysis_group_results;
 DROP VIEW p_api_analysis_group_results;
+DROP VIEW api_all_data;
 DROP VIEW api_protocol;
 DROP VIEW api_experiment;
 
