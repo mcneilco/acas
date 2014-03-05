@@ -1340,10 +1340,13 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                           preferred=TRUE)
   
   # Create LS Tags
-  tagList <- strsplit(metaData$"Experiment Keywords", ";")[[1]]
-  tagList <- trim(tagList)
-  
-  lsTags <- lapply(tagList, createTag)
+  if("Experiment Keywords" %in% names(metaData)) {
+    tagList <- strsplit(metaData$"Experiment Keywords"[[1]], ";")[[1]]
+    tagList <- trim(tagList)
+    lsTags <- lapply(tagList, createTag)
+  } else {
+    lsTags <- NULL
+  }
   
   # Create the experiment
   experiment <- createExperiment(lsTransaction = lsTransaction, 
