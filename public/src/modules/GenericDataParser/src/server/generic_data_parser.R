@@ -444,6 +444,8 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   # Returns:
   #   a "data.frame" of the validated calculated results
   
+  require(data.table)
+  
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
   batchIds <- unique(calculatedResults[[mainCode]][batchesToCheck])
@@ -471,14 +473,11 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   names(preferredIdFrame) <- names(newBatchIds[[1]])
   preferredIdFrame <- as.data.frame(lapply(preferredIdFrame,unlist), stringsAsFactors=FALSE)
 
-  require(data.table)
-  prefDT <- as.data.table(preferredIdFrame)
-  prefDT[ referenceName == "", referenceName := preferredName ]
-  preferredIdFrame <- as.data.frame(prefDT)
-
-
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
   if (!is.null(preferredIdFrame$referenceName)) {
+    prefDT <- as.data.table(preferredIdFrame)
+    prefDT[ referenceName == "", referenceName := preferredName ]
+    preferredIdFrame <- as.data.frame(prefDT)
     calculatedResults[[mainCode]][batchesToCheck] <- preferredIdFrame$referenceName[match(calculatedResults[[mainCode]][batchesToCheck],preferredIdFrame$requestName)]
   } else {
     calculatedResults[[mainCode]][batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults[[mainCode]][batchesToCheck],preferredIdFrame$requestName)]
