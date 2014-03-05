@@ -17,7 +17,7 @@ genes.char <- lapply(genes, convertToChar)
 genes.Json <- toJSON(genes.char)
 
 dataCsv <- getURL(
-	paste0(configList$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData"),
+	paste0(configList$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData?format=csv"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
 	postfields=genes.Json)
