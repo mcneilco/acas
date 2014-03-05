@@ -75,13 +75,17 @@ stop)
 
 		dirname=`basename $dir`
 
-        	echo "stopping $dirname/$app"
+        echo "stopping $dirname/$app"
 
-        	#su - $ACAS_USER $suAdd -c "(cd $dir && forever stop $app)"
-		cd $dir && forever stop $app
-        	#su - $ACAS_USER -c "killall node"
+        stopCommand="cd $dir && forever stop $app"
+		if [ $(whoami) == $ACAS_USER ]; then
+			eval $stopCommand
+		else
+			command="su - $ACAS_USER $suAdd -c \"($stopCommand)\""
+			eval $command
+		fi
 
-        	echo "$dirname/$app stopped"
+        echo "$dirname/$app stopped"
         done
         
 		echo "stoppping apache instance $ACAS_HOME/conf/$apacheConfFile"
