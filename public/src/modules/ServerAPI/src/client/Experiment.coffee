@@ -228,6 +228,7 @@ class window.ExperimentBaseController extends AbstractFormController
 	initialize: ->
 		@model.on 'sync', =>
 			@trigger 'amClean'
+			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
 			@render()
 		@model.on 'change', =>
@@ -412,6 +413,7 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_updateComplete').html "Save Complete"
 		else
 			@$('.bv_updateComplete').html "Update Complete"
+		@$('.bv_saving').show()
 		@model.save()
 
 	validationError: =>

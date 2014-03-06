@@ -412,6 +412,7 @@
       this.model.on('sync', (function(_this) {
         return function() {
           _this.trigger('amClean');
+          _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
           return _this.render();
         };
@@ -671,6 +672,7 @@
       } else {
         this.$('.bv_updateComplete').html("Update Complete");
       }
+      this.$('.bv_saving').show();
       return this.model.save();
     };
 
