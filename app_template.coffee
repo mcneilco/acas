@@ -15,6 +15,14 @@ startApp = ->
 	LocalStrategy = require('passport-local').Strategy
 	global.deployMode = config.all.client.deployMode
 
+	global.stubsMode = false
+	testModeOverRide = process.argv[2]
+	unless typeof testModeOverRide == "undefined"
+		if testModeOverRide == "stubsMode"
+			global.stubsMode = true
+			console.log "############ Starting in stubs mode"
+
+
 	global.app = express()
 	app.configure( ->
 		app.set('port', config.all.client.port)
