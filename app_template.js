@@ -4,7 +4,7 @@
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, config, express, flash, http, indexRoutes, loginRoutes, passport, path, user, util;
+    var LocalStrategy, config, express, flash, http, indexRoutes, loginRoutes, passport, path, testModeOverRide, user, util;
     config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
@@ -15,6 +15,14 @@
     util = require('util');
     LocalStrategy = require('passport-local').Strategy;
     global.deployMode = config.all.client.deployMode;
+    global.stubsMode = false;
+    testModeOverRide = process.argv[2];
+    if (typeof testModeOverRide !== "undefined") {
+      if (testModeOverRide === "stubsMode") {
+        global.stubsMode = true;
+        console.log("############ Starting in stubs mode");
+      }
+    }
     global.app = express();
     app.configure(function() {
       app.set('port', config.all.client.port);
