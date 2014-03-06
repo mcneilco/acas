@@ -22,6 +22,10 @@ exports.setupRoutes = (app, passport) ->
 	app.post '/login',
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
 		exports.loginPost
+#	app.post '/login', passport.authenticate 'local',
+#		failureRedirect: '/login'
+#		failureFlash: true
+#		successReturnToOrRedirect: session.returnTo
 	app.get '/logout', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/api/users/:username', exports.getUsers
@@ -45,7 +49,9 @@ exports.loginPage = (req, res) ->
 		message: errorMsg
 
 exports.loginPost = (req, res) ->
-	res.redirect '/'
+	console.log req
+#	res.redirect '/'
+	res.redirect req.session.returnTo
 
 exports.logout = (req, res) ->
 	req.logout()
@@ -54,6 +60,7 @@ exports.logout = (req, res) ->
 exports.ensureAuthenticated = (req, res, next) ->
 	if req.isAuthenticated()
 		return next()
+	req.session.returnTo = req.url
 	res.redirect '/login'
 
 exports.getUsers = (req, resp) ->

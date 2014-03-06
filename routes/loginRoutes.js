@@ -54,7 +54,8 @@ app.get '/api/users/:username', loginRoutes.getUsers
   };
 
   exports.loginPost = function(req, res) {
-    return res.redirect('/');
+    console.log(req);
+    return res.redirect(req.session.returnTo);
   };
 
   exports.logout = function(req, res) {
@@ -66,6 +67,7 @@ app.get '/api/users/:username', loginRoutes.getUsers
     if (req.isAuthenticated()) {
       return next();
     }
+    req.session.returnTo = req.url;
     return res.redirect('/login');
   };
 
