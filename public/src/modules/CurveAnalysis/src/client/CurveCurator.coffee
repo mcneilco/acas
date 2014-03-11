@@ -1,8 +1,9 @@
 class window.Curve extends Backbone.Model
 	defaults:
 		curveid: ""
-		status: "pass"
-		category: "sigmoid"
+		algorithmApproved: null
+		userApproved: null
+		category: ""
 
 class window.CurveList extends Backbone.Collection
 	model: Curve
@@ -21,11 +22,30 @@ class window.CurveSummaryController extends Backbone.View
 
 	render: =>
 		@$el.empty()
-		curveUrl = window.conf.service.rapache.fullpath+"/curve/render/?legend=false&curveIds="
-		curveUrl += @model.get('curveid')+"&height=200&width=250&axes=false"
-
+		if window.AppLaunchParams.testMode
+			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
+			curveUrl += @model.get('curveid')+".png"
+		else
+			curveUrl = window.conf.service.rapache.fullpath+"/curve/render/?legend=false&curveIds="
+			curveUrl += @model.get('curveid')+"&height=200&width=250&axes=false"
 		@$el.html @template
 			curveUrl: curveUrl
+		if @model.get('algorithmApproved')
+			@$('.bv_thumbnail').addClass 'algorithmApproved'
+			@$('.bv_thumbnail').removeClass 'algorithmNotApproved'
+		else
+			@$('.bv_thumbnail').removeClass 'algorithmApproved'
+			@$('.bv_thumbnail').addClass 'algorithmNotApproved'
+		if @model.get('userApproved')
+			@$('.bv_thumbsUp').show()
+			@$('.bv_thumbsDown').hide()
+		else
+			@$('.bv_thumbsUp').hide()
+			if @model.get('userApproved') == null
+				@$('.bv_thumbsDown').hide()
+			else
+				@$('.bv_thumbsDown').show()
+
 		@
 
 	setSelected: =>
@@ -45,6 +65,7 @@ class window.CurveSummaryListController extends Backbone.View
 	render: =>
 		@$el.empty()
 		@$el.html @template()
+		console.log @collection
 		@collection.each (cs) =>
 			csController = new CurveSummaryController(model: cs)
 			@$('.bv_curveSummaries').append(csController.render().el)

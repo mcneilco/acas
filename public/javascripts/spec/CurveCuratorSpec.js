@@ -18,9 +18,10 @@
           return expect(Curve).toBeDefined();
         });
         return it("should have defaults", function() {
-          expect(this.curve.get("curveid")).toEqual("");
-          expect(this.curve.get("status")).toEqual("pass");
-          return expect(this.curve.get("category")).toEqual("sigmoid");
+          expect(this.curve.get('curveid')).toEqual("");
+          expect(this.curve.get('algorithmApproved')).toBeNull();
+          expect(this.curve.get('userApproved')).toBeNull();
+          return expect(this.curve.get('category')).toEqual("");
         });
       });
     });
@@ -59,7 +60,7 @@
     });
     describe("Curve Summary Controller tests", function() {
       beforeEach(function() {
-        this.curve = new Curve(window.curveCuratorTestJSON.curveStubs[0]);
+        this.curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0]);
         this.csc = new CurveSummaryController({
           el: this.fixture,
           model: this.curve
@@ -82,16 +83,53 @@
           return expect(this.csc.$('.bv_thumbnail').attr('src')).toContain("90807_AG-00000026");
         });
       });
-      return describe("selection", function() {
+      describe("selection", function() {
         return it("should show selected when clicked", function() {
           this.csc.$el.click();
           return expect(this.csc.$el.hasClass('selected')).toBeTruthy();
         });
       });
+      describe("algorithm approved display", function() {
+        it("should show approved when algorithm approved", function() {
+          expect(this.csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeTruthy();
+          return expect(this.csc.$('.bv_thumbnail').hasClass('algorithmNotApproved')).toBeFalsy();
+        });
+        return it("should show not approved when algorithm not approved", function() {
+          this.csc.model.set({
+            algorithmApproved: false
+          });
+          this.csc.render();
+          expect(this.csc.$('.bv_thumbnail').hasClass('algorithmNotApproved')).toBeTruthy();
+          return expect(this.csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeFalsy();
+        });
+      });
+      return describe("user approved display", function() {
+        it("should show thumbs up when user approved", function() {
+          console.log(this.csc.$('.bv_thumbsUp'));
+          expect(this.csc.$('.bv_thumbsUp')).toBeVisible();
+          return expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
+        });
+        it("should show thumbs down when not user approved", function() {
+          this.csc.model.set({
+            userApproved: false
+          });
+          this.csc.render();
+          expect(this.csc.$('.bv_thumbsDown')).toBeVisible();
+          return expect(this.csc.$('.bv_thumbsUp')).toBeHidden();
+        });
+        return it("should hide thumbs up and thumbs down when no user input", function() {
+          this.csc.model.set({
+            userApproved: null
+          });
+          this.csc.render();
+          expect(this.csc.$('.bv_thumbsUp')).toBeHidden();
+          return expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
+        });
+      });
     });
     describe("Curve Summary List Controller tests", function() {
       beforeEach(function() {
-        this.curves = new CurveList(window.curveCuratorTestJSON.curveStubs);
+        this.curves = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs);
         this.cslc = new CurveSummaryListController({
           el: this.fixture,
           collection: this.curves
@@ -150,7 +188,7 @@
         return describe("when new model set", function() {
           return it("should set the iframe src", function() {
             var mdl;
-            mdl = new Curve(window.curveCuratorTestJSON.curveStubs[0]);
+            mdl = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0]);
             this.cec.setModel(mdl);
             return expect(this.cec.$('.bv_shinyContainer').attr('src')).toContain("90807_AG-00000026");
           });
@@ -158,7 +196,7 @@
       });
       return describe("when created with populated model", function() {
         beforeEach(function() {
-          this.curve = new Curve(window.curveCuratorTestJSON.curveStubs[0]);
+          this.curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0]);
           this.cec = new CurveEditorController({
             el: this.fixture,
             model: this.curve

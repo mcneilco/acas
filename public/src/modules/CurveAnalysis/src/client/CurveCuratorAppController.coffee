@@ -14,12 +14,13 @@ class window.CurveCuratorAppController extends Backbone.View
 	template: _.template($('#CurveCuratorAppView').html())
 
 	initialize: ->
+
 		$(@el).html @template()
 		#		@user = this.options.user;
 		@ccc = new CurveCuratorController
 			el: @$('.bv_curveCurator')
 
-		@render();
+		@render()
 
 		@router = new CurveCuratorAppRouter
 			appController: @

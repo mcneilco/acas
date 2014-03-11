@@ -52,7 +52,6 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 
 
 exports.geneIDQueryIndex = (req, res) ->
-	#"use strict"
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
 	global.specRunnerTestmode = false

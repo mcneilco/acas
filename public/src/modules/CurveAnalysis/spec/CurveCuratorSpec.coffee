@@ -13,9 +13,10 @@ describe "Curve Curator Module testing", ->
 			it "should have model defined", ->
 				expect(Curve).toBeDefined()
 			it "should have defaults", ->
-				expect(@curve.get("curveid")).toEqual ""
-				expect(@curve.get("status")).toEqual "pass"
-				expect(@curve.get("category")).toEqual "sigmoid"
+				expect(@curve.get('curveid')).toEqual ""
+				expect(@curve.get('algorithmApproved')).toBeNull()
+				expect(@curve.get('userApproved')).toBeNull()
+				expect(@curve.get('category')).toEqual ""
 
 	describe "Curve List Model testing", ->
 		beforeEach ->
@@ -39,7 +40,7 @@ describe "Curve Curator Module testing", ->
 
 	describe "Curve Summary Controller tests", ->
 		beforeEach ->
-			@curve = new Curve(window.curveCuratorTestJSON.curveStubs[0])
+			@curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0])
 			@csc = new CurveSummaryController
 				el: @fixture
 				model: @curve
@@ -58,10 +59,35 @@ describe "Curve Curator Module testing", ->
 			it "should show selected when clicked", ->
 				@csc.$el.click()
 				expect(@csc.$el.hasClass('selected')).toBeTruthy()
+		describe "algorithm approved display", ->
+			it "should show approved when algorithm approved", ->
+				expect(@csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeTruthy()
+				expect(@csc.$('.bv_thumbnail').hasClass('algorithmNotApproved')).toBeFalsy()
+			it "should show not approved when algorithm not approved", ->
+				@csc.model.set algorithmApproved: false
+				@csc.render()
+				expect(@csc.$('.bv_thumbnail').hasClass('algorithmNotApproved')).toBeTruthy()
+				expect(@csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeFalsy()
+		describe "user approved display", ->
+			#TODO these tests don't work, but implimentation does
+			it "should show thumbs up when user approved", ->
+				console.log @csc.$('.bv_thumbsUp')
+				expect(@csc.$('.bv_thumbsUp')).toBeVisible()
+				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
+			it "should show thumbs down when not user approved", ->
+				@csc.model.set userApproved: false
+				@csc.render()
+				expect(@csc.$('.bv_thumbsDown')).toBeVisible()
+				expect(@csc.$('.bv_thumbsUp')).toBeHidden()
+			it "should hide thumbs up and thumbs down when no user input", ->
+				@csc.model.set userApproved: null
+				@csc.render()
+				expect(@csc.$('.bv_thumbsUp')).toBeHidden()
+				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
 
 	describe "Curve Summary List Controller tests", ->
 		beforeEach ->
-			@curves = new CurveList(window.curveCuratorTestJSON.curveStubs)
+			@curves = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs)
 			@cslc = new CurveSummaryListController
 				el: @fixture
 				collection: @curves
@@ -101,13 +127,13 @@ describe "Curve Curator Module testing", ->
 					expect(@cec.$('.bv_shinyContainer').html()).toContain "No Curve Selected"
 			describe "when new model set", ->
 				it "should set the iframe src", ->
-					mdl = new Curve(window.curveCuratorTestJSON.curveStubs[0])
+					mdl = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0])
 					@cec.setModel(mdl)
 					expect(@cec.$('.bv_shinyContainer').attr('src')).toContain "90807_AG-00000026"
 
 		describe "when created with populated model", ->
 			beforeEach ->
-				@curve = new Curve(window.curveCuratorTestJSON.curveStubs[0])
+				@curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0])
 				@cec = new CurveEditorController
 					el: @fixture
 					model: @curve
@@ -158,3 +184,8 @@ describe "Curve Curator Module testing", ->
 					runs ->
 						expect(@ccc.$('.bv_shinyContainer').attr('src')).toContain "90807_AG-00000026"
 
+#TODO find all curve categores and update filter select options
+#TODO figure out what options are in sort select and where we should get that list
+#TODO implement filter and sort
+#TODO stub curation/refit service
+#TODO implement curation panel

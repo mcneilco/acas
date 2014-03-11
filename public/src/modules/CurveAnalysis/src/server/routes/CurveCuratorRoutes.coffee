@@ -1,42 +1,17 @@
-### To install this module this module
 
-In app.coffee
-	# CurveCurator routes
-	curveCuratorRoutes = require './public/src/modules/CurveAnalysis/src/server/routes/CurveCuratorRoutes.js'
-	curveCuratorRoutes.setupRoutes(app)
-
-
-###
-exports.setupRoutes = (app) ->
-	app.get '/curveCurator/*', exports.curveCuratorIndex
+exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/curves/stub/:exptCode', exports.getCurveStubs
+	config = require '../conf/compiled/conf.js'
+	if config.all.client.require.login
+		app.get '/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex
+	else
+		app.get '/curveCurator/*', exports.curveCuratorIndex
 
-
-requiredScripts = [
-	'/src/lib/jquery.min.js'
-	'/src/lib/json2.js'
-	'/src/lib/underscore.js'
-	'/src/lib/backbone-min.js'
-	'/src/lib/bootstrap/bootstrap.min.js'
-	'/src/lib/bootstrap/bootstrap-tooltip.js'
-	'/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js'
-	'/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js'
-	'/src/lib/bootstrap/bootstrap.min.js'
-	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js'
-]
-
-applicationScripts = [
-	'/src/conf/conf.js'
-	#Curve Analysis module
-	'/javascripts/src/CurveCurator.js'
-	'/javascripts/src/CurveCuratorAppController.js'
-]
 
 exports.getCurveStubs = (req, resp) ->
 	if global.specRunnerTestmode
-		console.log req.params
 		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
-		resp.end JSON.stringify curveCuratorTestData.curveStubs
+		resp.end JSON.stringify curveCuratorTestData.curveCuratorThumbs
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.rapache.fullpath+"/experimentcode/curvids/?experimentcode="
@@ -57,13 +32,30 @@ exports.getCurveStubs = (req, resp) ->
 		)
 
 
-exports.curveCuratorIndex = (request, response) ->
-	global.specRunnerTestmode = false
-	scriptsToLoad = requiredScripts.concat applicationScripts
+exports.curveCuratorIndex = (req, resp) ->
+	global.specRunnerTestmode = if global.stubsMode then true else false
+	scriptPaths = require './RequiredClientScripts.js'
+	config = require '../conf/compiled/conf.js'
+	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
+	if config.all.client.require.login
+		loginUserName = req.user.username
+		loginUser = req.user
+	else
+		loginUserName = "nouser"
+		loginUser =
+			id: 0,
+			username: "nouser",
+			email: "nouser@nowhere.com",
+			firstName: "no",
+			lastName: "user"
 
-	return response.render 'CurveCurator',
+	return resp.render 'CurveCurator',
 		title: 'Curve Curator'
 		scripts: scriptsToLoad
-		appParams:
-			exampleParam: null
+		AppLaunchParams:
+			loginUserName: loginUserName
+			loginUser: loginUser
+			testMode: global.specRunnerTestmode
+			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
+			deployMode: global.deployMode
 

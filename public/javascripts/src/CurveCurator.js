@@ -12,8 +12,9 @@
 
     Curve.prototype.defaults = {
       curveid: "",
-      status: "pass",
-      category: "sigmoid"
+      algorithmApproved: null,
+      userApproved: null,
+      category: ""
     };
 
     return Curve;
@@ -60,11 +61,34 @@
     CurveSummaryController.prototype.render = function() {
       var curveUrl;
       this.$el.empty();
-      curveUrl = window.conf.service.rapache.fullpath + "/curve/render/?legend=false&curveIds=";
-      curveUrl += this.model.get('curveid') + "&height=200&width=250&axes=false";
+      if (window.AppLaunchParams.testMode) {
+        curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
+        curveUrl += this.model.get('curveid') + ".png";
+      } else {
+        curveUrl = window.conf.service.rapache.fullpath + "/curve/render/?legend=false&curveIds=";
+        curveUrl += this.model.get('curveid') + "&height=200&width=250&axes=false";
+      }
       this.$el.html(this.template({
         curveUrl: curveUrl
       }));
+      if (this.model.get('algorithmApproved')) {
+        this.$('.bv_thumbnail').addClass('algorithmApproved');
+        this.$('.bv_thumbnail').removeClass('algorithmNotApproved');
+      } else {
+        this.$('.bv_thumbnail').removeClass('algorithmApproved');
+        this.$('.bv_thumbnail').addClass('algorithmNotApproved');
+      }
+      if (this.model.get('userApproved')) {
+        this.$('.bv_thumbsUp').show();
+        this.$('.bv_thumbsDown').hide();
+      } else {
+        this.$('.bv_thumbsUp').hide();
+        if (this.model.get('userApproved') === null) {
+          this.$('.bv_thumbsDown').hide();
+        } else {
+          this.$('.bv_thumbsDown').show();
+        }
+      }
       return this;
     };
 
@@ -100,6 +124,7 @@
     CurveSummaryListController.prototype.render = function() {
       this.$el.empty();
       this.$el.html(this.template());
+      console.log(this.collection);
       this.collection.each((function(_this) {
         return function(cs) {
           var csController;

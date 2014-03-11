@@ -1,30 +1,20 @@
-
-/* To install this module this module
-
-In app.coffee
-	 * CurveCurator routes
-	curveCuratorRoutes = require './public/src/modules/CurveAnalysis/src/server/routes/CurveCuratorRoutes.js'
-	curveCuratorRoutes.setupRoutes(app)
- */
-
 (function() {
-  var applicationScripts, requiredScripts;
-
-  exports.setupRoutes = function(app) {
-    app.get('/curveCurator/*', exports.curveCuratorIndex);
-    return app.get('/api/curves/stub/:exptCode', exports.getCurveStubs);
+  exports.setupRoutes = function(app, loginRoutes) {
+    var config;
+    app.get('/api/curves/stub/:exptCode', exports.getCurveStubs);
+    config = require('../conf/compiled/conf.js');
+    if (config.all.client.require.login) {
+      return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
+    } else {
+      return app.get('/curveCurator/*', exports.curveCuratorIndex);
+    }
   };
-
-  requiredScripts = ['/src/lib/jquery.min.js', '/src/lib/json2.js', '/src/lib/underscore.js', '/src/lib/backbone-min.js', '/src/lib/bootstrap/bootstrap.min.js', '/src/lib/bootstrap/bootstrap-tooltip.js', '/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js', '/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js', '/src/lib/bootstrap/bootstrap.min.js', '/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js'];
-
-  applicationScripts = ['/src/conf/conf.js', '/javascripts/src/CurveCurator.js', '/javascripts/src/CurveCuratorAppController.js'];
 
   exports.getCurveStubs = function(req, resp) {
     var baseurl, config, curveCuratorTestData, request;
     if (global.specRunnerTestmode) {
-      console.log(req.params);
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
-      return resp.end(JSON.stringify(curveCuratorTestData.curveStubs));
+      return resp.end(JSON.stringify(curveCuratorTestData.curveCuratorThumbs));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/experimentcode/curvids/?experimentcode=";
@@ -49,15 +39,34 @@ In app.coffee
     }
   };
 
-  exports.curveCuratorIndex = function(request, response) {
-    var scriptsToLoad;
-    global.specRunnerTestmode = false;
-    scriptsToLoad = requiredScripts.concat(applicationScripts);
-    return response.render('CurveCurator', {
+  exports.curveCuratorIndex = function(req, resp) {
+    var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
+    global.specRunnerTestmode = global.stubsMode ? true : false;
+    scriptPaths = require('./RequiredClientScripts.js');
+    config = require('../conf/compiled/conf.js');
+    scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts);
+    if (config.all.client.require.login) {
+      loginUserName = req.user.username;
+      loginUser = req.user;
+    } else {
+      loginUserName = "nouser";
+      loginUser = {
+        id: 0,
+        username: "nouser",
+        email: "nouser@nowhere.com",
+        firstName: "no",
+        lastName: "user"
+      };
+    }
+    return resp.render('CurveCurator', {
       title: 'Curve Curator',
       scripts: scriptsToLoad,
-      appParams: {
-        exampleParam: null
+      AppLaunchParams: {
+        loginUserName: loginUserName,
+        loginUser: loginUser,
+        testMode: global.specRunnerTestmode,
+        moduleLaunchParams: typeof moduleLaunchParams !== "undefined" && moduleLaunchParams !== null ? moduleLaunchParams : null,
+        deployMode: global.deployMode
       }
     });
   };
