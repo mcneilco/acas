@@ -22,7 +22,10 @@
   };
 
   exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
-    var Tempfile, child, command, csUtilities, exec, preValErrors, rCommand, rCommandFile, requestJSONFile;
+    var Tempfile, child, command, config, csUtilities, exec, preValErrors, rCommand, rCommandFile, requestJSONFile, serverUtilityFunctions;
+    config = require('../conf/compiled/conf.js');
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    rScript = config.all.server.rscript;
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
     csUtilities.logUsage("About to call R function: " + rFunction, JSON.stringify(request.body), request.body.user);
     if (preValidationFunction != null) {
@@ -49,7 +52,8 @@
     rCommand += '	cat(toJSON(returnValues));';
     rCommand += '},error = function(ex) {cat(paste("R Execution Error:",ex));})';
     rCommandFile.writeFileSync(rCommand);
-    command = "Rscript " + rCommandFile.path + " 2> /dev/null";
+    command = rScript + " " + rCommandFile.path + " 2> /dev/null";
+    csUtilities.logUsage(command);
     return child = exec(command, function(error, stdout, stderr) {
       var message, result;
       console.log("stderr: " + stderr);
