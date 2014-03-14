@@ -1,3 +1,4 @@
+#!/bin/sh
 #As root, run these first
 #npm install -g forever
 #npm install -g grunt-cli
@@ -104,14 +105,22 @@ then
 else 
 	echo "Not installing acas_custom"
 fi
+echo "Installing node modules"
 npm install
+echo "Copy acas_custom into place"
 grunt copy
+echo "Preparing configuration files"
 cd conf
 node PrepareConfigFiles.js $DEPLOYMODE
+echo "Preparing module includes"
 node PrepareModuleIncludes.js
+echo "Installing racas"
 Rscript install.R $ACAS_BRANCH $BITBUCKET_USER $BITBUCKET_PASSWORD
 if [ -z "config.R" ]; then
+    echo "Running custom config.R file"
 	Rscript config.R
+else
+    echo "Custom config.R file not found in conf, not running"
 fi
 
 #export ACAS_HOME=$(pwd)/..
