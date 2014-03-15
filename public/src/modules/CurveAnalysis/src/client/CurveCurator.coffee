@@ -8,9 +8,34 @@ class window.Curve extends Backbone.Model
 class window.CurveList extends Backbone.Collection
 	model: Curve
 
-	setExperimentCode: (exptCode) ->
-		@.url = "/api/curves/stub/"+exptCode
+	getCategories: ->
+		cats = _.unique @.pluck('category')
+		catList = new Backbone.Collection()
+		_.each cats, (cat) ->
+			catList.add
+				code: cat
+				name: cat
+		catList
 
+class window.CurveCurationSet extends Backbone.Model
+	defaults:
+		sortOptions: new Backbone.Collection()
+		curves: new CurveList()
+	setExperimentCode: (exptCode) ->
+		@url = "/api/curves/stub/"+exptCode
+
+	parse: (resp) =>
+		if resp.curves?
+			if resp.curves not instanceof CurveList
+				resp.curves = new CurveList(resp.curves)
+				resp.curves.on 'change', =>
+					@trigger 'change'
+		if resp.sortOptions?
+			if resp.sortOptions not instanceof Backbone.Collection
+				resp.sortOptions = new Backbone.Collection(resp.sortOptions)
+				resp.sortOptions.on 'change', =>
+					@trigger 'change'
+		resp
 
 class window.CurveSummaryController extends Backbone.View
 	template: _.template($("#CurveSummaryView").html())
@@ -62,11 +87,20 @@ class window.CurveSummaryController extends Backbone.View
 class window.CurveSummaryListController extends Backbone.View
 	template: _.template($("#CurveSummaryListView").html())
 
+	initialize: ->
+		@filterKey = 'all'
+
 	render: =>
 		@$el.empty()
 		@$el.html @template()
-		console.log @collection
-		@collection.each (cs) =>
+
+		if @filterKey != 'all'
+			toRender = new Backbone.Collection @collection.filter (cs) =>
+				cs.get('category') == @filterKey
+		else
+			toRender = @collection
+
+		toRender.each (cs) =>
 			csController = new CurveSummaryController(model: cs)
 			@$('.bv_curveSummaries').append(csController.render().el)
 			csController.on 'selected', @selectionUpdated
@@ -77,6 +111,11 @@ class window.CurveSummaryListController extends Backbone.View
 	selectionUpdated: (who) =>
 		@trigger 'clearSelected', who
 		@trigger 'selectionUpdated', who
+
+	filter: (key) ->
+		@filterKey = key
+		@render()
+
 
 
 class window.CurveEditorController extends Backbone.View
@@ -106,33 +145,57 @@ class window.CurveEditorController extends Backbone.View
 
 class window.CurveCuratorController extends Backbone.View
 	template: _.template($("#CurveCuratorView").html())
-
-	initialize: ->
-		@collection = new CurveList()
+	events:
+		'change .bv_filterBy': 'handleFilterChanged'
 
 	render: =>
 		@$el.empty()
 		@$el.html @template()
-		@curveListController = new CurveSummaryListController
-			el: @$('.bv_curveList')
-			collection: @collection
-		@curveListController.render()
-		@curveListController.on 'selectionUpdated', @curveSelectionUpdated
+		if @model?
+			@curveListController = new CurveSummaryListController
+				el: @$('.bv_curveList')
+				collection: @model.get 'curves'
+			@curveListController.render()
+			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
 
-		@curveEditorController = new CurveEditorController
-			el: @$('.bv_curveEditor')
-		@curveEditorController.render()
+			@curveEditorController = new CurveEditorController
+				el: @$('.bv_curveEditor')
+			@$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
 
-		@$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
+			@sortBySelect = new PickListSelectController
+				collection: @model.get 'sortOptions'
+				el: @$('.bv_sortBy')
+				insertFirstOption: new PickList
+					code: "none"
+					name: "No Sort"
+				selectedCode: "none"
+				autoFetch: false
+			@sortBySelect.render()
+
+			@filterBySelect = new PickListSelectController
+				collection: @model.get('curves').getCategories()
+				el: @$('.bv_filterBy')
+				insertFirstOption: new PickList
+					code: "all"
+					name: "Show All"
+				selectedCode: "all"
+				autoFetch: false
+			@filterBySelect.render()
 
 		@
 
 	getCurvesFromExperimentCode: (exptCode) ->
-		@collection.setExperimentCode exptCode
-		@collection.fetch
+		@model = new CurveCurationSet
+		@model.setExperimentCode exptCode
+		@model.fetch
 			success: =>
 				@render()
 
 	curveSelectionUpdated: (who) =>
 		@curveEditorController.setModel who.model
+
+	handleFilterChanged: =>
+		@curveListController.filter @$('.bv_filterBy').val()
+
+
 

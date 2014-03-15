@@ -8,11 +8,22 @@
 
 <script type="text/template" id="CurveSummaryListView" xmlns="http://www.w3.org/1999/html">
     <div class="span4" style="margin-left:0;width:300px;height:720px;">
+        <div class="bv_curveSummaries"></div>
+    </div>
+</script>
+
+<script type="text/template" id="CurveEditorView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_loading span8 pull-left">Loading Curve Editor...</div>
+    <iframe class="bv_shinyContainer span8 pull-left" src="<%= curveUrl %>" >No Curve Selected</iframe>
+</script>
+
+<script type="text/template" id="CurveCuratorView" xmlns="http://www.w3.org/1999/html">
+    <div class=" well well-small span12" style="background-color:#FFFFFF;width:1105px;">
         <div class="form-horizontal" style="margin-bottom:10px;">
             <div class="control-group bv_group_category">
                 <label class="control-label" style="width:65px;">Category:</label>
                 <div class="controls" style="margin-left:80px;">
-                    <select class="bv_category">
+                    <select class="bv_filterBy">
                         <option>Sigmoid</option>
                         <option>All</option>
                     </select>
@@ -27,17 +38,6 @@
                 </div>
             </div>
         </div>
-        <div class="bv_curveSummaries"></div>
-    </div>
-</script>
-
-<script type="text/template" id="CurveEditorView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_loading span8 pull-left">Loading Curve Editor...</div>
-    <iframe class="bv_shinyContainer span8 pull-left" src="<%= curveUrl %>" >No Curve Selected</iframe>
-</script>
-
-<script type="text/template" id="CurveCuratorView" xmlns="http://www.w3.org/1999/html">
-    <div class=" well well-small span12" style="background-color:#FFFFFF;width:1105px;">
         <div class="bv_curveList" ></div>
         <div class="bv_curveEditor" ></div>
     </div>

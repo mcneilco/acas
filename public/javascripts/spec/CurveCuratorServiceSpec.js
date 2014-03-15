@@ -25,13 +25,13 @@
       it('should return an array of curve stubs', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn.length).toBeGreaterThan(0);
+          return expect(this.serviceReturn.curves.length).toBeGreaterThan(0);
         });
       });
       return it('should curve stubs with an id', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn[0].curveid).toEqual("90807_AG-00000026");
+          return expect(this.serviceReturn.curves[0].curveid).toEqual("90807_AG-00000026");
         });
       });
     });

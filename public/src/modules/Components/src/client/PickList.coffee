@@ -27,16 +27,28 @@ class window.PickListSelectController extends Backbone.View
 		@rendered = false
 		@collection.bind "add", @addOne
 		@collection.bind "reset", @handleListReset
-		@collection.fetch
-			success: @handleListReset
+
 		unless @options.selectedCode is ""
 			@selectedCode = @options.selectedCode
 		else
 			@selectedCode = null
+
 		if @options.insertFirstOption?
 			@insertFirstOption = @options.insertFirstOption
 		else
 			@insertFirstOption = null
+
+		if @options.autoFetch?
+			@autoFetch = @options.autoFetch
+		else
+			@autoFetch = true
+
+		if @autoFetch
+			@collection.fetch
+				success: @handleListReset
+		else
+			@handleListReset()
+
 
 	handleListReset: =>
 		if @insertFirstOption

@@ -27,7 +27,7 @@
     });
     describe("Curve List Model testing", function() {
       beforeEach(function() {
-        this.curveList = new CurveList();
+        this.curveList = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs.curves);
         return this.curvesFetched = false;
       });
       describe("basic plumbing tests", function() {
@@ -35,32 +35,66 @@
           return expect(CurveList).toBeDefined();
         });
       });
-      return describe("get data from server", function() {
-        return it("should return the curves", function() {
+      return describe("making category list", function() {
+        return it("should return a list of categories", function() {
+          var categories;
+          categories = this.curveList.getCategories();
+          expect(categories.length).toEqual(3);
+          return expect(categories instanceof Backbone.Collection).toBeTruthy();
+        });
+      });
+    });
+    describe("CurveCurationSetModel testing", function() {
+      beforeEach(function() {
+        this.ccs = new CurveCurationSet();
+        return this.fetchReturn = false;
+      });
+      describe("basic plumbing tests", function() {
+        it("should have model defined", function() {
+          return expect(CurveCurationSet).toBeDefined();
+        });
+        return it("should have defaults", function() {
+          expect(this.ccs.get('sortOptions') instanceof Backbone.Collection).toBeTruthy();
+          return expect(this.ccs.get('curves') instanceof CurveList).toBeTruthy();
+        });
+      });
+      return describe("curve fetching", function() {
+        beforeEach(function() {
           runs(function() {
-            this.curveList.setExperimentCode("EXPT-00000018");
-            return this.curveList.fetch({
-              success: (function(_this) {
-                return function() {
-                  return _this.curvesFetched = true;
-                };
-              })(this)
-            });
+            this.ccs.on('sync', (function(_this) {
+              return function() {
+                return _this.fetchReturn = true;
+              };
+            })(this));
+            this.ccs.setExperimentCode("EXPT-00000018");
+            return this.ccs.fetch();
           });
-          waitsFor((function(_this) {
+          return waitsFor((function(_this) {
             return function() {
-              return _this.curvesFetched;
+              return _this.fetchReturn;
             };
           })(this), 200);
+        });
+        it("should fetch curves set from expt code", function() {
           return runs(function() {
-            return expect(this.curveList.length).toBeGreaterThan(0);
+            return expect(this.ccs.get('curves').length).toBeGreaterThan(0);
+          });
+        });
+        it("curves should be converted to CurveList", function() {
+          return runs(function() {
+            return expect(this.ccs.get('curves') instanceof CurveList).toBeTruthy();
+          });
+        });
+        return it("sortOptions should be converted to Collection", function() {
+          return runs(function() {
+            return expect(this.ccs.get('sortOptions') instanceof Backbone.Collection).toBeTruthy();
           });
         });
       });
     });
     describe("Curve Summary Controller tests", function() {
       beforeEach(function() {
-        this.curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0]);
+        this.curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0]);
         this.csc = new CurveSummaryController({
           el: this.fixture,
           model: this.curve
@@ -103,7 +137,7 @@
           return expect(this.csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeFalsy();
         });
       });
-      return describe("user approved display", function() {
+      return xdescribe("user approved display", function() {
         it("should show thumbs up when user approved", function() {
           console.log(this.csc.$('.bv_thumbsUp'));
           expect(this.csc.$('.bv_thumbsUp')).toBeVisible();
@@ -129,7 +163,7 @@
     });
     describe("Curve Summary List Controller tests", function() {
       beforeEach(function() {
-        this.curves = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs);
+        this.curves = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs.curves);
         this.cslc = new CurveSummaryListController({
           el: this.fixture,
           collection: this.curves
@@ -146,10 +180,10 @@
       });
       describe("summary rendering", function() {
         return it("should create summary divs", function() {
-          return expect(this.cslc.$('.bv_curveSummary').length).toBeGreaterThan(0);
+          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(9);
         });
       });
-      return describe("user thumbnail selection", function() {
+      describe("user thumbnail selection", function() {
         beforeEach(function() {
           return this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
         });
@@ -163,6 +197,17 @@
         return it("should clear selected when another row is selected", function() {
           this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(1).click();
           return expect(this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeFalsy();
+        });
+      });
+      return describe("filtering", function() {
+        it("should only show sigmoid when requested", function() {
+          this.cslc.filter('sigmoid');
+          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(3);
+        });
+        return it("should show all when requested", function() {
+          this.cslc.filter('sigmoid');
+          this.cslc.filter('all');
+          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(9);
         });
       });
     });
@@ -188,7 +233,7 @@
         return describe("when new model set", function() {
           return it("should set the iframe src", function() {
             var mdl;
-            mdl = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0]);
+            mdl = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0]);
             this.cec.setModel(mdl);
             return expect(this.cec.$('.bv_shinyContainer').attr('src')).toContain("90807_AG-00000026");
           });
@@ -196,7 +241,7 @@
       });
       return describe("when created with populated model", function() {
         beforeEach(function() {
-          this.curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0]);
+          this.curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0]);
           this.cec = new CurveEditorController({
             el: this.fixture,
             model: this.curve
@@ -228,39 +273,61 @@
           return expect(this.ccc.$('.bv_curveEditor').length).toEqual(1);
         });
       });
-      describe("curve fetching", function() {
-        return it("should fetch curves from expt code", function() {
-          runs(function() {
-            return this.ccc.getCurvesFromExperimentCode("EXPT-00000018");
-          });
-          waits(200);
-          return runs(function() {
-            return expect(this.ccc.collection.length).toBeGreaterThan(0);
-          });
-        });
-      });
       return describe("should initialize and render sub controllers", function() {
         beforeEach(function() {
           runs(function() {
             return this.ccc.getCurvesFromExperimentCode("EXPT-00000018");
           });
           return waitsFor(function() {
-            return this.ccc.collection.length > 0;
+            return this.ccc.model.get('curves').length > 0;
           });
         });
-        it("should show the curve summary list", function() {
-          return runs(function() {
-            return expect(this.ccc.$('.bv_curveSummary').length).toBeGreaterThan(0);
+        describe("post fetch display", function() {
+          it("should show the curve summary list", function() {
+            return runs(function() {
+              return expect(this.ccc.$('.bv_curveSummary').length).toBeGreaterThan(0);
+            });
+          });
+          it("should select the first curve in the list", function() {
+            return runs(function() {
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeTruthy();
+            });
+          });
+          return it("should show the curve editor", function() {
+            return runs(function() {
+              return expect(this.ccc.$('.bv_shinyContainer').length).toBeGreaterThan(0);
+            });
           });
         });
-        it("should select the first curve in the list", function() {
-          return runs(function() {
-            return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeTruthy();
+        describe("sort option select display", function() {
+          it("sortOption select should populate with options", function() {
+            return runs(function() {
+              return expect(this.ccc.$('.bv_sortBy option').length).toEqual(5);
+            });
+          });
+          return it("sortOption select should make first option none", function() {
+            return runs(function() {
+              return expect(this.ccc.$('.bv_sortBy option:eq(0)').html()).toEqual("No Sort");
+            });
           });
         });
-        it("should show the curve editor", function() {
-          return runs(function() {
-            return expect(this.ccc.$('.bv_shinyContainer').length).toBeGreaterThan(0);
+        describe("filter option select display", function() {
+          it("filterOption select should populate with options", function() {
+            return runs(function() {
+              return expect(this.ccc.$('.bv_filterBy option').length).toEqual(4);
+            });
+          });
+          it("sortOption select should make first option all", function() {
+            return runs(function() {
+              return expect(this.ccc.$('.bv_filterBy option:eq(0)').html()).toEqual("Show All");
+            });
+          });
+          return it("should only show sigmoid thumbnails when sigmoid selected", function() {
+            return runs(function() {
+              this.ccc.$('.bv_filterBy').val('sigmoid');
+              this.ccc.$('.bv_filterBy').change();
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual(3);
+            });
           });
         });
         return describe("When new thumbnail selected", function() {

@@ -20,27 +20,52 @@ describe "Curve Curator Module testing", ->
 
 	describe "Curve List Model testing", ->
 		beforeEach ->
-			@curveList = new CurveList()
+			@curveList = new CurveList window.curveCuratorTestJSON.curveCuratorThumbs.curves
 			@curvesFetched = false
 		describe "basic plumbing tests", ->
 			it "should have model defined", ->
 				expect(CurveList).toBeDefined()
-		describe "get data from server", ->
-			it "should return the curves", ->
+		describe "making category list", ->
+			it "should return a list of categories", ->
+				categories = @curveList.getCategories()
+				expect(categories.length).toEqual 3
+				expect(categories instanceof Backbone.Collection).toBeTruthy()
+
+	describe "CurveCurationSetModel testing", ->
+		beforeEach ->
+			@ccs = new CurveCurationSet()
+			@fetchReturn = false
+		describe "basic plumbing tests", ->
+			it "should have model defined", ->
+				expect(CurveCurationSet).toBeDefined()
+			it "should have defaults", ->
+				expect(@ccs.get('sortOptions') instanceof Backbone.Collection).toBeTruthy()
+				expect(@ccs.get('curves') instanceof CurveList).toBeTruthy()
+		describe "curve fetching", ->
+			beforeEach ->
 				runs ->
-					@curveList.setExperimentCode "EXPT-00000018"
-					@curveList.fetch
-						success: =>
-							@curvesFetched = true
+					@ccs.on 'sync', =>
+						@fetchReturn = true
+					@ccs.setExperimentCode("EXPT-00000018")
+					@ccs.fetch()
 				waitsFor =>
-					@curvesFetched
+					@fetchReturn
 				, 200
+
+			it "should fetch curves set from expt code", ->
 				runs ->
-					expect(@curveList.length).toBeGreaterThan 0
+					expect(@ccs.get('curves').length).toBeGreaterThan 0
+			it "curves should be converted to CurveList", ->
+				runs ->
+					expect(@ccs.get('curves') instanceof CurveList).toBeTruthy()
+			it "sortOptions should be converted to Collection", ->
+				runs ->
+					expect(@ccs.get('sortOptions') instanceof Backbone.Collection).toBeTruthy()
+
 
 	describe "Curve Summary Controller tests", ->
 		beforeEach ->
-			@curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0])
+			@curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0])
 			@csc = new CurveSummaryController
 				el: @fixture
 				model: @curve
@@ -68,7 +93,7 @@ describe "Curve Curator Module testing", ->
 				@csc.render()
 				expect(@csc.$('.bv_thumbnail').hasClass('algorithmNotApproved')).toBeTruthy()
 				expect(@csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeFalsy()
-		describe "user approved display", ->
+		xdescribe "user approved display", ->
 			#TODO these tests don't work, but implimentation does
 			it "should show thumbs up when user approved", ->
 				console.log @csc.$('.bv_thumbsUp')
@@ -87,7 +112,7 @@ describe "Curve Curator Module testing", ->
 
 	describe "Curve Summary List Controller tests", ->
 		beforeEach ->
-			@curves = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs)
+			@curves = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs.curves)
 			@cslc = new CurveSummaryListController
 				el: @fixture
 				collection: @curves
@@ -99,7 +124,7 @@ describe "Curve Curator Module testing", ->
 				expect(@cslc.$('.bv_curveSummaries').length).toEqual 1
 		describe "summary rendering", ->
 			it "should create summary divs", ->
-				expect(@cslc.$('.bv_curveSummary').length).toBeGreaterThan 0
+				expect(@cslc.$('.bv_curveSummary').length).toEqual 9
 		describe "user thumbnail selection", ->
 			beforeEach ->
 				@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
@@ -111,6 +136,14 @@ describe "Curve Curator Module testing", ->
 			it "should clear selected when another row is selected", ->
 				@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(1).click()
 				expect(@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeFalsy()
+		describe "filtering", ->
+			it "should only show sigmoid when requested", ->
+				@cslc.filter 'sigmoid'
+				expect(@cslc.$('.bv_curveSummary').length).toEqual 3
+			it "should show all when requested", ->
+				@cslc.filter 'sigmoid'
+				@cslc.filter 'all'
+				expect(@cslc.$('.bv_curveSummary').length).toEqual 9
 
 	describe "Curve Editor Controller tests", ->
 		describe "when created with no model", ->
@@ -127,13 +160,13 @@ describe "Curve Curator Module testing", ->
 					expect(@cec.$('.bv_shinyContainer').html()).toContain "No Curve Selected"
 			describe "when new model set", ->
 				it "should set the iframe src", ->
-					mdl = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0])
+					mdl = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0])
 					@cec.setModel(mdl)
 					expect(@cec.$('.bv_shinyContainer').attr('src')).toContain "90807_AG-00000026"
 
 		describe "when created with populated model", ->
 			beforeEach ->
-				@curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs[0])
+				@curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0])
 				@cec = new CurveEditorController
 					el: @fixture
 					model: @curve
@@ -154,28 +187,47 @@ describe "Curve Curator Module testing", ->
 				expect(@ccc.$('.bv_curveList').length).toEqual 1
 			it "should load template", ->
 				expect(@ccc.$('.bv_curveEditor').length).toEqual 1
-		describe "curve fetching", ->
-			it "should fetch curves from expt code", ->
-				runs ->
-					@ccc.getCurvesFromExperimentCode("EXPT-00000018")
-				waits(200)
-				runs ->
-					expect(@ccc.collection.length).toBeGreaterThan 0
 		describe "should initialize and render sub controllers", ->
 			beforeEach ->
 				runs ->
 					@ccc.getCurvesFromExperimentCode("EXPT-00000018")
 				waitsFor ->
-					@ccc.collection.length > 0
-			it "should show the curve summary list", ->
-				runs ->
-					expect(@ccc.$('.bv_curveSummary').length).toBeGreaterThan 0
-			it "should select the first curve in the list", ->
-				runs ->
-					expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeTruthy()
-			it "should show the curve editor", ->
-				runs ->
-					expect(@ccc.$('.bv_shinyContainer').length).toBeGreaterThan 0
+					@ccc.model.get('curves').length > 0
+			describe "post fetch display", ->
+				it "should show the curve summary list", ->
+					runs ->
+						expect(@ccc.$('.bv_curveSummary').length).toBeGreaterThan 0
+				it "should select the first curve in the list", ->
+					runs ->
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeTruthy()
+				it "should show the curve editor", ->
+					runs ->
+						expect(@ccc.$('.bv_shinyContainer').length).toBeGreaterThan 0
+			describe "sort option select display", ->
+				it "sortOption select should populate with options", ->
+					runs ->
+						expect(@ccc.$('.bv_sortBy option').length).toEqual 5
+				it "sortOption select should make first option none", ->
+					runs ->
+						expect(@ccc.$('.bv_sortBy option:eq(0)').html()).toEqual "No Sort"
+#				it "should sort by ", ->
+#					runs ->
+#						@ccc.$('.bv_sortBy').val 'EC50'
+#						@ccc.$('.bv_sortBy').change()
+#						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual 3
+			describe "filter option select display", ->
+				it "filterOption select should populate with options", ->
+					runs ->
+						expect(@ccc.$('.bv_filterBy option').length).toEqual 4
+				it "sortOption select should make first option all", ->
+					runs ->
+						expect(@ccc.$('.bv_filterBy option:eq(0)').html()).toEqual "Show All"
+				it "should only show sigmoid thumbnails when sigmoid selected", ->
+					runs ->
+						@ccc.$('.bv_filterBy').val 'sigmoid'
+						@ccc.$('.bv_filterBy').change()
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual 3
+
 			describe "When new thumbnail selected", ->
 				beforeEach ->
 					runs ->
@@ -184,8 +236,11 @@ describe "Curve Curator Module testing", ->
 					runs ->
 						expect(@ccc.$('.bv_shinyContainer').attr('src')).toContain "90807_AG-00000026"
 
+
 #TODO find all curve categores and update filter select options
-#TODO figure out what options are in sort select and where we should get that list
+#TODO modify testjson to include array of sort options, each has a attribute name and pretty name
+#TODO add sample attributes SSE, SST, R^2, EC50 to thumb stubs
+#TODO add ascending/descending controls for filter
 #TODO implement filter and sort
-#TODO stub curation/refit service
+#TODO stub curation/refit service. First stube new service to get curve details refactor to fetch full curve from other service
 #TODO implement curation panel

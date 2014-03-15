@@ -30,13 +30,67 @@
 
     CurveList.prototype.model = Curve;
 
-    CurveList.prototype.setExperimentCode = function(exptCode) {
-      return this.url = "/api/curves/stub/" + exptCode;
+    CurveList.prototype.getCategories = function() {
+      var catList, cats;
+      cats = _.unique(this.pluck('category'));
+      catList = new Backbone.Collection();
+      _.each(cats, function(cat) {
+        return catList.add({
+          code: cat,
+          name: cat
+        });
+      });
+      return catList;
     };
 
     return CurveList;
 
   })(Backbone.Collection);
+
+  window.CurveCurationSet = (function(_super) {
+    __extends(CurveCurationSet, _super);
+
+    function CurveCurationSet() {
+      this.parse = __bind(this.parse, this);
+      return CurveCurationSet.__super__.constructor.apply(this, arguments);
+    }
+
+    CurveCurationSet.prototype.defaults = {
+      sortOptions: new Backbone.Collection(),
+      curves: new CurveList()
+    };
+
+    CurveCurationSet.prototype.setExperimentCode = function(exptCode) {
+      return this.url = "/api/curves/stub/" + exptCode;
+    };
+
+    CurveCurationSet.prototype.parse = function(resp) {
+      if (resp.curves != null) {
+        if (!(resp.curves instanceof CurveList)) {
+          resp.curves = new CurveList(resp.curves);
+          resp.curves.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
+      }
+      if (resp.sortOptions != null) {
+        if (!(resp.sortOptions instanceof Backbone.Collection)) {
+          resp.sortOptions = new Backbone.Collection(resp.sortOptions);
+          resp.sortOptions.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
+      }
+      return resp;
+    };
+
+    return CurveCurationSet;
+
+  })(Backbone.Model);
 
   window.CurveSummaryController = (function(_super) {
     __extends(CurveSummaryController, _super);
@@ -121,11 +175,24 @@
 
     CurveSummaryListController.prototype.template = _.template($("#CurveSummaryListView").html());
 
+    CurveSummaryListController.prototype.initialize = function() {
+      return this.filterKey = 'all';
+    };
+
     CurveSummaryListController.prototype.render = function() {
+      var toRender;
       this.$el.empty();
       this.$el.html(this.template());
-      console.log(this.collection);
-      this.collection.each((function(_this) {
+      if (this.filterKey !== 'all') {
+        toRender = new Backbone.Collection(this.collection.filter((function(_this) {
+          return function(cs) {
+            return cs.get('category') === _this.filterKey;
+          };
+        })(this)));
+      } else {
+        toRender = this.collection;
+      }
+      toRender.each((function(_this) {
         return function(cs) {
           var csController;
           csController = new CurveSummaryController({
@@ -142,6 +209,11 @@
     CurveSummaryListController.prototype.selectionUpdated = function(who) {
       this.trigger('clearSelected', who);
       return this.trigger('selectionUpdated', who);
+    };
+
+    CurveSummaryListController.prototype.filter = function(key) {
+      this.filterKey = key;
+      return this.render();
     };
 
     return CurveSummaryListController;
@@ -195,6 +267,7 @@
     __extends(CurveCuratorController, _super);
 
     function CurveCuratorController() {
+      this.handleFilterChanged = __bind(this.handleFilterChanged, this);
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
       this.render = __bind(this.render, this);
       return CurveCuratorController.__super__.constructor.apply(this, arguments);
@@ -202,30 +275,54 @@
 
     CurveCuratorController.prototype.template = _.template($("#CurveCuratorView").html());
 
-    CurveCuratorController.prototype.initialize = function() {
-      return this.collection = new CurveList();
+    CurveCuratorController.prototype.events = {
+      'change .bv_filterBy': 'handleFilterChanged'
     };
 
     CurveCuratorController.prototype.render = function() {
       this.$el.empty();
       this.$el.html(this.template());
-      this.curveListController = new CurveSummaryListController({
-        el: this.$('.bv_curveList'),
-        collection: this.collection
-      });
-      this.curveListController.render();
-      this.curveListController.on('selectionUpdated', this.curveSelectionUpdated);
-      this.curveEditorController = new CurveEditorController({
-        el: this.$('.bv_curveEditor')
-      });
-      this.curveEditorController.render();
-      this.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
+      if (this.model != null) {
+        this.curveListController = new CurveSummaryListController({
+          el: this.$('.bv_curveList'),
+          collection: this.model.get('curves')
+        });
+        this.curveListController.render();
+        this.curveListController.on('selectionUpdated', this.curveSelectionUpdated);
+        this.curveEditorController = new CurveEditorController({
+          el: this.$('.bv_curveEditor')
+        });
+        this.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
+        this.sortBySelect = new PickListSelectController({
+          collection: this.model.get('sortOptions'),
+          el: this.$('.bv_sortBy'),
+          insertFirstOption: new PickList({
+            code: "none",
+            name: "No Sort"
+          }),
+          selectedCode: "none",
+          autoFetch: false
+        });
+        this.sortBySelect.render();
+        this.filterBySelect = new PickListSelectController({
+          collection: this.model.get('curves').getCategories(),
+          el: this.$('.bv_filterBy'),
+          insertFirstOption: new PickList({
+            code: "all",
+            name: "Show All"
+          }),
+          selectedCode: "all",
+          autoFetch: false
+        });
+        this.filterBySelect.render();
+      }
       return this;
     };
 
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode) {
-      this.collection.setExperimentCode(exptCode);
-      return this.collection.fetch({
+      this.model = new CurveCurationSet;
+      this.model.setExperimentCode(exptCode);
+      return this.model.fetch({
         success: (function(_this) {
           return function() {
             return _this.render();
@@ -236,6 +333,10 @@
 
     CurveCuratorController.prototype.curveSelectionUpdated = function(who) {
       return this.curveEditorController.setModel(who.model);
+    };
+
+    CurveCuratorController.prototype.handleFilterChanged = function() {
+      return this.curveListController.filter(this.$('.bv_filterBy').val());
     };
 
     return CurveCuratorController;
