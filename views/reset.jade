@@ -1,0 +1,19 @@
+extends layout
+block content
+    div.navbar.navbar-inverse.navbar-fixed-top
+        div.navbar-inner
+            div.container-fluid
+                div.brand ACAS
+    - if (message != "")
+        div.offset1.alert.alert-error(style="width:175px;margin-bottom:10px;") #{message}
+    label Reset Password
+    form(action="/reset", method="post")
+        div.offset1
+            label Email:
+            input(type="text", name="email")
+            br
+        div.offset1
+            input.btn(type="submit", value="Send Reset")
+        div.offset1
+            a(href="/login") login
+

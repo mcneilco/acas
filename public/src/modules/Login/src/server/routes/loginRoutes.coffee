@@ -29,6 +29,14 @@ exports.setupRoutes = (app, passport) ->
 	app.get '/logout', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/api/users/:username', exports.getUsers
+	app.get '/reset', exports.resetpage
+	app.post '/reset',
+		exports.resetAuthenticationService
+	app.post '/api/userResetAuthentication', exports.resetAuthenticationService
+	app.get '/change', exports.changePage
+	app.post '/change',
+		exports.changeAuthenticationService
+	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
 
 csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 
@@ -74,6 +82,7 @@ exports.getUsers = (req, resp) ->
 
 exports.authenticationService = (req, resp) ->
 	callback = (results) ->
+		console.log results
 		if results.indexOf("Success")>=0
 			resp.json
 				status: "Success"
@@ -86,3 +95,63 @@ exports.authenticationService = (req, resp) ->
 	else
 		csUtilities.authCheck req.body.user, req.body.password, callback
 
+exports.resetAuthenticationService = (req, resp) ->
+	callback = (results) ->
+		if results.indexOf("Success")>=0
+			resp.json
+				status: "Success"
+		else
+			resp.json
+				status: "Fail"
+
+	if global.specRunnerTestmode
+		callback("Success")
+	else
+		csUtilities.resetAuth req.body.email, callback
+
+exports.changeAuthenticationService = (req, resp) ->
+	callback = (results) ->
+		if results.indexOf("Success")>=0
+			resp.json
+				status: "Success"
+		else
+			resp.json
+				status: "Fail"
+
+	if global.specRunnerTestmode
+		callback("Success")
+	else
+		csUtilities.changeAuth req.body.user, req.body.oldPassword,req.body.oldPassword,req.body.oldPassword, callback
+
+
+exports.resetpage = (req, res) ->
+	user = null
+	if req.user?
+		user = req.user
+
+	errorMsg = ""
+	error = req.flash('error')
+	if error.length > 0
+		errorMsg = error[0]
+
+	res.render 'reset',
+		title: "ACAS reset"
+		scripts: []
+		user: user
+		message: errorMsg
+
+exports.changePage = (req, res) ->
+	user = null
+	if req.user?
+		user = req.user
+
+	errorMsg = ""
+	error = req.flash('error')
+	if error.length > 0
+		errorMsg = error[0]
+
+	res.render 'change',
+		title: "ACAS reset"
+		scripts: []
+		user: user
+		message: errorMsg

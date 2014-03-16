@@ -14,8 +14,68 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	callback(conf)
 
 exports.authCheck = (user, pass, retFun) ->
-	retFun "Success"
+	request = require 'request'
+	request(
+		headers:
+			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+		method: 'POST'
+		url: 'http://host3.labsynch.com:8080/acas/resources/j_spring_security_check'
+		form:
+			j_username: user
+			j_password: pass
+		json: false
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			retFun JSON.stringify json
+		else
+			console.log 'got ajax error trying authenticate a user'
+			console.log error
+			console.log json
+			console.log response
+	)
 
+exports.resetAuth = (email, retFun) ->
+	request = require 'request'
+	request(
+		headers:
+			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+		method: 'POST'
+		url: 'http://host3.labsynch.com:8080/acas/forgotpassword/update'
+		form:
+			emailAddress: email
+		json: false
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			retFun JSON.stringify json
+		else
+			console.log 'got ajax error trying authenticate a user'
+			console.log error
+			console.log json
+			console.log response
+	)
+
+exports.changeAuth = (user, passOld,passNew,passNewAgain, retFun) ->
+	request = require 'request'
+	request(
+		headers:
+			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+		method: 'POST'
+		url: 'http://host3.labsynch.com:8080/acas/changepassword/update'
+		form:
+			username: user
+			oldPassword: passOld
+			newPassword: passNew
+			newPasswordAgain: passNewAgain
+		json: false
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			retFun JSON.stringify json
+		else
+			console.log 'got ajax error trying authenticate a user'
+			console.log error
+			console.log json
+			console.log response
+	)
 exports.getUser = (username, callback) ->
 	config = require '../../../conf/compiled/conf.js'
 	if config.all.client.require.login
