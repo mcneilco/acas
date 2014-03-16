@@ -84,11 +84,9 @@ exports.authenticationService = (req, resp) ->
 	callback = (results) ->
 		console.log results
 		if results.indexOf("Success")>=0
-			resp.json
-				status: "Success"
+			resp.redirect '/login'
 		else
-			resp.json
-				status: "Fail"
+			resp.redirect '/login'
 
 	if global.specRunnerTestmode
 		callback("Success")
@@ -97,12 +95,11 @@ exports.authenticationService = (req, resp) ->
 
 exports.resetAuthenticationService = (req, resp) ->
 	callback = (results) ->
-		if results.indexOf("Success")>=0
-			resp.json
-				status: "Success"
+		console.log results
+		if results.indexOf("Your new password is sent to your email address")>=0
+			resp.redirect '/reset'
 		else
-			resp.json
-				status: "Fail"
+			resp.redirect '/reset'
 
 	if global.specRunnerTestmode
 		callback("Success")
@@ -111,12 +108,12 @@ exports.resetAuthenticationService = (req, resp) ->
 
 exports.changeAuthenticationService = (req, resp) ->
 	callback = (results) ->
+		console.log results
 		if results.indexOf("Success")>=0
 			resp.json
 				status: "Success"
 		else
-			resp.json
-				status: "Fail"
+			resp.redirect '/change'
 
 	if global.specRunnerTestmode
 		callback("Success")
@@ -133,7 +130,6 @@ exports.resetpage = (req, res) ->
 	error = req.flash('error')
 	if error.length > 0
 		errorMsg = error[0]
-
 	res.render 'reset',
 		title: "ACAS reset"
 		scripts: []
