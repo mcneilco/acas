@@ -113,8 +113,10 @@ exports.resetAuthenticationService = (req, resp) ->
 	callback = (results) ->
 		console.log results
 		if results.indexOf("Your new password is sent to your email address")>=0
+			req.flash 'error','Your new password is sent to your email address'
 			resp.redirect '/reset'
 		else
+			req.flash 'error','Invalid Email or Username'
 			resp.redirect '/reset'
 
 	if global.specRunnerTestmode
@@ -141,7 +143,7 @@ exports.resetpage = (req, res) ->
 	user = null
 	if req.user?
 		user = req.user
-
+	console.log req.flash
 	errorMsg = ""
 	error = req.flash('error')
 	if error.length > 0

@@ -52,7 +52,7 @@ exports.resetAuth = (email, retFun) ->
 		json: false
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
-			retFun JSON.stringify message: "Already Reset"
+			retFun JSON.stringify json
 		else
 			console.log 'got ajax error trying authenticate a user'
 			console.log error
