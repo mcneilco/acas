@@ -15,11 +15,13 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 
 exports.authCheck = (user, pass, retFun) ->
 	request = require 'request'
+	console.log request
 	request(
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
 		method: 'POST'
-		url: 'http://host3.labsynch.com:8080/acas/resources/j_spring_security_check'
+##  http://host3.labsynch.com:8080/acas/resources/j_spring_security_check
+		url: 'http://host3.labsynch.com:8080/acas/login'
 		form:
 			j_username: user
 			j_password: pass
