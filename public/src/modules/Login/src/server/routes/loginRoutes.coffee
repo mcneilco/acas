@@ -31,16 +31,19 @@ exports.setupRoutes = (app, passport) ->
 	app.get '/api/users/:username', exports.getUsers
 	app.get '/reset', exports.resetpage
 	app.post '/reset',
-		exports.resetAuthenticationService
+		exports.resetAuthenticationService,
+		exports.resetPost
 	app.post '/api/userResetAuthentication', exports.resetAuthenticationService
 	app.get '/change', exports.changePage
 	app.post '/change',
-		exports.changeAuthenticationService
+		exports.changeAuthenticationService,
+		exports.changePost
 	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
 
 csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 
 exports.loginPage = (req, res) ->
+	req.session.returnTo = '/'
 	user = null
 	if req.user?
 		user = req.user
@@ -57,9 +60,20 @@ exports.loginPage = (req, res) ->
 		message: errorMsg
 
 exports.loginPost = (req, res) ->
-	console.log req
+	console.log req.session
 #	res.redirect '/'
 	res.redirect req.session.returnTo
+
+exports.resetPost = (req, res) ->
+	console.log req.session
+	#	res.redirect '/'
+	res.redirect '/reset'
+
+exports.changePost = (req, res) ->
+	console.log req.session
+	#	res.redirect '/'
+	res.redirect '/change'
+
 
 exports.logout = (req, res) ->
 	req.logout()
@@ -84,9 +98,11 @@ exports.authenticationService = (req, resp) ->
 	callback = (results) ->
 		console.log results
 		if results.indexOf("Success")>=0
-			resp.redirect '/login'
+			resp.json
+				status: "Success"
 		else
-			resp.redirect '/login'
+			resp.json
+				status: "Fail"
 
 	if global.specRunnerTestmode
 		callback("Success")

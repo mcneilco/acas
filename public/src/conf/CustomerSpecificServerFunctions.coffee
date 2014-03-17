@@ -15,20 +15,24 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 
 exports.authCheck = (user, pass, retFun) ->
 	request = require 'request'
-	console.log request
 	request(
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
 		method: 'POST'
 ##  http://host3.labsynch.com:8080/acas/resources/j_spring_security_check
-		url: 'http://host3.labsynch.com:8080/acas/login'
+##  http://host3.labsynch.com:8080/acas/login
+		url: 'http://host3.labsynch.com:8080/acas/resources/j_spring_security_check'
 		form:
 			j_username: user
 			j_password: pass
 		json: false
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
+			console.log json
 			retFun JSON.stringify json
+		else if !error && response.statusCode == 302
+			console.log response.headers.location
+			retFun JSON.stringify response.headers.location
 		else
 			console.log 'got ajax error trying authenticate a user'
 			console.log error
@@ -48,7 +52,7 @@ exports.resetAuth = (email, retFun) ->
 		json: false
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
-			retFun JSON.stringify json
+			retFun JSON.stringify message: "Already Reset"
 		else
 			console.log 'got ajax error trying authenticate a user'
 			console.log error
@@ -107,13 +111,7 @@ exports.loginStrategy = (username, password, done) ->
 	process.nextTick ->
 		exports.findByUsername username, (err, user) ->
 			exports.authCheck username, password, (results) ->
-				if results.indexOf("Success")>=0
-					try
-						exports.logUsage "User logged in succesfully: ", "", username
-					catch error
-						console.log "Exception trying to log:"+error
-					return done null, user
-				else
+				if results.indexOf("login_error")>=0
 					try
 						exports.logUsage "User failed login: ", "", username
 					catch error
@@ -121,6 +119,31 @@ exports.loginStrategy = (username, password, done) ->
 					return done(null, false,
 						message: "Invalid credentials"
 					)
+				else
+					try
+						exports.logUsage "User logged in succesfully: ", "", username
+					catch error
+						console.log "Exception trying to log:"+error
+					return done null, user
+
+exports.resetStrategy = (username, done) ->
+	process.nextTick ->
+		exports.findByUsername username, (err, user) ->
+			exports.resetAuth username, (results) ->
+				if results.indexOf("Your new password is sent to your email address")>=0
+					try
+						exports.logUsage "Can't find email or user name: ", "", username
+					catch error
+						console.log "Exception trying to log:"+error
+					return done(null, false,
+						message: "Invalid username or email"
+					)
+				else
+					try
+						exports.logUsage "User password reset succesfully: ", "", username
+					catch error
+						console.log "Exception trying to log:"+error
+					return done null, user
 
 exports.getProjects = (resp) ->
 	projects = 	exports.projects = [
