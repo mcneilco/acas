@@ -18,7 +18,7 @@ basicRScriptPreValidation = (payload) ->
 exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-	rScript = config.all.server.rscript
+	rScriptCommand = config.all.server.rscript
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(request.body), request.body.user
 	if preValidationFunction?
@@ -49,7 +49,7 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 	rCommand += '	cat(toJSON(returnValues));'
 	rCommand += '},error = function(ex) {cat(paste("R Execution Error:",ex));})'
 	rCommandFile.writeFileSync rCommand
-	command = rScript + " " + rCommandFile.path + " 2> /dev/null"
+	command = rScriptCommand + " " + rCommandFile.path + " 2> /dev/null"
 
 	child = exec command,  (error, stdout, stderr) ->
 		console.log "stderr: " + stderr
