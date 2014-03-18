@@ -305,9 +305,25 @@
               return expect(this.ccc.$('.bv_sortBy option').length).toEqual(5);
             });
           });
-          return it("sortOption select should make first option none", function() {
+          it("sortOption select should make first option none", function() {
             return runs(function() {
               return expect(this.ccc.$('.bv_sortBy option:eq(0)').html()).toEqual("No Sort");
+            });
+          });
+          it("should sort by ", function() {
+            return runs(function() {
+              this.ccc.$('.bv_sortBy').val('EC50');
+              this.ccc.$('.bv_sortDirection').val('ascending');
+              this.ccc.$('.bv_sortBy').change();
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000009");
+            });
+          });
+          return it("should sort by ", function() {
+            return runs(function() {
+              this.ccc.$('.bv_sortBy').val('EC50');
+              this.ccc.$('.bv_sortDirection').val('descending');
+              this.ccc.$('.bv_sortBy').change();
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000004");
             });
           });
         });

@@ -210,11 +210,18 @@ describe "Curve Curator Module testing", ->
 				it "sortOption select should make first option none", ->
 					runs ->
 						expect(@ccc.$('.bv_sortBy option:eq(0)').html()).toEqual "No Sort"
-#				it "should sort by ", ->
-#					runs ->
-#						@ccc.$('.bv_sortBy').val 'EC50'
-#						@ccc.$('.bv_sortBy').change()
-#						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual 3
+				it "should sort by ", ->
+					runs ->
+						@ccc.$('.bv_sortBy').val 'EC50'
+						@ccc.$('.bv_sortDirection').val 'ascending'
+						@ccc.$('.bv_sortBy').change()
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000009"
+				it "should sort by ", ->
+					runs ->
+						@ccc.$('.bv_sortBy').val 'EC50'
+						@ccc.$('.bv_sortDirection').val 'descending'
+						@ccc.$('.bv_sortBy').change()
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000004"
 			describe "filter option select display", ->
 				it "filterOption select should populate with options", ->
 					runs ->
@@ -237,10 +244,8 @@ describe "Curve Curator Module testing", ->
 						expect(@ccc.$('.bv_shinyContainer').attr('src')).toContain "90807_AG-00000026"
 
 
-#TODO find all curve categores and update filter select options
-#TODO modify testjson to include array of sort options, each has a attribute name and pretty name
 #TODO add sample attributes SSE, SST, R^2, EC50 to thumb stubs
 #TODO add ascending/descending controls for filter
-#TODO implement filter and sort
+#TODO implement sort
 #TODO stub curation/refit service. First stube new service to get curve details refactor to fetch full curve from other service
 #TODO implement curation panel

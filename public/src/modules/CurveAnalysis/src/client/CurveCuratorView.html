@@ -4,6 +4,7 @@
     </div>
     <div class="bv_thumbsUp"><span class="badge badge-success">Up</span></div>
     <div class="bv_thumbsDown"><span class="badge badge-important">Down</span></div>
+    <div class="bv_compoundCode"></div>
 </script>
 
 <script type="text/template" id="CurveSummaryListView" xmlns="http://www.w3.org/1999/html">
@@ -34,6 +35,10 @@
                 <div class="controls" style="margin-left:80px;">
                     <select class="bv_sortBy">
                         <option>Compound ID</option>
+                    </select>
+                    <select class="bv_sortDirection">
+                        <option value="ascending">ascending</option>
+                        <option value="descending">descending</option>
                     </select>
                 </div>
             </div>
