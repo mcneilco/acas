@@ -6,6 +6,10 @@ require('racas')
 
 configList <- racas::applicationSettings
 
+str(GET) ## to see the values that are passed into the GET params
+
+exportCSV <- as.boolean(GET$exportCSV)
+
 postData <- rawToChar(receiveBin(1024))
 postData.list <- fromJSON(postData)
 genes <- postData.list$geneIDs
@@ -124,15 +128,20 @@ if (nrow(dataDT) > 0){
 	error1 <- list(errorLevel="error", message="No results found.")
 	error2 <- list(errorLevel="error", message="Please load more data.")
 	responseJson$errorMessages <- list(error1, error2)
-
 	setStatus(status=506L)
 
 }
 
+if (exportCSV){
+    setHeader("Access-Control-Allow-Origin" ,"*");
+    setContentType("application/json")
+    print(outputDF)
+} else {
+    setHeader("Access-Control-Allow-Origin" ,"*");
+    setContentType("application/json")
+    cat(toJSON(responseJson))
+}
 
-setHeader("Access-Control-Allow-Origin" ,"*");
-setContentType("application/json")
-cat(toJSON(responseJson))
 
 
 
