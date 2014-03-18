@@ -11,7 +11,8 @@ source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $
 
 #Export these variables so that the apache config can pick them up
 export ACAS_USER=${server_run_user}
-if [ $ACAS_USER == "" ] || [ $ACAS_USER == "null" ]; then
+if [ "$ACAS_USER" == "" ] || [ "$ACAS_USER" == "null" ]; then
+    echo "Setting ACAS_USER to $(whoami)"
     export ACAS_USER=$(whoami)
 fi
 
