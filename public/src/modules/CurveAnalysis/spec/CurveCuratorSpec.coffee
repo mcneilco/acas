@@ -224,6 +224,9 @@ describe "Curve Curator Module testing", ->
 						expect(@ccc.$('.bv_sortBy option:eq(0)').html()).toEqual "Compound Name"
 				it "should sort by ascending", ->
 					runs ->
+						@ccc.$('.bv_sortDirection_descending').prop("checked", false)
+						@ccc.$('.bv_sortDirection_ascending').prop("checked", true)
+						@ccc.$('.bv_sortDirection_ascending').click()
 						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000001"
 				it "should sort by descending", ->
 					runs ->
@@ -244,6 +247,18 @@ describe "Curve Curator Module testing", ->
 						@ccc.$('.bv_sortDirection_descending').prop("checked", false)
 						@ccc.$('.bv_sortDirection_ascending').click()
 						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000009"
+				it "should add the 'none' option if no sortBy options are received from the server", ->
+					runs ->
+						@ccc.model.set sortOptions: new Backbone.Collection()
+						@ccc.render()
+						expect(@ccc.$('.bv_sortBy').val()).toEqual "none"
+				it "should disable sortDirection radio buttons if 'none' sortBy option is selected", ->
+					runs ->
+						@ccc.model.set sortOptions: new Backbone.Collection()
+						@ccc.render()
+						expect(@ccc.$('.bv_sortBy').val()).toEqual "none"
+						expect(@ccc.$(".bv_sortDirection_ascending").prop("disabled")).toEqual true
+						expect(@ccc.$(".bv_sortDirection_descending").prop("disabled")).toEqual true
 			describe "filter option select display", ->
 				it "filterOption select should populate with options", ->
 					runs ->
@@ -265,7 +280,6 @@ describe "Curve Curator Module testing", ->
 					runs ->
 						expect(@ccc.$('.bv_shinyContainer').attr('src')).toContain "126907_AG-00000236"
 
-#TODO add test for when no sort options received from server, should add none to the list of sort options and disable the sort direction
 #TODO add sample attributes SSE, SST, R^2, EC50 to thumb stubs
 #TODO add ascending/descending controls for filter
 #TODO implement sort

@@ -329,6 +329,9 @@
           });
           it("should sort by ascending", function() {
             return runs(function() {
+              this.ccc.$('.bv_sortDirection_descending').prop("checked", false);
+              this.ccc.$('.bv_sortDirection_ascending').prop("checked", true);
+              this.ccc.$('.bv_sortDirection_ascending').click();
               return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000001");
             });
           });
@@ -341,7 +344,7 @@
               return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000004");
             });
           });
-          return it("should update sort when ascending/descending is changed", function() {
+          it("should update sort when ascending/descending is changed", function() {
             return runs(function() {
               this.ccc.$('.bv_sortBy').val('EC50');
               this.ccc.$('.bv_sortBy').change();
@@ -353,6 +356,26 @@
               this.ccc.$('.bv_sortDirection_descending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_ascending').click();
               return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000009");
+            });
+          });
+          it("should add the 'none' option if no sortBy options are received from the server", function() {
+            return runs(function() {
+              this.ccc.model.set({
+                sortOptions: new Backbone.Collection()
+              });
+              this.ccc.render();
+              return expect(this.ccc.$('.bv_sortBy').val()).toEqual("none");
+            });
+          });
+          return it("should disable sortDirection radio buttons if 'none' sortBy option is selected", function() {
+            return runs(function() {
+              this.ccc.model.set({
+                sortOptions: new Backbone.Collection()
+              });
+              this.ccc.render();
+              expect(this.ccc.$('.bv_sortBy').val()).toEqual("none");
+              expect(this.ccc.$(".bv_sortDirection_ascending").prop("disabled")).toEqual(true);
+              return expect(this.ccc.$(".bv_sortDirection_descending").prop("disabled")).toEqual(true);
             });
           });
         });
