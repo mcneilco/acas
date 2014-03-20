@@ -179,7 +179,7 @@ class window.CurveCuratorController extends Backbone.View
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
 
-			if((@model.get 'sortOptions').length > 0)
+			if @model.get('sortOptions').length > 0
 				@sortBySelect = new PickListSelectController
 					collection: @model.get 'sortOptions'
 					el: @$('.bv_sortBy')

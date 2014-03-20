@@ -139,11 +139,11 @@ describe "Curve Curator Module testing", ->
 				@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(1).click()
 				expect(@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeFalsy()
 		describe "filtering", ->
-			it "should only show sigmoid when requested", ->
-				@cslc.filter 'sigmoid'
+			it "should only show Sigmoid when requested", ->
+				@cslc.filter 'Sigmoid'
 				expect(@cslc.$('.bv_curveSummary').length).toEqual 3
 			it "should show all when requested", ->
-				@cslc.filter 'sigmoid'
+				@cslc.filter 'Sigmoid'
 				@cslc.filter 'all'
 				expect(@cslc.$('.bv_curveSummary').length).toEqual 9
 		describe "sorting", ->
@@ -219,9 +219,10 @@ describe "Curve Curator Module testing", ->
 				it "sortOption select should populate with options", ->
 					runs ->
 						expect(@ccc.$('.bv_sortBy option').length).toEqual 5
-				it "sortOptions should make the first sortOption the default", ->
+				it "default sort option should be the first in the list from the server", ->
 					runs ->
 						expect(@ccc.$('.bv_sortBy option:eq(0)').html()).toEqual "Compound Name"
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000001"
 				it "should sort by ascending", ->
 					runs ->
 						@ccc.$('.bv_sortDirection_descending').prop("checked", false)
@@ -266,9 +267,9 @@ describe "Curve Curator Module testing", ->
 				it "sortOption select should make first option all", ->
 					runs ->
 						expect(@ccc.$('.bv_filterBy option:eq(0)').html()).toEqual "Show All"
-				it "should only show sigmoid thumbnails when sigmoid selected", ->
+				it "should only show Sigmoid thumbnails when Sigmoid selected", ->
 					runs ->
-						@ccc.$('.bv_filterBy').val 'sigmoid'
+						@ccc.$('.bv_filterBy').val 'Sigmoid'
 						@ccc.$('.bv_filterBy').change()
 						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual 3
 

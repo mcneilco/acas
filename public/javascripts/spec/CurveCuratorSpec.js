@@ -203,12 +203,12 @@
         });
       });
       describe("filtering", function() {
-        it("should only show sigmoid when requested", function() {
-          this.cslc.filter('sigmoid');
+        it("should only show Sigmoid when requested", function() {
+          this.cslc.filter('Sigmoid');
           return expect(this.cslc.$('.bv_curveSummary').length).toEqual(3);
         });
         return it("should show all when requested", function() {
-          this.cslc.filter('sigmoid');
+          this.cslc.filter('Sigmoid');
           this.cslc.filter('all');
           return expect(this.cslc.$('.bv_curveSummary').length).toEqual(9);
         });
@@ -322,9 +322,10 @@
               return expect(this.ccc.$('.bv_sortBy option').length).toEqual(5);
             });
           });
-          it("sortOptions should make the first sortOption the default", function() {
+          it("default sort option should be the first in the list from the server", function() {
             return runs(function() {
-              return expect(this.ccc.$('.bv_sortBy option:eq(0)').html()).toEqual("Compound Name");
+              expect(this.ccc.$('.bv_sortBy option:eq(0)').html()).toEqual("Compound Name");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000001");
             });
           });
           it("should sort by ascending", function() {
@@ -390,9 +391,9 @@
               return expect(this.ccc.$('.bv_filterBy option:eq(0)').html()).toEqual("Show All");
             });
           });
-          return it("should only show sigmoid thumbnails when sigmoid selected", function() {
+          return it("should only show Sigmoid thumbnails when Sigmoid selected", function() {
             return runs(function() {
-              this.ccc.$('.bv_filterBy').val('sigmoid');
+              this.ccc.$('.bv_filterBy').val('Sigmoid');
               this.ccc.$('.bv_filterBy').change();
               return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual(3);
             });

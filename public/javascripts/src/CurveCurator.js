@@ -318,7 +318,7 @@
         this.curveEditorController = new CurveEditorController({
           el: this.$('.bv_curveEditor')
         });
-        if ((this.model.get('sortOptions')).length > 0) {
+        if (this.model.get('sortOptions').length > 0) {
           this.sortBySelect = new PickListSelectController({
             collection: this.model.get('sortOptions'),
             el: this.$('.bv_sortBy'),
