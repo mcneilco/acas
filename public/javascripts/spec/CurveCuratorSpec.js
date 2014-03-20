@@ -319,20 +319,17 @@
         describe("sort option select display", function() {
           it("sortOption select should populate with options", function() {
             return runs(function() {
-              return expect(this.ccc.$('.bv_sortBy option').length).toEqual(6);
+              return expect(this.ccc.$('.bv_sortBy option').length).toEqual(5);
             });
           });
-          it("sortOption select should make first option none", function() {
+          it("sortOptions should make the first sortOption the default", function() {
             return runs(function() {
-              return expect(this.ccc.$('.bv_sortBy option:eq(0)').html()).toEqual("No Sort");
+              return expect(this.ccc.$('.bv_sortBy option:eq(0)').html()).toEqual("Compound Name");
             });
           });
           it("should sort by ascending", function() {
             return runs(function() {
-              this.ccc.$('.bv_sortBy').val('EC50');
-              this.ccc.$('.bv_sortDirection_ascending').click();
-              this.ccc.$('.bv_sortBy').change();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000009");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000001");
             });
           });
           it("should sort by descending", function() {
@@ -386,7 +383,7 @@
           });
           return it("should set the curve editor iframe src", function() {
             return runs(function() {
-              return expect(this.ccc.$('.bv_shinyContainer').attr('src')).toContain("90807_AG-00000026");
+              return expect(this.ccc.$('.bv_shinyContainer').attr('src')).toContain("126907_AG-00000236");
             });
           });
         });

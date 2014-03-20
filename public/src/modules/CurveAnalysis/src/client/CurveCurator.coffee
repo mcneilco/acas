@@ -176,15 +176,8 @@ class window.CurveCuratorController extends Backbone.View
 			@curveListController.render()
 			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
 
-			if(@curveListController.sortAscending)
-				@$('.bv_sortDirection_ascending').attr( "checked", true );
-			else
-				@$('.bv_sortDirection_descending').attr( "checked", true );
-
-
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
-			@$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
 
 			if((@model.get 'sortOptions').length > 0)
 				@sortBySelect = new PickListSelectController
@@ -201,7 +194,6 @@ class window.CurveCuratorController extends Backbone.View
 						name: "No Sort"
 					selectedCode: "none"
 					autoFetch: false
-
 			@sortBySelect.render()
 
 			@filterBySelect = new PickListSelectController
@@ -213,6 +205,14 @@ class window.CurveCuratorController extends Backbone.View
 				selectedCode: "all"
 				autoFetch: false
 			@filterBySelect.render()
+
+			if(@curveListController.sortAscending)
+				@$('.bv_sortDirection_ascending').attr( "checked", true );
+			else
+				@$('.bv_sortDirection_descending').attr( "checked", true );
+
+			@handleSortChanged()
+			@$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
 
 		@
 
@@ -230,6 +230,11 @@ class window.CurveCuratorController extends Backbone.View
 		@curveListController.filter @$('.bv_filterBy').val()
 
 	handleSortChanged: =>
+		sortBy = @$('.bv_sortBy').val()
+		if(sortBy == "none")
+			@$("input[name='bv_sortDirection']").prop('disabled', true);
+		else
+			@$("input[name='bv_sortDirection']").prop('disabled', false);
 		sortDirection = if @$("input[name='bv_sortDirection']:checked").val() == "descending" then false else true
-		@curveListController.sort @$('.bv_sortBy').val(), sortDirection
+		@curveListController.sort sortBy, sortDirection
 

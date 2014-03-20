@@ -315,15 +315,9 @@
         });
         this.curveListController.render();
         this.curveListController.on('selectionUpdated', this.curveSelectionUpdated);
-        if (this.curveListController.sortAscending) {
-          this.$('.bv_sortDirection_ascending').attr("checked", true);
-        } else {
-          this.$('.bv_sortDirection_descending').attr("checked", true);
-        }
         this.curveEditorController = new CurveEditorController({
           el: this.$('.bv_curveEditor')
         });
-        this.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
         if ((this.model.get('sortOptions')).length > 0) {
           this.sortBySelect = new PickListSelectController({
             collection: this.model.get('sortOptions'),
@@ -355,6 +349,13 @@
           autoFetch: false
         });
         this.filterBySelect.render();
+        if (this.curveListController.sortAscending) {
+          this.$('.bv_sortDirection_ascending').attr("checked", true);
+        } else {
+          this.$('.bv_sortDirection_descending').attr("checked", true);
+        }
+        this.handleSortChanged();
+        this.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
       }
       return this;
     };
@@ -380,9 +381,15 @@
     };
 
     CurveCuratorController.prototype.handleSortChanged = function() {
-      var sortDirection;
+      var sortBy, sortDirection;
+      sortBy = this.$('.bv_sortBy').val();
+      if (sortBy === "none") {
+        this.$("input[name='bv_sortDirection']").prop('disabled', true);
+      } else {
+        this.$("input[name='bv_sortDirection']").prop('disabled', false);
+      }
       sortDirection = this.$("input[name='bv_sortDirection']:checked").val() === "descending" ? false : true;
-      return this.curveListController.sort(this.$('.bv_sortBy').val(), sortDirection);
+      return this.curveListController.sort(sortBy, sortDirection);
     };
 
     return CurveCuratorController;
