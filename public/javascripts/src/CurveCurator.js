@@ -143,6 +143,7 @@
           this.$('.bv_thumbsDown').show();
         }
       }
+      this.$('.bv_compoundCode').html(this.model.get('curveAttributes').compoundCode);
       return this;
     };
 
@@ -176,7 +177,9 @@
     CurveSummaryListController.prototype.template = _.template($("#CurveSummaryListView").html());
 
     CurveSummaryListController.prototype.initialize = function() {
-      return this.filterKey = 'all';
+      this.filterKey = 'all';
+      this.sortKey = 'none';
+      return this.sortAscending = true;
     };
 
     CurveSummaryListController.prototype.render = function() {
@@ -191,6 +194,19 @@
         })(this)));
       } else {
         toRender = this.collection;
+      }
+      if (this.sortKey !== 'none') {
+        toRender = toRender.sortBy((function(_this) {
+          return function(curve) {
+            var attributes;
+            attributes = curve.get('curveAttributes');
+            return attributes[_this.sortKey];
+          };
+        })(this));
+        if (!this.sortAscending) {
+          toRender = toRender.reverse();
+        }
+        toRender = new Backbone.Collection(toRender);
       }
       toRender.each((function(_this) {
         return function(cs) {
@@ -213,6 +229,12 @@
 
     CurveSummaryListController.prototype.filter = function(key) {
       this.filterKey = key;
+      return this.render();
+    };
+
+    CurveSummaryListController.prototype.sort = function(key, ascending) {
+      this.sortKey = key;
+      this.sortAscending = ascending;
       return this.render();
     };
 
@@ -267,6 +289,7 @@
     __extends(CurveCuratorController, _super);
 
     function CurveCuratorController() {
+      this.handleSortChanged = __bind(this.handleSortChanged, this);
       this.handleFilterChanged = __bind(this.handleFilterChanged, this);
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
       this.render = __bind(this.render, this);
@@ -276,7 +299,10 @@
     CurveCuratorController.prototype.template = _.template($("#CurveCuratorView").html());
 
     CurveCuratorController.prototype.events = {
-      'change .bv_filterBy': 'handleFilterChanged'
+      'change .bv_filterBy': 'handleFilterChanged',
+      'change .bv_sortBy': 'handleSortChanged',
+      'click .bv_sortDirection_ascending': 'handleSortChanged',
+      'click .bv_sortDirection_descending': 'handleSortChanged'
     };
 
     CurveCuratorController.prototype.render = function() {
@@ -289,20 +315,34 @@
         });
         this.curveListController.render();
         this.curveListController.on('selectionUpdated', this.curveSelectionUpdated);
+        if (this.curveListController.sortAscending) {
+          this.$('.bv_sortDirection_ascending').attr("checked", true);
+        } else {
+          this.$('.bv_sortDirection_descending').attr("checked", true);
+        }
         this.curveEditorController = new CurveEditorController({
           el: this.$('.bv_curveEditor')
         });
         this.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
-        this.sortBySelect = new PickListSelectController({
-          collection: this.model.get('sortOptions'),
-          el: this.$('.bv_sortBy'),
-          insertFirstOption: new PickList({
-            code: "none",
-            name: "No Sort"
-          }),
-          selectedCode: "none",
-          autoFetch: false
-        });
+        if ((this.model.get('sortOptions')).length > 0) {
+          this.sortBySelect = new PickListSelectController({
+            collection: this.model.get('sortOptions'),
+            el: this.$('.bv_sortBy'),
+            selectedCode: (this.model.get('sortOptions'))[0],
+            autoFetch: false
+          });
+        } else {
+          this.sortBySelect = new PickListSelectController({
+            collection: this.model.get('sortOptions'),
+            el: this.$('.bv_sortBy'),
+            insertFirstOption: new PickList({
+              code: "none",
+              name: "No Sort"
+            }),
+            selectedCode: "none",
+            autoFetch: false
+          });
+        }
         this.sortBySelect.render();
         this.filterBySelect = new PickListSelectController({
           collection: this.model.get('curves').getCategories(),
@@ -337,6 +377,12 @@
 
     CurveCuratorController.prototype.handleFilterChanged = function() {
       return this.curveListController.filter(this.$('.bv_filterBy').val());
+    };
+
+    CurveCuratorController.prototype.handleSortChanged = function() {
+      var sortDirection;
+      sortDirection = this.$("input[name='bv_sortDirection']:checked").val() === "descending" ? false : true;
+      return this.curveListController.sort(this.$('.bv_sortBy').val(), sortDirection);
     };
 
     return CurveCuratorController;

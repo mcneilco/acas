@@ -70,7 +70,7 @@ class window.CurveSummaryController extends Backbone.View
 				@$('.bv_thumbsDown').hide()
 			else
 				@$('.bv_thumbsDown').show()
-
+		@$('.bv_compoundCode').html @model.get('curveAttributes').compoundCode
 		@
 
 	setSelected: =>
@@ -89,6 +89,8 @@ class window.CurveSummaryListController extends Backbone.View
 
 	initialize: ->
 		@filterKey = 'all'
+		@sortKey = 'none'
+		@sortAscending = true
 
 	render: =>
 		@$el.empty()
@@ -99,6 +101,14 @@ class window.CurveSummaryListController extends Backbone.View
 				cs.get('category') == @filterKey
 		else
 			toRender = @collection
+
+		unless @sortKey == 'none'
+			toRender = toRender.sortBy (curve) =>
+				attributes = curve.get('curveAttributes')
+				attributes[@sortKey]
+			unless @sortAscending
+				toRender = toRender.reverse()
+			toRender = new Backbone.Collection toRender
 
 		toRender.each (cs) =>
 			csController = new CurveSummaryController(model: cs)
@@ -114,6 +124,11 @@ class window.CurveSummaryListController extends Backbone.View
 
 	filter: (key) ->
 		@filterKey = key
+		@render()
+
+	sort: (key, ascending) ->
+		@sortKey = key
+		@sortAscending = ascending
 		@render()
 
 
@@ -147,6 +162,9 @@ class window.CurveCuratorController extends Backbone.View
 	template: _.template($("#CurveCuratorView").html())
 	events:
 		'change .bv_filterBy': 'handleFilterChanged'
+		'change .bv_sortBy': 'handleSortChanged'
+		'click .bv_sortDirection_ascending': 'handleSortChanged'
+		'click .bv_sortDirection_descending': 'handleSortChanged'
 
 	render: =>
 		@$el.empty()
@@ -158,18 +176,32 @@ class window.CurveCuratorController extends Backbone.View
 			@curveListController.render()
 			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
 
+			if(@curveListController.sortAscending)
+				@$('.bv_sortDirection_ascending').attr( "checked", true );
+			else
+				@$('.bv_sortDirection_descending').attr( "checked", true );
+
+
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
 			@$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
 
-			@sortBySelect = new PickListSelectController
-				collection: @model.get 'sortOptions'
-				el: @$('.bv_sortBy')
-				insertFirstOption: new PickList
-					code: "none"
-					name: "No Sort"
-				selectedCode: "none"
-				autoFetch: false
+			if((@model.get 'sortOptions').length > 0)
+				@sortBySelect = new PickListSelectController
+					collection: @model.get 'sortOptions'
+					el: @$('.bv_sortBy')
+					selectedCode: (@model.get 'sortOptions')[0]
+					autoFetch: false
+			else
+				@sortBySelect = new PickListSelectController
+					collection: @model.get 'sortOptions'
+					el: @$('.bv_sortBy')
+					insertFirstOption: new PickList
+						code: "none"
+						name: "No Sort"
+					selectedCode: "none"
+					autoFetch: false
+
 			@sortBySelect.render()
 
 			@filterBySelect = new PickListSelectController
@@ -197,5 +229,7 @@ class window.CurveCuratorController extends Backbone.View
 	handleFilterChanged: =>
 		@curveListController.filter @$('.bv_filterBy').val()
 
-
+	handleSortChanged: =>
+		sortDirection = if @$("input[name='bv_sortDirection']:checked").val() == "descending" then false else true
+		@curveListController.sort @$('.bv_sortBy').val(), sortDirection
 

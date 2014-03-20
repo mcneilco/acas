@@ -80,6 +80,8 @@ describe "Curve Curator Module testing", ->
 		describe "rendering thumbnail", ->
 			it "should have img src attribute set", ->
 				expect(@csc.$('.bv_thumbnail').attr('src')).toContain "90807_AG-00000026"
+			it "should show the compound code", ->
+				expect(@csc.$('.bv_compoundCode').html()).toEqual "CMPD-0000008"
 		describe "selection", ->
 			it "should show selected when clicked", ->
 				@csc.$el.click()
@@ -144,6 +146,16 @@ describe "Curve Curator Module testing", ->
 				@cslc.filter 'sigmoid'
 				@cslc.filter 'all'
 				expect(@cslc.$('.bv_curveSummary').length).toEqual 9
+		describe "sorting", ->
+			it "should show the lowest EC50 when requested", ->
+				@cslc.sort 'EC50', true
+				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000009"
+			it "should show the highest EC50 when requested", ->
+				@cslc.sort 'EC50', false
+				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000004"
+			it "should show the first one when no sorting is requested", ->
+				@cslc.sort 'none'
+				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000008"
 
 	describe "Curve Editor Controller tests", ->
 		describe "when created with no model", ->
@@ -206,22 +218,35 @@ describe "Curve Curator Module testing", ->
 			describe "sort option select display", ->
 				it "sortOption select should populate with options", ->
 					runs ->
-						expect(@ccc.$('.bv_sortBy option').length).toEqual 5
+						expect(@ccc.$('.bv_sortBy option').length).toEqual 6
 				it "sortOption select should make first option none", ->
 					runs ->
 						expect(@ccc.$('.bv_sortBy option:eq(0)').html()).toEqual "No Sort"
-				it "should sort by ", ->
+				it "should sort by ascending", ->
 					runs ->
 						@ccc.$('.bv_sortBy').val 'EC50'
-						@ccc.$('.bv_sortDirection').val 'ascending'
+						@ccc.$('.bv_sortDirection_ascending').click()
 						@ccc.$('.bv_sortBy').change()
 						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000009"
-				it "should sort by ", ->
+				it "should sort by descending", ->
 					runs ->
 						@ccc.$('.bv_sortBy').val 'EC50'
-						@ccc.$('.bv_sortDirection').val 'descending'
-						@ccc.$('.bv_sortBy').change()
+						@ccc.$('.bv_sortDirection_descending').prop("checked", true)
+						@ccc.$('.bv_sortDirection_ascending').prop("checked", false)
+						@ccc.$('.bv_sortDirection_descending').click()
 						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000004"
+				it "should update sort when ascending/descending is changed", ->
+					runs ->
+						@ccc.$('.bv_sortBy').val 'EC50'
+						@ccc.$('.bv_sortBy').change()
+						@ccc.$('.bv_sortDirection_descending').prop("checked", true)
+						@ccc.$('.bv_sortDirection_ascending').prop("checked", false)
+						@ccc.$('.bv_sortDirection_descending').click()
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000004"
+						@ccc.$('.bv_sortDirection_ascending').prop("checked", true)
+						@ccc.$('.bv_sortDirection_descending').prop("checked", false)
+						@ccc.$('.bv_sortDirection_ascending').click()
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000009"
 			describe "filter option select display", ->
 				it "filterOption select should populate with options", ->
 					runs ->

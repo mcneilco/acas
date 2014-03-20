@@ -113,8 +113,11 @@
         });
       });
       describe("rendering thumbnail", function() {
-        return it("should have img src attribute set", function() {
+        it("should have img src attribute set", function() {
           return expect(this.csc.$('.bv_thumbnail').attr('src')).toContain("90807_AG-00000026");
+        });
+        return it("should show the compound code", function() {
+          return expect(this.csc.$('.bv_compoundCode').html()).toEqual("CMPD-0000008");
         });
       });
       describe("selection", function() {
@@ -199,7 +202,7 @@
           return expect(this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeFalsy();
         });
       });
-      return describe("filtering", function() {
+      describe("filtering", function() {
         it("should only show sigmoid when requested", function() {
           this.cslc.filter('sigmoid');
           return expect(this.cslc.$('.bv_curveSummary').length).toEqual(3);
@@ -208,6 +211,20 @@
           this.cslc.filter('sigmoid');
           this.cslc.filter('all');
           return expect(this.cslc.$('.bv_curveSummary').length).toEqual(9);
+        });
+      });
+      return describe("sorting", function() {
+        it("should show the lowest EC50 when requested", function() {
+          this.cslc.sort('EC50', true);
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000009");
+        });
+        it("should show the highest EC50 when requested", function() {
+          this.cslc.sort('EC50', false);
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000004");
+        });
+        return it("should show the first one when no sorting is requested", function() {
+          this.cslc.sort('none');
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000008");
         });
       });
     });
@@ -302,7 +319,7 @@
         describe("sort option select display", function() {
           it("sortOption select should populate with options", function() {
             return runs(function() {
-              return expect(this.ccc.$('.bv_sortBy option').length).toEqual(5);
+              return expect(this.ccc.$('.bv_sortBy option').length).toEqual(6);
             });
           });
           it("sortOption select should make first option none", function() {
@@ -310,20 +327,35 @@
               return expect(this.ccc.$('.bv_sortBy option:eq(0)').html()).toEqual("No Sort");
             });
           });
-          it("should sort by ", function() {
+          it("should sort by ascending", function() {
             return runs(function() {
               this.ccc.$('.bv_sortBy').val('EC50');
-              this.ccc.$('.bv_sortDirection').val('ascending');
+              this.ccc.$('.bv_sortDirection_ascending').click();
               this.ccc.$('.bv_sortBy').change();
               return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000009");
             });
           });
-          return it("should sort by ", function() {
+          it("should sort by descending", function() {
             return runs(function() {
               this.ccc.$('.bv_sortBy').val('EC50');
-              this.ccc.$('.bv_sortDirection').val('descending');
-              this.ccc.$('.bv_sortBy').change();
+              this.ccc.$('.bv_sortDirection_descending').prop("checked", true);
+              this.ccc.$('.bv_sortDirection_ascending').prop("checked", false);
+              this.ccc.$('.bv_sortDirection_descending').click();
               return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000004");
+            });
+          });
+          return it("should update sort when ascending/descending is changed", function() {
+            return runs(function() {
+              this.ccc.$('.bv_sortBy').val('EC50');
+              this.ccc.$('.bv_sortBy').change();
+              this.ccc.$('.bv_sortDirection_descending').prop("checked", true);
+              this.ccc.$('.bv_sortDirection_ascending').prop("checked", false);
+              this.ccc.$('.bv_sortDirection_descending').click();
+              expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000004");
+              this.ccc.$('.bv_sortDirection_ascending').prop("checked", true);
+              this.ccc.$('.bv_sortDirection_descending').prop("checked", false);
+              this.ccc.$('.bv_sortDirection_ascending').click();
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000009");
             });
           });
         });
