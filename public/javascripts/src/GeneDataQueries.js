@@ -31,7 +31,6 @@
       var gid, gids, _i, _len, _results;
       if ($.trim(listStr) !== "") {
         gids = listStr.split(",");
-        console.log(gids.length);
         _results = [];
         for (_i = 0, _len = gids.length; _i < _len; _i++) {
           gid = gids[_i];
@@ -80,8 +79,6 @@
     };
 
     GeneIDQueryInputController.prototype.handleInputFieldChanged = function(e) {
-      console.log("in handleInputFieldChanged");
-      console.log(e);
       this.updateGIDsFromField();
       if (this.collection.length === 0) {
         return this.$('.bv_search').attr('disabled', 'disabled');
@@ -233,10 +230,68 @@
 
   })(Backbone.View);
 
+  window.ExperimentTreeController = (function(_super) {
+    __extends(ExperimentTreeController, _super);
+
+    function ExperimentTreeController() {
+      this.handleSearchClear = __bind(this.handleSearchClear, this);
+      this.render = __bind(this.render, this);
+      return ExperimentTreeController.__super__.constructor.apply(this, arguments);
+    }
+
+    ExperimentTreeController.prototype.template = _.template($("#ExperimentTreeView").html());
+
+    ExperimentTreeController.prototype.events = {
+      "click .bv_searchClear": "handleSearchClear"
+    };
+
+    ExperimentTreeController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.setupTree();
+      return this;
+    };
+
+    ExperimentTreeController.prototype.setupTree = function() {
+      var to;
+      this.$('.bv_tree').jstree({
+        core: {
+          data: this.model.get('experimentData')
+        },
+        plugins: ["checkbox", "search"]
+      });
+      to = false;
+      return this.$(".bv_searchVal").keyup((function(_this) {
+        return function() {
+          if (to) {
+            clearTimeout(to);
+          }
+          to = setTimeout(function() {
+            var v;
+            v = this.$(".bv_searchVal").val();
+            this.$(".bv_tree").jstree(true).search(v);
+          }, 250);
+        };
+      })(this));
+    };
+
+    ExperimentTreeController.prototype.handleSearchClear = function() {
+      return this.$('.bv_searchVal').val("");
+    };
+
+    ExperimentTreeController.prototype.getSelectedExperiments = function() {
+      return this.$('.bv_tree').jstree('get_selected');
+    };
+
+    return ExperimentTreeController;
+
+  })(Backbone.View);
+
   window.GeneIDQueryAppController = (function(_super) {
     __extends(GeneIDQueryAppController, _super);
 
     function GeneIDQueryAppController() {
+      this.handleGetGeneExperimentsReturn = __bind(this.handleGetGeneExperimentsReturn, this);
       return GeneIDQueryAppController.__super__.constructor.apply(this, arguments);
     }
 
@@ -245,10 +300,29 @@
     GeneIDQueryAppController.prototype.initialize = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      this.gidqsc = new GeneIDQuerySearchController({
-        el: this.$('.bv_queryView')
+      return $.ajax({
+        type: 'POST',
+        url: "api/getGeneExperiments",
+        dataType: 'json',
+        data: {
+          geneIDs: "1234, 2345, 4444"
+        },
+        success: this.handleGetGeneExperimentsReturn,
+        error: (function(_this) {
+          return function(err) {
+            console.log('got ajax error');
+            return _this.serviceReturn = null;
+          };
+        })(this)
       });
-      return this.gidqsc.render();
+    };
+
+    GeneIDQueryAppController.prototype.handleGetGeneExperimentsReturn = function(json) {
+      this.etc = new ExperimentTreeController({
+        el: this.$('.bv_queryView'),
+        model: new Backbone.Model(json.results)
+      });
+      return this.etc.render();
     };
 
     return GeneIDQueryAppController;

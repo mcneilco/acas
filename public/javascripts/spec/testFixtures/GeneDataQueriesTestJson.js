@@ -60,7 +60,7 @@
         ]
       }
     };
-    return exports.geneIDQueryResultsNoneFound = {
+    exports.geneIDQueryResultsNoneFound = {
       htmlSummary: "HTML from service",
       data: {
         "iTotalRecords": 0,
@@ -68,6 +68,73 @@
         "aaData": [],
         "groupHeaders": []
       }
+    };
+    exports.getGeneExperimentsReturn = {
+      experimentData: [
+        {
+          description: "Protocol Kind",
+          id: "genomic",
+          lsTags: [],
+          parent: "Root Node",
+          text: "genomic"
+        }, {
+          description: "Root Node for All Protocols",
+          id: "Root Node",
+          lsTags: [],
+          parent: "#",
+          text: "All Protocols"
+        }, {
+          description: "NA",
+          id: "EXPT-00000397",
+          lsTags: [
+            {
+              id: 26,
+              recordedDate: 1393195767000,
+              tagText: "catalina island",
+              version: 1
+            }
+          ],
+          parent: "PROT-00000026",
+          text: "EXPT-00000397 Test Load 103"
+        }, {
+          description: "NA",
+          id: "EXPT-00000398",
+          lsTags: [
+            {
+              id: 26,
+              recordedDate: 1393195767000,
+              tagText: "catalina island",
+              version: 1
+            }
+          ],
+          parent: "PROT-00000026",
+          text: "EXPT-00000398 Test Load 104"
+        }, {
+          description: "NA",
+          id: "EXPT-00000396",
+          lsTags: [
+            {
+              id: 26,
+              recordedDate: 1393195767000,
+              tagText: "catalina island",
+              version: 1
+            }
+          ],
+          parent: "PROT-00000026",
+          text: "EXPT-00000396 Test Load 102"
+        }, {
+          description: "protocol created by generic data parser",
+          id: "PROT-00000026",
+          lsTags: [],
+          parent: "genomic",
+          text: "PROT-00000026 APMS"
+        }
+      ],
+      htmlSummary: "OK"
+    };
+    return exports.getGeneExperimentsNoResultsReturn = {
+      experimentData: [],
+      htmlSummary: "No results found"
     };
   })((typeof process === "undefined" || !process.versions ? window.geneDataQueriesTestJSON = window.geneDataQueriesTestJSON || {} : exports));
 

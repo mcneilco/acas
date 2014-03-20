@@ -192,6 +192,61 @@ describe "Gene Data Queries Module Testing", ->
 				it "should add the toolbar fixed top class", ->
 					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeTruthy()
 
+	################  Advanced-mode queries ###
+
+
+
+	describe "Advanced search modules", ->
+		describe "Protocol and experiment display", ->
+			describe 'when instantiated', ->
+				beforeEach ->
+					@etc = new ExperimentTreeController
+						el: $('#fixture')
+						model: new Backbone.Model window.geneDataQueriesTestJSON.getGeneExperimentsReturn
+					@etc.render()
+				describe "basic existance tests", ->
+					it 'should exist', ->
+						expect(@etc).toBeDefined()
+					it 'should load a template', ->
+						expect(@etc.$('.bv_tree').length).toEqual 1
+				describe "rendering", ->
+					it "should load tree and display root node", ->
+						expect(@etc.$('.bv_tree').html()).toContain "Protocols"
+				describe "search field management", ->
+					it "should clear search field on request", ->
+						@etc.$('.bv_searchVal').val "search text"
+						expect(@etc.$('.bv_searchVal').val()).toEqual "search text"
+						@etc.$('.bv_searchClear').click()
+						expect(@etc.$('.bv_searchVal').val()).toEqual ""
+					it "should show an experiment on search", ->
+						expect(@etc.$('.bv_tree').html()).toNotContain "EXPT-00000397"
+						@etc.$('.bv_searchVal').val "397"
+						@etc.$(".bv_tree").jstree(true).search @etc.$('.bv_searchVal').val()
+#						@etc.$('.bv_searchVal').keyup()
+						expect(@etc.$('.bv_tree').html()).toContain "EXPT-00000397"
+				describe "getting selected", ->
+					it "should get selected experiments", ->
+						@etc.$(".bv_tree").jstree(true).search "EXPT-00000398"
+						expect(@etc.$('.bv_tree').html()).toContain "EXPT-00000398"
+						@etc.$('.jstree-checkbox:eq(4)').click()
+						@etc.$('.jstree-checkbox:eq(5)').click()
+						expect(@etc.getSelectedExperiments()).toEqual ["EXPT-00000398", "EXPT-00000396"]
+
+	#	describe "Advanced search wizard", ->
+	#		describe 'when instantiated', ->
+	#			beforeEach ->
+	#				@gidaqc = new GeneIDAdvancedQueryController
+	#					el: $('#fixture')
+	#				@gidaqc.render()
+	#			describe "basic existance tests", ->
+	#				it 'should exist', ->
+	#					expect(@gidaqc).toBeDefined()
+	#				it 'should load a template', ->
+	#					expect(@gidaqc.$('.bv_getGeneCodesView').length).toEqual 1
+
+
+
+	################ stand-alone app launcher   ##########
 	describe "Gene ID Query App Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
@@ -207,7 +262,7 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqac.$('.bv_inputView').length).toEqual 1
 
 
+#TODO Reconfigure GeneIDQueryInputController to send "" list instead of model
 #TODO setup download CSV service
-#TODO make login so it doesn't loose original URL request
-#TODO replace non-test mode query service with call to RApache
+#TODO add an enuciator to show search errors etc
 

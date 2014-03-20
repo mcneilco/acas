@@ -286,6 +286,55 @@
         });
       });
     });
+    describe("Advanced search modules", function() {
+      return describe("Protocol and experiment display", function() {
+        return describe('when instantiated', function() {
+          beforeEach(function() {
+            this.etc = new ExperimentTreeController({
+              el: $('#fixture'),
+              model: new Backbone.Model(window.geneDataQueriesTestJSON.getGeneExperimentsReturn)
+            });
+            return this.etc.render();
+          });
+          describe("basic existance tests", function() {
+            it('should exist', function() {
+              return expect(this.etc).toBeDefined();
+            });
+            return it('should load a template', function() {
+              return expect(this.etc.$('.bv_tree').length).toEqual(1);
+            });
+          });
+          describe("rendering", function() {
+            return it("should load tree and display root node", function() {
+              return expect(this.etc.$('.bv_tree').html()).toContain("Protocols");
+            });
+          });
+          describe("search field management", function() {
+            it("should clear search field on request", function() {
+              this.etc.$('.bv_searchVal').val("search text");
+              expect(this.etc.$('.bv_searchVal').val()).toEqual("search text");
+              this.etc.$('.bv_searchClear').click();
+              return expect(this.etc.$('.bv_searchVal').val()).toEqual("");
+            });
+            return it("should show an experiment on search", function() {
+              expect(this.etc.$('.bv_tree').html()).toNotContain("EXPT-00000397");
+              this.etc.$('.bv_searchVal').val("397");
+              this.etc.$(".bv_tree").jstree(true).search(this.etc.$('.bv_searchVal').val());
+              return expect(this.etc.$('.bv_tree').html()).toContain("EXPT-00000397");
+            });
+          });
+          return describe("getting selected", function() {
+            return it("should get selected experiments", function() {
+              this.etc.$(".bv_tree").jstree(true).search("EXPT-00000398");
+              expect(this.etc.$('.bv_tree').html()).toContain("EXPT-00000398");
+              this.etc.$('.jstree-checkbox:eq(4)').click();
+              this.etc.$('.jstree-checkbox:eq(5)').click();
+              return expect(this.etc.getSelectedExperiments()).toEqual(["EXPT-00000398", "EXPT-00000396"]);
+            });
+          });
+        });
+      });
+    });
     return describe("Gene ID Query App Controller", function() {
       return describe('when instantiated', function() {
         beforeEach(function() {

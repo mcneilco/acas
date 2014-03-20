@@ -1,6 +1,7 @@
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/geneDataQuery', exports.getExperimentDataForGenes
+	app.post '/api/getGeneExperiments', exports.getExperimentListForGenes
 	config = require '../conf/compiled/conf.js'
 	if config.all.client.require.login
 		app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
@@ -16,7 +17,7 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 		console.log "test mode: "+global.specRunnerTestmode
 		geneDataQueriesTestJSON = require '../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js'
 		requestError = if req.body.maxRowsToReturn < 0 then true else false
-		if req.body.geneIDs[0].gid == "fiona"
+		if req.body.geneIDs == "fiona"
 			results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound
 		else
 			results = geneDataQueriesTestJSON.geneIDQueryResults
@@ -49,13 +50,37 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 				console.log resp
 		)
 
+exports.getExperimentListForGenes = (req, resp)  ->
+	req.connection.setTimeout 600000
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+
+	resp.writeHead(200, {'Content-Type': 'application/json'});
+	if global.specRunnerTestmode
+		console.log "test mode: "+global.specRunnerTestmode
+		geneDataQueriesTestJSON = require '../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js'
+		requestError = if req.body.maxRowsToReturn < 0 then true else false
+		if req.body.geneIDs == "fiona"
+			results = geneDataQueriesTestJSON.getGeneExperimentsNoResultsReturn
+		else
+			results = geneDataQueriesTestJSON.getGeneExperimentsReturn
+		responseObj =
+			results: results
+			hasError: requestError
+			hasWarning: true
+			errorMessages: [
+				{errorLevel: "warning", message: "some genes not found"},
+			]
+		if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "start offset outside allowed range, please speake to an administrator"}
+		resp.end JSON.stringify responseObj
+	else
+		console.log "production function getExperimentListForGenes not implemented"
 
 
 exports.geneIDQueryIndex = (req, res) ->
 	#"use strict"
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
-	global.specRunnerTestmode = false
+	global.specRunnerTestmode = if global.stubsMode then true else false
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
 	if config.all.client.require.login
 		loginUserName = req.user.username

@@ -8,7 +8,6 @@ class window.GeneIDList extends Backbone.Collection
 	addGIDsFromString: (listStr) ->
 		unless $.trim(listStr) == ""
 			gids = listStr.split ","
-			console.log gids.length
 			for gid in gids
 				@add new GeneID gid: $.trim(gid)
 
@@ -34,8 +33,6 @@ class window.GeneIDQueryInputController extends Backbone.View
 		@collection.addGIDsFromString @$('.bv_gidListString').val()
 
 	handleInputFieldChanged: (e) =>
-		console.log "in handleInputFieldChanged"
-		console.log e
 		@updateGIDsFromField()
 		if @collection.length == 0
 			@$('.bv_search').attr('disabled','disabled')
@@ -137,13 +134,71 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@$('.bv_resultsView').show()
 
 
+################  Advanced-mode queries ################
+
+class window.ExperimentTreeController extends Backbone.View
+	template: _.template($("#ExperimentTreeView").html())
+	events:
+		"click .bv_searchClear": "handleSearchClear"
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@setupTree()
+		
+		@
+	
+	setupTree: ->
+		@$('.bv_tree').jstree
+			core:
+				data: @model.get('experimentData')
+			plugins: [ "checkbox","search"]
+
+		to = false
+		@$(".bv_searchVal").keyup =>
+			clearTimeout to  if to
+			to = setTimeout(->
+				v = @$(".bv_searchVal").val()
+				@$(".bv_tree").jstree(true).search v
+				return
+			, 250)
+			return
+
+	handleSearchClear: =>
+		@$('.bv_searchVal').val("")
+
+	getSelectedExperiments: ->
+		@$('.bv_tree').jstree('get_selected')
+
+
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
 
+#	initialize: ->
+#		$(@el).empty()
+#		$(@el).html @template()
+#		@gidqsc = new GeneIDQuerySearchController
+#			el: @$('.bv_queryView')
+#		@gidqsc.render()
+
+	#This is dev scaffolding. Real code for basic query is above commented out
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
-		@gidqsc = new GeneIDQuerySearchController
+		$.ajax
+			type: 'POST'
+			url: "api/getGeneExperiments"
+			dataType: 'json'
+			data:
+				geneIDs: "1234, 2345, 4444"
+			success: @handleGetGeneExperimentsReturn
+			error: (err) =>
+				console.log 'got ajax error'
+				@serviceReturn = null
+
+	handleGetGeneExperimentsReturn: (json) =>
+		@etc = new ExperimentTreeController
 			el: @$('.bv_queryView')
-		@gidqsc.render()
+			model: new Backbone.Model json.results
+		@etc.render()
 
