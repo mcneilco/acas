@@ -53,6 +53,29 @@
 
 
 </script>
+
+<script type="text/template" id="ExperimentResultFilterTermView" xmlns="http://www.w3.org/1999/html">
+
+    <label style="margin-left:10px;margin-right:5px;">Q1</label>
+    <select class="span4 bv_experiment" style="margin-right:5px;"></select>
+    <select class="span4 bv_kind" style="margin-right:5px;"></select>
+    <select class="span1 bv_operator_number" style="margin-right:5px;">
+        <option val="=">=</option>
+        <option val="<">&lt;</option>
+        <option val=">">&gt;</option>
+    </select>
+    <select class="span1 bv_operator_bool" style="margin-right:5px;">
+        <option val="true">true</option>
+        <option val="false">false</option>
+    </select>
+    <select class="span1 bv_operator_string" style="margin-right:5px;">
+        <option val="exact">equals</option>
+        <option val="contains">contains</option>
+    </select>
+    <input type="text" class="span2 bv_filterValue" placeholder="filter value" />
+    <button class="close bv_delete" style="margin-top:3px;margin-right:8px;">&times;</button>
+</script>
+
 <script type="text/template" id="GeneIDQueryAppView" xmlns="http://www.w3.org/1999/html">
     <div class="navbar navbar-static-top navbar-inverse bv_gidMainNavbar">
         <div class="navbar-inner">
@@ -63,6 +86,9 @@
     </div>
     <div class="container">
         <div class="bv_queryView"></div>
+        <div class="bv_exptTreeView"></div>
+        <div class="bv_attributeFilterView"></div>
+
 
      </div>
 </script>

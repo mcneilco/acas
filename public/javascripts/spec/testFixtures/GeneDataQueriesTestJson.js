@@ -132,8 +132,60 @@
       ],
       htmlSummary: "OK"
     };
-    return exports.getGeneExperimentsNoResultsReturn = {
+    exports.getGeneExperimentsNoResultsReturn = {
       experimentData: [],
+      htmlSummary: "No results found"
+    };
+    exports.experimentSearchOptions = {
+      experiments: [
+        {
+          experimentCode: "EXPT-00000396",
+          valueKinds: [
+            {
+              lsKind: "EC50",
+              lsType: "numericValue"
+            }, {
+              lsKind: "hit",
+              lsType: "booleanValue"
+            }, {
+              lsKind: "category",
+              lsType: "stringValue"
+            }
+          ]
+        }, {
+          experimentCode: "EXPT-00000398",
+          valueKinds: [
+            {
+              lsKind: "KD",
+              lsType: "numericValue"
+            }, {
+              lsKind: "hit",
+              lsType: "booleanValue"
+            }, {
+              lsKind: "category",
+              lsType: "stringValue"
+            }
+          ]
+        }, {
+          experimentCode: "EXPT-00000397",
+          valueKinds: [
+            {
+              lsKind: "a pretty long attribute name",
+              lsType: "numericValue"
+            }, {
+              lsKind: "hit",
+              lsType: "booleanValue"
+            }, {
+              lsKind: "category",
+              lsType: "stringValue"
+            }
+          ]
+        }
+      ],
+      htmlSummary: "OK"
+    };
+    return exports.experimentSearchOptionsNoMatches = {
+      experiments: [],
       htmlSummary: "No results found"
     };
   })((typeof process === "undefined" || !process.versions ? window.geneDataQueriesTestJSON = window.geneDataQueriesTestJSON || {} : exports));

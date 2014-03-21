@@ -2,6 +2,7 @@
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/geneDataQuery', exports.getExperimentDataForGenes
 	app.post '/api/getGeneExperiments', exports.getExperimentListForGenes
+	app.post '/api/getExperimentSearchAttributes', exports.getExperimentSearchAttributes
 	config = require '../conf/compiled/conf.js'
 	if config.all.client.require.login
 		app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
@@ -71,6 +72,31 @@ exports.getExperimentListForGenes = (req, resp)  ->
 				{errorLevel: "warning", message: "some genes not found"},
 			]
 		if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "start offset outside allowed range, please speake to an administrator"}
+		resp.end JSON.stringify responseObj
+	else
+		console.log "production function getExperimentListForGenes not implemented"
+
+exports.getExperimentSearchAttributes = (req, resp)  ->
+	req.connection.setTimeout 600000
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+
+	resp.writeHead(200, {'Content-Type': 'application/json'});
+	if global.specRunnerTestmode
+		console.log "test mode: "+global.specRunnerTestmode
+		geneDataQueriesTestJSON = require '../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js'
+		requestError = if req.body.experimentCodes[0] == "error" then true else false
+		if req.body.experimentCodes[0] == "fiona"
+			results = geneDataQueriesTestJSON.experimentSearchOptionsNoMatches
+		else
+			results = geneDataQueriesTestJSON.experimentSearchOptions
+		responseObj =
+			results: results
+			hasError: requestError
+			hasWarning: true
+			errorMessages: [
+				{errorLevel: "warning", message: "some warning"},
+			]
+		if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "no experiment attributes found, please speake to an administrator"}
 		resp.end JSON.stringify responseObj
 	else
 		console.log "production function getExperimentListForGenes not implemented"

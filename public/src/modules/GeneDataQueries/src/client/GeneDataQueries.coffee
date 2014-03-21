@@ -170,6 +170,71 @@ class window.ExperimentTreeController extends Backbone.View
 	getSelectedExperiments: ->
 		@$('.bv_tree').jstree('get_selected')
 
+class window.ExperimentResultFilterTermController extends Backbone.View
+	template: _.template($("#ExperimentResultFilterTermView").html())
+	tagName: "div"
+	className: "form-inline"
+	events:
+		"change .bv_experiment": "setKindOptions"
+		"change .bv_kind": "setOperatorOptions"
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@collection.each (expt) =>
+			code = expt.get('experimentCode')
+			@$('.bv_experiment').append '<option val="'+code+'">'+code+'</option>'
+		@setKindOptions()
+		@setOperatorOptions()
+
+		@
+
+	setKindOptions: =>
+		currentExpt = @getSelectedExperiment()
+		kinds = _.pluck currentExpt.get('valueKinds'), 'lsKind'
+		@$('.bv_kind').empty()
+		for kind in kinds
+			@$('.bv_kind').append '<option val="'+kind+'">'+kind+'</option>'
+
+	setOperatorOptions: =>
+		currentExpt = @getSelectedExperiment()
+		kind =  @$('.bv_kind').val()
+		currentAttr = _.filter currentExpt.get('valueKinds'), (k) ->
+			k.lsKind == kind
+		type = currentAttr[0].lsType
+		switch type
+			when "numericValue"
+				@$('.bv_operator_number').addClass 'bv_operator'
+				@$('.bv_operator_number').show()
+				@$('.bv_operator_bool').removeClass 'bv_operator'
+				@$('.bv_operator_bool').hide()
+				@$('.bv_operator_string').removeClass 'bv_operator'
+				@$('.bv_operator_string').hide()
+				@$('.bv_filterValue').show()
+			when "booleanValue"
+				@$('.bv_operator_number').removeClass 'bv_operator'
+				@$('.bv_operator_number').hide()
+				@$('.bv_operator_bool').addClass 'bv_operator'
+				@$('.bv_operator_bool').show()
+				@$('.bv_operator_string').removeClass 'bv_operator'
+				@$('.bv_operator_string').hide()
+				@$('.bv_filterValue').hide()
+			when "stringValue"
+				@$('.bv_operator_number').removeClass 'bv_operator'
+				@$('.bv_operator_number').hide()
+				@$('.bv_operator_bool').removeClass 'bv_operator'
+				@$('.bv_operator_bool').hide()
+				@$('.bv_operator_string').addClass 'bv_operator'
+				@$('.bv_operator_string').show()
+				@$('.bv_filterValue').show()
+
+
+	getSelectedExperiment: ->
+		exptCode = @$('.bv_experiment').val()
+		currentExpt = @collection.filter (expt) ->
+			expt.get('experimentCode') == exptCode
+		currentExpt[0]
+
 
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
@@ -181,24 +246,46 @@ class window.GeneIDQueryAppController extends Backbone.View
 #			el: @$('.bv_queryView')
 #		@gidqsc.render()
 
-	#This is dev scaffolding. Real code for basic query is above commented out
+#	#This is dev scaffolding for the experiment tree. Real code for basic query is above commented out
+#	initialize: ->
+#		$(@el).empty()
+#		$(@el).html @template()
+#		$.ajax
+#			type: 'POST'
+#			url: "api/getGeneExperiments"
+#			dataType: 'json'
+#			data:
+#				geneIDs: "1234, 2345, 4444"
+#			success: @handleGetGeneExperimentsReturn
+#			error: (err) =>
+#				console.log 'got ajax error'
+#				@serviceReturn = null
+
+	#This is dev scaffolding for the experiment tree. Real code for basic query is above commented out
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
 		$.ajax
 			type: 'POST'
-			url: "api/getGeneExperiments"
+			url: "api/getExperimentSearchAttributes"
 			dataType: 'json'
 			data:
-				geneIDs: "1234, 2345, 4444"
-			success: @handleGetGeneExperimentsReturn
+				experimentCodes: ["EXPT-00000398", "EXPT-00000396", "EXPT-00000398"]
+			success: @handleGetExperimentSearchAttributesReturn
 			error: (err) =>
 				console.log 'got ajax error'
 				@serviceReturn = null
 
 	handleGetGeneExperimentsReturn: (json) =>
 		@etc = new ExperimentTreeController
-			el: @$('.bv_queryView')
+			el: @$('.bv_exptTreeView')
 			model: new Backbone.Model json.results
 		@etc.render()
+
+	handleGetExperimentSearchAttributesReturn: (json) =>
+		@etc = new ExperimentResultFilterTermController
+			el: @$('.bv_attributeFilterView')
+			collection: new Backbone.Collection json.results.experiments
+		@etc.render()
+
 

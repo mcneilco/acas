@@ -4,7 +4,7 @@ This service takes a list of geneids and returns related experimental data,
  */
 
 (function() {
-  var advnacedReturnExampleSuccess, badDataRequest, basicReturnExampleError, basicReturnExampleSuccess, goodDataRequest;
+  var advancedReturnExampleSuccess, advnacedReturnExampleSuccess, badDataRequest, basicReturnExampleError, basicReturnExampleSuccess, goodDataRequest;
 
   goodDataRequest = {
     geneIDs: "1234, 2345, 4444",
@@ -38,6 +38,20 @@ This service takes a list of geneids and returns related experimental data,
 
   advnacedReturnExampleSuccess = {
     results: window.geneDataQueriesTestJSON.getGeneExperimentsNoResultsReturn,
+    hasError: false,
+    hasWarning: false,
+    errorMessages: []
+  };
+
+  advancedReturnExampleSuccess = {
+    results: window.geneDataQueriesTestJSON.experimentSearchOptions,
+    hasError: false,
+    hasWarning: false,
+    errorMessages: []
+  };
+
+  advnacedReturnExampleSuccess = {
+    results: window.geneDataQueriesTestJSON.experimentSearchOptionsNoMatches,
     hasError: false,
     hasWarning: false,
     errorMessages: []
@@ -167,7 +181,7 @@ This service takes a list of geneids and returns related experimental data,
         });
       });
     });
-    return describe("advanced experiments for genes query", function() {
+    describe("advanced experiments for genes query", function() {
       describe('when run with valid input data', function() {
         beforeEach(function() {
           return runs(function() {
@@ -241,6 +255,110 @@ This service takes a list of geneids and returns related experimental data,
               type: 'POST',
               url: "api/getGeneExperiments",
               data: badDataRequest,
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        return it('should return error=true, and at least one message', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 20000);
+          return runs(function() {
+            expect(this.serviceReturn.results.htmlSummary).toBeDefined();
+            expect(this.serviceReturn.hasError).toBeTruthy();
+            expect(this.serviceReturn.errorMessages.length).toBeGreaterThan(0);
+            return expect(this.serviceReturn.errorMessages[1].errorLevel).toEqual('error');
+          });
+        });
+      });
+    });
+    return describe("advanced experiment attributes for experiments", function() {
+      describe('when run with valid input data', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'POST',
+              url: "api/getExperimentSearchAttributes",
+              data: {
+                experimentCodes: ["EXPT-00000398", "EXPT-00000396", "EXPT-00000398"]
+              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 10000);
+          return runs(function() {
+            expect(this.serviceReturn.hasError).toBeFalsy();
+            expect(this.serviceReturn.results.experiments[0].experimentCode).toEqual("EXPT-00000396");
+            expect(this.serviceReturn.hasWarning).toBeDefined();
+            return expect(this.serviceReturn.results.htmlSummary).toBeDefined();
+          });
+        });
+      });
+      describe('when run with no results expected', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'POST',
+              url: "api/getExperimentSearchAttributes",
+              data: {
+                experimentCodes: ["fiona"]
+              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 10000);
+          return runs(function() {
+            expect(this.serviceReturn.hasError).toBeFalsy();
+            expect(this.serviceReturn.results.experiments.length).toEqual(0);
+            expect(this.serviceReturn.hasWarning).toBeDefined();
+            return expect(this.serviceReturn.results.htmlSummary).toBeDefined();
+          });
+        });
+      });
+      return describe('when run with invalid input data', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'POST',
+              url: "api/getExperimentSearchAttributes",
+              data: {
+                experimentCodes: ["error"]
+              },
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;

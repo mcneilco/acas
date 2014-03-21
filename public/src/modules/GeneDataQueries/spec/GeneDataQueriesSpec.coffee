@@ -232,6 +232,72 @@ describe "Gene Data Queries Module Testing", ->
 						@etc.$('.jstree-checkbox:eq(5)').click()
 						expect(@etc.getSelectedExperiments()).toEqual ["EXPT-00000398", "EXPT-00000396"]
 
+		describe "Experiment attribute filtering panel", ->
+			describe "filter term controller", ->
+				describe 'when instantiated', ->
+					beforeEach ->
+						@erftc = new ExperimentResultFilterTermController
+							el: $('#fixture')
+							collection: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
+						@erftc.render()
+					describe "basic existance tests", ->
+						it 'should exist', ->
+							expect(@erftc).toBeDefined()
+						it 'should load a template', ->
+							expect(@erftc.$('.bv_experiment').length).toEqual 1
+					describe "rendering", ->
+						it "should show experiment options", ->
+							expect(@erftc.$('.bv_experiment option').length).toEqual 3
+							expect(@erftc.$('.bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"
+					describe "show attribute list based on experiment picked", ->
+						it "should show correct attributes for first experiment", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000396"
+							@erftc.$('.bv_experiment').change()
+							expect(@erftc.$('.bv_kind option').length).toEqual 3
+							expect(@erftc.$('.bv_kind option:eq(0)').val()).toEqual "EC50"
+						it "should show correct attributes for second experiment", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000398"
+							@erftc.$('.bv_experiment').change()
+							expect(@erftc.$('.bv_kind option').length).toEqual 3
+							expect(@erftc.$('.bv_kind option:eq(0)').val()).toEqual "KD"
+					describe "show operator choices based on attribute type picked", ->
+						it "should show correct choice for first experiment and number type", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000396"
+							@erftc.$('.bv_experiment').change()
+							@erftc.$('.bv_kind').val "EC50"
+							@erftc.$('.bv_kind').change()
+							expect(@erftc.$('.bv_operator option').length).toEqual 3
+							expect(@erftc.$('.bv_operator option:eq(0)').val()).toEqual "="
+						it "should show correct choice for first experiment and string type", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000396"
+							@erftc.$('.bv_experiment').change()
+							@erftc.$('.bv_kind').val "category"
+							@erftc.$('.bv_kind').change()
+							expect(@erftc.$('.bv_operator option').length).toEqual 2
+							expect(@erftc.$('.bv_operator option:eq(0)').val()).toEqual "equals"
+						it "should show correct choice for first experiment and bool type", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000396"
+							@erftc.$('.bv_experiment').change()
+							@erftc.$('.bv_kind').val "hit"
+							@erftc.$('.bv_kind').change()
+							expect(@erftc.$('.bv_operator option').length).toEqual 2
+							expect(@erftc.$('.bv_operator option:eq(0)').val()).toEqual "true"
+					describe "show or hide filterValue based on attribute type picked", ->
+						it "should hide value field for first experiment and bool type", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000396"
+							@erftc.$('.bv_experiment').change()
+							@erftc.$('.bv_kind').val "hit"
+							@erftc.$('.bv_kind').change()
+							expect(@erftc.$('.bv_operator option').length).toEqual 2
+							expect(@erftc.$('.bv_filterValue')).toBeHidden()
+						it "should show value field for first experiment and number type", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000396"
+							@erftc.$('.bv_experiment').change()
+							@erftc.$('.bv_kind').val "EC50"
+							@erftc.$('.bv_kind').change()
+							expect(@erftc.$('.bv_operator option').length).toEqual 3
+							expect(@erftc.$('.bv_filterValue')).toBeVisible()
+
 	#	describe "Advanced search wizard", ->
 	#		describe 'when instantiated', ->
 	#			beforeEach ->

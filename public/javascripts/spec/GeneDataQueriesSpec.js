@@ -287,7 +287,7 @@
       });
     });
     describe("Advanced search modules", function() {
-      return describe("Protocol and experiment display", function() {
+      describe("Protocol and experiment display", function() {
         return describe('when instantiated', function() {
           beforeEach(function() {
             this.etc = new ExperimentTreeController({
@@ -330,6 +330,91 @@
               this.etc.$('.jstree-checkbox:eq(4)').click();
               this.etc.$('.jstree-checkbox:eq(5)').click();
               return expect(this.etc.getSelectedExperiments()).toEqual(["EXPT-00000398", "EXPT-00000396"]);
+            });
+          });
+        });
+      });
+      return describe("Experiment attribute filtering panel", function() {
+        return describe("filter term controller", function() {
+          return describe('when instantiated', function() {
+            beforeEach(function() {
+              this.erftc = new ExperimentResultFilterTermController({
+                el: $('#fixture'),
+                collection: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments)
+              });
+              return this.erftc.render();
+            });
+            describe("basic existance tests", function() {
+              it('should exist', function() {
+                return expect(this.erftc).toBeDefined();
+              });
+              return it('should load a template', function() {
+                return expect(this.erftc.$('.bv_experiment').length).toEqual(1);
+              });
+            });
+            describe("rendering", function() {
+              return it("should show experiment options", function() {
+                expect(this.erftc.$('.bv_experiment option').length).toEqual(3);
+                return expect(this.erftc.$('.bv_experiment option:eq(0)').val()).toEqual("EXPT-00000396");
+              });
+            });
+            describe("show attribute list based on experiment picked", function() {
+              it("should show correct attributes for first experiment", function() {
+                this.erftc.$('.bv_experiment').val("EXPT-00000396");
+                this.erftc.$('.bv_experiment').change();
+                expect(this.erftc.$('.bv_kind option').length).toEqual(3);
+                return expect(this.erftc.$('.bv_kind option:eq(0)').val()).toEqual("EC50");
+              });
+              return it("should show correct attributes for second experiment", function() {
+                this.erftc.$('.bv_experiment').val("EXPT-00000398");
+                this.erftc.$('.bv_experiment').change();
+                expect(this.erftc.$('.bv_kind option').length).toEqual(3);
+                return expect(this.erftc.$('.bv_kind option:eq(0)').val()).toEqual("KD");
+              });
+            });
+            describe("show operator choices based on attribute type picked", function() {
+              it("should show correct choice for first experiment and number type", function() {
+                this.erftc.$('.bv_experiment').val("EXPT-00000396");
+                this.erftc.$('.bv_experiment').change();
+                this.erftc.$('.bv_kind').val("EC50");
+                this.erftc.$('.bv_kind').change();
+                expect(this.erftc.$('.bv_operator option').length).toEqual(3);
+                return expect(this.erftc.$('.bv_operator option:eq(0)').val()).toEqual("=");
+              });
+              it("should show correct choice for first experiment and string type", function() {
+                this.erftc.$('.bv_experiment').val("EXPT-00000396");
+                this.erftc.$('.bv_experiment').change();
+                this.erftc.$('.bv_kind').val("category");
+                this.erftc.$('.bv_kind').change();
+                expect(this.erftc.$('.bv_operator option').length).toEqual(2);
+                return expect(this.erftc.$('.bv_operator option:eq(0)').val()).toEqual("equals");
+              });
+              return it("should show correct choice for first experiment and bool type", function() {
+                this.erftc.$('.bv_experiment').val("EXPT-00000396");
+                this.erftc.$('.bv_experiment').change();
+                this.erftc.$('.bv_kind').val("hit");
+                this.erftc.$('.bv_kind').change();
+                expect(this.erftc.$('.bv_operator option').length).toEqual(2);
+                return expect(this.erftc.$('.bv_operator option:eq(0)').val()).toEqual("true");
+              });
+            });
+            return describe("show or hide filterValue based on attribute type picked", function() {
+              it("should hide value field for first experiment and bool type", function() {
+                this.erftc.$('.bv_experiment').val("EXPT-00000396");
+                this.erftc.$('.bv_experiment').change();
+                this.erftc.$('.bv_kind').val("hit");
+                this.erftc.$('.bv_kind').change();
+                expect(this.erftc.$('.bv_operator option').length).toEqual(2);
+                return expect(this.erftc.$('.bv_filterValue')).toBeHidden();
+              });
+              return it("should show value field for first experiment and number type", function() {
+                this.erftc.$('.bv_experiment').val("EXPT-00000396");
+                this.erftc.$('.bv_experiment').change();
+                this.erftc.$('.bv_kind').val("EC50");
+                this.erftc.$('.bv_kind').change();
+                expect(this.erftc.$('.bv_operator option').length).toEqual(3);
+                return expect(this.erftc.$('.bv_filterValue')).toBeVisible();
+              });
             });
           });
         });

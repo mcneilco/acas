@@ -103,5 +103,48 @@
 		experimentData: []
 		htmlSummary: "No results found"
 
+	exports.experimentSearchOptions =
+		experiments: [
+			experimentCode: "EXPT-00000396"
+			valueKinds: [
+				lsKind: "EC50"
+				lsType: "numericValue"
+			,
+				lsKind: "hit"
+				lsType: "booleanValue"
+			,
+				lsKind: "category"
+				lsType: "stringValue"
+			]
+		,
+			experimentCode: "EXPT-00000398"
+			valueKinds: [
+				lsKind: "KD"
+				lsType: "numericValue"
+			,
+				lsKind: "hit"
+				lsType: "booleanValue"
+			,
+				lsKind: "category"
+				lsType: "stringValue"
+			]
+		,
+			experimentCode: "EXPT-00000397"
+			valueKinds: [
+				lsKind: "a pretty long attribute name"
+				lsType: "numericValue"
+			,
+				lsKind: "hit"
+				lsType: "booleanValue"
+			,
+				lsKind: "category"
+				lsType: "stringValue"
+			]
+		]
+		htmlSummary: "OK"
+
+	exports.experimentSearchOptionsNoMatches =
+		experiments: []
+		htmlSummary: "No results found"
 
 ) (if (typeof process is "undefined" or not process.versions) then window.geneDataQueriesTestJSON = window.geneDataQueriesTestJSON or {} else exports)
