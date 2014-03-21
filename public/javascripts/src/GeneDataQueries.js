@@ -291,6 +291,8 @@
     __extends(ExperimentResultFilterTermController, _super);
 
     function ExperimentResultFilterTermController() {
+      this.clear = __bind(this.clear, this);
+      this.updateModel = __bind(this.updateModel, this);
       this.setOperatorOptions = __bind(this.setOperatorOptions, this);
       this.setKindOptions = __bind(this.setKindOptions, this);
       this.render = __bind(this.render, this);
@@ -305,13 +307,19 @@
 
     ExperimentResultFilterTermController.prototype.events = {
       "change .bv_experiment": "setKindOptions",
-      "change .bv_kind": "setOperatorOptions"
+      "change .bv_kind": "setOperatorOptions",
+      "click .bv_delete": "clear"
+    };
+
+    ExperimentResultFilterTermController.prototype.initialize = function() {
+      this.filterOptions = this.options.filterOptions;
+      return this.model.on("destroy", this.remove, this);
     };
 
     ExperimentResultFilterTermController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      this.collection.each((function(_this) {
+      this.filterOptions.each((function(_this) {
         return function(expt) {
           var code;
           code = expt.get('experimentCode');
@@ -337,37 +345,21 @@
     };
 
     ExperimentResultFilterTermController.prototype.setOperatorOptions = function() {
-      var currentAttr, currentExpt, kind, type;
-      currentExpt = this.getSelectedExperiment();
-      kind = this.$('.bv_kind').val();
-      currentAttr = _.filter(currentExpt.get('valueKinds'), function(k) {
-        return k.lsKind === kind;
-      });
-      type = currentAttr[0].lsType;
-      switch (type) {
+      switch (this.getSelectedValueType()) {
         case "numericValue":
-          this.$('.bv_operator_number').addClass('bv_operator');
-          this.$('.bv_operator_number').show();
-          this.$('.bv_operator_bool').removeClass('bv_operator');
-          this.$('.bv_operator_bool').hide();
-          this.$('.bv_operator_string').removeClass('bv_operator');
-          this.$('.bv_operator_string').hide();
+          this.$('.bv_operator_number').addClass('bv_operator').show();
+          this.$('.bv_operator_bool').removeClass('bv_operator').hide();
+          this.$('.bv_operator_string').removeClass('bv_operator').hide();
           return this.$('.bv_filterValue').show();
         case "booleanValue":
-          this.$('.bv_operator_number').removeClass('bv_operator');
-          this.$('.bv_operator_number').hide();
-          this.$('.bv_operator_bool').addClass('bv_operator');
-          this.$('.bv_operator_bool').show();
-          this.$('.bv_operator_string').removeClass('bv_operator');
-          this.$('.bv_operator_string').hide();
+          this.$('.bv_operator_number').removeClass('bv_operator').hide();
+          this.$('.bv_operator_bool').addClass('bv_operator').show();
+          this.$('.bv_operator_string').removeClass('bv_operator').hide();
           return this.$('.bv_filterValue').hide();
         case "stringValue":
-          this.$('.bv_operator_number').removeClass('bv_operator');
-          this.$('.bv_operator_number').hide();
-          this.$('.bv_operator_bool').removeClass('bv_operator');
-          this.$('.bv_operator_bool').hide();
-          this.$('.bv_operator_string').addClass('bv_operator');
-          this.$('.bv_operator_string').show();
+          this.$('.bv_operator_number').removeClass('bv_operator').hide();
+          this.$('.bv_operator_bool').removeClass('bv_operator').hide();
+          this.$('.bv_operator_string').addClass('bv_operator').show();
           return this.$('.bv_filterValue').show();
       }
     };
@@ -375,13 +367,83 @@
     ExperimentResultFilterTermController.prototype.getSelectedExperiment = function() {
       var currentExpt, exptCode;
       exptCode = this.$('.bv_experiment').val();
-      currentExpt = this.collection.filter(function(expt) {
+      currentExpt = this.filterOptions.filter(function(expt) {
         return expt.get('experimentCode') === exptCode;
       });
       return currentExpt[0];
     };
 
+    ExperimentResultFilterTermController.prototype.getSelectedValueType = function() {
+      var currentAttr, currentExpt, kind;
+      currentExpt = this.getSelectedExperiment();
+      kind = this.$('.bv_kind').val();
+      currentAttr = _.filter(currentExpt.get('valueKinds'), function(k) {
+        return k.lsKind === kind;
+      });
+      return currentAttr[0].lsType;
+    };
+
+    ExperimentResultFilterTermController.prototype.updateModel = function() {
+      return this.model.set({
+        experimentCode: this.$('.bv_experiment').val(),
+        lsKind: this.$('.bv_kind').val(),
+        lsType: this.getSelectedValueType(),
+        operator: this.$('.bv_operator').val(),
+        filterValue: $.trim(this.$('.bv_filterValue').val())
+      });
+    };
+
+    ExperimentResultFilterTermController.prototype.clear = function() {
+      return this.model.destroy();
+    };
+
     return ExperimentResultFilterTermController;
+
+  })(Backbone.View);
+
+  window.ExperimentResultFilterTermListController = (function(_super) {
+    __extends(ExperimentResultFilterTermListController, _super);
+
+    function ExperimentResultFilterTermListController() {
+      this.addOne = __bind(this.addOne, this);
+      this.render = __bind(this.render, this);
+      return ExperimentResultFilterTermListController.__super__.constructor.apply(this, arguments);
+    }
+
+    ExperimentResultFilterTermListController.prototype.template = _.template($("#ExperimentResultFilterTermListView").html());
+
+    ExperimentResultFilterTermListController.prototype.events = {
+      "click .bv_addTerm": "addOne"
+    };
+
+    ExperimentResultFilterTermListController.prototype.initialize = function() {
+      return this.filterOptions = this.options.filterOptions;
+    };
+
+    ExperimentResultFilterTermListController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.addOne();
+      return this;
+    };
+
+    ExperimentResultFilterTermListController.prototype.addOne = function() {
+      var erftc, newModel;
+      newModel = new Backbone.Model();
+      this.collection.add(newModel);
+      erftc = new ExperimentResultFilterTermController({
+        model: newModel,
+        filterOptions: this.filterOptions
+      });
+      this.$('.bv_filterTerms').append(erftc.render().el);
+      return this.on("updateFilterModels", erftc.updateModel);
+    };
+
+    ExperimentResultFilterTermListController.prototype.updateCollection = function() {
+      return this.trigger("updateFilterModels");
+    };
+
+    return ExperimentResultFilterTermListController;
 
   })(Backbone.View);
 
@@ -425,9 +487,10 @@
     };
 
     GeneIDQueryAppController.prototype.handleGetExperimentSearchAttributesReturn = function(json) {
-      this.etc = new ExperimentResultFilterTermController({
+      this.etc = new ExperimentResultFilterTermListController({
         el: this.$('.bv_attributeFilterView'),
-        collection: new Backbone.Collection(json.results.experiments)
+        collection: new Backbone.Collection(),
+        filterOptions: new Backbone.Collection(json.results.experiments)
       });
       return this.etc.render();
     };

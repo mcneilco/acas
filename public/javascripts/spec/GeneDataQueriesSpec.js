@@ -335,12 +335,13 @@
         });
       });
       return describe("Experiment attribute filtering panel", function() {
-        return describe("filter term controller", function() {
+        describe("filter term controller", function() {
           return describe('when instantiated', function() {
             beforeEach(function() {
               this.erftc = new ExperimentResultFilterTermController({
                 el: $('#fixture'),
-                collection: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments)
+                model: new Backbone.Model(),
+                filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments)
               });
               return this.erftc.render();
             });
@@ -398,7 +399,7 @@
                 return expect(this.erftc.$('.bv_operator option:eq(0)').val()).toEqual("true");
               });
             });
-            return describe("show or hide filterValue based on attribute type picked", function() {
+            describe("show or hide filterValue based on attribute type picked", function() {
               it("should hide value field for first experiment and bool type", function() {
                 this.erftc.$('.bv_experiment').val("EXPT-00000396");
                 this.erftc.$('.bv_experiment').change();
@@ -414,6 +415,84 @@
                 this.erftc.$('.bv_kind').change();
                 expect(this.erftc.$('.bv_operator option').length).toEqual(3);
                 return expect(this.erftc.$('.bv_filterValue')).toBeVisible();
+              });
+            });
+            return describe("get filter term", function() {
+              return it("should return hash of user selections", function() {
+                this.erftc.$('.bv_experiment').val("EXPT-00000396");
+                this.erftc.$('.bv_experiment').change();
+                this.erftc.$('.bv_kind').val("category");
+                this.erftc.$('.bv_kind').change();
+                this.erftc.$('.bv_operator').val("contains");
+                this.erftc.$('.bv_filterValue').val(" search string ");
+                this.erftc.updateModel();
+                expect(this.erftc.model.get('experimentCode')).toEqual("EXPT-00000396");
+                expect(this.erftc.model.get('lsKind')).toEqual("category");
+                expect(this.erftc.model.get('lsType')).toEqual("stringValue");
+                expect(this.erftc.model.get('operator')).toEqual("contains");
+                return expect(this.erftc.model.get('filterValue')).toEqual("search string");
+              });
+            });
+          });
+        });
+        return describe("filter term list controller", function() {
+          return describe('when instantiated', function() {
+            beforeEach(function() {
+              this.erftlc = new ExperimentResultFilterTermListController({
+                el: $('#fixture'),
+                collection: new Backbone.Collection(),
+                filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments)
+              });
+              return this.erftlc.render();
+            });
+            describe("basic existance tests", function() {
+              it('should exist', function() {
+                return expect(this.erftlc).toBeDefined();
+              });
+              return it('should load a template', function() {
+                return expect(this.erftlc.$('.bv_addTerm').length).toEqual(1);
+              });
+            });
+            describe("rendering", function() {
+              return it("should show one experiment term with experiment options", function() {
+                expect(this.erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual(1);
+                expect(this.erftlc.$('.bv_filterTerms .bv_experiment option').length).toEqual(3);
+                return expect(this.erftlc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual("EXPT-00000396");
+              });
+            });
+            describe("adding and removing", function() {
+              it("should have two experiment terms when add is clicked", function() {
+                this.erftlc.$('.bv_addTerm').click();
+                expect(this.erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual(2);
+                return expect(this.erftlc.collection.length).toEqual(2);
+              });
+              return it("should one experiment terms when remove is clicked", function() {
+                this.erftlc.$('.bv_addTerm').click();
+                expect(this.erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual(2);
+                this.erftlc.$('.bv_delete:eq(0)').click();
+                expect(this.erftlc.collection.length).toEqual(1);
+                return expect(this.erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual(1);
+              });
+            });
+            return describe("update collection", function() {
+              return it("should update the collection wehn requested", function() {
+                var tmodel;
+                this.erftlc.$('.bv_addTerm').click();
+                this.erftlc.$('.bv_experiment:eq(1)').val("EXPT-00000396");
+                this.erftlc.$('.bv_experiment:eq(1)').change();
+                this.erftlc.$('.bv_kind:eq(1)').val("category");
+                this.erftlc.$('.bv_kind:eq(1)').change();
+                this.erftlc.$('.bv_operator:eq(1)').val("contains");
+                this.erftlc.$('.bv_filterValue:eq(1)').val(" search string ");
+                this.erftlc.updateCollection();
+                expect(this.erftlc.collection.length).toEqual(2);
+                tmodel = this.erftlc.collection.at(1);
+                expect(tmodel.get('experimentCode')).toEqual("EXPT-00000396");
+                expect(tmodel.get('lsKind')).toEqual("category");
+                expect(tmodel.get('lsType')).toEqual("stringValue");
+                expect(tmodel.get('operator')).toEqual("contains");
+                expect(tmodel.get('filterValue')).toEqual("search string");
+                return console.log(this.erftlc.collection);
               });
             });
           });

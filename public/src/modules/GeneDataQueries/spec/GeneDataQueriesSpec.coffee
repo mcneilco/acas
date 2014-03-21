@@ -238,7 +238,8 @@ describe "Gene Data Queries Module Testing", ->
 					beforeEach ->
 						@erftc = new ExperimentResultFilterTermController
 							el: $('#fixture')
-							collection: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
+							model: new Backbone.Model()
+							filterOptions: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
 						@erftc.render()
 					describe "basic existance tests", ->
 						it 'should exist', ->
@@ -297,6 +298,68 @@ describe "Gene Data Queries Module Testing", ->
 							@erftc.$('.bv_kind').change()
 							expect(@erftc.$('.bv_operator option').length).toEqual 3
 							expect(@erftc.$('.bv_filterValue')).toBeVisible()
+					describe "get filter term", ->
+						it "should return hash of user selections", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000396"
+							@erftc.$('.bv_experiment').change()
+							@erftc.$('.bv_kind').val "category"
+							@erftc.$('.bv_kind').change()
+							@erftc.$('.bv_operator').val "contains"
+							@erftc.$('.bv_filterValue').val " search string "
+							@erftc.updateModel()
+							expect(@erftc.model.get('experimentCode')).toEqual "EXPT-00000396"
+							expect(@erftc.model.get('lsKind')).toEqual "category"
+							expect(@erftc.model.get('lsType')).toEqual "stringValue"
+							expect(@erftc.model.get('operator')).toEqual "contains"
+							expect(@erftc.model.get('filterValue')).toEqual "search string"
+			describe "filter term list controller", ->
+				describe 'when instantiated', ->
+					beforeEach ->
+						@erftlc = new ExperimentResultFilterTermListController
+							el: $('#fixture')
+							collection: new Backbone.Collection()
+							filterOptions: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
+						@erftlc.render()
+					describe "basic existance tests", ->
+						it 'should exist', ->
+							expect(@erftlc).toBeDefined()
+						it 'should load a template', ->
+							expect(@erftlc.$('.bv_addTerm').length).toEqual 1
+					describe "rendering", ->
+						it "should show one experiment term with experiment options", ->
+							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
+							expect(@erftlc.$('.bv_filterTerms .bv_experiment option').length).toEqual 3
+							expect(@erftlc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"
+					describe "adding and removing", ->
+						it "should have two experiment terms when add is clicked", ->
+							@erftlc.$('.bv_addTerm').click()
+							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 2
+							expect(@erftlc.collection.length).toEqual 2
+						it "should one experiment terms when remove is clicked", ->
+							@erftlc.$('.bv_addTerm').click()
+							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 2
+							@erftlc.$('.bv_delete:eq(0)').click()
+							expect(@erftlc.collection.length).toEqual 1
+							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
+					describe "update collection", ->
+						it "should update the collection wehn requested", ->
+							@erftlc.$('.bv_addTerm').click()
+							@erftlc.$('.bv_experiment:eq(1)').val "EXPT-00000396"
+							@erftlc.$('.bv_experiment:eq(1)').change()
+							@erftlc.$('.bv_kind:eq(1)').val "category"
+							@erftlc.$('.bv_kind:eq(1)').change()
+							@erftlc.$('.bv_operator:eq(1)').val "contains"
+							@erftlc.$('.bv_filterValue:eq(1)').val " search string "
+							@erftlc.updateCollection()
+							expect(@erftlc.collection.length).toEqual 2
+							tmodel = @erftlc.collection.at(1)
+							expect(tmodel.get('experimentCode')).toEqual "EXPT-00000396"
+							expect(tmodel.get('lsKind')).toEqual "category"
+							expect(tmodel.get('lsType')).toEqual "stringValue"
+							expect(tmodel.get('operator')).toEqual "contains"
+							expect(tmodel.get('filterValue')).toEqual "search string"
+							console.log @erftlc.collection
+
 
 	#	describe "Advanced search wizard", ->
 	#		describe 'when instantiated', ->

@@ -177,11 +177,16 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 	events:
 		"change .bv_experiment": "setKindOptions"
 		"change .bv_kind": "setOperatorOptions"
+		"click .bv_delete": "clear"
+
+	initialize: ->
+		@filterOptions = @options.filterOptions
+		@model.on "destroy", @remove, @
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-		@collection.each (expt) =>
+		@filterOptions.each (expt) =>
 			code = expt.get('experimentCode')
 			@$('.bv_experiment').append '<option val="'+code+'">'+code+'</option>'
 		@setKindOptions()
@@ -197,44 +202,73 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 			@$('.bv_kind').append '<option val="'+kind+'">'+kind+'</option>'
 
 	setOperatorOptions: =>
+		switch @getSelectedValueType()
+			when "numericValue"
+				@$('.bv_operator_number').addClass('bv_operator').show()
+				@$('.bv_operator_bool').removeClass('bv_operator').hide()
+				@$('.bv_operator_string').removeClass('bv_operator').hide()
+				@$('.bv_filterValue').show()
+			when "booleanValue"
+				@$('.bv_operator_number').removeClass('bv_operator').hide()
+				@$('.bv_operator_bool').addClass('bv_operator').show()
+				@$('.bv_operator_string').removeClass('bv_operator').hide()
+				@$('.bv_filterValue').hide()
+			when "stringValue"
+				@$('.bv_operator_number').removeClass('bv_operator').hide()
+				@$('.bv_operator_bool').removeClass('bv_operator').hide()
+				@$('.bv_operator_string').addClass('bv_operator').show()
+				@$('.bv_filterValue').show()
+
+	getSelectedExperiment: ->
+		exptCode = @$('.bv_experiment').val()
+		currentExpt = @filterOptions.filter (expt) ->
+			expt.get('experimentCode') == exptCode
+		currentExpt[0]
+
+	getSelectedValueType: ->
 		currentExpt = @getSelectedExperiment()
 		kind =  @$('.bv_kind').val()
 		currentAttr = _.filter currentExpt.get('valueKinds'), (k) ->
 			k.lsKind == kind
-		type = currentAttr[0].lsType
-		switch type
-			when "numericValue"
-				@$('.bv_operator_number').addClass 'bv_operator'
-				@$('.bv_operator_number').show()
-				@$('.bv_operator_bool').removeClass 'bv_operator'
-				@$('.bv_operator_bool').hide()
-				@$('.bv_operator_string').removeClass 'bv_operator'
-				@$('.bv_operator_string').hide()
-				@$('.bv_filterValue').show()
-			when "booleanValue"
-				@$('.bv_operator_number').removeClass 'bv_operator'
-				@$('.bv_operator_number').hide()
-				@$('.bv_operator_bool').addClass 'bv_operator'
-				@$('.bv_operator_bool').show()
-				@$('.bv_operator_string').removeClass 'bv_operator'
-				@$('.bv_operator_string').hide()
-				@$('.bv_filterValue').hide()
-			when "stringValue"
-				@$('.bv_operator_number').removeClass 'bv_operator'
-				@$('.bv_operator_number').hide()
-				@$('.bv_operator_bool').removeClass 'bv_operator'
-				@$('.bv_operator_bool').hide()
-				@$('.bv_operator_string').addClass 'bv_operator'
-				@$('.bv_operator_string').show()
-				@$('.bv_filterValue').show()
+		currentAttr[0].lsType
 
+	updateModel: =>
+		@model.set
+			experimentCode: @$('.bv_experiment').val()
+			lsKind: @$('.bv_kind').val()
+			lsType: @getSelectedValueType()
+			operator: @$('.bv_operator').val()
+			filterValue: $.trim(@$('.bv_filterValue').val())
 
-	getSelectedExperiment: ->
-		exptCode = @$('.bv_experiment').val()
-		currentExpt = @collection.filter (expt) ->
-			expt.get('experimentCode') == exptCode
-		currentExpt[0]
+	clear: =>
+		@model.destroy()
 
+class window.ExperimentResultFilterTermListController extends Backbone.View
+	template: _.template($("#ExperimentResultFilterTermListView").html())
+	events:
+		"click .bv_addTerm": "addOne"
+
+	initialize: ->
+		@filterOptions = @options.filterOptions
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@addOne()
+
+		@
+
+	addOne: =>
+		newModel = new Backbone.Model()
+		@collection.add newModel
+		erftc = new ExperimentResultFilterTermController
+			model: newModel
+			filterOptions: @filterOptions
+		@$('.bv_filterTerms').append erftc.render().el
+		@on "updateFilterModels", erftc.updateModel
+
+	updateCollection: ->
+		@trigger "updateFilterModels"
 
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
@@ -283,9 +317,10 @@ class window.GeneIDQueryAppController extends Backbone.View
 		@etc.render()
 
 	handleGetExperimentSearchAttributesReturn: (json) =>
-		@etc = new ExperimentResultFilterTermController
+		@etc = new ExperimentResultFilterTermListController
 			el: @$('.bv_attributeFilterView')
-			collection: new Backbone.Collection json.results.experiments
+			collection: new Backbone.Collection()
+			filterOptions: new Backbone.Collection json.results.experiments
 		@etc.render()
 
 
