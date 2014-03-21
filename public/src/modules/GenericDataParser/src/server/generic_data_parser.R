@@ -26,6 +26,8 @@
 #   To run:
 #     parseGenericData(list(pathToGenericDataFormatExcelFile, dryRun = TRUE, ...))
 #     Example: 
+#       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/DR_SaveToExistingExperiment.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/DR_SaveToExistingExperiment.xlsx", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/Mia-Paca.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
@@ -292,22 +294,30 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
     stop("A Format must be entered in the Experiment Meta Data.")
   }
   
-  expectedDataFormat <- data.frame(
-    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", 
-                "Short Description", "Experiment Keywords", "Page","Assay Date"),
-    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
-    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
-  )
-  
-  if (!is.null(configList$client.include.project) && configList$client.include.project) {
-    expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
-  }
-  if (length(formatSettings) > 0) {
-    expectedDataFormat <- rbind(expectedDataFormat, formatSettings[[as.character(metaData$Format)]]$extraHeaders)
-  }
-  
-  if ("Assay Completion Date" %in% names(metaData)) {
-    names(metaData)[names(metaData) == "Assay Completion Date"] <- "Assay Date"
+  if (metaData$Format == "Use Existing Experiment") {
+    expectedDataFormat <- data.frame(
+      headers = c("Format","Experiment Code Name"),
+      class = c("Text", "Text"),
+      isNullable = c(FALSE, FALSE)
+    )
+  } else {
+    expectedDataFormat <- data.frame(
+      headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", 
+                  "Short Description", "Experiment Keywords", "Page","Assay Date"),
+      class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+      isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
+    )
+    
+    if (!is.null(configList$client.include.project) && configList$client.include.project) {
+      expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
+    }
+    if (length(formatSettings) > 0) {
+      expectedDataFormat <- rbind(expectedDataFormat, formatSettings[[as.character(metaData$Format)]]$extraHeaders)
+    }
+    
+    if ("Assay Completion Date" %in% names(metaData)) {
+      names(metaData)[names(metaData) == "Assay Completion Date"] <- "Assay Date"
+    }
   }
   
   # Extract the expected headers from the input variable
@@ -371,7 +381,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList) 
   }
   
-  if(grepl("CREATETHISEXPERIMENT$", validatedMetaData$"Experiment Name")) {
+  if(!is.null(validatedMetaData$"Experiment Name") && grepl("CREATETHISEXPERIMENT$", validatedMetaData$"Experiment Name")) {
     validatedMetaData$"Experiment Name" <- trim(gsub("CREATETHISEXPERIMENT$", "", validatedMetaData$"Experiment Name"))
     duplicateExperimentNamesAllowed <- TRUE
   } else {
@@ -2133,7 +2143,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     }
   } else {
     # TODO: generate the list dynamically
-    if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data"))) {
+    if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data", "Use Existing Experiment"))) {
       stop("The Format must be 'Generic', 'Dose Response', or some custom format that you have been given.")
     }
     lookFor <- "Calculated Results"
@@ -2189,16 +2199,35 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   # Get the protocol and experiment and, when not on a dry run, create them if they do not exist
-  protocol <- getProtocolByName(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
-  newProtocol <- is.na(protocol[[1]])
-  if (!newProtocol) {
-    metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
+  if (inputFormat != "Use Existing Experiment") {
+    protocol <- getProtocolByName(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
+    newProtocol <- is.na(protocol[[1]])
+    if (!newProtocol) {
+      metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
+    }
+  } else {
+    newProtocol <- FALSE
   }
   
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
   }
-  experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
+  if (inputFormat == "Use Existing Experiment") {
+    useExistingExperiment <- TRUE
+  } else {
+    useExistingExperiment <- FALSE
+  }
+  if (useExistingExperiment) {
+    experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
+    if (length(experiment) == 0) {
+      stop ("Experiment Code Name not found ", validatedMetaData$'Experiment Code Name'[1])
+    }
+    protocol <- getProtocolById(experiment$protocol$id)
+    validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
+    validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
+  } else {
+    experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
+  }
   
   # Checks if we have a new experiment
   newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
@@ -2212,14 +2241,17 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       deleteSourceFile(experiment, configList)
       deleteAnnotation(experiment, configList)
     }
-
-    deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
-    deleteExperiment(experiment)
+    if(useExistingExperiment) {
+      deleteAnalysisGroupByExperiment(experiment)
+    } else {
+      deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
+      deleteExperiment(experiment)
+    }
   } else {
     deletedExperimentCodes <- NULL
   }
   
-  if (!dryRun && errorFree) {
+  if (!dryRun && errorFree && !useExistingExperiment) {
     experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, 
                                       recordedBy, configList, deletedExperimentCodes)
     assign(x="experiment", value=experiment, envir=parent.frame())
@@ -2257,7 +2289,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   if (!is.null(configList$client.service.result.viewer.protocolPrefix)) {
-    protocolName <- paste0(validatedMetaData$"Protocol Name", protocolPostfix)
+    if (!(is.null(metaData$'Protocol Name'[1]))) {
+      protocolName <- paste0(validatedMetaData$"Protocol Name", protocolPostfix)
+    } else {
+      protocol <- fromJSON(getURL(URLencode(paste0(racas::applicationSettings$client.service.persistence.fullpath, "protocols/", protocol$id))))
+      
+      protocolName <- getPreferredName(protocol)
+    }
+      
     if (is.list(experiment) && configList$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
       experimentName <- paste0(experiment$codeName, "::", validatedMetaData$"Experiment Name")
     } else {
@@ -2282,8 +2321,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   summaryInfo$info$"Format" <- as.character(validatedMetaData$Format)
   summaryInfo$info$"Protocol" <- as.character(validatedMetaData$"Protocol Name")
   summaryInfo$info$"Experiment" <- as.character(validatedMetaData$"Experiment Name")
-  summaryInfo$info$"Scientist" <- as.character(validatedMetaData$Scientist)
-  summaryInfo$info$"Notebook" <- as.character(validatedMetaData$Notebook)
+  summaryInfo$info$"Scientist" <- validatedMetaData$Scientist
+  summaryInfo$info$"Notebook" <- validatedMetaData$Notebook
   if(!is.null(validatedMetaData$Page)) {
     summaryInfo$info$"Page" <- as.character(validatedMetaData$Page)
   }
@@ -2291,7 +2330,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     notebookIndex <- which(names(summaryInfo$info) == "Notebook")[1]
     summaryInfo$info$"In Life Notebook" <- as.character(validatedMetaData$"In Life Notebook")
   }
-  summaryInfo$info$"Assay Date" = as.character(validatedMetaData$"Assay Date")
+  summaryInfo$info$"Assay Date" = validatedMetaData$"Assay Date"
   summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
   summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$resultTypeAndUnit))
   summaryInfo$info[[paste0("Unique ",mainCode,"'s")]] = length(unique(calculatedResults[[mainCode]]))
@@ -2405,9 +2444,9 @@ parseGenericData <- function(request) {
   require('compiler')
   enableJIT(3)
   options("scipen"=15)
-  save(request, file="request.Rda")
-  # This is used for outputting the JSON rather than sending it to the server
-  developmentMode <- FALSE
+  # This is used for development: outputs the JSON rather than sending it to the
+  # server and does not wrap everything in tryCatch so traceback() will work
+  developmentMode <- TRUE
   
   # Collect the information from the request
   request <- as.list(request)
@@ -2436,13 +2475,23 @@ parseGenericData <- function(request) {
   errorList <<- list()
   
   # Run the function and save output (value), errors, and warnings
-  loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
-                                     reportFilePath = reportFilePath,
-                                     dryRun = dryRun,
-                                     developmentMode = developmentMode,
-                                     configList=configList, 
-                                     testMode=testMode,
-                                     recordedBy=recordedBy))
+  if (developmentMode) {
+    return(list(runMain(pathToGenericDataFormatExcelFile,
+                                       reportFilePath = reportFilePath,
+                                       dryRun = dryRun,
+                                       developmentMode = developmentMode,
+                                       configList=configList, 
+                                       testMode=testMode,
+                                       recordedBy=recordedBy)))
+  } else {
+    loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
+                                       reportFilePath = reportFilePath,
+                                       dryRun = dryRun,
+                                       developmentMode = developmentMode,
+                                       configList=configList, 
+                                       testMode=testMode,
+                                       recordedBy=recordedBy))
+  }
   
   # If the output has class simpleError or is not a list, save it as an error
   if(class(loadResult$value)[1]=="simpleError") {
