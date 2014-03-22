@@ -447,6 +447,80 @@
 
   })(Backbone.View);
 
+  window.AdvancedExperimentResultsQueryController = (function(_super) {
+    __extends(AdvancedExperimentResultsQueryController, _super);
+
+    function AdvancedExperimentResultsQueryController() {
+      this.handleGetGeneExperimentsReturn = __bind(this.handleGetGeneExperimentsReturn, this);
+      this.handleNextClicked = __bind(this.handleNextClicked, this);
+      return AdvancedExperimentResultsQueryController.__super__.constructor.apply(this, arguments);
+    }
+
+    AdvancedExperimentResultsQueryController.prototype.template = _.template($("#AdvancedExperimentResultsQueryView").html());
+
+    AdvancedExperimentResultsQueryController.prototype.events = {
+      "click .bv_next": "handleNextClicked"
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.initialize = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      return this.gotoStepGetCodes();
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.handleNextClicked = function() {
+      switch (this.nextStep) {
+        case 'fromCodesToExptTree':
+          return this.fromCodesToExptTree();
+      }
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.gotoStepGetCodes = function() {
+      this.nextStep = 'fromCodesToExptTree';
+      this.$('.bv_getCodesView').show();
+      this.$('.bv_getExperimentsView').hide();
+      this.$('.bv_getFiltersView').hide();
+      return this.$('.bv_showResultsView').hide();
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.fromCodesToExptTree = function() {
+      this.searchCodes = $.trim(this.$('.bv_codesField').val());
+      return $.ajax({
+        type: 'POST',
+        url: "api/getGeneExperiments",
+        dataType: 'json',
+        data: {
+          geneIDs: this.searchCodes
+        },
+        success: (function(_this) {
+          return function() {
+            return _this.handleGetGeneExperimentsReturn;
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            console.log('got ajax error trying to get experiment tree');
+            return _this.serviceReturn = null;
+          };
+        })(this)
+      });
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.handleGetGeneExperimentsReturn = function(json) {
+      this.etc = new ExperimentTreeController({
+        el: this.$('.bv_getExperimentsView'),
+        model: new Backbone.Model(json.results)
+      });
+      this.etc.render();
+      this.$('.bv_getCodesView').hide();
+      this.$('.bv_getExperimentsView').show();
+      return this.nextStep = 'fromExptTreeToFilters';
+    };
+
+    return AdvancedExperimentResultsQueryController;
+
+  })(Backbone.View);
+
   window.GeneIDQueryAppController = (function(_super) {
     __extends(GeneIDQueryAppController, _super);
 
@@ -461,21 +535,10 @@
     GeneIDQueryAppController.prototype.initialize = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      return $.ajax({
-        type: 'POST',
-        url: "api/getExperimentSearchAttributes",
-        dataType: 'json',
-        data: {
-          experimentCodes: ["EXPT-00000398", "EXPT-00000396", "EXPT-00000398"]
-        },
-        success: this.handleGetExperimentSearchAttributesReturn,
-        error: (function(_this) {
-          return function(err) {
-            console.log('got ajax error');
-            return _this.serviceReturn = null;
-          };
-        })(this)
+      this.gidqsc = new GeneIDQuerySearchController({
+        el: this.$('.bv_queryView')
       });
+      return this.gidqsc.render();
     };
 
     GeneIDQueryAppController.prototype.handleGetGeneExperimentsReturn = function(json) {

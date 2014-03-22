@@ -120,8 +120,6 @@ describe "Gene Data Queries Module Testing", ->
 				it "should show no results message", ->
 					expect(@gidqrc.$('.bv_noResultsFound')).toBeVisible()
 
-
-
 	describe "Gene ID Query Search Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
@@ -192,9 +190,7 @@ describe "Gene Data Queries Module Testing", ->
 				it "should add the toolbar fixed top class", ->
 					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeTruthy()
 
-	################  Advanced-mode queries ###
-
-
+	################  Advanced-mode queries ################
 
 	describe "Advanced search modules", ->
 		describe "Protocol and experiment display", ->
@@ -358,22 +354,46 @@ describe "Gene Data Queries Module Testing", ->
 							expect(tmodel.get('lsType')).toEqual "stringValue"
 							expect(tmodel.get('operator')).toEqual "contains"
 							expect(tmodel.get('filterValue')).toEqual "search string"
-							console.log @erftlc.collection
 
 
-	#	describe "Advanced search wizard", ->
-	#		describe 'when instantiated', ->
-	#			beforeEach ->
-	#				@gidaqc = new GeneIDAdvancedQueryController
-	#					el: $('#fixture')
-	#				@gidaqc.render()
-	#			describe "basic existance tests", ->
-	#				it 'should exist', ->
-	#					expect(@gidaqc).toBeDefined()
-	#				it 'should load a template', ->
-	#					expect(@gidaqc.$('.bv_getGeneCodesView').length).toEqual 1
+		describe "Advanced search wizard", ->
+			describe 'when instantiated', ->
+				beforeEach ->
+					@aerqc = new AdvancedExperimentResultsQueryController
+						el: $('#fixture')
+					@aerqc.render()
+				describe "basic existance tests", ->
+					it 'should exist', ->
+						expect(@aerqc).toBeDefined()
+					it 'should load a template', ->
+						expect(@aerqc.$('.bv_getCodesView').length).toEqual 1
+				describe "start with get codes step", ->
+					it "should show only getCodes", ->
+						expect(@aerqc.$('.bv_getCodesView')).toBeVisible()
+						expect(@aerqc.$('.bv_getExperimentsView')).toBeHidden()
+						expect(@aerqc.$('.bv_getFiltersView')).toBeHidden()
+						expect(@aerqc.$('.bv_showResultsView')).toBeHidden()
+				describe "when valid codes enter and next pressed", ->
+					beforeEach ->
+						runs ->
+							@aerqc.$('.bv_codesField').val "12345, 6789"
+							@aerqc.$('.bv_next').click()
+					describe "experiment tree display from stub service", ->
+						beforeEach ->
+							waitsFor =>
+								@aerqc.$('.bv_tree').length == 1
+							, 500
+						it "should show only getExperiments", ->
+							runs ->
+								expect(@aerqc.$('.bv_getCodesView')).toBeHidden()
+								expect(@aerqc.$('.bv_getExperimentsView')).toBeVisible()
+								expect(@aerqc.$('.bv_getFiltersView')).toBeHidden()
+								expect(@aerqc.$('.bv_showResultsView')).toBeHidden()
+						it "should load tree and display root node", ->
+							runs ->
+								expect(@aerqc.$('.bv_tree').html()).toContain "Protocols"
 
-
+	#describe "when invalid codes enter and next pressed", ->
 
 	################ stand-alone app launcher   ##########
 	describe "Gene ID Query App Controller", ->
@@ -391,7 +411,8 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqac.$('.bv_inputView').length).toEqual 1
 
 
-#TODO Reconfigure GeneIDQueryInputController to send "" list instead of model
 #TODO setup download CSV service
 #TODO add an enuciator to show search errors etc
-
+#TODO Refactor to make not gene specific in names etc.
+# Make entity type to search a configuration option
+#TODO Do we need a search again reset? WHat about back buttons?

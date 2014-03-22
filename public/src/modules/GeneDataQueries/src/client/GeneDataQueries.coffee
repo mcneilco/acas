@@ -270,15 +270,60 @@ class window.ExperimentResultFilterTermListController extends Backbone.View
 	updateCollection: ->
 		@trigger "updateFilterModels"
 
+class window.AdvancedExperimentResultsQueryController extends Backbone.View
+	template: _.template($("#AdvancedExperimentResultsQueryView").html())
+	events:
+		"click .bv_next": "handleNextClicked"
+
+	initialize: ->
+		$(@el).empty()
+		$(@el).html @template()
+		@gotoStepGetCodes()
+
+	handleNextClicked: =>
+		switch @nextStep
+			when 'fromCodesToExptTree'
+				@fromCodesToExptTree()
+
+	gotoStepGetCodes: ->
+		@nextStep = 'fromCodesToExptTree'
+		@$('.bv_getCodesView').show()
+		@$('.bv_getExperimentsView').hide()
+		@$('.bv_getFiltersView').hide()
+		@$('.bv_showResultsView').hide()
+
+	fromCodesToExptTree: ->
+		@searchCodes = $.trim @$('.bv_codesField').val()
+		$.ajax
+			type: 'POST'
+			url: "api/getGeneExperiments"
+			dataType: 'json'
+			data:
+				geneIDs: @searchCodes
+			success: => @handleGetGeneExperimentsReturn
+			error: (err) =>
+				console.log 'got ajax error trying to get experiment tree'
+				@serviceReturn = null
+
+	handleGetGeneExperimentsReturn: (json) =>
+		@etc = new ExperimentTreeController
+			el: @$('.bv_getExperimentsView')
+			model: new Backbone.Model json.results
+		@etc.render()
+		@$('.bv_getCodesView').hide()
+		@$('.bv_getExperimentsView').show()
+		@nextStep = 'fromExptTreeToFilters'
+
+
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
 
-#	initialize: ->
-#		$(@el).empty()
-#		$(@el).html @template()
-#		@gidqsc = new GeneIDQuerySearchController
-#			el: @$('.bv_queryView')
-#		@gidqsc.render()
+	initialize: ->
+		$(@el).empty()
+		$(@el).html @template()
+		@gidqsc = new GeneIDQuerySearchController
+			el: @$('.bv_queryView')
+		@gidqsc.render()
 
 #	#This is dev scaffolding for the experiment tree. Real code for basic query is above commented out
 #	initialize: ->
@@ -296,19 +341,19 @@ class window.GeneIDQueryAppController extends Backbone.View
 #				@serviceReturn = null
 
 	#This is dev scaffolding for the experiment tree. Real code for basic query is above commented out
-	initialize: ->
-		$(@el).empty()
-		$(@el).html @template()
-		$.ajax
-			type: 'POST'
-			url: "api/getExperimentSearchAttributes"
-			dataType: 'json'
-			data:
-				experimentCodes: ["EXPT-00000398", "EXPT-00000396", "EXPT-00000398"]
-			success: @handleGetExperimentSearchAttributesReturn
-			error: (err) =>
-				console.log 'got ajax error'
-				@serviceReturn = null
+#	initialize: ->
+#		$(@el).empty()
+#		$(@el).html @template()
+#		$.ajax
+#			type: 'POST'
+#			url: "api/getExperimentSearchAttributes"
+#			dataType: 'json'
+#			data:
+#				experimentCodes: ["EXPT-00000398", "EXPT-00000396", "EXPT-00000398"]
+#			success: @handleGetExperimentSearchAttributesReturn
+#			error: (err) =>
+#				console.log 'got ajax error'
+#				@serviceReturn = null
 
 	handleGetGeneExperimentsReturn: (json) =>
 		@etc = new ExperimentTreeController

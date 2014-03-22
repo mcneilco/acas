@@ -44,6 +44,7 @@
 </script>
 
 <script type="text/template" id="ExperimentTreeView" xmlns="http://www.w3.org/1999/html">
+    <div class="span2 pull-right" style="font-size:18px;width:90px;">Step 2 of 3</div>
     <h5 style="margin-top:0;">Filter Data By Experiments:</h5>
     <div class="form-inline" style="margin-bottom:10px;">
         <input class="bv_searchVal" type="text" placeholder="Filter experiments by keywords" style="width:842px;">
@@ -76,9 +77,31 @@
 </script>
 
 <script type="text/template" id="ExperimentResultFilterTermListView" xmlns="http://www.w3.org/1999/html">
+    <div class="span2 pull-right" style="font-size:18px;width:90px;">Step 3 of 3</div>
     <h5 style="margin-top:0;">Filter Data By Results:</h5>
     <div class="well well-small span12 bv_filterTerms" style="background-color:#FFFFFF;width:900px;margin-left:0;margin-bottom:10px;"></div>
     <button class="btn pull-right bv_addTerm">Add Term</button>
+</script>
+
+<script type="text/template" id="AdvancedExperimentResultsQueryView" xmlns="http://www.w3.org/1999/html">
+    <div class="span3 pull-left" style="font-size:18px;margin-left:0;">Advanced Query Wizard</div>
+    <div class="bv_getCodesView">
+        <div class="span12" style="padding-top:50px;">
+            <div class="span2 pull-right" style="font-size:18px;width:90px;">Step 1 of 3</div>
+
+            <div class="span12 well well-small" style="width:920px;margin-top:10px;margin-left:0;">
+                <h5 style="margin-top:0;">Filter Data By Gene IDs:</h5>
+                <textarea class="bv_codesField" rows="3" style="width:905px;resize:none;" placeholder="Optional list of Gene IDs"></textarea>
+
+            </div>
+        </div>
+    </div>
+    <div class="bv_getExperimentsView"></div>
+    <div class="bv_getFiltersView"></div>
+    <div class="bv_showResultsView"></div>
+    <button class="btn bv_help"><i class="icon-question-sign"></i></button>
+    <button class="btn pull-right bv_next" style="margin-left:5px;">Next</button>
+    <button class="btn btn-danger pull-right bv_cancel">Cancel</button>
 </script>
 
 <script type="text/template" id="GeneIDQueryAppView" xmlns="http://www.w3.org/1999/html">

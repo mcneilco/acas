@@ -334,7 +334,7 @@
           });
         });
       });
-      return describe("Experiment attribute filtering panel", function() {
+      describe("Experiment attribute filtering panel", function() {
         describe("filter term controller", function() {
           return describe('when instantiated', function() {
             beforeEach(function() {
@@ -491,8 +491,63 @@
                 expect(tmodel.get('lsKind')).toEqual("category");
                 expect(tmodel.get('lsType')).toEqual("stringValue");
                 expect(tmodel.get('operator')).toEqual("contains");
-                expect(tmodel.get('filterValue')).toEqual("search string");
-                return console.log(this.erftlc.collection);
+                return expect(tmodel.get('filterValue')).toEqual("search string");
+              });
+            });
+          });
+        });
+      });
+      return describe("Advanced search wizard", function() {
+        return describe('when instantiated', function() {
+          beforeEach(function() {
+            this.aerqc = new AdvancedExperimentResultsQueryController({
+              el: $('#fixture')
+            });
+            return this.aerqc.render();
+          });
+          describe("basic existance tests", function() {
+            it('should exist', function() {
+              return expect(this.aerqc).toBeDefined();
+            });
+            return it('should load a template', function() {
+              return expect(this.aerqc.$('.bv_getCodesView').length).toEqual(1);
+            });
+          });
+          describe("start with get codes step", function() {
+            return it("should show only getCodes", function() {
+              expect(this.aerqc.$('.bv_getCodesView')).toBeVisible();
+              expect(this.aerqc.$('.bv_getExperimentsView')).toBeHidden();
+              expect(this.aerqc.$('.bv_getFiltersView')).toBeHidden();
+              return expect(this.aerqc.$('.bv_showResultsView')).toBeHidden();
+            });
+          });
+          return describe("when valid codes enter and next pressed", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.aerqc.$('.bv_codesField').val("12345, 6789");
+                return this.aerqc.$('.bv_next').click();
+              });
+            });
+            return describe("experiment tree display from stub service", function() {
+              beforeEach(function() {
+                return waitsFor((function(_this) {
+                  return function() {
+                    return _this.aerqc.$('.bv_tree').length === 1;
+                  };
+                })(this), 500);
+              });
+              it("should show only getExperiments", function() {
+                return runs(function() {
+                  expect(this.aerqc.$('.bv_getCodesView')).toBeHidden();
+                  expect(this.aerqc.$('.bv_getExperimentsView')).toBeVisible();
+                  expect(this.aerqc.$('.bv_getFiltersView')).toBeHidden();
+                  return expect(this.aerqc.$('.bv_showResultsView')).toBeHidden();
+                });
+              });
+              return it("should load tree and display root node", function() {
+                return runs(function() {
+                  return expect(this.aerqc.$('.bv_tree').html()).toContain("Protocols");
+                });
               });
             });
           });
