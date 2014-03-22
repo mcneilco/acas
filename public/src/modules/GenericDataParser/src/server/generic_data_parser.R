@@ -2075,7 +2075,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   
-  require('XLConnect')
   require('RCurl')
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
@@ -2088,22 +2087,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     stop("Cannot find input file")
   }
   
-  if (grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
-    tryCatch({
-      wb <- loadWorkbook(pathToGenericDataFormatExcelFile)
-      genericDataFileDataFrame <- readWorksheet(wb, sheet=1, header = FALSE, dateTimeFormat="A_date_was_in_Excel_Date_format")
-    }, error = function(e) {
-      stop("Cannot read input excel file")
-    })
-  } else if (grepl("\\.csv$",pathToGenericDataFormatExcelFile)){
-    tryCatch({
-      genericDataFileDataFrame <- read.csv(pathToGenericDataFormatExcelFile, header = FALSE, stringsAsFactors=FALSE)
-    }, error = function(e) {
-      stop("Cannot read input csv file")
-    })
-  } else {
-    stop("The input file must have extension .xls, .xlsx, or .csv")
-  }
+  genericDataFileDataFrame <- readExcelOrCsv(pathToGenericDataFormatExcelFile)
   
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
@@ -2212,11 +2196,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
   }
-  if (inputFormat == "Use Existing Experiment") {
-    useExistingExperiment <- TRUE
-  } else {
-    useExistingExperiment <- FALSE
-  }
+  
+  useExistingExperiment <- inputFormat == "Use Existing Experiment"
   if (useExistingExperiment) {
     experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
     if (length(experiment) == 0) {
@@ -2236,24 +2217,16 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   errorFree <- length(errorList)==0
   
   # Delete any old data under the same experiment name (delete and reload)
+  deletedExperimentCodes <- NULL
   if(!dryRun && !newExperiment && errorFree) {
-    if(configList$server.delete.files.on.reload == "true") {
-      deleteSourceFile(experiment, configList)
-      deleteAnnotation(experiment, configList)
-    }
-    if(useExistingExperiment) {
-      deleteAnalysisGroupByExperiment(experiment)
-    } else {
-      deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
-      deleteExperiment(experiment)
-    }
-  } else {
-    deletedExperimentCodes <- NULL
+    deletedExperimentCodes <- deleteOldData(experiment, useExistingExperiment)
   }
   
   if (!dryRun && errorFree && !useExistingExperiment) {
     experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, 
                                       recordedBy, configList, deletedExperimentCodes)
+    
+    # If an error occurs, this allows the experiment to still be accessed
     assign(x="experiment", value=experiment, envir=parent.frame())
   }
   
@@ -2274,41 +2247,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     }
   }
   
-  # Add name modifier to protocol name for viewer
-  if (is.list(protocol)) {
-    protocolPostfixStates <- protocol$lsStates[lapply(protocol$lsStates, getElement, "lsTypeAndKind") == "metadata_name modifier"]
-  } else {
-    protocolPostfixStates <- list()
-  }
-  if (length(protocolPostfixStates) > 0) {
-    protocolPostfixState <- protocolPostfixStates[[1]]
-    protocolPostfixValues <- protocolPostfixState$lsValues[lapply(protocolPostfixState$lsValues, getElement, "lsTypeAndKind") == "stringValue_postfix"]
-    protocolPostfix <- protocolPostfixValues[[1]]$stringValue
-  } else {
-    protocolPostfix <- ""
-  }
-  
-  if (!is.null(configList$client.service.result.viewer.protocolPrefix)) {
-    if (!(is.null(metaData$'Protocol Name'[1]))) {
-      protocolName <- paste0(validatedMetaData$"Protocol Name", protocolPostfix)
-    } else {
-      protocol <- fromJSON(getURL(URLencode(paste0(racas::applicationSettings$client.service.persistence.fullpath, "protocols/", protocol$id))))
-      
-      protocolName <- getPreferredName(protocol)
-    }
-      
-    if (is.list(experiment) && configList$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
-      experimentName <- paste0(experiment$codeName, "::", validatedMetaData$"Experiment Name")
-    } else {
-      experimentName <- validatedMetaData$"Experiment Name"
-    }
-    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, 
-                         URLencode(protocolName, reserved=TRUE), 
-                         configList$client.service.result.viewer.experimentPrefix,
-                         URLencode(experimentName, reserved=TRUE))
-  } else {
-    viewerLink <- NULL
-  }
+  viewerLink <- getViewerLink(protocol, experiment, validatedMetaData$'Experiment Name')
   
   summaryInfo <- list(
     format = inputFormat,
@@ -2425,12 +2364,71 @@ getStateGroups <- function(formatSettings) {
   })
   return(stateGroups)
 }
+deleteOldData <- function(experiment, useExistingExperiment) {
+  # Deletes old data, either the whole experiment or just the analysisgroups
+  deletedExperimentCodes <- NULL
+  if(racas::applicationSettings$server.delete.files.on.reload == "true") {
+    deleteSourceFile(experiment, racas::applicationSettings)
+    deleteAnnotation(experiment, racas::applicationSettings)
+  }
+  if(useExistingExperiment) {
+    deleteAnalysisGroupByExperiment(experiment)
+  } else {
+    deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
+    deleteExperiment(experiment)
+  }
+  return(deletedExperimentCodes)
+}
 getPreviousExperimentCodes <- function(experiment) {
   metadataState <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]
   previousCodeValues <- getValuesByTypeAndKind(metadataState, "codeValue_previous experiment code")
   previousExperimentCodes <- lapply(previousCodeValues, getElement, "codeValue")
   return(previousExperimentCodes)
 }
+getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolName = NULL) {
+  # Returns url link for viewer
+  
+  if(is.null(experimentName)) {
+    experimentName <- getPreferredName(experiment)
+  }
+  
+  # Add name modifier to protocol name for viewer
+  protocolPostfixStates <- list()
+  if (is.list(protocol$lsStates)) {
+    protocolPostfixStates <- Filter(function(x) {x$lsTypeAndKind == "metadata_name modifier"}, 
+                                    protocol$lsStates)
+  }
+  
+  protocolPostfix <- ""
+  if (length(protocolPostfixStates) > 0) {
+    protocolPostfixState <- protocolPostfixStates[[1]]
+    protocolPostfixValues <- Filter(function(x) {x$lsTypeAndKind == "stringValue_postfix"},
+                                    protocolPostfixState)
+    protocolPostfix <- protocolPostfixValues[[1]]$stringValue
+  }
+  
+  if (!is.null(racas::applicationSettings$client.service.result.viewer.protocolPrefix)) {
+    if (!(is.null(protocolName))) {
+      protocolName <- paste0(protocolName, protocolPostfix)
+    } else {
+      protocol <- getProtocolById(protocol$id)
+      
+      protocolName <- getPreferredName(protocol)
+    }
+    
+    if (is.list(experiment) && racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
+      experimentName <- paste0(experiment$codeName, "::", experimentName)
+    }
+    viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
+                         URLencode(protocolName, reserved=TRUE), 
+                         racas::applicationSettings$client.service.result.viewer.experimentPrefix,
+                         URLencode(experimentName, reserved=TRUE))
+  } else {
+    viewerLink <- NULL
+  }
+  return(viewerLink)
+}
+
 parseGenericData <- function(request) {
   # Highest level function
   # 
@@ -2446,7 +2444,7 @@ parseGenericData <- function(request) {
   options("scipen"=15)
   # This is used for development: outputs the JSON rather than sending it to the
   # server and does not wrap everything in tryCatch so traceback() will work
-  developmentMode <- TRUE
+  developmentMode <- FALSE
   
   # Collect the information from the request
   request <- as.list(request)
