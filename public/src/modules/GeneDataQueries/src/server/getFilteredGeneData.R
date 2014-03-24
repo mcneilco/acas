@@ -2,41 +2,54 @@
 require('RCurl')
 require('rjson')
 require('data.table')
-require('racas')
 
-configList <- racas::applicationSettings
-
-#str(GET) ## to see the values that are passed into the GET params
-
-if(is.null(GET$exportCSV)){
-    exportCSV <- FALSE
-#    cat("exportCSV variable not found. Setting to FALSE")
-} else {
-    exportCSV <- as.boolean(GET$exportCSV)
-#    cat("export val found")
-}
-
-#cat(exportCSV)
+exportCSV <- as.boolean(GET$exportCSV)
 
 postData <- rawToChar(receiveBin(1024))
-postData.list <- fromJSON(postData)
-genes <- postData.list$geneIDs
 
-convertToChar <- function(input){
-	lapply(input, as.character)
+#postData <- '{"maxRowsToReturn": -1, "booleanFilter":"AND", "advancedFilter":"",  "batchCodes": "1, 2, 15, 17", "experimentCodeList": ["EXPT-00000316", "EXPT-00000396", "EXPT-00000397", "EXPT-00000398"], "searchFilters": [{"queryId":"Q1", "codeName":"EXPT-00000314", "lsType": "numericValue", "lsKind":"EC50", "operator":">", "filterValue":"0.9" }, {"queryId":"Q2", "codeName":"EXPT-00000314", "lsType": "stringValue", "lsKind":"Category", "operator":"=", "filterValue":"sigmoid" }, {"queryId":"Q3", "codeName":"EXPT-00000314", "lsType": "booleanValue", "lsKind":"hit", "operator":"=", "filterValue":"true" }]}'
+postData.list <- fromJSON(postData)
+
+batchCodeList <- list()
+if (!is.null(postData.list$batchCodes)) {
+	geneData <- postData.list$batchCodes
+	geneData <- gsub(";|\t|\n", ",", geneData)
+	geneData <- gsub(" ", "", geneData)
+	geneDataList <- strsplit(geneData, split=",")[[1]]
+
+	if (length(geneDataList) > 0) {
+		requestList <- list()
+		for (i in 1:length(geneDataList)){
+		   requestList[[length(requestList)+1]] <- list(requestName=geneDataList[[i]])
+		}
+		requestObject <- list()
+		requestObject$requests <- requestList
+		geneNameList <- getURL(
+			paste0("http://host3.labsynch.com:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
+			customrequest='POST',
+			httpheader=c('Content-Type'='application/json'),
+			postfields=toJSON(requestObject))
+
+		genes <- fromJSON(geneNameList)$results
+		batchCodeList <- list()
+		for (i in 1:length(genes)){
+		   if (genes[[i]]$referenceName != ""){
+		      batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$referenceName
+		   }
+		}
+	}
 }
-genes.char <- lapply(genes, convertToChar)
-genes.Json <- toJSON(genes.char)
+
+postData.list$batchCodeList <- batchCodeList
 
 dataCsv <- getURL(
-	paste0(configList$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData?format=csv"),
+	'http://localhost:8080/acas/experiments/agdata/batchcodelist/experimentcodelist?format=csv',
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
-	postfields=genes.Json)
+	postfields=toJSON(postData.list))
 
 dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
 dataDT <- as.data.table(dataDF)
-
 
 pivotResults <- function(geneId, lsKind, result){
 	exptSubset <- data.table(geneId, lsKind, result)
