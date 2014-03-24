@@ -678,6 +678,7 @@
 
     GeneIDQueryAppController.prototype.startAdvanceedQueryWizard = function() {
       this.$('.bv_next').html("Next");
+      this.$('.bv_next').removeAttr('disabled');
       this.aerqc = new AdvancedExperimentResultsQueryController({
         el: this.$('.bv_advancedQueryView')
       });

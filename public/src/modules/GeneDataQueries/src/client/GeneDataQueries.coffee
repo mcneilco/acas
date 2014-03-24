@@ -428,6 +428,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 
 	startAdvanceedQueryWizard: =>
 		@$('.bv_next').html "Next"
+		@$('.bv_next').removeAttr 'disabled'
 		@aerqc = new AdvancedExperimentResultsQueryController
 			el: @$('.bv_advancedQueryView')
 		@aerqc.on 'enableNext', =>
