@@ -3,7 +3,7 @@ This service takes a list of geneids and returns related experimental data,
 
 
 ###
-#Service call data with good data:
+#Basic gene query Service call data with good data:
 goodDataRequest =
 	geneIDs: "1234, 2345, 4444"
 	maxRowsToReturn: 10000
@@ -14,6 +14,38 @@ badDataRequest =
 	geneIDs: "1234, 2345, 4444"
 	maxRowsToReturn: -1
 	user: 'jmcneil'
+
+#Advanced gene query Service call data with good data:
+goodAdvancedRequest =
+	queryParams:
+		batchCodes: "gene1, gene2"
+		experimentCodeList: [
+			"EXPT-00000397"
+			"EXPT-00000398"
+		]
+		searchFilters:
+			booleanFilter: "advanced"
+			advancedFilter: "Q1 AND Q2"
+			filters: [
+				{
+					termName: "Q1"
+					experimentCode: "EXPT-00000396"
+					lsKind: "EC50"
+					lsType: "numericValue"
+					operator: "<"
+					filterValue: ".05"
+				}
+				{
+					termName: "Q2"
+					experimentCode: "EXPT-00000398"
+					lsKind: "KD"
+					lsType: "numericValue"
+					operator: ">"
+					filterValue: "1"
+				}
+			]
+	maxRowsToReturn: 10000
+	user: "jmcneil"
 
 #The expected return format basic query mode:
 basicReturnExampleSuccess =
@@ -255,6 +287,72 @@ describe 'Gene Data Queries Service testing', ->
 						url: "api/getExperimentSearchAttributes"
 						data:
 							experimentCodes: ["error"]
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+			it 'should return error=true, and at least one message', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 20000)
+				runs ->
+					expect(@serviceReturn.results.htmlSummary).toBeDefined()
+					expect(@serviceReturn.hasError).toBeTruthy()
+					expect(@serviceReturn.errorMessages.length).toBeGreaterThan(0)
+					expect(@serviceReturn.errorMessages[1].errorLevel).toEqual 'error'
+
+	describe "advanced data search", ->
+		describe 'when run with valid input data', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'POST'
+						url: "api/geneDataQueryAdvanced"
+						data: goodAdvancedRequest
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+			# combine all expects in one test to reduce test run time since the service is slow
+			it 'should return no errors, dry run mode, hasWarning, and an html summary', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 10000)
+				runs ->
+					expect(@serviceReturn.hasError).toBeFalsy()
+					expect(@serviceReturn.results.data.aaData.length).toEqual 4
+					expect(@serviceReturn.hasWarning).toBeDefined()
+					expect(@serviceReturn.results.htmlSummary).toBeDefined()
+		describe 'when run with no results expected', ->
+			beforeEach ->
+				runs ->
+					goodAdvancedRequest.queryParams.batchCodes = "fiona"
+					$.ajax
+						type: 'POST'
+						url: "api/geneDataQueryAdvanced"
+						data: goodAdvancedRequest
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+			# combine all expects in one test to reduce test run time since the service is slow
+			it 'should return no errors, dry run mode, hasWarning, and an html summary', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 10000)
+				runs ->
+					expect(@serviceReturn.hasError).toBeFalsy()
+					expect(@serviceReturn.results.data.iTotalRecords).toEqual 0
+					expect(@serviceReturn.hasWarning).toBeDefined()
+					expect(@serviceReturn.results.htmlSummary).toBeDefined()
+		describe 'when run with invalid input file', ->
+			beforeEach ->
+				runs ->
+					goodAdvancedRequest.maxRowsToReturn = -1
+					$.ajax
+						type: 'POST'
+						url: "api/geneDataQueryAdvanced"
+						data: goodAdvancedRequest
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>

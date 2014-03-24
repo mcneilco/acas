@@ -7,6 +7,7 @@
 		        <div class="lead pull-left bv_gidACASBadgeTop">ACAS</div>
 	            <input type="text" class="span4 bv_gidListString" placeholder="Search by gene IDs..." />
                 <button type="button" class="btn btn-primary bv_search">Search</button>
+                <button type="button" class="btn btn-primary bv_gidNavAdvancedSearchButton">Advanced Search</button>
             </div>
         </div>
     </div>
@@ -14,7 +15,7 @@
     <div class="navbar bv_group_toolbar navbar-fixed-bottom">
         <div class="well well-small bv_toolbar gidNavWellBottom">
             <button class="btn bv_gidNavHelpButton gidNavHelpButtonBottom"><i class="icon-question-sign"></i></button>
-            <button class="btn pull-right bv_gidNavAdvancedSearchButton gidNavAdvancedSearchButtonBottom"><i class="icon-wrench"></i></button>
+            <button class="btn pull-right gidNavAdvancedSearchButtonBottom"><i class="icon-wrench"></i></button>
         </div>
     </div>
 </script>
@@ -56,7 +57,7 @@
 </script>
 
 <script type="text/template" id="ExperimentResultFilterTermView" xmlns="http://www.w3.org/1999/html">
-    <label style="margin-left:10px;margin-right:5px;">Q1</label>
+    <label class="bv_termName" style="margin-left:10px;margin-right:5px;"></label>
     <select class="span4 bv_experiment" style="margin-right:5px;"></select>
     <select class="span4 bv_kind" style="margin-right:5px;"></select>
     <select class="span1 bv_operator_number" style="margin-right:5px;">
@@ -77,10 +78,31 @@
 </script>
 
 <script type="text/template" id="ExperimentResultFilterTermListView" xmlns="http://www.w3.org/1999/html">
-    <div class="span2 pull-right" style="font-size:18px;width:90px;">Step 3 of 3</div>
     <h5 style="margin-top:0;">Filter Data By Results:</h5>
     <div class="well well-small span12 bv_filterTerms" style="background-color:#FFFFFF;width:900px;margin-left:0;margin-bottom:10px;"></div>
     <button class="btn pull-right bv_addTerm">Add Term</button>
+</script>
+
+<script type="text/template" id="ExperimentResultFilterView" xmlns="http://www.w3.org/1999/html">
+    <div class="span2 pull-right" style="font-size:18px;width:90px;">Step 3 of 3</div>
+    <div class="span12 well well-small bv_filterTermList" style="width:920px;margin-top:10px;margin-left:0;"></div>
+    <div class="form-inline span12" style="margin-left:0;margin-bottom:10px;">
+        Boolean filter between search terms:
+        <label class="radio" style="padding-left:10px;">
+            <input type="radio" name="bv_booleanFilter" class="bv_booleanFilter_and" value="and" checked="checked" style="margin-right:5px;margin-top:3px;">And
+        </label>
+        <label class="radio" style="padding-left:25px;">
+            <input type="radio" name="bv_booleanFilter" class="bv_booleanFilter_or" value="or" style="margin-right:5px;margin-top:3px;">Or
+        </label>
+        <label class="radio" style="padding-left:25px;">
+            <input type="radio" name="bv_booleanFilter" class="bv_booleanFilter_advanced" value="advanced" style="margin-right:5px;margin-top:3px;">Advanced Filter
+        </label>
+    </div>
+
+    <div class="span12 bv_advancedBoolContainer" style="margin-left:0;margin-bottom:5px;">
+        Advanced Boolean Filter
+        <input type="text" class="span12 bv_advancedBooleanFilter" style="width:905px;" placeholder="Type in filter query: (Q1 or Q2 or Q3) NOT (Q4 and Q5)" />
+    </div>
 </script>
 
 <script type="text/template" id="AdvancedExperimentResultsQueryView" xmlns="http://www.w3.org/1999/html">
@@ -94,14 +116,12 @@
                 <textarea class="bv_codesField" rows="3" style="width:905px;resize:none;" placeholder="Optional list of Gene IDs"></textarea>
 
             </div>
+            <div class="bv_noExperimentsFound">No experiments found for these genes</div>
         </div>
     </div>
     <div class="bv_getExperimentsView"></div>
     <div class="bv_getFiltersView"></div>
-    <div class="bv_showResultsView"></div>
-    <button class="btn bv_help"><i class="icon-question-sign"></i></button>
-    <button class="btn pull-right bv_next" style="margin-left:5px;">Next</button>
-    <button class="btn btn-danger pull-right bv_cancel">Cancel</button>
+    <div class="bv_advResultsView"></div>
 </script>
 
 <script type="text/template" id="GeneIDQueryAppView" xmlns="http://www.w3.org/1999/html">
@@ -113,10 +133,12 @@
         </div>
     </div>
     <div class="container">
-        <div class="bv_queryView"></div>
-        <div class="bv_exptTreeView"></div>
-        <div class="bv_attributeFilterView"></div>
-
+        <div class="bv_basicQueryView"></div>
+        <div class="bv_advancedQueryContainer">
+            <div class="bv_advancedQueryView"></div>
+            <button class="btn pull-right bv_next" style="margin-left:5px;">Next</button>
+            <button class="btn btn-danger pull-right bv_cancel">Cancel</button>
+        </div>
 
      </div>
 </script>

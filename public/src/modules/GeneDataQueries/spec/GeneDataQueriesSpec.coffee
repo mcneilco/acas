@@ -6,43 +6,10 @@ afterEach ->
 	$("body").append $(@fixture)
 
 describe "Gene Data Queries Module Testing", ->
-	describe "Gene ID model testing", ->
-		describe "When loaded from new", ->
-			beforeEach ->
-				@gid = new GeneID()
-			describe "Existence and Defaults", ->
-				it "should be defined", ->
-					expect(@gid).toBeDefined()
-				it "should have a default gid", ->
-					expect(@gid.get('gid')).toBeNull()
-	describe "Gene ID List model testing", ->
-		describe "When loaded from new", ->
-			beforeEach ->
-				@gidl = new GeneIDList()
-			describe "Existence and Defaults", ->
-				it "should be defined", ->
-					expect(@gidl).toBeDefined()
-			describe "Parsing functions", ->
-				beforeEach ->
-					@gidl.addGIDsFromString "1234, 3421,1111, 2222 , 3333"
-				it "should be accept a string of comma seperated gene IDs", ->
-					expect(@gidl.length).toEqual 5
-				it "should strip spaces", ->
-					expect(@gidl.at(1).get('gid')).toEqual '3421'
-					expect(@gidl.at(3).get('gid')).toEqual '2222'
-				it "should add to the existing set when called again", ->
-					@gidl.addGIDsFromString "555, 3466621,777, 888 , 999"
-					expect(@gidl.length).toEqual 10
-				it "should have zero length when given an empty string", ->
-					@gidl.reset()
-					@gidl.addGIDsFromString ""
-					expect(@gidl.length).toEqual 0
-
 	describe "Gene ID Query Input Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
 				@gidqic = new GeneIDQueryInputController
-					collection: new GeneIDList()
 					el: $('#fixture')
 				@gidqic.render()
 			describe "basic existance tests", ->
@@ -50,35 +17,22 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqic).toBeDefined()
 				it 'should load a template', ->
 					expect(@gidqic.$('.bv_gidListString').length).toEqual 1
-			describe "update the model", ->
-				beforeEach ->
-					@gidqic.$('.bv_gidListString').val "1234, 3421,1111, 2222 , 3333"
-					@gidqic.updateGIDsFromField()
-				it "should get 5 entries", ->
-					expect(@gidqic.collection.length).toEqual 5
-				it "should strip spaces", ->
-					expect(@gidqic.collection.at(1).get('gid')).toEqual '3421'
-					expect(@gidqic.collection.at(3).get('gid')).toEqual '2222'
-				it "should empty the collection before adding gids from the text field", ->
-					@gidqic.$('.bv_gidListString').val "555, 3466621,777, 888 , 999"
-					@gidqic.updateGIDsFromField()
-					expect(@gidqic.collection.length).toEqual 5
 			describe "search button enabling behavior", ->
 				it "should have search button disabled when nothing in field", ->
 					expect(@gidqic.$('.bv_search').attr('disabled')).toEqual 'disabled'
 				it "should have search button enabled when someting added to field", ->
 					@gidqic.$('.bv_gidListString').val "555, 3466621,777, 888 , 999"
-					@gidqic.$('.bv_gidListString').change()
+					@gidqic.$('.bv_gidListString').keyup()
 					expect(@gidqic.$('.bv_search').attr('disabled')).toBeUndefined()
 				it "should have search button disabled when field is emptied", ->
 					@gidqic.$('.bv_gidListString').val ""
-					@gidqic.$('.bv_gidListString').change()
+					@gidqic.$('.bv_gidListString').keyup()
 					expect(@gidqic.$('.bv_search').attr('disabled')).toEqual 'disabled'
 			describe "search button behavior", ->
 				it "should trigger a search request when search button pressed", ->
 					runs ->
 						@gidqic.$('.bv_gidListString').val "555, 3466621,777, 888 , 999"
-						@gidqic.$('.bv_gidListString').change()
+						@gidqic.$('.bv_gidListString').keyup()
 						@gotTrigger = false
 						@gidqic.on 'search-requested', =>
 							@gotTrigger = true
@@ -88,6 +42,19 @@ describe "Gene Data Queries Module Testing", ->
 					, 1000
 					runs =>
 						expect(@gotTrigger).toBeTruthy()
+			describe "when advanced mode pressed", ->
+				beforeEach ->
+					runs ->
+						@advanceTriggered = false
+						@gidqic.on 'requestAdvancedMode', =>
+							@advanceTriggered = true
+						@gidqic.$('.bv_gidNavAdvancedSearchButton').click()
+				it "should request enable button disabled when an experiment selected", ->
+					waitsFor =>
+						@advanceTriggered
+					, 100
+					runs ->
+						expect(@advanceTriggered).toBeTruthy()
 
 	describe "Gene ID Query Result Controller", ->
 		describe 'when instantiated', ->
@@ -144,8 +111,8 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqsc.$('.bv_gidACASBadge')).toBeVisible()
 				it "should hide ACAS inline badge at start", ->
 					expect(@gidqsc.$('.bv_gidACASBadgeTop')).toBeHidden()
-				it "should have the gidNavAdvancedSearchButton start class", ->
-					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeTruthy()
+#				it "should have the gidNavAdvancedSearchButton start class", ->
+#					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeTruthy()
 				it "should not have the gidNavHelpButton pull-right class", ->
 					expect(@gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeFalsy()
 				it "should add the gidNavAdvancedSearchButton end class", ->
@@ -227,6 +194,33 @@ describe "Gene Data Queries Module Testing", ->
 						@etc.$('.jstree-checkbox:eq(4)').click()
 						@etc.$('.jstree-checkbox:eq(5)').click()
 						expect(@etc.getSelectedExperiments()).toEqual ["EXPT-00000398", "EXPT-00000396"]
+				describe "when none selected", ->
+					beforeEach ->
+						runs ->
+							@nextEnableRequested = false
+							@etc.on 'enableNext', =>
+								@nextEnableRequested = true
+							@nextDisableRequested = false
+							@etc.on 'disableNext', =>
+								@nextDisableRequested = true
+							@etc.$(".bv_tree").jstree(true).search "EXPT-00000398"
+							expect(@etc.$('.bv_tree').html()).toContain "EXPT-00000398"
+							@etc.$('.jstree-checkbox:eq(4)').click()
+					it "should request enable button disabled when an experiment selected", ->
+						waitsFor =>
+							@nextEnableRequested
+						, 100
+						runs ->
+							expect(@nextEnableRequested).toBeTruthy()
+					it "should request next button disabled when all experiments de-selected", ->
+						runs ->
+							@etc.$('.jstree-checkbox:eq(4)').click()
+						waitsFor =>
+							@nextDisableRequested
+						, 100
+						runs ->
+							expect(@nextDisableRequested).toBeTruthy()
+
 
 		describe "Experiment attribute filtering panel", ->
 			describe "filter term controller", ->
@@ -236,6 +230,7 @@ describe "Gene Data Queries Module Testing", ->
 							el: $('#fixture')
 							model: new Backbone.Model()
 							filterOptions: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
+							termName: "Q1"
 						@erftc.render()
 					describe "basic existance tests", ->
 						it 'should exist', ->
@@ -243,6 +238,8 @@ describe "Gene Data Queries Module Testing", ->
 						it 'should load a template', ->
 							expect(@erftc.$('.bv_experiment').length).toEqual 1
 					describe "rendering", ->
+						it "should show termName", ->
+							expect(@erftc.$('.bv_termName').html()).toEqual "Q1"
 						it "should show experiment options", ->
 							expect(@erftc.$('.bv_experiment option').length).toEqual 3
 							expect(@erftc.$('.bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"
@@ -322,6 +319,8 @@ describe "Gene Data Queries Module Testing", ->
 						it 'should load a template', ->
 							expect(@erftlc.$('.bv_addTerm').length).toEqual 1
 					describe "rendering", ->
+						it "should show one term with termName", ->
+							expect(@erftlc.$('.bv_termName').html()).toEqual "Q1"
 						it "should show one experiment term with experiment options", ->
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment option').length).toEqual 3
@@ -331,6 +330,9 @@ describe "Gene Data Queries Module Testing", ->
 							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 2
 							expect(@erftlc.collection.length).toEqual 2
+						it "should show 2nd term with incremented termName", ->
+							@erftlc.$('.bv_addTerm').click()
+							expect(@erftlc.$('.bv_termName:eq(1)').html()).toEqual "Q2"
 						it "should one experiment terms when remove is clicked", ->
 							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 2
@@ -349,11 +351,60 @@ describe "Gene Data Queries Module Testing", ->
 							@erftlc.updateCollection()
 							expect(@erftlc.collection.length).toEqual 2
 							tmodel = @erftlc.collection.at(1)
+							expect(tmodel.get('termName')).toEqual "Q2"
 							expect(tmodel.get('experimentCode')).toEqual "EXPT-00000396"
 							expect(tmodel.get('lsKind')).toEqual "category"
 							expect(tmodel.get('lsType')).toEqual "stringValue"
 							expect(tmodel.get('operator')).toEqual "contains"
 							expect(tmodel.get('filterValue')).toEqual "search string"
+			describe "ExperimentResultFilter Controller", ->
+				describe 'when instantiated', ->
+					beforeEach ->
+						@erfc = new ExperimentResultFilterController
+							el: $('#fixture')
+							filterOptions: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
+						@erfc.render()
+					describe "basic existance tests", ->
+						it 'should exist', ->
+							expect(@erfc).toBeDefined()
+						it 'should load a template', ->
+							expect(@erfc.$('.bv_advancedBooleanFilter').length).toEqual 1
+					describe "rendering", ->
+						it "should show an experiment term list with experiment options", ->
+							expect(@erfc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
+					describe "boolean filter radio behavior", ->
+						it "should hide advanced filter input when radio set to and", ->
+							@erfc.$('.bv_booleanFilter_and').attr('checked','checked')
+							@erfc.$('.bv_booleanFilter_and').click()
+							expect(@erfc.$('.bv_advancedBoolContainer')).toBeHidden()
+						it "should hide advanced filter input when radio set to or", ->
+							@erfc.$('.bv_booleanFilter_or').attr('checked','checked')
+							@erfc.$('.bv_booleanFilter_or').click()
+							expect(@erfc.$('.bv_advancedBoolContainer')).toBeHidden()
+						it "should show advanced filter input when radio set to advanced", ->
+							@erfc.$('.bv_booleanFilter_advanced').attr('checked','checked')
+							@erfc.$('.bv_booleanFilter_advanced').click()
+							expect(@erfc.$('.bv_advancedBoolContainer')).toBeVisible()
+					describe "get filter params", ->
+						it "should update the collection wehn requested", ->
+							@erfc.$('.bv_addTerm').click()
+							@erfc.$('.bv_experiment:eq(1)').val "EXPT-00000396"
+							@erfc.$('.bv_experiment:eq(1)').change()
+							@erfc.$('.bv_kind:eq(1)').val "category"
+							@erfc.$('.bv_kind:eq(1)').change()
+							@erfc.$('.bv_operator:eq(1)').val "contains"
+							@erfc.$('.bv_filterValue:eq(1)').val " search string "
+							@erfc.$('.bv_booleanFilter_advanced').attr('checked','checked')
+							@erfc.$('.bv_advancedBooleanFilter').val " (Q1 AND Q2) OR Q3 "
+							attrs = @erfc.getSearchFilters()
+							expect(attrs.booleanFilter).toEqual "advanced"
+							expect(attrs.advancedFilter).toEqual "(Q1 AND Q2) OR Q3"
+							expect(attrs.filters[1].termName).toEqual "Q2"
+							expect(attrs.filters[1].experimentCode).toEqual "EXPT-00000396"
+							expect(attrs.filters[1].lsKind).toEqual "category"
+							expect(attrs.filters[1].lsType).toEqual "stringValue"
+							expect(attrs.filters[1].operator).toEqual "contains"
+							expect(attrs.filters[1].filterValue).toEqual "search string"
 
 
 		describe "Advanced search wizard", ->
@@ -367,33 +418,91 @@ describe "Gene Data Queries Module Testing", ->
 						expect(@aerqc).toBeDefined()
 					it 'should load a template', ->
 						expect(@aerqc.$('.bv_getCodesView').length).toEqual 1
+
 				describe "start with get codes step", ->
 					it "should show only getCodes", ->
 						expect(@aerqc.$('.bv_getCodesView')).toBeVisible()
 						expect(@aerqc.$('.bv_getExperimentsView')).toBeHidden()
 						expect(@aerqc.$('.bv_getFiltersView')).toBeHidden()
-						expect(@aerqc.$('.bv_showResultsView')).toBeHidden()
+						expect(@aerqc.$('.bv_advResultsView')).toBeHidden()
+						expect(@aerqc.$('.bv_noExperimentsFound')).toBeHidden()
 				describe "when valid codes enter and next pressed", ->
 					beforeEach ->
 						runs ->
 							@aerqc.$('.bv_codesField').val "12345, 6789"
-							@aerqc.$('.bv_next').click()
+							@aerqc.handleNextClicked()
 					describe "experiment tree display from stub service", ->
 						beforeEach ->
 							waitsFor =>
 								@aerqc.$('.bv_tree').length == 1
 							, 500
+						describe "tree view display", ->
+							it "should show only getExperiments", ->
+								runs ->
+									expect(@aerqc.$('.bv_getCodesView')).toBeHidden()
+									expect(@aerqc.$('.bv_getExperimentsView')).toBeVisible()
+									expect(@aerqc.$('.bv_getFiltersView')).toBeHidden()
+									expect(@aerqc.$('.bv_advResultsView')).toBeHidden()
+							it "should load tree and display root node", ->
+								runs ->
+									expect(@aerqc.$('.bv_tree').html()).toContain "Protocols"
+						describe "to filter select from experiment tree", ->
+							beforeEach ->
+								runs ->
+									@aerqc.$(".bv_tree").jstree(true).search "EXPT-00000398"
+									@aerqc.$('.jstree-checkbox:eq(4)').click()
+									@aerqc.$('.jstree-checkbox:eq(5)').click()
+									@aerqc.handleNextClicked()
+							describe "should show only filters", ->
+								beforeEach ->
+									waitsFor =>
+										@aerqc.$('.bv_addTerm').length == 1
+									, 500
+								describe "filter view display", ->
+									it "should show one experiment term with experiment options", ->
+										runs ->
+											expect(@aerqc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
+											expect(@aerqc.$('.bv_filterTerms .bv_experiment option').length).toEqual 3
+											expect(@aerqc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"
+								describe "from filter to results", ->
+									beforeEach ->
+										runs ->
+											@requestNextToNewQuery = false
+											@aerqc.on 'requestNextChangeToNewQuery', =>
+												@requestNextToNewQuery = true
+											@aerqc.handleNextClicked()
+									describe "result display", ->
+										beforeEach ->
+											waitsFor =>
+												@aerqc.$('.bv_resultTable').length == 1
+											, 500
+										describe "show results", ->
+											it "should setup DOM in prep to load datatable module", ->
+												runs ->
+													expect(@aerqc.$('thead tr').length).toEqual 2
+											it "should render the rest of the table", ->
+												runs ->
+													expect(@aerqc.$('tbody tr').length).toEqual 4
+										describe "next button behavior", ->
+											it "should request next button to show New Query", ->
+												waitsFor =>
+													@requestNextToNewQuery
+												, 100
+												runs ->
+													expect(@requestNextToNewQuery).toBeTruthy()
+
+				describe "when invalid codes entered and next pressed (no experiments returned)", ->
+					beforeEach ->
+						runs ->
+							@aerqc.$('.bv_codesField').val "fiona"
+							@aerqc.handleNextClicked()
+					describe "stay at step one and show message", ->
+						beforeEach ->
+							waits 200
 						it "should show only getExperiments", ->
 							runs ->
-								expect(@aerqc.$('.bv_getCodesView')).toBeHidden()
-								expect(@aerqc.$('.bv_getExperimentsView')).toBeVisible()
-								expect(@aerqc.$('.bv_getFiltersView')).toBeHidden()
-								expect(@aerqc.$('.bv_showResultsView')).toBeHidden()
-						it "should load tree and display root node", ->
-							runs ->
-								expect(@aerqc.$('.bv_tree').html()).toContain "Protocols"
+								expect(@aerqc.$('.bv_noExperimentsFound')).toBeVisible()
 
-	#describe "when invalid codes enter and next pressed", ->
 
 	################ stand-alone app launcher   ##########
 	describe "Gene ID Query App Controller", ->
@@ -406,13 +515,33 @@ describe "Gene Data Queries Module Testing", ->
 				it 'should exist', ->
 					expect(@gidqac).toBeDefined()
 				it 'should load a template', ->
-					expect(@gidqac.$('.bv_queryView').length).toEqual 1
-				it 'should load a query controller', ->
+					expect(@gidqac.$('.bv_basicQueryView').length).toEqual 1
+			describe "Launch basic mode by default", ->
+				it 'should load a basic query controller', ->
 					expect(@gidqac.$('.bv_inputView').length).toEqual 1
+				it 'should hide advanced query view', ->
+					expect(@gidqac.$('.bv_advancedQueryContainer')).toBeHidden()
+			describe "Launch advanced mode when requested", ->
+				it 'should load advanced query controller', ->
+					@gidqac.$('.bv_gidNavAdvancedSearchButton').click()
+					expect(@gidqac.$('.bv_getCodesView').length).toEqual 1
+					expect(@gidqac.$('.bv_advancedQueryContainer')).toBeVisible()
+				it 'should hide basic query controller', ->
+					@gidqac.$('.bv_gidNavAdvancedSearchButton').click()
+					expect(@gidqac.$('.bv_basicQueryView')).toBeHidden()
+			describe "Rre-launch basic mode on cancel", ->
+				it 'should load basic query controller', ->
+					@gidqac.$('.bv_gidNavAdvancedSearchButton').click()
+					expect(@gidqac.$('.bv_getCodesView').length).toEqual 1
+					@gidqac.$('.bv_cancel').click()
+					expect(@gidqac.$('.bv_inputView').length).toEqual 1
+					expect(@gidqac.$('.bv_basicQueryView')).toBeVisible()
+					expect(@gidqac.$('.bv_advancedQueryContainer')).toBeHidden()
 
+#For demo
+#TODO right now gear/wrench launches advanced search. Need a button or link instead that is in both start and data display
 
+#after demo
 #TODO setup download CSV service
 #TODO add an enuciator to show search errors etc
-#TODO Refactor to make not gene specific in names etc.
-# Make entity type to search a configuration option
-#TODO Do we need a search again reset? WHat about back buttons?
+#TODO Refactor to make not gene specific in names etc. Make entity type to search a configuration option

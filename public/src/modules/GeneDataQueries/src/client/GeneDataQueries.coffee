@@ -1,22 +1,10 @@
-class window.GeneID extends Backbone.Model
-	defaults:
-		gid: null
-
-class window.GeneIDList extends Backbone.Collection
-	model: GeneID
-
-	addGIDsFromString: (listStr) ->
-		unless $.trim(listStr) == ""
-			gids = listStr.split ","
-			for gid in gids
-				@add new GeneID gid: $.trim(gid)
-
 class window.GeneIDQueryInputController extends Backbone.View
 	template: _.template($("#GeneIDQueryInputView").html())
 
 	events:
 		"click .bv_search": "handleSearchClicked"
-		"change .bv_gidListString": "handleInputFieldChanged"
+		"click .bv_gidNavAdvancedSearchButton": "handleAdvanceModeRequested"
+		"keyup .bv_gidListString": "handleInputFieldChanged"
 		"keydown .bv_gidListString": "handleKeyInInputField"
 
 	render: =>
@@ -25,29 +13,23 @@ class window.GeneIDQueryInputController extends Backbone.View
 		@$('.bv_search').attr('disabled','disabled')
 		@$('.bv_gidACASBadgeTop').hide()
 
-
 		@
 
-	updateGIDsFromField: ->
-		@collection.reset()
-		@collection.addGIDsFromString @$('.bv_gidListString').val()
-
-	handleInputFieldChanged: (e) =>
-		@updateGIDsFromField()
-		if @collection.length == 0
-			@$('.bv_search').attr('disabled','disabled')
-		else
+	handleInputFieldChanged: =>
+		if $.trim(@$('.bv_gidListString').val()).length > 1
 			@$('.bv_search').removeAttr('disabled')
+		else
+			@$('.bv_search').attr('disabled','disabled')
 
 	handleKeyInInputField: (e) =>
 		if e.keyCode == 13
 			@handleSearchClicked()
 
 	handleSearchClicked: =>
-		@updateGIDsFromField()
-		@trigger 'search-requested'
+		@trigger 'search-requested', $.trim(@$('.bv_gidListString').val())
 
-
+	handleAdvanceModeRequested: =>
+		@trigger 'requestAdvancedMode'
 
 class window.GeneIDQueryResultController extends Backbone.View
 	template: _.template($("#GeneIDQueryResultView").html())
@@ -82,22 +64,19 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@queryInputController = new GeneIDQueryInputController
-				collection: new GeneIDList()
 				el: @$('.bv_inputView')
 		@queryInputController.on 'search-requested', @handleSearchRequested
+		@queryInputController.on 'requestAdvancedMode', =>
+			@trigger 'requestAdvancedMode'
 		@queryInputController.render()
 		@setQueryOnlyMode()
 
-	render: =>
-
-		@
-
-	handleSearchRequested: =>
+	handleSearchRequested: (searchStr) =>
 		$.ajax
 			type: 'POST'
 			url: "api/geneDataQuery"
 			data:
-				geneIDs: @queryInputController.collection.toJSON()
+				geneIDs: searchStr
 				maxRowsToReturn: 10000
 				user: window.AppLaunchParams.loginUserName
 			success: @handleSearchReturn
@@ -105,7 +84,6 @@ class window.GeneIDQuerySearchController extends Backbone.View
 				console.log 'got ajax error'
 				@serviceReturn = null
 			dataType: 'json'
-
 
 	handleSearchReturn: (json) =>
 		@resultController = new GeneIDQueryResultController
@@ -140,10 +118,12 @@ class window.ExperimentTreeController extends Backbone.View
 	template: _.template($("#ExperimentTreeView").html())
 	events:
 		"click .bv_searchClear": "handleSearchClear"
+		"click .bv_tree": "handleSelectionChanged"
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
+		@trigger 'disableNext'
 		@setupTree()
 		
 		@
@@ -170,6 +150,13 @@ class window.ExperimentTreeController extends Backbone.View
 	getSelectedExperiments: ->
 		@$('.bv_tree').jstree('get_selected')
 
+	handleSelectionChanged: =>
+		selected = @getSelectedExperiments()
+		if selected.length > 0
+			@trigger 'enableNext'
+		else
+			@trigger 'disableNext'
+
 class window.ExperimentResultFilterTermController extends Backbone.View
 	template: _.template($("#ExperimentResultFilterTermView").html())
 	tagName: "div"
@@ -181,11 +168,13 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 
 	initialize: ->
 		@filterOptions = @options.filterOptions
+		@model.set termName: @options.termName
 		@model.on "destroy", @remove, @
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
+		@$('.bv_termName').html @model.get('termName')
 		@filterOptions.each (expt) =>
 			code = expt.get('experimentCode')
 			@$('.bv_experiment').append '<option val="'+code+'">'+code+'</option>'
@@ -248,8 +237,11 @@ class window.ExperimentResultFilterTermListController extends Backbone.View
 	events:
 		"click .bv_addTerm": "addOne"
 
+	TERM_NUMBER_PREFIX: "Q"
+
 	initialize: ->
 		@filterOptions = @options.filterOptions
+		@nextTermNumber = 1
 
 	render: =>
 		$(@el).empty()
@@ -264,16 +256,51 @@ class window.ExperimentResultFilterTermListController extends Backbone.View
 		erftc = new ExperimentResultFilterTermController
 			model: newModel
 			filterOptions: @filterOptions
+			termName: @TERM_NUMBER_PREFIX+@nextTermNumber++
 		@$('.bv_filterTerms').append erftc.render().el
 		@on "updateFilterModels", erftc.updateModel
 
 	updateCollection: ->
 		@trigger "updateFilterModels"
 
+class window.ExperimentResultFilterController extends Backbone.View
+	template: _.template($("#ExperimentResultFilterView").html())
+	events:
+		"click .bv_booleanFilter_and": "handleBooleanFilterChanged"
+		"click .bv_booleanFilter_or": "handleBooleanFilterChanged"
+		"click .bv_booleanFilter_advanced": "handleBooleanFilterChanged"
+
+	initialize: ->
+		@filterOptions = @options.filterOptions
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@erftlc = new ExperimentResultFilterTermListController
+			el: @$('.bv_filterTermList')
+			collection: new Backbone.Collection()
+			filterOptions: @filterOptions
+		@erftlc.render()
+		@handleBooleanFilterChanged()
+
+		@
+
+	getSearchFilters: ->
+		@erftlc.updateCollection()
+		filtersAtters =
+			booleanFilter: @$("input[name='bv_booleanFilter']:checked").val()
+			advancedFilter: $.trim @$('.bv_advancedBooleanFilter').val()
+			filters: @erftlc.collection.toJSON()
+		filtersAtters
+
+	handleBooleanFilterChanged: =>
+		if @$("input[name='bv_booleanFilter']:checked").val() == 'advanced'
+			@$('.bv_advancedBoolContainer').show()
+		else
+			@$('.bv_advancedBoolContainer').hide()
+
 class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	template: _.template($("#AdvancedExperimentResultsQueryView").html())
-	events:
-		"click .bv_next": "handleNextClicked"
 
 	initialize: ->
 		$(@el).empty()
@@ -284,13 +311,21 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		switch @nextStep
 			when 'fromCodesToExptTree'
 				@fromCodesToExptTree()
+			when 'fromExptTreeToFilters'
+				@fromExptTreeToFilters()
+			when 'fromFiltersToResults'
+				@fromFiltersToResults()
+			when 'gotoRestart'
+				@trigger 'requestRestartAdvancedQuery'
 
 	gotoStepGetCodes: ->
 		@nextStep = 'fromCodesToExptTree'
 		@$('.bv_getCodesView').show()
 		@$('.bv_getExperimentsView').hide()
 		@$('.bv_getFiltersView').hide()
-		@$('.bv_showResultsView').hide()
+		@$('.bv_advResultsView').hide()
+		@$('.bv_cancel').html 'Cancel'
+		@$('.bv_noExperimentsFound').hide()
 
 	fromCodesToExptTree: ->
 		@searchCodes = $.trim @$('.bv_codesField').val()
@@ -300,72 +335,117 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			dataType: 'json'
 			data:
 				geneIDs: @searchCodes
-			success: => @handleGetGeneExperimentsReturn
+			success: @handleGetGeneExperimentsReturn
 			error: (err) =>
 				console.log 'got ajax error trying to get experiment tree'
 				@serviceReturn = null
 
 	handleGetGeneExperimentsReturn: (json) =>
-		@etc = new ExperimentTreeController
-			el: @$('.bv_getExperimentsView')
-			model: new Backbone.Model json.results
-		@etc.render()
-		@$('.bv_getCodesView').hide()
-		@$('.bv_getExperimentsView').show()
-		@nextStep = 'fromExptTreeToFilters'
+		if json.results.experimentData.length > 0
+			@etc = new ExperimentTreeController
+				el: @$('.bv_getExperimentsView')
+				model: new Backbone.Model json.results
+			@etc.on 'enableNext', =>
+				@trigger 'enableNext'
+			@etc.on 'disableNext', =>
+				@trigger 'disableNext'
+			@etc.render()
+			@$('.bv_getCodesView').hide()
+			@$('.bv_getExperimentsView').show()
+			@nextStep = 'fromExptTreeToFilters'
+		else
+			@$('.bv_noExperimentsFound').show()
 
+	fromExptTreeToFilters: ->
+		@experimentList = @etc.getSelectedExperiments()
+		$.ajax
+			type: 'POST'
+			url: "api/getExperimentSearchAttributes"
+			dataType: 'json'
+			data:
+				experimentCodes: @experimentList
+			success: @handleGetExperimentSearchAttributesReturn
+			error: (err) =>
+				console.log 'got ajax error'
+				@serviceReturn = null
+
+	handleGetExperimentSearchAttributesReturn: (json) =>
+		@erfc = new ExperimentResultFilterController
+			el: @$('.bv_getFiltersView')
+			filterOptions: new Backbone.Collection json.results.experiments
+		@erfc.render()
+		@$('.bv_getExperimentsView').hide()
+		@$('.bv_getFiltersView').show()
+		@nextStep = 'fromFiltersToResults'
+
+	fromFiltersToResults: ->
+		queryParams =
+			batchCodes: @searchCodes
+			experimentCodeList: @experimentList
+			searchFilters: @erfc.getSearchFilters()
+		$.ajax
+			type: 'POST'
+			url: "api/geneDataQueryAdvanced"
+			dataType: 'json'
+			data:
+				queryParams: queryParams
+				maxRowsToReturn: 10000
+				user: window.AppLaunchParams.loginUserName
+			success: @handleSearchReturn
+			error: (err) =>
+				console.log 'got ajax error'
+				@serviceReturn = null
+
+	handleSearchReturn: (json) =>
+		@resultController = new GeneIDQueryResultController
+			model: new Backbone.Model json.results
+			el: $('.bv_advResultsView')
+		@resultController.render()
+		@$('.bv_getFiltersView').hide()
+		@$('.bv_advResultsView').show()
+		@nextStep = 'gotoRestart'
+		@trigger 'requestNextChangeToNewQuery'
 
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
+	events:
+		"click .bv_next": "handleNextClicked"
+		"click .bv_cancel": "handleCancelClicked"
 
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
-		@gidqsc = new GeneIDQuerySearchController
-			el: @$('.bv_queryView')
-		@gidqsc.render()
+		@startBasicQueryWizard()
 
-#	#This is dev scaffolding for the experiment tree. Real code for basic query is above commented out
-#	initialize: ->
-#		$(@el).empty()
-#		$(@el).html @template()
-#		$.ajax
-#			type: 'POST'
-#			url: "api/getGeneExperiments"
-#			dataType: 'json'
-#			data:
-#				geneIDs: "1234, 2345, 4444"
-#			success: @handleGetGeneExperimentsReturn
-#			error: (err) =>
-#				console.log 'got ajax error'
-#				@serviceReturn = null
+	startBasicQueryWizard: =>
+		@aerqc = new GeneIDQuerySearchController
+			el: @$('.bv_basicQueryView')
+		@aerqc.render()
+		@$('.bv_advancedQueryContainer').hide()
+		@$('.bv_basicQueryView').show()
+		@aerqc.on 'requestAdvancedMode', =>
+			@startAdvanceedQueryWizard()
 
-	#This is dev scaffolding for the experiment tree. Real code for basic query is above commented out
-#	initialize: ->
-#		$(@el).empty()
-#		$(@el).html @template()
-#		$.ajax
-#			type: 'POST'
-#			url: "api/getExperimentSearchAttributes"
-#			dataType: 'json'
-#			data:
-#				experimentCodes: ["EXPT-00000398", "EXPT-00000396", "EXPT-00000398"]
-#			success: @handleGetExperimentSearchAttributesReturn
-#			error: (err) =>
-#				console.log 'got ajax error'
-#				@serviceReturn = null
+	startAdvanceedQueryWizard: =>
+		@$('.bv_next').html "Next"
+		@aerqc = new AdvancedExperimentResultsQueryController
+			el: @$('.bv_advancedQueryView')
+		@aerqc.on 'enableNext', =>
+			@$('.bv_next').removeAttr 'disabled'
+		@aerqc.on 'disableNext', =>
+			@$('.bv_next').attr 'disabled', 'disabled'
+		@aerqc.on 'requestNextChangeToNewQuery', =>
+			@$('.bv_next').html "New Query"
+		@aerqc.on 'requestRestartAdvancedQuery', =>
+			@startAdvanceedQueryWizard()
+		@aerqc.render()
+		@$('.bv_basicQueryView').hide()
+		@$('.bv_advancedQueryContainer').show()
 
-	handleGetGeneExperimentsReturn: (json) =>
-		@etc = new ExperimentTreeController
-			el: @$('.bv_exptTreeView')
-			model: new Backbone.Model json.results
-		@etc.render()
+	handleNextClicked: =>
+		if @aerqc?
+			@aerqc.handleNextClicked()
 
-	handleGetExperimentSearchAttributesReturn: (json) =>
-		@etc = new ExperimentResultFilterTermListController
-			el: @$('.bv_attributeFilterView')
-			collection: new Backbone.Collection()
-			filterOptions: new Backbone.Collection json.results.experiments
-		@etc.render()
-
+	handleCancelClicked: =>
+		@startBasicQueryWizard()
 

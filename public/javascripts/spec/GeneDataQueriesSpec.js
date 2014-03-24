@@ -9,59 +9,10 @@
   });
 
   describe("Gene Data Queries Module Testing", function() {
-    describe("Gene ID model testing", function() {
-      return describe("When loaded from new", function() {
-        beforeEach(function() {
-          return this.gid = new GeneID();
-        });
-        return describe("Existence and Defaults", function() {
-          it("should be defined", function() {
-            return expect(this.gid).toBeDefined();
-          });
-          return it("should have a default gid", function() {
-            return expect(this.gid.get('gid')).toBeNull();
-          });
-        });
-      });
-    });
-    describe("Gene ID List model testing", function() {
-      return describe("When loaded from new", function() {
-        beforeEach(function() {
-          return this.gidl = new GeneIDList();
-        });
-        describe("Existence and Defaults", function() {
-          return it("should be defined", function() {
-            return expect(this.gidl).toBeDefined();
-          });
-        });
-        return describe("Parsing functions", function() {
-          beforeEach(function() {
-            return this.gidl.addGIDsFromString("1234, 3421,1111, 2222 , 3333");
-          });
-          it("should be accept a string of comma seperated gene IDs", function() {
-            return expect(this.gidl.length).toEqual(5);
-          });
-          it("should strip spaces", function() {
-            expect(this.gidl.at(1).get('gid')).toEqual('3421');
-            return expect(this.gidl.at(3).get('gid')).toEqual('2222');
-          });
-          it("should add to the existing set when called again", function() {
-            this.gidl.addGIDsFromString("555, 3466621,777, 888 , 999");
-            return expect(this.gidl.length).toEqual(10);
-          });
-          return it("should have zero length when given an empty string", function() {
-            this.gidl.reset();
-            this.gidl.addGIDsFromString("");
-            return expect(this.gidl.length).toEqual(0);
-          });
-        });
-      });
-    });
     describe("Gene ID Query Input Controller", function() {
       return describe('when instantiated', function() {
         beforeEach(function() {
           this.gidqic = new GeneIDQueryInputController({
-            collection: new GeneIDList(),
             el: $('#fixture')
           });
           return this.gidqic.render();
@@ -74,44 +25,26 @@
             return expect(this.gidqic.$('.bv_gidListString').length).toEqual(1);
           });
         });
-        describe("update the model", function() {
-          beforeEach(function() {
-            this.gidqic.$('.bv_gidListString').val("1234, 3421,1111, 2222 , 3333");
-            return this.gidqic.updateGIDsFromField();
-          });
-          it("should get 5 entries", function() {
-            return expect(this.gidqic.collection.length).toEqual(5);
-          });
-          it("should strip spaces", function() {
-            expect(this.gidqic.collection.at(1).get('gid')).toEqual('3421');
-            return expect(this.gidqic.collection.at(3).get('gid')).toEqual('2222');
-          });
-          return it("should empty the collection before adding gids from the text field", function() {
-            this.gidqic.$('.bv_gidListString').val("555, 3466621,777, 888 , 999");
-            this.gidqic.updateGIDsFromField();
-            return expect(this.gidqic.collection.length).toEqual(5);
-          });
-        });
         describe("search button enabling behavior", function() {
           it("should have search button disabled when nothing in field", function() {
             return expect(this.gidqic.$('.bv_search').attr('disabled')).toEqual('disabled');
           });
           it("should have search button enabled when someting added to field", function() {
             this.gidqic.$('.bv_gidListString').val("555, 3466621,777, 888 , 999");
-            this.gidqic.$('.bv_gidListString').change();
+            this.gidqic.$('.bv_gidListString').keyup();
             return expect(this.gidqic.$('.bv_search').attr('disabled')).toBeUndefined();
           });
           return it("should have search button disabled when field is emptied", function() {
             this.gidqic.$('.bv_gidListString').val("");
-            this.gidqic.$('.bv_gidListString').change();
+            this.gidqic.$('.bv_gidListString').keyup();
             return expect(this.gidqic.$('.bv_search').attr('disabled')).toEqual('disabled');
           });
         });
-        return describe("search button behavior", function() {
+        describe("search button behavior", function() {
           return it("should trigger a search request when search button pressed", function() {
             runs(function() {
               this.gidqic.$('.bv_gidListString').val("555, 3466621,777, 888 , 999");
-              this.gidqic.$('.bv_gidListString').change();
+              this.gidqic.$('.bv_gidListString').keyup();
               this.gotTrigger = false;
               this.gidqic.on('search-requested', (function(_this) {
                 return function() {
@@ -130,6 +63,29 @@
                 return expect(_this.gotTrigger).toBeTruthy();
               };
             })(this));
+          });
+        });
+        return describe("when advanced mode pressed", function() {
+          beforeEach(function() {
+            return runs(function() {
+              this.advanceTriggered = false;
+              this.gidqic.on('requestAdvancedMode', (function(_this) {
+                return function() {
+                  return _this.advanceTriggered = true;
+                };
+              })(this));
+              return this.gidqic.$('.bv_gidNavAdvancedSearchButton').click();
+            });
+          });
+          return it("should request enable button disabled when an experiment selected", function() {
+            waitsFor((function(_this) {
+              return function() {
+                return _this.advanceTriggered;
+              };
+            })(this), 100);
+            return runs(function() {
+              return expect(this.advanceTriggered).toBeTruthy();
+            });
           });
         });
       });
@@ -215,9 +171,6 @@
           });
           it("should hide ACAS inline badge at start", function() {
             return expect(this.gidqsc.$('.bv_gidACASBadgeTop')).toBeHidden();
-          });
-          it("should have the gidNavAdvancedSearchButton start class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeTruthy();
           });
           it("should not have the gidNavHelpButton pull-right class", function() {
             return expect(this.gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeFalsy();
@@ -323,13 +276,57 @@
               return expect(this.etc.$('.bv_tree').html()).toContain("EXPT-00000397");
             });
           });
-          return describe("getting selected", function() {
+          describe("getting selected", function() {
             return it("should get selected experiments", function() {
               this.etc.$(".bv_tree").jstree(true).search("EXPT-00000398");
               expect(this.etc.$('.bv_tree').html()).toContain("EXPT-00000398");
               this.etc.$('.jstree-checkbox:eq(4)').click();
               this.etc.$('.jstree-checkbox:eq(5)').click();
               return expect(this.etc.getSelectedExperiments()).toEqual(["EXPT-00000398", "EXPT-00000396"]);
+            });
+          });
+          return describe("when none selected", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.nextEnableRequested = false;
+                this.etc.on('enableNext', (function(_this) {
+                  return function() {
+                    return _this.nextEnableRequested = true;
+                  };
+                })(this));
+                this.nextDisableRequested = false;
+                this.etc.on('disableNext', (function(_this) {
+                  return function() {
+                    return _this.nextDisableRequested = true;
+                  };
+                })(this));
+                this.etc.$(".bv_tree").jstree(true).search("EXPT-00000398");
+                expect(this.etc.$('.bv_tree').html()).toContain("EXPT-00000398");
+                return this.etc.$('.jstree-checkbox:eq(4)').click();
+              });
+            });
+            it("should request enable button disabled when an experiment selected", function() {
+              waitsFor((function(_this) {
+                return function() {
+                  return _this.nextEnableRequested;
+                };
+              })(this), 100);
+              return runs(function() {
+                return expect(this.nextEnableRequested).toBeTruthy();
+              });
+            });
+            return it("should request next button disabled when all experiments de-selected", function() {
+              runs(function() {
+                return this.etc.$('.jstree-checkbox:eq(4)').click();
+              });
+              waitsFor((function(_this) {
+                return function() {
+                  return _this.nextDisableRequested;
+                };
+              })(this), 100);
+              return runs(function() {
+                return expect(this.nextDisableRequested).toBeTruthy();
+              });
             });
           });
         });
@@ -341,7 +338,8 @@
               this.erftc = new ExperimentResultFilterTermController({
                 el: $('#fixture'),
                 model: new Backbone.Model(),
-                filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments)
+                filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments),
+                termName: "Q1"
               });
               return this.erftc.render();
             });
@@ -354,6 +352,9 @@
               });
             });
             describe("rendering", function() {
+              it("should show termName", function() {
+                return expect(this.erftc.$('.bv_termName').html()).toEqual("Q1");
+              });
               return it("should show experiment options", function() {
                 expect(this.erftc.$('.bv_experiment option').length).toEqual(3);
                 return expect(this.erftc.$('.bv_experiment option:eq(0)').val()).toEqual("EXPT-00000396");
@@ -435,7 +436,7 @@
             });
           });
         });
-        return describe("filter term list controller", function() {
+        describe("filter term list controller", function() {
           return describe('when instantiated', function() {
             beforeEach(function() {
               this.erftlc = new ExperimentResultFilterTermListController({
@@ -454,6 +455,9 @@
               });
             });
             describe("rendering", function() {
+              it("should show one term with termName", function() {
+                return expect(this.erftlc.$('.bv_termName').html()).toEqual("Q1");
+              });
               return it("should show one experiment term with experiment options", function() {
                 expect(this.erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual(1);
                 expect(this.erftlc.$('.bv_filterTerms .bv_experiment option').length).toEqual(3);
@@ -465,6 +469,10 @@
                 this.erftlc.$('.bv_addTerm').click();
                 expect(this.erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual(2);
                 return expect(this.erftlc.collection.length).toEqual(2);
+              });
+              it("should show 2nd term with incremented termName", function() {
+                this.erftlc.$('.bv_addTerm').click();
+                return expect(this.erftlc.$('.bv_termName:eq(1)').html()).toEqual("Q2");
               });
               return it("should one experiment terms when remove is clicked", function() {
                 this.erftlc.$('.bv_addTerm').click();
@@ -487,11 +495,76 @@
                 this.erftlc.updateCollection();
                 expect(this.erftlc.collection.length).toEqual(2);
                 tmodel = this.erftlc.collection.at(1);
+                expect(tmodel.get('termName')).toEqual("Q2");
                 expect(tmodel.get('experimentCode')).toEqual("EXPT-00000396");
                 expect(tmodel.get('lsKind')).toEqual("category");
                 expect(tmodel.get('lsType')).toEqual("stringValue");
                 expect(tmodel.get('operator')).toEqual("contains");
                 return expect(tmodel.get('filterValue')).toEqual("search string");
+              });
+            });
+          });
+        });
+        return describe("ExperimentResultFilter Controller", function() {
+          return describe('when instantiated', function() {
+            beforeEach(function() {
+              this.erfc = new ExperimentResultFilterController({
+                el: $('#fixture'),
+                filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments)
+              });
+              return this.erfc.render();
+            });
+            describe("basic existance tests", function() {
+              it('should exist', function() {
+                return expect(this.erfc).toBeDefined();
+              });
+              return it('should load a template', function() {
+                return expect(this.erfc.$('.bv_advancedBooleanFilter').length).toEqual(1);
+              });
+            });
+            describe("rendering", function() {
+              return it("should show an experiment term list with experiment options", function() {
+                return expect(this.erfc.$('.bv_filterTerms .bv_experiment').length).toEqual(1);
+              });
+            });
+            describe("boolean filter radio behavior", function() {
+              it("should hide advanced filter input when radio set to and", function() {
+                this.erfc.$('.bv_booleanFilter_and').attr('checked', 'checked');
+                this.erfc.$('.bv_booleanFilter_and').click();
+                return expect(this.erfc.$('.bv_advancedBoolContainer')).toBeHidden();
+              });
+              it("should hide advanced filter input when radio set to or", function() {
+                this.erfc.$('.bv_booleanFilter_or').attr('checked', 'checked');
+                this.erfc.$('.bv_booleanFilter_or').click();
+                return expect(this.erfc.$('.bv_advancedBoolContainer')).toBeHidden();
+              });
+              return it("should show advanced filter input when radio set to advanced", function() {
+                this.erfc.$('.bv_booleanFilter_advanced').attr('checked', 'checked');
+                this.erfc.$('.bv_booleanFilter_advanced').click();
+                return expect(this.erfc.$('.bv_advancedBoolContainer')).toBeVisible();
+              });
+            });
+            return describe("get filter params", function() {
+              return it("should update the collection wehn requested", function() {
+                var attrs;
+                this.erfc.$('.bv_addTerm').click();
+                this.erfc.$('.bv_experiment:eq(1)').val("EXPT-00000396");
+                this.erfc.$('.bv_experiment:eq(1)').change();
+                this.erfc.$('.bv_kind:eq(1)').val("category");
+                this.erfc.$('.bv_kind:eq(1)').change();
+                this.erfc.$('.bv_operator:eq(1)').val("contains");
+                this.erfc.$('.bv_filterValue:eq(1)').val(" search string ");
+                this.erfc.$('.bv_booleanFilter_advanced').attr('checked', 'checked');
+                this.erfc.$('.bv_advancedBooleanFilter').val(" (Q1 AND Q2) OR Q3 ");
+                attrs = this.erfc.getSearchFilters();
+                expect(attrs.booleanFilter).toEqual("advanced");
+                expect(attrs.advancedFilter).toEqual("(Q1 AND Q2) OR Q3");
+                expect(attrs.filters[1].termName).toEqual("Q2");
+                expect(attrs.filters[1].experimentCode).toEqual("EXPT-00000396");
+                expect(attrs.filters[1].lsKind).toEqual("category");
+                expect(attrs.filters[1].lsType).toEqual("stringValue");
+                expect(attrs.filters[1].operator).toEqual("contains");
+                return expect(attrs.filters[1].filterValue).toEqual("search string");
               });
             });
           });
@@ -518,14 +591,15 @@
               expect(this.aerqc.$('.bv_getCodesView')).toBeVisible();
               expect(this.aerqc.$('.bv_getExperimentsView')).toBeHidden();
               expect(this.aerqc.$('.bv_getFiltersView')).toBeHidden();
-              return expect(this.aerqc.$('.bv_showResultsView')).toBeHidden();
+              expect(this.aerqc.$('.bv_advResultsView')).toBeHidden();
+              return expect(this.aerqc.$('.bv_noExperimentsFound')).toBeHidden();
             });
           });
-          return describe("when valid codes enter and next pressed", function() {
+          describe("when valid codes enter and next pressed", function() {
             beforeEach(function() {
               return runs(function() {
                 this.aerqc.$('.bv_codesField').val("12345, 6789");
-                return this.aerqc.$('.bv_next').click();
+                return this.aerqc.handleNextClicked();
               });
             });
             return describe("experiment tree display from stub service", function() {
@@ -536,17 +610,111 @@
                   };
                 })(this), 500);
               });
-              it("should show only getExperiments", function() {
-                return runs(function() {
-                  expect(this.aerqc.$('.bv_getCodesView')).toBeHidden();
-                  expect(this.aerqc.$('.bv_getExperimentsView')).toBeVisible();
-                  expect(this.aerqc.$('.bv_getFiltersView')).toBeHidden();
-                  return expect(this.aerqc.$('.bv_showResultsView')).toBeHidden();
+              describe("tree view display", function() {
+                it("should show only getExperiments", function() {
+                  return runs(function() {
+                    expect(this.aerqc.$('.bv_getCodesView')).toBeHidden();
+                    expect(this.aerqc.$('.bv_getExperimentsView')).toBeVisible();
+                    expect(this.aerqc.$('.bv_getFiltersView')).toBeHidden();
+                    return expect(this.aerqc.$('.bv_advResultsView')).toBeHidden();
+                  });
+                });
+                return it("should load tree and display root node", function() {
+                  return runs(function() {
+                    return expect(this.aerqc.$('.bv_tree').html()).toContain("Protocols");
+                  });
                 });
               });
-              return it("should load tree and display root node", function() {
+              return describe("to filter select from experiment tree", function() {
+                beforeEach(function() {
+                  return runs(function() {
+                    this.aerqc.$(".bv_tree").jstree(true).search("EXPT-00000398");
+                    this.aerqc.$('.jstree-checkbox:eq(4)').click();
+                    this.aerqc.$('.jstree-checkbox:eq(5)').click();
+                    return this.aerqc.handleNextClicked();
+                  });
+                });
+                return describe("should show only filters", function() {
+                  beforeEach(function() {
+                    return waitsFor((function(_this) {
+                      return function() {
+                        return _this.aerqc.$('.bv_addTerm').length === 1;
+                      };
+                    })(this), 500);
+                  });
+                  describe("filter view display", function() {
+                    return it("should show one experiment term with experiment options", function() {
+                      return runs(function() {
+                        expect(this.aerqc.$('.bv_filterTerms .bv_experiment').length).toEqual(1);
+                        expect(this.aerqc.$('.bv_filterTerms .bv_experiment option').length).toEqual(3);
+                        return expect(this.aerqc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual("EXPT-00000396");
+                      });
+                    });
+                  });
+                  return describe("from filter to results", function() {
+                    beforeEach(function() {
+                      return runs(function() {
+                        this.requestNextToNewQuery = false;
+                        this.aerqc.on('requestNextChangeToNewQuery', (function(_this) {
+                          return function() {
+                            return _this.requestNextToNewQuery = true;
+                          };
+                        })(this));
+                        return this.aerqc.handleNextClicked();
+                      });
+                    });
+                    return describe("result display", function() {
+                      beforeEach(function() {
+                        return waitsFor((function(_this) {
+                          return function() {
+                            return _this.aerqc.$('.bv_resultTable').length === 1;
+                          };
+                        })(this), 500);
+                      });
+                      describe("show results", function() {
+                        it("should setup DOM in prep to load datatable module", function() {
+                          return runs(function() {
+                            return expect(this.aerqc.$('thead tr').length).toEqual(2);
+                          });
+                        });
+                        return it("should render the rest of the table", function() {
+                          return runs(function() {
+                            return expect(this.aerqc.$('tbody tr').length).toEqual(4);
+                          });
+                        });
+                      });
+                      return describe("next button behavior", function() {
+                        return it("should request next button to show New Query", function() {
+                          waitsFor((function(_this) {
+                            return function() {
+                              return _this.requestNextToNewQuery;
+                            };
+                          })(this), 100);
+                          return runs(function() {
+                            return expect(this.requestNextToNewQuery).toBeTruthy();
+                          });
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+          return describe("when invalid codes entered and next pressed (no experiments returned)", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.aerqc.$('.bv_codesField').val("fiona");
+                return this.aerqc.handleNextClicked();
+              });
+            });
+            return describe("stay at step one and show message", function() {
+              beforeEach(function() {
+                return waits(200);
+              });
+              return it("should show only getExperiments", function() {
                 return runs(function() {
-                  return expect(this.aerqc.$('.bv_tree').html()).toContain("Protocols");
+                  return expect(this.aerqc.$('.bv_noExperimentsFound')).toBeVisible();
                 });
               });
             });
@@ -562,15 +730,41 @@
           });
           return this.gidqac.render();
         });
-        return describe("basic existance tests", function() {
+        describe("basic existance tests", function() {
           it('should exist', function() {
             return expect(this.gidqac).toBeDefined();
           });
-          it('should load a template', function() {
-            return expect(this.gidqac.$('.bv_queryView').length).toEqual(1);
+          return it('should load a template', function() {
+            return expect(this.gidqac.$('.bv_basicQueryView').length).toEqual(1);
           });
-          return it('should load a query controller', function() {
+        });
+        describe("Launch basic mode by default", function() {
+          it('should load a basic query controller', function() {
             return expect(this.gidqac.$('.bv_inputView').length).toEqual(1);
+          });
+          return it('should hide advanced query view', function() {
+            return expect(this.gidqac.$('.bv_advancedQueryContainer')).toBeHidden();
+          });
+        });
+        describe("Launch advanced mode when requested", function() {
+          it('should load advanced query controller', function() {
+            this.gidqac.$('.bv_gidNavAdvancedSearchButton').click();
+            expect(this.gidqac.$('.bv_getCodesView').length).toEqual(1);
+            return expect(this.gidqac.$('.bv_advancedQueryContainer')).toBeVisible();
+          });
+          return it('should hide basic query controller', function() {
+            this.gidqac.$('.bv_gidNavAdvancedSearchButton').click();
+            return expect(this.gidqac.$('.bv_basicQueryView')).toBeHidden();
+          });
+        });
+        return describe("Rre-launch basic mode on cancel", function() {
+          return it('should load basic query controller', function() {
+            this.gidqac.$('.bv_gidNavAdvancedSearchButton').click();
+            expect(this.gidqac.$('.bv_getCodesView').length).toEqual(1);
+            this.gidqac.$('.bv_cancel').click();
+            expect(this.gidqac.$('.bv_inputView').length).toEqual(1);
+            expect(this.gidqac.$('.bv_basicQueryView')).toBeVisible();
+            return expect(this.gidqac.$('.bv_advancedQueryContainer')).toBeHidden();
           });
         });
       });

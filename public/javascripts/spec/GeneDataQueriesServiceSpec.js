@@ -4,7 +4,7 @@ This service takes a list of geneids and returns related experimental data,
  */
 
 (function() {
-  var advancedReturnExampleSuccess, advnacedReturnExampleSuccess, badDataRequest, basicReturnExampleError, basicReturnExampleSuccess, goodDataRequest;
+  var advancedReturnExampleSuccess, advnacedReturnExampleSuccess, badDataRequest, basicReturnExampleError, basicReturnExampleSuccess, goodAdvancedRequest, goodDataRequest;
 
   goodDataRequest = {
     geneIDs: "1234, 2345, 4444",
@@ -16,6 +16,36 @@ This service takes a list of geneids and returns related experimental data,
     geneIDs: "1234, 2345, 4444",
     maxRowsToReturn: -1,
     user: 'jmcneil'
+  };
+
+  goodAdvancedRequest = {
+    queryParams: {
+      batchCodes: "gene1, gene2",
+      experimentCodeList: ["EXPT-00000397", "EXPT-00000398"],
+      searchFilters: {
+        booleanFilter: "advanced",
+        advancedFilter: "Q1 AND Q2",
+        filters: [
+          {
+            termName: "Q1",
+            experimentCode: "EXPT-00000396",
+            lsKind: "EC50",
+            lsType: "numericValue",
+            operator: "<",
+            filterValue: ".05"
+          }, {
+            termName: "Q2",
+            experimentCode: "EXPT-00000398",
+            lsKind: "KD",
+            lsType: "numericValue",
+            operator: ">",
+            filterValue: "1"
+          }
+        ]
+      }
+    },
+    maxRowsToReturn: 10000,
+    user: "jmcneil"
   };
 
   basicReturnExampleSuccess = {
@@ -281,7 +311,7 @@ This service takes a list of geneids and returns related experimental data,
         });
       });
     });
-    return describe("advanced experiment attributes for experiments", function() {
+    describe("advanced experiment attributes for experiments", function() {
       describe('when run with valid input data', function() {
         beforeEach(function() {
           return runs(function() {
@@ -359,6 +389,106 @@ This service takes a list of geneids and returns related experimental data,
               data: {
                 experimentCodes: ["error"]
               },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        return it('should return error=true, and at least one message', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 20000);
+          return runs(function() {
+            expect(this.serviceReturn.results.htmlSummary).toBeDefined();
+            expect(this.serviceReturn.hasError).toBeTruthy();
+            expect(this.serviceReturn.errorMessages.length).toBeGreaterThan(0);
+            return expect(this.serviceReturn.errorMessages[1].errorLevel).toEqual('error');
+          });
+        });
+      });
+    });
+    return describe("advanced data search", function() {
+      describe('when run with valid input data', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'POST',
+              url: "api/geneDataQueryAdvanced",
+              data: goodAdvancedRequest,
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 10000);
+          return runs(function() {
+            expect(this.serviceReturn.hasError).toBeFalsy();
+            expect(this.serviceReturn.results.data.aaData.length).toEqual(4);
+            expect(this.serviceReturn.hasWarning).toBeDefined();
+            return expect(this.serviceReturn.results.htmlSummary).toBeDefined();
+          });
+        });
+      });
+      describe('when run with no results expected', function() {
+        beforeEach(function() {
+          return runs(function() {
+            goodAdvancedRequest.queryParams.batchCodes = "fiona";
+            return $.ajax({
+              type: 'POST',
+              url: "api/geneDataQueryAdvanced",
+              data: goodAdvancedRequest,
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 10000);
+          return runs(function() {
+            expect(this.serviceReturn.hasError).toBeFalsy();
+            expect(this.serviceReturn.results.data.iTotalRecords).toEqual(0);
+            expect(this.serviceReturn.hasWarning).toBeDefined();
+            return expect(this.serviceReturn.results.htmlSummary).toBeDefined();
+          });
+        });
+      });
+      return describe('when run with invalid input file', function() {
+        beforeEach(function() {
+          return runs(function() {
+            goodAdvancedRequest.maxRowsToReturn = -1;
+            return $.ajax({
+              type: 'POST',
+              url: "api/geneDataQueryAdvanced",
+              data: goodAdvancedRequest,
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;
