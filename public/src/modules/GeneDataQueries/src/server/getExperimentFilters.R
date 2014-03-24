@@ -5,8 +5,7 @@ require('rjson')
 postData <- rawToChar(receiveBin(1024))
 
 #postData <- '[{"code":"EXPT-00000314"}, {"code":"EXPT-00000002-testingPut-101"}]'
-
-
+#postData <- '["EXPT-00000314", "EXPT-00000002-testingPut-101"]'
 
 experimentFilters <- getURL(
 	paste0("http://localhost:8080/acas/experiments/filters/jsonArray"),
