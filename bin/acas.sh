@@ -44,9 +44,9 @@ start)
 		fi
 
 		dirname=`basename $dir`
-		logname=$server_log_path/${dirname}-${server_log_suffix}.log
-		logout=$server_log_path/${dirname}-${server_log_suffix}_stdout.log
-		logerr=$server_log_path/${dirname}-${server_log_suffix}_stderr.log
+		logname=$server_log_path/${dirname}${server_log_suffix}.log
+		logout=$server_log_path/${dirname}${server_log_suffix}_stdout.log
+		logerr=$server_log_path/${dirname}${server_log_suffix}_stderr.log
 
         echo "starting $dirname/$app"
 		startCommand="cd $dir && forever start --append -l $logname -o $logout -e $logerr $app"
