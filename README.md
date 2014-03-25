@@ -31,6 +31,10 @@ Others deploys can be created next to this one. The name may be acas-host3 or ac
     cd acas-$date
 
     git clone git@bitbucket.org:mcneilco/acas.git .
+
+or
+
+    git clone https://$USER@bitbucket.org/mcneilco/acas.git .
     
     ln -s serverOnlyModules/blueimp-file-upload-node/ ../blueimp
 

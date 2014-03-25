@@ -6,8 +6,6 @@ require('racas')
 
 configList <- racas::applicationSettings
 
-#str(GET) ## to see the values that are passed into the GET params
-
 if(is.null(GET$exportCSV)){
     exportCSV <- FALSE
 #    cat("exportCSV variable not found. Setting to FALSE")
@@ -16,15 +14,15 @@ if(is.null(GET$exportCSV)){
 #    cat("export val found")
 }
 
-#cat(exportCSV)
 
 postData <- rawToChar(receiveBin(1024))
-#postData <- '{"maxRowsToReturn": -1, "user":"jmcneil", "geneIDs": "1, 2, 15, 17"}'
+#postData <- '{"queryParams":{"batchCodes":"1,2,15,17","experimentCodeList":["PROT-00000026","EXPT-00000397","EXPT-00000398","EXPT-00000396","genomic","Root Node"],"searchFilters":{"booleanFilter":"advanced","advancedFilter":"","filters":[{"termName":"Q1","experimentCode":"EXPT-00000397","lsKind":"Result 7","lsType":"numericValue","operator":">","filterValue":"7"}]}},"maxRowsToReturn":"10000","user":"nouser"}'
 postData.list <- fromJSON(postData)
 
+
 batchCodeList <- list()
-if (!is.null(postData.list$geneIDs)) {
-	geneData <- postData.list$geneIDs
+if (!is.null(postData.list$queryParams$batchCodes)) {
+	geneData <- postData.list$queryParams$batchCodes
 	geneData <- gsub(";|\t|\n", ",", geneData)
 	geneData <- gsub(" ", "", geneData)
 	geneDataList <- strsplit(geneData, split=",")[[1]]
@@ -37,8 +35,8 @@ if (!is.null(postData.list$geneIDs)) {
 		requestObject <- list()
 		requestObject$requests <- requestList
 		geneNameList <- getURL(
-			paste0(configList$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
 #			paste0("http://localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
+			paste0(configList$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
 			customrequest='POST',
 			httpheader=c('Content-Type'='application/json'),
 			postfields=toJSON(requestObject))
@@ -53,19 +51,25 @@ if (!is.null(postData.list$geneIDs)) {
 	}
 }
 
-batchCodeList <- unique(batchCodeList)
-batchCodeList.Json <- toJSON(batchCodeList)
+postData.list$batchCodeList <- batchCodeList
+searchParams <- list()
+searchParams$batchCodeList <- batchCodeList
+searchParams$experimentCodeList <- postData.list$queryParams$experimentCodeList
+searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
+searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
+searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter
+
 
 dataCsv <- getURL(
-	paste0(configList$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData?format=csv"),
-#	paste0("http://localhost:8080/acas/", "analysisgroupvalues/geneCodeData?format=csv"),
+#	'http://localhost:8080/acas/experiments/agdata/batchcodelist/experimentcodelist?format=csv',
+	paste0(configList$client.service.persistence.fullpath, "experiments/agdata/batchcodelist/experimentcodelist?format=csv"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
-	postfields=batchCodeList.Json)
+	postfields=toJSON(searchParams))
+
 
 dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
 dataDT <- as.data.table(dataDF)
-
 
 pivotResults <- function(geneId, lsKind, result){
 	exptSubset <- data.table(geneId, lsKind, result)
@@ -78,6 +82,7 @@ pivotResults <- function(geneId, lsKind, result){
 if (nrow(dataDT) > 0){
 	firstPass <- TRUE
 	for (expt in unique(dataDT$experimentId)){
+		#print(paste0("current experiment ", expt))
 		if(firstPass){
 			outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId) ]
 			codeName <- as.character(unique(outputDT$experimentCodeName))
@@ -172,24 +177,10 @@ if (exportCSV){
     setHeader("Access-Control-Allow-Origin" ,"*");
     setContentType("application/text")
 	write.csv(outputDT, file="", row.names=FALSE, quote=TRUE)
+	
 } else {
     setHeader("Access-Control-Allow-Origin" ,"*");
     setContentType("application/json")
     cat(toJSON(responseJson))
-
-#    setHeader(header='Content-Disposition', 'attachment; filename=rpdf.pdf')
-#    setContentType("application/text")
-##    t <- tempfile()
-#    pdf(t)
-##    attach(mtcars)
-#    plot(wt, mpg)
-#    abline(lm(mpg~wt))
-#    title("PDF Report")
-#    dev.off()
-#    setHeader('Content-Length',file.info(t)$size)
-#    sendBin(readBin(t,'raw',n=file.info(t)$size))
 }
-
-
-
 

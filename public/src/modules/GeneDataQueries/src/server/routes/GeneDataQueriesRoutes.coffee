@@ -75,7 +75,24 @@ exports.getExperimentListForGenes = (req, resp)  ->
 		if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "start offset outside allowed range, please speake to an administrator"}
 		resp.end JSON.stringify responseObj
 	else
-		console.log "production function getExperimentListForGenes not implemented"
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.rapache.fullpath+"getGeneExperiments/"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			if !error
+				console.log JSON.stringify json
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to query gene data'
+				console.log error
+				console.log resp
+		)
 
 exports.getExperimentSearchAttributes = (req, resp)  ->
 	req.connection.setTimeout 600000
@@ -100,8 +117,24 @@ exports.getExperimentSearchAttributes = (req, resp)  ->
 		if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "no experiment attributes found, please speake to an administrator"}
 		resp.end JSON.stringify responseObj
 	else
-		console.log "production function getExperimentListForGenes not implemented"
-
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.rapache.fullpath+"getExperimentFilters/"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			if !error
+				console.log JSON.stringify json
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to query gene data'
+				console.log error
+				console.log resp
+		)
 
 exports.geneIDQueryIndex = (req, res) ->
 	#"use strict"
@@ -155,7 +188,7 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 		resp.end JSON.stringify responseObj
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.rapache.fullpath+"getGeneData/"
+		baseurl = config.all.client.service.rapache.fullpath+"getFilteredGeneData/"
 		request = require 'request'
 		request(
 			method: 'POST'
