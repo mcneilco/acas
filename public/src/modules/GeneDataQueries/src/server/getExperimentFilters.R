@@ -1,22 +1,28 @@
 
 require('RCurl')
 require('rjson')
+require('racas')
 
+configList <- racas::applicationSettings
 postData <- rawToChar(receiveBin(1024))
+#postData <- '{"experimentCodes": ["EXPT-00000314", "EXPT-00000002-testingPut-101"]}'
+#cat(postData)
 
-#postData <- '[{"code":"EXPT-00000314"}, {"code":"EXPT-00000002-testingPut-101"}]'
-#postData <- '["EXPT-00000314", "EXPT-00000002-testingPut-101"]'
+
+postData.list <- fromJSON(postData)
+postData.Json <- toJSON(postData.list$experimentCodes)
 
 experimentFilters <- getURL(
-	paste0("http://localhost:8080/acas/experiments/filters/jsonArray"),
+	paste0(configList$client.service.persistence.fullpath, "experiments/filters/jsonArray"),
+#	paste0("http://localhost:8080/acas/experiments/filters/jsonArray"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
-	postfields=postData)
-
+	postfields=postData.Json)
+	
 if (length(fromJSON(experimentFilters)) > 1){
 
 	responseJson <- list()
-	responseJson$results$experimentFilters <- fromJSON(experimentFilters)
+	responseJson$results$experiments <- fromJSON(experimentFilters)
 	responseJson$results$htmlSummary <- "OK"
 	responseJson$hasError <- FALSE
 	responseJson$hasWarning <- FALSE
@@ -26,7 +32,7 @@ if (length(fromJSON(experimentFilters)) > 1){
 } else {
 
 	responseJson <- list()
-	responseJson$results$experimentFilters <- list()
+	responseJson$results$experiments <- list()
 	responseJson$results$htmlSummary <- "NO Results"
 	responseJson$hasError <- TRUE	
 	responseJson$hasWarning <- FALSE
@@ -40,7 +46,3 @@ if (length(fromJSON(experimentFilters)) > 1){
 setHeader("Access-Control-Allow-Origin" ,"*");
 setContentType("application/json")
 cat(toJSON(responseJson))
-
-
-
-

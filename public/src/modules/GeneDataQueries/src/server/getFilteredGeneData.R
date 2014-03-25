@@ -2,17 +2,27 @@
 require('RCurl')
 require('rjson')
 require('data.table')
+require('racas')
 
-exportCSV <- as.boolean(GET$exportCSV)
+configList <- racas::applicationSettings
+
+if(is.null(GET$exportCSV)){
+    exportCSV <- FALSE
+#    cat("exportCSV variable not found. Setting to FALSE")
+} else {
+    exportCSV <- as.boolean(GET$exportCSV)
+#    cat("export val found")
+}
+
 
 postData <- rawToChar(receiveBin(1024))
-
-#postData <- '{"maxRowsToReturn": -1, "booleanFilter":"AND", "advancedFilter":"",  "batchCodes": "1, 2, 15, 17", "experimentCodeList": ["EXPT-00000316", "EXPT-00000396", "EXPT-00000397", "EXPT-00000398"], "searchFilters": [{"queryId":"Q1", "codeName":"EXPT-00000314", "lsType": "numericValue", "lsKind":"EC50", "operator":">", "filterValue":"0.9" }, {"queryId":"Q2", "codeName":"EXPT-00000314", "lsType": "stringValue", "lsKind":"Category", "operator":"=", "filterValue":"sigmoid" }, {"queryId":"Q3", "codeName":"EXPT-00000314", "lsType": "booleanValue", "lsKind":"hit", "operator":"=", "filterValue":"true" }]}'
+#postData <- '{"queryParams":{"batchCodes":"1,2,15,17","experimentCodeList":["PROT-00000026","EXPT-00000397","EXPT-00000398","EXPT-00000396","genomic","Root Node"],"searchFilters":{"booleanFilter":"advanced","advancedFilter":"","filters":[{"termName":"Q1","experimentCode":"EXPT-00000397","lsKind":"Result 7","lsType":"numericValue","operator":">","filterValue":"7"}]}},"maxRowsToReturn":"10000","user":"nouser"}'
 postData.list <- fromJSON(postData)
 
+
 batchCodeList <- list()
-if (!is.null(postData.list$batchCodes)) {
-	geneData <- postData.list$batchCodes
+if (!is.null(postData.list$queryParams$batchCodes)) {
+	geneData <- postData.list$queryParams$batchCodes
 	geneData <- gsub(";|\t|\n", ",", geneData)
 	geneData <- gsub(" ", "", geneData)
 	geneDataList <- strsplit(geneData, split=",")[[1]]
@@ -25,7 +35,8 @@ if (!is.null(postData.list$batchCodes)) {
 		requestObject <- list()
 		requestObject$requests <- requestList
 		geneNameList <- getURL(
-			paste0("http://host3.labsynch.com:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
+#			paste0("http://localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
+			paste0(configList$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
 			customrequest='POST',
 			httpheader=c('Content-Type'='application/json'),
 			postfields=toJSON(requestObject))
@@ -41,12 +52,21 @@ if (!is.null(postData.list$batchCodes)) {
 }
 
 postData.list$batchCodeList <- batchCodeList
+searchParams <- list()
+searchParams$batchCodeList <- batchCodeList
+searchParams$experimentCodeList <- postData.list$queryParams$experimentCodeList
+searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
+searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
+searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter
+
 
 dataCsv <- getURL(
-	'http://localhost:8080/acas/experiments/agdata/batchcodelist/experimentcodelist?format=csv',
+#	'http://localhost:8080/acas/experiments/agdata/batchcodelist/experimentcodelist?format=csv',
+	paste0(configList$client.service.persistence.fullpath, "experiments/agdata/batchcodelist/experimentcodelist?format=csv"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
-	postfields=toJSON(postData.list))
+	postfields=toJSON(searchParams))
+
 
 dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
 dataDT <- as.data.table(dataDF)
@@ -156,25 +176,11 @@ if (nrow(dataDT) > 0){
 if (exportCSV){
     setHeader("Access-Control-Allow-Origin" ,"*");
     setContentType("application/text")
-    print(outputDF)
+	write.csv(outputDT, file="", row.names=FALSE, quote=TRUE)
+	
 } else {
     setHeader("Access-Control-Allow-Origin" ,"*");
     setContentType("application/json")
     cat(toJSON(responseJson))
-
-#    setHeader(header='Content-Disposition', 'attachment; filename=rpdf.pdf')
-#    setContentType("application/text")
-##    t <- tempfile()
-#    pdf(t)
-##    attach(mtcars)
-#    plot(wt, mpg)
-#    abline(lm(mpg~wt))
-#    title("PDF Report")
-#    dev.off()
-#    setHeader('Content-Length',file.info(t)$size)
-#    sendBin(readBin(t,'raw',n=file.info(t)$size))
 }
-
-
-
 

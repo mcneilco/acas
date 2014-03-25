@@ -19,20 +19,49 @@ if(is.null(GET$exportCSV)){
 #cat(exportCSV)
 
 postData <- rawToChar(receiveBin(1024))
+#postData <- '{"maxRowsToReturn": -1, "user":"jmcneil", "geneIDs": "1, 2, 15, 17"}'
 postData.list <- fromJSON(postData)
-genes <- postData.list$geneIDs
 
-convertToChar <- function(input){
-	lapply(input, as.character)
+batchCodeList <- list()
+if (!is.null(postData.list$geneIDs)) {
+	geneData <- postData.list$geneIDs
+	geneData <- gsub(";|\t|\n", ",", geneData)
+	geneData <- gsub(" ", "", geneData)
+	geneDataList <- strsplit(geneData, split=",")[[1]]
+
+	if (length(geneDataList) > 0) {
+		requestList <- list()
+		for (i in 1:length(geneDataList)){
+		   requestList[[length(requestList)+1]] <- list(requestName=geneDataList[[i]])
+		}
+		requestObject <- list()
+		requestObject$requests <- requestList
+		geneNameList <- getURL(
+			paste0(configList$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
+#			paste0("http://localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
+			customrequest='POST',
+			httpheader=c('Content-Type'='application/json'),
+			postfields=toJSON(requestObject))
+
+		genes <- fromJSON(geneNameList)$results
+		batchCodeList <- list()
+		for (i in 1:length(genes)){
+		   if (genes[[i]]$referenceName != ""){
+		      batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$referenceName
+		   }
+		}
+	}
 }
-genes.char <- lapply(genes, convertToChar)
-genes.Json <- toJSON(genes.char)
+
+batchCodeList <- unique(batchCodeList)
+batchCodeList.Json <- toJSON(batchCodeList)
 
 dataCsv <- getURL(
 	paste0(configList$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData?format=csv"),
+#	paste0("http://localhost:8080/acas/", "analysisgroupvalues/geneCodeData?format=csv"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
-	postfields=genes.Json)
+	postfields=batchCodeList.Json)
 
 dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
 dataDT <- as.data.table(dataDF)
@@ -49,7 +78,6 @@ pivotResults <- function(geneId, lsKind, result){
 if (nrow(dataDT) > 0){
 	firstPass <- TRUE
 	for (expt in unique(dataDT$experimentId)){
-		#print(paste0("current experiment ", expt))
 		if(firstPass){
 			outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId) ]
 			codeName <- as.character(unique(outputDT$experimentCodeName))
@@ -143,7 +171,7 @@ if (nrow(dataDT) > 0){
 if (exportCSV){
     setHeader("Access-Control-Allow-Origin" ,"*");
     setContentType("application/text")
-    print(outputDF)
+	write.csv(outputDT, file="", row.names=FALSE, quote=TRUE)
 } else {
     setHeader("Access-Control-Allow-Origin" ,"*");
     setContentType("application/json")
