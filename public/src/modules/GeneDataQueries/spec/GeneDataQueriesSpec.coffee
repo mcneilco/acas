@@ -469,13 +469,6 @@ describe "Gene Data Queries Module Testing", ->
 											it "should render the rest of the table", ->
 												runs ->
 													expect(@aerqc.$('tbody tr').length).toEqual 4
-										describe "next button behavior", ->
-											it "should request next button to show New Query", ->
-												waitsFor =>
-													@requestNextToNewQuery
-												, 100
-												runs ->
-													expect(@requestNextToNewQuery).toBeTruthy()
 
 				describe "when invalid codes entered and next pressed (no experiments returned)", ->
 					beforeEach ->

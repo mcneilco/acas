@@ -635,7 +635,7 @@
                           return _this.aerqc.$('.bv_resultTable').length === 1;
                         }, 500);
                       });
-                      describe("show results", function() {
+                      return describe("show results", function() {
                         it("should setup DOM in prep to load datatable module", function() {
                           return runs(function() {
                             return expect(this.aerqc.$('thead tr').length).toEqual(2);
@@ -644,17 +644,6 @@
                         return it("should render the rest of the table", function() {
                           return runs(function() {
                             return expect(this.aerqc.$('tbody tr').length).toEqual(4);
-                          });
-                        });
-                      });
-                      return describe("next button behavior", function() {
-                        return it("should request next button to show New Query", function() {
-                          var _this = this;
-                          waitsFor(function() {
-                            return _this.requestNextToNewQuery;
-                          }, 100);
-                          return runs(function() {
-                            return expect(this.requestNextToNewQuery).toBeTruthy();
                           });
                         });
                       });
