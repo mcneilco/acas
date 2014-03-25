@@ -25,7 +25,7 @@
 # Questions
 # For Dose Response, there is a read plate name but no barcode...
 # What to do when two runs are done on the same barcode?
-
+# request = fromJSON('{\"fileToParse\":\"serverOnlyModules/blueimp-file-upload-node/public/files/SinglePointRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\"}\",\"primaryAnalysisExperimentId\":\"1034\",\"testMode\":\"true\"}')
 # runPrimaryAnalysis(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/PrimaryAnalysisFiles.zip",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=255259))
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
@@ -213,19 +213,20 @@ createWellTable <- function(barcodeList, testMode) {
   barcodeQuery <- paste(barcodeList,collapse="','")
   
   if (testMode) {
-    fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
-    fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
-    fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
-    fakeAPI$BARCODE <- gsub("BF00007390","TL00098003",fakeAPI$BARCODE)
-    fakeAPI$BARCODE <- gsub("BF00007395","TL00098004",fakeAPI$BARCODE)
-    wellTable <- fakeAPI[fakeAPI$BARCODE %in% barcodeList, ]
-    wellTable$BATCH_CODE <- gsub("CRA-024169-1", "CRA-000399-1", wellTable$BATCH_CODE)
-    wellTable$BATCH_CODE <- gsub("CRA-024184-1", "CRA-000396-1", wellTable$BATCH_CODE)
-    wellTable$BATCH_CODE <- gsub("CRA-024074-1", "CRA-000399-1", wellTable$BATCH_CODE)
-    wellTable$BATCH_CODE <- gsub("CRA-024087-1", "CRA-000396-1", wellTable$BATCH_CODE)
-    # different test, remove after nextval deploy
-    load("public/src/modules/PrimaryScreen/spec/wellTable.Rda")
-    wellTable <- wellTable[!(wellTable$BATCH_CODE=="FL0073897-1-1" & (wellTable$CONCENTRATION < 0.2 | wellTable$CONCENTRATION>49.6)), ]
+    wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContents.csv")
+#     fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
+#     fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
+#     fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
+#     fakeAPI$BARCODE <- gsub("BF00007390","TL00098003",fakeAPI$BARCODE)
+#     fakeAPI$BARCODE <- gsub("BF00007395","TL00098004",fakeAPI$BARCODE)
+#     wellTable <- fakeAPI[fakeAPI$BARCODE %in% barcodeList, ]
+#     wellTable$BATCH_CODE <- gsub("CRA-024169-1", "CRA-000399-1", wellTable$BATCH_CODE)
+#     wellTable$BATCH_CODE <- gsub("CRA-024184-1", "CRA-000396-1", wellTable$BATCH_CODE)
+#     wellTable$BATCH_CODE <- gsub("CRA-024074-1", "CRA-000399-1", wellTable$BATCH_CODE)
+#     wellTable$BATCH_CODE <- gsub("CRA-024087-1", "CRA-000396-1", wellTable$BATCH_CODE)
+#     # different test, remove after nextval deploy
+#     load("public/src/modules/PrimaryScreen/spec/wellTable.Rda")
+#     wellTable <- wellTable[!(wellTable$BATCH_CODE=="FL0073897-1-1" & (wellTable$CONCENTRATION < 0.2 | wellTable$CONCENTRATION>49.6)), ]
   } else {
     wellTable <- query(paste0(
       "SELECT *
@@ -1203,9 +1204,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   require("data.table")
   
-  experiment <- getExperimentById(experimentId)
+  if(!testMode) {
   
-  metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
+    experiment <- getExperimentById(experimentId)
+    
+    metadataState <- Filter(function(x) x$lsKind == "experiment metadata", 
+                            x = experiment$lsStates)[[1]]
+    
+    # metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
+  
+  } else {
+    experiment <- list(codeName = "test")
+  }
   
   if(!dryRun) {
     setAnalysisStatus(status="parsing", metadataState)
@@ -1235,6 +1245,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     folderToParse <- paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName, "/rawData")
   } 
  
+### START HERE - FLIPR reading function
+
   fileNameTable <- validateInputFiles(folderToParse)
   
   # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
@@ -1247,6 +1259,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable, parameters$agonistControl)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
+
+### END FLIPR reading function
   
   resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, resultTable$concUnit, parameters$positiveControl, parameters$negativeControl, testMode)
   
@@ -1386,9 +1400,16 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   columnTypeSection <- data.frame(c(NA, "Calculated Results", "Datatype"), c(NA, NA, "Text"), stringsAsFactors=F)
   names(columnTypeSection) <- as.character(seq(1, length(columnTypeSection)))
   names(dataSection) <- as.character(seq(1, length(dataSection)))
-  headerSection <- data.frame(c("Format", "Protocol Name", "Experiment Name", "Scientist", "Notebook", "Page", "Assay Date"),
-                              c("Generic", protocolName, paste(experiment$lsLabels[[1]]$labelText, "user override"), experiment$lsLabels[[1]]$recordedBy, "", "", 
-                                format(as.POSIXct(completionDateValue$dateValue/1000, origin="1970-01-01"), "%Y-%m-%d")))
+  
+  if(!testMode) {
+    headerSection <- data.frame(c("Format", "Protocol Name", "Experiment Name", "Scientist", "Notebook", "Page", "Assay Date"),
+                                c("Generic", protocolName, paste(experiment$lsLabels[[1]]$labelText, "user override"), experiment$lsLabels[[1]]$recordedBy, "", "", 
+                                  format(as.POSIXct(completionDateValue$dateValue/1000, origin="1970-01-01"), "%Y-%m-%d")))
+  } else {
+    headerSection <- data.frame(c("Format", "Protocol Name", "Experiment Name", "Scientist", "Notebook", "Page", "Assay Date"),
+                                c("Generic", "testProtocol", paste("test", "user override"), "bob", "", "", 
+                                  format(as.POSIXct(1395788334, origin="1970-01-01"), "%Y-%m-%d")))
+  }
   names(headerSection) <- as.character(seq(1, length(headerSection)))
   
   library('plyr')

@@ -45,8 +45,33 @@ protocolValues <- list()
 protocolValues[[length(protocolValues)+1]] <- createStateValue(lsTransaction = lsTransaction,
                           lsType = "clobValue",
                           lsKind = "data analysis parameters",
-                          clobValue = '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "conentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 2,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd"}'
-                          )
+                          clobValue = '{
+                            "positiveControl": {
+                              "batchCode": "CMPD-0000006-1",
+                              "concentration": 2,
+                              "concentrationUnits": "uM"
+                            },
+                            "negativeControl": {
+                              "batchCode": "CMPD-0000001-1",
+                              "concentration": "Infinity",
+                              "concentrationUnits": "uM"
+                            },
+                            "agonistControl": {
+                              "batchCode": "CMPD-0000002-1",
+                              "concentration": 20,
+                              "concentrationUnits": "uM"
+                            },
+                            "vehicleControl": {
+                              "batchCode": "CMPD-00000001-01",
+                              "concentration": null,
+                              "concentrationUnits": null
+                            },
+                            "transformationRule": "(maximum-minimum)/minimum",
+                            "normalizationRule": "plate order",
+                            "hitEfficacyThreshold": 42,
+                            "hitSDThreshold": 5,
+                            "thresholdType": "sd"
+                          }')
 
 protocolStates[[length(protocolStates)+1]] <- createProtocolState(lsTransaction = lsTransaction,
                           protocolValues=protocolValues,
