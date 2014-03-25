@@ -42,47 +42,41 @@
         });
         describe("search button behavior", function() {
           return it("should trigger a search request when search button pressed", function() {
+            var _this = this;
             runs(function() {
+              var _this = this;
               this.gidqic.$('.bv_gidListString').val("555, 3466621,777, 888 , 999");
               this.gidqic.$('.bv_gidListString').keyup();
               this.gotTrigger = false;
-              this.gidqic.on('search-requested', (function(_this) {
-                return function() {
-                  return _this.gotTrigger = true;
-                };
-              })(this));
+              this.gidqic.on('search-requested', function() {
+                return _this.gotTrigger = true;
+              });
               return this.gidqic.$('.bv_search').click();
             });
-            waitsFor((function(_this) {
-              return function() {
-                return _this.gotTrigger;
-              };
-            })(this), 1000);
-            return runs((function(_this) {
-              return function() {
-                return expect(_this.gotTrigger).toBeTruthy();
-              };
-            })(this));
+            waitsFor(function() {
+              return _this.gotTrigger;
+            }, 1000);
+            return runs(function() {
+              return expect(_this.gotTrigger).toBeTruthy();
+            });
           });
         });
         return describe("when advanced mode pressed", function() {
           beforeEach(function() {
             return runs(function() {
+              var _this = this;
               this.advanceTriggered = false;
-              this.gidqic.on('requestAdvancedMode', (function(_this) {
-                return function() {
-                  return _this.advanceTriggered = true;
-                };
-              })(this));
+              this.gidqic.on('requestAdvancedMode', function() {
+                return _this.advanceTriggered = true;
+              });
               return this.gidqic.$('.bv_gidNavAdvancedSearchButton').click();
             });
           });
           return it("should request enable button disabled when an experiment selected", function() {
-            waitsFor((function(_this) {
-              return function() {
-                return _this.advanceTriggered;
-              };
-            })(this), 100);
+            var _this = this;
+            waitsFor(function() {
+              return _this.advanceTriggered;
+            }, 100);
             return runs(function() {
               return expect(this.advanceTriggered).toBeTruthy();
             });
@@ -172,23 +166,14 @@
           it("should hide ACAS inline badge at start", function() {
             return expect(this.gidqsc.$('.bv_gidACASBadgeTop')).toBeHidden();
           });
-          it("should not have the gidNavHelpButton pull-right class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeFalsy();
+          it("should have the gidNavAdvancedSearchButton start class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonStart')).toBeTruthy();
           });
-          it("should add the gidNavAdvancedSearchButton end class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeFalsy();
+          it("should not have the gidNavAdvancedSearchButton end class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonTop')).toBeFalsy();
           });
-          it("should have the gidNavWellBottom class at start", function() {
-            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeTruthy();
-          });
-          it("should not have the gidNavWellTop class at start", function() {
-            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeFalsy();
-          });
-          it("should have the toolbar fixed bottom class at start", function() {
-            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeTruthy();
-          });
-          return it("should not have the toolbar fixed top class at start", function() {
-            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeFalsy();
+          return it("should hide the bv_searchNavbar at start", function() {
+            return expect(this.gidqsc.$('.bv_searchNavbar')).toBeHidden();
           });
         });
         return describe("search return handling", function() {
@@ -204,7 +189,7 @@
             return expect(this.gidqsc.$('.bv_resultsView')).toBeVisible();
           });
           it("should move search to top navbar", function() {
-            return expect(this.gidqsc.$('.bv_toolbar .bv_searchForm').length).toEqual(1);
+            return expect(this.gidqsc.$('.bv_searchNavbar .bv_searchForm').length).toEqual(1);
           });
           it("should hide gidSearchStart", function() {
             return expect(this.gidqsc.$('.bv_gidSearchStart')).toBeHidden();
@@ -215,26 +200,14 @@
           it("should show ACAS inline badge", function() {
             return expect(this.gidqsc.$('.bv_gidACASBadgeTop')).toBeVisible();
           });
-          it("should remove the gidNavAdvancedSearchButton start class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeFalsy();
+          it("should not have the gidNavAdvancedSearchButton start class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonStart')).toBeFalsy();
           });
-          it("should add the gidNavHelpButton pull-right class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeTruthy();
+          it("should have the gidNavAdvancedSearchButton end class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonTop')).toBeTruthy();
           });
-          it("should add the gidNavAdvancedSearchButton end class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeTruthy();
-          });
-          it("should remove the gidNavWellBottom class", function() {
-            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeFalsy();
-          });
-          it("should add the gidNavWellTop class", function() {
-            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeTruthy();
-          });
-          it("should remove the toolbar fixed bottom class", function() {
-            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeFalsy();
-          });
-          return it("should add the toolbar fixed top class", function() {
-            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeTruthy();
+          return it("should show the bv_searchNavbar", function() {
+            return expect(this.gidqsc.$('.bv_searchNavbar')).toBeVisible();
           });
         });
       });
@@ -288,42 +261,37 @@
           return describe("when none selected", function() {
             beforeEach(function() {
               return runs(function() {
+                var _this = this;
                 this.nextEnableRequested = false;
-                this.etc.on('enableNext', (function(_this) {
-                  return function() {
-                    return _this.nextEnableRequested = true;
-                  };
-                })(this));
+                this.etc.on('enableNext', function() {
+                  return _this.nextEnableRequested = true;
+                });
                 this.nextDisableRequested = false;
-                this.etc.on('disableNext', (function(_this) {
-                  return function() {
-                    return _this.nextDisableRequested = true;
-                  };
-                })(this));
+                this.etc.on('disableNext', function() {
+                  return _this.nextDisableRequested = true;
+                });
                 this.etc.$(".bv_tree").jstree(true).search("EXPT-00000398");
                 expect(this.etc.$('.bv_tree').html()).toContain("EXPT-00000398");
                 return this.etc.$('.jstree-checkbox:eq(4)').click();
               });
             });
             it("should request enable button disabled when an experiment selected", function() {
-              waitsFor((function(_this) {
-                return function() {
-                  return _this.nextEnableRequested;
-                };
-              })(this), 100);
+              var _this = this;
+              waitsFor(function() {
+                return _this.nextEnableRequested;
+              }, 100);
               return runs(function() {
                 return expect(this.nextEnableRequested).toBeTruthy();
               });
             });
             return it("should request next button disabled when all experiments de-selected", function() {
+              var _this = this;
               runs(function() {
                 return this.etc.$('.jstree-checkbox:eq(4)').click();
               });
-              waitsFor((function(_this) {
-                return function() {
-                  return _this.nextDisableRequested;
-                };
-              })(this), 100);
+              waitsFor(function() {
+                return _this.nextDisableRequested;
+              }, 100);
               return runs(function() {
                 return expect(this.nextDisableRequested).toBeTruthy();
               });
@@ -604,11 +572,10 @@
             });
             return describe("experiment tree display from stub service", function() {
               beforeEach(function() {
-                return waitsFor((function(_this) {
-                  return function() {
-                    return _this.aerqc.$('.bv_tree').length === 1;
-                  };
-                })(this), 500);
+                var _this = this;
+                return waitsFor(function() {
+                  return _this.aerqc.$('.bv_tree').length === 1;
+                }, 500);
               });
               describe("tree view display", function() {
                 it("should show only getExperiments", function() {
@@ -636,11 +603,10 @@
                 });
                 return describe("should show only filters", function() {
                   beforeEach(function() {
-                    return waitsFor((function(_this) {
-                      return function() {
-                        return _this.aerqc.$('.bv_addTerm').length === 1;
-                      };
-                    })(this), 500);
+                    var _this = this;
+                    return waitsFor(function() {
+                      return _this.aerqc.$('.bv_addTerm').length === 1;
+                    }, 500);
                   });
                   describe("filter view display", function() {
                     return it("should show one experiment term with experiment options", function() {
@@ -654,22 +620,20 @@
                   return describe("from filter to results", function() {
                     beforeEach(function() {
                       return runs(function() {
+                        var _this = this;
                         this.requestNextToNewQuery = false;
-                        this.aerqc.on('requestNextChangeToNewQuery', (function(_this) {
-                          return function() {
-                            return _this.requestNextToNewQuery = true;
-                          };
-                        })(this));
+                        this.aerqc.on('requestNextChangeToNewQuery', function() {
+                          return _this.requestNextToNewQuery = true;
+                        });
                         return this.aerqc.handleNextClicked();
                       });
                     });
                     return describe("result display", function() {
                       beforeEach(function() {
-                        return waitsFor((function(_this) {
-                          return function() {
-                            return _this.aerqc.$('.bv_resultTable').length === 1;
-                          };
-                        })(this), 500);
+                        var _this = this;
+                        return waitsFor(function() {
+                          return _this.aerqc.$('.bv_resultTable').length === 1;
+                        }, 500);
                       });
                       describe("show results", function() {
                         it("should setup DOM in prep to load datatable module", function() {
@@ -685,11 +649,10 @@
                       });
                       return describe("next button behavior", function() {
                         return it("should request next button to show New Query", function() {
-                          waitsFor((function(_this) {
-                            return function() {
-                              return _this.requestNextToNewQuery;
-                            };
-                          })(this), 100);
+                          var _this = this;
+                          waitsFor(function() {
+                            return _this.requestNextToNewQuery;
+                          }, 100);
                           return runs(function() {
                             return expect(this.requestNextToNewQuery).toBeTruthy();
                           });
@@ -742,19 +705,26 @@
           it('should load a basic query controller', function() {
             return expect(this.gidqac.$('.bv_inputView').length).toEqual(1);
           });
-          return it('should hide advanced query view', function() {
+          it('should hide advanced query view', function() {
             return expect(this.gidqac.$('.bv_advancedQueryContainer')).toBeHidden();
+          });
+          return it("should hide advanced query navbar during basic mode", function() {
+            return expect(this.gidqac.$('.bv_advancedQueryNavbar')).toBeHidden();
           });
         });
         describe("Launch advanced mode when requested", function() {
+          beforeEach(function() {
+            return this.gidqac.$('.bv_gidNavAdvancedSearchButton').click();
+          });
           it('should load advanced query controller', function() {
-            this.gidqac.$('.bv_gidNavAdvancedSearchButton').click();
             expect(this.gidqac.$('.bv_getCodesView').length).toEqual(1);
             return expect(this.gidqac.$('.bv_advancedQueryContainer')).toBeVisible();
           });
-          return it('should hide basic query controller', function() {
-            this.gidqac.$('.bv_gidNavAdvancedSearchButton').click();
+          it('should hide basic query controller', function() {
             return expect(this.gidqac.$('.bv_basicQueryView')).toBeHidden();
+          });
+          return it("should show advanced query navbar during advanced mode", function() {
+            return expect(this.gidqac.$('.bv_advancedQueryNavbar')).toBeVisible();
           });
         });
         return describe("Rre-launch basic mode on cancel", function() {

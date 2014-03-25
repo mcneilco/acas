@@ -1,4 +1,3 @@
-
 /*
 This service bulk loads containers given a SDF file full of containers.
 The server takes a server-relative file path as input.
@@ -21,7 +20,8 @@ ALIQUOT_CONC_UNIT	      mM					Blank if physical state = solid
 ALIQUOT_VOLUME				  10
 ALIQUOT_VOLUME_UNIT		  uL					micro liter should use u, not mu
 ALIQUOT_DATE            5-Nov-12
- */
+*/
+
 
 (function() {
   var badDataRequest, goodDataRequest, returnExampleError, returnExampleSuccess;

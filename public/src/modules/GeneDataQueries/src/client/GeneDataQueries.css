@@ -1,27 +1,27 @@
-.bv_gidMainNavbar {
+.GeneIDQueryAppController .bv_gidMainNavbar {
 	margin-top: -60px !important;
 }
 
-.bv_gidACASBadge {
+.GeneIDQueryAppController .bv_gidACASBadge {
 	margin-bottom: 5px;
 }
 
-.bv_searchForm {
+.GeneIDQueryAppController .bv_searchForm {
 	margin-bottom: 0px !important;
 }
 
-.bv_search {
+.GeneIDQueryAppController .bv_search {
 	margin-top: 0px !important;
 }
 
-.gidNavWellBottom {
+.GeneIDQueryAppController .bv_toolbar {
 	margin-bottom: 0px !important;
 	-webkit-border-radius: 0 !important;
 	-moz-border-radius: 0 !important;
 	border-radius: 0 !important;
 }
 
-.gidNavWellTop {
+.GeneIDQueryAppController .gidNavWellTop {
 	margin-top: 40px !important;
 	margin-bottom: 0px !important;
 	-webkit-border-radius: 0 !important;
@@ -29,38 +29,198 @@
 	border-radius: 0 !important;
 }
 
-.bv_gidACASBadgeTop {
+.GeneIDQueryAppController .gidAdvancedNavSearchButtonStart {
+    margin-top: 5px;
+    margin-left: 306px;
+}
+
+.GeneIDQueryAppController .gidAdvancedNavSearchButtonTop {
+    margin-top: 0 !important;
+}
+
+.GeneIDQueryAppController .bv_gidACASBadgeTop {
+    padding-top: 0;
 	padding-right: 10px;
 }
 
-.bv_gidNavHelpButton {
+.GeneIDQueryAppController .bv_gidNavHelpButton {
 	margin-top: 0px !important;
 }
 
-.bv_gidNavAdvancedSearchButton {
+.GeneIDQueryAppController .bv_gidNavSettingsButton {
 	margin-top: 0px !important;
 }
 
-.gidNavHelpButtonTop {
-	margin-top: 0px !important;
-}
-
-.gidNavAdvancedSearchButtonTop {
-	margin-top: 0px !important;
-	margin-right: 5px;
-}
-
-.noResultsWell {
+.GeneIDQueryAppController .noResultsWell {
 	padding-left: 20px;
 	margin-top: 100px;
 }
 
-.resultsWell {
+.GeneIDQueryAppController .resultsWell {
 	margin-top: 100px !important;
 }
 
-.gidNamesHeader {
+.GeneIDQueryAppController .gidNamesHeader {
 	border-top: solid;
 	border-top-width: 1px;
 	border-top-color: #000000;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchNavWellTop {
+    margin-top: 40px !important;
+    margin-bottom: 0px !important;
+    height: 30px;
+    -webkit-border-radius: 0 !important;
+    -moz-border-radius: 0 !important;
+    border-radius: 0 !important;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchNavbarTitle {
+    margin-top: 6px;
+    margin-left: 0;
+}
+
+.GeneIDQueryAppController .gidAdvancedQueryContainerPadding {
+    padding-top: 100px;
+    padding-left: 75px;
+}
+
+.GeneIDQueryAppController .gidAdvancedQueryWizardTitle {
+    font-size: 18px;
+    margin-left:0;
+    margin-bottom: 10px;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchSteps {
+    font-size: 18px;
+    width: 90px;
+    margin-left: 580px;
+    margin-bottom: 10px;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchWell {
+    width: 920px;
+    margin-top: 0;
+    margin-left: 0;
+    margin-bottom: 10px;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchStepTitles {
+    margin-top: 0;
+}
+
+.GeneIDQueryAppController .bv_noExperimentsFound {
+    margin-left: 0;
+}
+
+.GeneIDQueryAppController .fiona {
+    margin-left: 0;
+    margin-bottom: 10px;
+    width: 890px;
+}
+
+.GeneIDQueryAppController .bv_codesField {
+    width: 905px;
+    resize: none;
+}
+
+.GeneIDQueryAppController .gidFilterExperimentsInput {
+    margin-bottom: 10px;
+}
+
+.GeneIDQueryAppController .bv_searchVal {
+    width: 838px;
+}
+
+.GeneIDQueryAppController .bv_tree {
+    margin-left: 0;
+    margin-bottom: 10px;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchTerms {
+    margin-bottom: 10px;
+}
+
+.GeneIDQueryAppController .bv_termName {
+    margin-left: 10px;
+    margin-right: 5px;
+}
+
+.GeneIDQueryAppController .bv_experiment {
+    margin-right: 5px;
+}
+
+.GeneIDQueryAppController .bv_kind {
+    margin-right: 5px;
+}
+
+.GeneIDQueryAppController .bv_operator_number {
+    margin-right: 5px;
+    width:90px;
+}
+
+.GeneIDQueryAppController .bv_operator_bool {
+    margin-right: 100px;
+    width:90px;
+}
+
+.GeneIDQueryAppController .bv_operator_string {
+    margin-right: 5px;
+    width:90px;
+}
+
+.GeneIDQueryAppController .bv_delete {
+    margin-top: 3px;
+    margin-right: 8px;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchTermsWell {
+    background-color: #FFFFFF;
+    width: 900px;
+    margin-left: 0;
+    margin-bottom: 10px;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchBooleanFilter {
+    margin-left: 0;
+    margin-bottom: 10px;
+}
+
+.GeneIDQueryAppController .radioAnd {
+    padding-left: 10px !important;
+}
+
+.GeneIDQueryAppController .radioOr {
+    padding-left: 25px !important;
+}
+
+.radioAdvancedFilter {
+    padding-left: 25px !important;
+}
+
+.GeneIDQueryAppController .booleanRadios {
+    margin-right: 5px !important;
+    margin-top: 3px!important;
+}
+
+.GeneIDQueryAppController .bv_advancedBoolContainer {
+    margin-left: 0;
+    margin-bottom: 5px;
+}
+
+.GeneIDQueryAppController .bv_advancedBooleanFilter {
+    width: 905px !important;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchButtons {
+    padding-left: 772px;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchButtonsNewQuery {
+    padding-left: 730px;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchButtonsResultsView {
+    padding-top: 10px;
+    padding-left: 958px;
 }

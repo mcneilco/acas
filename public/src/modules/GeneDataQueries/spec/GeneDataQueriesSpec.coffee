@@ -111,20 +111,13 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqsc.$('.bv_gidACASBadge')).toBeVisible()
 				it "should hide ACAS inline badge at start", ->
 					expect(@gidqsc.$('.bv_gidACASBadgeTop')).toBeHidden()
-#				it "should have the gidNavAdvancedSearchButton start class", ->
-#					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeTruthy()
-				it "should not have the gidNavHelpButton pull-right class", ->
-					expect(@gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeFalsy()
-				it "should add the gidNavAdvancedSearchButton end class", ->
-					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeFalsy()
-				it "should have the gidNavWellBottom class at start", ->
-					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeTruthy()
-				it "should not have the gidNavWellTop class at start", ->
-					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeFalsy()
-				it "should have the toolbar fixed bottom class at start", ->
-					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeTruthy()
-				it "should not have the toolbar fixed top class at start", ->
-					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeFalsy()
+				it "should have the gidNavAdvancedSearchButton start class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonStart')).toBeTruthy()
+				it "should not have the gidNavAdvancedSearchButton end class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonTop')).toBeFalsy()
+				it "should hide the bv_searchNavbar at start", ->
+					expect(@gidqsc.$('.bv_searchNavbar')).toBeHidden()
+
 
 			describe "search return handling", ->
 				beforeEach ->
@@ -135,27 +128,20 @@ describe "Gene Data Queries Module Testing", ->
 				it "should show result view", ->
 					expect(@gidqsc.$('.bv_resultsView')).toBeVisible()
 				it "should move search to top navbar", ->
-					expect(@gidqsc.$('.bv_toolbar .bv_searchForm').length).toEqual 1
+					expect(@gidqsc.$('.bv_searchNavbar .bv_searchForm').length).toEqual 1
 				it "should hide gidSearchStart", ->
 					expect(@gidqsc.$('.bv_gidSearchStart')).toBeHidden()
 				it "should hide ACAS badge", ->
 					expect(@gidqsc.$('.bv_gidACASBadge')).toBeHidden()
 				it "should show ACAS inline badge", ->
 					expect(@gidqsc.$('.bv_gidACASBadgeTop')).toBeVisible()
-				it "should remove the gidNavAdvancedSearchButton start class", ->
-					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeFalsy()
-				it "should add the gidNavHelpButton pull-right class", ->
-					expect(@gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeTruthy()
-				it "should add the gidNavAdvancedSearchButton end class", ->
-					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeTruthy()
-				it "should remove the gidNavWellBottom class", ->
-					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeFalsy()
-				it "should add the gidNavWellTop class", ->
-					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeTruthy()
-				it "should remove the toolbar fixed bottom class", ->
-					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeFalsy()
-				it "should add the toolbar fixed top class", ->
-					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeTruthy()
+				it "should not have the gidNavAdvancedSearchButton start class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonStart')).toBeFalsy()
+				it "should have the gidNavAdvancedSearchButton end class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonTop')).toBeTruthy()
+				it "should show the bv_searchNavbar", ->
+					expect(@gidqsc.$('.bv_searchNavbar')).toBeVisible()
+
 
 	################  Advanced-mode queries ################
 
@@ -521,14 +507,18 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqac.$('.bv_inputView').length).toEqual 1
 				it 'should hide advanced query view', ->
 					expect(@gidqac.$('.bv_advancedQueryContainer')).toBeHidden()
+				it "should hide advanced query navbar during basic mode", ->
+					expect(@gidqac.$('.bv_advancedQueryNavbar')).toBeHidden()
 			describe "Launch advanced mode when requested", ->
-				it 'should load advanced query controller', ->
+				beforeEach ->
 					@gidqac.$('.bv_gidNavAdvancedSearchButton').click()
+				it 'should load advanced query controller', ->
 					expect(@gidqac.$('.bv_getCodesView').length).toEqual 1
 					expect(@gidqac.$('.bv_advancedQueryContainer')).toBeVisible()
 				it 'should hide basic query controller', ->
-					@gidqac.$('.bv_gidNavAdvancedSearchButton').click()
 					expect(@gidqac.$('.bv_basicQueryView')).toBeHidden()
+				it "should show advanced query navbar during advanced mode", ->
+					expect(@gidqac.$('.bv_advancedQueryNavbar')).toBeVisible()
 			describe "Rre-launch basic mode on cancel", ->
 				it 'should load basic query controller', ->
 					@gidqac.$('.bv_gidNavAdvancedSearchButton').click()

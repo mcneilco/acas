@@ -36,21 +36,19 @@
       });
       return describe("get data from server", function() {
         return it("should return the curves", function() {
+          var _this = this;
           runs(function() {
+            var _this = this;
             this.curveList.setExperimentCode("EXPT-00000018");
             return this.curveList.fetch({
-              success: (function(_this) {
-                return function() {
-                  return _this.curvesFetched = true;
-                };
-              })(this)
+              success: function() {
+                return _this.curvesFetched = true;
+              }
             });
           });
-          waitsFor((function(_this) {
-            return function() {
-              return _this.curvesFetched;
-            };
-          })(this), 200);
+          waitsFor(function() {
+            return _this.curvesFetched;
+          }, 200);
           return runs(function() {
             return expect(this.curveList.length).toBeGreaterThan(0);
           });

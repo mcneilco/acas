@@ -14,7 +14,8 @@
   };
 
   exports.getExperimentDataForGenes = function(req, resp) {
-    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions,
+      _this = this;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     resp.writeHead(200, {
@@ -56,19 +57,17 @@
         url: baseurl,
         body: req.body,
         json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          console.log(response.statusCode);
-          if (!error) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to query gene data');
-            console.log(error);
-            return console.log(resp);
-          }
-        };
-      })(this));
+      }, function(error, response, json) {
+        console.log(response.statusCode);
+        if (!error) {
+          console.log(JSON.stringify(json));
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to query gene data');
+          console.log(error);
+          return console.log(resp);
+        }
+      });
     }
   };
 
@@ -170,7 +169,7 @@
       };
     }
     return res.render('GeneIDQuery', {
-      title: "Gene ID Queery",
+      title: "Gene ID Query",
       scripts: scriptsToLoad,
       AppLaunchParams: {
         loginUserName: loginUserName,
@@ -183,7 +182,8 @@
   };
 
   exports.getExperimentDataForGenesAdvanced = function(req, resp) {
-    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions,
+      _this = this;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     resp.writeHead(200, {
@@ -225,19 +225,17 @@
         url: baseurl,
         body: req.body,
         json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          console.log(response.statusCode);
-          if (!error) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to query gene data');
-            console.log(error);
-            return console.log(resp);
-          }
-        };
-      })(this));
+      }, function(error, response, json) {
+        console.log(response.statusCode);
+        if (!error) {
+          console.log(JSON.stringify(json));
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to query gene data');
+          console.log(error);
+          return console.log(resp);
+        }
+      });
     }
   };
 

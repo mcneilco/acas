@@ -122,7 +122,7 @@ exports.geneIDQueryIndex = (req, res) ->
 			lastName: "user"
 
 	return res.render 'GeneIDQuery',
-		title: "Gene ID Queery"
+		title: "Gene ID Query"
 		scripts: scriptsToLoad
 		AppLaunchParams:
 			loginUserName: loginUserName
