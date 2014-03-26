@@ -19,7 +19,7 @@ experimentFilters <- getURL(
 	httpheader=c('Content-Type'='application/json'),
 	postfields=postData.Json)
 	
-if (length(fromJSON(experimentFilters)) > 1){
+if (length(fromJSON(experimentFilters)) > 0){
 
 	responseJson <- list()
 	responseJson$results$experiments <- fromJSON(experimentFilters)
