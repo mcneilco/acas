@@ -1,9 +1,11 @@
 class window.Curve extends Backbone.Model
-	defaults:
-		curveid: ""
-		algorithmApproved: null
-		userApproved: null
-		category: ""
+
+class window.CurveDetail extends Backbone.Model
+	initialize: ->
+		@fixCompositeClasses()
+	fixCompositeClasses: =>
+		if @get('fitSettings') not instanceof DoseResponseAnalysisParameters
+			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
 
 class window.CurveList extends Backbone.Collection
 	model: Curve
@@ -22,7 +24,7 @@ class window.CurveCurationSet extends Backbone.Model
 		sortOptions: new Backbone.Collection()
 		curves: new CurveList()
 	setExperimentCode: (exptCode) ->
-		@url = "/api/curves/stub/"+exptCode
+		@url = "/api/curves/stubs/"+exptCode
 
 	parse: (resp) =>
 		if resp.curves?
@@ -138,24 +140,28 @@ class window.CurveEditorController extends Backbone.View
 
 	render: =>
 		@$el.empty()
+		@$el.html @template()
 		if @model?
-			if @model.get('curveid') != ""
-				curveUrl = window.conf.service.rshiny.fullpath+"/fit/?curveIds="
-				curveUrl += @model.get('curveid')
+			@drapc = new DoseResponseAnalysisParametersController
+				model: @model.get('fitSettings')
+				el: @$('.bv_analysisParameterForm')
+			@drapc.render()
 
-		@$el.html @template
-			curveUrl: curveUrl
-		@
-		@$('.bv_loading').show()
-		@$('.bv_shinyContainer').load =>
-			@$('.bv_loading').hide()
+			@$('.bv_reportedValues').html @model.get('reportedValues')
+			@$('.bv_fitSummary').html @model.get('fitSummary')
+			@$('.bv_parameterStdErrors').html @model.get('parameterStdErrors')
+			@$('.bv_curveErrors').html @model.get('curveErrors')
+			@$('.bv_category').html @model.get('category')
+		else
+			@$el.html "No curve selected"
 
+	getIt: ->
+		@drapc
 
 	setModel: (model)->
 		@model = model
 		@render()
 
-	shinyLoaded: =>
 
 
 class window.CurveCuratorController extends Backbone.View
@@ -224,7 +230,16 @@ class window.CurveCuratorController extends Backbone.View
 				@render()
 
 	curveSelectionUpdated: (who) =>
-		@curveEditorController.setModel who.model
+		$.ajax
+			type: 'GET'
+			url: "/api/curve/detail/" + who.model.get('curveid')
+			dataType: 'json'
+			success: @handleGetCurveDetailReturn
+			error: (err) ->
+				console.log 'got ajax error'
+
+	handleGetCurveDetailReturn: (json) =>
+		@curveEditorController.setModel new CurveDetail(json)
 
 	handleFilterChanged: =>
 		@curveListController.filter @$('.bv_filterBy').val()
