@@ -10,14 +10,31 @@
       return Curve.__super__.constructor.apply(this, arguments);
     }
 
-    Curve.prototype.defaults = {
-      curveid: "",
-      algorithmApproved: null,
-      userApproved: null,
-      category: ""
+    return Curve;
+
+  })(Backbone.Model);
+
+  window.CurveDetail = (function(_super) {
+    __extends(CurveDetail, _super);
+
+    function CurveDetail() {
+      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      return CurveDetail.__super__.constructor.apply(this, arguments);
+    }
+
+    CurveDetail.prototype.initialize = function() {
+      return this.fixCompositeClasses();
     };
 
-    return Curve;
+    CurveDetail.prototype.fixCompositeClasses = function() {
+      if (!(this.get('fitSettings') instanceof DoseResponseAnalysisParameters)) {
+        return this.set({
+          fitSettings: new DoseResponseAnalysisParameters(this.get('fitSettings'))
+        });
+      }
+    };
+
+    return CurveDetail;
 
   })(Backbone.Model);
 
@@ -61,7 +78,7 @@
     };
 
     CurveCurationSet.prototype.setExperimentCode = function(exptCode) {
-      return this.url = "/api/curves/stub/" + exptCode;
+      return this.url = "/api/curves/stubs/" + exptCode;
     };
 
     CurveCurationSet.prototype.parse = function(resp) {
@@ -242,11 +259,133 @@
 
   })(Backbone.View);
 
+  window.DoseResponsePlotController = (function(_super) {
+    __extends(DoseResponsePlotController, _super);
+
+    function DoseResponsePlotController() {
+      this.render = __bind(this.render, this);
+      return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
+    }
+
+    DoseResponsePlotController.prototype.template = _.template($("#DoseResponsePlotView").html());
+
+    DoseResponsePlotController.prototype.render = function() {
+      this.$el.empty();
+      this.$el.html(this.template());
+      this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
+      this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
+      return this;
+    };
+
+    DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
+      var brd, flag, ii, p1, t, x, y;
+      if (typeof brd === "undefined") {
+        brd = JXG.JSXGraph.initBoard(divID, {
+          boundingbox: plotWindow,
+          axis: false,
+          renderer: 'svg',
+          showCopyright: false,
+          zoom: {
+            wheel: true
+          }
+        });
+        ii = 0;
+        while (ii < points.response_sv_id.length) {
+          x = JXG.trunc(Math.log(points.dose[ii]), 4);
+          y = points.response[ii];
+          flag = points.flag[ii];
+          if (flag !== "NA") {
+            p1 = brd.create("point", [x, y], {
+              name: "",
+              fixed: true,
+              size: 4,
+              face: "cross",
+              strokecolor: "gray"
+            });
+          } else {
+            p1 = brd.create("point", [x, y], {
+              name: "",
+              fixed: true,
+              size: 4,
+              face: "circle",
+              strokecolor: "blue"
+            });
+          }
+          p1.idx = ii;
+          p1.knockOutPoint = function() {
+            if (points.flag[this.idx] === "NA") {
+              this.setAttribute({
+                strokecolor: "gray",
+                face: "cross"
+              });
+              this.flag = true;
+              points.flag[this.idx] = true;
+            } else {
+              this.setAttribute({
+                strokecolor: "blue",
+                face: "circle"
+              });
+              this.flag = false;
+              points.flag[this.idx] = false;
+            }
+          };
+          p1.xLabel = JXG.trunc(points.dose[ii], 4);
+          p1.on("mouseup", p1.knockOutPoint, p1);
+          brd.highlightInfobox = function(x, y, el) {
+            brd.infobox.setText("(" + el.xLabel + ", " + y + ")");
+          };
+          ii++;
+        }
+        x = brd.create("line", [[0, 0], [1, 0]], {
+          strokeColor: "#888888"
+        });
+        y = brd.create("axis", [[plotWindow[0] * 0.98, 0], [plotWindow[0] * 0.98, 1]]);
+        x.isDraggable = false;
+        return t = brd.create("ticks", [x, 1], {
+          drawLabels: true,
+          drawZero: true,
+          generateLabelValue: function(tick) {
+            p1 = this.line.point1;
+            return Math.pow(10, tick.usrCoords[1] - p1.coords.usrCoords[1]);
+          }
+        });
+      } else {
+        if (typeof window.curve !== "undefined") {
+          brd.removeObject(window.curve);
+        }
+        if (curve != null) {
+          Math.logArray = (function() {
+            return function(input_array, base) {
+              var i, output_array;
+              output_array = [];
+              if (input_array instanceof Array) {
+                i = 0;
+                while (i < input_array.length) {
+                  output_array.push(Math.log(input_array[i], base));
+                  i++;
+                }
+                return output_array;
+              } else {
+                return null;
+              }
+            };
+          })();
+          window.curve = brd.create("curve", [Math.logArray(curve.dose), curve.response], {
+            strokeColor: "black",
+            strokeWidth: 2
+          });
+        }
+      }
+    };
+
+    return DoseResponsePlotController;
+
+  })(AbstractFormController);
+
   window.CurveEditorController = (function(_super) {
     __extends(CurveEditorController, _super);
 
     function CurveEditorController() {
-      this.shinyLoaded = __bind(this.shinyLoaded, this);
       this.render = __bind(this.render, this);
       return CurveEditorController.__super__.constructor.apply(this, arguments);
     }
@@ -254,32 +393,33 @@
     CurveEditorController.prototype.template = _.template($("#CurveEditorView").html());
 
     CurveEditorController.prototype.render = function() {
-      var curveUrl;
       this.$el.empty();
+      this.$el.html(this.template());
       if (this.model != null) {
-        if (this.model.get('curveid') !== "") {
-          curveUrl = window.conf.service.rshiny.fullpath + "/fit/?curveIds=";
-          curveUrl += this.model.get('curveid');
-        }
+        this.drapc = new DoseResponseAnalysisParametersController({
+          model: this.model.get('fitSettings'),
+          el: this.$('.bv_analysisParameterForm')
+        });
+        this.drapc.render();
+        this.drpc = new DoseResponsePlotController({
+          model: new Backbone.Model(this.model.get('plotData')),
+          el: this.$('.bv_plotWindowWrapper')
+        });
+        this.drpc.render();
+        this.$('.bv_reportedValues').html(this.model.get('reportedValues'));
+        this.$('.bv_fitSummary').html(this.model.get('fitSummary'));
+        this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));
+        this.$('.bv_curveErrors').html(this.model.get('curveErrors'));
+        return this.$('.bv_category').html(this.model.get('category'));
+      } else {
+        return this.$el.html("No curve selected");
       }
-      this.$el.html(this.template({
-        curveUrl: curveUrl
-      }));
-      this;
-      this.$('.bv_loading').show();
-      return this.$('.bv_shinyContainer').load((function(_this) {
-        return function() {
-          return _this.$('.bv_loading').hide();
-        };
-      })(this));
     };
 
     CurveEditorController.prototype.setModel = function(model) {
       this.model = model;
       return this.render();
     };
-
-    CurveEditorController.prototype.shinyLoaded = function() {};
 
     return CurveEditorController;
 
@@ -291,6 +431,7 @@
     function CurveCuratorController() {
       this.handleSortChanged = __bind(this.handleSortChanged, this);
       this.handleFilterChanged = __bind(this.handleFilterChanged, this);
+      this.handleGetCurveDetailReturn = __bind(this.handleGetCurveDetailReturn, this);
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
       this.render = __bind(this.render, this);
       return CurveCuratorController.__super__.constructor.apply(this, arguments);
@@ -373,7 +514,19 @@
     };
 
     CurveCuratorController.prototype.curveSelectionUpdated = function(who) {
-      return this.curveEditorController.setModel(who.model);
+      return $.ajax({
+        type: 'GET',
+        url: "/api/curve/detail/" + who.model.get('curveid'),
+        dataType: 'json',
+        success: this.handleGetCurveDetailReturn,
+        error: function(err) {
+          return console.log('got ajax error');
+        }
+      });
+    };
+
+    CurveCuratorController.prototype.handleGetCurveDetailReturn = function(json) {
+      return this.curveEditorController.setModel(new CurveDetail(json));
     };
 
     CurveCuratorController.prototype.handleFilterChanged = function() {

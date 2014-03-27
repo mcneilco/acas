@@ -13,9 +13,51 @@
     </div>
 </script>
 
+<script type="text/template" id="DoseResponsePlotView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_plotWindow" style="height:300px;">plot view</div>
+</script>
+
 <script type="text/template" id="CurveEditorView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_loading span8 pull-left">Loading Curve Editor...</div>
-    <iframe class="bv_shinyContainer span8 pull-left" src="<%= curveUrl %>" >No Curve Selected</iframe>
+
+    <div class="bv_plotWindowWrapper">plot view</div>
+
+    <div class="bv_fitOptionWrapper">
+        <div class="bv_analysisParameterForm"></div>
+    </div>
+
+    <div class="bv_curveFitParameters"></div>
+
+    <div class="span5">
+        <h5 style="margin-top:0;">Reported Values:</h5>
+        <div class="well well-small bv_reportedValues" style="background-color:#ffffff;height:125px;overflow:auto;"></div>
+    </div>
+
+    <div class="span5">
+        <h5 style="margin-top:0;">Fit Summary:</h5>
+        <div class="well well-small bv_fitSummary" style="background-color:#ffffff;height:125px;overflow:auto;"></div>
+    </div>
+
+    <div class="span5">
+        <h5 style="margin-top:0;">Parameter Std. Errors:</h5>
+        <div class="well well-small bv_parameterStdErrors" style="background-color:#ffffff;height:50px;overflow:auto;"></div>
+    </div>
+
+    <div class="span5">
+        <h5 style="margin-top:0;">Curve Errors:</h5>
+        <div class="well well-small bv_curveErrors" style="background-color:#ffffff;height:50px;overflow:auto;"></div>
+    </div>
+
+    <div class="span5">
+        <h5 style="margin-top:0;">Curve Errors:</h5>
+        <div class="well well-small bv_category" style="background-color:#ffffff;height:50px;overflow:auto;"></div>
+    </div>
+
+    <div class="span10">
+        <button class="btn btn-danger bv_reject" type="button">Reject</button>
+        <button class="btn btn-success bv_approve" type="button">Approve</button>
+        <button class="btn btn-primary pull-right bv_update" type="button" style="margin-left:4px;">Update</button>
+        <button class="btn btn-default pull-right bv_reset" type="button">Reset</button>
+    </div>
 </script>
 
 <script type="text/template" id="CurveCuratorView" xmlns="http://www.w3.org/1999/html">

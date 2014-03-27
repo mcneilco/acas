@@ -16,7 +16,7 @@
 }
 
 
-.bv_curveCurator .bv_curveEditor .bv_shinyContainer {
+.bv_curveCurator .bv_curveEditor {
     height: 700px;
     min-width: 770px;
     border: none;

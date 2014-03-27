@@ -12,11 +12,6 @@ describe "Curve Curator Module testing", ->
 		describe "basic plumbing tests", ->
 			it "should have model defined", ->
 				expect(Curve).toBeDefined()
-			it "should have defaults", ->
-				expect(@curve.get('curveid')).toEqual ""
-				expect(@curve.get('algorithmApproved')).toBeNull()
-				expect(@curve.get('userApproved')).toBeNull()
-				expect(@curve.get('category')).toEqual ""
 
 	describe "Curve List Model testing", ->
 		beforeEach ->
@@ -61,7 +56,6 @@ describe "Curve Curator Module testing", ->
 			it "sortOptions should be converted to Collection", ->
 				runs ->
 					expect(@ccs.get('sortOptions') instanceof Backbone.Collection).toBeTruthy()
-
 
 	describe "Curve Summary Controller tests", ->
 		beforeEach ->
@@ -157,8 +151,22 @@ describe "Curve Curator Module testing", ->
 				@cslc.sort 'none'
 				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000008"
 
+	describe "Dose Response Plot Controller tests", ->
+		beforeEach ->
+			@drpc = new DoseResponsePlotController
+				model: new Backbone.Model window.curveCuratorTestJSON.curveDetail.plotData
+				el: @fixture
+			@drpc.render()
+		describe "basic plumbing", ->
+			it "should have controller defined", ->
+				expect(DoseResponsePlotController).toBeDefined()
+			it "should load the template", ->
+				expect(@drpc.$('.bv_plotWindow').length).toEqual 1
+			it "should set the div id to a unique cid", ->
+				expect(@drpc.$('.bv_plotWindow').attr('id')).toEqual "bvID_plotWindow_" + @drpc.model.cid
+
+
 	describe "Curve Editor Controller tests", ->
-		describe "when created with no model", ->
 			beforeEach ->
 				@cec = new CurveEditorController
 					el: @fixture
@@ -166,26 +174,42 @@ describe "Curve Curator Module testing", ->
 			describe "basic plumbing", ->
 				it "should have controller defined", ->
 					expect(CurveEditorController).toBeDefined()
-				it "should load template", ->
-					expect(@cec.$('.bv_shinyContainer').length).toEqual 1
-				it "should show no curve selected", ->
-					expect(@cec.$('.bv_shinyContainer').html()).toContain "No Curve Selected"
-			describe "when new model set", ->
-				it "should set the iframe src", ->
-					mdl = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0])
-					@cec.setModel(mdl)
-					expect(@cec.$('.bv_shinyContainer').attr('src')).toContain "90807_AG-00000026"
-
-		describe "when created with populated model", ->
-			beforeEach ->
-				@curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0])
-				@cec = new CurveEditorController
-					el: @fixture
-					model: @curve
-				@cec.render()
-			describe "rendering editor", ->
-				it "should have iframe src attribute set", ->
-					expect(@cec.$('.bv_shinyContainer').attr('src')).toContain "90807_AG-00000026"
+				it "should should show no curve selected when model is missing", ->
+					expect($(@cec.el).html()).toContain "No curve selected"
+			describe "when a model is set", ->
+				beforeEach ->
+					@curve = new CurveDetail(window.curveCuratorTestJSON.curveDetail)
+					@cec = new CurveEditorController
+						el: @fixture
+					@cec.setModel @curve
+				describe "basic result rendering", ->
+					it "should load template", ->
+						expect(@cec.$('.bv_reportedValues').length).toEqual 1
+					it "should show the reported values", ->
+						expect(@cec.$('.bv_reportedValues').html()).toContain "slope"
+					it "should show the fitSummary", ->
+						expect(@cec.$('.bv_fitSummary').html()).toContain "Model fitted"
+					it "should show the parameterStdErrors", ->
+						expect(@cec.$('.bv_parameterStdErrors').html()).toContain "stdErr"
+					it "should show the curveErrors", ->
+						expect(@cec.$('.bv_curveErrors').html()).toContain "SSE"
+					it "should show the category", ->
+						expect(@cec.$('.bv_category').html()).toContain "sigmoid"
+				describe "dose response parameter controller", ->
+					it "should have a populated dose response parameter controller", ->
+						expect(@cec.$('.bv_analysisParameterForm')).toBeDefined()
+					it 'should set the max_value to the number', ->
+						expect(@cec.$(".bv_max_value").val()).toEqual "101"
+					it 'should show the inverse agonist mode', ->
+						expect(@cec.$('.bv_inverseAgonistMode').attr('checked')).toEqual 'checked'
+				describe "editing curve parameters should update the model", ->
+					it "should update curve parameters if the max value is changed", ->
+						@cec.$('.bv_max_value').val 200
+						@cec.$('.bv_max_value').change()
+						expect(@cec.model.get('fitSettings').get('max').get('value')).toEqual 200
+				describe "dose response plot", ->
+					it "should have a dose response plot controller", ->
+						expect(@cec.$('.bv_plotWindow')).toBeDefined()
 
 	describe "Curve Curator Controller tests", ->
 		beforeEach ->
@@ -213,8 +237,11 @@ describe "Curve Curator Module testing", ->
 					runs ->
 						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeTruthy()
 				it "should show the curve editor", ->
+					waitsFor =>
+						@ccc.$('.bv_reportedValues').length > 0
+					, 500
 					runs ->
-						expect(@ccc.$('.bv_shinyContainer').length).toBeGreaterThan 0
+						expect(@ccc.$('.bv_reportedValues').length).toBeGreaterThan 0
 			describe "sort option select display", ->
 				it "sortOption select should populate with options", ->
 					runs ->
@@ -272,14 +299,16 @@ describe "Curve Curator Module testing", ->
 						@ccc.$('.bv_filterBy').val 'Sigmoid'
 						@ccc.$('.bv_filterBy').change()
 						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual 3
-
 			describe "When new thumbnail selected", ->
 				beforeEach ->
 					runs ->
 						@ccc.$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
-				it "should set the curve editor iframe src", ->
+				it "should show the selected curve details", ->
+					waitsFor =>
+						@ccc.$('.bv_reportedValues').length > 0
+					, 500
 					runs ->
-						expect(@ccc.$('.bv_shinyContainer').attr('src')).toContain "126907_AG-00000236"
+						expect(@ccc.$('.bv_reportedValues').html()).toContain "slope"
 
 #TODO add sample attributes SSE, SST, R^2, EC50 to thumb stubs
 #TODO add ascending/descending controls for filter

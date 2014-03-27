@@ -133,7 +133,152 @@ class window.CurveSummaryListController extends Backbone.View
 		@sortAscending = ascending
 		@render()
 
+class window.DoseResponsePlotController extends AbstractFormController
+	template: _.template($("#DoseResponsePlotView").html())
+	render: =>
+		@$el.empty()
+		@$el.html @template()
+		@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
+		@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
+		@
 
+	initJSXGraph: (points, curve, plotWindow, divID) ->
+		if typeof (brd) is "undefined"
+			brd =JXG.JSXGraph.initBoard(divID,
+				boundingbox: plotWindow
+				axis: false #we do this later (log axis reasons)
+				renderer: 'svg'
+				showCopyright: false
+				zoom : {
+					wheel: true
+				},
+			)
+			ii = 0
+			while ii < points.response_sv_id.length
+				x = JXG.trunc(Math.log(points.dose[ii]), 4)
+				y = points.response[ii]
+				flag = points.flag[ii]
+				if flag != "NA"
+					p1 = brd.create("point", [
+						x
+						y
+					],
+						name: ""
+						fixed: true
+						size: 4
+						face: "cross"
+						strokecolor: "gray"
+					)
+				else
+					p1 = brd.create("point", [
+						x
+						y
+					],
+						name: ""
+						fixed: true
+						size: 4
+						face: "circle"
+						strokecolor: "blue"
+					)
+				p1.idx = ii
+				p1.knockOutPoint = ->
+					unless points.flag[@idx] != "NA"
+						@setAttribute
+							strokecolor: "gray"
+							face: "cross"
+						@flag = true
+						points.flag[@idx] = true # set flag to true to flag it?
+					else
+						@setAttribute
+							strokecolor: "blue"
+							face: "circle"
+
+						@flag = false
+						points.flag[@idx] = false # set flag to null to un-flag it?
+					#$("input#selected").val JSON.stringify(points)
+					#$("input#selected").trigger "change"
+					return
+
+				p1.xLabel = JXG.trunc(points.dose[ii], 4)
+				p1.on "mouseup", p1.knockOutPoint, p1
+				brd.highlightInfobox = (x, y, el) ->
+
+					#brd.infobox.setText('<img src="http://www.freesmileys.org/smileys/big/big-smiley-face.gif" alt="Smiley face" width="42" height="42">');
+					brd.infobox.setText "(" + el.xLabel + ", " + y + ")"
+					return
+				ii++
+			x = brd.create("line", [
+				[
+					0
+					0
+				]
+				[
+					1
+					0
+				]
+			],
+				strokeColor: "#888888"
+			)
+			y = brd.create("axis", [
+				[
+					plotWindow[0] * 0.98
+					0
+				]
+				[
+					plotWindow[0] * 0.98
+					1
+				]
+			])
+			x.isDraggable = false
+
+			# create the tick markers for the axis
+			t = brd.create("ticks", [
+				x
+				1
+			],
+
+				# yes, show the labels
+				drawLabels: true
+
+			# yes, show the tick marker at zero (or, in this case: 1)
+				drawZero: true
+				generateLabelValue: (tick) ->
+
+					# get the first defining point of the axis
+					p1 = @line.point1
+
+					# this works for the x-axis, for the y-axis you'll have to use usrCoords[2] (usrCoords[0] is the z-coordinate).
+					Math.pow 10, tick.usrCoords[1] - p1.coords.usrCoords[1]
+			)
+
+			#LL4 <- function(x) drawMin + (drawMax - drawMin)/((1 + exp(-drawHill * (log(x/drawEC50))))^1)
+			#brd.create('functiongraph', [function(x){return Math.sin(x);},-Math.PI,2*Math.PI]);
+		else
+			#JXG.JSXGraph.freeBoard(brd);
+			#brd = JXG.JSXGraph.initBoard('jxgbox', {boundingbox: plotWindow, axis: false,  showCopyright: false});
+			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
+			if curve?
+				Math.logArray = (->
+					(input_array, base) ->
+						output_array = []
+						if input_array instanceof Array
+							i = 0
+
+							while i < input_array.length
+								output_array.push Math.log(input_array[i], base)
+								i++
+							output_array
+						else
+							null
+				)()
+				window.curve = brd.create("curve", [
+					Math.logArray(curve.dose)
+					curve.response
+				],
+					strokeColor: "black"
+					strokeWidth: 2
+				)
+			return
 
 class window.CurveEditorController extends Backbone.View
 	template: _.template($("#CurveEditorView").html())
@@ -147,6 +292,11 @@ class window.CurveEditorController extends Backbone.View
 				el: @$('.bv_analysisParameterForm')
 			@drapc.render()
 
+			@drpc = new DoseResponsePlotController
+				model: new Backbone.Model @model.get('plotData')
+				el: @$('.bv_plotWindowWrapper')
+			@drpc.render()
+
 			@$('.bv_reportedValues').html @model.get('reportedValues')
 			@$('.bv_fitSummary').html @model.get('fitSummary')
 			@$('.bv_parameterStdErrors').html @model.get('parameterStdErrors')
@@ -155,14 +305,9 @@ class window.CurveEditorController extends Backbone.View
 		else
 			@$el.html "No curve selected"
 
-	getIt: ->
-		@drapc
-
 	setModel: (model)->
 		@model = model
 		@render()
-
-
 
 class window.CurveCuratorController extends Backbone.View
 	template: _.template($("#CurveCuratorView").html())

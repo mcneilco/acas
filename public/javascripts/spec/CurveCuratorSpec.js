@@ -14,14 +14,8 @@
         return this.curve = new Curve();
       });
       return describe("basic plumbing tests", function() {
-        it("should have model defined", function() {
+        return it("should have model defined", function() {
           return expect(Curve).toBeDefined();
-        });
-        return it("should have defaults", function() {
-          expect(this.curve.get('curveid')).toEqual("");
-          expect(this.curve.get('algorithmApproved')).toBeNull();
-          expect(this.curve.get('userApproved')).toBeNull();
-          return expect(this.curve.get('category')).toEqual("");
         });
       });
     });
@@ -228,46 +222,90 @@
         });
       });
     });
+    describe("Dose Response Plot Controller tests", function() {
+      beforeEach(function() {
+        this.drpc = new DoseResponsePlotController({
+          model: new Backbone.Model(window.curveCuratorTestJSON.curveDetail.plotData),
+          el: this.fixture
+        });
+        return this.drpc.render();
+      });
+      return describe("basic plumbing", function() {
+        it("should have controller defined", function() {
+          return expect(DoseResponsePlotController).toBeDefined();
+        });
+        it("should load the template", function() {
+          return expect(this.drpc.$('.bv_plotWindow').length).toEqual(1);
+        });
+        return it("should set the div id to a unique cid", function() {
+          return expect(this.drpc.$('.bv_plotWindow').attr('id')).toEqual("bvID_plotWindow_" + this.drpc.model.cid);
+        });
+      });
+    });
     describe("Curve Editor Controller tests", function() {
-      describe("when created with no model", function() {
+      beforeEach(function() {
+        this.cec = new CurveEditorController({
+          el: this.fixture
+        });
+        return this.cec.render();
+      });
+      describe("basic plumbing", function() {
+        it("should have controller defined", function() {
+          return expect(CurveEditorController).toBeDefined();
+        });
+        return it("should should show no curve selected when model is missing", function() {
+          return expect($(this.cec.el).html()).toContain("No curve selected");
+        });
+      });
+      return describe("when a model is set", function() {
         beforeEach(function() {
+          this.curve = new CurveDetail(window.curveCuratorTestJSON.curveDetail);
           this.cec = new CurveEditorController({
             el: this.fixture
           });
-          return this.cec.render();
+          return this.cec.setModel(this.curve);
         });
-        describe("basic plumbing", function() {
-          it("should have controller defined", function() {
-            return expect(CurveEditorController).toBeDefined();
-          });
+        describe("basic result rendering", function() {
           it("should load template", function() {
-            return expect(this.cec.$('.bv_shinyContainer').length).toEqual(1);
+            return expect(this.cec.$('.bv_reportedValues').length).toEqual(1);
           });
-          return it("should show no curve selected", function() {
-            return expect(this.cec.$('.bv_shinyContainer').html()).toContain("No Curve Selected");
+          it("should show the reported values", function() {
+            return expect(this.cec.$('.bv_reportedValues').html()).toContain("slope");
+          });
+          it("should show the fitSummary", function() {
+            return expect(this.cec.$('.bv_fitSummary').html()).toContain("Model fitted");
+          });
+          it("should show the parameterStdErrors", function() {
+            return expect(this.cec.$('.bv_parameterStdErrors').html()).toContain("stdErr");
+          });
+          it("should show the curveErrors", function() {
+            return expect(this.cec.$('.bv_curveErrors').html()).toContain("SSE");
+          });
+          return it("should show the category", function() {
+            return expect(this.cec.$('.bv_category').html()).toContain("sigmoid");
           });
         });
-        return describe("when new model set", function() {
-          return it("should set the iframe src", function() {
-            var mdl;
-            mdl = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0]);
-            this.cec.setModel(mdl);
-            return expect(this.cec.$('.bv_shinyContainer').attr('src')).toContain("90807_AG-00000026");
+        describe("dose response parameter controller", function() {
+          it("should have a populated dose response parameter controller", function() {
+            return expect(this.cec.$('.bv_analysisParameterForm')).toBeDefined();
+          });
+          it('should set the max_value to the number', function() {
+            return expect(this.cec.$(".bv_max_value").val()).toEqual("101");
+          });
+          return it('should show the inverse agonist mode', function() {
+            return expect(this.cec.$('.bv_inverseAgonistMode').attr('checked')).toEqual('checked');
           });
         });
-      });
-      return describe("when created with populated model", function() {
-        beforeEach(function() {
-          this.curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0]);
-          this.cec = new CurveEditorController({
-            el: this.fixture,
-            model: this.curve
+        describe("editing curve parameters should update the model", function() {
+          return it("should update curve parameters if the max value is changed", function() {
+            this.cec.$('.bv_max_value').val(200);
+            this.cec.$('.bv_max_value').change();
+            return expect(this.cec.model.get('fitSettings').get('max').get('value')).toEqual(200);
           });
-          return this.cec.render();
         });
-        return describe("rendering editor", function() {
-          return it("should have iframe src attribute set", function() {
-            return expect(this.cec.$('.bv_shinyContainer').attr('src')).toContain("90807_AG-00000026");
+        return describe("dose response plot", function() {
+          return it("should have a dose response plot controller", function() {
+            return expect(this.cec.$('.bv_plotWindow')).toBeDefined();
           });
         });
       });
@@ -311,8 +349,13 @@
             });
           });
           return it("should show the curve editor", function() {
+            waitsFor((function(_this) {
+              return function() {
+                return _this.ccc.$('.bv_reportedValues').length > 0;
+              };
+            })(this), 500);
             return runs(function() {
-              return expect(this.ccc.$('.bv_shinyContainer').length).toBeGreaterThan(0);
+              return expect(this.ccc.$('.bv_reportedValues').length).toBeGreaterThan(0);
             });
           });
         });
@@ -405,9 +448,14 @@
               return this.ccc.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
             });
           });
-          return it("should set the curve editor iframe src", function() {
+          return it("should show the selected curve details", function() {
+            waitsFor((function(_this) {
+              return function() {
+                return _this.ccc.$('.bv_reportedValues').length > 0;
+              };
+            })(this), 500);
             return runs(function() {
-              return expect(this.ccc.$('.bv_shinyContainer').attr('src')).toContain("126907_AG-00000236");
+              return expect(this.ccc.$('.bv_reportedValues').html()).toContain("slope");
             });
           });
         });

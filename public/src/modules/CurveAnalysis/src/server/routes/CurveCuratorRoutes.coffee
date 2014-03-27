@@ -1,6 +1,7 @@
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/curves/stub/:exptCode', exports.getCurveStubs
+	app.get '/api/curves/stubs/:exptCode', exports.getCurveStubs
+	app.get '/api/curve/detail/:id', exports.getCurveDetail
 	config = require '../conf/compiled/conf.js'
 	if config.all.client.require.login
 		app.get '/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex
@@ -30,6 +31,29 @@ exports.getCurveStubs = (req, resp) ->
 				console.log json
 				console.log response
 		)
+
+exports.getCurveDetail = (req, resp) ->
+	if global.specRunnerTestmode
+		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
+		resp.end JSON.stringify curveCuratorTestData.curveDetail
+	else
+#		config = require '../conf/compiled/conf.js'
+#		baseurl = config.all.client.service.rapache.fullpath+"/experimentcode/curvids/?experimentcode="
+#		request = require 'request'
+#		request(
+#			method: 'GET'
+#			url: baseurl+req.params.exptCode
+#			json: true
+#		, (error, response, json) =>
+#			if !error && response.statusCode == 200
+#				console.log JSON.stringify json
+#				resp.end JSON.stringify json
+#			else
+#				console.log 'got ajax error trying to save new experiment'
+#				console.log error
+#				console.log json
+#				console.log response
+#		)
 
 
 exports.curveCuratorIndex = (req, resp) ->

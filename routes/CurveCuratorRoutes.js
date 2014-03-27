@@ -1,7 +1,8 @@
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
     var config;
-    app.get('/api/curves/stub/:exptCode', exports.getCurveStubs);
+    app.get('/api/curves/stubs/:exptCode', exports.getCurveStubs);
+    app.get('/api/curve/detail/:id', exports.getCurveDetail);
     config = require('../conf/compiled/conf.js');
     if (config.all.client.require.login) {
       return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
@@ -36,6 +37,16 @@
           }
         };
       })(this));
+    }
+  };
+
+  exports.getCurveDetail = function(req, resp) {
+    var curveCuratorTestData;
+    if (global.specRunnerTestmode) {
+      curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
+      return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
+    } else {
+
     }
   };
 
