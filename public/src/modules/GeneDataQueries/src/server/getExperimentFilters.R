@@ -10,7 +10,14 @@ postData <- rawToChar(receiveBin(1024))
 
 
 postData.list <- fromJSON(postData)
-postData.Json <- toJSON(postData.list$experimentCodes)
+if (length(postData.list$experimentCodes) > 1){
+	postData.Json <- toJSON(postData.list$experimentCodes)
+
+} else {
+	postData.single <- list()
+	postData.single[1] <- postData.list$experimentCodes
+	postData.Json <- toJSON(postData.single)
+}
 
 experimentFilters <- getURL(
 	paste0(configList$client.service.persistence.fullpath, "experiments/filters/jsonArray"),

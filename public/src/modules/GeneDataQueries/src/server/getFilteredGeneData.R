@@ -51,10 +51,15 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
 	}
 }
 
-postData.list$batchCodeList <- batchCodeList
 searchParams <- list()
+if (length(postData.list$queryParams$experimentCodeList) > 1){
+	searchParams$experimentCodeList <- postData.list$queryParams$experimentCodeList
+
+} else {
+	searchParams$experimentCodeList <- list()
+	searchParams$experimentCodeList[1] <- postData.list$queryParams$experimentCodeList
+}
 searchParams$batchCodeList <- batchCodeList
-searchParams$experimentCodeList <- postData.list$queryParams$experimentCodeList
 searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
 searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
 searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter
