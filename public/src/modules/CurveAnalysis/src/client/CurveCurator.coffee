@@ -169,16 +169,19 @@ class window.DoseResponsePlotController extends AbstractFormController
 	render: =>
 		@$el.empty()
 		@$el.html @template()
-		@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
-		@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
-		@
+		if @model?
+			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
+			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
+			@
+		else
+			@$el.html "Plot data not loaded"
+			@
 
 	initJSXGraph: (points, curve, plotWindow, divID) ->
 		if typeof (brd) is "undefined"
 				brd =JXG.JSXGraph.initBoard(divID,
 					boundingbox: plotWindow
 					axis: false #we do this later (log axis reasons)
-					renderer: 'svg'
 					showCopyright: false
 					zoom : {
 						wheel: true
@@ -287,10 +290,10 @@ class window.DoseResponsePlotController extends AbstractFormController
 			else
 				#JXG.JSXGraph.freeBoard(brd);
 				#brd = JXG.JSXGraph.initBoard('jxgbox', {boundingbox: plotWindow, axis: false,  showCopyright: false});
-			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
+				brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
+
 			if curve?
-				Math.logArray = (->
-						(input_array, base) ->
+				Math.logArray = (input_array, base) ->
 							output_array = []
 							if input_array instanceof Array
 								i = 0
@@ -301,7 +304,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 								output_array
 							else
 								null
-				)()
+
 				window.curve = brd.create("curve", [
 					Math.logArray(curve.dose)
 					curve.response

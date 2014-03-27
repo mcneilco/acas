@@ -1,11 +1,9 @@
 (function() {
-  beforeEach(function() {
-    return this.fixture = $.clone($("#fixture").get(0));
-  });
+  beforeEach(function() {});
 
   afterEach(function() {
     $("#fixture").remove();
-    return $("body").append($(this.fixture));
+    return $("body").append('<div id = "#fixture"></div>');
   });
 
   describe("Curve Curator Module testing", function() {
@@ -90,7 +88,7 @@
       beforeEach(function() {
         this.curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0]);
         this.csc = new CurveSummaryController({
-          el: this.fixture,
+          el: $("#fixture"),
           model: this.curve
         });
         return this.csc.render();
@@ -162,7 +160,7 @@
       beforeEach(function() {
         this.curves = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs.curves);
         this.cslc = new CurveSummaryListController({
-          el: this.fixture,
+          el: $("#fixture"),
           collection: this.curves
         });
         return this.cslc.render();
@@ -225,30 +223,43 @@
     describe("Dose Response Plot Controller tests", function() {
       beforeEach(function() {
         this.drpc = new DoseResponsePlotController({
-          model: new Backbone.Model(window.curveCuratorTestJSON.curveDetail.plotData),
-          el: this.fixture
+          el: $("#fixture")
         });
-        console.log(this.drpc.model);
         return this.drpc.render();
       });
-      return describe("basic plumbing", function() {
+      describe("basic plumbing", function() {
         it("should have controller defined", function() {
-          console.log(this.drpc.model);
           return expect(DoseResponsePlotController).toBeDefined();
         });
-        it("should load the template", function() {
-          return expect(this.drpc.$('.bv_plotWindow').length).toEqual(1);
+        return it("should show plot details not loaded when model is missing", function() {
+          return expect($(this.drpc.el).html()).toContain("Plot data not loaded");
         });
-        it("should set the div id to a unique cid", function() {
-          return expect(this.drpc.$('.bv_plotWindow').attr('id')).toEqual("bvID_plotWindow_" + this.drpc.model.cid);
+      });
+      return describe("when a model is set", function() {
+        beforeEach(function() {
+          this.drpc = new DoseResponsePlotController({
+            model: new Backbone.Model(window.curveCuratorTestJSON.curveDetail.plotData),
+            el: $("#fixture")
+          });
+          return this.drpc.render();
         });
-        return it("should render the points", function() {});
+        return describe("basic plot rendering", function() {
+          it("should load the template", function() {
+            return expect(this.drpc.$('.bv_plotWindow').length).toEqual(1);
+          });
+          it("should set the div id to a unique cid", function() {
+            return expect(this.drpc.$('.bv_plotWindow').attr('id')).toEqual("bvID_plotWindow_" + this.drpc.model.cid);
+          });
+          return it("should render the points", function() {
+            return console.log(this.drpc.$('.bv_plotWindow').html());
+          });
+        });
       });
     });
     describe("Curve Editor Controller tests", function() {
       beforeEach(function() {
         this.cec = new CurveEditorController({
-          el: this.fixture
+          el: $("#fixture")
         });
         return this.cec.render();
       });
@@ -264,7 +275,7 @@
         beforeEach(function() {
           this.curve = new CurveDetail(window.curveCuratorTestJSON.curveDetail);
           this.cec = new CurveEditorController({
-            el: this.fixture
+            el: $("#fixture")
           });
           return this.cec.setModel(this.curve);
         });
@@ -316,7 +327,7 @@
     return describe("Curve Curator Controller tests", function() {
       beforeEach(function() {
         this.ccc = new CurveCuratorController({
-          el: this.fixture
+          el: $("#fixture")
         });
         return this.ccc.render();
       });

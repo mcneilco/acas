@@ -315,9 +315,14 @@
     DoseResponsePlotController.prototype.render = function() {
       this.$el.empty();
       this.$el.html(this.template());
-      this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
-      this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
-      return this;
+      if (this.model != null) {
+        this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
+        this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
+        return this;
+      } else {
+        this.$el.html("Plot data not loaded");
+        return this;
+      }
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
@@ -326,7 +331,6 @@
         brd = JXG.JSXGraph.initBoard(divID, {
           boundingbox: plotWindow,
           axis: false,
-          renderer: 'svg',
           showCopyright: false,
           zoom: {
             wheel: true
@@ -393,28 +397,25 @@
           }
         });
       } else {
-
-      }
-      if (typeof window.curve !== "undefined") {
-        brd.removeObject(window.curve);
+        if (typeof window.curve !== "undefined") {
+          brd.removeObject(window.curve);
+        }
       }
       if (curve != null) {
-        Math.logArray = (function() {
-          return function(input_array, base) {
-            var i, output_array;
-            output_array = [];
-            if (input_array instanceof Array) {
-              i = 0;
-              while (i < input_array.length) {
-                output_array.push(Math.log(input_array[i], base));
-                i++;
-              }
-              return output_array;
-            } else {
-              return null;
+        Math.logArray = function(input_array, base) {
+          var i, output_array;
+          output_array = [];
+          if (input_array instanceof Array) {
+            i = 0;
+            while (i < input_array.length) {
+              output_array.push(Math.log(input_array[i], base));
+              i++;
             }
-          };
-        })();
+            return output_array;
+          } else {
+            return null;
+          }
+        };
         window.curve = brd.create("curve", [Math.logArray(curve.dose), curve.response], {
           strokeColor: "black",
           strokeWidth: 2

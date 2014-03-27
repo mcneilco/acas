@@ -1,9 +1,10 @@
 beforeEach ->
-	@fixture = $.clone($("#fixture").get(0))
+	#$("#fixture") = $.clone($("#fixture").get(0))
+	#$("#fixture") = $("#fixture")
 
 afterEach ->
 	$("#fixture").remove()
-	$("body").append $(@fixture)
+	$("body").append '<div id = "#fixture"></div>'
 
 describe "Curve Curator Module testing", ->
 	describe "Curve Model testing", ->
@@ -61,7 +62,7 @@ describe "Curve Curator Module testing", ->
 		beforeEach ->
 			@curve = new Curve(window.curveCuratorTestJSON.curveCuratorThumbs.curves[0])
 			@csc = new CurveSummaryController
-				el: @fixture
+				el: $("#fixture")
 				model: @curve
 			@csc.render()
 		describe "basic plumbing", ->
@@ -110,7 +111,7 @@ describe "Curve Curator Module testing", ->
 		beforeEach ->
 			@curves = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs.curves)
 			@cslc = new CurveSummaryListController
-				el: @fixture
+				el: $("#fixture")
 				collection: @curves
 			@cslc.render()
 		describe "basic plumbing", ->
@@ -154,25 +155,31 @@ describe "Curve Curator Module testing", ->
 	describe "Dose Response Plot Controller tests", ->
 		beforeEach ->
 			@drpc = new DoseResponsePlotController
-				model: new Backbone.Model window.curveCuratorTestJSON.curveDetail.plotData
-				el: @fixture
-			console.log @drpc.model
+				el: $("#fixture")
 			@drpc.render()
 		describe "basic plumbing", ->
 			it "should have controller defined", ->
-				console.log @drpc.model
 				expect(DoseResponsePlotController).toBeDefined()
-			it "should load the template", ->
-				expect(@drpc.$('.bv_plotWindow').length).toEqual 1
-			it "should set the div id to a unique cid", ->
-				expect(@drpc.$('.bv_plotWindow').attr('id')).toEqual "bvID_plotWindow_" + @drpc.model.cid
-			it "should render the points", ->
-				#console.log @drpc.$('.bv_plotWindow')
+			it "should show plot details not loaded when model is missing", ->
+				expect($(@drpc.el).html()).toContain "Plot data not loaded"
+		describe "when a model is set", ->
+			beforeEach ->
+				@drpc = new DoseResponsePlotController
+					model: new Backbone.Model window.curveCuratorTestJSON.curveDetail.plotData
+					el: $("#fixture")
+				@drpc.render()
+			describe "basic plot rendering", ->
+				it "should load the template", ->
+					expect(@drpc.$('.bv_plotWindow').length).toEqual 1
+				it "should set the div id to a unique cid", ->
+					expect(@drpc.$('.bv_plotWindow').attr('id')).toEqual "bvID_plotWindow_" + @drpc.model.cid
+				it "should render the points", ->
+					console.log @drpc.$('.bv_plotWindow').html()
 
 	describe "Curve Editor Controller tests", ->
 			beforeEach ->
 				@cec = new CurveEditorController
-					el: @fixture
+					el: $("#fixture")
 				@cec.render()
 			describe "basic plumbing", ->
 				it "should have controller defined", ->
@@ -183,7 +190,7 @@ describe "Curve Curator Module testing", ->
 				beforeEach ->
 					@curve = new CurveDetail(window.curveCuratorTestJSON.curveDetail)
 					@cec = new CurveEditorController
-						el: @fixture
+						el: $("#fixture")
 					@cec.setModel @curve
 				describe "basic result rendering", ->
 					it "should load template", ->
@@ -217,7 +224,7 @@ describe "Curve Curator Module testing", ->
 	describe "Curve Curator Controller tests", ->
 		beforeEach ->
 			@ccc = new CurveCuratorController
-				el: @fixture
+				el: $("#fixture")
 			@ccc.render()
 		describe "basic plumbing", ->
 			it "should have controller defined", ->
