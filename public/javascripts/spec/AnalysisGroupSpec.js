@@ -1,7 +1,7 @@
+
 /*
 This suite of services provides CRUD operations on Analysis Group Objects
-*/
-
+ */
 
 (function() {
   describe('AnalysisGroup CRUD testing', function() {

@@ -1,6 +1,7 @@
+
 /* To install this module add
   to app.coffee
-# login routes
+ * login routes
 passport.serializeUser (user, done) ->
 	done null, user.username
 passport.deserializeUser (username, done) ->
@@ -15,8 +16,7 @@ app.post '/login',
 app.get '/logout', loginRoutes.logout
 app.post '/api/userAuthentication', loginRoutes.authenticationService
 app.get '/api/users/:username', loginRoutes.getUsers
-*/
-
+ */
 
 (function() {
   var csUtilities;

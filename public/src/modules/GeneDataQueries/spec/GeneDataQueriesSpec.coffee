@@ -229,6 +229,7 @@ describe "Gene Data Queries Module Testing", ->
 						it "should show experiment options", ->
 							expect(@erftc.$('.bv_experiment option').length).toEqual 3
 							expect(@erftc.$('.bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"
+							expect(@erftc.$('.bv_experiment option:eq(0)').html()).toEqual "Experiment Name 1"
 					describe "show attribute list based on experiment picked", ->
 						it "should show correct attributes for first experiment", ->
 							@erftc.$('.bv_experiment').val "EXPT-00000396"
@@ -262,6 +263,11 @@ describe "Gene Data Queries Module Testing", ->
 							@erftc.$('.bv_kind').change()
 							expect(@erftc.$('.bv_operator option').length).toEqual 2
 							expect(@erftc.$('.bv_operator option:eq(0)').val()).toEqual "true"
+						it "should show correct operator options on first load", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000397"
+							@erftc.$('.bv_experiment').change()
+							expect(@erftc.$('.bv_operator option').length).toEqual 2
+							expect(@erftc.$('.bv_operator option:eq(0)').val()).toEqual "equals"
 					describe "show or hide filterValue based on attribute type picked", ->
 						it "should hide value field for first experiment and bool type", ->
 							@erftc.$('.bv_experiment').val "EXPT-00000396"
@@ -305,21 +311,28 @@ describe "Gene Data Queries Module Testing", ->
 						it 'should load a template', ->
 							expect(@erftlc.$('.bv_addTerm').length).toEqual 1
 					describe "rendering", ->
-						it "should show one term with termName", ->
+						it "should show no terms", ->
+							expect(@erftlc.$('.bv_termName').length).toEqual 0
+						it "should show one experiment term with term name", ->
+							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_termName').html()).toEqual "Q1"
 						it "should show one experiment term with experiment options", ->
+							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment option').length).toEqual 3
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"
 					describe "adding and removing", ->
 						it "should have two experiment terms when add is clicked", ->
 							@erftlc.$('.bv_addTerm').click()
+							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 2
 							expect(@erftlc.collection.length).toEqual 2
 						it "should show 2nd term with incremented termName", ->
 							@erftlc.$('.bv_addTerm').click()
+							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_termName:eq(1)').html()).toEqual "Q2"
 						it "should one experiment terms when remove is clicked", ->
+							@erftlc.$('.bv_addTerm').click()
 							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 2
 							@erftlc.$('.bv_delete:eq(0)').click()
@@ -327,6 +340,7 @@ describe "Gene Data Queries Module Testing", ->
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
 					describe "update collection", ->
 						it "should update the collection wehn requested", ->
+							@erftlc.$('.bv_addTerm').click()
 							@erftlc.$('.bv_addTerm').click()
 							@erftlc.$('.bv_experiment:eq(1)').val "EXPT-00000396"
 							@erftlc.$('.bv_experiment:eq(1)').change()
@@ -357,6 +371,7 @@ describe "Gene Data Queries Module Testing", ->
 							expect(@erfc.$('.bv_advancedBooleanFilter').length).toEqual 1
 					describe "rendering", ->
 						it "should show an experiment term list with experiment options", ->
+							@erfc.$('.bv_addTerm').click()
 							expect(@erfc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
 					describe "boolean filter radio behavior", ->
 						it "should hide advanced filter input when radio set to and", ->
@@ -373,6 +388,7 @@ describe "Gene Data Queries Module Testing", ->
 							expect(@erfc.$('.bv_advancedBoolContainer')).toBeVisible()
 					describe "get filter params", ->
 						it "should update the collection wehn requested", ->
+							@erfc.$('.bv_addTerm').click()
 							@erfc.$('.bv_addTerm').click()
 							@erfc.$('.bv_experiment:eq(1)').val "EXPT-00000396"
 							@erfc.$('.bv_experiment:eq(1)').change()
@@ -447,6 +463,7 @@ describe "Gene Data Queries Module Testing", ->
 								describe "filter view display", ->
 									it "should show one experiment term with experiment options", ->
 										runs ->
+											@aerqc.$('.bv_addTerm').click()
 											expect(@aerqc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
 											expect(@aerqc.$('.bv_filterTerms .bv_experiment option').length).toEqual 3
 											expect(@aerqc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"

@@ -1,9 +1,9 @@
+
 /*
   Master ACAS -specific implementations of required server functions
 
   All functions are required with unchanged signatures
-*/
-
+ */
 
 (function() {
   exports.logUsage = function(action, data, username) {

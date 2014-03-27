@@ -1,5 +1,13 @@
 .GeneIDQueryAppController .bv_gidMainNavbar {
-	margin-top: -60px !important;
+	margin-top: 0px !important;
+}
+
+.GeneIDQueryAppController .chandaACAS {
+    margin-left: 10px;
+}
+
+.GeneIDQueryAppController .navbar-inverse .brand:hover {
+    color: #999999;
 }
 
 .GeneIDQueryAppController .bv_gidACASBadge {
@@ -58,6 +66,15 @@
 
 .GeneIDQueryAppController .resultsWell {
 	margin-top: 100px !important;
+}
+
+.GeneIDQueryAppController .gidDownloadCSV {
+    margin-bottom: 10px;
+    margin-left: 1008px;
+}
+
+.GeneIDQueryAppController .bv_downloadCSV {
+    margin-left: 5px;
 }
 
 .GeneIDQueryAppController .gidNamesHeader {

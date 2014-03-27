@@ -395,20 +395,22 @@
         });
         return describe("when invalid batches added but there are valid bathes in list, should trigger invalid", function() {
           return it("should trigger activation request", function() {
-            var _this = this;
             runs(function() {
-              var _this = this;
               expect(this.blvc.$(".validBatchCount").html()).toEqual("3");
-              this.blvc.bind('invalid', function() {
-                return _this.gotTrigger = true;
-              });
+              this.blvc.bind('invalid', (function(_this) {
+                return function() {
+                  return _this.gotTrigger = true;
+                };
+              })(this));
               this.blvc.$('.batchList tr :eq(1) .bv_comment').val("");
               this.blvc.$('.batchList tr :eq(1) .bv_comment').change();
               return expect(this.blvc.$(".validBatchCount").html()).toEqual("2");
             });
-            waitsFor(function() {
-              return _this.gotTrigger;
-            }, 500);
+            waitsFor((function(_this) {
+              return function() {
+                return _this.gotTrigger;
+              };
+            })(this), 500);
             return runs(function() {
               return expect(this.gotTrigger).toBeTruthy();
             });

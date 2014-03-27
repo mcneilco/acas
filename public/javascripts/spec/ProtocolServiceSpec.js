@@ -1,11 +1,11 @@
+
 /*
 Protocol Service specs
 
 Just implenting GET for now
 
 See ProtocolServiceTestJSON.coffee for examples
-*/
-
+ */
 
 (function() {
   describe('Protocol CRUD testing', function() {
@@ -128,17 +128,20 @@ See ProtocolServiceTestJSON.coffee for examples
       describe('when protocol labels service called', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'GET',
               url: "api/protocolLabels",
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -159,17 +162,20 @@ See ProtocolServiceTestJSON.coffee for examples
       describe('when protocol code list service called', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'GET',
               url: "api/protocolCodes",
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -220,17 +226,20 @@ See ProtocolServiceTestJSON.coffee for examples
         describe("With matching case", function() {
           beforeEach(function() {
             return runs(function() {
-              var _this = this;
               return $.ajax({
                 type: 'GET',
                 url: "api/protocolCodes/filter/PK",
-                success: function(json) {
-                  return _this.serviceReturn = json;
-                },
-                error: function(err) {
-                  console.log('got ajax error');
-                  return _this.serviceReturn = null;
-                },
+                success: (function(_this) {
+                  return function(json) {
+                    return _this.serviceReturn = json;
+                  };
+                })(this),
+                error: (function(_this) {
+                  return function(err) {
+                    console.log('got ajax error');
+                    return _this.serviceReturn = null;
+                  };
+                })(this),
                 dataType: 'json'
               });
             });
@@ -245,17 +254,20 @@ See ProtocolServiceTestJSON.coffee for examples
         return describe("With non-matching case", function() {
           beforeEach(function() {
             return runs(function() {
-              var _this = this;
               return $.ajax({
                 type: 'GET',
                 url: "api/protocolCodes/filter/pk",
-                success: function(json) {
-                  return _this.serviceReturn = json;
-                },
-                error: function(err) {
-                  console.log('got ajax error');
-                  return _this.serviceReturn = null;
-                },
+                success: (function(_this) {
+                  return function(json) {
+                    return _this.serviceReturn = json;
+                  };
+                })(this),
+                error: (function(_this) {
+                  return function(err) {
+                    console.log('got ajax error');
+                    return _this.serviceReturn = null;
+                  };
+                })(this),
                 dataType: 'json'
               });
             });

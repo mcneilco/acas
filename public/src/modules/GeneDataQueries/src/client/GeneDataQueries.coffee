@@ -174,7 +174,8 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 		@$('.bv_termName').html @model.get('termName')
 		@filterOptions.each (expt) =>
 			code = expt.get('experimentCode')
-			@$('.bv_experiment').append '<option val="'+code+'">'+code+'</option>'
+			ename = expt.get('experimentName')
+			@$('.bv_experiment').append '<option value="'+code+'">'+ename+'</option>'
 		@setKindOptions()
 		@setOperatorOptions()
 
@@ -185,7 +186,8 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 		kinds = _.pluck currentExpt.get('valueKinds'), 'lsKind'
 		@$('.bv_kind').empty()
 		for kind in kinds
-			@$('.bv_kind').append '<option val="'+kind+'">'+kind+'</option>'
+			@$('.bv_kind').append '<option value="'+kind+'">'+kind+'</option>'
+		@setOperatorOptions()
 
 	setOperatorOptions: =>
 		switch @getSelectedValueType()
@@ -207,6 +209,7 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 
 	getSelectedExperiment: ->
 		exptCode = @$('.bv_experiment').val()
+		console.log exptCode
 		currentExpt = @filterOptions.filter (expt) ->
 			expt.get('experimentCode') == exptCode
 		currentExpt[0]
@@ -243,7 +246,6 @@ class window.ExperimentResultFilterTermListController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-		@addOne()
 
 		@
 

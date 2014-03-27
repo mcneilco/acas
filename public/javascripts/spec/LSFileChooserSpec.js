@@ -1,10 +1,10 @@
+
 /*
   This module is our MVC wrapper for the Blueimp jQuery fileupload() widget.
   Here are the docs: https://github.com/blueimp/jQuery-File-Upload/wiki/Options
   Much FM occurs in fileupload. This controller is designed to hide that and send events etc
   that match our general architecture
-*/
-
+ */
 
 (function() {
   describe('LS File Chooser Behavior Testing', function() {

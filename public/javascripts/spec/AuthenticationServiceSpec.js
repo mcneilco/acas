@@ -9,7 +9,6 @@
     describe('when auth service called', function() {
       beforeEach(function() {
         return runs(function() {
-          var _this = this;
           return $.ajax({
             type: 'POST',
             url: "api/userAuthentication",
@@ -17,13 +16,17 @@
               user: "bob",
               password: "secret"
             },
-            success: function(json) {
-              return _this.serviceReturn = json;
-            },
-            error: function(err) {
-              console.log('got ajax error');
-              return _this.serviceReturn = null;
-            },
+            success: (function(_this) {
+              return function(json) {
+                return _this.serviceReturn = json;
+              };
+            })(this),
+            error: (function(_this) {
+              return function(err) {
+                console.log('got ajax error');
+                return _this.serviceReturn = null;
+              };
+            })(this),
             dataType: 'json'
           });
         });
@@ -38,17 +41,20 @@
     describe('when user lookup called with valid username', function() {
       beforeEach(function() {
         return runs(function() {
-          var _this = this;
           return $.ajax({
             type: 'GET',
             url: "api/users/bob",
-            success: function(json) {
-              return _this.serviceReturn = json;
-            },
-            error: function(err) {
-              console.log('got ajax error');
-              return _this.serviceReturn = null;
-            },
+            success: (function(_this) {
+              return function(json) {
+                return _this.serviceReturn = json;
+              };
+            })(this),
+            error: (function(_this) {
+              return function(err) {
+                console.log('got ajax error');
+                return _this.serviceReturn = null;
+              };
+            })(this),
             dataType: 'json'
           });
         });
@@ -95,21 +101,26 @@
     return describe('when user lookup called with invalid username', function() {
       beforeEach(function() {
         return runs(function() {
-          var _this = this;
           return $.ajax({
             type: 'GET',
             url: "api/users/starksofwesteros",
-            success: function(json) {
-              return _this.serviceReturn = "got 200";
-            },
-            error: function(err) {
-              console.log('got ajax error');
-              return _this.serviceReturn = null;
-            },
+            success: (function(_this) {
+              return function(json) {
+                return _this.serviceReturn = "got 200";
+              };
+            })(this),
+            error: (function(_this) {
+              return function(err) {
+                console.log('got ajax error');
+                return _this.serviceReturn = null;
+              };
+            })(this),
             statusCode: {
-              204: function() {
-                return _this.serviceReturn = "got 204";
-              }
+              204: (function(_this) {
+                return function() {
+                  return _this.serviceReturn = "got 204";
+                };
+              })(this)
             },
             dataType: 'json'
           });

@@ -1,6 +1,5 @@
 (function() {
-  var _ref, _ref1,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -11,8 +10,7 @@
       this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
       this.existingExperiment = __bind(this.existingExperiment, this);
       this.newExperiment = __bind(this.newExperiment, this);
-      _ref = PrimaryScreenAppRouter.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return PrimaryScreenAppRouter.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryScreenAppRouter.prototype.routes = {
@@ -49,8 +47,7 @@
       this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
       this.newExperiment = __bind(this.newExperiment, this);
       this.render = __bind(this.render, this);
-      _ref1 = PrimaryScreenAppController.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      return PrimaryScreenAppController.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryScreenAppController.prototype.template = _.template($('#PrimaryScreenAppControllerView').html());
@@ -80,7 +77,6 @@
     };
 
     PrimaryScreenAppController.prototype.existingExperimentByCode = function(code) {
-      var _this = this;
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/codename/" + code,
@@ -88,27 +84,30 @@
         error: function(err) {
           return alert('Could not get experiment for code in this URL');
         },
-        success: function(json) {
-          return _this.existingExperiment(json.id);
-        }
+        success: (function(_this) {
+          return function(json) {
+            return _this.existingExperiment(json.id);
+          };
+        })(this)
       });
     };
 
     PrimaryScreenAppController.prototype.existingExperiment = function(expId) {
-      var exp,
-        _this = this;
+      var exp;
       exp = new PrimaryScreenExperiment({
         id: expId
       });
       return exp.fetch({
-        success: function() {
-          exp.fixCompositeClasses();
-          _this.primaryScreenExperimentController = new PrimaryScreenExperimentController({
-            model: exp,
-            el: $('.bv_primaryScreenExperimentController')
-          });
-          return _this.primaryScreenExperimentController.render();
-        }
+        success: (function(_this) {
+          return function() {
+            exp.fixCompositeClasses();
+            _this.primaryScreenExperimentController = new PrimaryScreenExperimentController({
+              model: exp,
+              el: $('.bv_primaryScreenExperimentController')
+            });
+            return _this.primaryScreenExperimentController.render();
+          };
+        })(this)
       });
     };
 

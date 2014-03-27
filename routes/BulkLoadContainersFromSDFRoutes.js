@@ -1,13 +1,13 @@
+
 /* To install this Module
 1) add to app.coffee
-  # BulkLoadContainersFromSDF routes
+   * BulkLoadContainersFromSDF routes
 	bulkLoadContainersFromSDFRoutes = require './public/src/modules/BulkLoadContainersFromSDF/src/server/routes/BulkLoadContainersFromSDFRoutes.js'
 	bulkLoadContainersFromSDFRoutes.setupRoutes(app)
 
 2) Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Load Containers From SDF", mainControllerClassName: "BulkLoadContainersFromSDFController"}
-*/
-
+ */
 
 (function() {
   exports.setupRoutes = function(app) {
