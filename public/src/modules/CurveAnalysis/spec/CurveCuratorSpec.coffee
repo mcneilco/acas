@@ -156,15 +156,18 @@ describe "Curve Curator Module testing", ->
 			@drpc = new DoseResponsePlotController
 				model: new Backbone.Model window.curveCuratorTestJSON.curveDetail.plotData
 				el: @fixture
+			console.log @drpc.model
 			@drpc.render()
 		describe "basic plumbing", ->
 			it "should have controller defined", ->
+				console.log @drpc.model
 				expect(DoseResponsePlotController).toBeDefined()
 			it "should load the template", ->
 				expect(@drpc.$('.bv_plotWindow').length).toEqual 1
 			it "should set the div id to a unique cid", ->
 				expect(@drpc.$('.bv_plotWindow').attr('id')).toEqual "bvID_plotWindow_" + @drpc.model.cid
-
+			it "should render the points", ->
+				#console.log @drpc.$('.bv_plotWindow')
 
 	describe "Curve Editor Controller tests", ->
 			beforeEach ->

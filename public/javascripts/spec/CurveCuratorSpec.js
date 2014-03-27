@@ -228,18 +228,21 @@
           model: new Backbone.Model(window.curveCuratorTestJSON.curveDetail.plotData),
           el: this.fixture
         });
+        console.log(this.drpc.model);
         return this.drpc.render();
       });
       return describe("basic plumbing", function() {
         it("should have controller defined", function() {
+          console.log(this.drpc.model);
           return expect(DoseResponsePlotController).toBeDefined();
         });
         it("should load the template", function() {
           return expect(this.drpc.$('.bv_plotWindow').length).toEqual(1);
         });
-        return it("should set the div id to a unique cid", function() {
+        it("should set the div id to a unique cid", function() {
           return expect(this.drpc.$('.bv_plotWindow').attr('id')).toEqual("bvID_plotWindow_" + this.drpc.model.cid);
         });
+        return it("should render the points", function() {});
       });
     });
     describe("Curve Editor Controller tests", function() {

@@ -259,6 +259,49 @@
 
   })(Backbone.View);
 
+  window.CurveEditorController = (function(_super) {
+    __extends(CurveEditorController, _super);
+
+    function CurveEditorController() {
+      this.render = __bind(this.render, this);
+      return CurveEditorController.__super__.constructor.apply(this, arguments);
+    }
+
+    CurveEditorController.prototype.template = _.template($("#CurveEditorView").html());
+
+    CurveEditorController.prototype.render = function() {
+      this.$el.empty();
+      this.$el.html(this.template());
+      if (this.model != null) {
+        this.drapc = new DoseResponseAnalysisParametersController({
+          model: this.model.get('fitSettings'),
+          el: this.$('.bv_analysisParameterForm')
+        });
+        this.drapc.render();
+        this.drpc = new DoseResponsePlotController({
+          model: new Backbone.Model(this.model.get('plotData')),
+          el: this.$('.bv_plotWindowWrapper')
+        });
+        this.drpc.render();
+        this.$('.bv_reportedValues').html(this.model.get('reportedValues'));
+        this.$('.bv_fitSummary').html(this.model.get('fitSummary'));
+        this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));
+        this.$('.bv_curveErrors').html(this.model.get('curveErrors'));
+        return this.$('.bv_category').html(this.model.get('category'));
+      } else {
+        return this.$el.html("No curve selected");
+      }
+    };
+
+    CurveEditorController.prototype.setModel = function(model) {
+      this.model = model;
+      return this.render();
+    };
+
+    return CurveEditorController;
+
+  })(Backbone.View);
+
   window.DoseResponsePlotController = (function(_super) {
     __extends(DoseResponsePlotController, _super);
 
@@ -341,7 +384,7 @@
         });
         y = brd.create("axis", [[plotWindow[0] * 0.98, 0], [plotWindow[0] * 0.98, 1]]);
         x.isDraggable = false;
-        return t = brd.create("ticks", [x, 1], {
+        t = brd.create("ticks", [x, 1], {
           drawLabels: true,
           drawZero: true,
           generateLabelValue: function(tick) {
@@ -350,80 +393,38 @@
           }
         });
       } else {
-        if (typeof window.curve !== "undefined") {
-          brd.removeObject(window.curve);
-        }
-        if (curve != null) {
-          Math.logArray = (function() {
-            return function(input_array, base) {
-              var i, output_array;
-              output_array = [];
-              if (input_array instanceof Array) {
-                i = 0;
-                while (i < input_array.length) {
-                  output_array.push(Math.log(input_array[i], base));
-                  i++;
-                }
-                return output_array;
-              } else {
-                return null;
+
+      }
+      if (typeof window.curve !== "undefined") {
+        brd.removeObject(window.curve);
+      }
+      if (curve != null) {
+        Math.logArray = (function() {
+          return function(input_array, base) {
+            var i, output_array;
+            output_array = [];
+            if (input_array instanceof Array) {
+              i = 0;
+              while (i < input_array.length) {
+                output_array.push(Math.log(input_array[i], base));
+                i++;
               }
-            };
-          })();
-          window.curve = brd.create("curve", [Math.logArray(curve.dose), curve.response], {
-            strokeColor: "black",
-            strokeWidth: 2
-          });
-        }
+              return output_array;
+            } else {
+              return null;
+            }
+          };
+        })();
+        window.curve = brd.create("curve", [Math.logArray(curve.dose), curve.response], {
+          strokeColor: "black",
+          strokeWidth: 2
+        });
       }
     };
 
     return DoseResponsePlotController;
 
   })(AbstractFormController);
-
-  window.CurveEditorController = (function(_super) {
-    __extends(CurveEditorController, _super);
-
-    function CurveEditorController() {
-      this.render = __bind(this.render, this);
-      return CurveEditorController.__super__.constructor.apply(this, arguments);
-    }
-
-    CurveEditorController.prototype.template = _.template($("#CurveEditorView").html());
-
-    CurveEditorController.prototype.render = function() {
-      this.$el.empty();
-      this.$el.html(this.template());
-      if (this.model != null) {
-        this.drapc = new DoseResponseAnalysisParametersController({
-          model: this.model.get('fitSettings'),
-          el: this.$('.bv_analysisParameterForm')
-        });
-        this.drapc.render();
-        this.drpc = new DoseResponsePlotController({
-          model: new Backbone.Model(this.model.get('plotData')),
-          el: this.$('.bv_plotWindowWrapper')
-        });
-        this.drpc.render();
-        this.$('.bv_reportedValues').html(this.model.get('reportedValues'));
-        this.$('.bv_fitSummary').html(this.model.get('fitSummary'));
-        this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));
-        this.$('.bv_curveErrors').html(this.model.get('curveErrors'));
-        return this.$('.bv_category').html(this.model.get('category'));
-      } else {
-        return this.$el.html("No curve selected");
-      }
-    };
-
-    CurveEditorController.prototype.setModel = function(model) {
-      this.model = model;
-      return this.render();
-    };
-
-    return CurveEditorController;
-
-  })(Backbone.View);
 
   window.CurveCuratorController = (function(_super) {
     __extends(CurveCuratorController, _super);
