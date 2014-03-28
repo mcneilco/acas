@@ -3,7 +3,8 @@
 }
 
 .GeneIDQueryAppController .chandaACAS {
-    margin-left: 10px;
+    margin-left: 1px;
+    padding-left: 9px;
 }
 
 .GeneIDQueryAppController .navbar-inverse .brand:hover {
@@ -238,6 +239,7 @@
 }
 
 .GeneIDQueryAppController .gidAdvancedSearchButtonsResultsView {
-    padding-top: 10px;
+    padding-top: 30px;
+    padding-bottom: 50px;
     padding-left: 958px;
 }
