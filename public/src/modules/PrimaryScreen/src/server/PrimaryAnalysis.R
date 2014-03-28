@@ -26,6 +26,9 @@
 # For Dose Response, there is a read plate name but no barcode...
 # What to do when two runs are done on the same barcode?
 # request = fromJSON('{\"fileToParse\":\"serverOnlyModules/blueimp-file-upload-node/public/files/SinglePointRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\"}\",\"primaryAnalysisExperimentId\":\"1034\",\"testMode\":\"true\"}')
+# Confirmation
+# file.copy("public/src/modules/PrimaryScreen/spec/ConfirmationRegression.zip", "serverOnlyModules/blueimp-file-upload-node/public/files/ConfirmationRegression.zip")
+# request = fromJSON('{\"fileToParse\":\"serverOnlyModules/blueimp-file-upload-node/public/files/ConfirmationRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"RD36882\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"DMSO\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"SUGAR\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\"}\",\"primaryAnalysisExperimentId\":\"1034\",\"testMode\":\"true\"}')
 # runPrimaryAnalysis(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/PrimaryAnalysisFiles.zip",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=255259))
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
@@ -213,7 +216,8 @@ createWellTable <- function(barcodeList, testMode) {
   barcodeQuery <- paste(barcodeList,collapse="','")
   
   if (testMode) {
-    wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContents.csv")
+    wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsConfirmation.csv")
+    #wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContents.csv")
 #     fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
 #     fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
 #     fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
@@ -1263,7 +1267,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 ### END FLIPR reading function
   
   resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, resultTable$concUnit, parameters$positiveControl, parameters$negativeControl, testMode)
-  
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformation)
   
