@@ -197,22 +197,25 @@ class window.DoseResponsePlotController extends AbstractFormController
 							x
 							y
 						],
-							name: ""
+							name: points.response_sv_id[ii]
 							fixed: true
 							size: 4
 							face: "cross"
 							strokecolor: "gray"
+							withLabel: false
 						)
 					else
 						p1 = brd.create("point", [
 							x
 							y
 						],
-							name: ""
+							name: points.response_sv_id[ii]
 							fixed: true
 							size: 4
 							face: "circle"
 							strokecolor: "blue"
+							withLabel: false
+
 						)
 					p1.idx = ii
 					p1.knockOutPoint = ->
@@ -220,15 +223,15 @@ class window.DoseResponsePlotController extends AbstractFormController
 							@setAttribute
 								strokecolor: "gray"
 								face: "cross"
-							@flag = true
-							points.flag[@idx] = true # set flag to true to flag it?
+							@flag = "user"
+							points.flag[@idx] = "user" # set flag to true to flag it?
 						else
 							@setAttribute
 								strokecolor: "blue"
 								face: "circle"
 
-							@flag = false
-							points.flag[@idx] = false # set flag to null to un-flag it?
+							@flag = "NA"
+							points.flag[@idx] = "NA" # set flag to null to un-flag it?
 						#$("input#selected").val JSON.stringify(points)
 						#$("input#selected").trigger "change"
 						return
@@ -288,8 +291,6 @@ class window.DoseResponsePlotController extends AbstractFormController
 				#LL4 <- function(x) drawMin + (drawMax - drawMin)/((1 + exp(-drawHill * (log(x/drawEC50))))^1)
 				#brd.create('functiongraph', [function(x){return Math.sin(x);},-Math.PI,2*Math.PI]);
 			else
-				#JXG.JSXGraph.freeBoard(brd);
-				#brd = JXG.JSXGraph.initBoard('jxgbox', {boundingbox: plotWindow, axis: false,  showCopyright: false});
 				brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
 
 			if curve?

@@ -343,19 +343,21 @@
           flag = points.flag[ii];
           if (flag !== "NA") {
             p1 = brd.create("point", [x, y], {
-              name: "",
+              name: points.response_sv_id[ii],
               fixed: true,
               size: 4,
               face: "cross",
-              strokecolor: "gray"
+              strokecolor: "gray",
+              withLabel: false
             });
           } else {
             p1 = brd.create("point", [x, y], {
-              name: "",
+              name: points.response_sv_id[ii],
               fixed: true,
               size: 4,
               face: "circle",
-              strokecolor: "blue"
+              strokecolor: "blue",
+              withLabel: false
             });
           }
           p1.idx = ii;
@@ -365,15 +367,15 @@
                 strokecolor: "gray",
                 face: "cross"
               });
-              this.flag = true;
-              points.flag[this.idx] = true;
+              this.flag = "user";
+              points.flag[this.idx] = "user";
             } else {
               this.setAttribute({
                 strokecolor: "blue",
                 face: "circle"
               });
-              this.flag = false;
-              points.flag[this.idx] = false;
+              this.flag = "NA";
+              points.flag[this.idx] = "NA";
             }
           };
           p1.xLabel = JXG.trunc(points.dose[ii], 4);
