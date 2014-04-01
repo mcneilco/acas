@@ -306,6 +306,7 @@
     __extends(DoseResponsePlotController, _super);
 
     function DoseResponsePlotController() {
+      this.handlePointsChanged = __bind(this.handlePointsChanged, this);
       this.render = __bind(this.render, this);
       return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
     }
@@ -318,15 +319,20 @@
       if (this.model != null) {
         this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
         this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
+        console.log(this.model);
+        this.model.on("change", this.handlePointsChanged);
         return this;
       } else {
-        this.$el.html("Plot data not loaded");
-        return this;
+        return this.$el.html("Plot data not loaded");
       }
     };
 
+    DoseResponsePlotController.prototype.handlePointsChanged = function() {
+      return console.log(this.model.get('points'));
+    };
+
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var brd, flag, ii, p1, t, x, y;
+      var brd, down, flag, getMouseCoords, ii, p1, t, x, y;
       if (typeof brd === "undefined") {
         brd = JXG.JSXGraph.initBoard(divID, {
           boundingbox: plotWindow,
@@ -361,22 +367,25 @@
             });
           }
           p1.idx = ii;
+          p1.model = this.model;
           p1.knockOutPoint = function() {
             if (points.flag[this.idx] === "NA") {
               this.setAttribute({
                 strokecolor: "gray",
                 face: "cross"
               });
-              this.flag = "user";
               points.flag[this.idx] = "user";
             } else {
               this.setAttribute({
                 strokecolor: "blue",
                 face: "circle"
               });
-              this.flag = "NA";
               points.flag[this.idx] = "NA";
             }
+            this.model.set({
+              points: points
+            });
+            this.model.trigger('change');
           };
           p1.xLabel = JXG.trunc(points.dose[ii], 4);
           p1.on("mouseup", p1.knockOutPoint, p1);
@@ -422,6 +431,35 @@
           strokeColor: "black",
           strokeWidth: 2
         });
+        getMouseCoords = function(e, i) {
+          var absPos, cPos, dx, dy;
+          cPos = brd.getCoordsTopLeftCorner(e, i);
+          absPos = JXG.getPosition(e, i);
+          dx = absPos[0] - cPos[0];
+          dy = absPos[1] - cPos[1];
+          return new JXG.Coords(JXG.COORDS_BY_SCREEN, [dx, dy], brd);
+        };
+        down = function(e) {
+          var A, canCreate, coords, el, i;
+          canCreate = true;
+          i = void 0;
+          coords = void 0;
+          el = void 0;
+          if (e[JXG.touchProperty]) {
+            i = 0;
+          }
+          coords = getMouseCoords(e, i);
+          for (el in brd.objects) {
+            if (JXG.isPoint(brd.objects[el]) && brd.objects[el].hasPoint(coords.scrCoords[1], coords.scrCoords[2])) {
+              canCreate = false;
+              break;
+            }
+          }
+          if (canCreate) {
+            A = brd.create("point", [coords.usrCoords[1], coords.usrCoords[2]]);
+          }
+        };
+        brd.on("down", down);
       }
     };
 

@@ -172,10 +172,14 @@ class window.DoseResponsePlotController extends AbstractFormController
 		if @model?
 			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
 			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
+			console.log @model
+			@model.on "change", @handlePointsChanged
 			@
 		else
 			@$el.html "Plot data not loaded"
-			@
+
+	handlePointsChanged: =>
+		console.log @model.get('points')
 
 	initJSXGraph: (points, curve, plotWindow, divID) ->
 		if typeof (brd) is "undefined"
@@ -218,22 +222,21 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 						)
 					p1.idx = ii
+					p1.model = @model
 					p1.knockOutPoint = ->
 						unless points.flag[@idx] != "NA"
 							@setAttribute
 								strokecolor: "gray"
 								face: "cross"
-							@flag = "user"
 							points.flag[@idx] = "user" # set flag to true to flag it?
 						else
 							@setAttribute
 								strokecolor: "blue"
 								face: "circle"
-
-							@flag = "NA"
 							points.flag[@idx] = "NA" # set flag to null to un-flag it?
-						#$("input#selected").val JSON.stringify(points)
-						#$("input#selected").trigger "change"
+						@model.set points: points
+						#TODO make this a real model that we don't have to trigger a change event on
+						@model.trigger 'change'
 						return
 
 					p1.xLabel = JXG.trunc(points.dose[ii], 4)
@@ -313,6 +316,39 @@ class window.DoseResponsePlotController extends AbstractFormController
 					strokeColor: "black"
 					strokeWidth: 2
 				)
+				getMouseCoords = (e, i) ->
+					cPos = brd.getCoordsTopLeftCorner(e, i)
+					absPos = JXG.getPosition(e, i)
+					dx = absPos[0] - cPos[0]
+					dy = absPos[1] - cPos[1]
+					new JXG.Coords(JXG.COORDS_BY_SCREEN, [
+						dx
+						dy
+					], brd)
+
+				down = (e) ->
+					canCreate = true
+					i = undefined
+					coords = undefined
+					el = undefined
+
+					# index of the finger that is used to extract the coordinates
+					i = 0  if e[JXG.touchProperty]
+					coords = getMouseCoords(e, i)
+					for el of brd.objects
+						if JXG.isPoint(brd.objects[el]) and brd.objects[el].hasPoint(coords.scrCoords[1], coords.scrCoords[2])
+							canCreate = false
+							break
+					if canCreate
+						A = brd.create "point", [
+							coords.usrCoords[1]
+							coords.usrCoords[2]
+						]
+
+					return
+
+				brd.on "down", down
+
 			return
 
 class window.CurveCuratorController extends Backbone.View
