@@ -5,7 +5,12 @@
 usage ()
 {
   echo 'Usage : Script -d <install_directory> -u <bitbucket_user> -p <bitbucket_password>'
-  echo '                -a <acas_branch> -c <custom_repo> -b <custom_branch> -m <deploy_mode>'
+  echo '                -a <acas_branch> -c <custom_repo> -b <custom_branch> -m <deploy_mode> -dev <dev>'
+  echo ''
+  echo '	-p <bitbucket_password>		optional - password, otherwise it will prompt you'
+  echo '	-m <deploy_mode>		optional - acas will run with config-<deploy_mode>.properties and config_advanced-<deploy_mode>.properties files'
+  echo '	-dev <dev>			optionally clone "base" or "custom" instead of export'
+  echo ''
   exit
 }
 
@@ -31,6 +36,9 @@ case $1 in
                        ;;
         -m )           shift
                        DEPLOYMODE=$1
+                       ;;
+        -dev )         shift
+                       DEV=$1
                        ;;
         * )            QUERY=$1
     esac
@@ -65,7 +73,12 @@ then
     	CUSTOM_BRANCH="master"
 	fi
 fi
-
+if [ "$DEV" != "base" ] && [ "$DEV" != "custom" ] && [ "$DEV" != "" ]
+then
+	echo "DEV: $DEV"
+    usage
+    
+fi
 #Main
 
 echo "Installing acas_branch $ACAS_BRANCH to $INSTALL_DIRECTORY"
@@ -93,14 +106,27 @@ date=$(date +%Y-%m-%d-%H-%M-%S)
 mkdir acas-$date
 ln -s acas-$date acas
 cd acas-$date
-curl --digest --user $BITBUCKET_USER:$BITBUCKET_PASSWORD https://bitbucket.org/mcneilco/acas/get/$ACAS_BRANCH.tar.gz | tar xvz --strip-components=1 
+
+if [ "$DEV" == "base" ] 
+then
+	git clone https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mcneilco/acas.git .
+	git checkout $ACAS_BRANCH
+else
+	curl --digest --user $BITBUCKET_USER:$BITBUCKET_PASSWORD https://bitbucket.org/mcneilco/acas/get/$ACAS_BRANCH.tar.gz | tar xvz --strip-components=1 
+fi
 ln -s acas/serverOnlyModules/blueimp-file-upload-node/ ../blueimp
 if [ "$CUSTOM_REPO" != "" ]
 then
 	echo "Installing acas_custom $CUSTOM_REPO on branch $CUSTOM_BRANCH"
     mkdir acas_custom
 	cd acas_custom
-	curl --digest --user $BITBUCKET_USER:$BITBUCKET_PASSWORD https://bitbucket.org/mcneilco/$CUSTOM_REPO/get/$CUSTOM_BRANCH.tar.gz | tar xvz --strip-components=1 
+	if [ "$DEV" == "custom" ] 
+	then
+		git clone https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mcneilco/$CUSTOM_REPO.git .
+		git checkout $CUSTOM_BRANCH
+	else
+		curl --digest --user $BITBUCKET_USER:$BITBUCKET_PASSWORD https://bitbucket.org/mcneilco/$CUSTOM_REPO/get/$CUSTOM_BRANCH.tar.gz | tar xvz --strip-components=1 
+	fi
 	cd ..
 else 
 	echo "Not installing acas_custom"
@@ -126,5 +152,4 @@ fi
 #export ACAS_HOME=$(pwd)/..
 #export R_LIBS=$ACAS_HOME/r_libs
 #R -e "library(racas);query('select * from api_protocol')"
-
 

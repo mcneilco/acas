@@ -172,23 +172,14 @@
           it("should hide ACAS inline badge at start", function() {
             return expect(this.gidqsc.$('.bv_gidACASBadgeTop')).toBeHidden();
           });
-          it("should not have the gidNavHelpButton pull-right class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeFalsy();
+          it("should have the gidNavAdvancedSearchButton start class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonStart')).toBeTruthy();
           });
-          it("should add the gidNavAdvancedSearchButton end class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeFalsy();
+          it("should not have the gidNavAdvancedSearchButton end class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonTop')).toBeFalsy();
           });
-          it("should have the gidNavWellBottom class at start", function() {
-            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeTruthy();
-          });
-          it("should not have the gidNavWellTop class at start", function() {
-            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeFalsy();
-          });
-          it("should have the toolbar fixed bottom class at start", function() {
-            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeTruthy();
-          });
-          return it("should not have the toolbar fixed top class at start", function() {
-            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeFalsy();
+          return it("should hide the bv_searchNavbar at start", function() {
+            return expect(this.gidqsc.$('.bv_searchNavbar')).toBeHidden();
           });
         });
         return describe("search return handling", function() {
@@ -204,7 +195,7 @@
             return expect(this.gidqsc.$('.bv_resultsView')).toBeVisible();
           });
           it("should move search to top navbar", function() {
-            return expect(this.gidqsc.$('.bv_toolbar .bv_searchForm').length).toEqual(1);
+            return expect(this.gidqsc.$('.bv_searchNavbar .bv_searchForm').length).toEqual(1);
           });
           it("should hide gidSearchStart", function() {
             return expect(this.gidqsc.$('.bv_gidSearchStart')).toBeHidden();
@@ -215,26 +206,14 @@
           it("should show ACAS inline badge", function() {
             return expect(this.gidqsc.$('.bv_gidACASBadgeTop')).toBeVisible();
           });
-          it("should remove the gidNavAdvancedSearchButton start class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeFalsy();
+          it("should not have the gidNavAdvancedSearchButton start class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonStart')).toBeFalsy();
           });
-          it("should add the gidNavHelpButton pull-right class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeTruthy();
+          it("should have the gidNavAdvancedSearchButton end class", function() {
+            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonTop')).toBeTruthy();
           });
-          it("should add the gidNavAdvancedSearchButton end class", function() {
-            return expect(this.gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeTruthy();
-          });
-          it("should remove the gidNavWellBottom class", function() {
-            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeFalsy();
-          });
-          it("should add the gidNavWellTop class", function() {
-            return expect(this.gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeTruthy();
-          });
-          it("should remove the toolbar fixed bottom class", function() {
-            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeFalsy();
-          });
-          return it("should add the toolbar fixed top class", function() {
-            return expect(this.gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeTruthy();
+          return it("should show the bv_searchNavbar", function() {
+            return expect(this.gidqsc.$('.bv_searchNavbar')).toBeVisible();
           });
         });
       });
@@ -357,7 +336,8 @@
               });
               return it("should show experiment options", function() {
                 expect(this.erftc.$('.bv_experiment option').length).toEqual(3);
-                return expect(this.erftc.$('.bv_experiment option:eq(0)').val()).toEqual("EXPT-00000396");
+                expect(this.erftc.$('.bv_experiment option:eq(0)').val()).toEqual("EXPT-00000396");
+                return expect(this.erftc.$('.bv_experiment option:eq(0)').html()).toEqual("Experiment Name 1");
               });
             });
             describe("show attribute list based on experiment picked", function() {
@@ -391,13 +371,19 @@
                 expect(this.erftc.$('.bv_operator option').length).toEqual(2);
                 return expect(this.erftc.$('.bv_operator option:eq(0)').val()).toEqual("equals");
               });
-              return it("should show correct choice for first experiment and bool type", function() {
+              it("should show correct choice for first experiment and bool type", function() {
                 this.erftc.$('.bv_experiment').val("EXPT-00000396");
                 this.erftc.$('.bv_experiment').change();
                 this.erftc.$('.bv_kind').val("hit");
                 this.erftc.$('.bv_kind').change();
                 expect(this.erftc.$('.bv_operator option').length).toEqual(2);
                 return expect(this.erftc.$('.bv_operator option:eq(0)').val()).toEqual("true");
+              });
+              return it("should show correct operator options on first load", function() {
+                this.erftc.$('.bv_experiment').val("EXPT-00000397");
+                this.erftc.$('.bv_experiment').change();
+                expect(this.erftc.$('.bv_operator option').length).toEqual(2);
+                return expect(this.erftc.$('.bv_operator option:eq(0)').val()).toEqual("equals");
               });
             });
             describe("show or hide filterValue based on attribute type picked", function() {
@@ -455,10 +441,15 @@
               });
             });
             describe("rendering", function() {
-              it("should show one term with termName", function() {
+              it("should show no terms", function() {
+                return expect(this.erftlc.$('.bv_termName').length).toEqual(0);
+              });
+              it("should show one experiment term with term name", function() {
+                this.erftlc.$('.bv_addTerm').click();
                 return expect(this.erftlc.$('.bv_termName').html()).toEqual("Q1");
               });
               return it("should show one experiment term with experiment options", function() {
+                this.erftlc.$('.bv_addTerm').click();
                 expect(this.erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual(1);
                 expect(this.erftlc.$('.bv_filterTerms .bv_experiment option').length).toEqual(3);
                 return expect(this.erftlc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual("EXPT-00000396");
@@ -467,14 +458,17 @@
             describe("adding and removing", function() {
               it("should have two experiment terms when add is clicked", function() {
                 this.erftlc.$('.bv_addTerm').click();
+                this.erftlc.$('.bv_addTerm').click();
                 expect(this.erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual(2);
                 return expect(this.erftlc.collection.length).toEqual(2);
               });
               it("should show 2nd term with incremented termName", function() {
                 this.erftlc.$('.bv_addTerm').click();
+                this.erftlc.$('.bv_addTerm').click();
                 return expect(this.erftlc.$('.bv_termName:eq(1)').html()).toEqual("Q2");
               });
               return it("should one experiment terms when remove is clicked", function() {
+                this.erftlc.$('.bv_addTerm').click();
                 this.erftlc.$('.bv_addTerm').click();
                 expect(this.erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual(2);
                 this.erftlc.$('.bv_delete:eq(0)').click();
@@ -485,6 +479,7 @@
             return describe("update collection", function() {
               return it("should update the collection wehn requested", function() {
                 var tmodel;
+                this.erftlc.$('.bv_addTerm').click();
                 this.erftlc.$('.bv_addTerm').click();
                 this.erftlc.$('.bv_experiment:eq(1)').val("EXPT-00000396");
                 this.erftlc.$('.bv_experiment:eq(1)').change();
@@ -524,6 +519,7 @@
             });
             describe("rendering", function() {
               return it("should show an experiment term list with experiment options", function() {
+                this.erfc.$('.bv_addTerm').click();
                 return expect(this.erfc.$('.bv_filterTerms .bv_experiment').length).toEqual(1);
               });
             });
@@ -547,6 +543,7 @@
             return describe("get filter params", function() {
               return it("should update the collection wehn requested", function() {
                 var attrs;
+                this.erfc.$('.bv_addTerm').click();
                 this.erfc.$('.bv_addTerm').click();
                 this.erfc.$('.bv_experiment:eq(1)').val("EXPT-00000396");
                 this.erfc.$('.bv_experiment:eq(1)').change();
@@ -645,6 +642,7 @@
                   describe("filter view display", function() {
                     return it("should show one experiment term with experiment options", function() {
                       return runs(function() {
+                        this.aerqc.$('.bv_addTerm').click();
                         expect(this.aerqc.$('.bv_filterTerms .bv_experiment').length).toEqual(1);
                         expect(this.aerqc.$('.bv_filterTerms .bv_experiment option').length).toEqual(3);
                         return expect(this.aerqc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual("EXPT-00000396");
@@ -671,7 +669,7 @@
                           };
                         })(this), 500);
                       });
-                      describe("show results", function() {
+                      return describe("show results", function() {
                         it("should setup DOM in prep to load datatable module", function() {
                           return runs(function() {
                             return expect(this.aerqc.$('thead tr').length).toEqual(2);
@@ -680,18 +678,6 @@
                         return it("should render the rest of the table", function() {
                           return runs(function() {
                             return expect(this.aerqc.$('tbody tr').length).toEqual(4);
-                          });
-                        });
-                      });
-                      return describe("next button behavior", function() {
-                        return it("should request next button to show New Query", function() {
-                          waitsFor((function(_this) {
-                            return function() {
-                              return _this.requestNextToNewQuery;
-                            };
-                          })(this), 100);
-                          return runs(function() {
-                            return expect(this.requestNextToNewQuery).toBeTruthy();
                           });
                         });
                       });
@@ -742,19 +728,26 @@
           it('should load a basic query controller', function() {
             return expect(this.gidqac.$('.bv_inputView').length).toEqual(1);
           });
-          return it('should hide advanced query view', function() {
+          it('should hide advanced query view', function() {
             return expect(this.gidqac.$('.bv_advancedQueryContainer')).toBeHidden();
+          });
+          return it("should hide advanced query navbar during basic mode", function() {
+            return expect(this.gidqac.$('.bv_advancedQueryNavbar')).toBeHidden();
           });
         });
         describe("Launch advanced mode when requested", function() {
+          beforeEach(function() {
+            return this.gidqac.$('.bv_gidNavAdvancedSearchButton').click();
+          });
           it('should load advanced query controller', function() {
-            this.gidqac.$('.bv_gidNavAdvancedSearchButton').click();
             expect(this.gidqac.$('.bv_getCodesView').length).toEqual(1);
             return expect(this.gidqac.$('.bv_advancedQueryContainer')).toBeVisible();
           });
-          return it('should hide basic query controller', function() {
-            this.gidqac.$('.bv_gidNavAdvancedSearchButton').click();
+          it('should hide basic query controller', function() {
             return expect(this.gidqac.$('.bv_basicQueryView')).toBeHidden();
+          });
+          return it("should show advanced query navbar during advanced mode", function() {
+            return expect(this.gidqac.$('.bv_advancedQueryNavbar')).toBeVisible();
           });
         });
         return describe("Rre-launch basic mode on cancel", function() {

@@ -37,6 +37,7 @@ running() {
 }
  
 start_server() {
+	cd `dirname ${APP}`
 	startCommand="forever start --append -l $logname -o $logout -e $logerr ${APP} 2>&1 >/dev/null"
 	if [ $(whoami) != $ACAS_USER ]; then
 		startCommand="su - $ACAS_USER $suAdd -c \"($startCommand)\""

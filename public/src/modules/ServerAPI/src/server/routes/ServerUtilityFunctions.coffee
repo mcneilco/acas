@@ -19,6 +19,11 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	rScriptCommand = config.all.server.rscript
+	if config.all.server.rscript?
+		rScriptCommand = config.all.server.rscript
+	else
+		rScriptCommand = "Rscript"
+
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(request.body), request.body.user
 	if preValidationFunction?

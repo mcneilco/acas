@@ -23,9 +23,8 @@ postData.list <- fromJSON(postData)
 batchCodeList <- list()
 if (!is.null(postData.list$queryParams$batchCodes)) {
 	geneData <- postData.list$queryParams$batchCodes
-	geneData <- gsub(";|\t|\n", ",", geneData)
-	geneData <- gsub(" ", "", geneData)
-	geneDataList <- strsplit(geneData, split=",")[[1]]
+	geneDataList <- strsplit(geneData, split="\\W")[[1]]
+	geneDataList <- geneDataList[geneDataList!=""]
 
 	if (length(geneDataList) > 0) {
 		requestList <- list()
@@ -51,10 +50,15 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
 	}
 }
 
-postData.list$batchCodeList <- batchCodeList
 searchParams <- list()
+if (length(postData.list$queryParams$experimentCodeList) > 1){
+	searchParams$experimentCodeList <- postData.list$queryParams$experimentCodeList
+
+} else {
+	searchParams$experimentCodeList <- list()
+	searchParams$experimentCodeList[1] <- postData.list$queryParams$experimentCodeList
+}
 searchParams$batchCodeList <- batchCodeList
-searchParams$experimentCodeList <- postData.list$queryParams$experimentCodeList
 searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
 searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
 searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter

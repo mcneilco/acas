@@ -12,6 +12,7 @@ class window.GeneIDQueryInputController extends Backbone.View
 		$(@el).html @template()
 		@$('.bv_search').attr('disabled','disabled')
 		@$('.bv_gidACASBadgeTop').hide()
+		@$('.bv_searchNavbar').hide()
 
 		@
 
@@ -91,17 +92,13 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			el: $('.bv_resultsView')
 		@resultController.render()
 		$('.bv_searchForm')
-			.appendTo('.bv_toolbar')
+			.appendTo('.bv_searchNavbar')
 		@$('.bv_gidSearchStart').hide()
 		@$('.bv_gidACASBadge').hide()
 		@$('.bv_gidACASBadgeTop').show()
-		@$('.bv_gidNavAdvancedSearchButton').removeClass 'gidNavAdvancedSearchButtonBottom'
-		@$('.bv_gidNavHelpButton').addClass 'pull-right'
-		@$('.bv_gidNavAdvancedSearchButton').addClass 'gidNavAdvancedSearchButtonTop'
-		@$('.bv_toolbar').removeClass 'gidNavWellBottom'
-		@$('.bv_toolbar').addClass 'gidNavWellTop'
-		@$('.bv_group_toolbar').removeClass 'navbar-fixed-bottom'
-		@$('.bv_group_toolbar').addClass 'navbar-fixed-top'
+		@$('.bv_gidNavAdvancedSearchButton').removeClass 'gidAdvancedNavSearchButtonStart'
+		@$('.bv_gidNavAdvancedSearchButton').addClass 'gidAdvancedNavSearchButtonTop'
+		@$('.bv_searchNavbar').show()
 
 		@setShowResultsMode()
 
@@ -177,7 +174,8 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 		@$('.bv_termName').html @model.get('termName')
 		@filterOptions.each (expt) =>
 			code = expt.get('experimentCode')
-			@$('.bv_experiment').append '<option val="'+code+'">'+code+'</option>'
+			ename = expt.get('experimentName')
+			@$('.bv_experiment').append '<option value="'+code+'">'+ename+'</option>'
 		@setKindOptions()
 		@setOperatorOptions()
 
@@ -188,7 +186,8 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 		kinds = _.pluck currentExpt.get('valueKinds'), 'lsKind'
 		@$('.bv_kind').empty()
 		for kind in kinds
-			@$('.bv_kind').append '<option val="'+kind+'">'+kind+'</option>'
+			@$('.bv_kind').append '<option value="'+kind+'">'+kind+'</option>'
+		@setOperatorOptions()
 
 	setOperatorOptions: =>
 		switch @getSelectedValueType()
@@ -210,6 +209,7 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 
 	getSelectedExperiment: ->
 		exptCode = @$('.bv_experiment').val()
+		console.log exptCode
 		currentExpt = @filterOptions.filter (expt) ->
 			expt.get('experimentCode') == exptCode
 		currentExpt[0]
@@ -246,7 +246,6 @@ class window.ExperimentResultFilterTermListController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-		@addOne()
 
 		@
 
@@ -355,6 +354,8 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			@nextStep = 'fromExptTreeToFilters'
 		else
 			@$('.bv_noExperimentsFound').show()
+			@trigger 'changeNextToNewQuery'
+			@nextStep = 'gotoRestart'
 
 	fromExptTreeToFilters: ->
 		@experimentList = @etc.getSelectedExperiments()
@@ -404,7 +405,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@$('.bv_getFiltersView').hide()
 		@$('.bv_advResultsView').show()
 		@nextStep = 'gotoRestart'
-		@trigger 'requestNextChangeToNewQuery'
+		@trigger 'requestShowResultsMode'
 
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
@@ -415,6 +416,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
+		$(@el).addClass 'GeneIDQueryAppController'
 		@startBasicQueryWizard()
 
 	startBasicQueryWizard: =>
@@ -422,6 +424,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 			el: @$('.bv_basicQueryView')
 		@aerqc.render()
 		@$('.bv_advancedQueryContainer').hide()
+		@$('.bv_advancedQueryNavbar').hide()
 		@$('.bv_basicQueryView').show()
 		@aerqc.on 'requestAdvancedMode', =>
 			@startAdvanceedQueryWizard()
@@ -429,19 +432,31 @@ class window.GeneIDQueryAppController extends Backbone.View
 	startAdvanceedQueryWizard: =>
 		@$('.bv_next').html "Next"
 		@$('.bv_next').removeAttr 'disabled'
+		@$('.bv_advancedQueryContainer').addClass 'gidAdvancedQueryContainerPadding'
+		@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtons'
+		@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtonsResultsView'
+		@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtonsNewQuery'
 		@aerqc = new AdvancedExperimentResultsQueryController
 			el: @$('.bv_advancedQueryView')
 		@aerqc.on 'enableNext', =>
 			@$('.bv_next').removeAttr 'disabled'
 		@aerqc.on 'disableNext', =>
 			@$('.bv_next').attr 'disabled', 'disabled'
-		@aerqc.on 'requestNextChangeToNewQuery', =>
+		@aerqc.on 'requestShowResultsMode', =>
 			@$('.bv_next').html "New Query"
+			@$('.bv_advancedQueryContainer').removeClass 'gidAdvancedQueryContainerPadding'
+			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'
+			@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtonsResultsView'
 		@aerqc.on 'requestRestartAdvancedQuery', =>
 			@startAdvanceedQueryWizard()
+		@aerqc.on 'changeNextToNewQuery', =>
+			@$('.bv_next').html "New Query"
+			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'
+			@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtonsNewQuery'
 		@aerqc.render()
 		@$('.bv_basicQueryView').hide()
 		@$('.bv_advancedQueryContainer').show()
+		@$('.bv_advancedQueryNavbar').show()
 
 	handleNextClicked: =>
 		if @aerqc?

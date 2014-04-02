@@ -29,6 +29,7 @@
       $(this.el).html(this.template());
       this.$('.bv_search').attr('disabled', 'disabled');
       this.$('.bv_gidACASBadgeTop').hide();
+      this.$('.bv_searchNavbar').hide();
       return this;
     };
 
@@ -159,17 +160,13 @@
         el: $('.bv_resultsView')
       });
       this.resultController.render();
-      $('.bv_searchForm').appendTo('.bv_toolbar');
+      $('.bv_searchForm').appendTo('.bv_searchNavbar');
       this.$('.bv_gidSearchStart').hide();
       this.$('.bv_gidACASBadge').hide();
       this.$('.bv_gidACASBadgeTop').show();
-      this.$('.bv_gidNavAdvancedSearchButton').removeClass('gidNavAdvancedSearchButtonBottom');
-      this.$('.bv_gidNavHelpButton').addClass('pull-right');
-      this.$('.bv_gidNavAdvancedSearchButton').addClass('gidNavAdvancedSearchButtonTop');
-      this.$('.bv_toolbar').removeClass('gidNavWellBottom');
-      this.$('.bv_toolbar').addClass('gidNavWellTop');
-      this.$('.bv_group_toolbar').removeClass('navbar-fixed-bottom');
-      this.$('.bv_group_toolbar').addClass('navbar-fixed-top');
+      this.$('.bv_gidNavAdvancedSearchButton').removeClass('gidAdvancedNavSearchButtonStart');
+      this.$('.bv_gidNavAdvancedSearchButton').addClass('gidAdvancedNavSearchButtonTop');
+      this.$('.bv_searchNavbar').show();
       return this.setShowResultsMode();
     };
 
@@ -293,9 +290,10 @@
       this.$('.bv_termName').html(this.model.get('termName'));
       this.filterOptions.each((function(_this) {
         return function(expt) {
-          var code;
+          var code, ename;
           code = expt.get('experimentCode');
-          return _this.$('.bv_experiment').append('<option val="' + code + '">' + code + '</option>');
+          ename = expt.get('experimentName');
+          return _this.$('.bv_experiment').append('<option value="' + code + '">' + ename + '</option>');
         };
       })(this));
       this.setKindOptions();
@@ -304,16 +302,15 @@
     };
 
     ExperimentResultFilterTermController.prototype.setKindOptions = function() {
-      var currentExpt, kind, kinds, _i, _len, _results;
+      var currentExpt, kind, kinds, _i, _len;
       currentExpt = this.getSelectedExperiment();
       kinds = _.pluck(currentExpt.get('valueKinds'), 'lsKind');
       this.$('.bv_kind').empty();
-      _results = [];
       for (_i = 0, _len = kinds.length; _i < _len; _i++) {
         kind = kinds[_i];
-        _results.push(this.$('.bv_kind').append('<option val="' + kind + '">' + kind + '</option>'));
+        this.$('.bv_kind').append('<option value="' + kind + '">' + kind + '</option>');
       }
-      return _results;
+      return this.setOperatorOptions();
     };
 
     ExperimentResultFilterTermController.prototype.setOperatorOptions = function() {
@@ -339,6 +336,7 @@
     ExperimentResultFilterTermController.prototype.getSelectedExperiment = function() {
       var currentExpt, exptCode;
       exptCode = this.$('.bv_experiment').val();
+      console.log(exptCode);
       currentExpt = this.filterOptions.filter(function(expt) {
         return expt.get('experimentCode') === exptCode;
       });
@@ -398,7 +396,6 @@
     ExperimentResultFilterTermListController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      this.addOne();
       return this;
     };
 
@@ -562,7 +559,9 @@
         this.$('.bv_getExperimentsView').show();
         return this.nextStep = 'fromExptTreeToFilters';
       } else {
-        return this.$('.bv_noExperimentsFound').show();
+        this.$('.bv_noExperimentsFound').show();
+        this.trigger('changeNextToNewQuery');
+        return this.nextStep = 'gotoRestart';
       }
     };
 
@@ -631,7 +630,7 @@
       this.$('.bv_getFiltersView').hide();
       this.$('.bv_advResultsView').show();
       this.nextStep = 'gotoRestart';
-      return this.trigger('requestNextChangeToNewQuery');
+      return this.trigger('requestShowResultsMode');
     };
 
     return AdvancedExperimentResultsQueryController;
@@ -659,6 +658,7 @@
     GeneIDQueryAppController.prototype.initialize = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
+      $(this.el).addClass('GeneIDQueryAppController');
       return this.startBasicQueryWizard();
     };
 
@@ -668,6 +668,7 @@
       });
       this.aerqc.render();
       this.$('.bv_advancedQueryContainer').hide();
+      this.$('.bv_advancedQueryNavbar').hide();
       this.$('.bv_basicQueryView').show();
       return this.aerqc.on('requestAdvancedMode', (function(_this) {
         return function() {
@@ -679,6 +680,10 @@
     GeneIDQueryAppController.prototype.startAdvanceedQueryWizard = function() {
       this.$('.bv_next').html("Next");
       this.$('.bv_next').removeAttr('disabled');
+      this.$('.bv_advancedQueryContainer').addClass('gidAdvancedQueryContainerPadding');
+      this.$('.bv_controlButtonContainer').addClass('gidAdvancedSearchButtons');
+      this.$('.bv_controlButtonContainer').removeClass('gidAdvancedSearchButtonsResultsView');
+      this.$('.bv_controlButtonContainer').removeClass('gidAdvancedSearchButtonsNewQuery');
       this.aerqc = new AdvancedExperimentResultsQueryController({
         el: this.$('.bv_advancedQueryView')
       });
@@ -692,9 +697,12 @@
           return _this.$('.bv_next').attr('disabled', 'disabled');
         };
       })(this));
-      this.aerqc.on('requestNextChangeToNewQuery', (function(_this) {
+      this.aerqc.on('requestShowResultsMode', (function(_this) {
         return function() {
-          return _this.$('.bv_next').html("New Query");
+          _this.$('.bv_next').html("New Query");
+          _this.$('.bv_advancedQueryContainer').removeClass('gidAdvancedQueryContainerPadding');
+          _this.$('.bv_controlButtonContainer').removeClass('gidAdvancedSearchButtons');
+          return _this.$('.bv_controlButtonContainer').addClass('gidAdvancedSearchButtonsResultsView');
         };
       })(this));
       this.aerqc.on('requestRestartAdvancedQuery', (function(_this) {
@@ -702,9 +710,17 @@
           return _this.startAdvanceedQueryWizard();
         };
       })(this));
+      this.aerqc.on('changeNextToNewQuery', (function(_this) {
+        return function() {
+          _this.$('.bv_next').html("New Query");
+          _this.$('.bv_controlButtonContainer').removeClass('gidAdvancedSearchButtons');
+          return _this.$('.bv_controlButtonContainer').addClass('gidAdvancedSearchButtonsNewQuery');
+        };
+      })(this));
       this.aerqc.render();
       this.$('.bv_basicQueryView').hide();
-      return this.$('.bv_advancedQueryContainer').show();
+      this.$('.bv_advancedQueryContainer').show();
+      return this.$('.bv_advancedQueryNavbar').show();
     };
 
     GeneIDQueryAppController.prototype.handleNextClicked = function() {

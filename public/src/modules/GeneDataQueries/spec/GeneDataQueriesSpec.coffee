@@ -111,20 +111,13 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqsc.$('.bv_gidACASBadge')).toBeVisible()
 				it "should hide ACAS inline badge at start", ->
 					expect(@gidqsc.$('.bv_gidACASBadgeTop')).toBeHidden()
-#				it "should have the gidNavAdvancedSearchButton start class", ->
-#					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeTruthy()
-				it "should not have the gidNavHelpButton pull-right class", ->
-					expect(@gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeFalsy()
-				it "should add the gidNavAdvancedSearchButton end class", ->
-					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeFalsy()
-				it "should have the gidNavWellBottom class at start", ->
-					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeTruthy()
-				it "should not have the gidNavWellTop class at start", ->
-					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeFalsy()
-				it "should have the toolbar fixed bottom class at start", ->
-					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeTruthy()
-				it "should not have the toolbar fixed top class at start", ->
-					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeFalsy()
+				it "should have the gidNavAdvancedSearchButton start class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonStart')).toBeTruthy()
+				it "should not have the gidNavAdvancedSearchButton end class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonTop')).toBeFalsy()
+				it "should hide the bv_searchNavbar at start", ->
+					expect(@gidqsc.$('.bv_searchNavbar')).toBeHidden()
+
 
 			describe "search return handling", ->
 				beforeEach ->
@@ -135,27 +128,20 @@ describe "Gene Data Queries Module Testing", ->
 				it "should show result view", ->
 					expect(@gidqsc.$('.bv_resultsView')).toBeVisible()
 				it "should move search to top navbar", ->
-					expect(@gidqsc.$('.bv_toolbar .bv_searchForm').length).toEqual 1
+					expect(@gidqsc.$('.bv_searchNavbar .bv_searchForm').length).toEqual 1
 				it "should hide gidSearchStart", ->
 					expect(@gidqsc.$('.bv_gidSearchStart')).toBeHidden()
 				it "should hide ACAS badge", ->
 					expect(@gidqsc.$('.bv_gidACASBadge')).toBeHidden()
 				it "should show ACAS inline badge", ->
 					expect(@gidqsc.$('.bv_gidACASBadgeTop')).toBeVisible()
-				it "should remove the gidNavAdvancedSearchButton start class", ->
-					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonBottom')).toBeFalsy()
-				it "should add the gidNavHelpButton pull-right class", ->
-					expect(@gidqsc.$('.bv_gidNavHelpButton').hasClass('pull-right')).toBeTruthy()
-				it "should add the gidNavAdvancedSearchButton end class", ->
-					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidNavAdvancedSearchButtonTop')).toBeTruthy()
-				it "should remove the gidNavWellBottom class", ->
-					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellBottom')).toBeFalsy()
-				it "should add the gidNavWellTop class", ->
-					expect(@gidqsc.$('.bv_toolbar').hasClass('gidNavWellTop')).toBeTruthy()
-				it "should remove the toolbar fixed bottom class", ->
-					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-bottom')).toBeFalsy()
-				it "should add the toolbar fixed top class", ->
-					expect(@gidqsc.$('.bv_group_toolbar').hasClass('navbar-fixed-top')).toBeTruthy()
+				it "should not have the gidNavAdvancedSearchButton start class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonStart')).toBeFalsy()
+				it "should have the gidNavAdvancedSearchButton end class", ->
+					expect(@gidqsc.$('.bv_gidNavAdvancedSearchButton').hasClass('gidAdvancedNavSearchButtonTop')).toBeTruthy()
+				it "should show the bv_searchNavbar", ->
+					expect(@gidqsc.$('.bv_searchNavbar')).toBeVisible()
+
 
 	################  Advanced-mode queries ################
 
@@ -243,6 +229,7 @@ describe "Gene Data Queries Module Testing", ->
 						it "should show experiment options", ->
 							expect(@erftc.$('.bv_experiment option').length).toEqual 3
 							expect(@erftc.$('.bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"
+							expect(@erftc.$('.bv_experiment option:eq(0)').html()).toEqual "Experiment Name 1"
 					describe "show attribute list based on experiment picked", ->
 						it "should show correct attributes for first experiment", ->
 							@erftc.$('.bv_experiment').val "EXPT-00000396"
@@ -276,6 +263,11 @@ describe "Gene Data Queries Module Testing", ->
 							@erftc.$('.bv_kind').change()
 							expect(@erftc.$('.bv_operator option').length).toEqual 2
 							expect(@erftc.$('.bv_operator option:eq(0)').val()).toEqual "true"
+						it "should show correct operator options on first load", ->
+							@erftc.$('.bv_experiment').val "EXPT-00000397"
+							@erftc.$('.bv_experiment').change()
+							expect(@erftc.$('.bv_operator option').length).toEqual 2
+							expect(@erftc.$('.bv_operator option:eq(0)').val()).toEqual "equals"
 					describe "show or hide filterValue based on attribute type picked", ->
 						it "should hide value field for first experiment and bool type", ->
 							@erftc.$('.bv_experiment').val "EXPT-00000396"
@@ -319,21 +311,28 @@ describe "Gene Data Queries Module Testing", ->
 						it 'should load a template', ->
 							expect(@erftlc.$('.bv_addTerm').length).toEqual 1
 					describe "rendering", ->
-						it "should show one term with termName", ->
+						it "should show no terms", ->
+							expect(@erftlc.$('.bv_termName').length).toEqual 0
+						it "should show one experiment term with term name", ->
+							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_termName').html()).toEqual "Q1"
 						it "should show one experiment term with experiment options", ->
+							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment option').length).toEqual 3
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"
 					describe "adding and removing", ->
 						it "should have two experiment terms when add is clicked", ->
 							@erftlc.$('.bv_addTerm').click()
+							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 2
 							expect(@erftlc.collection.length).toEqual 2
 						it "should show 2nd term with incremented termName", ->
 							@erftlc.$('.bv_addTerm').click()
+							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_termName:eq(1)').html()).toEqual "Q2"
 						it "should one experiment terms when remove is clicked", ->
+							@erftlc.$('.bv_addTerm').click()
 							@erftlc.$('.bv_addTerm').click()
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 2
 							@erftlc.$('.bv_delete:eq(0)').click()
@@ -341,6 +340,7 @@ describe "Gene Data Queries Module Testing", ->
 							expect(@erftlc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
 					describe "update collection", ->
 						it "should update the collection wehn requested", ->
+							@erftlc.$('.bv_addTerm').click()
 							@erftlc.$('.bv_addTerm').click()
 							@erftlc.$('.bv_experiment:eq(1)').val "EXPT-00000396"
 							@erftlc.$('.bv_experiment:eq(1)').change()
@@ -371,6 +371,7 @@ describe "Gene Data Queries Module Testing", ->
 							expect(@erfc.$('.bv_advancedBooleanFilter').length).toEqual 1
 					describe "rendering", ->
 						it "should show an experiment term list with experiment options", ->
+							@erfc.$('.bv_addTerm').click()
 							expect(@erfc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
 					describe "boolean filter radio behavior", ->
 						it "should hide advanced filter input when radio set to and", ->
@@ -387,6 +388,7 @@ describe "Gene Data Queries Module Testing", ->
 							expect(@erfc.$('.bv_advancedBoolContainer')).toBeVisible()
 					describe "get filter params", ->
 						it "should update the collection wehn requested", ->
+							@erfc.$('.bv_addTerm').click()
 							@erfc.$('.bv_addTerm').click()
 							@erfc.$('.bv_experiment:eq(1)').val "EXPT-00000396"
 							@erfc.$('.bv_experiment:eq(1)').change()
@@ -461,6 +463,7 @@ describe "Gene Data Queries Module Testing", ->
 								describe "filter view display", ->
 									it "should show one experiment term with experiment options", ->
 										runs ->
+											@aerqc.$('.bv_addTerm').click()
 											expect(@aerqc.$('.bv_filterTerms .bv_experiment').length).toEqual 1
 											expect(@aerqc.$('.bv_filterTerms .bv_experiment option').length).toEqual 3
 											expect(@aerqc.$('.bv_filterTerms .bv_experiment option:eq(0)').val()).toEqual "EXPT-00000396"
@@ -483,13 +486,6 @@ describe "Gene Data Queries Module Testing", ->
 											it "should render the rest of the table", ->
 												runs ->
 													expect(@aerqc.$('tbody tr').length).toEqual 4
-										describe "next button behavior", ->
-											it "should request next button to show New Query", ->
-												waitsFor =>
-													@requestNextToNewQuery
-												, 100
-												runs ->
-													expect(@requestNextToNewQuery).toBeTruthy()
 
 				describe "when invalid codes entered and next pressed (no experiments returned)", ->
 					beforeEach ->
@@ -521,14 +517,18 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqac.$('.bv_inputView').length).toEqual 1
 				it 'should hide advanced query view', ->
 					expect(@gidqac.$('.bv_advancedQueryContainer')).toBeHidden()
+				it "should hide advanced query navbar during basic mode", ->
+					expect(@gidqac.$('.bv_advancedQueryNavbar')).toBeHidden()
 			describe "Launch advanced mode when requested", ->
-				it 'should load advanced query controller', ->
+				beforeEach ->
 					@gidqac.$('.bv_gidNavAdvancedSearchButton').click()
+				it 'should load advanced query controller', ->
 					expect(@gidqac.$('.bv_getCodesView').length).toEqual 1
 					expect(@gidqac.$('.bv_advancedQueryContainer')).toBeVisible()
 				it 'should hide basic query controller', ->
-					@gidqac.$('.bv_gidNavAdvancedSearchButton').click()
 					expect(@gidqac.$('.bv_basicQueryView')).toBeHidden()
+				it "should show advanced query navbar during advanced mode", ->
+					expect(@gidqac.$('.bv_advancedQueryNavbar')).toBeVisible()
 			describe "Rre-launch basic mode on cancel", ->
 				it 'should load basic query controller', ->
 					@gidqac.$('.bv_gidNavAdvancedSearchButton').click()

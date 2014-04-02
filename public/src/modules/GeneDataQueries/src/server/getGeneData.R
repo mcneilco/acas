@@ -25,9 +25,8 @@ postData.list <- fromJSON(postData)
 batchCodeList <- list()
 if (!is.null(postData.list$geneIDs)) {
 	geneData <- postData.list$geneIDs
-	geneData <- gsub(";|\t|\n", ",", geneData)
-	geneData <- gsub(" ", "", geneData)
-	geneDataList <- strsplit(geneData, split=",")[[1]]
+	geneDataList <- strsplit(geneData, split="\\W")[[1]]
+	geneDataList <- geneDataList[geneDataList!=""]
 
 	if (length(geneDataList) > 0) {
 		requestList <- list()

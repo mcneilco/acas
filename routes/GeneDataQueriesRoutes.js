@@ -73,7 +73,7 @@
   };
 
   exports.getExperimentListForGenes = function(req, resp) {
-    var geneDataQueriesTestJSON, requestError, responseObj, results, serverUtilityFunctions;
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     resp.writeHead(200, {
@@ -107,12 +107,32 @@
       }
       return resp.end(JSON.stringify(responseObj));
     } else {
-      return console.log("production function getExperimentListForGenes not implemented");
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "getGeneExperiments/";
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: req.body,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to query gene data');
+            console.log(error);
+            return console.log(resp);
+          }
+        };
+      })(this));
     }
   };
 
   exports.getExperimentSearchAttributes = function(req, resp) {
-    var geneDataQueriesTestJSON, requestError, responseObj, results, serverUtilityFunctions;
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     resp.writeHead(200, {
@@ -146,7 +166,27 @@
       }
       return resp.end(JSON.stringify(responseObj));
     } else {
-      return console.log("production function getExperimentListForGenes not implemented");
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "getExperimentFilters/";
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: req.body,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to query gene data');
+            console.log(error);
+            return console.log(resp);
+          }
+        };
+      })(this));
     }
   };
 
@@ -170,7 +210,7 @@
       };
     }
     return res.render('GeneIDQuery', {
-      title: "Gene ID Queery",
+      title: "Gene ID Query",
       scripts: scriptsToLoad,
       AppLaunchParams: {
         loginUserName: loginUserName,
@@ -218,7 +258,7 @@
       return resp.end(JSON.stringify(responseObj));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.rapache.fullpath + "getGeneData/";
+      baseurl = config.all.client.service.rapache.fullpath + "getFilteredGeneData/";
       request = require('request');
       return request({
         method: 'POST',
