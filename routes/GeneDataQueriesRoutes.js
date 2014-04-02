@@ -2,6 +2,9 @@
   exports.setupRoutes = function(app, loginRoutes) {
     var config;
     app.post('/api/geneDataQuery', exports.getExperimentDataForGenes);
+    app.post('/api/getGeneExperiments', exports.getExperimentListForGenes);
+    app.post('/api/getExperimentSearchAttributes', exports.getExperimentSearchAttributes);
+    app.post('/api/geneDataQueryAdvanced', exports.getExperimentDataForGenesAdvanced);
     config = require('../conf/compiled/conf.js');
     if (config.all.client.require.login) {
       return app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
@@ -21,7 +24,7 @@
       console.log("test mode: " + global.specRunnerTestmode);
       geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
       requestError = req.body.maxRowsToReturn < 0 ? true : false;
-      if (req.body.geneIDs[0].gid === "fiona") {
+      if (req.body.geneIDs === "fiona") {
         results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound;
       } else {
         results = geneDataQueriesTestJSON.geneIDQueryResults;
@@ -69,11 +72,129 @@
     }
   };
 
+  exports.getExperimentListForGenes = function(req, resp) {
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
+    req.connection.setTimeout(600000);
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    resp.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
+    if (global.specRunnerTestmode) {
+      console.log("test mode: " + global.specRunnerTestmode);
+      geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
+      requestError = req.body.maxRowsToReturn < 0 ? true : false;
+      if (req.body.geneIDs === "fiona") {
+        results = geneDataQueriesTestJSON.getGeneExperimentsNoResultsReturn;
+      } else {
+        results = geneDataQueriesTestJSON.getGeneExperimentsReturn;
+      }
+      responseObj = {
+        results: results,
+        hasError: requestError,
+        hasWarning: true,
+        errorMessages: [
+          {
+            errorLevel: "warning",
+            message: "some genes not found"
+          }
+        ]
+      };
+      if (requestError) {
+        responseObj.errorMessages.push({
+          errorLevel: "error",
+          message: "start offset outside allowed range, please speake to an administrator"
+        });
+      }
+      return resp.end(JSON.stringify(responseObj));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "getGeneExperiments/";
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: req.body,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to query gene data');
+            console.log(error);
+            return console.log(resp);
+          }
+        };
+      })(this));
+    }
+  };
+
+  exports.getExperimentSearchAttributes = function(req, resp) {
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
+    req.connection.setTimeout(600000);
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    resp.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
+    if (global.specRunnerTestmode) {
+      console.log("test mode: " + global.specRunnerTestmode);
+      geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
+      requestError = req.body.experimentCodes[0] === "error" ? true : false;
+      if (req.body.experimentCodes[0] === "fiona") {
+        results = geneDataQueriesTestJSON.experimentSearchOptionsNoMatches;
+      } else {
+        results = geneDataQueriesTestJSON.experimentSearchOptions;
+      }
+      responseObj = {
+        results: results,
+        hasError: requestError,
+        hasWarning: true,
+        errorMessages: [
+          {
+            errorLevel: "warning",
+            message: "some warning"
+          }
+        ]
+      };
+      if (requestError) {
+        responseObj.errorMessages.push({
+          errorLevel: "error",
+          message: "no experiment attributes found, please speake to an administrator"
+        });
+      }
+      return resp.end(JSON.stringify(responseObj));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "getExperimentFilters/";
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: req.body,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to query gene data');
+            console.log(error);
+            return console.log(resp);
+          }
+        };
+      })(this));
+    }
+  };
+
   exports.geneIDQueryIndex = function(req, res) {
     var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
     scriptPaths = require('./RequiredClientScripts.js');
     config = require('../conf/compiled/conf.js');
-    global.specRunnerTestmode = false;
+    global.specRunnerTestmode = global.stubsMode ? true : false;
     scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts);
     if (config.all.client.require.login) {
       loginUserName = req.user.username;
@@ -89,7 +210,7 @@
       };
     }
     return res.render('GeneIDQuery', {
-      title: "Gene ID Queery",
+      title: "Gene ID Query",
       scripts: scriptsToLoad,
       AppLaunchParams: {
         loginUserName: loginUserName,
@@ -99,6 +220,65 @@
         deployMode: global.deployMode
       }
     });
+  };
+
+  exports.getExperimentDataForGenesAdvanced = function(req, resp) {
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
+    req.connection.setTimeout(600000);
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    resp.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
+    if (global.specRunnerTestmode) {
+      console.log("test mode: " + global.specRunnerTestmode);
+      geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
+      requestError = req.body.maxRowsToReturn < 0 ? true : false;
+      if (req.body.queryParams.batchCodes === "fiona") {
+        results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound;
+      } else {
+        results = geneDataQueriesTestJSON.geneIDQueryResults;
+      }
+      responseObj = {
+        results: results,
+        hasError: requestError,
+        hasWarning: true,
+        errorMessages: [
+          {
+            errorLevel: "warning",
+            message: "some genes not found"
+          }
+        ]
+      };
+      if (requestError) {
+        responseObj.errorMessages.push({
+          errorLevel: "error",
+          message: "start offset outside allowed range, please speake to an administrator"
+        });
+      }
+      return resp.end(JSON.stringify(responseObj));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "getFilteredGeneData/";
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: req.body,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to query gene data');
+            console.log(error);
+            return console.log(resp);
+          }
+        };
+      })(this));
+    }
   };
 
 }).call(this);

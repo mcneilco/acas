@@ -16,7 +16,8 @@ exports.requiredScripts = [
 	'/src/lib/jqueryFileUpload/js/locale.js',
 	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
 	'/src/lib/dataTables/js/jquery.dataTables.js',
-	'/src/lib/jsxgraph/jsxgraphcore.js'
+	'/src/lib/jsxgraph/jsxgraphcore.js',
+	'/src/lib/jstree/jstree.min.js'
 ];
 
 exports.applicationScripts = [

@@ -63,6 +63,7 @@ AS
 
 CREATE OR REPLACE VIEW p_api_analysis_group_results AS 
 SELECT ag.id AS ag_id, 
+ag.code_name as ag_code_name,
 ag.experiment_id AS experiment_id, 
 agv2.code_value AS tested_lot, 
 agv3.numeric_value AS tested_conc, 
@@ -125,7 +126,10 @@ JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
 JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code' AND agv.ls_kind <> 'time'
 JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
 LEFT OUTER JOIN analysis_GROUP_value agv3 ON agv3.analysis_state_id = ags.id and agv3.ls_kind = 'tested concentration'
-LEFT OUTER JOIN analysis_GROUP_value agv4 ON agv4.analysis_state_id = ags.id and agv4.ls_kind = 'time';
+LEFT OUTER JOIN analysis_GROUP_value agv4 ON agv4.analysis_state_id = ags.id and agv4.ls_kind = 'time'
+WHERE ag.ignored = '0' and
+ags.ignored = '0' and
+agv.ignored = '0';
 
 CREATE OR REPLACE VIEW api_analysis_group_results AS 
 SELECT *
