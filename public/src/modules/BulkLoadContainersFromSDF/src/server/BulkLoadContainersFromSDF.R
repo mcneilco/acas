@@ -44,28 +44,37 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   library('plyr')
   library('iterators')
   
-  testMode <- TRUE
+  testMode <- FALSE
   
   # fileName <- "public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf"
   
-  if (!grepl("\\.sdf$",fileName)) {
-    stop("The input file must have extension .sdf")
+  if (!grepl("\\.sdf$|\\.csv$",fileName)) {
+    stop("The input file must have extension .sdf or .csv")
   }
   
   tryCatch({
-    moleculeList <- iload.molecules(fileName, type="sdf")
-    firstMolecule <- nextElem(moleculeList)
+    if (grepl("\\.sdf$",fileName)) {
+      moleculeList <- iload.molecules(fileName, type="sdf")
+      firstMolecule <- nextElem(moleculeList)
+    } else if (grepl("\\.csv$",fileName)) {
+      moleculeList <- read.csv(fileName, blank.lines.skip=TRUE)
+    }
   }, error = function(e) {
     stop(paste("Error in loading the file:",e))
   })
   
-  fileLines <- readLines(fileName)
-  compoundNumber <- sum(fileLines == "$$$$")
+  if (grepl("\\.sdf$",fileName)) {
+    fileLines <- readLines(fileName)
+    compoundNumber <- sum(fileLines == "$$$$")
+    availableProperties <- names(get.properties(firstMolecule))
+  } else if (grepl("\\.csv$",fileName)) {
+    fileLines <- read.csv(fileName, blank.lines.skip=TRUE)
+    compoundNumber <- nrow(fileLines)
+    availableProperties <- colnames(fileLines)
+  }
   
   requiredProperties <- c("ALIQUOT_PLATE_BARCODE","ALIQUOT_WELL_ID","SAMPLE_ID","ALIQUOT_SOLVENT","ALIQUOT_CONC","ALIQUOT_CONC_UNIT",
                           "ALIQUOT_VOLUME","ALIQUOT_VOLUME_UNIT","ALIQUOT_DATE")
-  
-  availableProperties <- names(get.properties(firstMolecule))
   
   differences <- setdiff(requiredProperties,availableProperties)
   
@@ -82,15 +91,19 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     ))
   
   if (!dryRun) {
-    propertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(firstMolecule, key=property)))
-    names(propertyTable) <- requiredProperties
-    while(hasNext(moleculeList)) {
-      mol <- nextElem(moleculeList)
-      newPropertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(mol, key=property)))
-      names(newPropertyTable) <- requiredProperties
-      propertyTable <- rbind.fill(propertyTable, newPropertyTable)
+    if (grepl("\\.sdf$",fileName)) {
+      propertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(firstMolecule, key=property)))
+      names(propertyTable) <- requiredProperties
+      while(hasNext(moleculeList)) {
+        mol <- nextElem(moleculeList)
+        newPropertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(mol, key=property)))
+        names(newPropertyTable) <- requiredProperties
+        propertyTable <- rbind.fill(propertyTable, newPropertyTable)
+      }
+    } else if (grepl("\\.csv$",fileName)) {
+      propertyTable <- as.data.frame(subset(fileLines, select=requiredProperties))
     }
-    
+      
     summaryInfo$info$"Number of wells loaded" <- nrow(propertyTable)
     
     sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
