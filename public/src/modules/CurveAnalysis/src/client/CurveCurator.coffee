@@ -166,6 +166,14 @@ class window.CurveEditorController extends Backbone.View
 
 class window.DoseResponsePlotController extends AbstractFormController
 	template: _.template($("#DoseResponsePlotView").html())
+	initialize: ->
+		@fixModel()
+	fixModel: =>
+		console.log @model.get 'points'
+		points = @model.get 'points'
+		points = _.extend 'dose', points.dose
+		console.log points
+
 	render: =>
 		@$el.empty()
 		@$el.html @template()
@@ -209,10 +217,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 							withLabel: false
 						)
 					else
-						p1 = brd.create("point", [
-							x
-							y
-						],
+						p1 = brd.create("point", [x,y],
 							name: points.response_sv_id[ii]
 							fixed: true
 							size: 4
@@ -222,7 +227,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 						)
 					p1.idx = ii
-					p1.model = @model
+					brd.model = @model
 					p1.knockOutPoint = ->
 						unless points.flag[@idx] != "NA"
 							@setAttribute
@@ -234,9 +239,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 								strokecolor: "blue"
 								face: "circle"
 							points.flag[@idx] = "NA" # set flag to null to un-flag it?
-						@model.set points: points
+						brd.model.set points: points
 						#TODO make this a real model that we don't have to trigger a change event on
-						@model.trigger 'change'
+						brd.model.trigger 'change'
 						return
 
 					p1.xLabel = JXG.trunc(points.dose[ii], 4)
@@ -248,10 +253,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 						return
 					ii++
 				x = brd.create("line", [
-					[
-						0
-						0
-					]
+					[0,0]
 					[
 						1
 						0
@@ -316,38 +318,64 @@ class window.DoseResponsePlotController extends AbstractFormController
 					strokeColor: "black"
 					strokeWidth: 2
 				)
-				getMouseCoords = (e, i) ->
-					cPos = brd.getCoordsTopLeftCorner(e, i)
-					absPos = JXG.getPosition(e, i)
+				getMouseCoords = (e) ->
+					cPos = brd.getCoordsTopLeftCorner(e)
+					absPos = JXG.getPosition(e)
 					dx = absPos[0] - cPos[0]
 					dy = absPos[1] - cPos[1]
 					new JXG.Coords(JXG.COORDS_BY_SCREEN, [
 						dx
 						dy
 					], brd)
+				createSelection = (e) ->
+					if !brd.elementsByName.selection?
+						coords = getMouseCoords(e)
+						a = brd.create 'point', [coords.usrCoords[1],coords.usrCoords[2]], {name:'selectionA', withLabel:false, visible:false, fixed:false}
+						b = brd.create 'point', [coords.usrCoords[1],coords.usrCoords[2]], {name:'selectionB', visible:false, fixed:true}
+						c = brd.create 'point', ["X(selectionA)",coords.usrCoords[2]], {name:'selectionC', visible:false}
+						d = brd.create 'point', [coords.usrCoords[1],"Y(selectionA)"], {name:'selectionD', visible:false}
+						selection = brd.create 'polygon', [b, c, a, d], {name: 'selection', hasInnerPoints: true}
+						selection.update = ->
+							if brd.elementsByName.selectionA.coords.usrCoords[2] < brd.elementsByName.selectionB.coords.usrCoords[2]
+								@setAttribute
+									fillcolor: 'red'
+							else
+								@setAttribute
+									fillcolor: '#00FF00'
+						selection.on 'update', selection.update, selection
+						#p1.on "mouseup", brd.removeObject(brd.elementsByName.selection)
+						brd.mouseUp = ->
+							brd.removeObject(brd.elementsByName.selection)
+							brd.removeObject(brd.elementsByName.selectionC)
+							brd.removeObject(brd.elementsByName.selectionD)
+							brd.removeObject(brd.elementsByName.selectionB)
+							brd.removeObject(brd.elementsByName.selectionA)
+						brd.on 'mouseup', brd.mouseUp, brd
+						brd.followSelection = (e) ->
+							if brd.elementsByName.selection
+								coords = getMouseCoords(e)
+								brd.elementsByName.selectionA.setPosition(JXG.COORDS_BY_USER, coords.usrCoords)
+								selection = brd.elementsByName.selection
+								selection.update()
+								selectionCoords = [selection.vertices[0].coords.usrCoords,
+								                   selection.vertices[1].coords.usrCoords,
+								                   selection.vertices[2].coords.usrCoords,
+								                   selection.vertices[3].coords.usrCoords]
+								#xMin = _.min selection.vertices, (vertex) -> vertex.coords.usrCoords[1]
+								sorted = _.sortBy selection.vertices.slice(0,4), (vertex) -> vertex.coords.usrCoords[2]
+								south = _.sortBy sorted.slice(0,2), (vertex) -> vertex.coords.usrCoords[1]
+								north = _.sortBy sorted.slice(2,4), (vertex) -> vertex.coords.usrCoords[2]
+								northWest = north[0]
+								northEast = north[1]
+								southWest = south[0]
+								southEast = south[1]
+								console.log brd.model.get('points')
 
-				down = (e) ->
-					canCreate = true
-					i = undefined
-					coords = undefined
-					el = undefined
-
-					# index of the finger that is used to extract the coordinates
-					i = 0  if e[JXG.touchProperty]
-					coords = getMouseCoords(e, i)
-					for el of brd.objects
-						if JXG.isPoint(brd.objects[el]) and brd.objects[el].hasPoint(coords.scrCoords[1], coords.scrCoords[2])
-							canCreate = false
-							break
-					if canCreate
-						A = brd.create "point", [
-							coords.usrCoords[1]
-							coords.usrCoords[2]
-						]
+								#boxCoords = getBoxCoords(selectionCoords)
+						brd.on 'mousemove', brd.followSelection, brd
 
 					return
-
-				brd.on "down", down
+				brd.on "down", createSelection
 
 			return
 

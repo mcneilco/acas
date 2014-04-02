@@ -308,10 +308,23 @@
     function DoseResponsePlotController() {
       this.handlePointsChanged = __bind(this.handlePointsChanged, this);
       this.render = __bind(this.render, this);
+      this.fixModel = __bind(this.fixModel, this);
       return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
     }
 
     DoseResponsePlotController.prototype.template = _.template($("#DoseResponsePlotView").html());
+
+    DoseResponsePlotController.prototype.initialize = function() {
+      return this.fixModel();
+    };
+
+    DoseResponsePlotController.prototype.fixModel = function() {
+      var points;
+      console.log(this.model.get('points'));
+      points = this.model.get('points');
+      points = _.extend('dose', points.dose);
+      return console.log(points);
+    };
 
     DoseResponsePlotController.prototype.render = function() {
       this.$el.empty();
@@ -332,7 +345,7 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var brd, down, flag, getMouseCoords, ii, p1, t, x, y;
+      var brd, createSelection, flag, getMouseCoords, ii, p1, t, x, y;
       if (typeof brd === "undefined") {
         brd = JXG.JSXGraph.initBoard(divID, {
           boundingbox: plotWindow,
@@ -367,7 +380,7 @@
             });
           }
           p1.idx = ii;
-          p1.model = this.model;
+          brd.model = this.model;
           p1.knockOutPoint = function() {
             if (points.flag[this.idx] === "NA") {
               this.setAttribute({
@@ -382,10 +395,10 @@
               });
               points.flag[this.idx] = "NA";
             }
-            this.model.set({
+            brd.model.set({
               points: points
             });
-            this.model.trigger('change');
+            brd.model.trigger('change');
           };
           p1.xLabel = JXG.trunc(points.dose[ii], 4);
           p1.on("mouseup", p1.knockOutPoint, p1);
@@ -431,35 +444,89 @@
           strokeColor: "black",
           strokeWidth: 2
         });
-        getMouseCoords = function(e, i) {
+        getMouseCoords = function(e) {
           var absPos, cPos, dx, dy;
-          cPos = brd.getCoordsTopLeftCorner(e, i);
-          absPos = JXG.getPosition(e, i);
+          cPos = brd.getCoordsTopLeftCorner(e);
+          absPos = JXG.getPosition(e);
           dx = absPos[0] - cPos[0];
           dy = absPos[1] - cPos[1];
           return new JXG.Coords(JXG.COORDS_BY_SCREEN, [dx, dy], brd);
         };
-        down = function(e) {
-          var A, canCreate, coords, el, i;
-          canCreate = true;
-          i = void 0;
-          coords = void 0;
-          el = void 0;
-          if (e[JXG.touchProperty]) {
-            i = 0;
-          }
-          coords = getMouseCoords(e, i);
-          for (el in brd.objects) {
-            if (JXG.isPoint(brd.objects[el]) && brd.objects[el].hasPoint(coords.scrCoords[1], coords.scrCoords[2])) {
-              canCreate = false;
-              break;
-            }
-          }
-          if (canCreate) {
-            A = brd.create("point", [coords.usrCoords[1], coords.usrCoords[2]]);
+        createSelection = function(e) {
+          var a, b, c, coords, d, selection;
+          if (brd.elementsByName.selection == null) {
+            coords = getMouseCoords(e);
+            a = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
+              name: 'selectionA',
+              withLabel: false,
+              visible: false,
+              fixed: false
+            });
+            b = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
+              name: 'selectionB',
+              visible: false,
+              fixed: true
+            });
+            c = brd.create('point', ["X(selectionA)", coords.usrCoords[2]], {
+              name: 'selectionC',
+              visible: false
+            });
+            d = brd.create('point', [coords.usrCoords[1], "Y(selectionA)"], {
+              name: 'selectionD',
+              visible: false
+            });
+            selection = brd.create('polygon', [b, c, a, d], {
+              name: 'selection',
+              hasInnerPoints: true
+            });
+            selection.update = function() {
+              if (brd.elementsByName.selectionA.coords.usrCoords[2] < brd.elementsByName.selectionB.coords.usrCoords[2]) {
+                return this.setAttribute({
+                  fillcolor: 'red'
+                });
+              } else {
+                return this.setAttribute({
+                  fillcolor: '#00FF00'
+                });
+              }
+            };
+            selection.on('update', selection.update, selection);
+            brd.mouseUp = function() {
+              brd.removeObject(brd.elementsByName.selection);
+              brd.removeObject(brd.elementsByName.selectionC);
+              brd.removeObject(brd.elementsByName.selectionD);
+              brd.removeObject(brd.elementsByName.selectionB);
+              return brd.removeObject(brd.elementsByName.selectionA);
+            };
+            brd.on('mouseup', brd.mouseUp, brd);
+            brd.followSelection = function(e) {
+              var north, northEast, northWest, selectionCoords, sorted, south, southEast, southWest;
+              if (brd.elementsByName.selection) {
+                coords = getMouseCoords(e);
+                brd.elementsByName.selectionA.setPosition(JXG.COORDS_BY_USER, coords.usrCoords);
+                selection = brd.elementsByName.selection;
+                selection.update();
+                selectionCoords = [selection.vertices[0].coords.usrCoords, selection.vertices[1].coords.usrCoords, selection.vertices[2].coords.usrCoords, selection.vertices[3].coords.usrCoords];
+                sorted = _.sortBy(selection.vertices.slice(0, 4), function(vertex) {
+                  return vertex.coords.usrCoords[2];
+                });
+                south = _.sortBy(sorted.slice(0, 2), function(vertex) {
+                  return vertex.coords.usrCoords[1];
+                });
+                north = _.sortBy(sorted.slice(2, 4), function(vertex) {
+                  return vertex.coords.usrCoords[2];
+                });
+                northWest = north[0];
+                northEast = north[1];
+                southWest = south[0];
+                southEast = south[1];
+                return console.log(brd.model.get('points'));
+              }
+            };
+            brd.on('mousemove', brd.followSelection, brd);
           }
         };
-        brd.on("down", down);
+        brd.on("down", createSelection);
       }
     };
 
