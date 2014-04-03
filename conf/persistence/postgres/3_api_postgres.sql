@@ -1,7 +1,7 @@
 -----------------------------
 -- Run all of these as acas the acas user
 -----------------------------
-
+--TODO: make into proper ddl
 --drop (ordered by dependency)
 DROP VIEW API_SUBJECT_CONTAINER_RESULTS;
 DROP VIEW API_SUBJECT_RESULTS;
@@ -631,13 +631,3 @@ LEFT OUTER JOIN itx_subject_container isc ON isc.subject_id=s.id
 LEFT OUTER JOIN container c ON c.id = isc.container_id
 LEFT OUTER JOIN container_state cs ON cs.container_id = c.id
 LEFT OUTER JOIN container_value cv ON cv.container_state_id = cs.id;
-
---grants
-GRANT SELECT on api_protocol TO seurat;
-GRANT SELECT on api_experiment TO seurat;
-GRANT SELECT on api_analysis_group_results TO seurat;
-GRANT SELECT on p_api_analysis_group_results TO seurat;
-GRANT select on api_curve_params to seurat;
-GRANT SELECT on api_dose_response TO seurat;
-GRANT SELECT on api_all_data TO seurat;
-
