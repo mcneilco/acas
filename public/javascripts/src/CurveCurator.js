@@ -345,7 +345,10 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var brd, createSelection, flag, getMouseCoords, ii, p1, t, x, y;
+      var LL4, brd, createSelection, drawEC50, drawHill, drawMax, drawMin, flag, getMouseCoords, ii, log10, p1, t, x, y;
+      log10 = function(val) {
+        return Math.log(val) / Math.LN10;
+      };
       if (typeof brd === "undefined") {
         brd = JXG.JSXGraph.initBoard(divID, {
           boundingbox: plotWindow,
@@ -356,14 +359,14 @@
           }
         });
         ii = 0;
-        console.log(points);
-        while (ii < points.length) {
-          x = JXG.trunc(Math.log(points[ii].dose), 4);
-          y = points[ii].response;
-          flag = points[ii].flag;
+        while (ii < points.response_sv_id.length) {
+          console.log("Original: " + points.dose[ii] + ", Log: " + Math.log(points.dose[ii], 10));
+          x = log10(points.dose[ii]);
+          y = points.response[ii];
+          flag = points.flag[ii];
           if (flag !== "NA") {
             p1 = brd.create("point", [x, y], {
-              name: points[ii].response_sv_id,
+              name: points.response_sv_id[ii],
               fixed: true,
               size: 4,
               face: "cross",
@@ -372,7 +375,7 @@
             });
           } else {
             p1 = brd.create("point", [x, y], {
-              name: points[ii].response_sv_id,
+              name: points.response_sv_id[ii],
               fixed: true,
               size: 4,
               face: "circle",
@@ -383,31 +386,42 @@
           p1.idx = ii;
           brd.model = this.model;
           p1.knockOutPoint = function() {
-            if (points[this.idx].flag === "NA") {
+            if (points.flag[this.idx] === "NA") {
               this.setAttribute({
                 strokecolor: "gray",
                 face: "cross"
               });
-              points[this.idx].flag = "user";
+              points.flag[this.idx] = "user";
             } else {
               this.setAttribute({
                 strokecolor: "blue",
                 face: "circle"
               });
-              points[this.idx].flag = "NA";
+              points.flag[this.idx] = "NA";
             }
             brd.model.set({
               points: points
             });
             brd.model.trigger('change');
           };
-          p1.xLabel = JXG.trunc(points[ii].dose, 4);
+          p1.xLabel = JXG.trunc(points.dose[ii], 4);
           p1.on("mouseup", p1.knockOutPoint, p1);
           brd.highlightInfobox = function(x, y, el) {
             brd.infobox.setText("(" + el.xLabel + ", " + y + ")");
           };
           ii++;
         }
+        drawMin = 12.04285;
+        drawMax = 98.2325;
+        drawEC50 = 0.7008525;
+        drawHill = -1.338461;
+        console.log(plotWindow[0]);
+        LL4 = function(x) {
+          return drawMin + (drawMax - drawMin) / (1 + Math.exp(drawHill * Math.log(Math.pow(10, x) / drawEC50)));
+        };
+        brd.create('functiongraph', [LL4, -3, 20], {
+          strokeWidth: 2
+        });
         x = brd.create("line", [[0, 0], [1, 0]], {
           strokeColor: "#888888"
         });
@@ -418,16 +432,12 @@
           drawZero: true,
           generateLabelValue: function(tick) {
             p1 = this.line.point1;
+            console.log(tick.usrCoords);
             return Math.pow(10, tick.usrCoords[1] - p1.coords.usrCoords[1]);
           }
         });
       } else {
-        if (typeof window.curve !== "undefined") {
-          brd.removeObject(window.curve);
-        }
-      }
-      if (curve != null) {
-        Math.logArray = function(input_array, base) {
+        brd.removeObject(window.curve(typeof window.curve !== "undefined" ? curve != null ? (Math.logArray = function(input_array, base) {
           var i, output_array;
           output_array = [];
           if (input_array instanceof Array) {
@@ -440,13 +450,10 @@
           } else {
             return null;
           }
-        };
-        console.log(_.pluck(curve, 'dose'));
-        console.log(_.pluck(curve, 'response'));
-        window.curve = brd.create("curve", [Math.logArray(_.pluck(curve, 'dose')), _.pluck(curve, 'response')], {
+        }, window.curve = brd.create("curve", [Math.logArray(curve.dose, 10), curve.response], {
           strokeColor: "black",
           strokeWidth: 2
-        });
+        })) : void 0 : void 0));
         getMouseCoords = function(e) {
           var absPos, cPos, dx, dy;
           cPos = brd.getCoordsTopLeftCorner(e);
