@@ -200,16 +200,17 @@ class window.DoseResponsePlotController extends AbstractFormController
 					},
 				)
 				ii = 0
-				while ii < points.response_sv_id.length
-					x = JXG.trunc(Math.log(points.dose[ii]), 4)
-					y = points.response[ii]
-					flag = points.flag[ii]
+				console.log points
+				while ii < points.length
+					x = JXG.trunc(Math.log(points[ii].dose), 4)
+					y = points[ii].response
+					flag = points[ii].flag
 					if flag != "NA"
 						p1 = brd.create("point", [
 							x
 							y
 						],
-							name: points.response_sv_id[ii]
+							name: points[ii].response_sv_id
 							fixed: true
 							size: 4
 							face: "cross"
@@ -218,7 +219,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 						)
 					else
 						p1 = brd.create("point", [x,y],
-							name: points.response_sv_id[ii]
+							name: points[ii].response_sv_id
 							fixed: true
 							size: 4
 							face: "circle"
@@ -229,22 +230,22 @@ class window.DoseResponsePlotController extends AbstractFormController
 					p1.idx = ii
 					brd.model = @model
 					p1.knockOutPoint = ->
-						unless points.flag[@idx] != "NA"
+						unless points[@idx].flag != "NA"
 							@setAttribute
 								strokecolor: "gray"
 								face: "cross"
-							points.flag[@idx] = "user" # set flag to true to flag it?
+							points[@idx].flag = "user" # set flag to true to flag it?
 						else
 							@setAttribute
 								strokecolor: "blue"
 								face: "circle"
-							points.flag[@idx] = "NA" # set flag to null to un-flag it?
+							points[@idx].flag = "NA" # set flag to null to un-flag it?
 						brd.model.set points: points
 						#TODO make this a real model that we don't have to trigger a change event on
 						brd.model.trigger 'change'
 						return
 
-					p1.xLabel = JXG.trunc(points.dose[ii], 4)
+					p1.xLabel = JXG.trunc(points[ii].dose, 4)
 					p1.on "mouseup", p1.knockOutPoint, p1
 					brd.highlightInfobox = (x, y, el) ->
 
@@ -311,9 +312,11 @@ class window.DoseResponsePlotController extends AbstractFormController
 							else
 								null
 
+				console.log _.pluck curve, 'dose'
+				console.log _.pluck curve, 'response'
 				window.curve = brd.create("curve", [
-					Math.logArray(curve.dose)
-					curve.response
+					Math.logArray _.pluck curve, 'dose'
+					_.pluck curve, 'response'
 				],
 					strokeColor: "black"
 					strokeWidth: 2

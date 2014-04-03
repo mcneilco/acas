@@ -356,13 +356,14 @@
           }
         });
         ii = 0;
-        while (ii < points.response_sv_id.length) {
-          x = JXG.trunc(Math.log(points.dose[ii]), 4);
-          y = points.response[ii];
-          flag = points.flag[ii];
+        console.log(points);
+        while (ii < points.length) {
+          x = JXG.trunc(Math.log(points[ii].dose), 4);
+          y = points[ii].response;
+          flag = points[ii].flag;
           if (flag !== "NA") {
             p1 = brd.create("point", [x, y], {
-              name: points.response_sv_id[ii],
+              name: points[ii].response_sv_id,
               fixed: true,
               size: 4,
               face: "cross",
@@ -371,7 +372,7 @@
             });
           } else {
             p1 = brd.create("point", [x, y], {
-              name: points.response_sv_id[ii],
+              name: points[ii].response_sv_id,
               fixed: true,
               size: 4,
               face: "circle",
@@ -382,25 +383,25 @@
           p1.idx = ii;
           brd.model = this.model;
           p1.knockOutPoint = function() {
-            if (points.flag[this.idx] === "NA") {
+            if (points[this.idx].flag === "NA") {
               this.setAttribute({
                 strokecolor: "gray",
                 face: "cross"
               });
-              points.flag[this.idx] = "user";
+              points[this.idx].flag = "user";
             } else {
               this.setAttribute({
                 strokecolor: "blue",
                 face: "circle"
               });
-              points.flag[this.idx] = "NA";
+              points[this.idx].flag = "NA";
             }
             brd.model.set({
               points: points
             });
             brd.model.trigger('change');
           };
-          p1.xLabel = JXG.trunc(points.dose[ii], 4);
+          p1.xLabel = JXG.trunc(points[ii].dose, 4);
           p1.on("mouseup", p1.knockOutPoint, p1);
           brd.highlightInfobox = function(x, y, el) {
             brd.infobox.setText("(" + el.xLabel + ", " + y + ")");
@@ -440,7 +441,9 @@
             return null;
           }
         };
-        window.curve = brd.create("curve", [Math.logArray(curve.dose), curve.response], {
+        console.log(_.pluck(curve, 'dose'));
+        console.log(_.pluck(curve, 'response'));
+        window.curve = brd.create("curve", [Math.logArray(_.pluck(curve, 'dose')), _.pluck(curve, 'response')], {
           strokeColor: "black",
           strokeWidth: 2
         });
