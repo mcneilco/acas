@@ -2517,7 +2517,7 @@ SET default_with_oids = false;
 -- Name: syn_therapeutic_area; Type: TABLE; Schema: seurat; Owner: postgres; Tablespace: 
 --
 
-CREATE TABLE syn_therapeutic_area (
+CREATE TABLE seurat.syn_therapeutic_area (
     id bigint NOT NULL,
     name character varying(500) NOT NULL,
     description character varying(4000)
@@ -2530,7 +2530,7 @@ ALTER TABLE seurat.syn_therapeutic_area OWNER TO postgres;
 -- Name: syn_ther_area_name_unique_cons; Type: CONSTRAINT; Schema: seurat; Owner: postgres; Tablespace: 
 --
 
-ALTER TABLE ONLY syn_therapeutic_area
+ALTER TABLE ONLY seurat.syn_therapeutic_area
     ADD CONSTRAINT syn_ther_area_name_unique_cons UNIQUE (name);
 
 
@@ -2538,7 +2538,7 @@ ALTER TABLE ONLY syn_therapeutic_area
 -- Name: syn_therapeutic_area_pk; Type: CONSTRAINT; Schema: seurat; Owner: postgres; Tablespace: 
 --
 
-ALTER TABLE ONLY syn_therapeutic_area
+ALTER TABLE ONLY seurat.syn_therapeutic_area
     ADD CONSTRAINT syn_therapeutic_area_pk PRIMARY KEY (id);
 
 
