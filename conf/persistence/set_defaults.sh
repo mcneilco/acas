@@ -1,19 +1,25 @@
-curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{typeName: "default"}
-]' http://"$HOSTNAME":8080/acas/protocoltypes/jsonArray
+#!/bin/sh
 
-curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{kindName: "default", lsType:{id:1, version:0}}
-]' http://"$HOSTNAME":8080/acas/protocolkinds/jsonArray
-
+HOSTNAMEFQDN=$(hostname --fqdn)
+ACAS_HOME=$(cd "$(dirname "$scriptPath")"/../..; pwd)
+source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/conf/readproperties.awk)"
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {typeName: "default"}
-]' http://"$HOSTNAME":8080/acas/experimenttypes/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/protocoltypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "default", lsType:{id:1, version:0}}
-]' http://"$HOSTNAME":8080/acas/experimentkinds/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/protocolkinds/jsonArray
+
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{typeName: "default"}
+]' http://"$HOSTNAMEFQDN":8080/acas/experimenttypes/jsonArray
+
+curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
+{kindName: "default", lsType:{id:1, version:0}}
+]' http://"$HOSTNAMEFQDN":8080/acas/experimentkinds/jsonArray
 
 
 
@@ -29,25 +35,25 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {typeVerb: "first has second as a member", typeName:"has member"},
 {typeVerb: "first was moved to second", typeName:"moved to"},
 {typeVerb: "contents of first were transferred to second", typeName:"transferred to"}
-]' http://"$HOSTNAME":8080/acas/interactiontypes/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/interactiontypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "test subject", lsType:{id:6, version:0}},
 {kindName: "plate well", lsType:{id:7, version:0}}
-]' http://"$HOSTNAME":8080/acas/interactionkinds/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/interactionkinds/jsonArray
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {typeName: "material"},
 {typeName: "plate"},
 {typeName: "well"}
-]' http://"$HOSTNAME":8080/acas/containertypes/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/containertypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "animal", lsType:{id:1, version:0}},
 {kindName: "384 well compound plate", lsType:{id:2, version:0}},
 {kindName: "plate well", lsType:{id:3, version:0}}
-]' http://"$HOSTNAME":8080/acas/containerkinds/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/containerkinds/jsonArray
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
@@ -55,7 +61,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {typeName: "data"},
 {typeName: "constants"},
 {typeName: "status"}
-]' http://"$HOSTNAME":8080/acas/statetypes/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/statetypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "raw results locations", lsType:{id:1, version:0}},
@@ -77,7 +83,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "protocol metadata", lsType:{id:1, version:0}},
 
 {kindName: "plate information", lsType:{id:1, version:0}}
-]' http://"$HOSTNAME":8080/acas/statekinds/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/statekinds/jsonArray
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
@@ -89,7 +95,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {typeName: "blobValue"},
 {typeName: "numericValue"},
 {typeName: "codeValue"}
-]' http://"$HOSTNAME":8080/acas/valuetypes/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/valuetypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "batch code", lsType:{id:8, version:0}},
@@ -150,13 +156,13 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "fluorescencePoints", lsType:{id:5, version:0}},
 {kindName: "timePoints", lsType:{id:5, version:0}},
 {kindName: "previous experiment code", lsType:{id:8, version:0}}
-]' http://"$HOSTNAME":8080/acas/valuekinds/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/valuekinds/jsonArray
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {typeName: "name"},
 {typeName: "barcode"}
-]' http://"$HOSTNAME":8080/acas/labeltypes/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/labeltypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "protocol name", lsType:{id:1, version:0}},
@@ -164,14 +170,14 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "container name", lsType:{id:1, version:0}},
 {kindName: "plate barcode", lsType:{id:2, version:0}},
 {kindName: "well name", lsType:{id:1, version:0}}
-]' http://"$HOSTNAME":8080/acas/labelkinds/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/labelkinds/jsonArray
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {typeName: "comparison"},
 {typeName: "mathematical"},
 {typeName: "boolean"}
-]' http://"$HOSTNAME":8080/acas/operatortypes/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/operatortypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: ">", lsType:{id:1, version:0}},
@@ -179,7 +185,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "<=", lsType:{id:1, version:0}},
 {kindName: ">=", lsType:{id:1, version:0}},
 {kindName: "=", lsType:{id:1, version:0}}
-]' http://"$HOSTNAME":8080/acas/operatorkinds/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/operatorkinds/jsonArray
 
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
@@ -196,7 +202,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {typeName: "pressure"},
 {typeName: "energy"},
 {typeName: "power"}
-]' http://"$HOSTNAME":8080/acas/unittypes/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/unittypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "1/hr", lsType:{id:3, version:0}},
@@ -212,7 +218,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "g", lsType:{id:5, version:0}},
 {kindName: "min", lsType:{id:2, version:0}},
 {kindName: "% Freezing", lsType:{id:7, version:0}}
-]' http://"$HOSTNAME":8080/acas/unitkinds/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/unitkinds/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {"digits":8,"groupDigits":false, "labelPrefix":"PROT","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"document_protocol"},
@@ -223,9 +229,9 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {"digits":8,"groupDigits":false, "labelPrefix":"CONT","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"material_container"},
 {"digits":8,"groupDigits":false, "labelPrefix":"CITX","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"interaction_containerContainer"},
 {"digits":8,"groupDigits":false, "labelPrefix":"SITX","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"interaction_subjectContainer"}
-]' http://"$HOSTNAME":8080/acas/labelsequences/jsonArray
+]' http://"$HOSTNAMEFQDN":8080/acas/labelsequences/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{propName:"BatchDocumentsURL", propValue: "http://'$HOSTNAME':8888/files/"},
-{propName:"server_address", propValue:"'$HOSTNAME'"}
-]' http://"$HOSTNAME":8080/acas/applicationsettings/jsonArray
+{propName:"BatchDocumentsURL", propValue: "http://'$HOSTNAMEFQDN':${client_service_file_port}/files/"},
+{propName:"server_address", propValue:"'$HOSTNAMEFQDN'"}
+]' http://"$HOSTNAMEFQDN":8080/acas/applicationsettings/jsonArray
