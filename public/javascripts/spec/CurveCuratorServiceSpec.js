@@ -1,5 +1,6 @@
 (function() {
   describe('Curve Curator service testing', function() {
+    var goodDataRequest;
     beforeEach(function() {
       return this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
@@ -35,13 +36,129 @@
         });
       });
     });
-    return describe('Get curve details from curve id', function() {
+    describe('Get curve details from curve id', function() {
+      beforeEach(function() {
+        var self;
+        self = this;
+        return runs(function() {
+          this.syncEvent = false;
+          this.testModel = new CurveDetail({
+            id: "AG-00068922_522"
+          });
+          this.testModel.on('change', (function(_this) {
+            return function() {
+              console.log('sync event true');
+              return _this.syncEvent = true;
+            };
+          })(this));
+          return this.testModel.fetch();
+        });
+      });
+      it('should return curve detail with reportedValues', function() {
+        waitsFor(function() {
+          return this.syncEvent;
+        }, 'service did not return', 2000);
+        return runs(function() {
+          return expect(this.testModel.get('reportedValues')).toContain("max");
+        });
+      });
+      it('should return curve detail with fitSummary', function() {
+        waitsFor(function() {
+          return this.syncEvent;
+        }, 'service did not return', 2000);
+        return runs(function() {
+          return expect(this.testModel.get('fitSummary')).toContain('Model fitted');
+        });
+      });
+      it('should return curve detail with curveErrors', function() {
+        waitsFor(function() {
+          return this.syncEvent;
+        }, 'service did not return', 2000);
+        return runs(function() {
+          return expect(this.testModel.get('curveErrors')).toContain('SSE');
+        });
+      });
+      it('should return curve detail with category', function() {
+        waitsFor(function() {
+          return this.syncEvent;
+        }, 'service did not return', 2000);
+        return runs(function() {
+          return expect(this.testModel.get('category')).toContain('sigmoid');
+        });
+      });
+      it('should return detail with approved', function() {
+        waitsFor(function() {
+          return this.syncEvent;
+        }, 'service did not return', 2000);
+        return runs(function() {
+          return expect(this.testModel.get('approved')).toBeTruthy;
+        });
+      });
+      it('should return curve detail with sessionID', function() {
+        waitsFor(function() {
+          return this.syncEvent;
+        }, 'service did not return', 2000);
+        return runs(function() {
+          return expect(this.testModel.sessionID).tobeDefined;
+        });
+      });
+      it('should return curve detail with curveAttributes', function() {
+        waitsFor(function() {
+          return this.syncEvent;
+        }, 'service did not return', 2000);
+        return runs(function() {
+          expect(this.testModel.get('curveAttributes').compoundCode).toEqual("CMPD-0000001-01");
+          return expect(this.testModel.get('curveAttributes').EC50).toEqual(0.700852529214898);
+        });
+      });
+      it('should return curve detail with plotData', function() {
+        waitsFor(function() {
+          return this.syncEvent;
+        }, 'service did not return', 2000);
+        return runs(function() {
+          expect(this.testModel.get('plotData').plotWindow.length).toEqual(4);
+          expect(this.testModel.get('plotData').points.dose.length).toBeGreaterThan(5);
+          expect(this.testModel.get('plotData').points.response.length).toBeGreaterThan(5);
+          return expect(this.testModel.get('plotData').curve.ec50).toEqual(0.7008525);
+        });
+      });
+      return it('should return curve detail with fitSettings', function() {
+        waitsFor(function() {
+          return this.syncEvent;
+        }, 'service did not return', 2000);
+        return runs(function() {
+          return expect(this.testModel.get('fitSettings').max.limitType).toEqual('pin');
+        });
+      });
+    });
+    goodDataRequest = {
+      sessionID: "/var/folders/5b/s62pqy655kx6929zhxrml5c80000gn/T//rSe-34a423d5ace7",
+      save: false,
+      fitSettings: {
+        max: {
+          limitType: "pin",
+          value: 101
+        },
+        min: {
+          limitType: "none",
+          value: null
+        },
+        slope: {
+          limitType: "limit",
+          value: 1.5
+        },
+        inactiveThreshold: 20,
+        inverseAgonistMode: true
+      }
+    };
+    return describe('Post to fit service and get response', function() {
       beforeEach(function() {
         var self;
         self = this;
         return $.ajax({
-          type: 'GET',
-          url: "api/curve/detail/AG-00068922_522",
+          type: 'POST',
+          url: "api/curve/fit",
+          data: goodDataRequest,
           success: function(json) {
             return self.serviceReturn = json;
           },
@@ -58,59 +175,10 @@
           return expect(this.serviceReturn.reportedValues).tobeDefined;
         });
       });
-      it('should return curve detail with fitSummary', function() {
+      return it('should return curve detail with fitSummary', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           return expect(this.serviceReturn.fitSummary).tobeDefined;
-        });
-      });
-      it('should return curve detail with curveErrors', function() {
-        waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
-        return runs(function() {
-          return expect(this.serviceReturn.curveErrors).tobeDefined;
-        });
-      });
-      it('should return curve detail with category', function() {
-        waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
-        return runs(function() {
-          return expect(this.serviceReturn.category).tobeDefined;
-        });
-      });
-      it('should return detail with approved', function() {
-        waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
-        return runs(function() {
-          return expect(this.serviceReturn.approved).tobeDefined;
-        });
-      });
-      it('should return curve detail with sessionID', function() {
-        waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
-        return runs(function() {
-          return expect(this.serviceReturn.sessionID).tobeDefined;
-        });
-      });
-      it('should return curve detail with curveAttributes', function() {
-        waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
-        return runs(function() {
-          expect(this.serviceReturn.curveAttributes).tobeDefined;
-          expect(this.serviceReturn.curveAttributes.compoundCode).toEqual("CMPD-0000001-01");
-          return expect(this.serviceReturn.curveAttributes.EC50).toEqual(0.70170549529582);
-        });
-      });
-      it('should return curve detail with plotData', function() {
-        waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
-        return runs(function() {
-          expect(this.serviceReturn.plotData).toBeDefined();
-          expect(this.serviceReturn.plotData.plotWindow).toBeDefined();
-          expect(this.serviceReturn.plotData.points.dose).toBeDefined();
-          expect(this.serviceReturn.plotData.points.response).toBeDefined();
-          expect(this.serviceReturn.plotData.curve.dose).toBeDefined();
-          return expect(this.serviceReturn.plotData.curve.response).toBeDefined();
-        });
-      });
-      return it('should return curve detail with fitSettings', function() {
-        waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
-        return runs(function() {
-          return expect(this.serviceReturn.fitSettings).toBeDefined();
         });
       });
     });

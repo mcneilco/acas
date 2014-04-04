@@ -51,29 +51,22 @@ renderCurve <- function(getParams) {
 	if(is.null(getParams$inTable)) {
 		inTable <- FALSE
 	} else {
-		if(getParams$inTable=="true") {
-			inTable <- TRUE
-		} else {
-			inTable <- FALSE
-		}
+		inTable <- as.logical(getParams$inTable)
 	}
-	if(is.null(getParams$axes)) {
-		axes <- TRUE
+	if(is.null(getParams$showAxes)) {
+		showAxes <- TRUE
 	} else {
-		if(getParams$axes=="true") {
-			axes <- TRUE
-		} else {
-			axes <- FALSE
-		}
+		showAxes <- as.logical(getParams$showAxes)
+	}
+	if(is.null(getParams$labelAxes)) {
+		labelAxes <- TRUE
+	} else {
+		labelAxes <- as.logical(getParams$labelAxes)
 	}
 	if(is.null(getParams$legend)) {
 		legend <- !inTable
 	} else {
-		if(getParams$legend=="true") {
-			legend <- TRUE
-		} else {
-			legend <- FALSE
-		}
+		legend <- as.logical(getParams$legend)
 	}
 
 	if(is.null(getParams$curveIds)) {
@@ -94,10 +87,10 @@ renderCurve <- function(getParams) {
 	setHeader(header="Cache-Control",value="max-age=1000000000000"); 
 	setHeader(header="Expires",value="Thu, 31 Dec 2099 24:24:24 GMT");
 	t <- tempfile()
-	PlotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "hill"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = TRUE, labelAxes = TRUE, showLegend=legend, axes = axes)
+	plotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "slope"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = TRUE, showAxes = showAxes, labelAxes = labelAxes, showLegend=legend)
 	sendBin(readBin(t,'raw',n=file.info(t)$size))
 	unlink(t) 
 	DONE
 }
-
+#dput(GET)
 renderCurve(getParams = GET)

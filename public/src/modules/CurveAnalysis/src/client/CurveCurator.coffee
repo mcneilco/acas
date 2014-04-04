@@ -1,11 +1,16 @@
 class window.Curve extends Backbone.Model
 
 class window.CurveDetail extends Backbone.Model
+	urlRoot: "/api/curve/detail"
 	initialize: ->
 		@fixCompositeClasses()
 	fixCompositeClasses: =>
 		if @get('fitSettings') not instanceof DoseResponseAnalysisParameters
 			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
+	parse: (resp) =>
+		if resp.fitSettings not instanceof DoseResponseAnalysisParameters
+			resp.fitSettings = new DoseResponseAnalysisParameters(resp.fitSettings)
+		return resp
 
 class window.CurveList extends Backbone.Collection
 	model: Curve
@@ -53,8 +58,8 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
 		else
-			curveUrl = window.conf.service.rapache.fullpath+"/curve/render/?legend=false&curveIds="
-			curveUrl += @model.get('curveid')+"&height=200&width=250&axes=false"
+			curveUrl = window.conf.service.rapache.fullpath+"curve/render/dr/?legend=false&curveIds="
+			curveUrl += @model.get('curveid')+"&height=150&width=250&showAxes=false&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
 		if @model.get('algorithmApproved')
@@ -166,21 +171,12 @@ class window.CurveEditorController extends Backbone.View
 
 class window.DoseResponsePlotController extends AbstractFormController
 	template: _.template($("#DoseResponsePlotView").html())
-	initialize: ->
-		@fixModel()
-	fixModel: =>
-		console.log @model.get 'points'
-		points = @model.get 'points'
-		points = _.extend 'dose', points.dose
-		console.log points
-
 	render: =>
 		@$el.empty()
 		@$el.html @template()
 		if @model?
 			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
 			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
-			console.log @model
 			@model.on "change", @handlePointsChanged
 			@
 		else
@@ -188,6 +184,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 	handlePointsChanged: =>
 		console.log @model.get('points')
+
 
 	initJSXGraph: (points, curve, plotWindow, divID) ->
 		log10 = (val) ->
@@ -203,17 +200,17 @@ class window.DoseResponsePlotController extends AbstractFormController
 				},
 			)
 			ii = 0
-			while ii < points.response_sv_id.length
-				console.log "Original: " + points.dose[ii] + ", Log: " + Math.log(points.dose[ii], 10)
-				x = log10 points.dose[ii]
-				y = points.response[ii]
-				flag = points.flag[ii]
+			while ii < points.length
+				#console.log "Original: " + points.dose[ii] + ", Log: " + Math.log(points.dose[ii], 10)
+				x = log10 points[ii].dose
+				y = points[ii].response
+				flag = points[ii].flag
 				if flag != "NA"
 					p1 = brd.create("point", [
 						x
 						y
 					],
-						name: points.response_sv_id[ii]
+						name: points[ii].response_sv_id
 						fixed: true
 						size: 4
 						face: "cross"
@@ -222,7 +219,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 					)
 				else
 					p1 = brd.create("point", [x,y],
-						name: points.response_sv_id[ii]
+						name: points[ii].response_sv_id
 						fixed: true
 						size: 4
 						face: "circle"
@@ -230,26 +227,36 @@ class window.DoseResponsePlotController extends AbstractFormController
 						withLabel: false
 
 					)
-				p1.idx = ii
 				brd.model = @model
-				p1.knockOutPoint = ->
-					unless points.flag[@idx] != "NA"
-						@setAttribute
-							strokecolor: "gray"
-							face: "cross"
-						points.flag[@idx] = "user" # set flag to true to flag it?
+				p1.idx = ii
+				p1.isDoseResponsePoint = true
+				p1.isSelected = false
+				p1.knockOutPoint = (reason) ->
+					@setAttribute
+						strokecolor: "gray"
+						face: "cross"
+					points[@idx].flag = reason
+					brd.model.set points: points
+				p1.includePoint = ->
+					@setAttribute
+						strokecolor: "blue"
+						face: "circle"
+					points[@idx].flag = "NA"
+					brd.model.set points: points
+				p1.handlePointClicked = ->
+					unless points[@idx].flag != "NA"
+						reason = getKnockoutReason()
+						@knockOutPoint reason
 					else
-						@setAttribute
-							strokecolor: "blue"
-							face: "circle"
-						points.flag[@idx] = "NA" # set flag to null to un-flag it?
+						@includePoint()
+
 					brd.model.set points: points
 					#TODO make this a real model that we don't have to trigger a change event on
 					brd.model.trigger 'change'
 					return
 
-				p1.xLabel = JXG.trunc(points.dose[ii], 4)
-				p1.on "mouseup", p1.knockOutPoint, p1
+				p1.xLabel = JXG.trunc(points[ii].dose, 4)
+				p1.on "mouseup", p1.handlePointClicked, p1
 				brd.highlightInfobox = (x, y, el) ->
 
 					#brd.infobox.setText('<img src="http://www.freesmileys.org/smileys/big/big-smiley-face.gif" alt="Smiley face" width="42" height="42">');
@@ -257,85 +264,45 @@ class window.DoseResponsePlotController extends AbstractFormController
 					return
 				ii++
 
-			drawMin = 12.04285
-			drawMax = 98.2325
-			drawEC50 = 0.7008525
-			drawHill = -1.338461
-			console.log plotWindow[0]
-			LL4 = (x) ->
-				#console.log(x)
-				drawMin + (drawMax - drawMin) / (1 + Math.exp(drawHill * Math.log(Math.pow(10,x) / drawEC50)))
-			#drawMin + (drawMax - drawMin) / (1 + exp(-drawHill * log(x / drawEC50)))
-			brd.create('functiongraph', [LL4, -3, 20], {strokeWidth:2});
-
-
 			x = brd.create("line", [
 				[0,0]
-				[
-					1
-					0
-				]
+				[1,0]
 			],
 				strokeColor: "#888888"
 			)
 			y = brd.create("axis", [
-				[
-					plotWindow[0] * 0.98
-					0
-				]
-				[
-					plotWindow[0] * 0.98
-					1
-				]
+				[plotWindow[0], 0]
+				[plotWindow[0], 1]
 			])
 			x.isDraggable = false
 
 			# create the tick markers for the axis
-			t = brd.create("ticks", [
-				x
-				1
-			],
-
+			t = brd.create("ticks", [x,1],
 				# yes, show the labels
 				drawLabels: true
-
 			# yes, show the tick marker at zero (or, in this case: 1)
 				drawZero: true
 				generateLabelValue: (tick) ->
-
 					# get the first defining point of the axis
 					p1 = @line.point1
-
 					# this works for the x-axis, for the y-axis you'll have to use usrCoords[2] (usrCoords[0] is the z-coordinate).
 					#Xaxis in log scale
-					console.log tick.usrCoords
 					Math.pow 10, tick.usrCoords[1] - p1.coords.usrCoords[1]
 			)
 
 		else
 			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
 
-						if curve?
-							Math.logArray = (input_array, base) ->
-										output_array = []
-										if input_array instanceof Array
-											i = 0
-
-											while i < input_array.length
-												output_array.push Math.log(input_array[i], base)
-												i++
-											output_array
-										else
-											null
-
-							window.curve = brd.create("curve", [
-								Math.logArray(curve.dose, 10)
-								curve.response
-							],
-								strokeColor: "black"
-								strokeWidth: 2
-							)
-			getMouseCoords = (e) ->
+		if curve?
+			if curve.type == "LL.4"
+				fct = (x) ->
+					curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
+				#drawMin + (drawMax - drawMin) / (1 + exp(-drawHill * log(x / drawEC50)))
+				brd.create('functiongraph', [fct, -3, 20], {strokeWidth:2});
+		getKnockoutReason = ->
+			reason = prompt("Please enter a reason","Outlier");
+			return reason
+		getMouseCoords = (e) ->
 				cPos = brd.getCoordsTopLeftCorner(e)
 				absPos = JXG.getPosition(e)
 				dx = absPos[0] - cPos[0]
@@ -356,17 +323,35 @@ class window.DoseResponsePlotController extends AbstractFormController
 						if brd.elementsByName.selectionA.coords.usrCoords[2] < brd.elementsByName.selectionB.coords.usrCoords[2]
 							@setAttribute
 								fillcolor: 'red'
+							selection.knockoutMode = true
 						else
 							@setAttribute
 								fillcolor: '#00FF00'
+							selection.knockoutMode = false
 					selection.on 'update', selection.update, selection
 					#p1.on "mouseup", brd.removeObject(brd.elementsByName.selection)
 					brd.mouseUp = ->
-						brd.removeObject(brd.elementsByName.selection)
-						brd.removeObject(brd.elementsByName.selectionC)
-						brd.removeObject(brd.elementsByName.selectionD)
-						brd.removeObject(brd.elementsByName.selectionB)
-						brd.removeObject(brd.elementsByName.selectionA)
+						selection = brd.elementsByName.selection
+						if selection?
+							knockoutMode = selection.knockoutMode
+							console.log knockoutMode
+							brd.removeObject(selection)
+							brd.removeObject(brd.elementsByName.selectionC)
+							brd.removeObject(brd.elementsByName.selectionD)
+							brd.removeObject(brd.elementsByName.selectionB)
+							brd.removeObject(brd.elementsByName.selectionA)
+							selected = selection.selected
+							if selected?
+								if selected.length > 0
+									if knockoutMode
+										reason = getKnockoutReason()
+									selected.forEach (point) ->
+										if knockoutMode
+											point.knockOutPoint(reason)
+										else
+											point.includePoint()
+									brd.model.trigger 'change'
+
 					brd.on 'mouseup', brd.mouseUp, brd
 					brd.followSelection = (e) ->
 						if brd.elementsByName.selection
@@ -378,22 +363,25 @@ class window.DoseResponsePlotController extends AbstractFormController
 							                   selection.vertices[1].coords.usrCoords,
 							                   selection.vertices[2].coords.usrCoords,
 							                   selection.vertices[3].coords.usrCoords]
-							#xMin = _.min selection.vertices, (vertex) -> vertex.coords.usrCoords[1]
+							#Sort by response desc (south is on the top)
 							sorted = _.sortBy selection.vertices.slice(0,4), (vertex) -> vertex.coords.usrCoords[2]
+							#Sort north and south by response (order will then be 0 = west 1 = east)
 							south = _.sortBy sorted.slice(0,2), (vertex) -> vertex.coords.usrCoords[1]
-							north = _.sortBy sorted.slice(2,4), (vertex) -> vertex.coords.usrCoords[2]
-							northWest = north[0]
-							northEast = north[1]
-							southWest = south[0]
-							southEast = south[1]
-							console.log brd.model.get('points')
+							north = _.sortBy sorted.slice(2,4), (vertex) -> vertex.coords.usrCoords[1]
+							northWest = north[0].coords.usrCoords
+							northEast = north[1].coords.usrCoords
+							southWest = south[0].coords.usrCoords
+							southEast = south[1].coords.usrCoords
+							selected = []
+							doseResponsePoints = _.where(brd.elementsByName, {isDoseResponsePoint: true, isSelected: false})
+							doseResponsePoints.forEach (point) ->
+								if point.coords.usrCoords[1] > northWest[1] & point.coords.usrCoords[2] < northWest[2] & point.coords.usrCoords[1] < northEast[1] & point.coords.usrCoords[2] < northEast[2] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[2] > southWest[2] & point.coords.usrCoords[1] < southEast[1] & point.coords.usrCoords[2] > southWest[2]
+									selected.push(point)
+							selection.selected = selected
 
-					#boxCoords = getBoxCoords(selectionCoords)
 					brd.on 'mousemove', brd.followSelection, brd
-
-				return
+					return
 			brd.on "down", createSelection
-
 		return
 
 class window.CurveCuratorController extends Backbone.View
@@ -462,13 +450,9 @@ class window.CurveCuratorController extends Backbone.View
 				@render()
 
 	curveSelectionUpdated: (who) =>
-		$.ajax
-			type: 'GET'
-			url: "/api/curve/detail/" + who.model.get('curveid')
-			dataType: 'json'
-			success: @handleGetCurveDetailReturn
-			error: (err) ->
-				console.log 'got ajax error'
+		curveDetail = new CurveDetail id: who.model.get('curveid')
+		curveDetail.fetch success: =>
+			@curveEditorController.setModel curveDetail
 
 	handleGetCurveDetailReturn: (json) =>
 		@curveEditorController.setModel new CurveDetail(json)

@@ -18,9 +18,12 @@
     __extends(CurveDetail, _super);
 
     function CurveDetail() {
+      this.parse = __bind(this.parse, this);
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       return CurveDetail.__super__.constructor.apply(this, arguments);
     }
+
+    CurveDetail.prototype.urlRoot = "/api/curve/detail";
 
     CurveDetail.prototype.initialize = function() {
       return this.fixCompositeClasses();
@@ -32,6 +35,13 @@
           fitSettings: new DoseResponseAnalysisParameters(this.get('fitSettings'))
         });
       }
+    };
+
+    CurveDetail.prototype.parse = function(resp) {
+      if (!(resp.fitSettings instanceof DoseResponseAnalysisParameters)) {
+        resp.fitSettings = new DoseResponseAnalysisParameters(resp.fitSettings);
+      }
+      return resp;
     };
 
     return CurveDetail;
@@ -136,8 +146,8 @@
         curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
         curveUrl += this.model.get('curveid') + ".png";
       } else {
-        curveUrl = window.conf.service.rapache.fullpath + "/curve/render/?legend=false&curveIds=";
-        curveUrl += this.model.get('curveid') + "&height=200&width=250&axes=false";
+        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&curveIds=";
+        curveUrl += this.model.get('curveid') + "&height=150&width=250&showAxes=false&labelAxes=false";
       }
       this.$el.html(this.template({
         curveUrl: curveUrl
@@ -308,23 +318,10 @@
     function DoseResponsePlotController() {
       this.handlePointsChanged = __bind(this.handlePointsChanged, this);
       this.render = __bind(this.render, this);
-      this.fixModel = __bind(this.fixModel, this);
       return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
     }
 
     DoseResponsePlotController.prototype.template = _.template($("#DoseResponsePlotView").html());
-
-    DoseResponsePlotController.prototype.initialize = function() {
-      return this.fixModel();
-    };
-
-    DoseResponsePlotController.prototype.fixModel = function() {
-      var points;
-      console.log(this.model.get('points'));
-      points = this.model.get('points');
-      points = _.extend('dose', points.dose);
-      return console.log(points);
-    };
 
     DoseResponsePlotController.prototype.render = function() {
       this.$el.empty();
@@ -332,7 +329,6 @@
       if (this.model != null) {
         this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
         this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
-        console.log(this.model);
         this.model.on("change", this.handlePointsChanged);
         return this;
       } else {
@@ -345,7 +341,7 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var LL4, brd, createSelection, drawEC50, drawHill, drawMax, drawMin, flag, getMouseCoords, ii, log10, p1, t, x, y;
+      var brd, createSelection, fct, flag, getKnockoutReason, getMouseCoords, ii, log10, p1, t, x, y;
       log10 = function(val) {
         return Math.log(val) / Math.LN10;
       };
@@ -359,14 +355,13 @@
           }
         });
         ii = 0;
-        while (ii < points.response_sv_id.length) {
-          console.log("Original: " + points.dose[ii] + ", Log: " + Math.log(points.dose[ii], 10));
-          x = log10(points.dose[ii]);
-          y = points.response[ii];
-          flag = points.flag[ii];
+        while (ii < points.length) {
+          x = log10(points[ii].dose);
+          y = points[ii].response;
+          flag = points[ii].flag;
           if (flag !== "NA") {
             p1 = brd.create("point", [x, y], {
-              name: points.response_sv_id[ii],
+              name: points[ii].response_sv_id,
               fixed: true,
               size: 4,
               face: "cross",
@@ -375,7 +370,7 @@
             });
           } else {
             p1 = brd.create("point", [x, y], {
-              name: points.response_sv_id[ii],
+              name: points[ii].response_sv_id,
               fixed: true,
               size: 4,
               face: "circle",
@@ -383,161 +378,200 @@
               withLabel: false
             });
           }
-          p1.idx = ii;
           brd.model = this.model;
-          p1.knockOutPoint = function() {
-            if (points.flag[this.idx] === "NA") {
-              this.setAttribute({
-                strokecolor: "gray",
-                face: "cross"
-              });
-              points.flag[this.idx] = "user";
+          p1.idx = ii;
+          p1.isDoseResponsePoint = true;
+          p1.isSelected = false;
+          p1.knockOutPoint = function(reason) {
+            this.setAttribute({
+              strokecolor: "gray",
+              face: "cross"
+            });
+            points[this.idx].flag = reason;
+            return brd.model.set({
+              points: points
+            });
+          };
+          p1.includePoint = function() {
+            this.setAttribute({
+              strokecolor: "blue",
+              face: "circle"
+            });
+            points[this.idx].flag = "NA";
+            return brd.model.set({
+              points: points
+            });
+          };
+          p1.handlePointClicked = function() {
+            var reason;
+            if (points[this.idx].flag === "NA") {
+              reason = getKnockoutReason();
+              this.knockOutPoint(reason);
             } else {
-              this.setAttribute({
-                strokecolor: "blue",
-                face: "circle"
-              });
-              points.flag[this.idx] = "NA";
+              this.includePoint();
             }
             brd.model.set({
               points: points
             });
             brd.model.trigger('change');
           };
-          p1.xLabel = JXG.trunc(points.dose[ii], 4);
-          p1.on("mouseup", p1.knockOutPoint, p1);
+          p1.xLabel = JXG.trunc(points[ii].dose, 4);
+          p1.on("mouseup", p1.handlePointClicked, p1);
           brd.highlightInfobox = function(x, y, el) {
             brd.infobox.setText("(" + el.xLabel + ", " + y + ")");
           };
           ii++;
         }
-        drawMin = 12.04285;
-        drawMax = 98.2325;
-        drawEC50 = 0.7008525;
-        drawHill = -1.338461;
-        console.log(plotWindow[0]);
-        LL4 = function(x) {
-          return drawMin + (drawMax - drawMin) / (1 + Math.exp(drawHill * Math.log(Math.pow(10, x) / drawEC50)));
-        };
-        brd.create('functiongraph', [LL4, -3, 20], {
-          strokeWidth: 2
-        });
         x = brd.create("line", [[0, 0], [1, 0]], {
           strokeColor: "#888888"
         });
-        y = brd.create("axis", [[plotWindow[0] * 0.98, 0], [plotWindow[0] * 0.98, 1]]);
+        y = brd.create("axis", [[plotWindow[0], 0], [plotWindow[0], 1]]);
         x.isDraggable = false;
         t = brd.create("ticks", [x, 1], {
           drawLabels: true,
           drawZero: true,
           generateLabelValue: function(tick) {
             p1 = this.line.point1;
-            console.log(tick.usrCoords);
             return Math.pow(10, tick.usrCoords[1] - p1.coords.usrCoords[1]);
           }
         });
       } else {
-        brd.removeObject(window.curve(typeof window.curve !== "undefined" ? curve != null ? (Math.logArray = function(input_array, base) {
-          var i, output_array;
-          output_array = [];
-          if (input_array instanceof Array) {
-            i = 0;
-            while (i < input_array.length) {
-              output_array.push(Math.log(input_array[i], base));
-              i++;
+        if (typeof window.curve !== "undefined") {
+          brd.removeObject(window.curve);
+        }
+      }
+      if (curve != null) {
+        if (curve.type === "LL.4") {
+          fct = function(x) {
+            return curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10, x) / curve.ec50)));
+          };
+          brd.create('functiongraph', [fct, -3, 20], {
+            strokeWidth: 2
+          });
+        }
+      }
+      getKnockoutReason = function() {
+        var reason;
+        reason = prompt("Please enter a reason", "Outlier");
+        return reason;
+      };
+      getMouseCoords = function(e) {
+        var absPos, cPos, dx, dy;
+        cPos = brd.getCoordsTopLeftCorner(e);
+        absPos = JXG.getPosition(e);
+        dx = absPos[0] - cPos[0];
+        dy = absPos[1] - cPos[1];
+        return new JXG.Coords(JXG.COORDS_BY_SCREEN, [dx, dy], brd);
+      };
+      createSelection = function(e) {
+        var a, b, c, coords, d, selection;
+        if (brd.elementsByName.selection == null) {
+          coords = getMouseCoords(e);
+          a = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
+            name: 'selectionA',
+            withLabel: false,
+            visible: false,
+            fixed: false
+          });
+          b = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
+            name: 'selectionB',
+            visible: false,
+            fixed: true
+          });
+          c = brd.create('point', ["X(selectionA)", coords.usrCoords[2]], {
+            name: 'selectionC',
+            visible: false
+          });
+          d = brd.create('point', [coords.usrCoords[1], "Y(selectionA)"], {
+            name: 'selectionD',
+            visible: false
+          });
+          selection = brd.create('polygon', [b, c, a, d], {
+            name: 'selection',
+            hasInnerPoints: true
+          });
+          selection.update = function() {
+            if (brd.elementsByName.selectionA.coords.usrCoords[2] < brd.elementsByName.selectionB.coords.usrCoords[2]) {
+              this.setAttribute({
+                fillcolor: 'red'
+              });
+              return selection.knockoutMode = true;
+            } else {
+              this.setAttribute({
+                fillcolor: '#00FF00'
+              });
+              return selection.knockoutMode = false;
             }
-            return output_array;
-          } else {
-            return null;
-          }
-        }, window.curve = brd.create("curve", [Math.logArray(curve.dose, 10), curve.response], {
-          strokeColor: "black",
-          strokeWidth: 2
-        })) : void 0 : void 0));
-        getMouseCoords = function(e) {
-          var absPos, cPos, dx, dy;
-          cPos = brd.getCoordsTopLeftCorner(e);
-          absPos = JXG.getPosition(e);
-          dx = absPos[0] - cPos[0];
-          dy = absPos[1] - cPos[1];
-          return new JXG.Coords(JXG.COORDS_BY_SCREEN, [dx, dy], brd);
-        };
-        createSelection = function(e) {
-          var a, b, c, coords, d, selection;
-          if (brd.elementsByName.selection == null) {
-            coords = getMouseCoords(e);
-            a = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
-              name: 'selectionA',
-              withLabel: false,
-              visible: false,
-              fixed: false
-            });
-            b = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
-              name: 'selectionB',
-              visible: false,
-              fixed: true
-            });
-            c = brd.create('point', ["X(selectionA)", coords.usrCoords[2]], {
-              name: 'selectionC',
-              visible: false
-            });
-            d = brd.create('point', [coords.usrCoords[1], "Y(selectionA)"], {
-              name: 'selectionD',
-              visible: false
-            });
-            selection = brd.create('polygon', [b, c, a, d], {
-              name: 'selection',
-              hasInnerPoints: true
-            });
-            selection.update = function() {
-              if (brd.elementsByName.selectionA.coords.usrCoords[2] < brd.elementsByName.selectionB.coords.usrCoords[2]) {
-                return this.setAttribute({
-                  fillcolor: 'red'
-                });
-              } else {
-                return this.setAttribute({
-                  fillcolor: '#00FF00'
-                });
-              }
-            };
-            selection.on('update', selection.update, selection);
-            brd.mouseUp = function() {
-              brd.removeObject(brd.elementsByName.selection);
+          };
+          selection.on('update', selection.update, selection);
+          brd.mouseUp = function() {
+            var knockoutMode, reason, selected;
+            selection = brd.elementsByName.selection;
+            if (selection != null) {
+              knockoutMode = selection.knockoutMode;
+              console.log(knockoutMode);
+              brd.removeObject(selection);
               brd.removeObject(brd.elementsByName.selectionC);
               brd.removeObject(brd.elementsByName.selectionD);
               brd.removeObject(brd.elementsByName.selectionB);
-              return brd.removeObject(brd.elementsByName.selectionA);
-            };
-            brd.on('mouseup', brd.mouseUp, brd);
-            brd.followSelection = function(e) {
-              var north, northEast, northWest, selectionCoords, sorted, south, southEast, southWest;
-              if (brd.elementsByName.selection) {
-                coords = getMouseCoords(e);
-                brd.elementsByName.selectionA.setPosition(JXG.COORDS_BY_USER, coords.usrCoords);
-                selection = brd.elementsByName.selection;
-                selection.update();
-                selectionCoords = [selection.vertices[0].coords.usrCoords, selection.vertices[1].coords.usrCoords, selection.vertices[2].coords.usrCoords, selection.vertices[3].coords.usrCoords];
-                sorted = _.sortBy(selection.vertices.slice(0, 4), function(vertex) {
-                  return vertex.coords.usrCoords[2];
-                });
-                south = _.sortBy(sorted.slice(0, 2), function(vertex) {
-                  return vertex.coords.usrCoords[1];
-                });
-                north = _.sortBy(sorted.slice(2, 4), function(vertex) {
-                  return vertex.coords.usrCoords[2];
-                });
-                northWest = north[0];
-                northEast = north[1];
-                southWest = south[0];
-                southEast = south[1];
-                return console.log(brd.model.get('points'));
+              brd.removeObject(brd.elementsByName.selectionA);
+              selected = selection.selected;
+              if (selected != null) {
+                if (selected.length > 0) {
+                  if (knockoutMode) {
+                    reason = getKnockoutReason();
+                  }
+                  selected.forEach(function(point) {
+                    if (knockoutMode) {
+                      return point.knockOutPoint(reason);
+                    } else {
+                      return point.includePoint();
+                    }
+                  });
+                  return brd.model.trigger('change');
+                }
               }
-            };
-            brd.on('mousemove', brd.followSelection, brd);
-          }
-        };
-        brd.on("down", createSelection);
-      }
+            }
+          };
+          brd.on('mouseup', brd.mouseUp, brd);
+          brd.followSelection = function(e) {
+            var doseResponsePoints, north, northEast, northWest, selected, selectionCoords, sorted, south, southEast, southWest;
+            if (brd.elementsByName.selection) {
+              coords = getMouseCoords(e);
+              brd.elementsByName.selectionA.setPosition(JXG.COORDS_BY_USER, coords.usrCoords);
+              selection = brd.elementsByName.selection;
+              selection.update();
+              selectionCoords = [selection.vertices[0].coords.usrCoords, selection.vertices[1].coords.usrCoords, selection.vertices[2].coords.usrCoords, selection.vertices[3].coords.usrCoords];
+              sorted = _.sortBy(selection.vertices.slice(0, 4), function(vertex) {
+                return vertex.coords.usrCoords[2];
+              });
+              south = _.sortBy(sorted.slice(0, 2), function(vertex) {
+                return vertex.coords.usrCoords[1];
+              });
+              north = _.sortBy(sorted.slice(2, 4), function(vertex) {
+                return vertex.coords.usrCoords[1];
+              });
+              northWest = north[0].coords.usrCoords;
+              northEast = north[1].coords.usrCoords;
+              southWest = south[0].coords.usrCoords;
+              southEast = south[1].coords.usrCoords;
+              selected = [];
+              doseResponsePoints = _.where(brd.elementsByName, {
+                isDoseResponsePoint: true,
+                isSelected: false
+              });
+              doseResponsePoints.forEach(function(point) {
+                if (point.coords.usrCoords[1] > northWest[1] & point.coords.usrCoords[2] < northWest[2] & point.coords.usrCoords[1] < northEast[1] & point.coords.usrCoords[2] < northEast[2] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[2] > southWest[2] & point.coords.usrCoords[1] < southEast[1] & point.coords.usrCoords[2] > southWest[2]) {
+                  return selected.push(point);
+                }
+              });
+              return selection.selected = selected;
+            }
+          };
+          brd.on('mousemove', brd.followSelection, brd);
+        }
+      };
+      brd.on("down", createSelection);
     };
 
     return DoseResponsePlotController;
@@ -633,14 +667,16 @@
     };
 
     CurveCuratorController.prototype.curveSelectionUpdated = function(who) {
-      return $.ajax({
-        type: 'GET',
-        url: "/api/curve/detail/" + who.model.get('curveid'),
-        dataType: 'json',
-        success: this.handleGetCurveDetailReturn,
-        error: function(err) {
-          return console.log('got ajax error');
-        }
+      var curveDetail;
+      curveDetail = new CurveDetail({
+        id: who.model.get('curveid')
+      });
+      return curveDetail.fetch({
+        success: (function(_this) {
+          return function() {
+            return _this.curveEditorController.setModel(curveDetail);
+          };
+        })(this)
       });
     };
 

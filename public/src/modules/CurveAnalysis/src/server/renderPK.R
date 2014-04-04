@@ -94,7 +94,7 @@ renderCurve <- function(getParams) {
 	setHeader(header="Cache-Control",value="max-age=1000000000000"); 
 	setHeader(header="Expires",value="Thu, 31 Dec 2099 24:24:24 GMT");
 	t <- tempfile()
-	PlotCurve(curveData = data$points, params = data$parameters, paramNames = NA, outFile = t, ymin=yMin, logDose = FALSE, logResponse = TRUE, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = FALSE, showLegend=legend, plotMeans = FALSE, connectPoints = TRUE, drawCurve = FALSE, axes = axes, addShapes = TRUE, labelAxes = TRUE, drawStdDevs = TRUE)
+	plotCurve(curveData = data$points, params = data$parameters, paramNames = NA, outFile = t, ymin=yMin, logDose = FALSE, logResponse = TRUE, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = FALSE, showLegend=legend, plotMeans = FALSE, connectPoints = TRUE, drawCurve = FALSE, axes = axes, addShapes = TRUE, labelAxes = TRUE, drawStdDevs = TRUE)
 	sendBin(readBin(t,'raw',n=file.info(t)$size))
 	unlink(t) 
 	DONE

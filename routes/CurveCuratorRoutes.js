@@ -3,6 +3,7 @@
     var config;
     app.get('/api/curves/stubs/:exptCode', exports.getCurveStubs);
     app.get('/api/curve/detail/:id', exports.getCurveDetail);
+    app.post('/api/curve/fit', exports.refitCurve);
     config = require('../conf/compiled/conf.js');
     if (config.all.client.require.login) {
       return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
@@ -18,7 +19,7 @@
       return resp.end(JSON.stringify(curveCuratorTestData.curveCuratorThumbs));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.rapache.fullpath + "/experimentcode/curvids/?experimentcode=";
+      baseurl = config.all.client.service.rapache.fullpath + "/experimentcode/curveids/?experimentcode=";
       request = require('request');
       return request({
         method: 'GET',
@@ -41,12 +42,41 @@
   };
 
   exports.getCurveDetail = function(req, resp) {
+    var baseurl, config, curveCuratorTestData, request;
+    if (global.specRunnerTestmode) {
+      curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
+      return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "/curve/detail/?id=";
+      request = require('request');
+      return request({
+        method: 'GET',
+        url: baseurl + req.params.id,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to retrieve curve detail');
+            console.log(error);
+            console.log(json);
+            return console.log(response);
+          }
+        };
+      })(this));
+    }
+  };
+
+  exports.refitCurve = function(req, resp) {
     var curveCuratorTestData;
     if (global.specRunnerTestmode) {
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
     } else {
-
+      return console.log('not implemented yet');
     }
   };
 

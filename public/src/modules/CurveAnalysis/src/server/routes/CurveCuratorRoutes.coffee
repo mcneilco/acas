@@ -2,12 +2,13 @@
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/curves/stubs/:exptCode', exports.getCurveStubs
 	app.get '/api/curve/detail/:id', exports.getCurveDetail
+	app.post '/api/curve/fit', exports.refitCurve
+
 	config = require '../conf/compiled/conf.js'
 	if config.all.client.require.login
 		app.get '/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex
 	else
 		app.get '/curveCurator/*', exports.curveCuratorIndex
-
 
 exports.getCurveStubs = (req, resp) ->
 	if global.specRunnerTestmode
@@ -15,7 +16,7 @@ exports.getCurveStubs = (req, resp) ->
 		resp.end JSON.stringify curveCuratorTestData.curveCuratorThumbs
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.rapache.fullpath+"/experimentcode/curvids/?experimentcode="
+		baseurl = config.all.client.service.rapache.fullpath+"/experimentcode/curveids/?experimentcode="
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -37,24 +38,30 @@ exports.getCurveDetail = (req, resp) ->
 		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveDetail
 	else
-#		config = require '../conf/compiled/conf.js'
-#		baseurl = config.all.client.service.rapache.fullpath+"/experimentcode/curvids/?experimentcode="
-#		request = require 'request'
-#		request(
-#			method: 'GET'
-#			url: baseurl+req.params.exptCode
-#			json: true
-#		, (error, response, json) =>
-#			if !error && response.statusCode == 200
-#				console.log JSON.stringify json
-#				resp.end JSON.stringify json
-#			else
-#				console.log 'got ajax error trying to save new experiment'
-#				console.log error
-#				console.log json
-#				console.log response
-#		)
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.rapache.fullpath+"/curve/detail/?id="
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl+req.params.id
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				console.log JSON.stringify json
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to retrieve curve detail'
+				console.log error
+				console.log json
+				console.log response
+		)
 
+exports.refitCurve = (req, resp) ->
+	if global.specRunnerTestmode
+		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
+		resp.end JSON.stringify curveCuratorTestData.curveDetail
+	else
+		console.log 'not implemented yet'
 
 exports.curveCuratorIndex = (req, resp) ->
 	global.specRunnerTestmode = if global.stubsMode then true else false

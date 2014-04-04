@@ -47,7 +47,6 @@ describe "Curve Curator Module testing", ->
 				waitsFor =>
 					@fetchReturn
 				, 200
-
 			it "should fetch curves set from expt code", ->
 				runs ->
 					expect(@ccs.get('curves').length).toBeGreaterThan 0
@@ -320,8 +319,7 @@ describe "Curve Curator Module testing", ->
 					runs ->
 						expect(@ccc.$('.bv_reportedValues').html()).toContain "slope"
 
-#TODO add sample attributes SSE, SST, R^2, EC50 to thumb stubs
-#TODO add ascending/descending controls for filter
-#TODO implement sort
-#TODO stub curation/refit service. First stube new service to get curve details refactor to fetch full curve from other service
+
+#TODO fix the styling of the plot
+#TODO stub refit service. First stube new service to get curve details refactor to fetch full curve from other service
 #TODO implement curation panel

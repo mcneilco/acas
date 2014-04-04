@@ -27,9 +27,105 @@ describe 'Curve Curator service testing', ->
 	describe 'Get curve details from curve id', ->
 		beforeEach ->
 			self = @
+			runs ->
+				@syncEvent=false
+				@testModel = new CurveDetail id: "AG-00068922_522"
+				@testModel.on 'change', =>
+					console.log 'sync event true'
+					@syncEvent=true
+				@testModel.fetch()
+		it 'should return curve detail with reportedValues', ->
+			waitsFor ->
+				@syncEvent
+			, 'service did not return'
+			, 2000
+			runs ->
+				expect(@testModel.get 'reportedValues' ).toContain "max"
+		it 'should return curve detail with fitSummary', ->
+			waitsFor ->
+				@syncEvent
+			, 'service did not return'
+			, 2000
+			runs ->
+				expect(@testModel.get 'fitSummary').toContain 'Model fitted'
+		it 'should return curve detail with curveErrors', ->
+			waitsFor ->
+				@syncEvent
+			, 'service did not return'
+			, 2000
+			runs ->
+				expect(@testModel.get 'curveErrors').toContain 'SSE'
+		it 'should return curve detail with category', ->
+			waitsFor ->
+				@syncEvent
+			, 'service did not return'
+			, 2000
+			runs ->
+				expect(@testModel.get 'category').toContain 'sigmoid'
+		it 'should return detail with approved', ->
+			waitsFor ->
+				@syncEvent
+			, 'service did not return'
+			, 2000
+			runs ->
+				expect(@testModel.get 'approved').toBeTruthy
+		it 'should return curve detail with sessionID', ->
+			waitsFor ->
+				@syncEvent
+			, 'service did not return'
+			, 2000
+			runs ->
+				expect(@testModel.sessionID).tobeDefined
+		it 'should return curve detail with curveAttributes', ->
+			waitsFor ->
+				@syncEvent
+			, 'service did not return'
+			, 2000
+			runs ->
+				expect(@testModel.get('curveAttributes').compoundCode).toEqual "CMPD-0000001-01"
+				expect(@testModel.get('curveAttributes').EC50).toEqual 0.700852529214898
+		it 'should return curve detail with plotData', ->
+			waitsFor ->
+				@syncEvent
+			, 'service did not return'
+			, 2000
+			runs ->
+				expect(@testModel.get('plotData').plotWindow.length).toEqual 4
+				expect(@testModel.get('plotData').points.dose.length).toBeGreaterThan 5
+				expect(@testModel.get('plotData').points.response.length).toBeGreaterThan 5
+				expect(@testModel.get('plotData').curve.ec50).toEqual 0.7008525
+		it 'should return curve detail with fitSettings', ->
+			waitsFor ->
+				@syncEvent
+			, 'service did not return'
+			, 2000
+			runs ->
+				expect(@testModel.get('fitSettings').max.limitType).toEqual 'pin'
+
+
+	goodDataRequest =
+		sessionID: "/var/folders/5b/s62pqy655kx6929zhxrml5c80000gn/T//rSe-34a423d5ace7"
+		save: false
+		fitSettings:
+			max:
+				limitType: "pin"# none, pin or limit
+				value: 101
+			min:
+				limitType: "none"# none, pin or limit
+				value: null
+			slope:
+				limitType: "limit"# none, pin or limit
+				value: 1.5
+			inactiveThreshold: 20
+			inverseAgonistMode: true
+
+	describe 'Post to fit service and get response', ->
+		beforeEach ->
+			self = @
 			$.ajax
-				type: 'GET'
-				url: "api/curve/detail/AG-00068922_522"
+				type: 'POST'
+				url: "api/curve/fit"
+				data: goodDataRequest
 				success: (json) ->
 					self.serviceReturn = json
 				error: (err) ->
@@ -44,38 +140,5 @@ describe 'Curve Curator service testing', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn.fitSummary).tobeDefined
-		it 'should return curve detail with curveErrors', ->
-			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-			runs ->
-				expect(@serviceReturn.curveErrors).tobeDefined
-		it 'should return curve detail with category', ->
-			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-			runs ->
-				expect(@serviceReturn.category).tobeDefined
-		it 'should return detail with approved', ->
-			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-			runs ->
-				expect(@serviceReturn.approved).tobeDefined
-		it 'should return curve detail with sessionID', ->
-			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-			runs ->
-				expect(@serviceReturn.sessionID).tobeDefined
-		it 'should return curve detail with curveAttributes', ->
-			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-			runs ->
-				expect(@serviceReturn.curveAttributes).tobeDefined
-				expect(@serviceReturn.curveAttributes.compoundCode).toEqual "CMPD-0000001-01"
-				expect(@serviceReturn.curveAttributes.EC50).toEqual 0.70170549529582
-		it 'should return curve detail with plotData', ->
-			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-			runs ->
-				expect(@serviceReturn.plotData).toBeDefined()
-				expect(@serviceReturn.plotData.plotWindow).toBeDefined()
-				expect(@serviceReturn.plotData.points.dose).toBeDefined()
-				expect(@serviceReturn.plotData.points.response).toBeDefined()
-				expect(@serviceReturn.plotData.curve.dose).toBeDefined()
-				expect(@serviceReturn.plotData.curve.response).toBeDefined()
-		it 'should return curve detail with fitSettings', ->
-			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-			runs ->
-				expect(@serviceReturn.fitSettings).toBeDefined()
+
+
