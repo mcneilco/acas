@@ -70,7 +70,7 @@ else
 fi
 
 ###Now setup the base backup location for seurat instance
-backupsLocation=$BACKUP_DIRECTORY/$client_deployMode
+backupsLocation=$BACKUP_DIRECTORY$client_deployMode
 echo "	creating $backupsLocation/backups/backup_daily"
 mkdir -p $backupsLocation/backups/backup_daily
 echo "	creating $backupsLocation/backups/backup_hourly"
@@ -90,11 +90,11 @@ cat /dev/null > $backupsLocation/scripts/backup_hourly.sh
 ###Setup Script specific variables
 backupDirLine="BaseBackupDir=$backupsLocation/backups"
 logDateLine="date >> \$BaseBackupDir/backup_hourly/backuplog.txt"
-logStartLineDaily="echo \"$client_deployMode Hourly Backup\" >> \$BaseBackupDir/\$1/backuplog.txt"
+logStartLineDaily="echo \"$client_deployMode Hourly Backup\" >> \$BaseBackupDir/backup_hourly/backuplog.txt"
 ACASNameDaily="acasArchNameGz=hourlyACAS_\`date +%H\`.tar.gz"
-acasTarLine="tar -pPzcf \$BaseBackupDir/backup_hourly/\$acasArchNameGz $ACAS_HOME >> \$BaseBackupDir/backup_hourly/backuplog.txt 2>&1"
+acasTarLine="tar -pPzcf \$BaseBackupDir/backup_hourly/\$acasArchNameGz $ACAS_HOMEserverOnlyModules/blueimp-file-upload-node/public/files >> \$BaseBackupDir/backup_hourly/backuplog.txt 2>&1"
 passwordEnvironmentVariable="export PGPASSWORD=${server_database_password}"
-dbDumpLine="pg_dump --dbname=${server_database_name} --host=${server_database_host} --port=${server_database_port} --username=${server_database_username} --username=${server_database_password} --clean | gzip -c > \$BaseBackupDir/backup_hourly/${server_database_name}_DatabaseDump_\`date +%H\`.gz"
+dbDumpLine="pg_dump --host=${server_database_host} --port=${server_database_port} --username=${server_database_username} --clean ${server_database_name} | gzip -c > \$BaseBackupDir/backup_hourly/${server_database_name}_DatabaseDump_\`date +%H\`.gz"
 
 ##Add Lines to Temp File
 echo $backupDirLine >> $backupsLocation/scripts/backup_hourly.sh
@@ -129,13 +129,13 @@ echo $cpLine2Daily >> $backupsLocation/scripts/backup_daily.sh
 ###Create File
 echo "	creating $backupsLocation/scripts/backup_weekly.sh"
 touch $backupsLocation/scripts/backup_weekly.sh
-cat /dev/null > $backupsLocation/scripts/backup_daily.sh
+cat /dev/null > $backupsLocation/scripts/backup_weekly.sh
 ###Variables
 backupDirLine="BaseBackupDir=$backupsLocation/backups"
-logDateLine="date >> \$BaseBackupDir/backup_daily/backuplog.txt"
+logDateLine="date >> \$BaseBackupDir/backup_weekly/backuplog.txt"
 logStartLineWeekly="echo \"$BackupName Weekly Backup\" >> \$BaseBackupDir/backup_weekly/backuplog.txt"
 ACASNameWeekly="acasArchNameGz=weeklyACAS_\`date +%m_%d_%y\`.tar.gz"
-cpLine1Weekly="cp \$BaseBackupDir/backup_daily/dailyACAS_Fri.tar.gz \$BaseBackupDir/backup_weekly/\$acasArchNameGz >> \$BaseBackupDir/\$1/backuplog.txt 2>&1"
+cpLine1Weekly="cp \$BaseBackupDir/backup_daily/dailyACAS_Fri.tar.gz \$BaseBackupDir/backup_weekly/\$acasArchNameGz >> \$BaseBackupDir/backup_weekly/backuplog.txt 2>&1"
 cpLine2Weekly="cp \$BaseBackupDir/backup_daily/${server_database_name}_DatabaseDump_Fri.gz \$BaseBackupDir/backup_weekly/${server_database_name}_DatabaseDump_\`date +%m_%d_%y\`.gz >> \$BaseBackupDir/backup_weekly/backuplog.txt 2>&1"
 ##Add to File
 echo $backupDirLine >> $backupsLocation/scripts/backup_weekly.sh
@@ -164,4 +164,5 @@ su - $BACKUP_USER -c "rm -f /tmp/crontabFile.txt"
 ##Set permissions for these new files to the backup user
 chown -R $BACKUP_USER $backupsLocation
 chmod -R 700 $backupsLocation
+
 
