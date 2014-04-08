@@ -92,7 +92,7 @@ backupDirLine="BaseBackupDir=$backupsLocation/backups"
 logDateLine="date >> \$BaseBackupDir/backup_hourly/backuplog.txt"
 logStartLineDaily="echo \"$client_deployMode Hourly Backup\" >> \$BaseBackupDir/backup_hourly/backuplog.txt"
 ACASNameDaily="acasArchNameGz=hourlyACAS_\`date +%H\`.tar.gz"
-acasTarLine="tar -pPzcf \$BaseBackupDir/backup_hourly/\$acasArchNameGz $ACAS_HOMEserverOnlyModules/blueimp-file-upload-node/public/files >> \$BaseBackupDir/backup_hourly/backuplog.txt 2>&1"
+acasTarLine="tar -pPzcf \$BaseBackupDir/backup_hourly/\$acasArchNameGz $ACAS_HOME/serverOnlyModules/blueimp-file-upload-node/public/files >> \$BaseBackupDir/backup_hourly/backuplog.txt 2>&1"
 passwordEnvironmentVariable="export PGPASSWORD=${server_database_password}"
 dbDumpLine="pg_dump --host=${server_database_host} --port=${server_database_port} --username=${server_database_username} --clean ${server_database_name} | gzip -c > \$BaseBackupDir/backup_hourly/${server_database_name}_DatabaseDump_\`date +%H\`.gz"
 
@@ -164,5 +164,3 @@ su - $BACKUP_USER -c "rm -f /tmp/crontabFile.txt"
 ##Set permissions for these new files to the backup user
 chown -R $BACKUP_USER $backupsLocation
 chmod -R 700 $backupsLocation
-
-
