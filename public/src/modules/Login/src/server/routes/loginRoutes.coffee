@@ -20,8 +20,7 @@ app.get '/api/users/:username', loginRoutes.getUsers
 exports.setupRoutes = (app, passport) ->
 	app.get '/login', exports.loginPage
 	app.post '/login',
-		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
-		exports.loginPost
+		passport.authenticate('local', { failureRedirect: '/login',successRedirect: '/', failureFlash: true })
 #	app.post '/login', passport.authenticate 'local',
 #		failureRedirect: '/login'
 #		failureFlash: true
@@ -59,11 +58,6 @@ exports.loginPage = (req, res) ->
 		user: user
 		message: errorMsg
 
-exports.loginPost = (req, res) ->
-	console.log req.session
-#	res.redirect '/'
-	res.redirect req.session.returnTo
-
 exports.resetPost = (req, res) ->
 	console.log req.session
 	#	res.redirect '/'
@@ -98,9 +92,11 @@ exports.authenticationService = (req, resp) ->
 	callback = (results) ->
 		console.log results
 		if results.indexOf("Success")>=0
+			console.log "in authentication service success"
 			resp.json
 				status: "Success"
 		else
+			console.log "in authentication service fail"
 			resp.json
 				status: "Fail"
 

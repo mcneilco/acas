@@ -58,6 +58,20 @@
       });
     });
     passport.use(new LocalStrategy(csUtilities.loginStrategy));
+    passport.isAdmin = function(req, resp, next) {
+      if (req.isAuthenticated() && req.user.role === 'admin') {
+        return next();
+      } else {
+        return next(new handler.NotAuthorizedError("Sorry, you don't have the right!"));
+      }
+    };
+    passport.isAuthenticated = function(req, resp, next) {
+      if (!req.isAuthenticated()) {
+        return next(new handler.NotAuthorizedError("Sorry, you don't have the right!"));
+      } else {
+        return next();
+      }
+    };
     loginRoutes = require('./routes/loginRoutes');
     loginRoutes.setupRoutes(app, passport);
     indexRoutes = require('./routes/index.js');
