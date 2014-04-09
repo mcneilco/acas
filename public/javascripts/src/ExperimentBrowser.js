@@ -1,5 +1,6 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref, _ref1, _ref2, _ref3,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -7,7 +8,8 @@
     __extends(ExperimentSearch, _super);
 
     function ExperimentSearch() {
-      return ExperimentSearch.__super__.constructor.apply(this, arguments);
+      _ref = ExperimentSearch.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     ExperimentSearch.prototype.defaults = {
@@ -26,7 +28,8 @@
       this.handleFindClicked = __bind(this.handleFindClicked, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
-      return ExperimentSearchController.__super__.constructor.apply(this, arguments);
+      _ref1 = ExperimentSearchController.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     ExperimentSearchController.prototype.template = _.template($("#ExperimentSearchView").html());
@@ -77,7 +80,8 @@
 
     function ExperimentRowSummaryController() {
       this.render = __bind(this.render, this);
-      return ExperimentRowSummaryController.__super__.constructor.apply(this, arguments);
+      _ref2 = ExperimentRowSummaryController.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     ExperimentRowSummaryController.prototype.tagName = 'tr';
@@ -104,7 +108,8 @@
 
     function ExperimentBrowserController() {
       this.render = __bind(this.render, this);
-      return ExperimentBrowserController.__super__.constructor.apply(this, arguments);
+      _ref3 = ExperimentBrowserController.__super__.constructor.apply(this, arguments);
+      return _ref3;
     }
 
     ExperimentBrowserController.prototype.template = _.template($("#ExperimentBrowserView").html());

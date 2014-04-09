@@ -1,9 +1,9 @@
-
 /*
 This service takes an experiment code,
   looks up efficacy data already saved there, and fits curves.
   It returns a summary in HTML. To see detailed result you have to open the curve curator
- */
+*/
+
 
 (function() {
   var badDataRequest, goodDataRequest, returnExampleError, returnExampleSuccess;
@@ -61,21 +61,18 @@ This service takes an experiment code,
     describe('when run with valid input data', function() {
       beforeEach(function() {
         return runs(function() {
+          var _this = this;
           return $.ajax({
             type: 'POST',
             url: "api/doseResponseCurveFit",
             data: goodDataRequest,
-            success: (function(_this) {
-              return function(json) {
-                return _this.serviceReturn = json;
-              };
-            })(this),
-            error: (function(_this) {
-              return function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              };
-            })(this),
+            success: function(json) {
+              return _this.serviceReturn = json;
+            },
+            error: function(err) {
+              console.log('got ajax error');
+              return _this.serviceReturn = null;
+            },
             dataType: 'json'
           });
         });
@@ -93,21 +90,18 @@ This service takes an experiment code,
     return describe('when run with invalid input file', function() {
       beforeEach(function() {
         return runs(function() {
+          var _this = this;
           return $.ajax({
             type: 'POST',
             url: "api/doseResponseCurveFit",
             data: badDataRequest,
-            success: (function(_this) {
-              return function(json) {
-                return _this.serviceReturn = json;
-              };
-            })(this),
-            error: (function(_this) {
-              return function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              };
-            })(this),
+            success: function(json) {
+              return _this.serviceReturn = json;
+            },
+            error: function(err) {
+              console.log('got ajax error');
+              return _this.serviceReturn = null;
+            },
             dataType: 'json'
           });
         });

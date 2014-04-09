@@ -1,5 +1,6 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -8,7 +9,8 @@
 
     function Protocol() {
       this.parse = __bind(this.parse, this);
-      return Protocol.__super__.constructor.apply(this, arguments);
+      _ref = Protocol.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     Protocol.prototype.urlRoot = "/api/protocols";
@@ -27,24 +29,21 @@
     };
 
     Protocol.prototype.parse = function(resp) {
+      var _this = this;
       if (resp.lsLabels != null) {
         if (!(resp.lsLabels instanceof LabelList)) {
           resp.lsLabels = new LabelList(resp.lsLabels);
-          resp.lsLabels.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
+          resp.lsLabels.on('change', function() {
+            return _this.trigger('change');
+          });
         }
       }
       if (resp.lsStates != null) {
         if (!(resp.lsStates instanceof StateList)) {
           resp.lsStates = new StateList(resp.lsStates);
-          resp.lsStates.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
+          resp.lsStates.on('change', function() {
+            return _this.trigger('change');
+          });
         }
       }
       return resp;
@@ -68,16 +67,13 @@
     };
 
     Protocol.prototype.setupCompositeChangeTriggers = function() {
-      this.get('lsLabels').on('change', (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      return this.get('lsStates').on('change', (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
+      var _this = this;
+      this.get('lsLabels').on('change', function() {
+        return _this.trigger('change');
+      });
+      return this.get('lsStates').on('change', function() {
+        return _this.trigger('change');
+      });
     };
 
     Protocol.prototype.isStub = function() {
