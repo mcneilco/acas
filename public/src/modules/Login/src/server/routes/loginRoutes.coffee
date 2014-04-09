@@ -154,14 +154,20 @@ exports.changePage = (req, res) ->
 	user = null
 	if req.user?
 		user = req.user
+	if user != null && user.role!=null && user.role == 'admin'
+		errorMsg = ""
+		error = req.flash('error')
+		if error.length > 0
+			errorMsg = error[0]
 
-	errorMsg = ""
-	error = req.flash('error')
-	if error.length > 0
-		errorMsg = error[0]
-
-	res.render 'change',
-		title: "ACAS reset"
-		scripts: []
-		user: user
-		message: errorMsg
+		res.render 'change',
+			title: "ACAS reset"
+			scripts: []
+			user: user
+			message: errorMsg
+	else
+		res.render 'login',
+			title: "ACAS login"
+			scripts: []
+			user: user
+			message: "need login or admin"

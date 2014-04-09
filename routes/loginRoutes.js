@@ -184,17 +184,26 @@ app.get '/api/users/:username', loginRoutes.getUsers
     if (req.user != null) {
       user = req.user;
     }
-    errorMsg = "";
-    error = req.flash('error');
-    if (error.length > 0) {
-      errorMsg = error[0];
+    if (user !== null && user.role !== null && user.role === 'admin') {
+      errorMsg = "";
+      error = req.flash('error');
+      if (error.length > 0) {
+        errorMsg = error[0];
+      }
+      return res.render('change', {
+        title: "ACAS reset",
+        scripts: [],
+        user: user,
+        message: errorMsg
+      });
+    } else {
+      return res.render('login', {
+        title: "ACAS login",
+        scripts: [],
+        user: user,
+        message: "need login or admin"
+      });
     }
-    return res.render('change', {
-      title: "ACAS reset",
-      scripts: [],
-      user: user,
-      message: errorMsg
-    });
   };
 
 }).call(this);
