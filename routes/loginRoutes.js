@@ -143,11 +143,11 @@ app.get '/api/users/:username', loginRoutes.getUsers
     var callback;
     callback = function(results) {
       console.log(results);
-      if (results.indexOf("Success") >= 0) {
-        return resp.json({
-          status: "Success"
-        });
+      if (results.indexOf("You password has been successfully been changed") >= 0) {
+        req.flash('error', 'Your new password is set');
+        return resp.redirect('/login');
       } else {
+        req.flash('error', 'Invalid password or new password does not match');
         return resp.redirect('/change');
       }
     };

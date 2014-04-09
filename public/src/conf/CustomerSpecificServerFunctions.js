@@ -33,10 +33,8 @@
       json: false
     }, function(error, response, json) {
       if (!error && response.statusCode === 200) {
-        console.log(json);
         return retFun(JSON.stringify(json));
       } else if (!error && response.statusCode === 302) {
-        console.log("return from ajax check 302:" + response.headers.location);
         return retFun(JSON.stringify(response.headers.location));
       } else {
         console.log('got ajax error trying authenticate a user');
@@ -91,6 +89,7 @@
       },
       json: false
     }, function(error, response, json) {
+      console.log(response.statusCode);
       if (!error && response.statusCode === 200) {
         return retFun(JSON.stringify(json));
       } else {
@@ -117,14 +116,12 @@
         json: '{"name":"guy@mcneilco.com"}'
       }, function(error, response, json) {
         if (!error && response.statusCode === 200) {
-          console.log("returned:" + json);
-          console.log(response.body);
           return callback(null, {
             id: "bob",
             username: "bob",
             email: "bob@nowwhere.com",
-            firstName: "Bob",
-            lastName: "Roberts",
+            firstName: "Bob2",
+            lastName: "Roberts1",
             role: "admin"
           });
         } else {

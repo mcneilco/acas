@@ -123,10 +123,11 @@ exports.resetAuthenticationService = (req, resp) ->
 exports.changeAuthenticationService = (req, resp) ->
 	callback = (results) ->
 		console.log results
-		if results.indexOf("Success")>=0
-			resp.json
-				status: "Success"
+		if results.indexOf("You password has been successfully been changed")>=0
+			req.flash 'error','Your new password is set'
+			resp.redirect '/login'
 		else
+			req.flash 'error','Invalid password or new password does not match'
 			resp.redirect '/change'
 
 	if global.specRunnerTestmode
