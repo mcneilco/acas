@@ -42,7 +42,6 @@ exports.setupRoutes = (app, passport) ->
 csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 
 exports.loginPage = (req, res) ->
-	req.session.returnTo = '/'
 	user = null
 	if req.user?
 		user = req.user

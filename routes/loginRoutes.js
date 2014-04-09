@@ -43,7 +43,6 @@ app.get '/api/users/:username', loginRoutes.getUsers
 
   exports.loginPage = function(req, res) {
     var error, errorMsg, user;
-    req.session.returnTo = '/';
     user = null;
     if (req.user != null) {
       user = req.user;
