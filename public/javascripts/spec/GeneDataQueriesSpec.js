@@ -107,7 +107,7 @@
             return expect(this.gidqrc.$('.bv_resultTable').length).toEqual(1);
           });
         });
-        return describe("data display", function() {
+        describe("data display", function() {
           it("should setup DOM in prep to load datatable module", function() {
             return expect(this.gidqrc.$('thead tr').length).toEqual(2);
           });
@@ -116,6 +116,29 @@
           });
           return it("should not show the no results message", function() {
             return expect(this.gidqrc.$('.bv_noResultsFound')).toBeHidden();
+          });
+        });
+        return describe("request results as CSV", function() {
+          return it("should trigger search format csv request", function() {
+            runs((function(_this) {
+              return function() {
+                _this.downLoadCSVRequested = false;
+                _this.gidqrc.on('downLoadCSVRequested', function() {
+                  return _this.downLoadCSVRequested = true;
+                });
+                return _this.gidqrc.$('.bv_downloadCSV').click();
+              };
+            })(this));
+            waitsFor((function(_this) {
+              return function() {
+                return _this.downLoadCSVRequested;
+              };
+            })(this), 200);
+            return runs((function(_this) {
+              return function() {
+                return expect(_this.downLoadCSVRequested).toBeTruthy();
+              };
+            })(this));
           });
         });
       });

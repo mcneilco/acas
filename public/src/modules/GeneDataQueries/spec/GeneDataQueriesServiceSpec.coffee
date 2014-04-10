@@ -148,7 +148,7 @@ describe 'Gene Data Queries Service testing', ->
 					expect(@serviceReturn.results.data.iTotalRecords).toEqual 0
 					expect(@serviceReturn.hasWarning).toBeDefined()
 					expect(@serviceReturn.results.htmlSummary).toBeDefined()
-		describe 'when run with invalid input file', ->
+		describe 'when run with invalid input', ->
 			beforeEach ->
 				runs ->
 					$.ajax
@@ -168,6 +168,22 @@ describe 'Gene Data Queries Service testing', ->
 					expect(@serviceReturn.hasError).toBeTruthy()
 					expect(@serviceReturn.errorMessages.length).toBeGreaterThan(0)
 					expect(@serviceReturn.errorMessages[1].errorLevel).toEqual 'error'
+		describe 'when run with valid input data and format is CSV', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'POST'
+						url: "api/geneDataQuery?format=csv"
+						data:
+							geneIDs: "fiona"
+						success: (res) =>
+							console.log res
+							@serviceReturn = res
+			it 'should return no errors, dry run mode, hasWarning, and an html summary', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 300)
+				runs ->
+					#returns a link to a temp file
+					expect(@serviceReturn.fileURL).toContain "http://"
 
 	describe "advanced experiments for genes query", ->
 		describe 'when run with valid input data', ->
@@ -366,5 +382,21 @@ describe 'Gene Data Queries Service testing', ->
 					expect(@serviceReturn.hasError).toBeTruthy()
 					expect(@serviceReturn.errorMessages.length).toBeGreaterThan(0)
 					expect(@serviceReturn.errorMessages[1].errorLevel).toEqual 'error'
+		describe 'when run with valid input data and format is CSV', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'POST'
+						url: "api/geneDataQueryAdvanced?format=csv"
+						data: goodAdvancedRequest
+						success: (res) =>
+							console.log res
+							@serviceReturn = res
+			# combine all expects in one test to reduce test run time since the service is slow
+			it 'should return no errors, dry run mode, hasWarning, and an html summary', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 500)
+				runs ->
+					#returns a link to a temp file
+					expect(@serviceReturn.fileURL).toContain "http://"
 
-#TODO api/geneDataQueryReturnCSV just returns a CSV stream May not be able to test here
+
