@@ -32,6 +32,7 @@ exports.applicationScripts = [
 	'/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',
 	'/javascripts/src/Protocol.js',
+	"/javascripts/src/PrimaryScreenExperiment.js",
 	"/javascripts/src/AppController.js",
 	"/javascripts/src/BatchListValidator.js",
 	"/javascripts/src/BulkLoadContainersFromSDF.js",
@@ -50,7 +51,6 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenus.js",
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
-	"/javascripts/src/PrimaryScreenExperiment.js",
 	"/javascripts/src/TagList.js"
 ];
 

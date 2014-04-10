@@ -313,6 +313,11 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_hitSDThreshold').change()
 					expect(@psapc.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy()
 
+	describe "Abstract Upload and Run Primary Analysis Controller testing", ->
+		describe "Basic loading", ->
+			it "Class should exist", ->
+				expect(window.AbstractUploadAndRunPrimaryAnalsysisController).toBeDefined()
+
 	describe "Upload and Run Primary Analysis Controller testing", ->
 		beforeEach ->
 			@exp = new PrimaryScreenExperiment()
@@ -335,6 +340,7 @@ describe "Primary Screen Experiment module testing", ->
 				@psac = new PrimaryScreenAnalysisController
 					model: @exp
 					el: $('#fixture')
+					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 				@psac.render()
 			describe "Basic loading", ->
 				it "Class should exist", ->
@@ -361,6 +367,7 @@ describe "Primary Screen Experiment module testing", ->
 				@psac = new PrimaryScreenAnalysisController
 					model: @exp
 					el: $('#fixture')
+					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 				@psac.render()
 			it "Should disable analsyis parameter editing if status is Finalized", ->
 				@psac.model.getStatus().set stringValue: "Finalized"
@@ -378,9 +385,16 @@ describe "Primary Screen Experiment module testing", ->
 				@psac = new PrimaryScreenAnalysisController
 					model: @exp
 					el: $('#fixture')
+					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 				@psac.render()
 			it "should show upload button as re-analyze since status is not 'not started'", ->
 				expect(@psac.$('.bv_save').html()).toEqual "Re-Analyze"
+
+
+	describe "Abstract Primary Screen Experiment Controller testing", ->
+		describe "Basic loading", ->
+			it "Class should exist", ->
+				expect(window.AbstractPrimaryScreenExperimentController).toBeDefined()
 
 	describe "Primary Screen Experiment Controller testing", ->
 		describe "basic plumbing checks with new experiment", ->

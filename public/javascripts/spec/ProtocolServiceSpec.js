@@ -222,13 +222,13 @@ See ProtocolServiceTestJSON.coffee for examples
           });
         });
       });
-      return describe('when protocol code list service called with filtering option', function() {
+      describe('when protocol code list service called with label filtering option', function() {
         describe("With matching case", function() {
           beforeEach(function() {
             return runs(function() {
               return $.ajax({
                 type: 'GET',
-                url: "api/protocolCodes/filter/PK",
+                url: "api/protocolCodes/?protocolName=PK",
                 success: (function(_this) {
                   return function(json) {
                     return _this.serviceReturn = json;
@@ -256,7 +256,7 @@ See ProtocolServiceTestJSON.coffee for examples
             return runs(function() {
               return $.ajax({
                 type: 'GET',
-                url: "api/protocolCodes/filter/pk",
+                url: "api/protocolCodes/?protocolName=pk",
                 success: (function(_this) {
                   return function(json) {
                     return _this.serviceReturn = json;
@@ -277,6 +277,34 @@ See ProtocolServiceTestJSON.coffee for examples
             return runs(function() {
               return expect(this.serviceReturn[this.serviceReturn.length - 1].name).toContain("PK");
             });
+          });
+        });
+      });
+      return describe('when protocol code list service called with protocol lsKind filtering option', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "api/protocolCodes/?protocolKind=KD",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        return it('should only return names with PK', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[this.serviceReturn.length - 1].name).toContain("KD");
           });
         });
       });

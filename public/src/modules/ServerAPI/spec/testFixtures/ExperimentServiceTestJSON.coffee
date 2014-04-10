@@ -1275,8 +1275,8 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-#				stringValue: "complete"
-				stringValue: "not started"
+				stringValue: "complete"
+#				stringValue: "not started"
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
