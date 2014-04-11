@@ -153,7 +153,7 @@ app.get '/api/users/:username', loginRoutes.getUsers
     if (global.specRunnerTestmode) {
       return callback("Success");
     } else {
-      return csUtilities.changeAuth(req.body.user, req.body.oldPassword, req.body.oldPassword, req.body.oldPassword, callback);
+      return csUtilities.changeAuth(req.body.user, req.body.oldPassword, req.body.newPassword, req.body.newPasswordAgain, callback);
     }
   };
 

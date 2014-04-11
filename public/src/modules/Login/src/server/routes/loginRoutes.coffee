@@ -132,7 +132,7 @@ exports.changeAuthenticationService = (req, resp) ->
 	if global.specRunnerTestmode
 		callback("Success")
 	else
-		csUtilities.changeAuth req.body.user, req.body.oldPassword,req.body.oldPassword,req.body.oldPassword, callback
+		csUtilities.changeAuth req.body.user, req.body.oldPassword,req.body.newPassword,req.body.newPasswordAgain, callback
 
 
 exports.resetpage = (req, res) ->
