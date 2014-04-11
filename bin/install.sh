@@ -107,7 +107,7 @@ mkdir acas-$date
 ln -s acas-$date acas
 cd acas-$date
 
-if [ "$DEV" == "base" ] 
+if [ "$DEV" = "base" ] 
 then
 	git clone https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mcneilco/acas.git .
 	git checkout $ACAS_BRANCH
@@ -120,7 +120,7 @@ then
 	echo "Installing acas_custom $CUSTOM_REPO on branch $CUSTOM_BRANCH"
     mkdir acas_custom
 	cd acas_custom
-	if [ "$DEV" == "custom" ] 
+	if [ "$DEV" = "custom" ]
 	then
 		git clone https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mcneilco/$CUSTOM_REPO.git .
 		git checkout $CUSTOM_BRANCH
@@ -152,4 +152,3 @@ fi
 #export ACAS_HOME=$(pwd)/..
 #export R_LIBS=$ACAS_HOME/r_libs
 #R -e "library(racas);query('select * from api_protocol')"
-
