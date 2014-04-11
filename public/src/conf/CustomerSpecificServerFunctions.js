@@ -25,7 +25,7 @@
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       },
       method: 'POST',
-      url: 'http://host3.labsynch.com:8080/acas/resources/j_spring_security_check',
+      url: config.all.client.require.login.loginLink,
       form: {
         j_username: user,
         j_password: pass
@@ -54,7 +54,7 @@
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       },
       method: 'POST',
-      url: 'http://host3.labsynch.com:8080/acas/forgotpassword/update',
+      url: config.all.client.require.login.resetLink,
       form: {
         emailAddress: email
       },
@@ -80,7 +80,7 @@
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       },
       method: 'POST',
-      url: 'http://host3.labsynch.com:8080/acas/changepassword/update',
+      url: config.all.client.require.login.changeLink,
       form: {
         username: user,
         oldPassword: passOld,
@@ -112,10 +112,11 @@
           accept: 'application/json'
         },
         method: 'POST',
-        url: 'http://host3.labsynch.com:8080/acas/authors/findbyname',
+        url: config.all.client.require.login.getUserLink,
         json: '{"name":"guy@mcneilco.com"}'
       }, function(error, response, json) {
         if (!error && response.statusCode === 200) {
+          console.log(json);
           return callback(null, {
             id: "bob",
             username: "bob",
@@ -144,33 +145,27 @@
   };
 
   exports.loginStrategy = function(username, password, done) {
-    return exports.findByUsername(username, function(err, user) {
-      return exports.authCheck(username, password, function(results) {
-        var error;
-        if (results.indexOf("login_error") >= 0) {
-          try {
-            exports.logUsage("User failed login: ", "", username);
-          } catch (_error) {
-            error = _error;
-            console.log("Exception trying to log:" + error);
-          }
-          return done(null, false, {
-            message: "Invalid credentials"
-          });
-        } else {
-          try {
-            exports.logUsage("User logged in succesfully: ", "", username);
-          } catch (_error) {
-            error = _error;
-            console.log("Exception trying to log:" + error);
-          }
-          if (user === null) {
-            return exports.getUser(username, done);
-          } else {
-            return done(null, user);
-          }
+    return exports.authCheck(username, password, function(results) {
+      var error;
+      if (results.indexOf("login_error") >= 0) {
+        try {
+          exports.logUsage("User failed login: ", "", username);
+        } catch (_error) {
+          error = _error;
+          console.log("Exception trying to log:" + error);
         }
-      });
+        return done(null, false, {
+          message: "Invalid credentials"
+        });
+      } else {
+        try {
+          exports.logUsage("User logged in succesfully: ", "", username);
+        } catch (_error) {
+          error = _error;
+          console.log("Exception trying to log:" + error);
+        }
+        return exports.getUser(username, done);
+      }
     });
   };
 
