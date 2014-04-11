@@ -117,17 +117,19 @@
         },
         method: 'POST',
         url: config.all.client.require.getUserLink,
-        json: '{"name":"guy@mcneilco.com"}'
+        json: {
+          name: username
+        }
       }, function(error, response, json) {
         if (!error && response.statusCode === 200) {
           console.log(json);
           return callback(null, {
-            id: "bob",
-            username: "bob",
-            email: "bob@nowwhere.com",
-            firstName: "Bob2",
-            lastName: "Roberts1",
-            role: "admin"
+            id: json.id,
+            username: json.userName,
+            email: json.emailAddress,
+            firstName: json.firstName,
+            lastName: json.lastName,
+            role: json.role
           });
         } else {
           return callback("user not found", null);
