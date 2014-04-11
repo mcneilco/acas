@@ -12,8 +12,7 @@
     app.post('/api/protocols', exports.postProtocol);
     app.put('/api/protocols', exports.putProtocol);
     app.get('/api/protocollabels', exports.lsLabels);
-    app.get('/api/protocolCodes', exports.protocolCodeList);
-    return app.get('/api/protocolCodes/filter/:str', exports.protocolCodeList);
+    return app.get('/api/protocolCodes', exports.protocolCodeList);
   };
 
   exports.protocolByCodename = function(req, resp) {
@@ -118,21 +117,26 @@
   };
 
   exports.protocolCodeList = function(req, resp) {
-    var baseurl, config, filterString, labels, protocolServiceTestJSON, request, shouldFilter, translateToCodes;
-    console.log(req.params);
-    if (req.params.str != null) {
-      shouldFilter = true;
-      filterString = req.params.str.toUpperCase();
+    var baseurl, config, filterString, labels, protocolServiceTestJSON, request, shouldFilterByKind, shouldFilterByName, translateToCodes;
+    if (req.query.protocolName != null) {
+      shouldFilterByName = true;
+      filterString = req.query.protocolName.toUpperCase();
+    } else if (req.query.protocolKind != null) {
+      shouldFilterByKind = true;
+      filterString = req.query.protocolKind.toUpperCase();
     } else {
-      shouldFilter = false;
+      shouldFilterByName = false;
+      shouldFilterByKind = false;
     }
     translateToCodes = function(labels) {
       var label, match, protCodes, _i, _len;
       protCodes = [];
       for (_i = 0, _len = labels.length; _i < _len; _i++) {
         label = labels[_i];
-        if (shouldFilter) {
+        if (shouldFilterByName) {
           match = label.labelText.toUpperCase().indexOf(filterString) > -1;
+        } else if (shouldFilterByKind) {
+          match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1;
         } else {
           match = true;
         }
@@ -153,8 +157,10 @@
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocollabels/codetable";
-      if (shouldFilter) {
+      if (shouldFilterByName) {
         baseurl += "/?protocolName=" + filterString;
+      } else if (shouldFilterByKind) {
+        baseurl += "/?protocolKind=" + filterString;
       }
       request = require('request');
       return request({

@@ -441,6 +441,13 @@
         });
       });
     });
+    describe("Abstract Upload and Run Primary Analysis Controller testing", function() {
+      return describe("Basic loading", function() {
+        return it("Class should exist", function() {
+          return expect(window.AbstractUploadAndRunPrimaryAnalsysisController).toBeDefined();
+        });
+      });
+    });
     describe("Upload and Run Primary Analysis Controller testing", function() {
       beforeEach(function() {
         this.exp = new PrimaryScreenExperiment();
@@ -466,7 +473,8 @@
           this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
           this.psac = new PrimaryScreenAnalysisController({
             model: this.exp,
-            el: $('#fixture')
+            el: $('#fixture'),
+            uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
           });
           return this.psac.render();
         });
@@ -503,7 +511,8 @@
           this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
           this.psac = new PrimaryScreenAnalysisController({
             model: this.exp,
-            el: $('#fixture')
+            el: $('#fixture'),
+            uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
           });
           return this.psac.render();
         });
@@ -534,12 +543,20 @@
           });
           this.psac = new PrimaryScreenAnalysisController({
             model: this.exp,
-            el: $('#fixture')
+            el: $('#fixture'),
+            uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
           });
           return this.psac.render();
         });
         return it("should show upload button as re-analyze since status is not 'not started'", function() {
           return expect(this.psac.$('.bv_save').html()).toEqual("Re-Analyze");
+        });
+      });
+    });
+    describe("Abstract Primary Screen Experiment Controller testing", function() {
+      return describe("Basic loading", function() {
+        return it("Class should exist", function() {
+          return expect(window.AbstractPrimaryScreenExperimentController).toBeDefined();
         });
       });
     });

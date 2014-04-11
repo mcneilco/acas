@@ -615,7 +615,7 @@
 			codeName: "PROT-00000007"
 			id: 2585
 			ignored: false
-			lsKind: "default"
+			lsKind: "PK"
 			lsTransaction: 74
 			lsType: "default"
 			lsTypeAndKind: "default_default"
@@ -645,7 +645,7 @@
 			codeName: "PROT-00000008"
 			id: 2586
 			ignored: false
-			lsKind: "default"
+			lsKind: "PK"
 			lsTransaction: 75
 			lsType: "default"
 			lsTypeAndKind: "default_default"
@@ -675,7 +675,7 @@
 			codeName: "PROT-00000009"
 			id: 2587
 			ignored: false
-			lsKind: "default"
+			lsKind: "PK"
 			lsTransaction: 76
 			lsType: "default"
 			lsTypeAndKind: "default_default"
@@ -766,7 +766,7 @@
 			ignored: false
 			lsKind: "default"
 			lsTransaction: 78
-			lsType: "default"
+			lsType: "uSol"
 			lsTypeAndKind: "default_default"
 			modifiedBy: null
 			modifiedDate: null
@@ -793,7 +793,7 @@
 			codeName: "PROT-00000013"
 			id: 2590
 			ignored: false
-			lsKind: "default"
+			lsKind: "PAMPA"
 			lsTransaction: 78
 			lsType: "default"
 			lsTypeAndKind: "default_default"
@@ -822,7 +822,7 @@
 			codeName: "PROT-00000014"
 			id: 2590
 			ignored: false
-			lsKind: "default"
+			lsKind: "Microsome Stability"
 			lsTransaction: 78
 			lsType: "default"
 			lsTypeAndKind: "default_default"
@@ -851,7 +851,7 @@
 			codeName: "PROT-00000015"
 			id: 2590
 			ignored: true
-			lsKind: "default"
+			lsKind: "FLIPR"
 			lsTransaction: 78
 			lsType: "default"
 			lsTypeAndKind: "default_default"
@@ -880,7 +880,37 @@
 			codeName: "PROT-00000001"
 			id: 2590
 			ignored: false
-			lsKind: "default"
+			lsKind: "FLIPR"
+			lsTransaction: 79
+			lsType: "default"
+			lsTypeAndKind: "default_default"
+			modifiedBy: null
+			modifiedDate: null
+			recordedBy: "smeyer"
+			recordedDate: 1372303173000
+			shortDescription: "protocol created by hand"
+			version: 1
+
+		recordedBy: "smeyer"
+		recordedDate: 1372303173000
+		version: 0
+	,
+		id: 73
+		ignored: false
+		imageFile: null
+		labelText: "KD Experiment"
+		lsKind: "protocol name"
+		lsTransaction: 79
+		lsType: "name"
+		lsTypeAndKind: "name_protocol name"
+		modifiedDate: null
+		physicallyLabled: false
+		preferred: true
+		protocol:
+			codeName: "PROT-00000111"
+			id: 2591
+			ignored: false
+			lsKind: "KD"
 			lsTransaction: 79
 			lsType: "default"
 			lsTypeAndKind: "default_default"
@@ -896,5 +926,6 @@
 		version: 0
 	]
 ) (if (typeof process is "undefined" or not process.versions) then window.protocolServiceTestJSON = window.protocolServiceTestJSON or {} else exports)
+
 
 

@@ -154,13 +154,13 @@ describe 'Protocol CRUD testing', ->
 					matches = _.filter @serviceReturn, (label) ->
 						label.name == "Ignore this protocol"
 					expect(matches.length).toEqual 0
-		describe 'when protocol code list service called with filtering option', ->
+		describe 'when protocol code list service called with label filtering option', ->
 			describe "With matching case", ->
 				beforeEach ->
 					runs ->
 						$.ajax
 							type: 'GET'
-							url: "api/protocolCodes/filter/PK"
+							url: "api/protocolCodes/?protocolName=PK"
 							success: (json) =>
 								@serviceReturn = json
 							error: (err) =>
@@ -177,7 +177,7 @@ describe 'Protocol CRUD testing', ->
 					runs ->
 						$.ajax
 							type: 'GET'
-							url: "api/protocolCodes/filter/pk"
+							url: "api/protocolCodes/?protocolName=pk"
 							success: (json) =>
 								@serviceReturn = json
 							error: (err) =>
@@ -189,4 +189,21 @@ describe 'Protocol CRUD testing', ->
 					waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 					runs ->
 						expect(@serviceReturn[@serviceReturn.length-1].name).toContain "PK"
+		describe 'when protocol code list service called with protocol lsKind filtering option', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'GET'
+						url: "api/protocolCodes/?protocolKind=KD"
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+
+			it 'should only return names with PK', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[@serviceReturn.length-1].name).toContain "KD"
 

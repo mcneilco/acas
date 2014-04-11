@@ -13,6 +13,12 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "PrimaryScreenExperimentController"
 		autoLaunchName:"flipr_screening_assay"
 	,
+		#{isHeader: false, menuName: "Annotate Batches with File", mainControllerClassName: "DocForBatchesController"}
+		isHeader: false
+		menuName: "Analyze KD Data"
+		mainControllerClassName: "DNSKDPrimaryScreenExperimentController"
+		autoLaunchName:"dnskd_screening_assay"
+	,
 		isHeader: false, menuName: "Experiment Browser"
 		mainControllerClassName: "ExperimentBrowserController"
 	,
