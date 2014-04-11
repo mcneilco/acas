@@ -14,6 +14,8 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	callback(conf)
 
 exports.authCheck = (user, pass, retFun) ->
+	config = require '../../../conf/compiled/conf.js'
+	console.log config.all.client.require.login.loginLink
 	request = require 'request'
 	request(
 		headers:
@@ -39,6 +41,7 @@ exports.authCheck = (user, pass, retFun) ->
 	)
 
 exports.resetAuth = (email, retFun) ->
+	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		headers:
@@ -59,6 +62,7 @@ exports.resetAuth = (email, retFun) ->
 	)
 
 exports.changeAuth = (user, passOld,passNew,passNewAgain, retFun) ->
+	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		headers:
@@ -134,23 +138,7 @@ exports.loginStrategy = (username, password, done) ->
 				console.log "Exception trying to log:"+error
 			exports.getUser username,done
 
-exports.resetStrategy = (username, done) ->
-	exports.findByUsername username, (err, user) ->
-		exports.resetAuth username, (results) ->
-			if results.indexOf("Your new password is sent to your email address")>=0
-				try
-					exports.logUsage "Can't find email or user name: ", "", username
-				catch error
-					console.log "Exception trying to log:"+error
-				return done(null, false,
-					message: "Invalid username or email"
-				)
-			else
-				try
-					exports.logUsage "User password reset succesfully: ", "", username
-				catch error
-					console.log "Exception trying to log:"+error
-				return done null, user
+
 
 exports.getProjects = (resp) ->
 	projects = 	exports.projects = [

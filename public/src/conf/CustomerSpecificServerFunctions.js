@@ -17,8 +17,10 @@
   };
 
   exports.authCheck = function(user, pass, retFun) {
-    var request,
+    var config, request,
       _this = this;
+    config = require('../../../conf/compiled/conf.js');
+    console.log(config.all.client.require.login.loginLink);
     request = require('request');
     return request({
       headers: {
@@ -46,8 +48,9 @@
   };
 
   exports.resetAuth = function(email, retFun) {
-    var request,
+    var config, request,
       _this = this;
+    config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
       headers: {
@@ -72,8 +75,9 @@
   };
 
   exports.changeAuth = function(user, passOld, passNew, passNewAgain, retFun) {
-    var request,
+    var config, request,
       _this = this;
+    config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
       headers: {
@@ -166,33 +170,6 @@
         }
         return exports.getUser(username, done);
       }
-    });
-  };
-
-  exports.resetStrategy = function(username, done) {
-    return exports.findByUsername(username, function(err, user) {
-      return exports.resetAuth(username, function(results) {
-        var error;
-        if (results.indexOf("Your new password is sent to your email address") >= 0) {
-          try {
-            exports.logUsage("Can't find email or user name: ", "", username);
-          } catch (_error) {
-            error = _error;
-            console.log("Exception trying to log:" + error);
-          }
-          return done(null, false, {
-            message: "Invalid username or email"
-          });
-        } else {
-          try {
-            exports.logUsage("User password reset succesfully: ", "", username);
-          } catch (_error) {
-            error = _error;
-            console.log("Exception trying to log:" + error);
-          }
-          return done(null, user);
-        }
-      });
     });
   };
 
