@@ -30,12 +30,12 @@
           rem.on('data', function(chunk) {
             return file.write(chunk);
           });
-          rem.on('end', function() {
+          return rem.on('end', function() {
             file.close();
-            return console.log("file written");
-          });
-          return resp.json({
-            fileURL: "http://localhost:3000/tempFiles/" + filename
+            console.log("file written");
+            return resp.json({
+              fileURL: "http://localhost:3000/tempFiles/" + filename
+            });
           });
         } else {
           config = require('../conf/compiled/conf.js');
@@ -271,11 +271,11 @@
           rem.on('data', function(chunk) {
             return file.write(chunk);
           });
-          rem.on('end', function() {
-            return file.close();
-          });
-          return resp.json({
-            fileURL: "http://localhost:3000/tempFiles/" + filename
+          return rem.on('end', function() {
+            file.close();
+            return resp.json({
+              fileURL: "http://localhost:3000/tempFiles/" + filename
+            });
           });
         } else {
           config = require('../conf/compiled/conf.js');

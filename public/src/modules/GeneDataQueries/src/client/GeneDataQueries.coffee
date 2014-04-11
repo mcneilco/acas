@@ -63,8 +63,10 @@ class window.GeneIDQueryResultController extends Backbone.View
 	handleDownloadCSVClicked: =>
 		@trigger 'downLoadCSVRequested'
 
-	showCSVFileLink: (json) ->
-		alert 'Here is the file <a href="'+json.fileURL+'">result file</a>'
+	showCSVFileLink: (json) =>
+		@$('.bv_resultFileLink').attr 'href', json.fileURL
+		@$('.bv_csvFileLinkModal').modal
+			show: true
 
 
 class window.GeneIDQuerySearchController extends Backbone.View

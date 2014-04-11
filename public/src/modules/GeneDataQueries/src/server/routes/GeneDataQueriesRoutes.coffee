@@ -21,7 +21,7 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 		if req.query.format=="csv"
 			if global.specRunnerTestmode
 				# the following is really elegant, but the client won't support an ajax call returning a file, so start over....
-				#request.get('http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv').pipe(resp)
+#				request.get('http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv').pipe(resp)
 
 				filename = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query.csv';
 				console.log filename
@@ -32,8 +32,8 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 				rem.on 'end', ->
 					file.close()
 					console.log "file written"
-				resp.json
-					fileURL: "http://localhost:3000/tempFiles/"+filename
+					resp.json
+						fileURL: "http://localhost:3000/tempFiles/"+filename
 
 
 			else
@@ -215,8 +215,8 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 					file.write(chunk);
 				rem.on 'end', ->
 					file.close()
-				resp.json
-					fileURL: "http://localhost:3000/tempFiles/"+filename
+					resp.json
+						fileURL: "http://localhost:3000/tempFiles/"+filename
 			else
 				#TODO this implementation is not tested!!!
 				config = require '../conf/compiled/conf.js'

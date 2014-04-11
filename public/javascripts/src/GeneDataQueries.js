@@ -63,6 +63,7 @@
     __extends(GeneIDQueryResultController, _super);
 
     function GeneIDQueryResultController() {
+      this.showCSVFileLink = __bind(this.showCSVFileLink, this);
       this.handleDownloadCSVClicked = __bind(this.handleDownloadCSVClicked, this);
       this.render = __bind(this.render, this);
       return GeneIDQueryResultController.__super__.constructor.apply(this, arguments);
@@ -111,7 +112,10 @@
     };
 
     GeneIDQueryResultController.prototype.showCSVFileLink = function(json) {
-      return alert('Here is the file <a href="' + json.fileURL + '">result file</a>');
+      this.$('.bv_resultFileLink').attr('href', json.fileURL);
+      return this.$('.bv_csvFileLinkModal').modal({
+        show: true
+      });
     };
 
     return GeneIDQueryResultController;
