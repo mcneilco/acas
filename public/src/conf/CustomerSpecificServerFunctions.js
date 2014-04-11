@@ -20,14 +20,14 @@
     var config, request,
       _this = this;
     config = require('../../../conf/compiled/conf.js');
-    console.log(config.all.client.require.login.loginLink);
+    console.log(config.all.client.require);
     request = require('request');
     return request({
       headers: {
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       },
       method: 'POST',
-      url: config.all.client.require.login.loginLink,
+      url: config.all.client.require.loginLink,
       form: {
         j_username: user,
         j_password: pass
@@ -57,7 +57,7 @@
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       },
       method: 'POST',
-      url: config.all.client.require.login.resetLink,
+      url: config.all.client.require.resetLink,
       form: {
         emailAddress: email
       },
@@ -84,7 +84,7 @@
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       },
       method: 'POST',
-      url: config.all.client.require.login.changeLink,
+      url: config.all.client.require.changeLink,
       form: {
         username: user,
         oldPassword: passOld,
@@ -116,7 +116,7 @@
           accept: 'application/json'
         },
         method: 'POST',
-        url: config.all.client.require.login.getUserLink,
+        url: config.all.client.require.getUserLink,
         json: '{"name":"guy@mcneilco.com"}'
       }, function(error, response, json) {
         if (!error && response.statusCode === 200) {
