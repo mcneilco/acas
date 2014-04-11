@@ -34,6 +34,8 @@ class window.GeneIDQueryInputController extends Backbone.View
 
 class window.GeneIDQueryResultController extends Backbone.View
 	template: _.template($("#GeneIDQueryResultView").html())
+	events:
+		"click .bv_downloadCSV": "handleDownloadCSVClicked"
 
 	render: =>
 		$(@el).empty()
@@ -58,8 +60,16 @@ class window.GeneIDQueryResultController extends Backbone.View
 		_.each @model.get('data').aoColumns, (header) =>
 			@$('.bv_columnNamesHeader').append '<th>placeholder</th>'
 
+	handleDownloadCSVClicked: =>
+		@trigger 'downLoadCSVRequested'
+
+	showCSVFileLink: (json) ->
+		alert 'Here is the file <a href="'+json.fileURL+'">result file</a>'
+
+
 class window.GeneIDQuerySearchController extends Backbone.View
 	template: _.template($("#GeneIDQuerySearchView").html())
+	lastSearch: ""
 
 	initialize: ->
 		$(@el).empty()
@@ -72,7 +82,9 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@queryInputController.render()
 		@setQueryOnlyMode()
 
+
 	handleSearchRequested: (searchStr) =>
+		@lastSearch = searchStr
 		$.ajax
 			type: 'POST'
 			url: "api/geneDataQuery"
@@ -91,6 +103,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			model: new Backbone.Model json.results
 			el: $('.bv_resultsView')
 		@resultController.render()
+		@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
 		$('.bv_searchForm')
 			.appendTo('.bv_searchNavbar')
 		@$('.bv_gidSearchStart').hide()
@@ -107,6 +120,21 @@ class window.GeneIDQuerySearchController extends Backbone.View
 
 	setShowResultsMode: =>
 		@$('.bv_resultsView').show()
+
+	handleDownLoadCSVRequested: =>
+		$.ajax
+			type: 'POST'
+			url: "api/geneDataQuery?format=csv"
+			dataType: 'json'
+			data:
+				geneIDs: @lastSearch
+				maxRowsToReturn: 10000
+				user: window.AppLaunchParams.loginUserName
+			success: @resultController.showCSVFileLink
+			error: (err) =>
+				console.log 'got ajax error'
+				@serviceReturn = null
+
 
 
 ################  Advanced-mode queries ################
@@ -209,7 +237,6 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 
 	getSelectedExperiment: ->
 		exptCode = @$('.bv_experiment').val()
-		console.log exptCode
 		currentExpt = @filterOptions.filter (expt) ->
 			expt.get('experimentCode') == exptCode
 		currentExpt[0]
@@ -379,17 +406,19 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@$('.bv_getFiltersView').show()
 		@nextStep = 'fromFiltersToResults'
 
-	fromFiltersToResults: ->
+	getQueryParams: ->
 		queryParams =
 			batchCodes: @searchCodes
 			experimentCodeList: @experimentList
 			searchFilters: @erfc.getSearchFilters()
+
+	fromFiltersToResults: ->
 		$.ajax
 			type: 'POST'
 			url: "api/geneDataQueryAdvanced"
 			dataType: 'json'
 			data:
-				queryParams: queryParams
+				queryParams: @getQueryParams()
 				maxRowsToReturn: 10000
 				user: window.AppLaunchParams.loginUserName
 			success: @handleSearchReturn
@@ -401,11 +430,27 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@resultController = new GeneIDQueryResultController
 			model: new Backbone.Model json.results
 			el: $('.bv_advResultsView')
+		@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
 		@resultController.render()
 		@$('.bv_getFiltersView').hide()
 		@$('.bv_advResultsView').show()
 		@nextStep = 'gotoRestart'
 		@trigger 'requestShowResultsMode'
+
+	handleDownLoadCSVRequested: =>
+		$.ajax
+			type: 'POST'
+			url: "api/geneDataQueryAdvanced?format=csv"
+			dataType: 'json'
+			data:
+				queryParams: @getQueryParams()
+				maxRowsToReturn: 10000
+				user: window.AppLaunchParams.loginUserName
+			success: @resultController.showCSVFileLink
+			error: (err) =>
+				console.log 'got ajax error'
+				@serviceReturn = null
+
 
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
