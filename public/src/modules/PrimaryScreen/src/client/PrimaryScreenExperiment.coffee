@@ -382,7 +382,9 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 							if json.length == 0
 								alert 'Could not get experiment for code in this URL, creating new one'
 							else
-								exp = new PrimaryScreenExperiment json
+								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#								exp = new PrimaryScreenExperiment json
+								exp = new PrimaryScreenExperiment json[0]
 								exp.fixCompositeClasses()
 								@model = exp
 							@completeInitialization()
@@ -440,5 +442,5 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 	modelFitControllerName: "DoseResponseAnalysisController"
-	protocolFilter: "?protocolKind=FLIPR"
+	protocolFilter: "?protocolName=FLIPR"
 	moduleLaunchName: "flipr_screening_assay"

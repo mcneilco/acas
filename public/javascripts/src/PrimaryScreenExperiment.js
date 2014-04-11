@@ -606,7 +606,7 @@
                   if (json.length === 0) {
                     alert('Could not get experiment for code in this URL, creating new one');
                   } else {
-                    exp = new PrimaryScreenExperiment(json);
+                    exp = new PrimaryScreenExperiment(json[0]);
                     exp.fixCompositeClasses();
                     _this.model = exp;
                   }
@@ -713,7 +713,7 @@
 
     PrimaryScreenExperimentController.prototype.modelFitControllerName = "DoseResponseAnalysisController";
 
-    PrimaryScreenExperimentController.prototype.protocolFilter = "?protocolKind=FLIPR";
+    PrimaryScreenExperimentController.prototype.protocolFilter = "?protocolName=FLIPR";
 
     PrimaryScreenExperimentController.prototype.moduleLaunchName = "flipr_screening_assay";
 
