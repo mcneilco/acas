@@ -66,7 +66,7 @@
       this.parseFileController = new LSFileInputController({
         el: this.$('.bv_parseFile'),
         inputTitle: '',
-        url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
+        url: UtilityFunctions.prototype.getFileServiceURL(),
         fieldIsRequired: false,
         allowedFileTypes: this.allowedFileTypes,
         maxFileSize: this.maxFileSize

@@ -29,7 +29,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@parseFileController = new LSFileInputController
 			el: @$('.bv_parseFile')
 			inputTitle: ''
-			url: "http://"+window.conf.host+":"+window.conf.service.file.port
+			url: UtilityFunctions::getFileServiceURL()
 			fieldIsRequired: false
 			allowedFileTypes: @allowedFileTypes
 			maxFileSize: @maxFileSize

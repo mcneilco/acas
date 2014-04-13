@@ -1371,7 +1371,7 @@ validateProject <- function(projectName, configList) {
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(paste0(configList$client.host, ":", configList$client.port, configList$client.service.project.path))
+  projectList <- getURL(paste0(racas::getSSLString(),configList$client.host, ":", configList$client.port, configList$client.service.project.path))
   }, error = function(e) {
     stop("The project service did not respond correctly, contact your system administrator")
   })

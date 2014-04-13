@@ -81,7 +81,7 @@
       this.fileInputController = new LSFileInputController({
         el: this.$('.bv_fileInput'),
         inputTitle: '',
-        url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
+        url: UtilityFunctions.prototype.getFileServiceURL(),
         fieldIsRequired: false,
         requiresValidation: false,
         maxNumberOfFiles: 1

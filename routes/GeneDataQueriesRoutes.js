@@ -14,19 +14,25 @@
   };
 
   exports.getExperimentDataForGenes = function(req, resp) {
-    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions;
+    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions, urlPref;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     request = require('request');
     fs = require('fs');
     crypto = require('crypto');
+    config = require('../conf/compiled/conf.js');
     if (req.query.format != null) {
       if (req.query.format === "csv") {
         if (global.specRunnerTestmode) {
+          if (config.all.client.use.ssl) {
+            urlPref = "https://";
+          } else {
+            urlPref = "http://";
+          }
           filename = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query.csv';
           console.log(filename);
           file = fs.createWriteStream('./public/tempFiles/' + filename);
-          rem = request('http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
+          rem = request(urlPref + 'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
           rem.on('data', function(chunk) {
             return file.write(chunk);
           });
@@ -34,11 +40,10 @@
             file.close();
             console.log("file written");
             return resp.json({
-              fileURL: "http://localhost:3000/tempFiles/" + filename
+              fileURL: urlPref + "localhost:3000/tempFiles/" + filename
             });
           });
         } else {
-          config = require('../conf/compiled/conf.js');
           baseurl = config.all.client.service.rapache.fullpath + "getGeneData?format=CSV";
           return request({
             method: 'POST',
@@ -81,7 +86,6 @@
         }
         return resp.end(JSON.stringify(responseObj));
       } else {
-        config = require('../conf/compiled/conf.js');
         baseurl = config.all.client.service.rapache.fullpath + "getGeneData/";
         return request({
           method: 'POST',
@@ -256,25 +260,31 @@
   };
 
   exports.getExperimentDataForGenesAdvanced = function(req, resp) {
-    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions;
+    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions, urlPref;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     request = require('request');
     fs = require('fs');
     crypto = require('crypto');
+    config = require('../conf/compiled/conf.js');
+    if (config.all.client.use.ssl) {
+      urlPref = "https://";
+    } else {
+      urlPref = "http://";
+    }
     if (req.query.format != null) {
       if (req.query.format === "csv") {
         if (global.specRunnerTestmode) {
           filename = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query.csv';
           file = fs.createWriteStream('./public/tempFiles/' + filename);
-          rem = request('http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
+          rem = request(urlPref + 'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
           rem.on('data', function(chunk) {
             return file.write(chunk);
           });
           return rem.on('end', function() {
             file.close();
             return resp.json({
-              fileURL: "http://localhost:3000/tempFiles/" + filename
+              fileURL: urlPref + "localhost:3000/tempFiles/" + filename
             });
           });
         } else {

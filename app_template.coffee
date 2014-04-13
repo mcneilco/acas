@@ -65,9 +65,25 @@ startApp = ->
 	indexRoutes.setupRoutes(app, loginRoutes)
 	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
 
-	http.createServer(app).listen(app.get('port'), ->
-		console.log("Express server listening on port " + app.get('port'))
-	)
+	if not config.all.client.use.ssl
+		http.createServer(app).listen(app.get('port'), ->
+			console.log("Express server listening on port " + app.get('port'))
+		)
+	else
+		console.log "------ Starting in SSL Mode"
+		https = require('https');
+		fs = require('fs');
+		sslOptions =
+			key: fs.readFileSync config.all.server.ssl.key.file.path
+			cert: fs.readFileSync config.all.server.ssl.cert.file.path
+			ca: fs.readFileSync config.all.server.ssl.cert.authority.file.path
+			passphrase: config.all.server.ssl.cert.passphrase
+		https.createServer(sslOptions, app).listen(app.get('port'), ->
+			console.log("Express server listening on port " + app.get('port'))
+		)
+		#TODO hack to prevent bug: https://github.com/mikeal/request/issues/418
+		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 startApp()

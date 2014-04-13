@@ -27,7 +27,6 @@ startApp = ->
 		minFileSize: 1
 		maxFileSize: 100000000 # 100 MB
 		acceptFileTypes: /.+/i
-
 	# Files not matched by this regular expression force a download dialog,
 	# to prevent executing any scripts in the context of the service domain:
 		safeFileTypes: /\.(gif|jpe?g|png)$/i
@@ -36,20 +35,19 @@ startApp = ->
 			thumbnail:
 				width: 80
 				height: 80
-
 		accessControl:
 			allowOrigin: "*"
 			allowMethods: "OPTIONS, HEAD, GET, POST, PUT, DELETE"
-
-
-	# Uncomment and edit this section to provide the service via HTTPS:
-	#            ssl: {
-	#                key: fs.readFileSync('/Applications/XAMPP/etc/ssl.key/server.key'),
-	#                cert: fs.readFileSync('/Applications/XAMPP/etc/ssl.crt/server.crt')
-	#            },
-	#
 		nodeStatic:
 			cache: 3600 # seconds to cache served files
+
+	if config.all.client.use.ssl
+		console.log "---- Starting in SSL mode"
+		options['ssl'] =
+			key: fs.readFileSync "../../"+config.all.server.ssl.key.file.path
+			cert: fs.readFileSync "../../"+config.all.server.ssl.cert.file.path
+			ca: fs.readFileSync "../../"+config.all.server.ssl.cert.authority.file.path
+			passphrase: config.all.server.ssl.cert.passphrase
 
 	utf8encode = (str) ->
 		unescape encodeURIComponent(str)

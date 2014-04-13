@@ -183,7 +183,7 @@ describe 'Gene Data Queries Service testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 300)
 				runs ->
 					#returns a link to a temp file
-					expect(@serviceReturn.fileURL).toContain "http://"
+					expect(@serviceReturn.fileURL).toContain "http"
 
 	describe "advanced experiments for genes query", ->
 		describe 'when run with valid input data', ->
@@ -397,6 +397,6 @@ describe 'Gene Data Queries Service testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 500)
 				runs ->
 					#returns a link to a temp file
-					expect(@serviceReturn.fileURL).toContain "http://"
+					expect(@serviceReturn.fileURL).toContain "http"
 
 

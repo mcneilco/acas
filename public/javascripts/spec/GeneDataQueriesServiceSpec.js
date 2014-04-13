@@ -231,7 +231,7 @@ This service takes a list of geneids and returns related experimental data,
         return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 300);
           return runs(function() {
-            return expect(this.serviceReturn.fileURL).toContain("http://");
+            return expect(this.serviceReturn.fileURL).toContain("http");
           });
         });
       });
@@ -558,7 +558,7 @@ This service takes a list of geneids and returns related experimental data,
         return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 500);
           return runs(function() {
-            return expect(this.serviceReturn.fileURL).toContain("http://");
+            return expect(this.serviceReturn.fileURL).toContain("http");
           });
         });
       });
