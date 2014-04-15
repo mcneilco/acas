@@ -37,7 +37,7 @@
 
     BasicFileValidateAndSaveController.prototype.loadReportFile = false;
 
-    BasicFileValidateAndSaveController.prototype.filePath = "serverOnlyModules/blueimp-file-upload-node/public/files/";
+    BasicFileValidateAndSaveController.prototype.filePath = "privateUploads/";
 
     BasicFileValidateAndSaveController.prototype.additionalData = {
       experimentId: 1234,

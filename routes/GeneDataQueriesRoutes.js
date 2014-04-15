@@ -31,7 +31,7 @@
           }
           filename = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query.csv';
           console.log(filename);
-          file = fs.createWriteStream('./public/tempFiles/' + filename);
+          file = fs.createWriteStream('./privateTempFiles/' + filename);
           rem = request(urlPref + 'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
           rem.on('data', function(chunk) {
             return file.write(chunk);
@@ -276,7 +276,7 @@
       if (req.query.format === "csv") {
         if (global.specRunnerTestmode) {
           filename = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query.csv';
-          file = fs.createWriteStream('./public/tempFiles/' + filename);
+          file = fs.createWriteStream('./privateTempFiles/' + filename);
           rem = request(urlPref + 'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
           rem.on('data', function(chunk) {
             return file.write(chunk);

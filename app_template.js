@@ -4,12 +4,13 @@
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, config, express, flash, fs, http, https, indexRoutes, loginRoutes, passport, path, sslOptions, testModeOverRide, user, util;
+    var LocalStrategy, config, express, flash, fs, http, https, indexRoutes, loginRoutes, passport, path, sslOptions, testModeOverRide, upload, user, util;
     config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
     http = require('http');
     path = require('path');
+    upload = require('./node_modules_customized/jquery-file-upload-middleware');
     flash = require('connect-flash');
     passport = require('passport');
     util = require('util');
@@ -23,31 +24,10 @@
         console.log("############ Starting in stubs mode");
       }
     }
-    global.app = express();
-    app.configure(function() {
-      app.set('port', config.all.client.port);
-      app.set('views', __dirname + '/views');
-      app.set('view engine', 'jade');
-      app.use(express.favicon());
-      app.use(express.logger('dev'));
-      app.use(express.bodyParser());
-      app.use(express.methodOverride());
-      app.use(express["static"](path.join(__dirname, 'public')));
-      app.use(express.cookieParser());
-      app.use(express.session({
-        secret: 'acas needs login',
-        cookie: {
-          maxAge: 365 * 24 * 60 * 60 * 1000
-        }
-      }));
-      app.use(flash());
-      app.use(passport.initialize());
-      app.use(passport.session());
-      return app.use(app.router);
-    });
-    app.configure('development', function() {
-      app.use(express.errorHandler());
-      return console.log("node dev mode set");
+    upload.configure({
+      uploadDir: __dirname + '/privateUploads',
+      ssl: config.all.client.use.ssl,
+      uploadUrl: "/dataFiles"
     });
     passport.serializeUser(function(user, done) {
       return done(null, user.username);
@@ -59,11 +39,49 @@
     });
     passport.use(new LocalStrategy(csUtilities.loginStrategy));
     loginRoutes = require('./routes/loginRoutes');
+    global.app = express();
+    app.configure(function() {
+      app.set('port', config.all.client.port);
+      app.set('views', __dirname + '/views');
+      app.set('view engine', 'jade');
+      app.use(express.favicon());
+      app.use(express.logger('dev'));
+      app.use(express.cookieParser());
+      app.use(express.session({
+        secret: 'acas needs login',
+        cookie: {
+          maxAge: 365 * 24 * 60 * 60 * 1000
+        }
+      }));
+      app.use(flash());
+      app.use(passport.initialize());
+      app.use(passport.session({
+        pauseStream: true
+      }));
+      app.use('/uploads', upload.fileHandler());
+      app.use(express.json());
+      app.use(express.urlencoded());
+      app.use(express.methodOverride());
+      app.use(express["static"](path.join(__dirname, 'public')));
+      return app.use(app.router);
+    });
+    upload.on("error", function(e) {
+      return console.log("fileUpload: ", e.message);
+    });
+    upload.on("end", function(fileInfo) {
+      return app.emit("file-uploaded", fileInfo);
+    });
     loginRoutes.setupRoutes(app, passport);
     indexRoutes = require('./routes/index.js');
     indexRoutes.setupRoutes(app, loginRoutes);
 
     /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */
+    app.get('/dataFiles/:filename', loginRoutes.ensureAuthenticated, function(req, resp) {
+      return resp.sendfile(__dirname + '/privateUploads/' + req.params.filename);
+    });
+    app.get('/tempFiles/:filename', loginRoutes.ensureAuthenticated, function(req, resp) {
+      return resp.sendfile(__dirname + '/privateTempFiles/' + req.params.filename);
+    });
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {
         return console.log("Express server listening on port " + app.get('port'));

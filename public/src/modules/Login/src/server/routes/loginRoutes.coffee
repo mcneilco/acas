@@ -49,7 +49,6 @@ exports.loginPage = (req, res) ->
 		message: errorMsg
 
 exports.loginPost = (req, res) ->
-	console.log req
 #	res.redirect '/'
 	res.redirect req.session.returnTo
 
@@ -60,7 +59,8 @@ exports.logout = (req, res) ->
 exports.ensureAuthenticated = (req, res, next) ->
 	if req.isAuthenticated()
 		return next()
-	req.session.returnTo = req.url
+	if req.session?
+		req.session.returnTo = req.url
 	res.redirect '/login'
 
 exports.getUsers = (req, resp) ->

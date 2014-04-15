@@ -79,7 +79,7 @@ describe 'LS File Chooser Behavior Testing', ->
 				@fc.render()
 				
 			it 'should have upload url', ->
-				(expect @fc.url).toContain 'http'
+				(expect @fc.url).toContain 'uploads'
 			
 			it 'drop field should initially be hidden', ->
 				(expect $('.field1').is(':visible')).toBeFalsy();

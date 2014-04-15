@@ -6,7 +6,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	filePassedValidation: false
 	reportFileNameOnServer: null
 	loadReportFile: false
-	filePath: "serverOnlyModules/blueimp-file-upload-node/public/files/"
+	#TODO replace filePath with value from config file, or don't send path and let R find it
+	filePath: "privateUploads/"
 	additionalData: {experimentId: 1234, otherparam: "fred"}
 	allowedFileTypes: ['xls', 'xlsx', 'csv']
 	maxFileSize: 200000000

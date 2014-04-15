@@ -5,8 +5,8 @@
 	projectServiceRoutes.setupRoutes(app)
 ###
 
-exports.setupRoutes = (app) ->
-	app.get '/api/projects', exports.getProjects
+exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/api/projects', loginRoutes.ensureAuthenticated, exports.getProjects
 
 exports.getProjects = (req, resp) ->
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
