@@ -1,7 +1,7 @@
+
 /*
 This service takes a list of geneids and returns related experimental data,
-*/
-
+ */
 
 (function() {
   var advancedReturnExampleSuccess, advnacedReturnExampleSuccess, badDataRequest, basicReturnExampleError, basicReturnExampleSuccess, goodAdvancedRequest, goodDataRequest;
@@ -115,18 +115,21 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with valid input data', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/geneDataQuery",
               data: goodDataRequest,
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -144,20 +147,23 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with no results expected', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/geneDataQuery",
               data: {
                 geneIDs: "fiona"
               },
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -175,18 +181,21 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with invalid input', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/geneDataQuery",
               data: badDataRequest,
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -231,18 +240,21 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with valid input data', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/getGeneExperiments",
               data: goodDataRequest,
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -260,20 +272,23 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with no results expected', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/getGeneExperiments",
               data: {
                 geneIDs: "fiona"
               },
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -291,18 +306,21 @@ This service takes a list of geneids and returns related experimental data,
       return describe('when run with invalid input file', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/getGeneExperiments",
               data: badDataRequest,
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -322,20 +340,23 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with valid input data', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/getExperimentSearchAttributes",
               data: {
                 experimentCodes: ["EXPT-00000398", "EXPT-00000396", "EXPT-00000398"]
               },
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -353,20 +374,23 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with no results expected', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/getExperimentSearchAttributes",
               data: {
                 experimentCodes: ["fiona"]
               },
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -384,20 +408,23 @@ This service takes a list of geneids and returns related experimental data,
       return describe('when run with invalid input data', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/getExperimentSearchAttributes",
               data: {
                 experimentCodes: ["error"]
               },
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -417,18 +444,21 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with valid input data', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/geneDataQueryAdvanced",
               data: goodAdvancedRequest,
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -446,19 +476,22 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with no results expected', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             goodAdvancedRequest.queryParams.batchCodes = "fiona";
             return $.ajax({
               type: 'POST',
               url: "api/geneDataQueryAdvanced",
               data: goodAdvancedRequest,
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });
@@ -476,19 +509,22 @@ This service takes a list of geneids and returns related experimental data,
       describe('when run with invalid input file', function() {
         beforeEach(function() {
           return runs(function() {
-            var _this = this;
             goodAdvancedRequest.maxRowsToReturn = -1;
             return $.ajax({
               type: 'POST',
               url: "api/geneDataQueryAdvanced",
               data: goodAdvancedRequest,
-              success: function(json) {
-                return _this.serviceReturn = json;
-              },
-              error: function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              },
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
               dataType: 'json'
             });
           });

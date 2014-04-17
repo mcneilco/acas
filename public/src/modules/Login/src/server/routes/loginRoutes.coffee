@@ -1,30 +1,8 @@
-### To install this module add
-  to app.coffee
-# login routes
-passport.serializeUser (user, done) ->
-	done null, user.username
-passport.deserializeUser (username, done) ->
-	loginRoutes.findByUsername username, (err, user) ->
-		done err, user
-passport.use new LocalStrategy loginRoutes.loginStrategy
 
-app.get '/login', loginRoutes.loginPage
-app.post '/login',
-	passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
-	loginRoutes.loginPost
-app.get '/logout', loginRoutes.logout
-app.post '/api/userAuthentication', loginRoutes.authenticationService
-app.get '/api/users/:username', loginRoutes.getUsers
-
-###
 exports.setupRoutes = (app, passport) ->
 	app.get '/login', exports.loginPage
 	app.post '/login',
-		passport.authenticate('local', { failureRedirect: '/login',successRedirect: '/', failureFlash: true })
-#	app.post '/login', passport.authenticate 'local',
-#		failureRedirect: '/login'
-#		failureFlash: true
-#		successReturnToOrRedirect: session.returnTo
+		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
 	app.get '/logout', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/api/users/:username', exports.getUsers
@@ -63,6 +41,7 @@ exports.resetPost = (req, res) ->
 	res.redirect '/reset'
 	
 exports.loginPost = (req, res) ->
+	console.log "got to login post"
 #	res.redirect '/'
 	res.redirect req.session.returnTo
 
@@ -71,12 +50,12 @@ exports.changePost = (req, res) ->
 	#	res.redirect '/'
 	res.redirect '/change'
 
-
 exports.logout = (req, res) ->
 	req.logout()
 	res.redirect '/'
 
 exports.ensureAuthenticated = (req, res, next) ->
+	console.log "checking for login for path: "+req.url
 	if req.isAuthenticated()
 		return next()
 	if req.session?
@@ -139,7 +118,6 @@ exports.changeAuthenticationService = (req, resp) ->
 	else
 		csUtilities.changeAuth req.body.user, req.body.oldPassword,req.body.newPassword,req.body.newPasswordAgain, callback
 
-
 exports.resetpage = (req, res) ->
 	user = null
 	if req.user?
@@ -159,7 +137,7 @@ exports.changePage = (req, res) ->
 	user = null
 	if req.user?
 		user = req.user
-	if user != null && user.role!=null && user.role == 'admin'
+	if user != null && csUtilities.isUserAdmin(user)
 		errorMsg = ""
 		error = req.flash('error')
 		if error.length > 0

@@ -1,6 +1,5 @@
 (function() {
-  var _ref, _ref1, _ref2,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -9,8 +8,7 @@
 
     function DoseResponseAnalysisParameters() {
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
-      _ref = DoseResponseAnalysisParameters.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return DoseResponseAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
     DoseResponseAnalysisParameters.prototype.defaults = {
@@ -26,31 +24,36 @@
     };
 
     DoseResponseAnalysisParameters.prototype.fixCompositeClasses = function() {
-      var _this = this;
       if (!(this.get('max') instanceof Backbone.Model)) {
         this.set({
           max: new Backbone.Model(this.get('max'))
         });
       }
-      this.get('max').on("change", function() {
-        return _this.trigger('change');
-      });
+      this.get('max').on("change", (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
       if (!(this.get('min') instanceof Backbone.Model)) {
         this.set({
           min: new Backbone.Model(this.get('min'))
         });
       }
-      this.get('min').on("change", function() {
-        return _this.trigger('change');
-      });
+      this.get('min').on("change", (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
       if (!(this.get('slope') instanceof Backbone.Model)) {
         this.set({
           slope: new Backbone.Model(this.get('slope'))
         });
       }
-      return this.get('slope').on("change", function() {
-        return _this.trigger('change');
-      });
+      return this.get('slope').on("change", (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
     };
 
     DoseResponseAnalysisParameters.prototype.validate = function(attrs) {
@@ -105,8 +108,7 @@
       this.handleInactiveThresholdChanged = __bind(this.handleInactiveThresholdChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
-      _ref1 = DoseResponseAnalysisParametersController.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      return DoseResponseAnalysisParametersController.__super__.constructor.apply(this, arguments);
     }
 
     DoseResponseAnalysisParametersController.prototype.template = _.template($("#DoseResponseAnalysisParametersView").html());
@@ -248,8 +250,7 @@
       this.setReadyForFit = __bind(this.setReadyForFit, this);
       this.testReadyForFit = __bind(this.testReadyForFit, this);
       this.render = __bind(this.render, this);
-      _ref2 = DoseResponseAnalysisController.__super__.constructor.apply(this, arguments);
-      return _ref2;
+      return DoseResponseAnalysisController.__super__.constructor.apply(this, arguments);
     }
 
     DoseResponseAnalysisController.prototype.template = _.template($("#DoseResponseAnalysisView").html());
@@ -331,17 +332,20 @@
     };
 
     DoseResponseAnalysisController.prototype.setupCurveFitAnalysisParameterController = function() {
-      var _this = this;
       this.parameterController = new DoseResponseAnalysisParametersController({
         el: this.$('.bv_analysisParameterForm'),
         model: new DoseResponseAnalysisParameters(this.model.getModelFitParameters())
       });
-      this.parameterController.on('amDirty', function() {
-        return _this.trigger('amDirty');
-      });
-      this.parameterController.on('amClean', function() {
-        return _this.trigger('amClean');
-      });
+      this.parameterController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.parameterController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
       this.parameterController.on('valid', this.paramsValid);
       this.parameterController.on('invalid', this.paramsInvalid);
       return this.parameterController.render();
@@ -356,8 +360,7 @@
     };
 
     DoseResponseAnalysisController.prototype.launchFit = function() {
-      var fitData,
-        _this = this;
+      var fitData;
       if (this.analyzedPreviously) {
         if (!confirm("Re-fitting the data will delete the previously fitted results")) {
           return;
@@ -374,10 +377,12 @@
         url: "/api/doseResponseCurveFit",
         data: fitData,
         success: this.fitReturnSuccess,
-        error: function(err) {
-          alert('got ajax error');
-          return _this.serviceReturn = null;
-        },
+        error: (function(_this) {
+          return function(err) {
+            alert('got ajax error');
+            return _this.serviceReturn = null;
+          };
+        })(this),
         dataType: 'json'
       });
     };

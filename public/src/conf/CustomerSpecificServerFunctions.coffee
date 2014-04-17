@@ -98,14 +98,13 @@ exports.getUser = (username, callback) ->
 				name:username
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				console.log json
 				callback null,
 					id: json.id
 					username: json.userName
 					email: json.emailAddress
 					firstName: json.firstName
 					lastName: json.lastName
-					role: json.role
+					roles: json.authorRoles
 			else
 				callback "user not found", null
 		)
@@ -118,6 +117,11 @@ exports.getUser = (username, callback) ->
 			lastName: username
 
 
+exports.isUserAdmin = (user) ->
+	_ = require 'underscore'
+	adminRoles = _.filter user.roles, (role) ->
+		role.roleEntry.roleName == 'admin'
+	isAdmin = if adminRoles.length >0 then true else false
 
 exports.findByUsername = (username, fn) ->
 	return exports.getUser username, fn

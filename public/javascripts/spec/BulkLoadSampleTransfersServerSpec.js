@@ -1,3 +1,4 @@
+
 /*
 This service bulk laods sample transfer information provided in a CSV file.
 The server takes a server-relative file path as input.
@@ -21,8 +22,7 @@ Concentration Units		mM					Blank if physical state = solid
 Amount Transferred		100
 Amount Units			uL					micro liter should use u, not mu
 Transfer Date
-*/
-
+ */
 
 (function() {
   var badDataRequest, goodDataRequest, returnExampleError, returnExampleSuccess;
