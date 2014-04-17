@@ -1,18 +1,9 @@
-
-/* To install this module this module
-
-In app.coffee
-	 * CurveCurator routes
-	curveCuratorRoutes = require './public/src/modules/CurveAnalysis/src/server/routes/CurveCuratorRoutes.js'
-	curveCuratorRoutes.setupRoutes(app)
- */
-
 (function() {
   var applicationScripts, requiredScripts;
 
-  exports.setupRoutes = function(app) {
-    app.get('/curveCurator/*', exports.curveCuratorIndex);
-    return app.get('/api/curves/stub/:exptCode', exports.getCurveStubs);
+  exports.setupRoutes = function(app, loginRoutes) {
+    app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
+    return app.get('/api/curves/stub/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs);
   };
 
   requiredScripts = ['/src/lib/jquery.min.js', '/src/lib/json2.js', '/src/lib/underscore.js', '/src/lib/backbone-min.js', '/src/lib/bootstrap/bootstrap.min.js', '/src/lib/bootstrap/bootstrap-tooltip.js', '/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js', '/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js', '/src/lib/bootstrap/bootstrap.min.js', '/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js'];

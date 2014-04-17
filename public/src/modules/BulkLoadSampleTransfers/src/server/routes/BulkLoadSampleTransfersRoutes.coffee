@@ -1,25 +1,13 @@
-### To install this Module
-1) add to app.coffee
-# BulkLoadSampleTransfers routes
-	bulkLoadSampleTransfersRoutes = require './public/src/modules/BulkLoadSampleTransfers/src/server/routes/BulkLoadSampleTransfersRoutes.js'
-	bulkLoadSampleTransfersRoutes.setupRoutes(app)
-
-2) Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
+###
+Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Load Sample Transfer Log", mainControllerClassName: "BulkLoadSampleTransfersController"}
 
-
 ###
-exports.setupRoutes = (app) ->
-	app.post '/api/bulkLoadSampleTransfers', exports.bulkLoadSampleTransfers
+exports.setupRoutes = (app, loginRoutes) ->
+	app.post '/api/bulkLoadSampleTransfers', loginRoutes.ensureAuthenticated, exports.bulkLoadSampleTransfers
 
 exports.bulkLoadSampleTransfers = (request, response)  ->
 	request.connection.setTimeout 6000000
-#	console.log "bulkload called"
-#	setTimeout =>
-#		console.log "timeout over"
-#		response.end "sending response now"
-#	,
-#		125000
 
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 

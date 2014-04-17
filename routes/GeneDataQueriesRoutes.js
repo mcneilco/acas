@@ -1,16 +1,12 @@
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
     var config;
-    app.post('/api/geneDataQuery', exports.getExperimentDataForGenes);
-    app.post('/api/getGeneExperiments', exports.getExperimentListForGenes);
-    app.post('/api/getExperimentSearchAttributes', exports.getExperimentSearchAttributes);
-    app.post('/api/geneDataQueryAdvanced', exports.getExperimentDataForGenesAdvanced);
+    app.post('/api/geneDataQuery', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenes);
+    app.post('/api/getGeneExperiments', loginRoutes.ensureAuthenticated, exports.getExperimentListForGenes);
+    app.post('/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes);
+    app.post('/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced);
     config = require('../conf/compiled/conf.js');
-    if (config.all.client.require.login) {
-      return app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
-    } else {
-      return app.get('/geneIDQuery', exports.geneIDQueryIndex);
-    }
+    return app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
   };
 
   exports.getExperimentDataForGenes = function(req, resp) {

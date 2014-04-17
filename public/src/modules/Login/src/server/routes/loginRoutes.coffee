@@ -1,11 +1,14 @@
 
+exports.setupAPIRoutes = (app) ->
+	app.get '/api/users/:username', exports.getUsers
+
 exports.setupRoutes = (app, passport) ->
 	app.get '/login', exports.loginPage
 	app.post '/login',
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
 	app.get '/logout', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
-	app.get '/api/users/:username', exports.getUsers
+	app.get '/api/users/:username', exports.ensureAuthenticated, exports.getUsers
 	app.get '/reset', exports.resetpage
 	app.post '/reset',
 		exports.resetAuthenticationService,
@@ -61,6 +64,7 @@ exports.ensureAuthenticated = (req, res, next) ->
 	if req.session?
 		req.session.returnTo = req.url
 	res.redirect '/login'
+
 
 exports.getUsers = (req, resp) ->
 	callback = (err, user) ->

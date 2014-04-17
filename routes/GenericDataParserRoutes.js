@@ -10,8 +10,8 @@
  */
 
 (function() {
-  exports.setupRoutes = function(app) {
-    return app.post('/api/genericDataParser', exports.parseGenericData);
+  exports.setupRoutes = function(app, loginRoutes) {
+    return app.post('/api/genericDataParser', loginRoutes.ensureAuthenticated, exports.parseGenericData);
   };
 
   exports.parseGenericData = function(request, response) {

@@ -23,6 +23,7 @@
 	"properties": "*",
 	"flat": "*",
 	"glob": "*",
-	"ncp": "*"
+	"ncp": "*",
+	"forever-monitor": "*"
   }
 }

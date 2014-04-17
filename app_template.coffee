@@ -112,6 +112,19 @@ startApp = ->
 		#TODO hack to prevent bug: https://github.com/mikeal/request/issues/418
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
+	if config.all.client.port != config.all.server.nodeapi.port
+		options = if stubsMode then ["stubsMode"] else []
+		forever = require("forever-monitor")
+		child = new (forever.Monitor)("app_api.js",
+			max: 3
+			silent: false
+			options: options
+		)
+		child.on "exit", ->
+			console.log "app_api.js has exited after 3 restarts"
+
+		child.start()
+
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 startApp()

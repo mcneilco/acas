@@ -1,14 +1,13 @@
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.post '/api/geneDataQuery', exports.getExperimentDataForGenes
-	app.post '/api/getGeneExperiments', exports.getExperimentListForGenes
-	app.post '/api/getExperimentSearchAttributes', exports.getExperimentSearchAttributes
-	app.post '/api/geneDataQueryAdvanced', exports.getExperimentDataForGenesAdvanced
+	app.post '/api/geneDataQuery', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenes
+	app.post '/api/getGeneExperiments', loginRoutes.ensureAuthenticated, exports.getExperimentListForGenes
+	app.post '/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes
+	app.post '/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced
 	config = require '../conf/compiled/conf.js'
-	if config.all.client.require.login
-		app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
-	else
-		app.get '/geneIDQuery', exports.geneIDQueryIndex
+#	if config.all.client.require.login
+	app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
+
 
 exports.getExperimentDataForGenes = (req, resp)  ->
 	req.connection.setTimeout 600000

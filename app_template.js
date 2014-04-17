@@ -4,7 +4,7 @@
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, config, express, flash, fs, http, https, indexRoutes, loginRoutes, passport, path, sslOptions, testModeOverRide, upload, user, util;
+    var LocalStrategy, child, config, express, flash, forever, fs, http, https, indexRoutes, loginRoutes, options, passport, path, sslOptions, testModeOverRide, upload, user, util;
     config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
@@ -115,6 +115,19 @@
         return console.log("Express server listening on port " + app.get('port'));
       });
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+    }
+    if (config.all.client.port !== config.all.server.nodeapi.port) {
+      options = stubsMode ? ["stubsMode"] : [];
+      forever = require("forever-monitor");
+      child = new forever.Monitor("app_api.js", {
+        max: 3,
+        silent: false,
+        options: options
+      });
+      child.on("exit", function() {
+        return console.log("app_api.js has exited after 3 restarts");
+      });
+      child.start();
     }
     return csUtilities.logUsage("ACAS Node server started", "started", "");
   };

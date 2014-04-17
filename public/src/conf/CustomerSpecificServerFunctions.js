@@ -124,7 +124,7 @@
         }
       }, (function(_this) {
         return function(error, response, json) {
-          if (!error && response.statusCode === 200) {
+          if (!error && response.statusCode === 200 && json.id) {
             return callback(null, {
               id: json.id,
               username: json.userName,

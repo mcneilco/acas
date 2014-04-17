@@ -1,6 +1,10 @@
 (function() {
   var csUtilities;
 
+  exports.setupAPIRoutes = function(app) {
+    return app.get('/api/users/:username', exports.getUsers);
+  };
+
   exports.setupRoutes = function(app, passport) {
     app.get('/login', exports.loginPage);
     app.post('/login', passport.authenticate('local', {
@@ -9,7 +13,7 @@
     }), exports.loginPost);
     app.get('/logout', exports.logout);
     app.post('/api/userAuthentication', exports.authenticationService);
-    app.get('/api/users/:username', exports.getUsers);
+    app.get('/api/users/:username', exports.ensureAuthenticated, exports.getUsers);
     app.get('/reset', exports.resetpage);
     app.post('/reset', exports.resetAuthenticationService, exports.resetPost);
     app.post('/api/userResetAuthentication', exports.resetAuthenticationService);

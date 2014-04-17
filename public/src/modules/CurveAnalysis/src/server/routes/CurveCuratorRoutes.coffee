@@ -1,15 +1,7 @@
-### To install this module this module
 
-In app.coffee
-	# CurveCurator routes
-	curveCuratorRoutes = require './public/src/modules/CurveAnalysis/src/server/routes/CurveCuratorRoutes.js'
-	curveCuratorRoutes.setupRoutes(app)
-
-
-###
-exports.setupRoutes = (app) ->
-	app.get '/curveCurator/*', exports.curveCuratorIndex
-	app.get '/api/curves/stub/:exptCode', exports.getCurveStubs
+exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex
+	app.get '/api/curves/stub/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs
 
 
 requiredScripts = [

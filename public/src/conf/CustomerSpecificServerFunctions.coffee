@@ -97,7 +97,7 @@ exports.getUser = (username, callback) ->
 			json:
 				name:username
 		, (error, response, json) =>
-			if !error && response.statusCode == 200
+			if !error && response.statusCode == 200 && json.id
 				callback null,
 					id: json.id
 					username: json.userName
