@@ -38,6 +38,17 @@ startApp = ->
 			done err, user
 
 	passport.use new LocalStrategy csUtilities.loginStrategy
+	passport.isAdmin = (req, resp, next) ->
+		if req.isAuthenticated() and req.user.role is 'admin'
+			next()
+		else
+			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
+	passport.isAuthenticated = (req, resp, next) ->
+		unless req.isAuthenticated()
+			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
+		else
+			next()
+
 	loginRoutes = require './routes/loginRoutes'
 
 	global.app = express()

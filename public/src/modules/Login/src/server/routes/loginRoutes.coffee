@@ -20,8 +20,7 @@ app.get '/api/users/:username', loginRoutes.getUsers
 exports.setupRoutes = (app, passport) ->
 	app.get '/login', exports.loginPage
 	app.post '/login',
-		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }),
-		exports.loginPost
+		passport.authenticate('local', { failureRedirect: '/login',successRedirect: '/', failureFlash: true })
 #	app.post '/login', passport.authenticate 'local',
 #		failureRedirect: '/login'
 #		failureFlash: true
@@ -29,6 +28,16 @@ exports.setupRoutes = (app, passport) ->
 	app.get '/logout', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/api/users/:username', exports.getUsers
+	app.get '/reset', exports.resetpage
+	app.post '/reset',
+		exports.resetAuthenticationService,
+		exports.resetPost
+	app.post '/api/userResetAuthentication', exports.resetAuthenticationService
+	app.get '/change', exports.changePage
+	app.post '/change',
+		exports.changeAuthenticationService,
+		exports.changePost
+	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
 
 csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 
@@ -48,9 +57,20 @@ exports.loginPage = (req, res) ->
 		user: user
 		message: errorMsg
 
+exports.resetPost = (req, res) ->
+	console.log req.session
+	#	res.redirect '/'
+	res.redirect '/reset'
+	
 exports.loginPost = (req, res) ->
 #	res.redirect '/'
 	res.redirect req.session.returnTo
+
+exports.changePost = (req, res) ->
+	console.log req.session
+	#	res.redirect '/'
+	res.redirect '/change'
+
 
 exports.logout = (req, res) ->
 	req.logout()
@@ -74,10 +94,13 @@ exports.getUsers = (req, resp) ->
 
 exports.authenticationService = (req, resp) ->
 	callback = (results) ->
+		console.log results
 		if results.indexOf("Success")>=0
+			console.log "in authentication service success"
 			resp.json
 				status: "Success"
 		else
+			console.log "in authentication service fail"
 			resp.json
 				status: "Fail"
 
@@ -86,3 +109,70 @@ exports.authenticationService = (req, resp) ->
 	else
 		csUtilities.authCheck req.body.user, req.body.password, callback
 
+exports.resetAuthenticationService = (req, resp) ->
+	callback = (results) ->
+		console.log results
+		if results.indexOf("Your new password is sent to your email address")>=0
+			req.flash 'error','Your new password is sent to your email address'
+			resp.redirect '/reset'
+		else
+			req.flash 'error','Invalid Email or Username'
+			resp.redirect '/reset'
+
+	if global.specRunnerTestmode
+		callback("Success")
+	else
+		csUtilities.resetAuth req.body.email, callback
+
+exports.changeAuthenticationService = (req, resp) ->
+	callback = (results) ->
+		console.log results
+		if results.indexOf("You password has been successfully been changed")>=0
+			req.flash 'error','Your new password is set'
+			resp.redirect '/login'
+		else
+			req.flash 'error','Invalid password or new password does not match'
+			resp.redirect '/change'
+
+	if global.specRunnerTestmode
+		callback("Success")
+	else
+		csUtilities.changeAuth req.body.user, req.body.oldPassword,req.body.newPassword,req.body.newPasswordAgain, callback
+
+
+exports.resetpage = (req, res) ->
+	user = null
+	if req.user?
+		user = req.user
+	console.log req.flash
+	errorMsg = ""
+	error = req.flash('error')
+	if error.length > 0
+		errorMsg = error[0]
+	res.render 'reset',
+		title: "ACAS reset"
+		scripts: []
+		user: user
+		message: errorMsg
+
+exports.changePage = (req, res) ->
+	user = null
+	if req.user?
+		user = req.user
+	if user != null && user.role!=null && user.role == 'admin'
+		errorMsg = ""
+		error = req.flash('error')
+		if error.length > 0
+			errorMsg = error[0]
+
+		res.render 'change',
+			title: "ACAS reset"
+			scripts: []
+			user: user
+			message: errorMsg
+	else
+		res.render 'login',
+			title: "ACAS login"
+			scripts: []
+			user: user
+			message: "need login or admin"

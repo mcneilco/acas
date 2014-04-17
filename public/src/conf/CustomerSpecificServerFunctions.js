@@ -1,9 +1,9 @@
-
 /*
   Master ACAS -specific implementations of required server functions
 
   All functions are required with unchanged signatures
- */
+*/
+
 
 (function() {
   exports.logUsage = function(action, data, username) {
@@ -17,24 +17,124 @@
   };
 
   exports.authCheck = function(user, pass, retFun) {
-    return retFun("Success");
+    var config, request,
+      _this = this;
+    config = require('../../../conf/compiled/conf.js');
+    console.log(config.all.client.require);
+    request = require('request');
+    return request({
+      headers: {
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+      },
+      method: 'POST',
+      url: config.all.client.require.loginLink,
+      form: {
+        j_username: user,
+        j_password: pass
+      },
+      json: false
+    }, function(error, response, json) {
+      if (!error && response.statusCode === 200) {
+        return retFun(JSON.stringify(json));
+      } else if (!error && response.statusCode === 302) {
+        return retFun(JSON.stringify(response.headers.location));
+      } else {
+        console.log('got ajax error trying authenticate a user');
+        console.log(error);
+        console.log(json);
+        return console.log(response);
+      }
+    });
+  };
+
+  exports.resetAuth = function(email, retFun) {
+    var config, request,
+      _this = this;
+    config = require('../../../conf/compiled/conf.js');
+    request = require('request');
+    return request({
+      headers: {
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+      },
+      method: 'POST',
+      url: config.all.client.require.resetLink,
+      form: {
+        emailAddress: email
+      },
+      json: false
+    }, function(error, response, json) {
+      if (!error && response.statusCode === 200) {
+        return retFun(JSON.stringify(json));
+      } else {
+        console.log('got ajax error trying authenticate a user');
+        console.log(error);
+        console.log(json);
+        return console.log(response);
+      }
+    });
+  };
+
+  exports.changeAuth = function(user, passOld, passNew, passNewAgain, retFun) {
+    var config, request,
+      _this = this;
+    config = require('../../../conf/compiled/conf.js');
+    request = require('request');
+    return request({
+      headers: {
+        accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+      },
+      method: 'POST',
+      url: config.all.client.require.changeLink,
+      form: {
+        username: user,
+        oldPassword: passOld,
+        newPassword: passNew,
+        newPasswordAgain: passNewAgain
+      },
+      json: false
+    }, function(error, response, json) {
+      console.log(response.statusCode);
+      if (!error && response.statusCode === 200) {
+        return retFun(JSON.stringify(json));
+      } else {
+        console.log('got ajax error trying authenticate a user');
+        console.log(error);
+        console.log(json);
+        return console.log(response);
+      }
+    });
   };
 
   exports.getUser = function(username, callback) {
-    var config;
+    var config, request,
+      _this = this;
     config = require('../../../conf/compiled/conf.js');
     if (config.all.client.require.login) {
-      if (username === "bob") {
-        return callback(null, {
-          id: "bob",
-          username: "bob",
-          email: "bob@nowwhere.com",
-          firstName: "Bob",
-          lastName: "Roberts"
-        });
-      } else {
-        return callback("user not found", null);
-      }
+      request = require('request');
+      return request({
+        headers: {
+          accept: 'application/json'
+        },
+        method: 'POST',
+        url: config.all.client.require.getUserLink,
+        json: {
+          name: username
+        }
+      }, function(error, response, json) {
+        if (!error && response.statusCode === 200) {
+          console.log(json);
+          return callback(null, {
+            id: json.id,
+            username: json.userName,
+            email: json.emailAddress,
+            firstName: json.firstName,
+            lastName: json.lastName,
+            role: json.role
+          });
+        } else {
+          return callback("user not found", null);
+        }
+      });
     } else {
       return callback(null, {
         id: 0,
@@ -51,31 +151,27 @@
   };
 
   exports.loginStrategy = function(username, password, done) {
-    return process.nextTick(function() {
-      return exports.findByUsername(username, function(err, user) {
-        return exports.authCheck(username, password, function(results) {
-          var error;
-          if (results.indexOf("Success") >= 0) {
-            try {
-              exports.logUsage("User logged in succesfully: ", "", username);
-            } catch (_error) {
-              error = _error;
-              console.log("Exception trying to log:" + error);
-            }
-            return done(null, user);
-          } else {
-            try {
-              exports.logUsage("User failed login: ", "", username);
-            } catch (_error) {
-              error = _error;
-              console.log("Exception trying to log:" + error);
-            }
-            return done(null, false, {
-              message: "Invalid credentials"
-            });
-          }
+    return exports.authCheck(username, password, function(results) {
+      var error;
+      if (results.indexOf("login_error") >= 0) {
+        try {
+          exports.logUsage("User failed login: ", "", username);
+        } catch (_error) {
+          error = _error;
+          console.log("Exception trying to log:" + error);
+        }
+        return done(null, false, {
+          message: "Invalid credentials"
         });
-      });
+      } else {
+        try {
+          exports.logUsage("User logged in succesfully: ", "", username);
+        } catch (_error) {
+          error = _error;
+          console.log("Exception trying to log:" + error);
+        }
+        return exports.getUser(username, done);
+      }
     });
   };
 

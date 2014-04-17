@@ -1,13 +1,13 @@
-
 /* To install this Module
 1) Add these lines to app.coffee:
-	 * DocForBatches routes
+	# DocForBatches routes
 	docForBatchesRoutes = require './public/src/modules/DocForBatches/src/server/routes/DocForBatchesRoutes.js'
 	docForBatchesRoutes.setupRoutes(app)
 
 2) Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Annotate Batches with File", mainControllerClassName: "DocForBatchesController"}
- */
+*/
+
 
 (function() {
   var fixturesData;

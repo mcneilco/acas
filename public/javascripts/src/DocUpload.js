@@ -1,5 +1,6 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref, _ref1,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -7,7 +8,8 @@
     __extends(DocUpload, _super);
 
     function DocUpload() {
-      return DocUpload.__super__.constructor.apply(this, arguments);
+      _ref = DocUpload.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     DocUpload.prototype.defaults = {
@@ -19,9 +21,9 @@
     };
 
     DocUpload.prototype.validate = function(attrs) {
-      var errors, _ref;
+      var errors, _ref1;
       errors = [];
-      if ((_ref = attrs.docType) !== 'url' && _ref !== 'file') {
+      if ((_ref1 = attrs.docType) !== 'url' && _ref1 !== 'file') {
         errors.push({
           attribute: 'docType',
           message: "Type must be one of url or file"
@@ -64,7 +66,8 @@
       this.setNewFileName = __bind(this.setNewFileName, this);
       this.docTypeChanged = __bind(this.docTypeChanged, this);
       this.render = __bind(this.render, this);
-      return DocUploadController.__super__.constructor.apply(this, arguments);
+      _ref1 = DocUploadController.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     DocUploadController.prototype.template = _.template($("#DocUploadView").html());

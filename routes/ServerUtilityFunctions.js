@@ -94,12 +94,12 @@
     });
   };
 
-
   /* To allow following test routes to work, install this Module
-  	 * ServerUtility function testing routes
+  	# ServerUtility function testing routes
   	serverUtilityFunctions = require './public/src/modules/02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
   	serverUtilityFunctions.setupRoutes(app)
-   */
+  */
+
 
   exports.setupRoutes = function(app) {
     return app.post('/api/runRFunctionTest', exports.runRFunctionTest);
@@ -115,24 +115,23 @@
   };
 
   exports.getFromACASServer = function(baseurl, resp) {
-    var request;
+    var request,
+      _this = this;
     request = require('request');
     return request({
       method: 'GET',
       url: baseurl,
       json: true
-    }, (function(_this) {
-      return function(error, response, json) {
-        if (!error && response.statusCode === 200) {
-          return resp.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to save new experiment');
-          console.log(error);
-          console.log(json);
-          return console.log(response);
-        }
-      };
-    })(this));
+    }, function(error, response, json) {
+      if (!error && response.statusCode === 200) {
+        return resp.end(JSON.stringify(json));
+      } else {
+        console.log('got ajax error trying to save new experiment');
+        console.log(error);
+        console.log(json);
+        return console.log(response);
+      }
+    });
   };
 
 }).call(this);

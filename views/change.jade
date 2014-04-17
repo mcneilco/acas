@@ -1,0 +1,26 @@
+extends layout
+block content
+    div.navbar.navbar-inverse.navbar-fixed-top
+        div.navbar-inner
+            div.container-fluid
+                div.brand ACAS
+    - if (message != "")
+        div.offset1.alert.alert-error(style="width:175px;margin-bottom:10px;") #{message}
+    label Change Password
+    form(action="/change", method="post")
+        div.offset1
+            label Email or Username:
+            input(type="text", name="username")
+            br
+        div.offset1
+            label Old Password:
+            input(type="password", name="oldPassword")
+        div.offset1
+            label New Password:
+            input(type="password", name="newPassword")
+        div.offset1
+            label Repeat Password:
+            input(type="password", name="newPasswordAgain")
+        div.offset1
+            input.btn(type="submit", value="Change Password")
+

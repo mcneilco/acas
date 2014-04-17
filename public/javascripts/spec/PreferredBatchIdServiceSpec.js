@@ -119,21 +119,18 @@
       return describe('when run with valid input', function() {
         beforeEach(function() {
           return runs(function() {
+            var _this = this;
             return $.ajax({
               type: 'POST',
               url: "api/preferredBatchId",
               data: this.requestData,
-              success: (function(_this) {
-                return function(json) {
-                  return _this.serviceReturn = json;
-                };
-              })(this),
-              error: (function(_this) {
-                return function(err) {
-                  console.log('got ajax error');
-                  return _this.serviceReturn = null;
-                };
-              })(this),
+              success: function(json) {
+                return _this.serviceReturn = json;
+              },
+              error: function(err) {
+                console.log('got ajax error');
+                return _this.serviceReturn = null;
+              },
               dataType: 'json'
             });
           });

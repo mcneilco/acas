@@ -1,4 +1,3 @@
-
 /*
 This service runs a primary data analysis.
   The data is provided in a directory containing one or more data files.
@@ -13,7 +12,8 @@ This service runs a primary data analysis.
 	Finally, analysis parameters need to be saved as a CLOB value
   state type: "metadata", state kind: "experiment metadata"
   value type: "clobValue", value kind:"data analysis parameters"
- */
+*/
+
 
 (function() {
   var goodExampleData, returnExampleError, returnExampleSuccess;
