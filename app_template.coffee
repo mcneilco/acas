@@ -103,3 +103,4 @@ startApp = ->
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 startApp()
+

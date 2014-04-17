@@ -78,7 +78,7 @@
         this.reportFileController = new LSFileInputController({
           el: this.$('.bv_reportFile'),
           inputTitle: '',
-          url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
+          url: UtilityFunctions.prototype.getFileServiceURL(),
           fieldIsRequired: false,
           allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
         });

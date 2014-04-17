@@ -43,7 +43,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@reportFileController = new LSFileInputController
 				el: @$('.bv_reportFile')
 				inputTitle: ''
-				url: "http://"+window.conf.host+":"+window.conf.service.file.port
+				url: UtilityFunctions::getFileServiceURL()
 				fieldIsRequired: false
 				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
 			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)
