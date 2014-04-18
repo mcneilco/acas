@@ -37,7 +37,7 @@
 
     BasicFileValidateAndSaveController.prototype.loadReportFile = false;
 
-    BasicFileValidateAndSaveController.prototype.filePath = "privateUploads/";
+    BasicFileValidateAndSaveController.prototype.filePath = "";
 
     BasicFileValidateAndSaveController.prototype.additionalData = {
       experimentId: 1234,

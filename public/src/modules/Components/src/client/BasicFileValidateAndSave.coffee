@@ -7,7 +7,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	reportFileNameOnServer: null
 	loadReportFile: false
 	#TODO replace filePath with value from config file, or don't send path and let R find it
-	filePath: "privateUploads/"
+	filePath: ""
 	additionalData: {experimentId: 1234, otherparam: "fred"}
 	allowedFileTypes: ['xls', 'xlsx', 'csv']
 	maxFileSize: 200000000

@@ -116,19 +116,17 @@
       });
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
     }
-    if (config.all.client.port !== config.all.server.nodeapi.port) {
-      options = stubsMode ? ["stubsMode"] : [];
-      forever = require("forever-monitor");
-      child = new forever.Monitor("app_api.js", {
-        max: 3,
-        silent: false,
-        options: options
-      });
-      child.on("exit", function() {
-        return console.log("app_api.js has exited after 3 restarts");
-      });
-      child.start();
-    }
+    options = stubsMode ? ["stubsMode"] : [];
+    forever = require("forever-monitor");
+    child = new forever.Monitor("app_api.js", {
+      max: 3,
+      silent: false,
+      options: options
+    });
+    child.on("exit", function() {
+      return console.log("app_api.js has exited after 3 restarts");
+    });
+    child.start();
     return csUtilities.logUsage("ACAS Node server started", "started", "");
   };
 
