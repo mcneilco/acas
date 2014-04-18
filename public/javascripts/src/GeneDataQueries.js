@@ -63,11 +63,17 @@
     __extends(GeneIDQueryResultController, _super);
 
     function GeneIDQueryResultController() {
+      this.showCSVFileLink = __bind(this.showCSVFileLink, this);
+      this.handleDownloadCSVClicked = __bind(this.handleDownloadCSVClicked, this);
       this.render = __bind(this.render, this);
       return GeneIDQueryResultController.__super__.constructor.apply(this, arguments);
     }
 
     GeneIDQueryResultController.prototype.template = _.template($("#GeneIDQueryResultView").html());
+
+    GeneIDQueryResultController.prototype.events = {
+      "click .bv_downloadCSV": "handleDownloadCSVClicked"
+    };
 
     GeneIDQueryResultController.prototype.render = function() {
       $(this.el).empty();
@@ -101,6 +107,17 @@
       })(this));
     };
 
+    GeneIDQueryResultController.prototype.handleDownloadCSVClicked = function() {
+      return this.trigger('downLoadCSVRequested');
+    };
+
+    GeneIDQueryResultController.prototype.showCSVFileLink = function(json) {
+      this.$('.bv_resultFileLink').attr('href', json.fileURL);
+      return this.$('.bv_csvFileLinkModal').modal({
+        show: true
+      });
+    };
+
     return GeneIDQueryResultController;
 
   })(Backbone.View);
@@ -109,6 +126,7 @@
     __extends(GeneIDQuerySearchController, _super);
 
     function GeneIDQuerySearchController() {
+      this.handleDownLoadCSVRequested = __bind(this.handleDownLoadCSVRequested, this);
       this.setShowResultsMode = __bind(this.setShowResultsMode, this);
       this.setQueryOnlyMode = __bind(this.setQueryOnlyMode, this);
       this.handleSearchReturn = __bind(this.handleSearchReturn, this);
@@ -117,6 +135,8 @@
     }
 
     GeneIDQuerySearchController.prototype.template = _.template($("#GeneIDQuerySearchView").html());
+
+    GeneIDQuerySearchController.prototype.lastSearch = "";
 
     GeneIDQuerySearchController.prototype.initialize = function() {
       $(this.el).empty();
@@ -135,6 +155,7 @@
     };
 
     GeneIDQuerySearchController.prototype.handleSearchRequested = function(searchStr) {
+      this.lastSearch = searchStr;
       return $.ajax({
         type: 'POST',
         url: "api/geneDataQuery",
@@ -160,6 +181,7 @@
         el: $('.bv_resultsView')
       });
       this.resultController.render();
+      this.resultController.on('downLoadCSVRequested', this.handleDownLoadCSVRequested);
       $('.bv_searchForm').appendTo('.bv_searchNavbar');
       this.$('.bv_gidSearchStart').hide();
       this.$('.bv_gidACASBadge').hide();
@@ -176,6 +198,26 @@
 
     GeneIDQuerySearchController.prototype.setShowResultsMode = function() {
       return this.$('.bv_resultsView').show();
+    };
+
+    GeneIDQuerySearchController.prototype.handleDownLoadCSVRequested = function() {
+      return $.ajax({
+        type: 'POST',
+        url: "api/geneDataQuery?format=csv",
+        dataType: 'json',
+        data: {
+          geneIDs: this.lastSearch,
+          maxRowsToReturn: 10000,
+          user: window.AppLaunchParams.loginUserName
+        },
+        success: this.resultController.showCSVFileLink,
+        error: (function(_this) {
+          return function(err) {
+            console.log('got ajax error');
+            return _this.serviceReturn = null;
+          };
+        })(this)
+      });
     };
 
     return GeneIDQuerySearchController;
@@ -336,7 +378,6 @@
     ExperimentResultFilterTermController.prototype.getSelectedExperiment = function() {
       var currentExpt, exptCode;
       exptCode = this.$('.bv_experiment').val();
-      console.log(exptCode);
       currentExpt = this.filterOptions.filter(function(expt) {
         return expt.get('experimentCode') === exptCode;
       });
@@ -481,6 +522,7 @@
     __extends(AdvancedExperimentResultsQueryController, _super);
 
     function AdvancedExperimentResultsQueryController() {
+      this.handleDownLoadCSVRequested = __bind(this.handleDownLoadCSVRequested, this);
       this.handleSearchReturn = __bind(this.handleSearchReturn, this);
       this.handleGetExperimentSearchAttributesReturn = __bind(this.handleGetExperimentSearchAttributesReturn, this);
       this.handleGetGeneExperimentsReturn = __bind(this.handleGetGeneExperimentsReturn, this);
@@ -595,19 +637,22 @@
       return this.nextStep = 'fromFiltersToResults';
     };
 
-    AdvancedExperimentResultsQueryController.prototype.fromFiltersToResults = function() {
+    AdvancedExperimentResultsQueryController.prototype.getQueryParams = function() {
       var queryParams;
-      queryParams = {
+      return queryParams = {
         batchCodes: this.searchCodes,
         experimentCodeList: this.experimentList,
         searchFilters: this.erfc.getSearchFilters()
       };
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.fromFiltersToResults = function() {
       return $.ajax({
         type: 'POST',
         url: "api/geneDataQueryAdvanced",
         dataType: 'json',
         data: {
-          queryParams: queryParams,
+          queryParams: this.getQueryParams(),
           maxRowsToReturn: 10000,
           user: window.AppLaunchParams.loginUserName
         },
@@ -626,11 +671,32 @@
         model: new Backbone.Model(json.results),
         el: $('.bv_advResultsView')
       });
+      this.resultController.on('downLoadCSVRequested', this.handleDownLoadCSVRequested);
       this.resultController.render();
       this.$('.bv_getFiltersView').hide();
       this.$('.bv_advResultsView').show();
       this.nextStep = 'gotoRestart';
       return this.trigger('requestShowResultsMode');
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.handleDownLoadCSVRequested = function() {
+      return $.ajax({
+        type: 'POST',
+        url: "api/geneDataQueryAdvanced?format=csv",
+        dataType: 'json',
+        data: {
+          queryParams: this.getQueryParams(),
+          maxRowsToReturn: 10000,
+          user: window.AppLaunchParams.loginUserName
+        },
+        success: this.resultController.showCSVFileLink,
+        error: (function(_this) {
+          return function(err) {
+            console.log('got ajax error');
+            return _this.serviceReturn = null;
+          };
+        })(this)
+      });
     };
 
     return AdvancedExperimentResultsQueryController;

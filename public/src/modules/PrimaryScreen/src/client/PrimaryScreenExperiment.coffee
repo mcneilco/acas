@@ -196,26 +196,18 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_hitSDThreshold').removeAttr('disabled')
 		@attributeChanged()
 
-class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
-	initialize: ->
-		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
-		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
-		@allowedFileTypes = ['zip']
-		@maxFileSize = 200000000
-		@loadReportFile = false
-		super()
-		@$('.bv_moduleTitle').html("Upload Data and Analyze")
-		@psapc = new PrimaryScreenAnalysisParametersController
-			model: @options.paramsFromExperiment
-			el: @$('.bv_additionalValuesForm')
-		@psapc.on 'valid', @handleMSFormValid
-		@psapc.on 'invalid', @handleMSFormInvalid
-		@psapc.on 'notifyError', @notificationController.addNotification
-		@psapc.on 'clearErrors', @notificationController.clearAllNotificiations
-		@psapc.on 'amDirty', =>
+class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
+#	See UploadAndRunPrimaryAnalsysisController for example required initialization function
+
+	completeInitialization: ->
+		@analysisParameterController.on 'valid', @handleMSFormValid
+		@analysisParameterController.on 'invalid', @handleMSFormInvalid
+		@analysisParameterController.on 'notifyError', @notificationController.addNotification
+		@analysisParameterController.on 'clearErrors', @notificationController.clearAllNotificiations
+		@analysisParameterController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@analyzedPreviously = @options.analyzedPreviously
-		@psapc.render()
+		@analysisParameterController.render()
 		if @analyzedPreviously
 			@$('.bv_save').html("Re-Analyze")
 		@handleMSFormInvalid() #start invalid since file won't be loaded
@@ -228,7 +220,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@handleFormInvalid()
 
 	handleFormValid: ->
-		if @psapc.isValid()
+		if @analysisParameterController.isValid()
 			super()
 
 	parseAndSave: =>
@@ -239,7 +231,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 
 	handleValidationReturnSuccess: (json) =>
 		super(json)
-		@psapc.disableAllInputs()
+		@analysisParameterController.disableAllInputs()
 
 	handleSaveReturnSuccess: (json) =>
 		super(json)
@@ -248,11 +240,11 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 
 	showFileSelectPhase: ->
 		super()
-		if @psapc?
-			@psapc.enableAllInputs()
+		if @analysisParameterController?
+			@analysisParameterController.enableAllInputs()
 
 	disableAll: ->
-		@psapc.disableAllInputs()
+		@analysisParameterController.disableAllInputs()
 		@$('.bv_htmlSummary').hide()
 		@$('.bv_fileUploadWrapper').hide()
 		@$('.bv_nextControlContainer').hide()
@@ -261,14 +253,14 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 		@$('.bv_notifications').hide()
 
 	enableAll: ->
-		@psapc.enableAllInputs()
+		@analysisParameterController.enableAllInputs()
 		@showFileSelectPhase()
 
 	validateParseFile: =>
-		@psapc.updateModel()
-		unless !@psapc.isValid()
+		@analysisParameterController.updateModel()
+		unless !@analysisParameterController.isValid()
 			@additionalData =
-				inputParameters: JSON.stringify @psapc.model
+				inputParameters: JSON.stringify @analysisParameterController.model
 				primaryAnalysisExperimentId: @experimentId
 				testMode: false
 			super()
@@ -278,6 +270,20 @@ class window.UploadAndRunPrimaryAnalsysisController extends BasicFileValidateAnd
 
 	setExperimentId: (expId) ->
 		@experimentId = expId
+
+class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRunPrimaryAnalsysisController
+	initialize: ->
+		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
+		@errorOwnerName = 'UploadAndRunPrimaryAnalsysisController'
+		@allowedFileTypes = ['zip']
+		@maxFileSize = 200000000
+		@loadReportFile = false
+		super()
+		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+		@analysisParameterController = new PrimaryScreenAnalysisParametersController
+			model: @options.paramsFromExperiment
+			el: @$('.bv_additionalValuesForm')
+		@completeInitialization()
 
 class window.PrimaryScreenAnalysisController extends Backbone.View
 	template: _.template($("#PrimaryScreenAnalysisView").html())
@@ -291,7 +297,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		if @model.isNew()
 			@setExperimentNotSaved()
 		else
-			@setupDataAnalysisController()
+			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 			@setExperimentSaved()
 
 	render: =>
@@ -324,7 +330,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 
 	handleExperimentSaved: =>
 		unless @dataAnalysisController?
-			@setupDataAnalysisController()
+			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 		@model.getStatus().on 'change', @handleStatusChanged
 		@setExperimentSaved()
 
@@ -340,11 +346,12 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			else
 				@dataAnalysisController.disableAll()
 
-	setupDataAnalysisController: ->
-		@dataAnalysisController = new UploadAndRunPrimaryAnalsysisController
+	setupDataAnalysisController: (dacClassName) ->
+		newArgs =
 			el: @$('.bv_fileUploadWrapper')
 			paramsFromExperiment:	@model.getAnalysisParameters()
 			analyzedPreviously: @model.getAnalysisStatus().get('stringValue')!="not started"
+		@dataAnalysisController = new window[dacClassName](newArgs)
 		@dataAnalysisController.setUser(window.AppLaunchParams.loginUserName)
 		@dataAnalysisController.setExperimentId(@model.id)
 		@dataAnalysisController.on 'analysis-completed', @handleAnalysisComplete
@@ -355,7 +362,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 
 
 # This wraps all the tabs
-class window.PrimaryScreenExperimentController extends Backbone.View
+class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 	template: _.template($("#PrimaryScreenExperimentView").html())
 
 	initialize: ->
@@ -363,7 +370,7 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 			@completeInitialization()
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
-				if window.AppLaunchParams.moduleLaunchParams.moduleName == "flipr_screening_assay"
+				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
 						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
@@ -375,7 +382,9 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 							if json.length == 0
 								alert 'Could not get experiment for code in this URL, creating new one'
 							else
-								exp = new PrimaryScreenExperiment json
+								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#								exp = new PrimaryScreenExperiment json
+								exp = new PrimaryScreenExperiment json[0]
 								exp.fixCompositeClasses()
 								@model = exp
 							@completeInitialization()
@@ -393,6 +402,7 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 		@experimentBaseController = new ExperimentBaseController
 			model: @model
 			el: @$('.bv_experimentBase')
+			protocolFilter: @protocolFilter
 		@experimentBaseController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@experimentBaseController.on 'amClean', =>
@@ -400,26 +410,28 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 		@analysisController = new PrimaryScreenAnalysisController
 			model: @model
 			el: @$('.bv_primaryScreenDataAnalysis')
+			uploadAndRunControllerName: @uploadAndRunControllerName
 		@analysisController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@analysisController.on 'amClean', =>
 			@trigger 'amClean'
-		@doseRespController = new DoseResponseAnalysisController
-			model: @model
-			el: @$('.bv_doseResponseAnalysis')
-		@doseRespController.on 'amDirty', =>
-			@trigger 'amDirty'
-		@doseRespController.on 'amClean', =>
-			@trigger 'amClean'
+		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
-			@doseRespController.primaryAnalysisCompleted()
+			@modelFitController.primaryAnalysisCompleted()
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@experimentBaseController.render()
 		@analysisController.render()
-		@doseRespController.render()
+		@modelFitController.render()
 
-	render: ->
-		@
+	setupModelFitController: (modelFitControllerName) ->
+		newArgs =
+			model: @model
+			el: @$('.bv_doseResponseAnalysis')
+		@modelFitController = new window[modelFitControllerName](newArgs)
+		@modelFitController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@modelFitController.on 'amClean', =>
+			@trigger 'amClean'
 
 	handleExperimentSaved: =>
 		@analysisController.render()
@@ -427,3 +439,8 @@ class window.PrimaryScreenExperimentController extends Backbone.View
 	handleProtocolAttributesCopied: =>
 		@analysisController.render()
 
+class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
+	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
+	modelFitControllerName: "DoseResponseAnalysisController"
+	protocolFilter: "?protocolName=FLIPR"
+	moduleLaunchName: "flipr_screening_assay"

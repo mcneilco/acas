@@ -22,6 +22,7 @@
 	"asyncblock": "*",
 	"properties": "*",
 	"flat": "*",
-	"glob": "*"
+	"glob": "*",
+	"ncp": "*"
   }
 }

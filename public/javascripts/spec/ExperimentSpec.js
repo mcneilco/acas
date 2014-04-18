@@ -514,7 +514,8 @@
             this.exp0.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
             this.ebc = new ExperimentBaseController({
               model: this.exp0,
-              el: $('#fixture')
+              el: $('#fixture'),
+              protocolFilter: "?protocolKind=FLIPR"
             });
             return this.ebc.render();
           });
@@ -665,7 +666,8 @@
           this.exp2 = new Experiment(window.experimentServiceTestJSON.fullExperimentFromServer);
           this.ebc = new ExperimentBaseController({
             model: this.exp2,
-            el: $('#fixture')
+            el: $('#fixture'),
+            protocolFilter: "?protocolKind=FLIPR"
           });
           return this.ebc.render();
         });
@@ -763,7 +765,8 @@
           });
           this.ebc = new ExperimentBaseController({
             model: this.exp0,
-            el: $('#fixture')
+            el: $('#fixture'),
+            protocolFilter: "?protocolKind=FLIPR"
           });
           return this.ebc.render();
         });

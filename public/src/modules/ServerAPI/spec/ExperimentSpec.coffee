@@ -341,6 +341,7 @@ describe "Experiment module testing", ->
 					@ebc = new ExperimentBaseController
 						model: @exp0
 						el: $('#fixture')
+						protocolFilter: "?protocolKind=FLIPR"
 					@ebc.render()
 			describe "Basic loading", ->
 				it "Class should exist", ->
@@ -458,6 +459,7 @@ describe "Experiment module testing", ->
 				@ebc = new ExperimentBaseController
 					model: @exp2
 					el: $('#fixture')
+					protocolFilter: "?protocolKind=FLIPR"
 				@ebc.render()
 			describe "property display", ->
 				it "should show the protocol code", ->
@@ -530,6 +532,7 @@ describe "Experiment module testing", ->
 				@ebc = new ExperimentBaseController
 					model: @exp0
 					el: $('#fixture')
+					protocolFilter: "?protocolKind=FLIPR"
 				@ebc.render()
 			describe "basic startup conditions", ->
 				it "should have protocol code not set", ->

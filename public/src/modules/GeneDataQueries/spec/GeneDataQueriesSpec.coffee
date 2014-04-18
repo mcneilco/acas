@@ -75,6 +75,18 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqrc.$('tbody tr').length).toEqual 4
 				it "should not show the no results message", ->
 					expect(@gidqrc.$('.bv_noResultsFound')).toBeHidden()
+			describe "request results as CSV", ->
+				it "should trigger search format csv request", ->
+					runs =>
+						@downLoadCSVRequested = false
+						@gidqrc.on 'downLoadCSVRequested', =>
+							@downLoadCSVRequested = true
+						@gidqrc.$('.bv_downloadCSV').click()
+					waitsFor =>
+						@downLoadCSVRequested
+					, 200
+					runs =>
+						expect(@downLoadCSVRequested).toBeTruthy()
 		describe 'when instantiated with empty result set', ->
 			beforeEach ->
 				@gidqrc = new GeneIDQueryResultController

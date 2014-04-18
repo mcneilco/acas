@@ -2,6 +2,7 @@
 #As root, run these first
 #npm install -g forever
 #npm install -g grunt-cli
+#npm install -g grunt
 usage ()
 {
   echo 'Usage : Script -d <install_directory> -u <bitbucket_user> -p <bitbucket_password>'
@@ -14,7 +15,7 @@ usage ()
   exit
 }
 
-while [ "$1" != "" ]; do
+while [ ! -z "$1" ]; do
 case $1 in
         -d )           shift
                        INSTALL_DIRECTORY=$1
@@ -66,9 +67,9 @@ then
 	stty echo
 	printf '\n'
 fi
-if [ "$CUSTOM_REPO" != "" ]
+if [ ! -z "$CUSTOM_REPO" ]
 then
-    if [ "$CUSTOM_BRANCH" = "" ]
+    if [ -z "$CUSTOM_BRANCH" ]
 	then
     	CUSTOM_BRANCH="master"
 	fi
@@ -82,12 +83,12 @@ fi
 #Main
 
 echo "Installing acas_branch $ACAS_BRANCH to $INSTALL_DIRECTORY"
-if [ "$CUSTOM_REPO" = "" ]; then
+if [ -z "$CUSTOM_REPO" ]; then
 	echo "Not using acas_custom"
 else 
 	echo "Using custom_repo $CUSTOM_REPO on custom_branch $CUSTOM_BRANCH"
 fi
-if [ "$DEPLOYMODE" = "" ]; then
+if [ -z "$DEPLOYMODE" ]; then
 	echo "deploy_mode not set so using standard configuration settings"
 else
 	echo "deploy_mode set to $DEPLOYMODE"
@@ -107,7 +108,7 @@ mkdir acas-$date
 ln -s acas-$date acas
 cd acas-$date
 
-if [ "$DEV" == "base" ] 
+if [ "$DEV" = "base" ] 
 then
 	git clone https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mcneilco/acas.git .
 	git checkout $ACAS_BRANCH
@@ -115,12 +116,12 @@ else
 	curl --digest --user $BITBUCKET_USER:$BITBUCKET_PASSWORD https://bitbucket.org/mcneilco/acas/get/$ACAS_BRANCH.tar.gz | tar xvz --strip-components=1 
 fi
 ln -s acas/serverOnlyModules/blueimp-file-upload-node/ ../blueimp
-if [ "$CUSTOM_REPO" != "" ]
+if [ ! -z "$CUSTOM_REPO" ]
 then
 	echo "Installing acas_custom $CUSTOM_REPO on branch $CUSTOM_BRANCH"
     mkdir acas_custom
 	cd acas_custom
-	if [ "$DEV" == "custom" ] 
+	if [ "$DEV" = "custom" ]
 	then
 		git clone https://$BITBUCKET_USER:$BITBUCKET_PASSWORD@bitbucket.org/mcneilco/$CUSTOM_REPO.git .
 		git checkout $CUSTOM_BRANCH
@@ -152,4 +153,3 @@ fi
 #export ACAS_HOME=$(pwd)/..
 #export R_LIBS=$ACAS_HOME/r_libs
 #R -e "library(racas);query('select * from api_protocol')"
-
