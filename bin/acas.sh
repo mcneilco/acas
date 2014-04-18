@@ -11,11 +11,26 @@
 ################################################################################
 ################################################################################
  
-#macs don't have /etc/init.d/functions so skipping.
-unamestr=$(uname)
-if [ "$unamestr" != 'Darwin' ]; then
-	. /etc/init.d/functions
+ARCH=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
+if [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    OS=$DISTRIB_ID
+    VER=$DISTRIB_RELEASE
+    . /lib/lsb/init-functions
+elif [ -f /etc/debian_version ]; then
+    OS=Debian  # XXX or Ubuntu??
+    VER=$(cat /etc/debian_version)
+    . /lib/lsb/init-functions
+elif [ -f /etc/redhat-release ]; then
+    OS=`cat /etc/redhat-release | awk {'print $1}'`
+    VER=`cut -d ' ' -f 3 /etc/redhat-release`
+    . /etc/init.d/functions
+else
+    OS=$(uname -s)
+    VER=$(uname -r)
 fi
+
+
 
 export PATH=/usr/local/bin:${PATH:=}
 export MANPATH=/usr/local/man:${MANPATH:=}
