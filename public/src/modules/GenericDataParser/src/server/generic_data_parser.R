@@ -1371,7 +1371,7 @@ validateProject <- function(projectName, configList) {
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(paste0(racas::getSSLString(),configList$client.host, ":", configList$client.port, configList$client.service.project.path))
+  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.project.path))
   }, error = function(e) {
     stop("The project service did not respond correctly, contact your system administrator")
   })
@@ -1401,7 +1401,7 @@ validateScientist <- function(scientistName, configList) {
   response <- NULL
   username <- "username"
   tryCatch({
-    response <- getURL(URLencode(paste0(configList$client.host, ":", configList$client.port, configList$client.service.users.path, "/", scientistName)))
+    response <- getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.users.path, "/", scientistName)))
     if (response == "") {
       errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
       return("")
@@ -2067,6 +2067,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   require('XLConnect')
   require('RCurl')
+  
+  pathToGenericDataFormatExcelFile <- racas::getUploadedFilePath(pathToGenericDataFormatExcelFile)
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
   
