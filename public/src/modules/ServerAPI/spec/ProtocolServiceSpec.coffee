@@ -1,8 +1,6 @@
 ###
 Protocol Service specs
 
-Just implenting GET for now
-
 See ProtocolServiceTestJSON.coffee for examples
 
 ###
@@ -150,7 +148,6 @@ describe 'Protocol CRUD testing', ->
 			it 'should not return protocols where protocol itself is set to ignore', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
-					console.log @serviceReturn
 					matches = _.filter @serviceReturn, (label) ->
 						label.name == "Ignore this protocol"
 					expect(matches.length).toEqual 0
@@ -206,4 +203,29 @@ describe 'Protocol CRUD testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn[@serviceReturn.length-1].name).toContain "KD"
+
+		describe 'when protocol kind list service called', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'GET'
+						url: "api/protocolKindCodes"
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+
+			it 'should array of protocolKinds', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn.length).toBeGreaterThan 0
+			it 'should array of protocolKinds', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					console.log @serviceReturn
+					expect(@serviceReturn[0].code).toBeDefined()
+					expect(@serviceReturn[0].name).toBeDefined()
+					expect(@serviceReturn[0].ignored).toBeDefined()
 

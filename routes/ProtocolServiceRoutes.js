@@ -1,10 +1,3 @@
-
-/* To install this Module
-1) Add these lines to app.coffee:
-	protocolRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ProtocolServiceRoutes.js'
-	protocolRoutes.setupRoutes(app)
- */
-
 (function() {
   exports.setupRoutes = function(app) {
     app.get('/api/protocols/codename/:code', exports.protocolByCodename);
@@ -12,7 +5,8 @@
     app.post('/api/protocols', exports.postProtocol);
     app.put('/api/protocols', exports.putProtocol);
     app.get('/api/protocollabels', exports.lsLabels);
-    return app.get('/api/protocolCodes', exports.protocolCodeList);
+    app.get('/api/protocolCodes', exports.protocolCodeList);
+    return app.get('/api/protocolKindCodes', exports.protocolKindCodeList);
   };
 
   exports.protocolByCodename = function(req, resp) {
@@ -171,6 +165,47 @@
         return function(error, response, json) {
           if (!error && response.statusCode === 200) {
             return resp.json(json);
+          } else {
+            console.log('got ajax error trying to get protocol labels');
+            console.log(error);
+            console.log(json);
+            return console.log(response);
+          }
+        };
+      })(this));
+    }
+  };
+
+  exports.protocolKindCodeList = function(req, resp) {
+    var baseurl, config, protocolServiceTestJSON, request, translateToCodes;
+    translateToCodes = function(kinds) {
+      var kind, kindCodes, _i, _len;
+      kindCodes = [];
+      for (_i = 0, _len = kinds.length; _i < _len; _i++) {
+        kind = kinds[_i];
+        kindCodes.push({
+          code: kind.kindName,
+          name: kind.kindName,
+          ignored: false
+        });
+      }
+      return kindCodes;
+    };
+    if (global.specRunnerTestmode) {
+      protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
+      return resp.json(translateToCodes(protocolServiceTestJSON.protocolKinds));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocolkinds";
+      request = require('request');
+      return request({
+        method: 'GET',
+        url: baseurl,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return resp.json(translateToCodes(json));
           } else {
             console.log('got ajax error trying to get protocol labels');
             console.log(error);

@@ -18,10 +18,6 @@
       mainControllerClassName: "DNSKDPrimaryScreenExperimentController",
       autoLaunchName: "dnskd_screening_assay"
     }, {
-      isHeader: false,
-      menuName: "Experiment Browser",
-      mainControllerClassName: "ExperimentBrowserController"
-    }, {
       isHeader: true,
       menuName: "Inventory"
     }, {
@@ -32,6 +28,13 @@
       isHeader: false,
       menuName: "Load Sample Transfer Log",
       mainControllerClassName: "BulkLoadSampleTransfersController"
+    }, {
+      isHeader: true,
+      menuName: "Search and Edit"
+    }, {
+      isHeader: false,
+      menuName: "Experiment Browser",
+      mainControllerClassName: "ExperimentBrowserController"
     }
   ];
 

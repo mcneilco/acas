@@ -1,10 +1,4 @@
-### To install this Module
-1) Add these lines to app.coffee:
-	protocolRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ProtocolServiceRoutes.js'
-	protocolRoutes.setupRoutes(app)
 
-
-###
 exports.setupRoutes = (app) ->
 	app.get '/api/protocols/codename/:code', exports.protocolByCodename
 	app.get '/api/protocols/:id', exports.protocolById
@@ -12,6 +6,7 @@ exports.setupRoutes = (app) ->
 	app.put '/api/protocols', exports.putProtocol
 	app.get '/api/protocollabels', exports.lsLabels
 	app.get '/api/protocolCodes', exports.protocolCodeList
+	app.get '/api/protocolKindCodes', exports.protocolKindCodeList
 
 exports.protocolByCodename = (req, resp) ->
 	console.log req.params.code
@@ -150,3 +145,33 @@ exports.protocolCodeList = (req, resp) ->
 		)
 
 
+exports.protocolKindCodeList = (req, resp) ->
+	translateToCodes = (kinds) ->
+		kindCodes = []
+		for kind in kinds
+				kindCodes.push
+					code: kind.kindName
+					name: kind.kindName
+					ignored: false
+		kindCodes
+
+	if global.specRunnerTestmode
+		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		resp.json translateToCodes(protocolServiceTestJSON.protocolKinds)
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocolkinds"
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.json translateToCodes(json)
+			else
+				console.log 'got ajax error trying to get protocol labels'
+				console.log error
+				console.log json
+				console.log response
+		)
