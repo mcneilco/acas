@@ -31,7 +31,7 @@
             console.log(JSON.stringify(json));
             return resp.end(JSON.stringify(json));
           } else {
-            console.log('got ajax error trying to save new experiment');
+            console.log('got ajax error trying to retrieve curve stubs');
             console.log(error);
             console.log(json);
             return console.log(response);

@@ -27,7 +27,7 @@ exports.getCurveStubs = (req, resp) ->
 				console.log JSON.stringify json
 				resp.end JSON.stringify json
 			else
-				console.log 'got ajax error trying to save new experiment'
+				console.log 'got ajax error trying to retrieve curve stubs'
 				console.log error
 				console.log json
 				console.log response
