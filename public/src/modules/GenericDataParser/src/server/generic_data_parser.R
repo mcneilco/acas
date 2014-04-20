@@ -464,7 +464,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
       warning(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
                      "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
-                     "'. If this is not what you intended, replace the ", maincode, " with the correct ID."))
+                     "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
     }
   }
 
