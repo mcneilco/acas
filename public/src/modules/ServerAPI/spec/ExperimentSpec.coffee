@@ -432,7 +432,7 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_protocolCode').val("PROT-00000001")
 						@ebc.$('.bv_protocolCode').change()
 					#changing protocol needs a server round trip
-					waits 200
+					waits 1000
 					runs ->
 						expect(@ebc.model.get('protocol').get('codeName')).toEqual "PROT-00000001"
 				it "should update model when project is changed", ->
@@ -567,26 +567,22 @@ describe "Experiment module testing", ->
 					runs ->
 						@ebc.$('.bv_protocolCode').val("PROT-00000001")
 						@ebc.$('.bv_protocolCode').change()
+						waits(1000) # needs to fetch stub protocol
 				describe "When user picks protocol", ->
 					it "should update model", ->
-						waits(200) # needs to fetch stub protocol
 						runs ->
 							expect(@ebc.model.get('protocol').get('codeName')).toEqual "PROT-00000001"
 					it "should fill the short description field because the protocol attrobutes are automatically copied", ->
-						waits(200)
 						runs ->
 							expect(@ebc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 					it "should enable use protocol params", ->
-						waits(200) # needs to fill out stub protocol
 						runs ->
 							expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toBeUndefined()
 				xdescribe "When user and asks to clone attributes should populate fields", ->
 					beforeEach ->
-						waits(200)
 						runs ->
 							@ebc.$('.bv_useProtocolParameters').click()
 					it "should fill the short description field", ->
-						waits(200)
 						runs ->
 							expect(@ebc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 			describe "controller validation rules", ->
@@ -682,13 +678,14 @@ describe "Experiment module testing", ->
 					it "should update experiment code", ->
 						runs ->
 							@ebc.$('.bv_save').click()
-						waits(100)
+						waits(1000)
 						runs ->
 							expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
 					it "should show the save button text as Update", ->
 						runs ->
 							@ebc.$('.bv_save').click()
-						waits(100)
+						waits(1000)
 						runs ->
 							expect(@ebc.$('.bv_save').html()).toEqual "Update"
 
+#TODO all the specs that include copying protocol params have a hard 1 second wait. Add trigger to watch

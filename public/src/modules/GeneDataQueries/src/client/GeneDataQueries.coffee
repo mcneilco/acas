@@ -159,7 +159,12 @@ class window.ExperimentTreeController extends Backbone.View
 		@$('.bv_tree').jstree
 			core:
 				data: @model.get('experimentData')
+			search:
+				fuzzy: false
 			plugins: [ "checkbox","search"]
+
+		@$('.bv_tree').bind "hover_node.jstree", (e, data) ->
+			$(e.target).attr("title", data.node.original.description)
 
 		to = false
 		@$(".bv_searchVal").keyup =>
