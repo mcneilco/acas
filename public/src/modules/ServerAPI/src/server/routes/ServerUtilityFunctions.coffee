@@ -54,6 +54,7 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 	rCommand += '	cat(toJSON(returnValues));'
 	rCommand += '},error = function(ex) {cat(paste("R Execution Error:",ex));})'
 	rCommandFile.writeFileSync rCommand
+	console.log rCommand
 	command = rScriptCommand + " " + rCommandFile.path + " 2> /dev/null"
 
 	child = exec command,  (error, stdout, stderr) ->

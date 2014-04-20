@@ -57,6 +57,7 @@
     rCommand += '	cat(toJSON(returnValues));';
     rCommand += '},error = function(ex) {cat(paste("R Execution Error:",ex));})';
     rCommandFile.writeFileSync(rCommand);
+    console.log(rCommand);
     command = rScriptCommand + " " + rCommandFile.path + " 2> /dev/null";
     return child = exec(command, function(error, stdout, stderr) {
       var message, result;

@@ -1,14 +1,13 @@
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.post '/api/geneDataQuery', exports.getExperimentDataForGenes
-	app.post '/api/getGeneExperiments', exports.getExperimentListForGenes
-	app.post '/api/getExperimentSearchAttributes', exports.getExperimentSearchAttributes
-	app.post '/api/geneDataQueryAdvanced', exports.getExperimentDataForGenesAdvanced
+	app.post '/api/geneDataQuery', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenes
+	app.post '/api/getGeneExperiments', loginRoutes.ensureAuthenticated, exports.getExperimentListForGenes
+	app.post '/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes
+	app.post '/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced
 	config = require '../conf/compiled/conf.js'
-	if config.all.client.require.login
-		app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
-	else
-		app.get '/geneIDQuery', exports.geneIDQueryIndex
+#	if config.all.client.require.login
+	app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
+
 
 exports.getExperimentDataForGenes = (req, resp)  ->
 	req.connection.setTimeout 600000
@@ -16,29 +15,33 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 	request = require 'request'
 	fs = require 'fs'
 	crypto = require('crypto');
+	config = require '../conf/compiled/conf.js'
 
 	if req.query.format?
 		if req.query.format=="csv"
 			if global.specRunnerTestmode
 				# the following is really elegant, but the client won't support an ajax call returning a file, so start over....
 #				request.get('http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv').pipe(resp)
+				if config.all.client.use.ssl
+					urlPref = "https://"
+				else
+					urlPref = "http://"
 
 				filename = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query.csv';
 				console.log filename
-				file = fs.createWriteStream './public/tempFiles/'+filename
-				rem = request 'http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
+				file = fs.createWriteStream './privateTempFiles/'+filename
+				rem = request urlPref+'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
 				rem.on 'data', (chunk) ->
 					file.write(chunk);
 				rem.on 'end', ->
 					file.close()
 					console.log "file written"
 					resp.json
-						fileURL: "http://localhost:3000/tempFiles/"+filename
+						fileURL: urlPref+"localhost:3000/tempFiles/"+filename
 
 
 			else
 				#TODO this implementation is not tested!!!
-				config = require '../conf/compiled/conf.js'
 				baseurl = config.all.client.service.rapache.fullpath+"getGeneData?format=CSV"
 				request(
 					method: 'POST'
@@ -68,7 +71,6 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 			if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "start offset outside allowed range, please speake to an administrator"}
 			resp.end JSON.stringify responseObj
 		else
-			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.rapache.fullpath+"getGeneData/"
 			request(
 				method: 'POST'
@@ -204,19 +206,24 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 	request = require 'request'
 	fs = require 'fs'
 	crypto = require('crypto');
+	config = require '../conf/compiled/conf.js'
+	if config.all.client.use.ssl
+		urlPref = "https://"
+	else
+		urlPref = "http://"
 
 	if req.query.format?
 		if req.query.format=="csv"
 			if global.specRunnerTestmode
 				filename = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query.csv';
-				file = fs.createWriteStream './public/tempFiles/'+filename
-				rem = request 'http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
+				file = fs.createWriteStream './privateTempFiles/'+filename
+				rem = request urlPref+'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
 				rem.on 'data', (chunk) ->
 					file.write(chunk);
 				rem.on 'end', ->
 					file.close()
 					resp.json
-						fileURL: "http://localhost:3000/tempFiles/"+filename
+						fileURL: urlPref+"localhost:3000/tempFiles/"+filename
 			else
 				#TODO this implementation is not tested!!!
 				config = require '../conf/compiled/conf.js'

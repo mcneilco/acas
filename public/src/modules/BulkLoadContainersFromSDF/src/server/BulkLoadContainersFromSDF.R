@@ -134,15 +134,15 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     }
     
     # Save plate
-    if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")) {
-      dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")
+    if(!file.exists(racas::getUploadedFilePath("uploadedPlates"))) {
+      dir.create(racas::getUploadedFilePath("uploadedPlates"))
     }
     newFileName <- paste0("uploadedPlates/", basename(fileName))
     
     if(!file.exists(fileName)) {
       stop(paste("Missing file", fileName))
     }
-    file.rename(fileName, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", newFileName))
+    file.rename(fileName, paste0(racas::getUploadedFilePath(newFileName)))
     
     lsTransaction <- createLsTransaction(comments="Bulk load from .sdf file")$id
     

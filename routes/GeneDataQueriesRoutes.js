@@ -1,33 +1,34 @@
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
     var config;
-    app.post('/api/geneDataQuery', exports.getExperimentDataForGenes);
-    app.post('/api/getGeneExperiments', exports.getExperimentListForGenes);
-    app.post('/api/getExperimentSearchAttributes', exports.getExperimentSearchAttributes);
-    app.post('/api/geneDataQueryAdvanced', exports.getExperimentDataForGenesAdvanced);
+    app.post('/api/geneDataQuery', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenes);
+    app.post('/api/getGeneExperiments', loginRoutes.ensureAuthenticated, exports.getExperimentListForGenes);
+    app.post('/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes);
+    app.post('/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced);
     config = require('../conf/compiled/conf.js');
-    if (config.all.client.require.login) {
-      return app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
-    } else {
-      return app.get('/geneIDQuery', exports.geneIDQueryIndex);
-    }
+    return app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
   };
 
   exports.getExperimentDataForGenes = function(req, resp) {
-    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions,
-      _this = this;
+    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions, urlPref;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     request = require('request');
     fs = require('fs');
     crypto = require('crypto');
+    config = require('../conf/compiled/conf.js');
     if (req.query.format != null) {
       if (req.query.format === "csv") {
         if (global.specRunnerTestmode) {
+          if (config.all.client.use.ssl) {
+            urlPref = "https://";
+          } else {
+            urlPref = "http://";
+          }
           filename = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query.csv';
           console.log(filename);
-          file = fs.createWriteStream('./public/tempFiles/' + filename);
-          rem = request('http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
+          file = fs.createWriteStream('./privateTempFiles/' + filename);
+          rem = request(urlPref + 'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
           rem.on('data', function(chunk) {
             return file.write(chunk);
           });
@@ -35,11 +36,10 @@
             file.close();
             console.log("file written");
             return resp.json({
-              fileURL: "http://localhost:3000/tempFiles/" + filename
+              fileURL: urlPref + "localhost:3000/tempFiles/" + filename
             });
           });
         } else {
-          config = require('../conf/compiled/conf.js');
           baseurl = config.all.client.service.rapache.fullpath + "getGeneData?format=CSV";
           return request({
             method: 'POST',
@@ -82,31 +82,31 @@
         }
         return resp.end(JSON.stringify(responseObj));
       } else {
-        config = require('../conf/compiled/conf.js');
         baseurl = config.all.client.service.rapache.fullpath + "getGeneData/";
         return request({
           method: 'POST',
           url: baseurl,
           body: req.body,
           json: true
-        }, function(error, response, json) {
-          console.log(response.statusCode);
-          if (!error) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to query gene data');
-            console.log(error);
-            return console.log(resp);
-          }
-        });
+        }, (function(_this) {
+          return function(error, response, json) {
+            console.log(response.statusCode);
+            if (!error) {
+              console.log(JSON.stringify(json));
+              return resp.end(JSON.stringify(json));
+            } else {
+              console.log('got ajax error trying to query gene data');
+              console.log(error);
+              return console.log(resp);
+            }
+          };
+        })(this));
       }
     }
   };
 
   exports.getExperimentListForGenes = function(req, resp) {
-    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions,
-      _this = this;
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     resp.writeHead(200, {
@@ -148,23 +148,24 @@
         url: baseurl,
         body: req.body,
         json: true
-      }, function(error, response, json) {
-        console.log(response.statusCode);
-        if (!error) {
-          console.log(JSON.stringify(json));
-          return resp.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to query gene data');
-          console.log(error);
-          return console.log(resp);
-        }
-      });
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to query gene data');
+            console.log(error);
+            return console.log(resp);
+          }
+        };
+      })(this));
     }
   };
 
   exports.getExperimentSearchAttributes = function(req, resp) {
-    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions,
-      _this = this;
+    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     resp.writeHead(200, {
@@ -206,17 +207,19 @@
         url: baseurl,
         body: req.body,
         json: true
-      }, function(error, response, json) {
-        console.log(response.statusCode);
-        if (!error) {
-          console.log(JSON.stringify(json));
-          return resp.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to query gene data');
-          console.log(error);
-          return console.log(resp);
-        }
-      });
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to query gene data');
+            console.log(error);
+            return console.log(resp);
+          }
+        };
+      })(this));
     }
   };
 
@@ -253,26 +256,31 @@
   };
 
   exports.getExperimentDataForGenesAdvanced = function(req, resp) {
-    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions,
-      _this = this;
+    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions, urlPref;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     request = require('request');
     fs = require('fs');
     crypto = require('crypto');
+    config = require('../conf/compiled/conf.js');
+    if (config.all.client.use.ssl) {
+      urlPref = "https://";
+    } else {
+      urlPref = "http://";
+    }
     if (req.query.format != null) {
       if (req.query.format === "csv") {
         if (global.specRunnerTestmode) {
           filename = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query.csv';
-          file = fs.createWriteStream('./public/tempFiles/' + filename);
-          rem = request('http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
+          file = fs.createWriteStream('./privateTempFiles/' + filename);
+          rem = request(urlPref + 'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
           rem.on('data', function(chunk) {
             return file.write(chunk);
           });
           return rem.on('end', function() {
             file.close();
             return resp.json({
-              fileURL: "http://localhost:3000/tempFiles/" + filename
+              fileURL: urlPref + "localhost:3000/tempFiles/" + filename
             });
           });
         } else {
@@ -326,17 +334,19 @@
           url: baseurl,
           body: req.body,
           json: true
-        }, function(error, response, json) {
-          console.log(response.statusCode);
-          if (!error) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to query gene data');
-            console.log(error);
-            return console.log(resp);
-          }
-        });
+        }, (function(_this) {
+          return function(error, response, json) {
+            console.log(response.statusCode);
+            if (!error) {
+              console.log(JSON.stringify(json));
+              return resp.end(JSON.stringify(json));
+            } else {
+              console.log('got ajax error trying to query gene data');
+              console.log(error);
+              return console.log(resp);
+            }
+          };
+        })(this));
       }
     }
   };

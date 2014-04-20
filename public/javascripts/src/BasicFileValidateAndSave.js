@@ -39,7 +39,7 @@
 
     BasicFileValidateAndSaveController.prototype.loadReportFile = false;
 
-    BasicFileValidateAndSaveController.prototype.filePath = "serverOnlyModules/blueimp-file-upload-node/public/files/";
+    BasicFileValidateAndSaveController.prototype.filePath = "";
 
     BasicFileValidateAndSaveController.prototype.additionalData = {
       experimentId: 1234,
@@ -68,7 +68,7 @@
       this.parseFileController = new LSFileInputController({
         el: this.$('.bv_parseFile'),
         inputTitle: '',
-        url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
+        url: UtilityFunctions.prototype.getFileServiceURL(),
         fieldIsRequired: false,
         allowedFileTypes: this.allowedFileTypes,
         maxFileSize: this.maxFileSize
@@ -80,7 +80,7 @@
         this.reportFileController = new LSFileInputController({
           el: this.$('.bv_reportFile'),
           inputTitle: '',
-          url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
+          url: UtilityFunctions.prototype.getFileServiceURL(),
           fieldIsRequired: false,
           allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
         });
