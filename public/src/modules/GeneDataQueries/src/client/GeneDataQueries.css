@@ -243,3 +243,12 @@
     padding-bottom: 50px;
     padding-left: 958px;
 }
+
+.GeneIDQueryAppController .aboutACAS {
+    margin-top: 0;
+}
+
+.GeneIDQueryAppController .helpLinks {
+    margin-top: 10px;
+    margin-left: 185px;
+}

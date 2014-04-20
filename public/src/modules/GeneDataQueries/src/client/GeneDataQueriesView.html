@@ -54,6 +54,20 @@
             <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
         </div>
     </div>
+
+    <div class="modal bv_searchStatusDropDown hide">
+        <div class="modal-header">
+            <h3>Loading</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <br />
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width:100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </script>
 
 <script type="text/template" id="GeneIDQuerySearchView" xmlns="http://www.w3.org/1999/html">
@@ -127,6 +141,7 @@
         <input type="text" class="span12 bv_advancedBooleanFilter" placeholder="Type in filter query: (Q1 or Q2 or Q3) NOT (Q4 and Q5)" />
     </div>
     </div>
+
 </script>
 
 <script type="text/template" id="AdvancedExperimentResultsQueryView" xmlns="http://www.w3.org/1999/html">
@@ -147,6 +162,20 @@
     <div class="bv_getExperimentsView"></div>
     <div class="bv_getFiltersView"></div>
     <div class="bv_advResultsView"></div>
+
+        <div class="modal bv_searchStatusDropDown hide">
+            <div class="modal-header">
+                <h3>Loading</h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <br />
+                    <div class="progress progress-striped active">
+                        <div class="bar" style="width:100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 </script>
 
 <script type="text/template" id="GeneIDQueryAppView" xmlns="http://www.w3.org/1999/html">
@@ -177,6 +206,23 @@
         </div>
 
      </div>
+
+    <div class="modal hide fade bv_helpModal">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Help</h3>
+        </div>
+        <div class="modal-body bv_modalMessage">
+            <h5 class="aboutACAS">About ACAS</h5>
+            <span>ACAS SEL (Advanced Capture and Analysis System) is a data loading and analysis web application designed by <a  href="http://www.mcneilco.com">John McNeil & Co., Inc.</a></span>
+            <div class="helpLinks">
+                <a class="btn" href="/change">Change Password</a>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+    </div>
 
     <div class="navbar bv_group_toolbar navbar-fixed-bottom">
         <div class="well well-small bv_toolbar">

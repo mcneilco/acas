@@ -445,6 +445,8 @@ describe "Gene Data Queries Module Testing", ->
 						runs ->
 							@aerqc.$('.bv_codesField').val "12345, 6789"
 							@aerqc.handleNextClicked()
+#					describe "step two loading", ->
+#						it "should show a loading screen between step one and two", ->
 					describe "experiment tree display from stub service", ->
 						beforeEach ->
 							waitsFor =>

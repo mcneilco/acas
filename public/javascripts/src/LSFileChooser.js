@@ -1,12 +1,14 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref, _ref1, _ref2,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.LSFileChooserModel = (function(_super) {
     __extends(LSFileChooserModel, _super);
 
     function LSFileChooserModel() {
-      return LSFileChooserModel.__super__.constructor.apply(this, arguments);
+      _ref = LSFileChooserModel.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     LSFileChooserModel.prototype.defaults = {
@@ -31,7 +33,8 @@
     __extends(LSFileModelCollection, _super);
 
     function LSFileModelCollection() {
-      return LSFileModelCollection.__super__.constructor.apply(this, arguments);
+      _ref1 = LSFileModelCollection.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     LSFileModelCollection.prototype.model = LSFileChooserModel;
@@ -44,7 +47,8 @@
     __extends(LSFileChooserController, _super);
 
     function LSFileChooserController() {
-      return LSFileChooserController.__super__.constructor.apply(this, arguments);
+      _ref2 = LSFileChooserController.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     LSFileChooserController.prototype.allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'];

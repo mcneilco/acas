@@ -1,9 +1,9 @@
-
 /* To install this Module
 1) Add these lines to app.coffee:
 	experimentRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ExperimentServiceRoutes.js'
 	experimentRoutes.setupRoutes(app)
- */
+*/
+
 
 (function() {
   exports.setupRoutes = function(app) {
@@ -59,7 +59,8 @@
   };
 
   exports.postExperiment = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, request;
+    var baseurl, config, experimentServiceTestJSON, request,
+      _this = this;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
@@ -72,24 +73,23 @@
         url: baseurl,
         body: req.body,
         json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 201) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to save new experiment');
-            console.log(error);
-            console.log(json);
-            return console.log(response);
-          }
-        };
-      })(this));
+      }, function(error, response, json) {
+        if (!error && response.statusCode === 201) {
+          console.log(JSON.stringify(json));
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to save new experiment');
+          console.log(error);
+          console.log(json);
+          return console.log(response);
+        }
+      });
     }
   };
 
   exports.putExperiment = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, putId, request;
+    var baseurl, config, experimentServiceTestJSON, putId, request,
+      _this = this;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
@@ -103,19 +103,17 @@
         url: baseurl,
         body: req.body,
         json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          console.log(response.statusCode);
-          if (!error && response.statusCode === 200) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to save new experiment');
-            console.log(error);
-            return console.log(response);
-          }
-        };
-      })(this));
+      }, function(error, response, json) {
+        console.log(response.statusCode);
+        if (!error && response.statusCode === 200) {
+          console.log(JSON.stringify(json));
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to save new experiment');
+          console.log(error);
+          return console.log(response);
+        }
+      });
     }
   };
 

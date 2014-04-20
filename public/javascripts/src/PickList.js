@@ -1,5 +1,6 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref, _ref1, _ref2, _ref3,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -7,7 +8,8 @@
     __extends(PickList, _super);
 
     function PickList() {
-      return PickList.__super__.constructor.apply(this, arguments);
+      _ref = PickList.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     return PickList;
@@ -18,7 +20,8 @@
     __extends(PickListList, _super);
 
     function PickListList() {
-      return PickListList.__super__.constructor.apply(this, arguments);
+      _ref1 = PickListList.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     PickListList.prototype.model = PickList;
@@ -48,7 +51,8 @@
 
     function PickListOptionController() {
       this.render = __bind(this.render, this);
-      return PickListOptionController.__super__.constructor.apply(this, arguments);
+      _ref2 = PickListOptionController.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     PickListOptionController.prototype.tagName = "option";
@@ -71,7 +75,8 @@
       this.addOne = __bind(this.addOne, this);
       this.render = __bind(this.render, this);
       this.handleListReset = __bind(this.handleListReset, this);
-      return PickListSelectController.__super__.constructor.apply(this, arguments);
+      _ref3 = PickListSelectController.__super__.constructor.apply(this, arguments);
+      return _ref3;
     }
 
     PickListSelectController.prototype.initialize = function() {
@@ -104,14 +109,13 @@
     };
 
     PickListSelectController.prototype.render = function() {
-      var self;
+      var self,
+        _this = this;
       $(this.el).empty();
       self = this;
-      this.collection.each((function(_this) {
-        return function(enm) {
-          return _this.addOne(enm);
-        };
-      })(this));
+      this.collection.each(function(enm) {
+        return _this.addOne(enm);
+      });
       if (this.selectedCode) {
         $(this.el).val(this.selectedCode);
       }

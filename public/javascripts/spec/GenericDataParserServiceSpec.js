@@ -1,7 +1,7 @@
-
 /*
 This service parses data from the generic format and saves it to the database
- */
+*/
+
 
 (function() {
   var badDataRequest, goodDataRequest, returnExampleError, returnExampleSuccess;
@@ -67,21 +67,18 @@ This service parses data from the generic format and saves it to the database
     describe('when run with valid input file', function() {
       beforeEach(function() {
         return runs(function() {
+          var _this = this;
           return $.ajax({
             type: 'POST',
             url: "api/genericDataParser",
             data: goodDataRequest,
-            success: (function(_this) {
-              return function(json) {
-                return _this.serviceReturn = json;
-              };
-            })(this),
-            error: (function(_this) {
-              return function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              };
-            })(this),
+            success: function(json) {
+              return _this.serviceReturn = json;
+            },
+            error: function(err) {
+              console.log('got ajax error');
+              return _this.serviceReturn = null;
+            },
             dataType: 'json'
           });
         });
@@ -99,21 +96,18 @@ This service parses data from the generic format and saves it to the database
     return describe('when run with invalid input file', function() {
       beforeEach(function() {
         return runs(function() {
+          var _this = this;
           return $.ajax({
             type: 'POST',
             url: "api/genericDataParser",
             data: badDataRequest,
-            success: (function(_this) {
-              return function(json) {
-                return _this.serviceReturn = json;
-              };
-            })(this),
-            error: (function(_this) {
-              return function(err) {
-                console.log('got ajax error');
-                return _this.serviceReturn = null;
-              };
-            })(this),
+            success: function(json) {
+              return _this.serviceReturn = json;
+            },
+            error: function(err) {
+              console.log('got ajax error');
+              return _this.serviceReturn = null;
+            },
             dataType: 'json'
           });
         });

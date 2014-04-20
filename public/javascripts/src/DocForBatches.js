@@ -1,5 +1,6 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref, _ref1,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -7,7 +8,8 @@
     __extends(DocForBatches, _super);
 
     function DocForBatches() {
-      return DocForBatches.__super__.constructor.apply(this, arguments);
+      _ref = DocForBatches.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     DocForBatches.prototype.protocol = null;
@@ -63,20 +65,19 @@
     };
 
     DocForBatches.prototype._fetchStubProtocol = function() {
-      var docForBatchesProtocolCode;
+      var docForBatchesProtocolCode,
+        _this = this;
       docForBatchesProtocolCode = "ACASdocForBatches";
       return $.ajax({
         type: 'GET',
         url: "api/protocols/codename/" + docForBatchesProtocolCode,
-        success: (function(_this) {
-          return function(json) {
-            if (json.length === 0) {
-              return alert("Could not find required protocol with code: " + docForBatchesProtocolCode + ". Please seek help from an administrator");
-            } else {
-              return _this.protocol = new Protocol(json[0]);
-            }
-          };
-        })(this),
+        success: function(json) {
+          if (json.length === 0) {
+            return alert("Could not find required protocol with code: " + docForBatchesProtocolCode + ". Please seek help from an administrator");
+          } else {
+            return _this.protocol = new Protocol(json[0]);
+          }
+        },
         error: function(err) {
           return alert('got ajax error from api/protocols/codename/ in DocForBatches.coffee');
         },
@@ -228,7 +229,8 @@
       this.subFormIsInvalid = __bind(this.subFormIsInvalid, this);
       this.subFormIsValid = __bind(this.subFormIsValid, this);
       this.render = __bind(this.render, this);
-      return DocForBatchesController.__super__.constructor.apply(this, arguments);
+      _ref1 = DocForBatchesController.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     DocForBatchesController.prototype.template = _.template($("#DocForBatchesView").html());
@@ -247,28 +249,25 @@
     };
 
     DocForBatchesController.prototype.setupSubControllers = function() {
+      var _this = this;
       this.docUploadController = new DocUploadController({
         model: this.model.get('docUpload'),
         el: this.$('.bv_docUpload')
       });
       this.docUploadController.on("invalid", this.subFormIsInvalid);
       this.docUploadController.on("valid", this.subFormIsValid);
-      this.docUploadController.on('amDirty', (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
+      this.docUploadController.on('amDirty', function() {
+        return _this.trigger('amDirty');
+      });
       this.batchListValidator = new BatchListValidatorController({
         el: this.$(".bv_batchListValidator"),
         collection: this.model.get('batchNameList')
       });
       this.batchListValidator.on("invalid", this.subFormIsInvalid);
       this.batchListValidator.on("valid", this.subFormIsValid);
-      this.batchListValidator.on('amDirty', (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
+      this.batchListValidator.on('amDirty', function() {
+        return _this.trigger('amDirty');
+      });
       return this.subFormIsInvalid();
     };
 
@@ -299,6 +298,7 @@
     };
 
     DocForBatchesController.prototype.save = function() {
+      var _this = this;
       if (this.model.isValid()) {
         return $.ajax({
           type: 'POST',
@@ -307,20 +307,16 @@
             docForBatches: JSON.stringify(this.model),
             user: window.AppLaunchParams.loginUserName
           },
-          success: (function(_this) {
-            return function(response) {
-              _this.model.set({
-                id: response.results.id
-              });
-              _this.trigger('amClean');
-              return _this.render();
-            };
-          })(this),
-          error: (function(_this) {
-            return function(err) {
-              return _this.serviceReturn = null;
-            };
-          })(this),
+          success: function(response) {
+            _this.model.set({
+              id: response.results.id
+            });
+            _this.trigger('amClean');
+            return _this.render();
+          },
+          error: function(err) {
+            return _this.serviceReturn = null;
+          },
           dataType: 'json'
         });
       }

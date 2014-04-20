@@ -12,11 +12,13 @@
     });
     return describe('when instantiated', function() {
       beforeEach(function() {
+        var _ref;
         this.TestAbstractFormController = (function(_super) {
           __extends(TestAbstractFormController, _super);
 
           function TestAbstractFormController() {
-            return TestAbstractFormController.__super__.constructor.apply(this, arguments);
+            _ref = TestAbstractFormController.__super__.constructor.apply(this, arguments);
+            return _ref;
           }
 
           TestAbstractFormController.prototype.initialize = function() {

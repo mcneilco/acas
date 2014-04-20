@@ -1,5 +1,6 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref, _ref1, _ref2, _ref3, _ref4, _ref5,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -7,7 +8,8 @@
     __extends(Curve, _super);
 
     function Curve() {
-      return Curve.__super__.constructor.apply(this, arguments);
+      _ref = Curve.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     Curve.prototype.defaults = {
@@ -24,7 +26,8 @@
     __extends(CurveList, _super);
 
     function CurveList() {
-      return CurveList.__super__.constructor.apply(this, arguments);
+      _ref1 = CurveList.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     CurveList.prototype.model = Curve;
@@ -44,7 +47,8 @@
       this.clearSelected = __bind(this.clearSelected, this);
       this.setSelected = __bind(this.setSelected, this);
       this.render = __bind(this.render, this);
-      return CurveSummaryController.__super__.constructor.apply(this, arguments);
+      _ref2 = CurveSummaryController.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     CurveSummaryController.prototype.template = _.template($("#CurveSummaryView").html());
@@ -92,25 +96,25 @@
     function CurveSummaryListController() {
       this.selectionUpdated = __bind(this.selectionUpdated, this);
       this.render = __bind(this.render, this);
-      return CurveSummaryListController.__super__.constructor.apply(this, arguments);
+      _ref3 = CurveSummaryListController.__super__.constructor.apply(this, arguments);
+      return _ref3;
     }
 
     CurveSummaryListController.prototype.template = _.template($("#CurveSummaryListView").html());
 
     CurveSummaryListController.prototype.render = function() {
+      var _this = this;
       this.$el.empty();
       this.$el.html(this.template());
-      this.collection.each((function(_this) {
-        return function(cs) {
-          var csController;
-          csController = new CurveSummaryController({
-            model: cs
-          });
-          _this.$('.bv_curveSummaries').append(csController.render().el);
-          csController.on('selected', _this.selectionUpdated);
-          return _this.on('clearSelected', csController.clearSelected);
-        };
-      })(this));
+      this.collection.each(function(cs) {
+        var csController;
+        csController = new CurveSummaryController({
+          model: cs
+        });
+        _this.$('.bv_curveSummaries').append(csController.render().el);
+        csController.on('selected', _this.selectionUpdated);
+        return _this.on('clearSelected', csController.clearSelected);
+      });
       return this;
     };
 
@@ -129,13 +133,15 @@
     function CurveEditorController() {
       this.shinyLoaded = __bind(this.shinyLoaded, this);
       this.render = __bind(this.render, this);
-      return CurveEditorController.__super__.constructor.apply(this, arguments);
+      _ref4 = CurveEditorController.__super__.constructor.apply(this, arguments);
+      return _ref4;
     }
 
     CurveEditorController.prototype.template = _.template($("#CurveEditorView").html());
 
     CurveEditorController.prototype.render = function() {
-      var curveUrl;
+      var curveUrl,
+        _this = this;
       this.$el.empty();
       if (this.model != null) {
         if (this.model.get('curveid') !== "") {
@@ -148,11 +154,9 @@
       }));
       this;
       this.$('.bv_loading').show();
-      return this.$('.bv_shinyContainer').load((function(_this) {
-        return function() {
-          return _this.$('.bv_loading').hide();
-        };
-      })(this));
+      return this.$('.bv_shinyContainer').load(function() {
+        return _this.$('.bv_loading').hide();
+      });
     };
 
     CurveEditorController.prototype.setModel = function(model) {
@@ -172,7 +176,8 @@
     function CurveCuratorController() {
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
       this.render = __bind(this.render, this);
-      return CurveCuratorController.__super__.constructor.apply(this, arguments);
+      _ref5 = CurveCuratorController.__super__.constructor.apply(this, arguments);
+      return _ref5;
     }
 
     CurveCuratorController.prototype.template = _.template($("#CurveCuratorView").html());
@@ -199,13 +204,12 @@
     };
 
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode) {
+      var _this = this;
       this.collection.setExperimentCode(exptCode);
       return this.collection.fetch({
-        success: (function(_this) {
-          return function() {
-            return _this.render();
-          };
-        })(this)
+        success: function() {
+          return _this.render();
+        }
       });
     };
 

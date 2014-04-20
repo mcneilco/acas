@@ -32,6 +32,7 @@ class window.GeneIDQueryInputController extends Backbone.View
 	handleAdvanceModeRequested: =>
 		@trigger 'requestAdvancedMode'
 
+
 class window.GeneIDQueryResultController extends Backbone.View
 	template: _.template($("#GeneIDQueryResultView").html())
 	events:
@@ -61,9 +62,13 @@ class window.GeneIDQueryResultController extends Backbone.View
 			@$('.bv_columnNamesHeader').append '<th>placeholder</th>'
 
 	handleDownloadCSVClicked: =>
+		@$('.bv_searchStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		@trigger 'downLoadCSVRequested'
 
 	showCSVFileLink: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
 		@$('.bv_resultFileLink').attr 'href', json.fileURL
 		@$('.bv_csvFileLinkModal').modal
 			show: true
@@ -87,6 +92,9 @@ class window.GeneIDQuerySearchController extends Backbone.View
 
 	handleSearchRequested: (searchStr) =>
 		@lastSearch = searchStr
+		@$('.bv_searchStatusDropDown').modal
+		backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
 			url: "api/geneDataQuery"
@@ -101,6 +109,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			dataType: 'json'
 
 	handleSearchReturn: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
 		@resultController = new GeneIDQueryResultController
 			model: new Backbone.Model json.results
 			el: $('.bv_resultsView')
@@ -159,6 +168,8 @@ class window.ExperimentTreeController extends Backbone.View
 		@$('.bv_tree').jstree
 			core:
 				data: @model.get('experimentData')
+			search:
+				fuzzy: false
 			plugins: [ "checkbox","search"]
 
 		to = false
@@ -357,6 +368,9 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 
 	fromCodesToExptTree: ->
 		@searchCodes = $.trim @$('.bv_codesField').val()
+		@$('.bv_searchStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
 			url: "api/getGeneExperiments"
@@ -369,6 +383,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				@serviceReturn = null
 
 	handleGetGeneExperimentsReturn: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
 		if json.results.experimentData.length > 0
 			@etc = new ExperimentTreeController
 				el: @$('.bv_getExperimentsView')
@@ -388,6 +403,9 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 
 	fromExptTreeToFilters: ->
 		@experimentList = @etc.getSelectedExperiments()
+		@$('.bv_searchStatusDropDown').modal
+		backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
 			url: "api/getExperimentSearchAttributes"
@@ -400,6 +418,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				@serviceReturn = null
 
 	handleGetExperimentSearchAttributesReturn: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
 		@erfc = new ExperimentResultFilterController
 			el: @$('.bv_getFiltersView')
 			filterOptions: new Backbone.Collection json.results.experiments
@@ -415,6 +434,9 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			searchFilters: @erfc.getSearchFilters()
 
 	fromFiltersToResults: ->
+		@$('.bv_searchStatusDropDown').modal
+		backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
 			url: "api/geneDataQueryAdvanced"
@@ -429,6 +451,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				@serviceReturn = null
 
 	handleSearchReturn: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
 		@resultController = new GeneIDQueryResultController
 			model: new Backbone.Model json.results
 			el: $('.bv_advResultsView')
@@ -459,6 +482,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 	events:
 		"click .bv_next": "handleNextClicked"
 		"click .bv_cancel": "handleCancelClicked"
+		"click .bv_gidNavHelpButton": "handleHelpClicked"
 
 	initialize: ->
 		$(@el).empty()
@@ -511,4 +535,9 @@ class window.GeneIDQueryAppController extends Backbone.View
 
 	handleCancelClicked: =>
 		@startBasicQueryWizard()
+
+	handleHelpClicked: =>
+		@$('.bv_helpModal').modal
+			backdrop: "static"
+		@$('.bv_helpModal').modal "show"
 
