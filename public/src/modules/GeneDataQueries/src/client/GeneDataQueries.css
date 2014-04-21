@@ -8,8 +8,7 @@
 }
 
 .GeneIDQueryAppController .logoutButton {
-    margin-top: 5px !important;
-    margin-right: 10px;
+    margin-top: 0px !important;
 }
 
 .GeneIDQueryAppController .navbar-inverse .brand:hover {

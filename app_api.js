@@ -32,7 +32,6 @@
     });
     loginRoutes = require('./routes/loginRoutes');
     loginRoutes.setupAPIRoutes(app);
-
   	routeSet_1 = require("./routes/BulkLoadContainersFromSDFRoutes.js");
 	if (routeSet_1.setupAPIRoutes) {
 		routeSet_1.setupAPIRoutes(app); }
@@ -75,6 +74,7 @@
 	routeSet_14 = require("./routes/ServerUtilityFunctions.js");
 	if (routeSet_14.setupAPIRoutes) {
 		routeSet_14.setupAPIRoutes(app); }
+
 
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("ACAS API server listening on port " + app.get('port'));

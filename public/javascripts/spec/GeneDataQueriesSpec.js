@@ -1,11 +1,12 @@
 (function() {
   beforeEach(function() {
-    return this.fixture = $.clone($("#fixture").get(0));
+    return this.fixture = $("#fixture");
   });
 
   afterEach(function() {
+    $(".modal-backdrop").remove();
     $("#fixture").remove();
-    return $("body").append($(this.fixture));
+    return $("body").append('<div id="fixture"></div>');
   });
 
   describe("Gene Data Queries Module Testing", function() {

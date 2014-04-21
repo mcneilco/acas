@@ -89,7 +89,6 @@
     loginRoutes.setupRoutes(app, passport);
     indexRoutes = require('./routes/index.js');
     indexRoutes.setupRoutes(app, loginRoutes);
-
   	routeSet_1 = require("./routes/BulkLoadContainersFromSDFRoutes.js");
 	routeSet_1.setupRoutes(app, loginRoutes);
 	routeSet_2 = require("./routes/BulkLoadSampleTransfersRoutes.js");
@@ -118,6 +117,7 @@
 	routeSet_13.setupRoutes(app, loginRoutes);
 	routeSet_14 = require("./routes/ServerUtilityFunctions.js");
 	routeSet_14.setupRoutes(app, loginRoutes);
+
 
     app.get('/dataFiles/:filename', loginRoutes.ensureAuthenticated, function(req, resp) {
       return resp.sendfile(__dirname + '/privateUploads/' + req.params.filename);
