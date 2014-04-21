@@ -1,7 +1,7 @@
+
 /*
 This suite of services provides CRUD operations on Experiment Objects
-*/
-
+ */
 
 (function() {
   describe('Experiment Service testing', function() {

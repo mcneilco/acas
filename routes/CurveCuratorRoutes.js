@@ -11,8 +11,7 @@
   applicationScripts = ['/src/conf/conf.js', '/javascripts/src/CurveCurator.js', '/javascripts/src/CurveCuratorAppController.js'];
 
   exports.getCurveStubs = function(req, resp) {
-    var baseurl, config, curveCuratorTestData, request,
-      _this = this;
+    var baseurl, config, curveCuratorTestData, request;
     if (global.specRunnerTestmode) {
       console.log(req.params);
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
@@ -25,17 +24,19 @@
         method: 'GET',
         url: baseurl + req.params.exptCode,
         json: true
-      }, function(error, response, json) {
-        if (!error && response.statusCode === 200) {
-          console.log(JSON.stringify(json));
-          return resp.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to save new experiment');
-          console.log(error);
-          console.log(json);
-          return console.log(response);
-        }
-      });
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to save new experiment');
+            console.log(error);
+            console.log(json);
+            return console.log(response);
+          }
+        };
+      })(this));
     }
   };
 

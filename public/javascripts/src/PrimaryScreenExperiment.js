@@ -1,6 +1,5 @@
 (function() {
-  var _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -9,8 +8,7 @@
 
     function PrimaryScreenAnalysisParameters() {
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
-      _ref = PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryScreenAnalysisParameters.prototype.defaults = {
@@ -30,39 +28,46 @@
     };
 
     PrimaryScreenAnalysisParameters.prototype.fixCompositeClasses = function() {
-      var _this = this;
       if (!(this.get('positiveControl') instanceof Backbone.Model)) {
         this.set({
           positiveControl: new Backbone.Model(this.get('positiveControl'))
         });
       }
-      this.get('positiveControl').on("change", function() {
-        return _this.trigger('change');
-      });
+      this.get('positiveControl').on("change", (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
       if (!(this.get('negativeControl') instanceof Backbone.Model)) {
         this.set({
           negativeControl: new Backbone.Model(this.get('negativeControl'))
         });
       }
-      this.get('negativeControl').on("change", function() {
-        return _this.trigger('change');
-      });
+      this.get('negativeControl').on("change", (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
       if (!(this.get('vehicleControl') instanceof Backbone.Model)) {
         this.set({
           vehicleControl: new Backbone.Model(this.get('vehicleControl'))
         });
       }
-      this.get('vehicleControl').on("change", function() {
-        return _this.trigger('change');
-      });
+      this.get('vehicleControl').on("change", (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
       if (!(this.get('agonistControl') instanceof Backbone.Model)) {
         this.set({
           agonistControl: new Backbone.Model(this.get('agonistControl'))
         });
       }
-      return this.get('agonistControl').on("change", function() {
-        return _this.trigger('change');
-      });
+      return this.get('agonistControl').on("change", (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
@@ -156,8 +161,7 @@
     __extends(PrimaryScreenExperiment, _super);
 
     function PrimaryScreenExperiment() {
-      _ref1 = PrimaryScreenExperiment.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      return PrimaryScreenExperiment.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryScreenExperiment.prototype.getAnalysisParameters = function() {
@@ -235,8 +239,7 @@
       this.handleThresholdTypeChanged = __bind(this.handleThresholdTypeChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
-      _ref2 = PrimaryScreenAnalysisParametersController.__super__.constructor.apply(this, arguments);
-      return _ref2;
+      return PrimaryScreenAnalysisParametersController.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryScreenAnalysisParametersController.prototype.template = _.template($("#PrimaryScreenAnalysisParametersView").html());
@@ -328,19 +331,19 @@
       this.parseAndSave = __bind(this.parseAndSave, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
       this.handleMSFormValid = __bind(this.handleMSFormValid, this);
-      _ref3 = AbstractUploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
-      return _ref3;
+      return AbstractUploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
     }
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.completeInitialization = function() {
-      var _this = this;
       this.analysisParameterController.on('valid', this.handleMSFormValid);
       this.analysisParameterController.on('invalid', this.handleMSFormInvalid);
       this.analysisParameterController.on('notifyError', this.notificationController.addNotification);
       this.analysisParameterController.on('clearErrors', this.notificationController.clearAllNotificiations);
-      this.analysisParameterController.on('amDirty', function() {
-        return _this.trigger('amDirty');
-      });
+      this.analysisParameterController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
       this.analyzedPreviously = this.options.analyzedPreviously;
       this.analysisParameterController.render();
       if (this.analyzedPreviously) {
@@ -435,8 +438,7 @@
     __extends(UploadAndRunPrimaryAnalsysisController, _super);
 
     function UploadAndRunPrimaryAnalsysisController() {
-      _ref4 = UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      return UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
     }
 
     UploadAndRunPrimaryAnalsysisController.prototype.initialize = function() {
@@ -467,8 +469,7 @@
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.setExperimentSaved = __bind(this.setExperimentSaved, this);
       this.render = __bind(this.render, this);
-      _ref5 = PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
-      return _ref5;
+      return PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryScreenAnalysisController.prototype.template = _.template($("#PrimaryScreenAnalysisView").html());
@@ -547,8 +548,7 @@
     };
 
     PrimaryScreenAnalysisController.prototype.setupDataAnalysisController = function(dacClassName) {
-      var newArgs,
-        _this = this;
+      var newArgs;
       newArgs = {
         el: this.$('.bv_fileUploadWrapper'),
         paramsFromExperiment: this.model.getAnalysisParameters(),
@@ -558,12 +558,16 @@
       this.dataAnalysisController.setUser(window.AppLaunchParams.loginUserName);
       this.dataAnalysisController.setExperimentId(this.model.id);
       this.dataAnalysisController.on('analysis-completed', this.handleAnalysisComplete);
-      this.dataAnalysisController.on('amDirty', function() {
-        return _this.trigger('amDirty');
-      });
-      return this.dataAnalysisController.on('amClean', function() {
-        return _this.trigger('amClean');
-      });
+      this.dataAnalysisController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      return this.dataAnalysisController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
     };
 
     return PrimaryScreenAnalysisController;
@@ -577,14 +581,12 @@
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
-      _ref6 = AbstractPrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
-      return _ref6;
+      return AbstractPrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
     }
 
     AbstractPrimaryScreenExperimentController.prototype.template = _.template($("#PrimaryScreenExperimentView").html());
 
     AbstractPrimaryScreenExperimentController.prototype.initialize = function() {
-      var _this = this;
       if (this.model != null) {
         return this.completeInitialization();
       } else {
@@ -598,17 +600,19 @@
                 alert('Could not get experiment for code in this URL, creating new one');
                 return this.completeInitialization();
               },
-              success: function(json) {
-                var exp;
-                if (json.length === 0) {
-                  alert('Could not get experiment for code in this URL, creating new one');
-                } else {
-                  exp = new PrimaryScreenExperiment(json[0]);
-                  exp.fixCompositeClasses();
-                  _this.model = exp;
-                }
-                return _this.completeInitialization();
-              }
+              success: (function(_this) {
+                return function(json) {
+                  var exp;
+                  if (json.length === 0) {
+                    alert('Could not get experiment for code in this URL, creating new one');
+                  } else {
+                    exp = new PrimaryScreenExperiment(json[0]);
+                    exp.fixCompositeClasses();
+                    _this.model = exp;
+                  }
+                  return _this.completeInitialization();
+                };
+              })(this)
             });
           } else {
             return this.completeInitialization();
@@ -620,7 +624,6 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.completeInitialization = function() {
-      var _this = this;
       if (this.model == null) {
         this.model = new PrimaryScreenExperiment();
       }
@@ -631,27 +634,37 @@
         el: this.$('.bv_experimentBase'),
         protocolFilter: this.protocolFilter
       });
-      this.experimentBaseController.on('amDirty', function() {
-        return _this.trigger('amDirty');
-      });
-      this.experimentBaseController.on('amClean', function() {
-        return _this.trigger('amClean');
-      });
+      this.experimentBaseController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.experimentBaseController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
       this.analysisController = new PrimaryScreenAnalysisController({
         model: this.model,
         el: this.$('.bv_primaryScreenDataAnalysis'),
         uploadAndRunControllerName: this.uploadAndRunControllerName
       });
-      this.analysisController.on('amDirty', function() {
-        return _this.trigger('amDirty');
-      });
-      this.analysisController.on('amClean', function() {
-        return _this.trigger('amClean');
-      });
+      this.analysisController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.analysisController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
       this.setupModelFitController(this.modelFitControllerName);
-      this.analysisController.on('analysis-completed', function() {
-        return _this.modelFitController.primaryAnalysisCompleted();
-      });
+      this.analysisController.on('analysis-completed', (function(_this) {
+        return function() {
+          return _this.modelFitController.primaryAnalysisCompleted();
+        };
+      })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
       this.experimentBaseController.render();
       this.analysisController.render();
@@ -659,19 +672,22 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupModelFitController = function(modelFitControllerName) {
-      var newArgs,
-        _this = this;
+      var newArgs;
       newArgs = {
         model: this.model,
         el: this.$('.bv_doseResponseAnalysis')
       };
       this.modelFitController = new window[modelFitControllerName](newArgs);
-      this.modelFitController.on('amDirty', function() {
-        return _this.trigger('amDirty');
-      });
-      return this.modelFitController.on('amClean', function() {
-        return _this.trigger('amClean');
-      });
+      this.modelFitController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      return this.modelFitController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
     };
 
     AbstractPrimaryScreenExperimentController.prototype.handleExperimentSaved = function() {
@@ -690,8 +706,7 @@
     __extends(PrimaryScreenExperimentController, _super);
 
     function PrimaryScreenExperimentController() {
-      _ref7 = PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
-      return _ref7;
+      return PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryScreenExperimentController.prototype.uploadAndRunControllerName = "UploadAndRunPrimaryAnalsysisController";

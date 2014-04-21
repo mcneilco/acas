@@ -1,9 +1,9 @@
+
 /*
   Master ACAS -specific implementations of required server functions
 
   All functions are required with unchanged signatures
-*/
-
+ */
 
 (function() {
   exports.logUsage = function(action, data, username) {
@@ -17,8 +17,7 @@
   };
 
   exports.authCheck = function(user, pass, retFun) {
-    var config, request,
-      _this = this;
+    var config, request;
     config = require('../../../conf/compiled/conf.js');
     console.log(config.all.client.require);
     request = require('request');
@@ -33,23 +32,24 @@
         j_password: pass
       },
       json: false
-    }, function(error, response, json) {
-      if (!error && response.statusCode === 200) {
-        return retFun(JSON.stringify(json));
-      } else if (!error && response.statusCode === 302) {
-        return retFun(JSON.stringify(response.headers.location));
-      } else {
-        console.log('got ajax error trying authenticate a user');
-        console.log(error);
-        console.log(json);
-        return console.log(response);
-      }
-    });
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error && response.statusCode === 200) {
+          return retFun(JSON.stringify(json));
+        } else if (!error && response.statusCode === 302) {
+          return retFun(JSON.stringify(response.headers.location));
+        } else {
+          console.log('got ajax error trying authenticate a user');
+          console.log(error);
+          console.log(json);
+          return console.log(response);
+        }
+      };
+    })(this));
   };
 
   exports.resetAuth = function(email, retFun) {
-    var config, request,
-      _this = this;
+    var config, request;
     config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
@@ -62,21 +62,22 @@
         emailAddress: email
       },
       json: false
-    }, function(error, response, json) {
-      if (!error && response.statusCode === 200) {
-        return retFun(JSON.stringify(json));
-      } else {
-        console.log('got ajax error trying authenticate a user');
-        console.log(error);
-        console.log(json);
-        return console.log(response);
-      }
-    });
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error && response.statusCode === 200) {
+          return retFun(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying authenticate a user');
+          console.log(error);
+          console.log(json);
+          return console.log(response);
+        }
+      };
+    })(this));
   };
 
   exports.changeAuth = function(user, passOld, passNew, passNewAgain, retFun) {
-    var config, request,
-      _this = this;
+    var config, request;
     config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
@@ -92,22 +93,23 @@
         newPasswordAgain: passNewAgain
       },
       json: false
-    }, function(error, response, json) {
-      console.log(response.statusCode);
-      if (!error && response.statusCode === 200) {
-        return retFun(JSON.stringify(json));
-      } else {
-        console.log('got ajax error trying authenticate a user');
-        console.log(error);
-        console.log(json);
-        return console.log(response);
-      }
-    });
+    }, (function(_this) {
+      return function(error, response, json) {
+        console.log(response.statusCode);
+        if (!error && response.statusCode === 200) {
+          return retFun(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying authenticate a user');
+          console.log(error);
+          console.log(json);
+          return console.log(response);
+        }
+      };
+    })(this));
   };
 
   exports.getUser = function(username, callback) {
-    var config, request,
-      _this = this;
+    var config, request;
     config = require('../../../conf/compiled/conf.js');
     if (config.all.client.require.login) {
       request = require('request');
@@ -120,20 +122,22 @@
         json: {
           name: username
         }
-      }, function(error, response, json) {
-        if (!error && response.statusCode === 200 && json.id) {
-          return callback(null, {
-            id: json.id,
-            username: json.userName,
-            email: json.emailAddress,
-            firstName: json.firstName,
-            lastName: json.lastName,
-            roles: json.authorRoles
-          });
-        } else {
-          return callback("user not found", null);
-        }
-      });
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200 && json.id) {
+            return callback(null, {
+              id: json.id,
+              username: json.userName,
+              email: json.emailAddress,
+              firstName: json.firstName,
+              lastName: json.lastName,
+              roles: json.authorRoles
+            });
+          } else {
+            return callback("user not found", null);
+          }
+        };
+      })(this));
     } else {
       return callback(null, {
         id: 0,

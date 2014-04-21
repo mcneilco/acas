@@ -31,8 +31,7 @@
       });
     } else {
       return each(requests).parallel(1).on("item", function(batchName, next) {
-        var baseurl,
-          _this = this;
+        var baseurl;
         if (global.specRunnerTestmode) {
           console.log("running fake batch check");
           checkBatch_TestMode(batchName);
@@ -44,20 +43,22 @@
             method: 'GET',
             url: baseurl + batchName.requestName,
             json: true
-          }, function(error, response, json) {
-            if (!error && response.statusCode === 200) {
-              if (json.lot != null) {
-                if (json.lot.corpName != null) {
-                  batchName.preferredName = batchName.requestName;
+          }, (function(_this) {
+            return function(error, response, json) {
+              if (!error && response.statusCode === 200) {
+                if (json.lot != null) {
+                  if (json.lot.corpName != null) {
+                    batchName.preferredName = batchName.requestName;
+                  }
+                } else {
+                  batchName.preferredName = "";
                 }
               } else {
-                batchName.preferredName = "";
+                console.log('got ajax error trying to validate batch name');
               }
-            } else {
-              console.log('got ajax error trying to validate batch name');
-            }
-            return next();
-          });
+              return next();
+            };
+          })(this));
         } else if (serviceType === "SingleBatchNameQueryString") {
           console.log("running SingleBatchNameQueryString batch check");
           baseurl = config.all.server.service.external.preferred.batchid.url;
@@ -65,17 +66,19 @@
             method: 'GET',
             url: baseurl + batchName.requestName + ".csv",
             json: false
-          }, function(error, response, body) {
-            if (!error && response.statusCode === 200) {
-              console.log(body);
-              batchName.preferredName = body;
-            } else if (!error && response.statusCode === 204) {
-              batchName.preferredName = "";
-            } else {
-              console.log('got ajax error trying to validate batch name');
-            }
-            return next();
-          });
+          }, (function(_this) {
+            return function(error, response, body) {
+              if (!error && response.statusCode === 200) {
+                console.log(body);
+                batchName.preferredName = body;
+              } else if (!error && response.statusCode === 204) {
+                batchName.preferredName = "";
+              } else {
+                console.log('got ajax error trying to validate batch name');
+              }
+              return next();
+            };
+          })(this));
         }
       }).on("error", function(err, errors) {
         console.log(err.message);

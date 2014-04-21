@@ -89,8 +89,8 @@
     loginRoutes.setupRoutes(app, passport);
     indexRoutes = require('./routes/index.js');
     indexRoutes.setupRoutes(app, loginRoutes);
-    /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES*/
 
+    /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */
     app.get('/dataFiles/:filename', loginRoutes.ensureAuthenticated, function(req, resp) {
       return resp.sendfile(__dirname + '/privateUploads/' + req.params.filename);
     });

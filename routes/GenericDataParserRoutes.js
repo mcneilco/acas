@@ -1,13 +1,13 @@
+
 /* To install this Module
 1) Add these lines to app.coffee:
-	# GenericDataParser routes
+	 * GenericDataParser routes
 	genericDataParserRoutes = require './public/src/modules/GenericDataParser/src/server/routes/GenericDataParserRoutes.js'
 	genericDataParserRoutes.setupRoutes(app)
 
 2) Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Load From Generic Format", mainControllerClassName: "GenericDataParserController"}
-*/
-
+ */
 
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
