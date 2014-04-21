@@ -17,7 +17,7 @@
     app.get('/reset', exports.resetpage);
     app.post('/reset', exports.resetAuthenticationService, exports.resetPost);
     app.post('/api/userResetAuthentication', exports.resetAuthenticationService);
-    app.get('/change', exports.changePage);
+    app.get('/change', exports.ensureAuthenticated, exports.changePage);
     app.post('/change', exports.changeAuthenticationService, exports.changePost);
     return app.post('/api/userChangeAuthentication', exports.changeAuthenticationService);
   };
@@ -76,6 +76,7 @@
 
   exports.getUsers = function(req, resp) {
     var callback;
+    console.log("ghet users in route file");
     callback = function(err, user) {
       if (user === null) {
         return resp.send(204);
@@ -174,7 +175,7 @@
     if (req.user != null) {
       user = req.user;
     }
-    if (user !== null && csUtilities.isUserAdmin(user)) {
+    if (user !== null) {
       errorMsg = "";
       error = req.flash('error');
       if (error.length > 0) {

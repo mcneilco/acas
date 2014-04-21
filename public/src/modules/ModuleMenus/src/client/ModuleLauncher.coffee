@@ -25,7 +25,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 	tagName: 'li'
 
 	events:
-		'click': "handleSelect"
+		'click .bv_menuName': "handleSelect"
 
 	initialize: ->
 		@model.bind "change", @render
@@ -33,7 +33,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html(@template(@model.toJSON()))
-		$(@el).addClass('bv_launch_'+@model.get('autoLaunchName'))
+		$(@el).addClass 'bv_launch_'+@model.get('autoLaunchName')
 		if @model.get('isActive') then $(@el).addClass "active"
 		else $(@el).removeClass "active"
 
@@ -41,6 +41,12 @@ class window.ModuleLauncherMenuController extends Backbone.View
 		else @$('.bv_isLoaded').hide()
 		if @model.get('isDirty') then @$('.bv_isDirty').show()
 		else @$('.bv_isDirty').hide()
+
+		if @model.has 'requireUserRoles'
+			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @model.get('requireUserRoles')
+				$(@el).attr 'title', "User is not authorized to use this feature"
+				@$('.bv_menuName').hide()
+				@$('.bv_menuName_disabled').show()
 
 		@
 

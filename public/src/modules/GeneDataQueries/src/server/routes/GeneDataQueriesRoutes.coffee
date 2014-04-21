@@ -176,6 +176,7 @@ exports.geneIDQueryIndex = (req, res) ->
 	#"use strict"
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
+
 	global.specRunnerTestmode = if global.stubsMode then true else false
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
 	if config.all.client.require.login

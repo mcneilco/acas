@@ -14,7 +14,7 @@ exports.setupRoutes = (app, passport) ->
 		exports.resetAuthenticationService,
 		exports.resetPost
 	app.post '/api/userResetAuthentication', exports.resetAuthenticationService
-	app.get '/change', exports.changePage
+	app.get '/change', exports.ensureAuthenticated, exports.changePage
 	app.post '/change',
 		exports.changeAuthenticationService,
 		exports.changePost
@@ -67,6 +67,7 @@ exports.ensureAuthenticated = (req, res, next) ->
 
 
 exports.getUsers = (req, resp) ->
+	console.log "ghet users in route file"
 	callback = (err, user) ->
 		if user == null
 			resp.send(204)
@@ -141,7 +142,7 @@ exports.changePage = (req, res) ->
 	user = null
 	if req.user?
 		user = req.user
-	if user != null && csUtilities.isUserAdmin(user)
+	if user != null
 		errorMsg = ""
 		error = req.flash('error')
 		if error.length > 0

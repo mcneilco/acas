@@ -38,21 +38,6 @@
       });
     });
     passport.use(new LocalStrategy(csUtilities.loginStrategy));
-    passport.isAdmin = function(req, resp, next) {
-      if (req.isAuthenticated() && csUtilities.isUserAdmin(req.user)) {
-        return next();
-      } else {
-        return next(new handler.NotAuthorizedError("Sorry, you don't have the right!"));
-      }
-    };
-    passport.isAuthenticated = function(req, resp, next) {
-      console.log("running passort.isAuthenticated");
-      if (!req.isAuthenticated()) {
-        return next(new handler.NotAuthorizedError("Sorry, you don't have the right!"));
-      } else {
-        return next();
-      }
-    };
     loginRoutes = require('./routes/loginRoutes');
     global.app = express();
     app.configure(function() {

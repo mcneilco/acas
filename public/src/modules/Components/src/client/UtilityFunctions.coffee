@@ -1,7 +1,16 @@
 class window.UtilityFunctions
 	getFileServiceURL: ->
 		"/uploads"
-#		if window.conf.use.ssl
-#			"https://"+window.conf.host+":"+window.conf.service.file.port
-#		else
-#			"http://"+window.conf.host+":"+window.conf.service.file.port
+
+
+	testUserHasRole: (user, roleNames) ->
+		if not user.roles? then return true
+
+		match = false
+		for roleName in roleNames
+			for role in user.roles
+				if role.roleEntry.roleName == roleName then match = true
+
+		match
+
+

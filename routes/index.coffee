@@ -10,8 +10,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/', exports.index
 
 	if config.all.server.enableSpecRunner
-		app.get '/SpecRunner', exports.specRunner
-		app.get '/LiveServiceSpecRunner', exports.liveServiceSpecRunner
+		app.get '/SpecRunner', loginRoutes.ensureAuthenticated, exports.specRunner
+		app.get '/LiveServiceSpecRunner', loginRoutes.ensureAuthenticated, exports.liveServiceSpecRunner
 
 
 exports.autoLaunchWithCode = (req, res) ->
