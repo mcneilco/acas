@@ -93,6 +93,7 @@
       } else {
         this.$('.bv_resultTable').hide();
         this.$('.bv_noResultsFound').show();
+        this.$('.bv_gidDownloadCSV').hide();
       }
       return this;
     };
@@ -270,6 +271,9 @@
           fuzzy: false
         },
         plugins: ["checkbox", "search"]
+      });
+      this.$('.bv_tree').bind("hover_node.jstree", function(e, data) {
+        return $(e.target).attr("title", data.node.original.description);
       });
       to = false;
       return this.$(".bv_searchVal").keyup(function() {

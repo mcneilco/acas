@@ -143,8 +143,11 @@
           it("should hide the data table", function() {
             return expect(this.gidqrc.$('.bv_resultTable')).toBeHidden();
           });
-          return it("should show no results message", function() {
+          it("should show no results message", function() {
             return expect(this.gidqrc.$('.bv_noResultsFound')).toBeVisible();
+          });
+          return it("should hide the download CSV option", function() {
+            return expect(this.gidqrc.$('.bv_gidDownloadCSV')).toBeHidden();
           });
         });
       });

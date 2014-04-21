@@ -52,6 +52,7 @@ class window.GeneIDQueryResultController extends Backbone.View
 		else
 			@$('.bv_resultTable').hide()
 			@$('.bv_noResultsFound').show()
+			@$('.bv_gidDownloadCSV').hide()
 
 		@
 
@@ -170,7 +171,10 @@ class window.ExperimentTreeController extends Backbone.View
 				data: @model.get('experimentData')
 			search:
 				fuzzy: false
-			plugins: [ "checkbox","search"]
+			plugins: [ "checkbox", "search"]
+
+		@$('.bv_tree').bind "hover_node.jstree", (e, data) ->
+			$(e.target).attr("title", data.node.original.description)
 
 		to = false
 		@$(".bv_searchVal").keyup =>

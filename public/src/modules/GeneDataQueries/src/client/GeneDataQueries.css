@@ -7,6 +7,11 @@
     padding-left: 9px;
 }
 
+.GeneIDQueryAppController .logoutButton {
+    margin-top: 5px !important;
+    margin-right: 10px;
+}
+
 .GeneIDQueryAppController .navbar-inverse .brand:hover {
     color: #999999;
 }
@@ -69,7 +74,7 @@
 	margin-top: 100px !important;
 }
 
-.GeneIDQueryAppController .gidDownloadCSV {
+.GeneIDQueryAppController .bv_gidDownloadCSV {
     margin-bottom: 10px;
     margin-left: 1017px;
 }

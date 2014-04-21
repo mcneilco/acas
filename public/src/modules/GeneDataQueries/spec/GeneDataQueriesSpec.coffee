@@ -98,6 +98,8 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqrc.$('.bv_resultTable')).toBeHidden()
 				it "should show no results message", ->
 					expect(@gidqrc.$('.bv_noResultsFound')).toBeVisible()
+				it "should hide the download CSV option", ->
+					expect(@gidqrc.$('.bv_gidDownloadCSV')).toBeHidden()
 
 	describe "Gene ID Query Search Controller", ->
 		describe 'when instantiated', ->
@@ -445,8 +447,6 @@ describe "Gene Data Queries Module Testing", ->
 						runs ->
 							@aerqc.$('.bv_codesField').val "12345, 6789"
 							@aerqc.handleNextClicked()
-#					describe "step two loading", ->
-#						it "should show a loading screen between step one and two", ->
 					describe "experiment tree display from stub service", ->
 						beforeEach ->
 							waitsFor =>
