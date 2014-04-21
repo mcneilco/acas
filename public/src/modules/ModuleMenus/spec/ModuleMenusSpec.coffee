@@ -1,11 +1,5 @@
 beforeEach ->
 	@fixture = $.clone($("#fixture").get(0))
-	@testMenuItems = [
-		{isHeader: true, menuName: "Test Header" }
-		{isHeader: false, menuName: "Test Launcher 1", mainControllerClassName: "controllerClassName1"}
-		{isHeader: false, menuName: "Test Launcher 2", mainControllerClassName: "controllerClassName2"}
-		{isHeader: false, menuName: "Test Launcher 3", mainControllerClassName: "controllerClassName3"}
-	]
 
 afterEach ->
 	$("#fixture").remove()
@@ -15,7 +9,7 @@ describe "Module Menus Controller testing", ->
 	beforeEach ->
 		@mmc = new ModuleMenusController
 			el: $('#fixture')
-			menuListJSON: @testMenuItems # should be in a global config file
+			menuListJSON: window.moduleMenusTestJSON.testMenuItems # should be in a global config file
 		@mmc.render()
 
 	describe "Basic loading", ->
@@ -35,16 +29,16 @@ describe "Module Menus Controller testing", ->
 				expect(@mmc.$('.bv_logout').attr('href')).toContain 'logout'
 
 	describe "Sub Controllers load after rendering", ->
-		it "Should have 4 menu items", ->
-			expect(@mmc.$('.bv_modLaunchMenuWrapper li').length).toEqual 4
+		it "Should have 6 menu items", ->
+			expect(@mmc.$('.bv_modLaunchMenuWrapper li').length).toEqual 6
 		it "Should create and make divs for all the non header ModuleLauncherControllers", ->
-			expect(@mmc.$('.bv_mainModuleWrapper div.bv_moduleContent').length).toEqual 3
+			expect(@mmc.$('.bv_mainModuleWrapper div.bv_moduleContent').length).toEqual 5
 
 	describe "Deploy mode display", ->
 		beforeEach ->
 			@mmc = new ModuleMenusController
 				el: $('#fixture')
-				menuListJSON: @testMenuItems # should be in a global config file
+				menuListJSON: window.moduleMenusTestJSON.testMenuItems # should be in a global config file
 		it "should show the deploy mode if set", ->
 			window.AppLaunchParams.deployMode = "Stage"
 			@mmc.render()

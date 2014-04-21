@@ -86,8 +86,11 @@ exports.changeAuth = (user, passOld,passNew,passNewAgain, retFun) ->
 			console.log response
 	)
 exports.getUser = (username, callback) ->
+	console.log "getting user"
 	config = require '../../../conf/compiled/conf.js'
-	if config.all.client.require.login
+	if config.all.client.require.login and !global.specRunnerTestmode
+		console.log "getting user from server"
+
 		request = require 'request'
 		request(
 			headers:
@@ -109,12 +112,15 @@ exports.getUser = (username, callback) ->
 				callback "user not found", null
 		)
 	else
-		callback null,
-			id: 0,
-			username: username,
-			email: username+"@nowhere.com",
-			firstName: "",
-			lastName: username
+		if username != "starksofwesteros"
+			callback null,
+				id: 0,
+				username: username,
+				email: username+"@nowhere.com",
+				firstName: username,
+				lastName: username
+		else
+			callback "user not found", null
 
 
 exports.isUserAdmin = (user) ->

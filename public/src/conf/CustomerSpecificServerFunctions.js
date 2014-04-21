@@ -110,8 +110,10 @@
 
   exports.getUser = function(username, callback) {
     var config, request;
+    console.log("getting user");
     config = require('../../../conf/compiled/conf.js');
-    if (config.all.client.require.login) {
+    if (config.all.client.require.login && !global.specRunnerTestmode) {
+      console.log("getting user from server");
       request = require('request');
       return request({
         headers: {
@@ -139,13 +141,17 @@
         };
       })(this));
     } else {
-      return callback(null, {
-        id: 0,
-        username: username,
-        email: username + "@nowhere.com",
-        firstName: "",
-        lastName: username
-      });
+      if (username !== "starksofwesteros") {
+        return callback(null, {
+          id: 0,
+          username: username,
+          email: username + "@nowhere.com",
+          firstName: username,
+          lastName: username
+        });
+      } else {
+        return callback("user not found", null);
+      }
     }
   };
 
