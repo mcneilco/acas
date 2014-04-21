@@ -22,6 +22,7 @@ exports.requiredScripts = [
 
 exports.applicationScripts = [
 	'/src/conf/conf.js',
+	"/javascripts/src/UtilityFunctions.js",
 	'/javascripts/src/LSFileInput.js',
 	'/javascripts/src/LSFileChooser.js',
 	'/javascripts/src/LSErrorNotification.js',
@@ -115,5 +116,6 @@ exports.specScripts = [
 	"/javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js",
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/TagListSpec.js",
+	"/javascripts/spec/UtilityFunctionsSpec.js",
 	"/javascripts/spec/dnsAuthenticationServiceSpec.js"
 ]

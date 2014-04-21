@@ -44,7 +44,7 @@ class window.DocUploadController extends AbstractFormController
 		@fileInputController = new LSFileInputController
 			el: @$('.bv_fileInput'),
 			inputTitle: ''
-			url: "http://"+window.conf.host+":"+window.conf.service.file.port
+			url: UtilityFunctions::getFileServiceURL()
 			fieldIsRequired: false
 			requiresValidation: false
 			maxNumberOfFiles: 1

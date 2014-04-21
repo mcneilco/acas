@@ -1,15 +1,9 @@
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
-    var config;
-    app.get('/api/curves/stubs/:exptCode', exports.getCurveStubs);
-    app.get('/api/curve/detail/:id', exports.getCurveDetail);
-    app.post('/api/curve/fit', exports.refitCurve);
-    config = require('../conf/compiled/conf.js');
-    if (config.all.client.require.login) {
-      return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
-    } else {
-      return app.get('/curveCurator/*', exports.curveCuratorIndex);
-    }
+    app.get('/api/curves/stubs/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs);
+    app.get('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail);
+    app.post('/api/curve/fit', loginRoutes.ensureAuthenticated, exports.refitCurve);
+    return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
   };
 
   exports.getCurveStubs = function(req, resp) {
@@ -21,6 +15,7 @@
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/experimentcode/curveids/?experimentcode=";
       request = require('request');
+      console.log(baseurl + req.params.exptCode);
       return request({
         method: 'GET',
         url: baseurl + req.params.exptCode,

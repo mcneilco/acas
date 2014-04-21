@@ -4,7 +4,7 @@ library(racas)
 fitDoseResponse <- function(request){
   request <- as.list(request)
   simpleFitSettings <- fromJSON(request$inputParameters)
-  experimentCode <- "EXPT-00000026"
+  experimentCode <- "EXPT-00000036"
   user <- request$user
   testMode <- as.logical(request$testMode)
 

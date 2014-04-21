@@ -255,7 +255,13 @@
         core: {
           data: this.model.get('experimentData')
         },
+        search: {
+          fuzzy: false
+        },
         plugins: ["checkbox", "search"]
+      });
+      this.$('.bv_tree').bind("hover_node.jstree", function(e, data) {
+        return $(e.target).attr("title", data.node.original.description);
       });
       to = false;
       return this.$(".bv_searchVal").keyup((function(_this) {

@@ -1,17 +1,12 @@
-### To install this Module
-1) Add these lines to app.coffee:
-	protocolRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ProtocolServiceRoutes.js'
-	protocolRoutes.setupRoutes(app)
 
 
-###
-exports.setupRoutes = (app) ->
-	app.get '/api/protocols/codename/:code', exports.protocolByCodename
-	app.get '/api/protocols/:id', exports.protocolById
-	app.post '/api/protocols', exports.postProtocol
-	app.put '/api/protocols', exports.putProtocol
-	app.get '/api/protocollabels', exports.lsLabels
-	app.get '/api/protocolCodes', exports.protocolCodeList
+exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/api/protocols/codename/:code', loginRoutes.ensureAuthenticated, exports.protocolByCodename
+	app.get '/api/protocols/:id', loginRoutes.ensureAuthenticated, exports.protocolById
+	app.post '/api/protocols', loginRoutes.ensureAuthenticated, exports.postProtocol
+	app.put '/api/protocols', loginRoutes.ensureAuthenticated, exports.putProtocol
+	app.get '/api/protocollabels', loginRoutes.ensureAuthenticated, exports.lsLabels
+	app.get '/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList
 
 exports.protocolByCodename = (req, resp) ->
 	console.log req.params.code
