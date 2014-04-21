@@ -9,6 +9,11 @@
       mainControllerClassName: "GenericDataParserController"
     }, {
       isHeader: false,
+      menuName: "Load Experiment",
+      mainControllerClassName: "GenericDataParserController",
+      requireUserRoles: ["admin", "loadData"]
+    }, {
+      isHeader: false,
       menuName: "Analyze FLIPR Data",
       mainControllerClassName: "PrimaryScreenExperimentController",
       autoLaunchName: "flipr_screening_assay"

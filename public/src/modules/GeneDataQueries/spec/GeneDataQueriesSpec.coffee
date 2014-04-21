@@ -1,9 +1,10 @@
 beforeEach ->
-	@fixture = $.clone($("#fixture").get(0))
+	@fixture = $("#fixture")
 
 afterEach ->
+	$(".modal-backdrop").remove()
 	$("#fixture").remove()
-	$("body").append $(@fixture)
+	$("body").append '<div id="fixture"></div>'
 
 describe "Gene Data Queries Module Testing", ->
 	describe "Gene ID Query Input Controller", ->
@@ -98,6 +99,8 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqrc.$('.bv_resultTable')).toBeHidden()
 				it "should show no results message", ->
 					expect(@gidqrc.$('.bv_noResultsFound')).toBeVisible()
+				it "should hide the download CSV option", ->
+					expect(@gidqrc.$('.bv_gidDownloadCSV')).toBeHidden()
 
 	describe "Gene ID Query Search Controller", ->
 		describe 'when instantiated', ->
@@ -550,10 +553,3 @@ describe "Gene Data Queries Module Testing", ->
 					expect(@gidqac.$('.bv_basicQueryView')).toBeVisible()
 					expect(@gidqac.$('.bv_advancedQueryContainer')).toBeHidden()
 
-#For demo
-#TODO right now gear/wrench launches advanced search. Need a button or link instead that is in both start and data display
-
-#after demo
-#TODO setup download CSV service
-#TODO add an enuciator to show search errors etc
-#TODO Refactor to make not gene specific in names etc. Make entity type to search a configuration option

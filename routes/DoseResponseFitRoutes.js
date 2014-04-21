@@ -1,6 +1,6 @@
 (function() {
-  exports.setupRoutes = function(app) {
-    return app.post('/api/doseResponseCurveFit', exports.fitDoseResponse);
+  exports.setupRoutes = function(app, loginRoutes) {
+    return app.post('/api/doseResponseCurveFit', loginRoutes.ensureAuthenticated, exports.fitDoseResponse);
   };
 
   exports.fitDoseResponse = function(request, response) {

@@ -96,12 +96,12 @@
             dropZoneClassId: 'field1',
             autoUpload: false,
             maxNumberOfFiles: 1,
-            url: "http://" + window.conf.host + ":" + window.conf.service.file.port
+            url: UtilityFunctions.prototype.getFileServiceURL()
           });
           return this.fc.render();
         });
         it('should have upload url', function() {
-          return (expect(this.fc.url)).toContain('http://');
+          return (expect(this.fc.url)).toContain('uploads');
         });
         it('drop field should initially be hidden', function() {
           return (expect($('.field1').is(':visible'))).toBeFalsy();

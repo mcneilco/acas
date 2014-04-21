@@ -84,18 +84,24 @@ insertToLayoutTemplate "//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCL
 specScriptLines = prepSpecScripts()
 insertToLayoutTemplate "//SPECSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES", ",\n"+specScriptLines, "../routes/RequiredClientScripts.js", "../routes/RequiredClientScripts.js"
 
-prepRouteIncludes = ->
+prepRouteIncludes = (apiMode) ->
 	routeFiles = makeFileNameHash glob.sync('../routes/*.js')
 	routeFiles = _.omit routeFiles, ["index.js", "loginRoutes.js", "RequiredClientScripts.js", "RequiredClientScripts_template.js", "user.js"]
 	routeLines = ""
 	routeNum = 1
 	for fname, path of routeFiles
 		includeStr = '\trouteSet_'+routeNum+' = require("./routes/'+fname+'");\n'
-		includeStr += '\trouteSet_'+routeNum+'.setupRoutes(app, loginRoutes);\n'
+		if apiMode
+			includeStr += '\tif (routeSet_'+routeNum+'.setupAPIRoutes) {\n'
+			includeStr += '\t\trouteSet_'+routeNum+'.setupAPIRoutes(app); }\n'
+		else
+			includeStr += '\trouteSet_'+routeNum+'.setupRoutes(app, loginRoutes);\n'
 		routeLines += includeStr
 		routeNum++
 
 	routeLines
 
-routeLines = prepRouteIncludes()
+routeLines = prepRouteIncludes(false)
 insertToLayoutTemplate "  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "../app_template.js", "../app.js"
+routeLines = prepRouteIncludes(true)
+insertToLayoutTemplate "  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "../app_api_template.js", "../app_api.js"

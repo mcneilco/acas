@@ -1,24 +1,6 @@
 (function() {
   beforeEach(function() {
-    this.fixture = $.clone($("#fixture").get(0));
-    return this.testMenuItems = [
-      {
-        isHeader: true,
-        menuName: "Test Header"
-      }, {
-        isHeader: false,
-        menuName: "Test Launcher 1",
-        mainControllerClassName: "controllerClassName1"
-      }, {
-        isHeader: false,
-        menuName: "Test Launcher 2",
-        mainControllerClassName: "controllerClassName2"
-      }, {
-        isHeader: false,
-        menuName: "Test Launcher 3",
-        mainControllerClassName: "controllerClassName3"
-      }
-    ];
+    return this.fixture = $.clone($("#fixture").get(0));
   });
 
   afterEach(function() {
@@ -30,7 +12,7 @@
     beforeEach(function() {
       this.mmc = new ModuleMenusController({
         el: $('#fixture'),
-        menuListJSON: this.testMenuItems
+        menuListJSON: window.moduleMenusTestJSON.testMenuItems
       });
       return this.mmc.render();
     });
@@ -59,18 +41,18 @@
       });
     });
     describe("Sub Controllers load after rendering", function() {
-      it("Should have 4 menu items", function() {
-        return expect(this.mmc.$('.bv_modLaunchMenuWrapper li').length).toEqual(4);
+      it("Should have 6 menu items", function() {
+        return expect(this.mmc.$('.bv_modLaunchMenuWrapper li').length).toEqual(6);
       });
       return it("Should create and make divs for all the non header ModuleLauncherControllers", function() {
-        return expect(this.mmc.$('.bv_mainModuleWrapper div.bv_moduleContent').length).toEqual(3);
+        return expect(this.mmc.$('.bv_mainModuleWrapper div.bv_moduleContent').length).toEqual(5);
       });
     });
     return describe("Deploy mode display", function() {
       beforeEach(function() {
         return this.mmc = new ModuleMenusController({
           el: $('#fixture'),
-          menuListJSON: this.testMenuItems
+          menuListJSON: window.moduleMenusTestJSON.testMenuItems
         });
       });
       it("should show the deploy mode if set", function() {

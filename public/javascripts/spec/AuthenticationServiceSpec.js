@@ -1,10 +1,9 @@
 (function() {
   describe('User authentication Service testing', function() {
     beforeEach(function() {
-      this.waitForServiceReturn = function() {
+      return this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
       };
-      return this.serviceType = window.conf.authentication.user.type;
     });
     describe('when auth service called', function() {
       beforeEach(function() {
@@ -69,7 +68,7 @@
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           if (window.conf.require.login) {
-            return expect(this.serviceReturn.firstName).toEqual("Bob");
+            return expect(this.serviceReturn.firstName).toEqual("bob");
           } else {
             return expect(this.serviceReturn.firstName).toEqual("");
           }
@@ -79,7 +78,7 @@
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           if (window.conf.require.login) {
-            return expect(this.serviceReturn.lastName).toEqual("Roberts");
+            return expect(this.serviceReturn.lastName).toEqual("bob");
           } else {
             return expect(this.serviceReturn.lastName).toEqual("bob");
           }

@@ -6,7 +6,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	filePassedValidation: false
 	reportFileNameOnServer: null
 	loadReportFile: false
-	filePath: "serverOnlyModules/blueimp-file-upload-node/public/files/"
+	#TODO replace filePath with value from config file, or don't send path and let R find it
+	filePath: ""
 	additionalData: {experimentId: 1234, otherparam: "fred"}
 	allowedFileTypes: ['xls', 'xlsx', 'csv']
 	maxFileSize: 200000000
@@ -29,7 +30,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@parseFileController = new LSFileInputController
 			el: @$('.bv_parseFile')
 			inputTitle: ''
-			url: "http://"+window.conf.host+":"+window.conf.service.file.port
+			url: UtilityFunctions::getFileServiceURL()
 			fieldIsRequired: false
 			allowedFileTypes: @allowedFileTypes
 			maxFileSize: @maxFileSize
@@ -42,7 +43,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@reportFileController = new LSFileInputController
 				el: @$('.bv_reportFile')
 				inputTitle: ''
-				url: "http://"+window.conf.host+":"+window.conf.service.file.port
+				url: UtilityFunctions::getFileServiceURL()
 				fieldIsRequired: false
 				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
 			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)

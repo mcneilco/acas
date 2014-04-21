@@ -7,6 +7,10 @@
     padding-left: 9px;
 }
 
+.GeneIDQueryAppController .logoutButton {
+    margin-top: 0px !important;
+}
+
 .GeneIDQueryAppController .navbar-inverse .brand:hover {
     color: #999999;
 }
@@ -69,7 +73,7 @@
 	margin-top: 100px !important;
 }
 
-.GeneIDQueryAppController .gidDownloadCSV {
+.GeneIDQueryAppController .bv_gidDownloadCSV {
     margin-bottom: 10px;
     margin-left: 1017px;
 }
@@ -242,4 +246,13 @@
     padding-top: 30px;
     padding-bottom: 50px;
     padding-left: 958px;
+}
+
+.GeneIDQueryAppController .aboutACAS {
+    margin-top: 0;
+}
+
+.GeneIDQueryAppController .helpLinks {
+    margin-top: 10px;
+    margin-left: 185px;
 }

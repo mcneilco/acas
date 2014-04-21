@@ -1,22 +1,9 @@
-# PreferredBatchIdService.coffee
-#
-# John McNeil
-# john@mcneilco.com
-#
-# Copyright 2012 John McNeil & Co. Inc.
-#########################################################################
-# For API docs see spec: PreferredBatchIdServiceSpec.coffee
-#########################################################################
-# serverAPI routes
-### To install this Module
-1) Add these lines to app.coffee:
-preferredBatchIdRoutes = require './public/src/modules/02_serverAPI/src/server/routes/PreferredBatchIdService.js'
-preferredBatchIdRoutes.setupRoutes(app)
-###
-
-exports.setupRoutes = (app) ->
+exports.setupAPIRoutes = (app) ->
 	app.post '/api/preferredBatchId', exports.preferredBatchId
-	app.post '/api/testRoute', exports.testRoute
+
+exports.setupRoutes = (app, loginRoutes) ->
+	app.post '/api/preferredBatchId', loginRoutes.ensureAuthenticated, exports.preferredBatchId
+	app.post '/api/testRoute', loginRoutes.ensureAuthenticated, exports.testRoute
 
 exports.preferredBatchId = (req, resp) ->
 	#oracle = require "db-oracle"

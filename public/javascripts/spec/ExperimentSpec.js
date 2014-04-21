@@ -634,7 +634,7 @@
               this.ebc.$('.bv_protocolCode').val("PROT-00000001");
               return this.ebc.$('.bv_protocolCode').change();
             });
-            waits(200);
+            waits(1000);
             return runs(function() {
               return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000001");
             });
@@ -814,24 +814,22 @@
           beforeEach(function() {
             return runs(function() {
               this.ebc.$('.bv_protocolCode').val("PROT-00000001");
-              return this.ebc.$('.bv_protocolCode').change();
+              this.ebc.$('.bv_protocolCode').change();
+              return waits(1000);
             });
           });
           describe("When user picks protocol", function() {
             it("should update model", function() {
-              waits(200);
               return runs(function() {
                 return expect(this.ebc.model.get('protocol').get('codeName')).toEqual("PROT-00000001");
               });
             });
             it("should fill the short description field because the protocol attrobutes are automatically copied", function() {
-              waits(200);
               return runs(function() {
                 return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
               });
             });
             return it("should enable use protocol params", function() {
-              waits(200);
               return runs(function() {
                 return expect(this.ebc.$('.bv_useProtocolParameters').attr("disabled")).toBeUndefined();
               });
@@ -839,13 +837,11 @@
           });
           return xdescribe("When user and asks to clone attributes should populate fields", function() {
             beforeEach(function() {
-              waits(200);
               return runs(function() {
                 return this.ebc.$('.bv_useProtocolParameters').click();
               });
             });
             return it("should fill the short description field", function() {
-              waits(200);
               return runs(function() {
                 return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
               });
@@ -988,7 +984,7 @@
               runs(function() {
                 return this.ebc.$('.bv_save').click();
               });
-              waits(100);
+              waits(1000);
               return runs(function() {
                 return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
               });
@@ -997,7 +993,7 @@
               runs(function() {
                 return this.ebc.$('.bv_save').click();
               });
-              waits(100);
+              waits(1000);
               return runs(function() {
                 return expect(this.ebc.$('.bv_save').html()).toEqual("Update");
               });

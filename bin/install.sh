@@ -97,9 +97,6 @@ cd $INSTALL_DIRECTORY
 if [ -h "acas" ]; then
 	rm acas
 fi
-if [ -h "blueimp" ]; then
-	rm blueimp
-fi
 if [ ! -d "log" ]; then
 	mkdir log
 fi
@@ -115,7 +112,6 @@ then
 else
 	curl --digest --user $BITBUCKET_USER:$BITBUCKET_PASSWORD https://bitbucket.org/mcneilco/acas/get/$ACAS_BRANCH.tar.gz | tar xvz --strip-components=1 
 fi
-ln -s acas/serverOnlyModules/blueimp-file-upload-node/ ../blueimp
 if [ ! -z "$CUSTOM_REPO" ]
 then
 	echo "Installing acas_custom $CUSTOM_REPO on branch $CUSTOM_BRANCH"

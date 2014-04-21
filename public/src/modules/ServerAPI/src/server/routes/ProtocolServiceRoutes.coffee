@@ -1,12 +1,13 @@
 
-exports.setupRoutes = (app) ->
-	app.get '/api/protocols/codename/:code', exports.protocolByCodename
-	app.get '/api/protocols/:id', exports.protocolById
-	app.post '/api/protocols', exports.postProtocol
-	app.put '/api/protocols', exports.putProtocol
-	app.get '/api/protocollabels', exports.lsLabels
-	app.get '/api/protocolCodes', exports.protocolCodeList
-	app.get '/api/protocolKindCodes', exports.protocolKindCodeList
+
+exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/api/protocols/codename/:code', loginRoutes.ensureAuthenticated, exports.protocolByCodename
+	app.get '/api/protocols/:id', loginRoutes.ensureAuthenticated, exports.protocolById
+	app.post '/api/protocols', loginRoutes.ensureAuthenticated, exports.postProtocol
+	app.put '/api/protocols', loginRoutes.ensureAuthenticated, exports.putProtocol
+	app.get '/api/protocollabels', loginRoutes.ensureAuthenticated, exports.lsLabels
+	app.get '/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList
+	app.get '/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList
 
 exports.protocolByCodename = (req, resp) ->
 	console.log req.params.code
