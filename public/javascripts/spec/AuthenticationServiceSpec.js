@@ -1,10 +1,9 @@
 (function() {
   describe('User authentication Service testing', function() {
     beforeEach(function() {
-      this.waitForServiceReturn = function() {
+      return this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
       };
-      return this.serviceType = window.conf.authentication.user.type;
     });
     describe('when auth service called', function() {
       beforeEach(function() {
