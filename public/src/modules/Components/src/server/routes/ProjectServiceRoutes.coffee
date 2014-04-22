@@ -1,3 +1,5 @@
+exports.setupAPIRoutes = (app) ->
+  app.get '/api/projects', exports.getProjects
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/projects', loginRoutes.ensureAuthenticated, exports.getProjects
