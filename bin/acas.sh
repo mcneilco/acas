@@ -46,10 +46,14 @@ export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH:=}
  
  
 running() {
-	forever list 2>/dev/null | grep ${APP} 2>&1 >/dev/null
+	runningCommand="forever list 2>/dev/null | grep ${APP} 2>&1 >/dev/null"
+	if [ $(whoami) != $ACAS_USER ]; then
+		runningCommand="su - $ACAS_USER $suAdd -c \"($runningCommand)\""
+	fi
+	eval $runningCommand
     return $?
 }
- 
+
 start_server() {
 	cd `dirname ${APP}`
 	startCommand="forever start --append -l $logname -o $logout -e $logerr ${APP} 2>&1 >/dev/null"
@@ -61,7 +65,13 @@ start_server() {
 }
  
 stop_server() {
-	forever stop ${APP} 2>&1 >/dev/null
+
+	stopCommand="forever stop ${APP} 2>&1 >/dev/null"
+	if [ $(whoami) != $ACAS_USER ]; then
+		stopCommand="su - $ACAS_USER $suAdd -c \"($stopCommand)\""
+	fi
+	eval $stopCommand
+
 	return $?
 }
 
@@ -263,7 +273,7 @@ get_status() {
 ################################################################################
 ################################################################################
  
-scriptPath=${BASH_SOURCE[0]}
+scriptPath=$(readlink ${BASH_SOURCE[0]})
 if [ "$scriptPath" == '' ]; then
 	scriptPath=$(readlink ${BASH_SOURCE[0]})
 fi
@@ -287,6 +297,11 @@ export client_port=$client_port
 export server_log_path=$server_log_path
 export server_log_suffix=$server_log_suffix
 export server_log_level=$(echo $server_log_level | awk '{print tolower($0)}')
+export client_use_ssl=$client_use_ssl
+export server_ssl_key_file_path=$server_ssl_key_file_path
+export server_ssl_cert_file_path=$server_ssl_key_file_path
+export server_ssl_cert_authority_file_path=$server_ssl_key_file_path
+export server_ssl_cert_passphrase=$server_ssl_key_file_path
 
 unamestr=$(uname)
 apacheConfFile=apache.conf
