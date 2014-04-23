@@ -654,9 +654,9 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   # Remove Datatype Row
   calculatedResults <- calculatedResults[1:nrow(calculatedResults) > 1, ]
   
-  # Precise column information
-  stateTypeRow <- NULL
-  stateKindRow <- NULL
+  # Precise column information (or default)
+  stateTypeRow <- rep("data", length(classRow))
+  stateKindRow <- rep("results", length(classRow))
   if (precise) {
     stateTypeRow <- calculatedResults[1:nrow(calculatedResults) == 1, ]
     stateKindRow <- calculatedResults[1:nrow(calculatedResults) == 2, ]
