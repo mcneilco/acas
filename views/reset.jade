@@ -4,16 +4,22 @@ block content
         div.navbar-inner
             div.container-fluid
                 div.brand ACAS
-    - if (message != "")
-        div.offset1.alert.alert-error(style="width:175px;margin-bottom:10px;") #{message}
-    label Reset Password
-    form(action="/reset", method="post")
-        div.offset1
-            label Email:
-            input(type="text", name="email")
-            br
-        div.offset1
-            input.btn(type="submit", value="Send Reset")
-        div.offset1
-            a(href="/login") login
 
+    div.container.loginContainer
+        div.span8.offset1
+            h3 Reset Password
+            div.well
+                span Please enter the email address associated with your account.
+                hr.loginDivider
+                form.form-horizontal(action="/reset", method="post")
+                    div.control-group
+                        label.control-label Email:
+                        div.controls
+                            input.span5(type="text", name="email")
+                    div.form-horizontal
+                        div.control-group
+                            div.controls
+                                input.btn.btn-primary(type="submit", value="Send Reset")
+                                a.loginLink(href="/login") Login
+        - if (message != "")
+            div.span7.offset1.alert.alert-error.loginError #{message}

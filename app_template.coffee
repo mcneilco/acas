@@ -38,17 +38,17 @@ startApp = ->
 			done err, user
 
 	passport.use new LocalStrategy csUtilities.loginStrategy
-	passport.isAdmin = (req, resp, next) ->
-		if req.isAuthenticated() and csUtilities.isUserAdmin(req.user)
-			next()
-		else
-			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
-	passport.isAuthenticated = (req, resp, next) ->
-		console.log "running passort.isAuthenticated"
-		unless req.isAuthenticated()
-			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
-		else
-			next()
+#	passport.isAdmin = (req, resp, next) ->
+#		if req.isAuthenticated() and csUtilities.isUserAdmin(req.user)
+#			next()
+#		else
+#			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
+#	passport.isAuthenticated = (req, resp, next) ->
+#		console.log "running passort.isAuthenticated"
+#		unless req.isAuthenticated()
+#			next new handler.NotAuthorizedError "Sorry, you don't have the right!"
+#		else
+#			next()
 
 	loginRoutes = require './routes/loginRoutes'
 
@@ -127,4 +127,5 @@ startApp = ->
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 startApp()
+
 

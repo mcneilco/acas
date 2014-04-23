@@ -1,4 +1,8 @@
 (function() {
+  exports.setupAPIRoutes = function(app) {
+    return app.get('/api/projects', exports.getProjects);
+  };
+
   exports.setupRoutes = function(app, loginRoutes) {
     return app.get('/api/projects', loginRoutes.ensureAuthenticated, exports.getProjects);
   };

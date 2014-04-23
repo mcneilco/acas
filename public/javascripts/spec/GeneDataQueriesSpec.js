@@ -1,11 +1,12 @@
 (function() {
   beforeEach(function() {
-    return this.fixture = $.clone($("#fixture").get(0));
+    return this.fixture = $("#fixture");
   });
 
   afterEach(function() {
+    $(".modal-backdrop").remove();
     $("#fixture").remove();
-    return $("body").append($(this.fixture));
+    return $("body").append('<div id="fixture"></div>');
   });
 
   describe("Gene Data Queries Module Testing", function() {
@@ -154,8 +155,11 @@
           it("should hide the data table", function() {
             return expect(this.gidqrc.$('.bv_resultTable')).toBeHidden();
           });
-          return it("should show no results message", function() {
+          it("should show no results message", function() {
             return expect(this.gidqrc.$('.bv_noResultsFound')).toBeVisible();
+          });
+          return it("should hide the download CSV option", function() {
+            return expect(this.gidqrc.$('.bv_gidDownloadCSV')).toBeHidden();
           });
         });
       });

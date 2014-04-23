@@ -1,0 +1,21 @@
+.loginContainer {
+    padding-top: 40px;
+}
+
+.loginDivider {
+    border-color: #DADADA;
+    color: #DADADA;
+    background-color: #DADADA;
+}
+
+.forgotPasswordLink {
+    margin-left: 10px !important;
+}
+
+.loginError {
+    width: 719px;
+}
+
+.loginLink {
+    margin-left: 10px !important;
+}
