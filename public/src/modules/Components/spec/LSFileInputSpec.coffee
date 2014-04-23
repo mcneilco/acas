@@ -12,7 +12,7 @@ describe 'LS File Input Behavior Testing', ->
 				@echoFileController = new LSFileInputController
 						el: '#fixture',
 						inputTitle: 'Test File'
-						url: "http://"+window.conf.host+":"+window.conf.service.file.port
+						url: UtilityFunctions::getFileServiceURL()
 						fieldIsRequired: true
 				@echoFileController.render()
 

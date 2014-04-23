@@ -12,6 +12,7 @@ class window.GeneIDQueryInputController extends Backbone.View
 		$(@el).html @template()
 		@$('.bv_search').attr('disabled','disabled')
 		@$('.bv_gidACASBadgeTop').hide()
+		@$('.bv_searchNavbar').hide()
 
 		@
 
@@ -31,8 +32,11 @@ class window.GeneIDQueryInputController extends Backbone.View
 	handleAdvanceModeRequested: =>
 		@trigger 'requestAdvancedMode'
 
+
 class window.GeneIDQueryResultController extends Backbone.View
 	template: _.template($("#GeneIDQueryResultView").html())
+	events:
+		"click .bv_downloadCSV": "handleDownloadCSVClicked"
 
 	render: =>
 		$(@el).empty()
@@ -48,6 +52,7 @@ class window.GeneIDQueryResultController extends Backbone.View
 		else
 			@$('.bv_resultTable').hide()
 			@$('.bv_noResultsFound').show()
+			@$('.bv_gidDownloadCSV').hide()
 
 		@
 
@@ -57,8 +62,22 @@ class window.GeneIDQueryResultController extends Backbone.View
 		_.each @model.get('data').aoColumns, (header) =>
 			@$('.bv_columnNamesHeader').append '<th>placeholder</th>'
 
+	handleDownloadCSVClicked: =>
+		@$('.bv_searchStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
+		@trigger 'downLoadCSVRequested'
+
+	showCSVFileLink: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
+		@$('.bv_resultFileLink').attr 'href', json.fileURL
+		@$('.bv_csvFileLinkModal').modal
+			show: true
+
+
 class window.GeneIDQuerySearchController extends Backbone.View
 	template: _.template($("#GeneIDQuerySearchView").html())
+	lastSearch: ""
 
 	initialize: ->
 		$(@el).empty()
@@ -71,7 +90,12 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@queryInputController.render()
 		@setQueryOnlyMode()
 
+
 	handleSearchRequested: (searchStr) =>
+		@lastSearch = searchStr
+		@$('.bv_searchStatusDropDown').modal
+		backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
 			url: "api/geneDataQuery"
@@ -86,22 +110,20 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			dataType: 'json'
 
 	handleSearchReturn: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
 		@resultController = new GeneIDQueryResultController
 			model: new Backbone.Model json.results
 			el: $('.bv_resultsView')
 		@resultController.render()
+		@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
 		$('.bv_searchForm')
-			.appendTo('.bv_toolbar')
+			.appendTo('.bv_searchNavbar')
 		@$('.bv_gidSearchStart').hide()
 		@$('.bv_gidACASBadge').hide()
 		@$('.bv_gidACASBadgeTop').show()
-		@$('.bv_gidNavAdvancedSearchButton').removeClass 'gidNavAdvancedSearchButtonBottom'
-		@$('.bv_gidNavHelpButton').addClass 'pull-right'
-		@$('.bv_gidNavAdvancedSearchButton').addClass 'gidNavAdvancedSearchButtonTop'
-		@$('.bv_toolbar').removeClass 'gidNavWellBottom'
-		@$('.bv_toolbar').addClass 'gidNavWellTop'
-		@$('.bv_group_toolbar').removeClass 'navbar-fixed-bottom'
-		@$('.bv_group_toolbar').addClass 'navbar-fixed-top'
+		@$('.bv_gidNavAdvancedSearchButton').removeClass 'gidAdvancedNavSearchButtonStart'
+		@$('.bv_gidNavAdvancedSearchButton').addClass 'gidAdvancedNavSearchButtonTop'
+		@$('.bv_searchNavbar').show()
 
 		@setShowResultsMode()
 
@@ -110,6 +132,21 @@ class window.GeneIDQuerySearchController extends Backbone.View
 
 	setShowResultsMode: =>
 		@$('.bv_resultsView').show()
+
+	handleDownLoadCSVRequested: =>
+		$.ajax
+			type: 'POST'
+			url: "api/geneDataQuery?format=csv"
+			dataType: 'json'
+			data:
+				geneIDs: @lastSearch
+				maxRowsToReturn: 10000
+				user: window.AppLaunchParams.loginUserName
+			success: @resultController.showCSVFileLink
+			error: (err) =>
+				console.log 'got ajax error'
+				@serviceReturn = null
+
 
 
 ################  Advanced-mode queries ################
@@ -132,7 +169,12 @@ class window.ExperimentTreeController extends Backbone.View
 		@$('.bv_tree').jstree
 			core:
 				data: @model.get('experimentData')
-			plugins: [ "checkbox","search"]
+			search:
+				fuzzy: false
+			plugins: [ "checkbox", "search"]
+
+		@$('.bv_tree').bind "hover_node.jstree", (e, data) ->
+			$(e.target).attr("title", data.node.original.description)
 
 		to = false
 		@$(".bv_searchVal").keyup =>
@@ -177,7 +219,8 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 		@$('.bv_termName').html @model.get('termName')
 		@filterOptions.each (expt) =>
 			code = expt.get('experimentCode')
-			@$('.bv_experiment').append '<option val="'+code+'">'+code+'</option>'
+			ename = expt.get('experimentName')
+			@$('.bv_experiment').append '<option value="'+code+'">'+ename+'</option>'
 		@setKindOptions()
 		@setOperatorOptions()
 
@@ -188,7 +231,8 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 		kinds = _.pluck currentExpt.get('valueKinds'), 'lsKind'
 		@$('.bv_kind').empty()
 		for kind in kinds
-			@$('.bv_kind').append '<option val="'+kind+'">'+kind+'</option>'
+			@$('.bv_kind').append '<option value="'+kind+'">'+kind+'</option>'
+		@setOperatorOptions()
 
 	setOperatorOptions: =>
 		switch @getSelectedValueType()
@@ -246,7 +290,6 @@ class window.ExperimentResultFilterTermListController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-		@addOne()
 
 		@
 
@@ -329,6 +372,9 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 
 	fromCodesToExptTree: ->
 		@searchCodes = $.trim @$('.bv_codesField').val()
+		@$('.bv_searchStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
 			url: "api/getGeneExperiments"
@@ -341,6 +387,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				@serviceReturn = null
 
 	handleGetGeneExperimentsReturn: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
 		if json.results.experimentData.length > 0
 			@etc = new ExperimentTreeController
 				el: @$('.bv_getExperimentsView')
@@ -355,9 +402,14 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			@nextStep = 'fromExptTreeToFilters'
 		else
 			@$('.bv_noExperimentsFound').show()
+			@trigger 'changeNextToNewQuery'
+			@nextStep = 'gotoRestart'
 
 	fromExptTreeToFilters: ->
 		@experimentList = @etc.getSelectedExperiments()
+		@$('.bv_searchStatusDropDown').modal
+		backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
 			url: "api/getExperimentSearchAttributes"
@@ -370,6 +422,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				@serviceReturn = null
 
 	handleGetExperimentSearchAttributesReturn: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
 		@erfc = new ExperimentResultFilterController
 			el: @$('.bv_getFiltersView')
 			filterOptions: new Backbone.Collection json.results.experiments
@@ -378,17 +431,22 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@$('.bv_getFiltersView').show()
 		@nextStep = 'fromFiltersToResults'
 
-	fromFiltersToResults: ->
+	getQueryParams: ->
 		queryParams =
 			batchCodes: @searchCodes
 			experimentCodeList: @experimentList
 			searchFilters: @erfc.getSearchFilters()
+
+	fromFiltersToResults: ->
+		@$('.bv_searchStatusDropDown').modal
+		backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
 			url: "api/geneDataQueryAdvanced"
 			dataType: 'json'
 			data:
-				queryParams: queryParams
+				queryParams: @getQueryParams()
 				maxRowsToReturn: 10000
 				user: window.AppLaunchParams.loginUserName
 			success: @handleSearchReturn
@@ -397,24 +455,43 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				@serviceReturn = null
 
 	handleSearchReturn: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
 		@resultController = new GeneIDQueryResultController
 			model: new Backbone.Model json.results
 			el: $('.bv_advResultsView')
+		@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
 		@resultController.render()
 		@$('.bv_getFiltersView').hide()
 		@$('.bv_advResultsView').show()
 		@nextStep = 'gotoRestart'
-		@trigger 'requestNextChangeToNewQuery'
+		@trigger 'requestShowResultsMode'
+
+	handleDownLoadCSVRequested: =>
+		$.ajax
+			type: 'POST'
+			url: "api/geneDataQueryAdvanced?format=csv"
+			dataType: 'json'
+			data:
+				queryParams: @getQueryParams()
+				maxRowsToReturn: 10000
+				user: window.AppLaunchParams.loginUserName
+			success: @resultController.showCSVFileLink
+			error: (err) =>
+				console.log 'got ajax error'
+				@serviceReturn = null
+
 
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
 	events:
 		"click .bv_next": "handleNextClicked"
 		"click .bv_cancel": "handleCancelClicked"
+		"click .bv_gidNavHelpButton": "handleHelpClicked"
 
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
+		$(@el).addClass 'GeneIDQueryAppController'
 		@startBasicQueryWizard()
 
 	startBasicQueryWizard: =>
@@ -422,6 +499,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 			el: @$('.bv_basicQueryView')
 		@aerqc.render()
 		@$('.bv_advancedQueryContainer').hide()
+		@$('.bv_advancedQueryNavbar').hide()
 		@$('.bv_basicQueryView').show()
 		@aerqc.on 'requestAdvancedMode', =>
 			@startAdvanceedQueryWizard()
@@ -429,19 +507,31 @@ class window.GeneIDQueryAppController extends Backbone.View
 	startAdvanceedQueryWizard: =>
 		@$('.bv_next').html "Next"
 		@$('.bv_next').removeAttr 'disabled'
+		@$('.bv_advancedQueryContainer').addClass 'gidAdvancedQueryContainerPadding'
+		@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtons'
+		@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtonsResultsView'
+		@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtonsNewQuery'
 		@aerqc = new AdvancedExperimentResultsQueryController
 			el: @$('.bv_advancedQueryView')
 		@aerqc.on 'enableNext', =>
 			@$('.bv_next').removeAttr 'disabled'
 		@aerqc.on 'disableNext', =>
 			@$('.bv_next').attr 'disabled', 'disabled'
-		@aerqc.on 'requestNextChangeToNewQuery', =>
+		@aerqc.on 'requestShowResultsMode', =>
 			@$('.bv_next').html "New Query"
+			@$('.bv_advancedQueryContainer').removeClass 'gidAdvancedQueryContainerPadding'
+			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'
+			@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtonsResultsView'
 		@aerqc.on 'requestRestartAdvancedQuery', =>
 			@startAdvanceedQueryWizard()
+		@aerqc.on 'changeNextToNewQuery', =>
+			@$('.bv_next').html "New Query"
+			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'
+			@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtonsNewQuery'
 		@aerqc.render()
 		@$('.bv_basicQueryView').hide()
 		@$('.bv_advancedQueryContainer').show()
+		@$('.bv_advancedQueryNavbar').show()
 
 	handleNextClicked: =>
 		if @aerqc?
@@ -449,4 +539,9 @@ class window.GeneIDQueryAppController extends Backbone.View
 
 	handleCancelClicked: =>
 		@startBasicQueryWizard()
+
+	handleHelpClicked: =>
+		@$('.bv_helpModal').modal
+			backdrop: "static"
+		@$('.bv_helpModal').modal "show"
 

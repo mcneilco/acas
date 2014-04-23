@@ -21,6 +21,7 @@ exports.requiredScripts = [
 
 exports.applicationScripts = [
 	'/src/conf/conf.js',
+	"/javascripts/src/UtilityFunctions.js",
 	'/javascripts/src/LSFileInput.js',
 	'/javascripts/src/LSFileChooser.js',
 	'/javascripts/src/LSErrorNotification.js',
@@ -31,7 +32,8 @@ exports.applicationScripts = [
 	'/javascripts/src/Label.js',
 	'/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',
-	'/javascripts/src/Protocol.js'//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
+	'/javascripts/src/Protocol.js',
+	"/javascripts/src/PrimaryScreenExperiment.js"//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
 ];
 
 exports.jasmineScripts = [

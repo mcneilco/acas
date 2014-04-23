@@ -36,7 +36,7 @@
 
     AbstractParserFormController.prototype.setupProtocolSelect = function(search) {
       this.protocolList = new PickListList();
-      this.protocolList.url = "api/protocolCodes/filter/" + search;
+      this.protocolList.url = "api/protocolCodes/?protocolName=" + search;
       return this.protocolListController = new PickListSelectController({
         el: this.$('.bv_protocolName'),
         collection: this.protocolList,

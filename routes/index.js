@@ -15,8 +15,8 @@
     app.get('/:moduleName/codeName/:code', exports.autoLaunchWithCode);
     app.get('/', exports.index);
     if (config.all.server.enableSpecRunner) {
-      app.get('/SpecRunner', exports.specRunner);
-      return app.get('/LiveServiceSpecRunner', exports.liveServiceSpecRunner);
+      app.get('/SpecRunner', loginRoutes.ensureAuthenticated, exports.specRunner);
+      return app.get('/LiveServiceSpecRunner', loginRoutes.ensureAuthenticated, exports.liveServiceSpecRunner);
     }
   };
 

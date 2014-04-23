@@ -428,7 +428,7 @@
       $(this.el).empty();
       $(this.el).html(this.template());
       this.$('.bv_save').attr('disabled', 'disabled');
-      this.setupProtocolSelect();
+      this.setupProtocolSelect(this.options.protocolFilter);
       this.setupProjectSelect();
       this.setupTagList();
       return this.model.getStatus().on('change', this.updateEditable);
@@ -466,15 +466,18 @@
       return this;
     };
 
-    ExperimentBaseController.prototype.setupProtocolSelect = function() {
-      var protocolCode;
+    ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter) {
+      var protocolCode, protocolKindFilter;
+      if (typeof protocolKindFilter === "undefined" || protocolKindFilter === null) {
+        protocolKindFilter = "";
+      }
       if (this.model.get('protocol') !== null) {
         protocolCode = this.model.get('protocol').get('codeName');
       } else {
         protocolCode = "unassigned";
       }
       this.protocolList = new PickListList();
-      this.protocolList.url = "/api/protocolCodes/filter/FLIPR";
+      this.protocolList.url = "/api/protocolCodes/" + protocolFilter;
       return this.protocolListController = new PickListSelectController({
         el: this.$('.bv_protocolCode'),
         collection: this.protocolList,

@@ -106,6 +106,7 @@
 	exports.experimentSearchOptions =
 		experiments: [
 			experimentCode: "EXPT-00000396"
+			experimentName: "Experiment Name 1"
 			valueKinds: [
 				lsKind: "EC50"
 				lsType: "numericValue"
@@ -118,6 +119,7 @@
 			]
 		,
 			experimentCode: "EXPT-00000398"
+			experimentName: "Experiment Name 2"
 			valueKinds: [
 				lsKind: "KD"
 				lsType: "numericValue"
@@ -130,7 +132,11 @@
 			]
 		,
 			experimentCode: "EXPT-00000397"
+			experimentName: "Experiment Name 3"
 			valueKinds: [
+				lsKind: "test string attr"
+				lsType: "stringValue"
+			,
 				lsKind: "a pretty long attribute name"
 				lsType: "numericValue"
 			,

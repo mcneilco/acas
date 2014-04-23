@@ -108,12 +108,12 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   # Save things
   lsTransaction <- createLsTransaction(comments="Sample Transfer load")$id
   
-  if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedLogFiles/")) {
-    dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedLogFiles/")
+  if(!file.exists(racas::getUploadedFilePath("uploadedPlates"))) {
+    dir.create(racas::getUploadedFilePath("uploadedPlates"))
   }
   newFileName <- paste0("uploadedLogFiles/", basename(fileName))
   # TODO: safe rename that will not overwrite
-  file.rename(fileName, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", newFileName))
+  file.rename(fileName, paste0(racas::getUploadedFilePath(""), newFileName))
   
   ### Save new plates (but not contents yet)
   wellTranslation <- saveNewWells(newBarcodeList, logFile, lsTransaction, recordedBy, newFileName)

@@ -267,12 +267,12 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, t
   resultTable <- resultTable[!resultTable$fluorescent,]
   
   if(dryRun) {
-    dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/tmp", showWarnings=FALSE, recursive=TRUE)
+    dir.create(racas::getUploadedFilePath("tmp"), showWarnings=FALSE, recursive=TRUE)
     pdfLocation <- paste0("tmp/",experiment$codeName,"_SummaryDRAFT.pdf")
   } else {
     pdfLocation <- paste0("experiments/",experiment$codeName,"/analysis/",experiment$codeName,"_Summary.pdf")
   }
-  pdf(file=paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", pdfLocation), width=8.5, height=11)
+  pdf(file=racas::getUploadedFilePath(pdfLocation), width=8.5, height=11)
   if(dryRun) {
     textplot("Validation DRAFT")
   }
@@ -1225,6 +1225,8 @@ computeNormalized  <- function(values, wellType) {
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters) {
   # Runs main functions that are inside the tryCatch.W.E
   
+  folderToParse <- racas::getUploadedFilePath(folderToParse)
+  
   require("data.table")
   
   if(!testMode) {
@@ -1247,8 +1249,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # TODO: store this in protocol
   parameters$latePeakTime <- 80
   
-  dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/experiments", showWarnings = FALSE)
-  dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName), showWarnings = FALSE)
+  dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
+  dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
   
   # If the folderToParse is actually a zip file
   zipFile <- NULL
@@ -1257,7 +1259,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       stop("The file provided must be a zip file or a directory")
     }
     zipFile <- folderToParse
-    filesLocation <- paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName, "/rawData")
+    filesLocation <- paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData")
     
     dir.create(filesLocation, showWarnings = FALSE)
     
@@ -1265,8 +1267,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     do.call(unlink, list(oldFiles, recursive=T))
     
-    unzip(zipfile=folderToParse, exdir=paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName, "/rawData"))
-    folderToParse <- paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName, "/rawData")
+    unzip(zipfile=folderToParse, exdir=paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData"))
+    folderToParse <- paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData")
   } 
  
   ### START HERE - FLIPR reading function
@@ -1505,35 +1507,32 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #save(experiment, file="experiment.Rda")
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                              threshold = efficacyThreshold, experiment, dryRun)
-    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
-                                         ":", racas::applicationSettings$client.service.file.port,
+    summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
                                          "/files/tmp/", 
                                          experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
     
     overrideLocation <- paste0("tmp/", experiment$codeName, "_OverrideDRAFT.csv")
-    write.csv(userOverrideFrame, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", overrideLocation), 
+    write.csv(userOverrideFrame, paste0(racas::getUploadedFilePath(overrideLocation)), 
               na = "", row.names=FALSE)
-    summaryInfo$info$"QC Entry" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
-                                         ":", racas::applicationSettings$client.service.file.port,
+    summaryInfo$info$"QC Entry" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
                                          "/files/tmp/", 
                                          experiment$codeName,'_OverrideDRAFT.csv" target="_blank">QC Entry</a>')
     
     resultsLocation <- paste0("tmp/", experiment$codeName, "_ResultsDRAFT.csv")
-    write.csv(outputTable, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", resultsLocation), row.names=FALSE)
-    summaryInfo$info$"Results" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
-                                         ":", racas::applicationSettings$client.service.file.port,
+    write.csv(outputTable, paste0(racas::getUploadedFilePath(resultsLocation)), row.names=FALSE)
+    summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
                                          "/files/tmp/", 
                                          experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
   } else {
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
-                  paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/rawData/", 
+                  paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/rawData/", 
                          basename(zipFile)))
     }
 
     
     lsTransaction <- createLsTransaction()$id
-    dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
+    dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
     deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath){
       response <- getURL(
@@ -1550,11 +1549,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     deleteExperimentAnalysisGroups(experiment)
     
     rawResultsLocation <- paste0("experiments/",experiment$codeName,"/analysis/rawResults.Rda")
-    save(resultTable,parameters,file=paste0("serverOnlyModules/blueimp-file-upload-node/public/files/",rawResultsLocation))
+    save(resultTable,parameters,file=paste0(racas::getUploadedFilePath(rawResultsLocation)))
     
     resultsLocation <- paste0("experiments/", experiment$codeName,"/analysis/",experiment$codeName, "_Results.csv")
 
-    write.csv(outputTable, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", resultsLocation), row.names=FALSE)
+    write.csv(outputTable, paste0(racas::getUploadedFilePath(resultsLocation)), row.names=FALSE)
     
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                              threshold = efficacyThreshold, experiment)
@@ -1568,21 +1567,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     saveFileLocations(rawResultsLocation, resultsLocation, pdfLocation, experiment, dryRun, user, lsTransaction)
     
     #TODO: allow saving in an external file service
-    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
-                                         ":", racas::applicationSettings$client.service.file.port,
+    summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
            
     overrideLocation <- paste0("tmp/", experiment$codeName, "_Override.csv")
-    write.csv(userOverrideFrame, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", overrideLocation), 
+    write.csv(userOverrideFrame, paste0(racas::getUploadedFilePath(overrideLocation)), 
               na = "", row.names=FALSE)
-    summaryInfo$info$"QC Entry" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
-                                                ":", racas::applicationSettings$client.service.file.port,
+    summaryInfo$info$"QC Entry" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
                                                 "/files/tmp/", 
                                                 experiment$codeName,'_Override.csv" target="_blank">QC Entry</a>')
     
-    summaryInfo$info$"Results" <- paste0('<a href="http://', racas::applicationSettings$client.host, 
-                                         ":", racas::applicationSettings$client.service.file.port,
+    summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
                                          '/files/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Results.csv" target="_blank">Results</a>')
     

@@ -65,7 +65,7 @@
     ModuleLauncherMenuController.prototype.tagName = 'li';
 
     ModuleLauncherMenuController.prototype.events = {
-      'click': "handleSelect"
+      'click .bv_menuName': "handleSelect"
     };
 
     ModuleLauncherMenuController.prototype.initialize = function() {
@@ -90,6 +90,13 @@
         this.$('.bv_isDirty').show();
       } else {
         this.$('.bv_isDirty').hide();
+      }
+      if (this.model.has('requireUserRoles')) {
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.model.get('requireUserRoles'))) {
+          $(this.el).attr('title', "User is not authorized to use this feature");
+          this.$('.bv_menuName').hide();
+          this.$('.bv_menuName_disabled').show();
+        }
       }
       return this;
     };

@@ -29,6 +29,7 @@
       $(this.el).html(this.template());
       this.$('.bv_search').attr('disabled', 'disabled');
       this.$('.bv_gidACASBadgeTop').hide();
+      this.$('.bv_searchNavbar').hide();
       return this;
     };
 
@@ -62,11 +63,17 @@
     __extends(GeneIDQueryResultController, _super);
 
     function GeneIDQueryResultController() {
+      this.showCSVFileLink = __bind(this.showCSVFileLink, this);
+      this.handleDownloadCSVClicked = __bind(this.handleDownloadCSVClicked, this);
       this.render = __bind(this.render, this);
       return GeneIDQueryResultController.__super__.constructor.apply(this, arguments);
     }
 
     GeneIDQueryResultController.prototype.template = _.template($("#GeneIDQueryResultView").html());
+
+    GeneIDQueryResultController.prototype.events = {
+      "click .bv_downloadCSV": "handleDownloadCSVClicked"
+    };
 
     GeneIDQueryResultController.prototype.render = function() {
       $(this.el).empty();
@@ -83,6 +90,7 @@
       } else {
         this.$('.bv_resultTable').hide();
         this.$('.bv_noResultsFound').show();
+        this.$('.bv_gidDownloadCSV').hide();
       }
       return this;
     };
@@ -100,6 +108,22 @@
       })(this));
     };
 
+    GeneIDQueryResultController.prototype.handleDownloadCSVClicked = function() {
+      this.$('.bv_searchStatusDropDown').modal({
+        backdrop: "static"
+      });
+      this.$('.bv_searchStatusDropDown').modal("show");
+      return this.trigger('downLoadCSVRequested');
+    };
+
+    GeneIDQueryResultController.prototype.showCSVFileLink = function(json) {
+      this.$('.bv_searchStatusDropDown').modal("hide");
+      this.$('.bv_resultFileLink').attr('href', json.fileURL);
+      return this.$('.bv_csvFileLinkModal').modal({
+        show: true
+      });
+    };
+
     return GeneIDQueryResultController;
 
   })(Backbone.View);
@@ -108,6 +132,7 @@
     __extends(GeneIDQuerySearchController, _super);
 
     function GeneIDQuerySearchController() {
+      this.handleDownLoadCSVRequested = __bind(this.handleDownLoadCSVRequested, this);
       this.setShowResultsMode = __bind(this.setShowResultsMode, this);
       this.setQueryOnlyMode = __bind(this.setQueryOnlyMode, this);
       this.handleSearchReturn = __bind(this.handleSearchReturn, this);
@@ -116,6 +141,8 @@
     }
 
     GeneIDQuerySearchController.prototype.template = _.template($("#GeneIDQuerySearchView").html());
+
+    GeneIDQuerySearchController.prototype.lastSearch = "";
 
     GeneIDQuerySearchController.prototype.initialize = function() {
       $(this.el).empty();
@@ -134,6 +161,12 @@
     };
 
     GeneIDQuerySearchController.prototype.handleSearchRequested = function(searchStr) {
+      this.lastSearch = searchStr;
+      this.$('.bv_searchStatusDropDown').modal;
+      ({
+        backdrop: "static"
+      });
+      this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
         url: "api/geneDataQuery",
@@ -154,22 +187,20 @@
     };
 
     GeneIDQuerySearchController.prototype.handleSearchReturn = function(json) {
+      this.$('.bv_searchStatusDropDown').modal("hide");
       this.resultController = new GeneIDQueryResultController({
         model: new Backbone.Model(json.results),
         el: $('.bv_resultsView')
       });
       this.resultController.render();
-      $('.bv_searchForm').appendTo('.bv_toolbar');
+      this.resultController.on('downLoadCSVRequested', this.handleDownLoadCSVRequested);
+      $('.bv_searchForm').appendTo('.bv_searchNavbar');
       this.$('.bv_gidSearchStart').hide();
       this.$('.bv_gidACASBadge').hide();
       this.$('.bv_gidACASBadgeTop').show();
-      this.$('.bv_gidNavAdvancedSearchButton').removeClass('gidNavAdvancedSearchButtonBottom');
-      this.$('.bv_gidNavHelpButton').addClass('pull-right');
-      this.$('.bv_gidNavAdvancedSearchButton').addClass('gidNavAdvancedSearchButtonTop');
-      this.$('.bv_toolbar').removeClass('gidNavWellBottom');
-      this.$('.bv_toolbar').addClass('gidNavWellTop');
-      this.$('.bv_group_toolbar').removeClass('navbar-fixed-bottom');
-      this.$('.bv_group_toolbar').addClass('navbar-fixed-top');
+      this.$('.bv_gidNavAdvancedSearchButton').removeClass('gidAdvancedNavSearchButtonStart');
+      this.$('.bv_gidNavAdvancedSearchButton').addClass('gidAdvancedNavSearchButtonTop');
+      this.$('.bv_searchNavbar').show();
       return this.setShowResultsMode();
     };
 
@@ -179,6 +210,26 @@
 
     GeneIDQuerySearchController.prototype.setShowResultsMode = function() {
       return this.$('.bv_resultsView').show();
+    };
+
+    GeneIDQuerySearchController.prototype.handleDownLoadCSVRequested = function() {
+      return $.ajax({
+        type: 'POST',
+        url: "api/geneDataQuery?format=csv",
+        dataType: 'json',
+        data: {
+          geneIDs: this.lastSearch,
+          maxRowsToReturn: 10000,
+          user: window.AppLaunchParams.loginUserName
+        },
+        success: this.resultController.showCSVFileLink,
+        error: (function(_this) {
+          return function(err) {
+            console.log('got ajax error');
+            return _this.serviceReturn = null;
+          };
+        })(this)
+      });
     };
 
     return GeneIDQuerySearchController;
@@ -216,7 +267,13 @@
         core: {
           data: this.model.get('experimentData')
         },
+        search: {
+          fuzzy: false
+        },
         plugins: ["checkbox", "search"]
+      });
+      this.$('.bv_tree').bind("hover_node.jstree", function(e, data) {
+        return $(e.target).attr("title", data.node.original.description);
       });
       to = false;
       return this.$(".bv_searchVal").keyup((function(_this) {
@@ -293,9 +350,10 @@
       this.$('.bv_termName').html(this.model.get('termName'));
       this.filterOptions.each((function(_this) {
         return function(expt) {
-          var code;
+          var code, ename;
           code = expt.get('experimentCode');
-          return _this.$('.bv_experiment').append('<option val="' + code + '">' + code + '</option>');
+          ename = expt.get('experimentName');
+          return _this.$('.bv_experiment').append('<option value="' + code + '">' + ename + '</option>');
         };
       })(this));
       this.setKindOptions();
@@ -304,16 +362,15 @@
     };
 
     ExperimentResultFilterTermController.prototype.setKindOptions = function() {
-      var currentExpt, kind, kinds, _i, _len, _results;
+      var currentExpt, kind, kinds, _i, _len;
       currentExpt = this.getSelectedExperiment();
       kinds = _.pluck(currentExpt.get('valueKinds'), 'lsKind');
       this.$('.bv_kind').empty();
-      _results = [];
       for (_i = 0, _len = kinds.length; _i < _len; _i++) {
         kind = kinds[_i];
-        _results.push(this.$('.bv_kind').append('<option val="' + kind + '">' + kind + '</option>'));
+        this.$('.bv_kind').append('<option value="' + kind + '">' + kind + '</option>');
       }
-      return _results;
+      return this.setOperatorOptions();
     };
 
     ExperimentResultFilterTermController.prototype.setOperatorOptions = function() {
@@ -398,7 +455,6 @@
     ExperimentResultFilterTermListController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      this.addOne();
       return this;
     };
 
@@ -484,6 +540,7 @@
     __extends(AdvancedExperimentResultsQueryController, _super);
 
     function AdvancedExperimentResultsQueryController() {
+      this.handleDownLoadCSVRequested = __bind(this.handleDownLoadCSVRequested, this);
       this.handleSearchReturn = __bind(this.handleSearchReturn, this);
       this.handleGetExperimentSearchAttributesReturn = __bind(this.handleGetExperimentSearchAttributesReturn, this);
       this.handleGetGeneExperimentsReturn = __bind(this.handleGetGeneExperimentsReturn, this);
@@ -524,6 +581,10 @@
 
     AdvancedExperimentResultsQueryController.prototype.fromCodesToExptTree = function() {
       this.searchCodes = $.trim(this.$('.bv_codesField').val());
+      this.$('.bv_searchStatusDropDown').modal({
+        backdrop: "static"
+      });
+      this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
         url: "api/getGeneExperiments",
@@ -542,6 +603,7 @@
     };
 
     AdvancedExperimentResultsQueryController.prototype.handleGetGeneExperimentsReturn = function(json) {
+      this.$('.bv_searchStatusDropDown').modal("hide");
       if (json.results.experimentData.length > 0) {
         this.etc = new ExperimentTreeController({
           el: this.$('.bv_getExperimentsView'),
@@ -562,12 +624,19 @@
         this.$('.bv_getExperimentsView').show();
         return this.nextStep = 'fromExptTreeToFilters';
       } else {
-        return this.$('.bv_noExperimentsFound').show();
+        this.$('.bv_noExperimentsFound').show();
+        this.trigger('changeNextToNewQuery');
+        return this.nextStep = 'gotoRestart';
       }
     };
 
     AdvancedExperimentResultsQueryController.prototype.fromExptTreeToFilters = function() {
       this.experimentList = this.etc.getSelectedExperiments();
+      this.$('.bv_searchStatusDropDown').modal;
+      ({
+        backdrop: "static"
+      });
+      this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
         url: "api/getExperimentSearchAttributes",
@@ -586,6 +655,7 @@
     };
 
     AdvancedExperimentResultsQueryController.prototype.handleGetExperimentSearchAttributesReturn = function(json) {
+      this.$('.bv_searchStatusDropDown').modal("hide");
       this.erfc = new ExperimentResultFilterController({
         el: this.$('.bv_getFiltersView'),
         filterOptions: new Backbone.Collection(json.results.experiments)
@@ -596,19 +666,27 @@
       return this.nextStep = 'fromFiltersToResults';
     };
 
-    AdvancedExperimentResultsQueryController.prototype.fromFiltersToResults = function() {
+    AdvancedExperimentResultsQueryController.prototype.getQueryParams = function() {
       var queryParams;
-      queryParams = {
+      return queryParams = {
         batchCodes: this.searchCodes,
         experimentCodeList: this.experimentList,
         searchFilters: this.erfc.getSearchFilters()
       };
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.fromFiltersToResults = function() {
+      this.$('.bv_searchStatusDropDown').modal;
+      ({
+        backdrop: "static"
+      });
+      this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
         url: "api/geneDataQueryAdvanced",
         dataType: 'json',
         data: {
-          queryParams: queryParams,
+          queryParams: this.getQueryParams(),
           maxRowsToReturn: 10000,
           user: window.AppLaunchParams.loginUserName
         },
@@ -623,15 +701,37 @@
     };
 
     AdvancedExperimentResultsQueryController.prototype.handleSearchReturn = function(json) {
+      this.$('.bv_searchStatusDropDown').modal("hide");
       this.resultController = new GeneIDQueryResultController({
         model: new Backbone.Model(json.results),
         el: $('.bv_advResultsView')
       });
+      this.resultController.on('downLoadCSVRequested', this.handleDownLoadCSVRequested);
       this.resultController.render();
       this.$('.bv_getFiltersView').hide();
       this.$('.bv_advResultsView').show();
       this.nextStep = 'gotoRestart';
-      return this.trigger('requestNextChangeToNewQuery');
+      return this.trigger('requestShowResultsMode');
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.handleDownLoadCSVRequested = function() {
+      return $.ajax({
+        type: 'POST',
+        url: "api/geneDataQueryAdvanced?format=csv",
+        dataType: 'json',
+        data: {
+          queryParams: this.getQueryParams(),
+          maxRowsToReturn: 10000,
+          user: window.AppLaunchParams.loginUserName
+        },
+        success: this.resultController.showCSVFileLink,
+        error: (function(_this) {
+          return function(err) {
+            console.log('got ajax error');
+            return _this.serviceReturn = null;
+          };
+        })(this)
+      });
     };
 
     return AdvancedExperimentResultsQueryController;
@@ -642,6 +742,7 @@
     __extends(GeneIDQueryAppController, _super);
 
     function GeneIDQueryAppController() {
+      this.handleHelpClicked = __bind(this.handleHelpClicked, this);
       this.handleCancelClicked = __bind(this.handleCancelClicked, this);
       this.handleNextClicked = __bind(this.handleNextClicked, this);
       this.startAdvanceedQueryWizard = __bind(this.startAdvanceedQueryWizard, this);
@@ -653,12 +754,14 @@
 
     GeneIDQueryAppController.prototype.events = {
       "click .bv_next": "handleNextClicked",
-      "click .bv_cancel": "handleCancelClicked"
+      "click .bv_cancel": "handleCancelClicked",
+      "click .bv_gidNavHelpButton": "handleHelpClicked"
     };
 
     GeneIDQueryAppController.prototype.initialize = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
+      $(this.el).addClass('GeneIDQueryAppController');
       return this.startBasicQueryWizard();
     };
 
@@ -668,6 +771,7 @@
       });
       this.aerqc.render();
       this.$('.bv_advancedQueryContainer').hide();
+      this.$('.bv_advancedQueryNavbar').hide();
       this.$('.bv_basicQueryView').show();
       return this.aerqc.on('requestAdvancedMode', (function(_this) {
         return function() {
@@ -679,6 +783,10 @@
     GeneIDQueryAppController.prototype.startAdvanceedQueryWizard = function() {
       this.$('.bv_next').html("Next");
       this.$('.bv_next').removeAttr('disabled');
+      this.$('.bv_advancedQueryContainer').addClass('gidAdvancedQueryContainerPadding');
+      this.$('.bv_controlButtonContainer').addClass('gidAdvancedSearchButtons');
+      this.$('.bv_controlButtonContainer').removeClass('gidAdvancedSearchButtonsResultsView');
+      this.$('.bv_controlButtonContainer').removeClass('gidAdvancedSearchButtonsNewQuery');
       this.aerqc = new AdvancedExperimentResultsQueryController({
         el: this.$('.bv_advancedQueryView')
       });
@@ -692,9 +800,12 @@
           return _this.$('.bv_next').attr('disabled', 'disabled');
         };
       })(this));
-      this.aerqc.on('requestNextChangeToNewQuery', (function(_this) {
+      this.aerqc.on('requestShowResultsMode', (function(_this) {
         return function() {
-          return _this.$('.bv_next').html("New Query");
+          _this.$('.bv_next').html("New Query");
+          _this.$('.bv_advancedQueryContainer').removeClass('gidAdvancedQueryContainerPadding');
+          _this.$('.bv_controlButtonContainer').removeClass('gidAdvancedSearchButtons');
+          return _this.$('.bv_controlButtonContainer').addClass('gidAdvancedSearchButtonsResultsView');
         };
       })(this));
       this.aerqc.on('requestRestartAdvancedQuery', (function(_this) {
@@ -702,9 +813,17 @@
           return _this.startAdvanceedQueryWizard();
         };
       })(this));
+      this.aerqc.on('changeNextToNewQuery', (function(_this) {
+        return function() {
+          _this.$('.bv_next').html("New Query");
+          _this.$('.bv_controlButtonContainer').removeClass('gidAdvancedSearchButtons');
+          return _this.$('.bv_controlButtonContainer').addClass('gidAdvancedSearchButtonsNewQuery');
+        };
+      })(this));
       this.aerqc.render();
       this.$('.bv_basicQueryView').hide();
-      return this.$('.bv_advancedQueryContainer').show();
+      this.$('.bv_advancedQueryContainer').show();
+      return this.$('.bv_advancedQueryNavbar').show();
     };
 
     GeneIDQueryAppController.prototype.handleNextClicked = function() {
@@ -715,6 +834,13 @@
 
     GeneIDQueryAppController.prototype.handleCancelClicked = function() {
       return this.startBasicQueryWizard();
+    };
+
+    GeneIDQueryAppController.prototype.handleHelpClicked = function() {
+      this.$('.bv_helpModal').modal({
+        backdrop: "static"
+      });
+      return this.$('.bv_helpModal').modal("show");
     };
 
     return GeneIDQueryAppController;
