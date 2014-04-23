@@ -14,6 +14,271 @@
 
   })(Backbone.Model);
 
+  window.DoseResponsePlotController = (function(_super) {
+    __extends(DoseResponsePlotController, _super);
+
+    function DoseResponsePlotController() {
+      this.initJSXGraph = __bind(this.initJSXGraph, this);
+      this.render = __bind(this.render, this);
+      return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
+    }
+
+    DoseResponsePlotController.prototype.template = _.template($("#DoseResponsePlotView").html());
+
+    DoseResponsePlotController.prototype.initialize = function() {
+      return this.pointList = [];
+    };
+
+    DoseResponsePlotController.prototype.render = function() {
+      this.$el.empty();
+      this.$el.html(this.template());
+      if (this.model != null) {
+        this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
+        this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
+        return this;
+      } else {
+        return this.$el.html("Plot data not loaded");
+      }
+    };
+
+    DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
+      var brd, createSelection, fct, flag, getMouseCoords, ii, log10, p1, t, x, y;
+      log10 = function(val) {
+        return Math.log(val) / Math.LN10;
+      };
+      if (typeof brd === "undefined") {
+        brd = JXG.JSXGraph.initBoard(divID, {
+          boundingbox: plotWindow,
+          axis: false,
+          showCopyright: false,
+          zoom: {
+            wheel: true
+          }
+        });
+        brd.getKnockoutReason = function() {
+          var reason;
+          reason = prompt("Please enter a reason", "Outlier");
+          return reason;
+        };
+        brd.model = this.model;
+        ii = 0;
+        while (ii < points.length) {
+          x = log10(points[ii].dose);
+          y = points[ii].response;
+          flag = points[ii].flag;
+          if (flag !== "NA") {
+            p1 = brd.create("point", [x, y], {
+              name: points[ii].response_sv_id,
+              fixed: true,
+              size: 4,
+              face: "cross",
+              strokecolor: "gray",
+              withLabel: false
+            });
+          } else {
+            p1 = brd.create("point", [x, y], {
+              name: points[ii].response_sv_id,
+              fixed: true,
+              size: 4,
+              face: "circle",
+              strokecolor: "blue",
+              withLabel: false
+            });
+          }
+          p1.idx = ii;
+          p1.isDoseResponsePoint = true;
+          p1.isSelected = false;
+          p1.knockOutPoint = function(reason) {
+            this.setAttribute({
+              strokecolor: "gray",
+              face: "cross"
+            });
+            points[this.idx].flag = reason;
+            return brd.model.set({
+              points: points
+            });
+          };
+          p1.includePoint = function() {
+            this.setAttribute({
+              strokecolor: "blue",
+              face: "circle"
+            });
+            points[this.idx].flag = "NA";
+            return brd.model.set({
+              points: points
+            });
+          };
+          p1.handlePointClicked = function() {
+            var reason;
+            if (points[this.idx].flag === "NA") {
+              reason = brd.getKnockoutReason();
+              this.knockOutPoint(reason);
+            } else {
+              this.includePoint();
+            }
+            brd.model.set({
+              points: points
+            });
+            brd.model.trigger('change');
+          };
+          p1.xLabel = JXG.trunc(points[ii].dose, 4);
+          p1.on("mouseup", p1.handlePointClicked, p1);
+          this.pointList.push(p1);
+          brd.highlightInfobox = function(x, y, el) {
+            brd.infobox.setText("(" + el.xLabel + ", " + y + ")");
+          };
+          ii++;
+        }
+        x = brd.create("line", [[0, 0], [1, 0]], {
+          strokeColor: "#888888"
+        });
+        y = brd.create("axis", [[plotWindow[0], 0], [plotWindow[0], 1]]);
+        x.isDraggable = false;
+        t = brd.create("ticks", [x, 1], {
+          drawLabels: true,
+          drawZero: true,
+          generateLabelValue: function(tick) {
+            p1 = this.line.point1;
+            return Math.pow(10, tick.usrCoords[1] - p1.coords.usrCoords[1]);
+          }
+        });
+      } else {
+        if (typeof window.curve !== "undefined") {
+          brd.removeObject(window.curve);
+        }
+      }
+      if (curve != null) {
+        if (curve.type === "LL.4") {
+          fct = function(x) {
+            return curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10, x) / curve.ec50)));
+          };
+          brd.create('functiongraph', [fct, -3, 20], {
+            strokeWidth: 2
+          });
+        }
+      }
+      getMouseCoords = function(e) {
+        var absPos, cPos, dx, dy;
+        cPos = brd.getCoordsTopLeftCorner(e);
+        absPos = JXG.getPosition(e);
+        dx = absPos[0] - cPos[0];
+        dy = absPos[1] - cPos[1];
+        return new JXG.Coords(JXG.COORDS_BY_SCREEN, [dx, dy], brd);
+      };
+      createSelection = function(e) {
+        var a, b, c, coords, d, selection;
+        if (brd.elementsByName.selection == null) {
+          coords = getMouseCoords(e);
+          a = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
+            name: 'selectionA',
+            withLabel: false,
+            visible: false,
+            fixed: false
+          });
+          b = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
+            name: 'selectionB',
+            visible: false,
+            fixed: true
+          });
+          c = brd.create('point', ["X(selectionA)", coords.usrCoords[2]], {
+            name: 'selectionC',
+            visible: false
+          });
+          d = brd.create('point', [coords.usrCoords[1], "Y(selectionA)"], {
+            name: 'selectionD',
+            visible: false
+          });
+          selection = brd.create('polygon', [b, c, a, d], {
+            name: 'selection',
+            hasInnerPoints: true
+          });
+          selection.update = function() {
+            if (brd.elementsByName.selectionA.coords.usrCoords[2] < brd.elementsByName.selectionB.coords.usrCoords[2]) {
+              this.setAttribute({
+                fillcolor: 'red'
+              });
+              return selection.knockoutMode = true;
+            } else {
+              this.setAttribute({
+                fillcolor: '#00FF00'
+              });
+              return selection.knockoutMode = false;
+            }
+          };
+          selection.on('update', selection.update, selection);
+          brd.mouseUp = function() {
+            var knockoutMode, reason, selected;
+            selection = brd.elementsByName.selection;
+            if (selection != null) {
+              knockoutMode = selection.knockoutMode;
+              brd.removeObject(selection);
+              brd.removeObject(brd.elementsByName.selectionC);
+              brd.removeObject(brd.elementsByName.selectionD);
+              brd.removeObject(brd.elementsByName.selectionB);
+              brd.removeObject(brd.elementsByName.selectionA);
+              selected = selection.selected;
+              if (selected != null) {
+                if (selected.length > 0) {
+                  if (knockoutMode) {
+                    reason = brd.getKnockoutReason();
+                  }
+                  selected.forEach(function(point) {
+                    if (knockoutMode) {
+                      return point.knockOutPoint(reason);
+                    } else {
+                      return point.includePoint();
+                    }
+                  });
+                  return brd.model.trigger('change');
+                }
+              }
+            }
+          };
+          brd.on('mouseup', brd.mouseUp, brd);
+          brd.followSelection = function(e) {
+            var doseResponsePoints, north, northEast, northWest, selected, selectionCoords, sorted, south, southEast, southWest;
+            if (brd.elementsByName.selection) {
+              coords = getMouseCoords(e);
+              brd.elementsByName.selectionA.setPosition(JXG.COORDS_BY_USER, coords.usrCoords);
+              selection = brd.elementsByName.selection;
+              selection.update();
+              selectionCoords = [selection.vertices[0].coords.usrCoords, selection.vertices[1].coords.usrCoords, selection.vertices[2].coords.usrCoords, selection.vertices[3].coords.usrCoords];
+              sorted = _.sortBy(selection.vertices.slice(0, 4), function(vertex) {
+                return vertex.coords.usrCoords[2];
+              });
+              south = _.sortBy(sorted.slice(0, 2), function(vertex) {
+                return vertex.coords.usrCoords[1];
+              });
+              north = _.sortBy(sorted.slice(2, 4), function(vertex) {
+                return vertex.coords.usrCoords[1];
+              });
+              northWest = north[0].coords.usrCoords;
+              northEast = north[1].coords.usrCoords;
+              southWest = south[0].coords.usrCoords;
+              southEast = south[1].coords.usrCoords;
+              selected = [];
+              doseResponsePoints = _.where(brd.elementsByName, {
+                isDoseResponsePoint: true,
+                isSelected: false
+              });
+              doseResponsePoints.forEach(function(point) {
+                if (point.coords.usrCoords[1] > northWest[1] & point.coords.usrCoords[2] < northWest[2] & point.coords.usrCoords[1] < northEast[1] & point.coords.usrCoords[2] < northEast[2] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[2] > southWest[2] & point.coords.usrCoords[1] < southEast[1] & point.coords.usrCoords[2] > southWest[2]) {
+                  return selected.push(point);
+                }
+              });
+              return selection.selected = selected;
+            }
+          };
+          brd.on('mousemove', brd.followSelection, brd);
+        }
+      };
+      brd.on("down", createSelection);
+    };
+
+    return DoseResponsePlotController;
+
+  })(AbstractFormController);
+
   window.CurveDetail = (function(_super) {
     __extends(CurveDetail, _super);
 
@@ -23,7 +288,9 @@
       return CurveDetail.__super__.constructor.apply(this, arguments);
     }
 
-    CurveDetail.prototype.urlRoot = "/api/curve/detail";
+    CurveDetail.prototype.url = function() {
+      return "/api/curve/detail/" + this.id;
+    };
 
     CurveDetail.prototype.initialize = function() {
       return this.fixCompositeClasses();
@@ -47,6 +314,80 @@
     return CurveDetail;
 
   })(Backbone.Model);
+
+  window.CurveEditorController = (function(_super) {
+    __extends(CurveEditorController, _super);
+
+    function CurveEditorController() {
+      this.handleUpdateClicked = __bind(this.handleUpdateClicked, this);
+      this.handleResetClicked = __bind(this.handleResetClicked, this);
+      this.handleParametersChanged = __bind(this.handleParametersChanged, this);
+      this.handlePointsChanged = __bind(this.handlePointsChanged, this);
+      this.render = __bind(this.render, this);
+      return CurveEditorController.__super__.constructor.apply(this, arguments);
+    }
+
+    CurveEditorController.prototype.template = _.template($("#CurveEditorView").html());
+
+    CurveEditorController.prototype.events = {
+      'click .bv_reset': 'handleResetClicked',
+      'click .bv_update': 'handleUpdateClicked'
+    };
+
+    CurveEditorController.prototype.render = function() {
+      this.$el.empty();
+      this.$el.html(this.template());
+      if (this.model != null) {
+        this.drapc = new DoseResponseAnalysisParametersController({
+          model: this.model.get('fitSettings'),
+          el: this.$('.bv_analysisParameterForm')
+        });
+        this.drapc.render();
+        this.drapc.model.on("change", this.handleParametersChanged);
+        this.drpc = new DoseResponsePlotController({
+          model: new Backbone.Model(this.model.get('plotData')),
+          el: this.$('.bv_plotWindowWrapper')
+        });
+        this.drpc.render();
+        this.drpc.model.on("change", this.handlePointsChanged);
+        this.$('.bv_reportedValues').html(this.model.get('reportedValues'));
+        this.$('.bv_fitSummary').html(this.model.get('fitSummary'));
+        this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));
+        this.$('.bv_curveErrors').html(this.model.get('curveErrors'));
+        return this.$('.bv_category').html(this.model.get('category'));
+      } else {
+        return this.$el.html("No curve selected");
+      }
+    };
+
+    CurveEditorController.prototype.setModel = function(model) {
+      this.model = model;
+      this.render();
+      return this.model.on('sync', this.render);
+    };
+
+    CurveEditorController.prototype.handlePointsChanged = function() {
+      return this.model.save();
+    };
+
+    CurveEditorController.prototype.handleParametersChanged = function() {
+      return this.model.save();
+    };
+
+    CurveEditorController.prototype.handleResetClicked = function() {
+      return this.model.fetch();
+    };
+
+    CurveEditorController.prototype.handleUpdateClicked = function() {
+      return this.model.save({
+        persist: true,
+        user: window.AppLaunchParams.loginUserName
+      });
+    };
+
+    return CurveEditorController;
+
+  })(Backbone.View);
 
   window.CurveList = (function(_super) {
     __extends(CurveList, _super);
@@ -268,315 +609,6 @@
     return CurveSummaryListController;
 
   })(Backbone.View);
-
-  window.CurveEditorController = (function(_super) {
-    __extends(CurveEditorController, _super);
-
-    function CurveEditorController() {
-      this.render = __bind(this.render, this);
-      return CurveEditorController.__super__.constructor.apply(this, arguments);
-    }
-
-    CurveEditorController.prototype.template = _.template($("#CurveEditorView").html());
-
-    CurveEditorController.prototype.render = function() {
-      this.$el.empty();
-      this.$el.html(this.template());
-      if (this.model != null) {
-        this.drapc = new DoseResponseAnalysisParametersController({
-          model: this.model.get('fitSettings'),
-          el: this.$('.bv_analysisParameterForm')
-        });
-        this.drapc.render();
-        this.drpc = new DoseResponsePlotController({
-          model: new Backbone.Model(this.model.get('plotData')),
-          el: this.$('.bv_plotWindowWrapper')
-        });
-        this.drpc.render();
-        this.$('.bv_reportedValues').html(this.model.get('reportedValues'));
-        this.$('.bv_fitSummary').html(this.model.get('fitSummary'));
-        this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));
-        this.$('.bv_curveErrors').html(this.model.get('curveErrors'));
-        return this.$('.bv_category').html(this.model.get('category'));
-      } else {
-        return this.$el.html("No curve selected");
-      }
-    };
-
-    CurveEditorController.prototype.setModel = function(model) {
-      this.model = model;
-      return this.render();
-    };
-
-    return CurveEditorController;
-
-  })(Backbone.View);
-
-  window.DoseResponsePlotController = (function(_super) {
-    __extends(DoseResponsePlotController, _super);
-
-    function DoseResponsePlotController() {
-      this.handlePointsChanged = __bind(this.handlePointsChanged, this);
-      this.render = __bind(this.render, this);
-      return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
-    }
-
-    DoseResponsePlotController.prototype.template = _.template($("#DoseResponsePlotView").html());
-
-    DoseResponsePlotController.prototype.render = function() {
-      this.$el.empty();
-      this.$el.html(this.template());
-      if (this.model != null) {
-        this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
-        this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
-        this.model.on("change", this.handlePointsChanged);
-        return this;
-      } else {
-        return this.$el.html("Plot data not loaded");
-      }
-    };
-
-    DoseResponsePlotController.prototype.handlePointsChanged = function() {
-      return console.log(this.model.get('points'));
-    };
-
-    DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var brd, createSelection, fct, flag, getKnockoutReason, getMouseCoords, ii, log10, p1, t, x, y;
-      log10 = function(val) {
-        return Math.log(val) / Math.LN10;
-      };
-      if (typeof brd === "undefined") {
-        brd = JXG.JSXGraph.initBoard(divID, {
-          boundingbox: plotWindow,
-          axis: false,
-          showCopyright: false,
-          zoom: {
-            wheel: true
-          }
-        });
-        ii = 0;
-        while (ii < points.length) {
-          x = log10(points[ii].dose);
-          y = points[ii].response;
-          flag = points[ii].flag;
-          if (flag !== "NA") {
-            p1 = brd.create("point", [x, y], {
-              name: points[ii].response_sv_id,
-              fixed: true,
-              size: 4,
-              face: "cross",
-              strokecolor: "gray",
-              withLabel: false
-            });
-          } else {
-            p1 = brd.create("point", [x, y], {
-              name: points[ii].response_sv_id,
-              fixed: true,
-              size: 4,
-              face: "circle",
-              strokecolor: "blue",
-              withLabel: false
-            });
-          }
-          brd.model = this.model;
-          p1.idx = ii;
-          p1.isDoseResponsePoint = true;
-          p1.isSelected = false;
-          p1.knockOutPoint = function(reason) {
-            this.setAttribute({
-              strokecolor: "gray",
-              face: "cross"
-            });
-            points[this.idx].flag = reason;
-            return brd.model.set({
-              points: points
-            });
-          };
-          p1.includePoint = function() {
-            this.setAttribute({
-              strokecolor: "blue",
-              face: "circle"
-            });
-            points[this.idx].flag = "NA";
-            return brd.model.set({
-              points: points
-            });
-          };
-          p1.handlePointClicked = function() {
-            var reason;
-            if (points[this.idx].flag === "NA") {
-              reason = getKnockoutReason();
-              this.knockOutPoint(reason);
-            } else {
-              this.includePoint();
-            }
-            brd.model.set({
-              points: points
-            });
-            brd.model.trigger('change');
-          };
-          p1.xLabel = JXG.trunc(points[ii].dose, 4);
-          p1.on("mouseup", p1.handlePointClicked, p1);
-          brd.highlightInfobox = function(x, y, el) {
-            brd.infobox.setText("(" + el.xLabel + ", " + y + ")");
-          };
-          ii++;
-        }
-        x = brd.create("line", [[0, 0], [1, 0]], {
-          strokeColor: "#888888"
-        });
-        y = brd.create("axis", [[plotWindow[0], 0], [plotWindow[0], 1]]);
-        x.isDraggable = false;
-        t = brd.create("ticks", [x, 1], {
-          drawLabels: true,
-          drawZero: true,
-          generateLabelValue: function(tick) {
-            p1 = this.line.point1;
-            return Math.pow(10, tick.usrCoords[1] - p1.coords.usrCoords[1]);
-          }
-        });
-      } else {
-        if (typeof window.curve !== "undefined") {
-          brd.removeObject(window.curve);
-        }
-      }
-      if (curve != null) {
-        if (curve.type === "LL.4") {
-          fct = function(x) {
-            return curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10, x) / curve.ec50)));
-          };
-          brd.create('functiongraph', [fct, -3, 20], {
-            strokeWidth: 2
-          });
-        }
-      }
-      getKnockoutReason = function() {
-        var reason;
-        reason = prompt("Please enter a reason", "Outlier");
-        return reason;
-      };
-      getMouseCoords = function(e) {
-        var absPos, cPos, dx, dy;
-        cPos = brd.getCoordsTopLeftCorner(e);
-        absPos = JXG.getPosition(e);
-        dx = absPos[0] - cPos[0];
-        dy = absPos[1] - cPos[1];
-        return new JXG.Coords(JXG.COORDS_BY_SCREEN, [dx, dy], brd);
-      };
-      createSelection = function(e) {
-        var a, b, c, coords, d, selection;
-        if (brd.elementsByName.selection == null) {
-          coords = getMouseCoords(e);
-          a = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
-            name: 'selectionA',
-            withLabel: false,
-            visible: false,
-            fixed: false
-          });
-          b = brd.create('point', [coords.usrCoords[1], coords.usrCoords[2]], {
-            name: 'selectionB',
-            visible: false,
-            fixed: true
-          });
-          c = brd.create('point', ["X(selectionA)", coords.usrCoords[2]], {
-            name: 'selectionC',
-            visible: false
-          });
-          d = brd.create('point', [coords.usrCoords[1], "Y(selectionA)"], {
-            name: 'selectionD',
-            visible: false
-          });
-          selection = brd.create('polygon', [b, c, a, d], {
-            name: 'selection',
-            hasInnerPoints: true
-          });
-          selection.update = function() {
-            if (brd.elementsByName.selectionA.coords.usrCoords[2] < brd.elementsByName.selectionB.coords.usrCoords[2]) {
-              this.setAttribute({
-                fillcolor: 'red'
-              });
-              return selection.knockoutMode = true;
-            } else {
-              this.setAttribute({
-                fillcolor: '#00FF00'
-              });
-              return selection.knockoutMode = false;
-            }
-          };
-          selection.on('update', selection.update, selection);
-          brd.mouseUp = function() {
-            var knockoutMode, reason, selected;
-            selection = brd.elementsByName.selection;
-            if (selection != null) {
-              knockoutMode = selection.knockoutMode;
-              console.log(knockoutMode);
-              brd.removeObject(selection);
-              brd.removeObject(brd.elementsByName.selectionC);
-              brd.removeObject(brd.elementsByName.selectionD);
-              brd.removeObject(brd.elementsByName.selectionB);
-              brd.removeObject(brd.elementsByName.selectionA);
-              selected = selection.selected;
-              if (selected != null) {
-                if (selected.length > 0) {
-                  if (knockoutMode) {
-                    reason = getKnockoutReason();
-                  }
-                  selected.forEach(function(point) {
-                    if (knockoutMode) {
-                      return point.knockOutPoint(reason);
-                    } else {
-                      return point.includePoint();
-                    }
-                  });
-                  return brd.model.trigger('change');
-                }
-              }
-            }
-          };
-          brd.on('mouseup', brd.mouseUp, brd);
-          brd.followSelection = function(e) {
-            var doseResponsePoints, north, northEast, northWest, selected, selectionCoords, sorted, south, southEast, southWest;
-            if (brd.elementsByName.selection) {
-              coords = getMouseCoords(e);
-              brd.elementsByName.selectionA.setPosition(JXG.COORDS_BY_USER, coords.usrCoords);
-              selection = brd.elementsByName.selection;
-              selection.update();
-              selectionCoords = [selection.vertices[0].coords.usrCoords, selection.vertices[1].coords.usrCoords, selection.vertices[2].coords.usrCoords, selection.vertices[3].coords.usrCoords];
-              sorted = _.sortBy(selection.vertices.slice(0, 4), function(vertex) {
-                return vertex.coords.usrCoords[2];
-              });
-              south = _.sortBy(sorted.slice(0, 2), function(vertex) {
-                return vertex.coords.usrCoords[1];
-              });
-              north = _.sortBy(sorted.slice(2, 4), function(vertex) {
-                return vertex.coords.usrCoords[1];
-              });
-              northWest = north[0].coords.usrCoords;
-              northEast = north[1].coords.usrCoords;
-              southWest = south[0].coords.usrCoords;
-              southEast = south[1].coords.usrCoords;
-              selected = [];
-              doseResponsePoints = _.where(brd.elementsByName, {
-                isDoseResponsePoint: true,
-                isSelected: false
-              });
-              doseResponsePoints.forEach(function(point) {
-                if (point.coords.usrCoords[1] > northWest[1] & point.coords.usrCoords[2] < northWest[2] & point.coords.usrCoords[1] < northEast[1] & point.coords.usrCoords[2] < northEast[2] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[2] > southWest[2] & point.coords.usrCoords[1] < southEast[1] & point.coords.usrCoords[2] > southWest[2]) {
-                  return selected.push(point);
-                }
-              });
-              return selection.selected = selected;
-            }
-          };
-          brd.on('mousemove', brd.followSelection, brd);
-        }
-      };
-      brd.on("down", createSelection);
-    };
-
-    return DoseResponsePlotController;
-
-  })(AbstractFormController);
 
   window.CurveCuratorController = (function(_super) {
     __extends(CurveCuratorController, _super);

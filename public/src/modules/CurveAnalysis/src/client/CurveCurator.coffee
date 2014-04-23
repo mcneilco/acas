@@ -1,7 +1,223 @@
 class window.Curve extends Backbone.Model
 
+class window.DoseResponsePlotController extends AbstractFormController
+	template: _.template($("#DoseResponsePlotView").html())
+	initialize: ->
+		@pointList = []
+	render: =>
+		@$el.empty()
+		@$el.html @template()
+		if @model?
+			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
+			#			@model.on "change", @handlePointsChanged
+			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
+			@
+		else
+			@$el.html "Plot data not loaded"
+
+	initJSXGraph: (points, curve, plotWindow, divID) =>
+		log10 = (val) ->
+			Math.log(val) / Math.LN10
+		if typeof (brd) is "undefined"
+			brd = JXG.JSXGraph.initBoard(divID,
+				boundingbox: plotWindow
+				axis: false #we do this later (log axis reasons)
+				showCopyright: false
+				zoom : {
+					wheel: true
+				},
+			)
+			brd.getKnockoutReason = ->
+				reason = prompt("Please enter a reason","Outlier");
+				return reason
+
+			brd.model = @model
+
+			ii = 0
+			while ii < points.length
+				#console.log "Original: " + points.dose[ii] + ", Log: " + Math.log(points.dose[ii], 10)
+				x = log10 points[ii].dose
+				y = points[ii].response
+				flag = points[ii].flag
+				if flag != "NA"
+					p1 = brd.create("point", [x,y],
+						name: points[ii].response_sv_id
+						fixed: true
+						size: 4
+						face: "cross"
+						strokecolor: "gray"
+						withLabel: false
+					)
+				else
+					p1 = brd.create("point", [x,y],
+						name: points[ii].response_sv_id
+						fixed: true
+						size: 4
+						face: "circle"
+						strokecolor: "blue"
+						withLabel: false
+
+					)
+
+				p1.idx = ii
+				p1.isDoseResponsePoint = true
+				p1.isSelected = false
+				p1.knockOutPoint = (reason) ->
+					@setAttribute
+						strokecolor: "gray"
+						face: "cross"
+					points[@idx].flag = reason
+					brd.model.set points: points
+				p1.includePoint = ->
+					@setAttribute
+						strokecolor: "blue"
+						face: "circle"
+					points[@idx].flag = "NA"
+					brd.model.set points: points
+				p1.handlePointClicked = ->
+					unless points[@idx].flag != "NA"
+						reason = brd.getKnockoutReason()
+						@knockOutPoint reason
+					else
+						@includePoint()
+					brd.model.set points: points
+
+					brd.model.trigger 'change'
+					return
+
+				p1.xLabel = JXG.trunc(points[ii].dose, 4)
+				p1.on "mouseup", p1.handlePointClicked, p1
+				@pointList.push p1
+				brd.highlightInfobox = (x, y, el) ->
+
+					#brd.infobox.setText('<img src="http://www.freesmileys.org/smileys/big/big-smiley-face.gif" alt="Smiley face" width="42" height="42">');
+					brd.infobox.setText "(" + el.xLabel + ", " + y + ")"
+					return
+				ii++
+			#			console.log @pointList
+			#			window.chicken = @pointList[0]
+			#			@pointList[0].handlePointClicked()
+			#			console.log @pointList[0]
+			x = brd.create("line", [
+				[0,0]
+				[1,0]
+			],
+				strokeColor: "#888888"
+			)
+			y = brd.create("axis", [
+				[plotWindow[0], 0]
+				[plotWindow[0], 1]
+			])
+			x.isDraggable = false
+
+			# create the tick markers for the axis
+			t = brd.create("ticks", [x,1],
+				# yes, show the labels
+				drawLabels: true
+			# yes, show the tick marker at zero (or, in this case: 1)
+				drawZero: true
+				generateLabelValue: (tick) ->
+					# get the first defining point of the axis
+					p1 = @line.point1
+					# this works for the x-axis, for the y-axis you'll have to use usrCoords[2] (usrCoords[0] is the z-coordinate).
+					#Xaxis in log scale
+					Math.pow 10, tick.usrCoords[1] - p1.coords.usrCoords[1]
+			)
+
+		else
+			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
+
+		if curve?
+			if curve.type == "LL.4"
+				fct = (x) ->
+					curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
+				#drawMin + (drawMax - drawMin) / (1 + exp(-drawHill * log(x / drawEC50)))
+				brd.create('functiongraph', [fct, -3, 20], {strokeWidth:2});
+
+		getMouseCoords = (e) ->
+			cPos = brd.getCoordsTopLeftCorner(e)
+			absPos = JXG.getPosition(e)
+			dx = absPos[0] - cPos[0]
+			dy = absPos[1] - cPos[1]
+			new JXG.Coords(JXG.COORDS_BY_SCREEN, [
+				dx
+				dy
+			], brd)
+		createSelection = (e) ->
+			if !brd.elementsByName.selection?
+				coords = getMouseCoords(e)
+				a = brd.create 'point', [coords.usrCoords[1],coords.usrCoords[2]], {name:'selectionA', withLabel:false, visible:false, fixed:false}
+				b = brd.create 'point', [coords.usrCoords[1],coords.usrCoords[2]], {name:'selectionB', visible:false, fixed:true}
+				c = brd.create 'point', ["X(selectionA)",coords.usrCoords[2]], {name:'selectionC', visible:false}
+				d = brd.create 'point', [coords.usrCoords[1],"Y(selectionA)"], {name:'selectionD', visible:false}
+				selection = brd.create 'polygon', [b, c, a, d], {name: 'selection', hasInnerPoints: true}
+				selection.update = ->
+					if brd.elementsByName.selectionA.coords.usrCoords[2] < brd.elementsByName.selectionB.coords.usrCoords[2]
+						@setAttribute
+							fillcolor: 'red'
+						selection.knockoutMode = true
+					else
+						@setAttribute
+							fillcolor: '#00FF00'
+						selection.knockoutMode = false
+				selection.on 'update', selection.update, selection
+				#p1.on "mouseup", brd.removeObject(brd.elementsByName.selection)
+				brd.mouseUp = ->
+					selection = brd.elementsByName.selection
+					if selection?
+						knockoutMode = selection.knockoutMode
+						brd.removeObject(selection)
+						brd.removeObject(brd.elementsByName.selectionC)
+						brd.removeObject(brd.elementsByName.selectionD)
+						brd.removeObject(brd.elementsByName.selectionB)
+						brd.removeObject(brd.elementsByName.selectionA)
+						selected = selection.selected
+						if selected?
+							if selected.length > 0
+								if knockoutMode
+									reason = brd.getKnockoutReason()
+								selected.forEach (point) ->
+									if knockoutMode
+										point.knockOutPoint(reason)
+									else
+										point.includePoint()
+								brd.model.trigger 'change'
+
+				brd.on 'mouseup', brd.mouseUp, brd
+				brd.followSelection = (e) ->
+					if brd.elementsByName.selection
+						coords = getMouseCoords(e)
+						brd.elementsByName.selectionA.setPosition(JXG.COORDS_BY_USER, coords.usrCoords)
+						selection = brd.elementsByName.selection
+						selection.update()
+						selectionCoords = [selection.vertices[0].coords.usrCoords,
+						                   selection.vertices[1].coords.usrCoords,
+						                   selection.vertices[2].coords.usrCoords,
+						                   selection.vertices[3].coords.usrCoords]
+						#Sort by response desc (south is on the top)
+						sorted = _.sortBy selection.vertices.slice(0,4), (vertex) -> vertex.coords.usrCoords[2]
+						#Sort north and south by response (order will then be 0 = west 1 = east)
+						south = _.sortBy sorted.slice(0,2), (vertex) -> vertex.coords.usrCoords[1]
+						north = _.sortBy sorted.slice(2,4), (vertex) -> vertex.coords.usrCoords[1]
+						northWest = north[0].coords.usrCoords
+						northEast = north[1].coords.usrCoords
+						southWest = south[0].coords.usrCoords
+						southEast = south[1].coords.usrCoords
+						selected = []
+						doseResponsePoints = _.where(brd.elementsByName, {isDoseResponsePoint: true, isSelected: false})
+						doseResponsePoints.forEach (point) ->
+							if point.coords.usrCoords[1] > northWest[1] & point.coords.usrCoords[2] < northWest[2] & point.coords.usrCoords[1] < northEast[1] & point.coords.usrCoords[2] < northEast[2] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[2] > southWest[2] & point.coords.usrCoords[1] < southEast[1] & point.coords.usrCoords[2] > southWest[2]
+								selected.push(point)
+						selection.selected = selected
+
+				brd.on 'mousemove', brd.followSelection, brd
+				return
+		brd.on "down", createSelection
+		return
+
 class window.CurveDetail extends Backbone.Model
-	urlRoot: "/api/curve/detail"
+	url: ->
+		return "/api/curve/detail/" + @id
 	initialize: ->
 		@fixCompositeClasses()
 	fixCompositeClasses: =>
@@ -11,6 +227,55 @@ class window.CurveDetail extends Backbone.Model
 		if resp.fitSettings not instanceof DoseResponseAnalysisParameters
 			resp.fitSettings = new DoseResponseAnalysisParameters(resp.fitSettings)
 		return resp
+
+class window.CurveEditorController extends Backbone.View
+	template: _.template($("#CurveEditorView").html())
+	events:
+		'click .bv_reset': 'handleResetClicked'
+		'click .bv_update': 'handleUpdateClicked'
+
+	render: =>
+		@$el.empty()
+		@$el.html @template()
+		if @model?
+			@drapc = new DoseResponseAnalysisParametersController
+				model: @model.get('fitSettings')
+				el: @$('.bv_analysisParameterForm')
+			@drapc.render()
+
+			@drapc.model.on "change", @handleParametersChanged
+
+			@drpc = new DoseResponsePlotController
+				model: new Backbone.Model @model.get('plotData')
+				el: @$('.bv_plotWindowWrapper')
+			@drpc.render()
+
+			@drpc.model.on "change", @handlePointsChanged
+
+			@$('.bv_reportedValues').html @model.get('reportedValues')
+			@$('.bv_fitSummary').html @model.get('fitSummary')
+			@$('.bv_parameterStdErrors').html @model.get('parameterStdErrors')
+			@$('.bv_curveErrors').html @model.get('curveErrors')
+			@$('.bv_category').html @model.get('category')
+		else
+			@$el.html "No curve selected"
+
+	setModel: (model)->
+		@model = model
+		@render()
+		@model.on 'sync', @render
+
+	handlePointsChanged: =>
+		@model.save()
+
+	handleParametersChanged: =>
+		@model.save()
+
+	handleResetClicked: =>
+		@model.fetch()
+
+	handleUpdateClicked: =>
+		@model.save({persist: true, user: window.AppLaunchParams.loginUserName})
 
 class window.CurveList extends Backbone.Collection
 	model: Curve
@@ -138,252 +403,6 @@ class window.CurveSummaryListController extends Backbone.View
 		@sortAscending = ascending
 		@render()
 
-
-
-class window.CurveEditorController extends Backbone.View
-	template: _.template($("#CurveEditorView").html())
-
-	render: =>
-		@$el.empty()
-		@$el.html @template()
-		if @model?
-			@drapc = new DoseResponseAnalysisParametersController
-				model: @model.get('fitSettings')
-				el: @$('.bv_analysisParameterForm')
-			@drapc.render()
-
-			@drpc = new DoseResponsePlotController
-				model: new Backbone.Model @model.get('plotData')
-				el: @$('.bv_plotWindowWrapper')
-			@drpc.render()
-
-			@$('.bv_reportedValues').html @model.get('reportedValues')
-			@$('.bv_fitSummary').html @model.get('fitSummary')
-			@$('.bv_parameterStdErrors').html @model.get('parameterStdErrors')
-			@$('.bv_curveErrors').html @model.get('curveErrors')
-			@$('.bv_category').html @model.get('category')
-		else
-			@$el.html "No curve selected"
-
-	setModel: (model)->
-		@model = model
-		@render()
-
-class window.DoseResponsePlotController extends AbstractFormController
-	template: _.template($("#DoseResponsePlotView").html())
-	render: =>
-		@$el.empty()
-		@$el.html @template()
-		if @model?
-			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
-			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
-			@model.on "change", @handlePointsChanged
-			@
-		else
-			@$el.html "Plot data not loaded"
-
-	handlePointsChanged: =>
-		console.log @model.get('points')
-
-
-	initJSXGraph: (points, curve, plotWindow, divID) ->
-		log10 = (val) ->
-			Math.log(val) / Math.LN10
-
-		if typeof (brd) is "undefined"
-			brd =JXG.JSXGraph.initBoard(divID,
-				boundingbox: plotWindow
-				axis: false #we do this later (log axis reasons)
-				showCopyright: false
-				zoom : {
-					wheel: true
-				},
-			)
-			ii = 0
-			while ii < points.length
-				#console.log "Original: " + points.dose[ii] + ", Log: " + Math.log(points.dose[ii], 10)
-				x = log10 points[ii].dose
-				y = points[ii].response
-				flag = points[ii].flag
-				if flag != "NA"
-					p1 = brd.create("point", [
-						x
-						y
-					],
-						name: points[ii].response_sv_id
-						fixed: true
-						size: 4
-						face: "cross"
-						strokecolor: "gray"
-						withLabel: false
-					)
-				else
-					p1 = brd.create("point", [x,y],
-						name: points[ii].response_sv_id
-						fixed: true
-						size: 4
-						face: "circle"
-						strokecolor: "blue"
-						withLabel: false
-
-					)
-				brd.model = @model
-				p1.idx = ii
-				p1.isDoseResponsePoint = true
-				p1.isSelected = false
-				p1.knockOutPoint = (reason) ->
-					@setAttribute
-						strokecolor: "gray"
-						face: "cross"
-					points[@idx].flag = reason
-					brd.model.set points: points
-				p1.includePoint = ->
-					@setAttribute
-						strokecolor: "blue"
-						face: "circle"
-					points[@idx].flag = "NA"
-					brd.model.set points: points
-				p1.handlePointClicked = ->
-					unless points[@idx].flag != "NA"
-						reason = getKnockoutReason()
-						@knockOutPoint reason
-					else
-						@includePoint()
-
-					brd.model.set points: points
-					#TODO make this a real model that we don't have to trigger a change event on
-					brd.model.trigger 'change'
-					return
-
-				p1.xLabel = JXG.trunc(points[ii].dose, 4)
-				p1.on "mouseup", p1.handlePointClicked, p1
-				brd.highlightInfobox = (x, y, el) ->
-
-					#brd.infobox.setText('<img src="http://www.freesmileys.org/smileys/big/big-smiley-face.gif" alt="Smiley face" width="42" height="42">');
-					brd.infobox.setText "(" + el.xLabel + ", " + y + ")"
-					return
-				ii++
-
-			x = brd.create("line", [
-				[0,0]
-				[1,0]
-			],
-				strokeColor: "#888888"
-			)
-			y = brd.create("axis", [
-				[plotWindow[0], 0]
-				[plotWindow[0], 1]
-			])
-			x.isDraggable = false
-
-			# create the tick markers for the axis
-			t = brd.create("ticks", [x,1],
-				# yes, show the labels
-				drawLabels: true
-			# yes, show the tick marker at zero (or, in this case: 1)
-				drawZero: true
-				generateLabelValue: (tick) ->
-					# get the first defining point of the axis
-					p1 = @line.point1
-					# this works for the x-axis, for the y-axis you'll have to use usrCoords[2] (usrCoords[0] is the z-coordinate).
-					#Xaxis in log scale
-					Math.pow 10, tick.usrCoords[1] - p1.coords.usrCoords[1]
-			)
-
-		else
-			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
-
-		if curve?
-			if curve.type == "LL.4"
-				fct = (x) ->
-					curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
-				#drawMin + (drawMax - drawMin) / (1 + exp(-drawHill * log(x / drawEC50)))
-				brd.create('functiongraph', [fct, -3, 20], {strokeWidth:2});
-		getKnockoutReason = ->
-			reason = prompt("Please enter a reason","Outlier");
-			return reason
-		getMouseCoords = (e) ->
-				cPos = brd.getCoordsTopLeftCorner(e)
-				absPos = JXG.getPosition(e)
-				dx = absPos[0] - cPos[0]
-				dy = absPos[1] - cPos[1]
-				new JXG.Coords(JXG.COORDS_BY_SCREEN, [
-					dx
-					dy
-				], brd)
-			createSelection = (e) ->
-				if !brd.elementsByName.selection?
-					coords = getMouseCoords(e)
-					a = brd.create 'point', [coords.usrCoords[1],coords.usrCoords[2]], {name:'selectionA', withLabel:false, visible:false, fixed:false}
-					b = brd.create 'point', [coords.usrCoords[1],coords.usrCoords[2]], {name:'selectionB', visible:false, fixed:true}
-					c = brd.create 'point', ["X(selectionA)",coords.usrCoords[2]], {name:'selectionC', visible:false}
-					d = brd.create 'point', [coords.usrCoords[1],"Y(selectionA)"], {name:'selectionD', visible:false}
-					selection = brd.create 'polygon', [b, c, a, d], {name: 'selection', hasInnerPoints: true}
-					selection.update = ->
-						if brd.elementsByName.selectionA.coords.usrCoords[2] < brd.elementsByName.selectionB.coords.usrCoords[2]
-							@setAttribute
-								fillcolor: 'red'
-							selection.knockoutMode = true
-						else
-							@setAttribute
-								fillcolor: '#00FF00'
-							selection.knockoutMode = false
-					selection.on 'update', selection.update, selection
-					#p1.on "mouseup", brd.removeObject(brd.elementsByName.selection)
-					brd.mouseUp = ->
-						selection = brd.elementsByName.selection
-						if selection?
-							knockoutMode = selection.knockoutMode
-							console.log knockoutMode
-							brd.removeObject(selection)
-							brd.removeObject(brd.elementsByName.selectionC)
-							brd.removeObject(brd.elementsByName.selectionD)
-							brd.removeObject(brd.elementsByName.selectionB)
-							brd.removeObject(brd.elementsByName.selectionA)
-							selected = selection.selected
-							if selected?
-								if selected.length > 0
-									if knockoutMode
-										reason = getKnockoutReason()
-									selected.forEach (point) ->
-										if knockoutMode
-											point.knockOutPoint(reason)
-										else
-											point.includePoint()
-									brd.model.trigger 'change'
-
-					brd.on 'mouseup', brd.mouseUp, brd
-					brd.followSelection = (e) ->
-						if brd.elementsByName.selection
-							coords = getMouseCoords(e)
-							brd.elementsByName.selectionA.setPosition(JXG.COORDS_BY_USER, coords.usrCoords)
-							selection = brd.elementsByName.selection
-							selection.update()
-							selectionCoords = [selection.vertices[0].coords.usrCoords,
-							                   selection.vertices[1].coords.usrCoords,
-							                   selection.vertices[2].coords.usrCoords,
-							                   selection.vertices[3].coords.usrCoords]
-							#Sort by response desc (south is on the top)
-							sorted = _.sortBy selection.vertices.slice(0,4), (vertex) -> vertex.coords.usrCoords[2]
-							#Sort north and south by response (order will then be 0 = west 1 = east)
-							south = _.sortBy sorted.slice(0,2), (vertex) -> vertex.coords.usrCoords[1]
-							north = _.sortBy sorted.slice(2,4), (vertex) -> vertex.coords.usrCoords[1]
-							northWest = north[0].coords.usrCoords
-							northEast = north[1].coords.usrCoords
-							southWest = south[0].coords.usrCoords
-							southEast = south[1].coords.usrCoords
-							selected = []
-							doseResponsePoints = _.where(brd.elementsByName, {isDoseResponsePoint: true, isSelected: false})
-							doseResponsePoints.forEach (point) ->
-								if point.coords.usrCoords[1] > northWest[1] & point.coords.usrCoords[2] < northWest[2] & point.coords.usrCoords[1] < northEast[1] & point.coords.usrCoords[2] < northEast[2] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[1] > southWest[1] & point.coords.usrCoords[2] > southWest[2] & point.coords.usrCoords[1] < southEast[1] & point.coords.usrCoords[2] > southWest[2]
-									selected.push(point)
-							selection.selected = selected
-
-					brd.on 'mousemove', brd.followSelection, brd
-					return
-			brd.on "down", createSelection
-		return
-
 class window.CurveCuratorController extends Backbone.View
 	template: _.template($("#CurveCuratorView").html())
 	events:
@@ -468,4 +487,3 @@ class window.CurveCuratorController extends Backbone.View
 			@$("input[name='bv_sortDirection']").prop('disabled', false);
 		sortDirection = if @$("input[name='bv_sortDirection']:checked").val() == "descending" then false else true
 		@curveListController.sort sortBy, sortDirection
-

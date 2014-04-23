@@ -243,7 +243,7 @@
           });
           return this.drpc.render();
         });
-        return describe("basic plot rendering", function() {
+        describe("basic plot rendering", function() {
           it("should load the template", function() {
             return expect(this.drpc.$('.bv_plotWindow').length).toEqual(1);
           });
@@ -252,6 +252,12 @@
           });
           return it("should render the points", function() {
             return console.log(this.drpc.$('.bv_plotWindow').html());
+          });
+        });
+        return describe("plotting of points and curve", function() {
+          return it("should plot points", function() {
+            console.log(this.drpc.$('.bv_plotWindow'));
+            return console.log(this.drpc.$('.bv_plotWindow'));
           });
         });
       });

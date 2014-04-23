@@ -174,6 +174,12 @@ describe "Curve Curator Module testing", ->
 					expect(@drpc.$('.bv_plotWindow').attr('id')).toEqual "bvID_plotWindow_" + @drpc.model.cid
 				it "should render the points", ->
 					console.log @drpc.$('.bv_plotWindow').html()
+			describe "plotting of points and curve", ->
+				it "should plot points", ->
+					console.log @drpc.$('.bv_plotWindow')
+					console.log @drpc.$('.bv_plotWindow')
+
+
 
 	describe "Curve Editor Controller tests", ->
 			beforeEach ->

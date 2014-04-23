@@ -2,7 +2,7 @@
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/curves/stubs/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs
 	app.get '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail
-	app.post '/api/curve/fit', loginRoutes.ensureAuthenticated, exports.refitCurve
+	app.put '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.refitCurve
 	app.get '/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex
 
 exports.getCurveStubs = (req, resp) ->
@@ -57,7 +57,24 @@ exports.refitCurve = (req, resp) ->
 		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveDetail
 	else
-		console.log 'not implemented yet'
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.rapache.fullpath+"/curve/detail"
+		request = require 'request'
+		console.log JSON.stringify req.body
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify req.body
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.end JSON.stringify json
+			else
+#				console.log 'got ajax error trying to refit curve'
+#				console.log error
+#				console.log json
+#				console.log response
+		)
 
 exports.curveCuratorIndex = (req, resp) ->
 	global.specRunnerTestmode = if global.stubsMode then true else false

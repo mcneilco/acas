@@ -2,7 +2,7 @@
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/curves/stubs/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs);
     app.get('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail);
-    app.post('/api/curve/fit', loginRoutes.ensureAuthenticated, exports.refitCurve);
+    app.put('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.refitCurve);
     return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
   };
 
@@ -66,12 +66,29 @@
   };
 
   exports.refitCurve = function(req, resp) {
-    var curveCuratorTestData;
+    var baseurl, config, curveCuratorTestData, request;
     if (global.specRunnerTestmode) {
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
     } else {
-      return console.log('not implemented yet');
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "/curve/detail";
+      request = require('request');
+      console.log(JSON.stringify(req.body));
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: JSON.stringify(req.body),
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return resp.end(JSON.stringify(json));
+          } else {
+
+          }
+        };
+      })(this));
     }
   };
 
