@@ -75,7 +75,8 @@ CASE
 	ELSE agv3.unit_kind
 END	
 AS tested_conc_unit, 
-agv.id AS agv_id, 
+agv.id AS agv_id,
+agv.ls_type as ls_type,
 agv.ls_kind as ls_kind, 
 agv.operator_kind, 
  CASE 
@@ -631,3 +632,8 @@ LEFT OUTER JOIN itx_subject_container isc ON isc.subject_id=s.id
 LEFT OUTER JOIN container c ON c.id = isc.container_id
 LEFT OUTER JOIN container_state cs ON cs.container_id = c.id
 LEFT OUTER JOIN container_value cv ON cv.container_state_id = cs.id;
+
+CREATE OR REPLACE VIEW api_experiment_results
+as
+select exp.code_name as expt_code_name, aagr.* from api_analysis_group_results aagr
+join experiment exp on aagr.experiment_id = exp.id;

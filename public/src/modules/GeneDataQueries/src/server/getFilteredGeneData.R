@@ -4,6 +4,95 @@ require('rjson')
 require('data.table')
 require('racas')
 
+
+### FUNCTIONS #####
+
+#' Returns a data.table with term names in one column and corresponding SQL statements in the other.
+#'
+#' @param searchFilters This is a list of filters from a JSON string.
+#' @return Outputs a data.table
+#' @keywords JSON SQL, Advanced Query
+#' @export
+getSQLFromJSONFilterList <- function(searchFilters) {
+
+  termsSQL <- data.table()
+  filterList <- 1
+    for (filterList in 1:length(searchFilters)) {
+      sqlQuery <- "(SELECT tested_lot FROM api_experiment_results WHERE "
+      if (!is.null(searchFilters[[filterList]]$termName)) {
+        termName <- searchFilters[[filterList]]$termName
+      } else {
+        stop("Filter termName not specified.")
+      }
+      if (!is.null(searchFilters[[filterList]]$experimentCode)) {
+        sqlQuery <- paste0(sqlQuery, "expt_code_name='", searchFilters[[filterList]]$experimentCode, "' AND")
+      }
+      if (!is.null(searchFilters[[filterList]]$lsKind)) {
+        sqlQuery <- paste0(sqlQuery, " ls_kind='", searchFilters[[filterList]]$lsKind, "' AND")
+      }
+
+      if (!is.null(searchFilters[[filterList]]$lsType)) {
+        sqlQuery <- paste0(sqlQuery, " ls_type='", searchFilters[[filterList]]$lsType, "' AND")
+      }
+
+      if (!is.null(searchFilters[[filterList]]$lsType) &&
+           !is.null(searchFilters[[filterList]]$operator) &&
+           !is.null(searchFilters[[filterList]]$filterValue)) {
+        if(searchFilters[[filterList]]$lsType == "numericValue") {
+          sqlQuery <- paste0(sqlQuery, " numeric_value", searchFilters[[filterList]]$operator, searchFilters[[filterList]]$filterValue, " AND")
+        } else {
+          stop(paste0("ls Type ", searchFilters[[filterList]]$lsType, " not defined yet"))
+        }
+      } else if (!is.null(searchFilters[[filterList]]$lsType) |
+                   !is.null(searchFilters[[filterList]]$operator) |
+                   !is.null(searchFilters[[filterList]]$filterValue)) {
+        stop("lsType/operator/filterValue not completely defined")
+      }
+
+      # checks to see if the query string ends with " AND"
+      if (substr(sqlQuery, start=nchar(sqlQuery)-3, stop=nchar(sqlQuery))==" AND") {
+        sqlQuery <- paste0(substr(sqlQuery, start=1, stop=nchar(sqlQuery)-4), ")")
+      } else {
+        sqlQuery <- paste0(sqlQuery, ")")
+      }
+      # print(sqlQuery)
+      # print(filterList)
+      # print(searchFilters[[filterList]])
+
+      termsSQL <- rbind(termsSQL, list(termName, sqlQuery))
+
+    }
+
+    setnames(termsSQL, colnames(termsSQL), c("tableTermName", "tableSQLQuery"))
+  return(termsSQL)
+}
+
+#' Returns a sqlString that can be used to query against a server.
+#'
+#' @param termsSQL This is a data.table with term names in one column and sql strings in the other.
+#' @param inputString This is an advanced query string. Example: '(Q1 and Q2) or (Q3 and Q4)'
+#' @return Outputs a sqlString
+#' @keywords JSON SQL, Advanced Query
+#' @export
+getFullSQLQuery <- function(termsSQL, sqlString) {
+  sqlString <- toupper(sqlString)
+
+  sqlString <- gsub(" AND ", " INTERSECT ", sqlString)
+  sqlString <- gsub(" OR ", " UNION ", sqlString)
+  sqlString <- gsub(" NOT ", " EXCEPT ", sqlString) # alternate SQL servers: s/except/minus
+
+  for (rowSubstitute in 1:nrow(termsSQL)) {
+    sqlString <- gsub(termsSQL[rowSubstitute, tableTermName], termsSQL[rowSubstitute, tableSQLQuery], sqlString)
+  }
+
+
+  return(sqlString)
+}
+
+
+### END FUNCTIONS #####
+
+
 if(is.null(GET$format)){
   exportCSV <- FALSE
 } else {
@@ -56,6 +145,12 @@ searchParams$batchCodeList <- batchCodeList
 searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
 searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
 searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter
+
+if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
+	termsSQL <- getSQLFromJSONFilterList(postData.list$queryParams$searchFilters$filters)
+	advancedSqlQuery <- getFullSQLQuery(termsSQL, postData.list$queryParams$searchFilters$advancedFilter)
+	searchParams$advancedFilterSQL <- advancedSqlQuery
+}
 
 
 dataCsv <- getURL(
