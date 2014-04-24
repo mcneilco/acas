@@ -220,7 +220,7 @@ if (nrow(dataDT) > 0){
   allColNamesDT <- as.data.table(allColNamesDF)
   allColNamesDT[ , sType := setType(lsType), by=list(lsKind, experimentId)]
   allColNamesDT[ , numberOfColumns := length(lsKind), by=list(experimentId)]
-  allColNamesDT[ , titleText := paste0(experimentCodeName, ": ", experimentName), by=list(experimentId)]
+  allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
   allColNamesDT$sClass <- "center"
   setnames(allColNamesDT, "lsKind", "sTitle")
   
