@@ -27,8 +27,8 @@
 # What to do when two runs are done on the same barcode?
 # request = fromJSON('{\"fileToParse\":\"serverOnlyModules/blueimp-file-upload-node/public/files/SinglePointRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\"}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
 # Confirmation
-# file.copy("public/src/modules/PrimaryScreen/spec/ConfirmationRegression.zip", "serverOnlyModules/blueimp-file-upload-node/public/files/ConfirmationRegression.zip", overwrite=T)
-# request = fromJSON('{\"fileToParse\":\"serverOnlyModules/blueimp-file-upload-node/public/files/ConfirmationRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"RD36882\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"DMSO\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"SUGAR\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":0.8,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"efficacy\\\"}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
+# file.copy("public/src/modules/PrimaryScreen/spec/ConfirmationRegression.zip", "privateUploads/ConfirmationRegression.zip", overwrite=T)
+# request = fromJSON('{\"fileToParse\":\"ConfirmationRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"RD36882\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"DMSO\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"SUGAR\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":0.8,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"efficacy\\\",\\\"aggregateReplicates\\\":\\\"within plates\\\"}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
 # runPrimaryAnalysis(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/PrimaryAnalysisFiles.zip",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=255259))
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
@@ -1151,8 +1151,13 @@ getExperimentParameters <- function(inputParameters) {
   #     $hitEfficacyThreshold
   #     $hitSDThreshold
   #     $thresholdType
+  #     $aggregateReplicates
   
   parameters <- fromJSON(inputParameters)
+  
+  if (is.null(parameters$aggregateReplicates)) {
+    parameters$aggregateReplicates<- "no"
+  }
   
   return(parameters)
 }
@@ -1227,6 +1232,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   folderToParse <- racas::getUploadedFilePath(folderToParse)
   
+  if (!file.exists(folderToParse)) {
+    stop("Input file not found")
+  }
+  
   require("data.table")
   
   if(!testMode) {
@@ -1238,7 +1247,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
   
   } else {
-    experiment <- list(codeName = "test")
+    experiment <- list(id = experimentId, codeName = "test")
   }
   
   if(!dryRun) {
@@ -1351,14 +1360,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                concentration = resultTable$concentration,
                                concUnit = resultTable$concUnit)
   
-  aggregateReplicates <- "within plates"
-  if (aggregateReplicates == "across plates") {
+  if (parameters$aggregateReplicates == "across plates") {
     treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
                                                 stDev = sd(values), n=length(values), 
                                                 sdScore = mean(sdScore), threshold = all(threshold),
                                                 latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
                                          by=list(batchName,fluorescent,concentration,concUnit,hasAgonist)]
-  } else if (aggregateReplicates == "within plates") {
+  } else if (parameters$aggregateReplicates == "within plates") {
     treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
                                                 stDev = sd(values), 
                                                 n=length(values),
@@ -1392,7 +1400,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   #analysisGroupData$threshold <- analysisGroupData$sdScore > parameters$hitSDThreshold & !analysisGroupData$fluorescent & analysisGroupData$wellType=="test"
   
-  if (aggregateReplicates == "no") {
+  if (parameters$aggregateReplicates == "no") {
   #     analysisGroupData$latePeak <- (analysisGroupData$overallMaxTime > 80) & 
   #       (analysisGroupData$groupMean > efficacyThreshold) & !analysisGroupData$fluorescent
   #     analysisGroupData$threshold <- analysisGroupData$groupMean > efficacyThreshold & !analysisGroupData$fluorescent & 
@@ -1429,7 +1437,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   outputTable$wellType <- NULL
   outputTable$hasAgonist <- NULL
   
-  if(aggregateReplicates == "no") {
+  if(parameters$aggregateReplicates == "no") {
     outputTable$"Well Hit" <- NULL
   }
   
@@ -1462,9 +1470,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   library('RCurl')
   row.names(outputTable) <- NULL
   outputTableReloadColumns <- as.data.frame(outputTable)[, c("Corporate Batch ID", "Hit")]
-  if (aggregateReplicates == "within plates") {
+  if (parameters$aggregateReplicates == "within plates") {
     uniqueString <- paste(outputTable$"Corporate Batch ID", outputTable$"Barcode", outputTable$"Well Type")
-  } else if (aggregateReplicates == "no") {
+  } else if (parameters$aggregateReplicates == "no") {
     uniqueString <- 1:nrow(outputTableReloadColumns)
   } else {
     uniqueString <- paste(outputTableReloadColumns$"Corporate Batch ID", outputTable$"Well Type")
@@ -1507,21 +1515,21 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #save(experiment, file="experiment.Rda")
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                              threshold = efficacyThreshold, experiment, dryRun)
-    summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
-                                         "/files/tmp/", 
+    summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$client.host, ":", client.port,
+                                         "/blueimpFiles/tmp/", 
                                          experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
     
     overrideLocation <- paste0("tmp/", experiment$codeName, "_OverrideDRAFT.csv")
     write.csv(userOverrideFrame, paste0(racas::getUploadedFilePath(overrideLocation)), 
               na = "", row.names=FALSE)
-    summaryInfo$info$"QC Entry" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
-                                         "/files/tmp/", 
+    summaryInfo$info$"QC Entry" <- paste0('<a href="', racas::applicationSettings$client.host, ":", client.port,
+                                         "/blueimpFiles/tmp/", 
                                          experiment$codeName,'_OverrideDRAFT.csv" target="_blank">QC Entry</a>')
     
     resultsLocation <- paste0("tmp/", experiment$codeName, "_ResultsDRAFT.csv")
     write.csv(outputTable, paste0(racas::getUploadedFilePath(resultsLocation)), row.names=FALSE)
-    summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
-                                         "/files/tmp/", 
+    summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$client.host, ":", client.port,
+                                         "/blueimpFiles/tmp/", 
                                          experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
   } else {
     if (!is.null(zipFile)) {
@@ -1533,7 +1541,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
-    
+    experiment <<- experiment
     deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath){
       response <- getURL(
         paste0(lsServerURL, "experiments/",experiment$id, "?with=analysisgroups"),
@@ -1601,7 +1609,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 }
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
-  require('racas')
+  library('racas')
   #save(request, file="request.Rda")
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
@@ -1613,7 +1621,6 @@ runPrimaryAnalysis <- function(request) {
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
-  testMode <- TRUE
   # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
   errorHandlingBox <- list(errorList = list())
   attach(errorHandlingBox)
