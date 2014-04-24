@@ -228,6 +228,7 @@ class window.ExperimentBaseController extends AbstractFormController
 	initialize: ->
 		@model.on 'sync', =>
 			@trigger 'amClean'
+			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
 			@render()
 		@model.on 'change', =>
@@ -238,7 +239,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_save').attr('disabled', 'disabled')
-		@setupProtocolSelect()
+		@setupProtocolSelect(@options.protocolFilter)
 		@setupProjectSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
@@ -271,13 +272,15 @@ class window.ExperimentBaseController extends AbstractFormController
 
 		@
 
-	setupProtocolSelect: ->
+	setupProtocolSelect: (protocolFilter) ->
+		unless protocolKindFilter?
+			protocolKindFilter = ""
 		if @model.get('protocol') != null
 			protocolCode = @model.get('protocol').get('codeName')
 		else
 			protocolCode = "unassigned"
 		@protocolList = new PickListList()
-		@protocolList.url = "/api/protocolCodes/filter/FLIPR"
+		@protocolList.url = "/api/protocolCodes/"+protocolFilter
 		@protocolListController = new PickListSelectController
 			el: @$('.bv_protocolCode')
 			collection: @protocolList
@@ -412,6 +415,7 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_updateComplete').html "Save Complete"
 		else
 			@$('.bv_updateComplete').html "Update Complete"
+		@$('.bv_saving').show()
 		@model.save()
 
 	validationError: =>

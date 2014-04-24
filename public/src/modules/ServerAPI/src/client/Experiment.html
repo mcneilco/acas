@@ -1,7 +1,7 @@
 <script type="text/template" id="ExperimentBaseView" xmlns="http://www.w3.org/1999/html">
 
 	<div class="span10">
-    <form class="form-horizontal">
+    <div class="form-horizontal">
         <div class="control-group">
             <label class="control-label"><i class="icon-lock bv_lock"></i> Status</label>
             <div class="controls">
@@ -26,10 +26,10 @@
                 <input class="bv_experimentName" style="width:336px;" type="text" placeholder="">
             </div>
         </div>
-    </form>
+    </div>
 
 
-    <form class="form-horizontal">
+    <div class="form-horizontal">
         <div class="control-group bv_group_recordedBy">
             <label class="control-label">*Scientist</label>
             <div class="controls">
@@ -49,11 +49,11 @@
 		        </div>
 		    </div>
 		</div>
-    </form>
+    </div>
 
 
 
-    <form class="form-horizontal">
+    <div class="form-horizontal">
         <div class="control-group bv_¡Code bv_group_protocolCode">
             <label class="control-label ">*Protocol</label>
             <div class="controls">
@@ -64,9 +64,9 @@
                 <button type="button" class="btn bv_useProtocolParameters hide" style="margin-top:5px;">Use Parameters</button>
             </div>
         </div>
-    </form>
+    </div>
 
-	<form class="form-horizontal">
+	<div class="form-horizontal">
 	    <div class="control-group bv_group_projectCode">
 	        <label class="control-label">*Project</label>
 	        <div class="controls">
@@ -85,7 +85,7 @@
                 <input class="bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
             </div>
         </div>
-	</form>
+	</div>
 
 	</div>
 
@@ -103,6 +103,7 @@
     <div>
         <button type="button" class="btn bv_save pull-left" style="margin-right:10px;">Save</button>
         <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;"></div>
+        <div class="bv_saving hide" style="padding-top:5px;color:red;">Saving...</div>
     </div>
 
 </script>

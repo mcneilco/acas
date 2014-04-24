@@ -1,22 +1,17 @@
 
 /* To install this Module
-1) Add these lines to app.coffee:
-	 * DocForBatches routes
-	docForBatchesRoutes = require './public/src/modules/DocForBatches/src/server/routes/DocForBatchesRoutes.js'
-	docForBatchesRoutes.setupRoutes(app)
-
-2) Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
+Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Annotate Batches with File", mainControllerClassName: "DocForBatchesController"}
  */
 
 (function() {
   var fixturesData;
 
-  exports.setupRoutes = function(app) {
-    app.get('/docForBatches/*', exports.docForBatchesIndex);
-    app.get('/docForBatches', exports.docForBatchesIndex);
-    app.get('/api/docForBatches/:id', exports.getDocForBatches);
-    return app.post('/api/docForBatches', exports.saveDocForBatches);
+  exports.setupRoutes = function(app, loginRoutes) {
+    app.get('/docForBatches/*', loginRoutes.ensureAuthenticated, exports.docForBatchesIndex);
+    app.get('/docForBatches', loginRoutes.ensureAuthenticated, exports.docForBatchesIndex);
+    app.get('/api/docForBatches/:id', loginRoutes.ensureAuthenticated, exports.getDocForBatches);
+    return app.post('/api/docForBatches', loginRoutes.ensureAuthenticated, exports.saveDocForBatches);
   };
 
   fixturesData = require('../public/src/modules/DocForBatches/spec/testFixtures/testJSON.js');

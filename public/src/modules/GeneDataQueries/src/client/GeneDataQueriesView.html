@@ -7,20 +7,25 @@
 		        <div class="lead pull-left bv_gidACASBadgeTop">ACAS</div>
 	            <input type="text" class="span4 bv_gidListString" placeholder="Search by gene IDs..." />
                 <button type="button" class="btn btn-primary bv_search">Search</button>
+                <button type="button" class="btn btn-default bv_gidNavAdvancedSearchButton gidAdvancedNavSearchButtonStart">Advanced Search</button>
             </div>
         </div>
     </div>
 
-    <div class="navbar bv_group_toolbar navbar-fixed-bottom">
-        <div class="well well-small bv_toolbar gidNavWellBottom">
-            <button class="btn bv_gidNavHelpButton gidNavHelpButtonBottom"><i class="icon-question-sign"></i></button>
-            <button class="btn pull-right bv_gidNavAdvancedSearchButton gidNavAdvancedSearchButtonBottom"><i class="icon-wrench"></i></button>
+    <div class="navbar navbar-fixed-top">
+        <div class="well well-small bv_searchNavbar gidNavWellTop">
+
         </div>
     </div>
+
 </script>
 
 <script type="text/template" id="GeneIDQueryResultView" xmlns="http://www.w3.org/1999/html">
     <div class="resultsWell">
+        <div class="span3 bv_gidDownloadCSV">
+            <span>Download .CSV</span>
+            <button class="btn bv_downloadCSV"><i class="icon-download-alt"></i></button>
+        </div>
 		<table cellpadding="0" cellspacing="0" border="0" class="display bv_resultTable">
 	        <thead>
 	            <tr class="bv_experimentNamesHeader gidNamesHeader">
@@ -36,6 +41,33 @@
 	        <h5>No results found for this query.</h5>
 	    </div>
     </div>
+    <div class="modal hide fade bv_csvFileLinkModal">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Results File</h3>
+        </div>
+        <div class="modal-body bv_modalMessage">
+            <h5>Click link to download file: <a class="bv_resultFileLink">query result file</a></h5>
+
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+    </div>
+
+    <div class="modal bv_searchStatusDropDown hide">
+        <div class="modal-header">
+            <h3>Loading</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <br />
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width:100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </script>
 
 <script type="text/template" id="GeneIDQuerySearchView" xmlns="http://www.w3.org/1999/html">
@@ -43,16 +75,160 @@
     <div class="bv_resultsView"></div>
 </script>
 
+<script type="text/template" id="ExperimentTreeView" xmlns="http://www.w3.org/1999/html">
+    <div class="span2 gidAdvancedSearchSteps">Step 2 of 3</div>
+    <div class="span12 well well-small gidAdvancedSearchWell">
+        <h5 class="gidAdvancedSearchStepTitles">Filter Data By Experiments:</h5>
+        <div class="form-inline gidFilterExperimentsInput">
+            <input class="bv_searchVal" type="text" placeholder="Filter experiments by keywords">
+            <button class="btn bv_searchClear">Clear</button>
+        </div>
+        <div class="span12 bv_tree">tree goes here</div>
+    </div>
+
+</script>
+
+<script type="text/template" id="ExperimentResultFilterTermView" xmlns="http://www.w3.org/1999/html">
+    <div class="form-inline gidAdvancedSearchTerms">
+        <label class="bv_termName"></label>
+        <select class="span3 bv_experiment"></select>
+        <select class="span3 bv_kind"></select>
+        <select class="span1 bv_operator_number">
+            <option val="=">&#61;</option>
+            <option val="<">&lt;</option>
+            <option val=">">&gt;</option>
+        </select>
+        <select class="span1 bv_operator_bool">
+            <option val="true">true</option>
+            <option val="false">false</option>
+        </select>
+        <select class="span1 bv_operator_string">
+            <option val="exact">equals</option>
+            <option val="contains">contains</option>
+        </select>
+        <input type="text" class="span2 bv_filterValue" placeholder="filter value" />
+        <button class="close bv_delete">&times;</button>
+    </div>
+</script>
+
+<script type="text/template" id="ExperimentResultFilterTermListView" xmlns="http://www.w3.org/1999/html">
+    <h5 class="gidAdvancedSearchStepTitles">Filter Data By Results:</h5>
+    <div class="well well-small span12 gidAdvancedSearchTermsWell">
+        <div class="bv_filterTerms"></div>
+        <button class="btn pull-right bv_addTerm">Add Term</button>
+    </div>
+</script>
+
+<script type="text/template" id="ExperimentResultFilterView" xmlns="http://www.w3.org/1999/html">
+    <div class="span2 gidAdvancedSearchSteps">Step 3 of 3</div>
+    <div class="span12 well well-small gidAdvancedSearchWell">
+    <div class="bv_filterTermList"></div>
+    <div class="form-inline span8 gidAdvancedSearchBooleanFilter">
+        Boolean filter between search terms:
+        <label class="radio radioAnd">
+            <input type="radio" name="bv_booleanFilter" class="bv_booleanFilter_and booleanRadios" value="and" checked="checked">And
+        </label>
+        <label class="radio radioOr">
+            <input type="radio" name="bv_booleanFilter" class="bv_booleanFilter_or booleanRadios" value="or">Or
+        </label>
+        <label class="radio radioAdvancedFilter">
+            <input type="radio" name="bv_booleanFilter" class="bv_booleanFilter_advanced booleanRadios" value="advanced">Advanced Filter
+        </label>
+    </div>
+
+    <div class="span9 bv_advancedBoolContainer">
+        Advanced Boolean Filter
+        <input type="text" class="span12 bv_advancedBooleanFilter" placeholder="Type in filter query: (Q1 or Q2 or Q3) NOT (Q4 and Q5)" />
+    </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="AdvancedExperimentResultsQueryView" xmlns="http://www.w3.org/1999/html">
+        <div class="span3 pull-left gidAdvancedQueryWizardTitle">Advanced Query Wizard</div>
+            <div class="bv_getCodesView">
+                <div class="span2 gidAdvancedSearchSteps">Step 1 of 3</div>
+
+                    <div class="span12 well well-small gidAdvancedSearchWell">
+                        <h5 class="gidAdvancedSearchStepTitles">Filter Data By Gene IDs:</h5>
+                        <textarea class="bv_codesField" rows="3" placeholder="Optional list of Gene IDs"></textarea>
+
+                    </div>
+                <div class="bv_noExperimentsFound span12">
+                    <div class="alert span9 fiona"><strong>No Results:</strong> No experiments found for these genes.</div>
+                </div>
+            </div>
+        </div>
+    <div class="bv_getExperimentsView"></div>
+    <div class="bv_getFiltersView"></div>
+    <div class="bv_advResultsView"></div>
+
+        <div class="modal bv_searchStatusDropDown hide">
+            <div class="modal-header">
+                <h3>Loading</h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <br />
+                    <div class="progress progress-striped active">
+                        <div class="bar" style="width:100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</script>
+
 <script type="text/template" id="GeneIDQueryAppView" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar navbar-static-top navbar-inverse bv_gidMainNavbar">
+    <div class="navbar navbar-fixed-top navbar-inverse bv_gidMainNavbar">
         <div class="navbar-inner">
-            <a class="brand">Chanda ACAS</a>
+            <span class="brand chandaACAS">FluOMICS ACAS</span>
             <ul class="nav">
             </ul>
         </div>
     </div>
+
+    <div class="navbar navbar-fixed-top">
+        <div class="well well-small bv_advancedQueryNavbar gidAdvancedSearchNavWellTop">
+            <div class="lead pull-left bv_gidACASBadgeTop">ACAS</div>
+            <div class="span2 gidAdvancedSearchNavbarTitle"><strong>Advanced Search</strong></div>
+
+        </div>
+    </div>
+
     <div class="container">
-        <div class="bv_queryView"></div>
+        <div class="bv_basicQueryView"></div>
+        <div class="bv_advancedQueryContainer gidAdvancedQueryContainerPadding span12">
+            <div class="bv_advancedQueryView"></div>
+            <div class="span3 bv_controlButtonContainer gidAdvancedSearchButtons">
+                <button class="btn btn-danger bv_cancel">Cancel</button>
+                <button class="btn bv_next">Next</button>
+            </div>
+        </div>
 
      </div>
+
+    <div class="modal hide fade bv_helpModal">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Help</h3>
+        </div>
+        <div class="modal-body bv_modalMessage">
+            <h5 class="aboutACAS">About ACAS</h5>
+            <span>ACAS SEL (Advanced Capture and Analysis System) is a data loading and analysis web application designed by <a  href="http://www.mcneilco.com">John McNeil & Co., Inc.</a></span>
+            <div class="helpLinks">
+                <a class="btn" href="/change">Change Password</a>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        </div>
+    </div>
+
+    <div class="navbar bv_group_toolbar navbar-fixed-bottom">
+        <div class="well well-small bv_toolbar">
+            <button class="btn bv_gidNavHelpButton"><i class="icon-question-sign"></i></button>
+            <a href="/logout" class="btn logoutButton">Logout</a>
+            <button class="btn pull-right bv_gidNavSettingsButton disabled"><i class="icon-wrench"></i></button>
+        </div>
+    </div>
 </script>

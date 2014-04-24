@@ -15,11 +15,13 @@ exports.requiredScripts = [
 	'/src/lib/jqueryFileUpload/js/jquery.fileupload-ui.js',
 	'/src/lib/jqueryFileUpload/js/locale.js',
 	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
-	'/src/lib/dataTables/js/jquery.dataTables.js'
+	'/src/lib/dataTables/js/jquery.dataTables.js',
+	'/src/lib/jstree/jstree.min.js'
 ];
 
 exports.applicationScripts = [
 	'/src/conf/conf.js',
+	"/javascripts/src/UtilityFunctions.js",
 	'/javascripts/src/LSFileInput.js',
 	'/javascripts/src/LSFileChooser.js',
 	'/javascripts/src/LSErrorNotification.js',
@@ -31,6 +33,7 @@ exports.applicationScripts = [
 	'/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',
 	'/javascripts/src/Protocol.js',
+	"/javascripts/src/PrimaryScreenExperiment.js",
 	"/javascripts/src/AppController.js",
 	"/javascripts/src/BatchListValidator.js",
 	"/javascripts/src/BulkLoadContainersFromSDF.js",
@@ -48,7 +51,6 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenus.js",
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
-	"/javascripts/src/PrimaryScreenExperiment.js",
 	"/javascripts/src/TagList.js"
 ];
 
@@ -73,20 +75,16 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/FullPKTestJSON.js",
 	"/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js",
+	"/javascripts/spec/testFixtures/LoginTestJSON.js",
 	"/javascripts/spec/testFixtures/MetStabTestJSON.js",
 	"/javascripts/spec/testFixtures/MicroSolTestJSON.js",
+	"/javascripts/spec/testFixtures/ModuleMenusTestJSON.js",
 	"/javascripts/spec/testFixtures/PampaTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/curveCuratorTestFixtures.js",
-	"/src/modules/Components/spec/AbstractFormControllerSpec.js",
-	"/src/modules/Components/spec/LSErrorNotificationSpec.js",
-	"/src/modules/Components/spec/LSFileChooserSpec.js",
-	"/src/modules/Components/spec/LSFileInputSpec.js",
-	"/src/modules/Components/spec/PickListSpec.js",
-	"/src/modules/Components/spec/ProjectsServiceSpec.js",
-	"/src/modules/Components/spec/TagListSpec.js",
 	"/src/modules/DocForBatches/spec/DocForBatchesSpec.js",
+	"/javascripts/spec/AbstractFormControllerSpec.js",
 	"/javascripts/spec/AnalysisGroupSpec.js",
 	"/javascripts/spec/AuthenticationServiceSpec.js",
 	"/javascripts/spec/BulkLoadContainersFromSDFServerSpec.js",
@@ -104,14 +102,21 @@ exports.specScripts = [
 	"/javascripts/spec/GeneDataQueriesSpec.js",
 	"/javascripts/spec/GenericDataParserServiceSpec.js",
 	"/javascripts/spec/GenericDataParserSpec.js",
+	"/javascripts/spec/LSErrorNotificationSpec.js",
+	"/javascripts/spec/LSFileChooserSpec.js",
+	"/javascripts/spec/LSFileInputSpec.js",
 	"/javascripts/spec/LabelSpec.js",
 	"/javascripts/spec/ModuleLauncherSpec.js",
 	"/javascripts/spec/ModuleMenusSpec.js",
+	"/javascripts/spec/PickListSpec.js",
 	"/javascripts/spec/PreferredBatchIdServiceSpec.js",
 	"/javascripts/spec/PrimaryScreenExperimentSpec.js",
+	"/javascripts/spec/ProjectsServiceSpec.js",
 	"/javascripts/spec/ProtocolServiceSpec.js",
 	"/javascripts/spec/ProtocolSpec.js",
 	"/javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js",
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
+	"/javascripts/spec/TagListSpec.js",
+	"/javascripts/spec/UtilityFunctionsSpec.js",
 	"/javascripts/spec/dnsAuthenticationServiceSpec.js"
 ]

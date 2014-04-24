@@ -13,7 +13,7 @@
           this.echoFileController = new LSFileInputController({
             el: '#fixture',
             inputTitle: 'Test File',
-            url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
+            url: UtilityFunctions.prototype.getFileServiceURL(),
             fieldIsRequired: true
           });
           return this.echoFileController.render();

@@ -10,8 +10,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/', exports.index
 
 	if config.all.server.enableSpecRunner
-		app.get '/SpecRunner', exports.specRunner
-		app.get '/LiveServiceSpecRunner', exports.liveServiceSpecRunner
+		app.get '/SpecRunner', loginRoutes.ensureAuthenticated, exports.specRunner
+		app.get '/LiveServiceSpecRunner', loginRoutes.ensureAuthenticated, exports.liveServiceSpecRunner
 
 
 exports.autoLaunchWithCode = (req, res) ->
@@ -23,7 +23,8 @@ exports.autoLaunchWithCode = (req, res) ->
 exports.index = (req, res, moduleLaunchParams) ->
 	#"use strict"
 	config = require '../conf/compiled/conf.js'
-	global.specRunnerTestmode = false
+	global.specRunnerTestmode = if global.stubsMode then true else false
+
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
 	if config.all.client.require.login
 		loginUserName = req.user.username

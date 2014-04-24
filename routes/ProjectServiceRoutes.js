@@ -1,14 +1,10 @@
-
-/* To install this Module
-1) Add these lines to app.coffee
-	 *Components routes
-	projectServiceRoutes = require './public/src/modules/01_Components/src/server/routes/ProjectServiceRoutes.js'
-	projectServiceRoutes.setupRoutes(app)
- */
-
 (function() {
-  exports.setupRoutes = function(app) {
+  exports.setupAPIRoutes = function(app) {
     return app.get('/api/projects', exports.getProjects);
+  };
+
+  exports.setupRoutes = function(app, loginRoutes) {
+    return app.get('/api/projects', loginRoutes.ensureAuthenticated, exports.getProjects);
   };
 
   exports.getProjects = function(req, resp) {

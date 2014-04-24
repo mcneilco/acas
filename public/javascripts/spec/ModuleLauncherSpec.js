@@ -1,29 +1,11 @@
 (function() {
   describe("Module Menu System Testing", function() {
     beforeEach(function() {
-      this.fixture = $.clone($("#fixture").get(0));
-      return this.testMenuItems = [
-        {
-          isHeader: true,
-          menuName: "Test Header"
-        }, {
-          isHeader: false,
-          menuName: "Test Launcher 1",
-          mainControllerClassName: "controllerClassName1"
-        }, {
-          isHeader: false,
-          menuName: "Test Launcher 2",
-          mainControllerClassName: "controllerClassName2"
-        }, {
-          isHeader: false,
-          menuName: "Test Launcher 3",
-          mainControllerClassName: "controllerClassName3"
-        }
-      ];
+      return this.fixture = $("#fixture");
     });
     afterEach(function() {
       $("#fixture").remove();
-      return $("body").append($(this.fixture));
+      return $("body").append('<div id="fixture"></div>');
     });
     describe("Module Launcher Model Testing", function() {
       beforeEach(function() {
@@ -81,11 +63,11 @@
       });
       describe("Module Launcher List Testing", function() {});
       beforeEach(function() {
-        return this.modLauncherList = new ModuleLauncherList(this.testMenuItems);
+        return this.modLauncherList = new ModuleLauncherList(window.moduleMenusTestJSON.testMenuItems);
       });
       return describe("Existence test", function() {
-        return it("should instanitate with 4 entries", function() {
-          return expect(this.modLauncherList.length).toEqual(4);
+        return it("should instanitate with 6 entries", function() {
+          return expect(this.modLauncherList.length).toEqual(6);
         });
       });
     });
@@ -111,8 +93,14 @@
         it("should show that it is not running", function() {
           return expect(this.modLauncherMenuController.$('.bv_isLoaded')).not.toBeVisible();
         });
-        return it("should show that it is not dirty", function() {
+        it("should show that it is not dirty", function() {
           return expect(this.modLauncherMenuController.$('.bv_isDirty')).not.toBeVisible();
+        });
+        it("should should hide disabled mode", function() {
+          return expect(this.modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible();
+        });
+        return it("should should show enabled mode", function() {
+          return expect(this.modLauncherMenuController.$('.bv_menuName')).toBeVisible();
         });
       });
       describe("When clicked", function() {
@@ -122,7 +110,7 @@
               return _this.gotTrigger = true;
             };
           })(this));
-          return $(this.modLauncherMenuController.el).click();
+          return this.modLauncherMenuController.$('.bv_menuName').click();
         });
         it("should set style active", function() {
           return expect(this.modLauncherMenuController.el).toHaveClass("active");
@@ -158,15 +146,80 @@
           return expect(this.modLauncherMenuController.$('.bv_isDirty')).toBeVisible();
         });
       });
-      return describe("when deselected", function() {
+      describe("when deselected", function() {
         return it("should change style", function() {
-          $(this.modLauncherMenuController.el).click();
+          this.modLauncherMenuController.$('.bv_menuName').click();
           expect(this.modLauncherMenuController.el).toHaveClass("active");
           this.modLauncherMenuController.clearSelected(new ModuleLauncherMenuController({
             model: new ModuleLauncher()
           }));
           expect($(this.modLauncherMenuController.el).hasClass("active")).toBeFalsy();
           return expect(this.modLauncherMenuController.model.get('isActive')).toBeFalsy();
+        });
+      });
+      return describe("when user not authorized to launch module", function() {
+        beforeEach(function() {
+          this.modLauncher2 = new ModuleLauncher({
+            isHeader: false,
+            menuName: "test launcher",
+            mainControllerClassName: "testLauncherClassName",
+            requireUserRoles: ["admin", "loadData"]
+          });
+          return this.modLauncherMenuController2 = new ModuleLauncherMenuController({
+            model: this.modLauncher2
+          });
+        });
+        describe("with current user with no roles attribute", function() {
+          return it("should enable menu item", function() {
+            $('#fixture').append(this.modLauncherMenuController2.render().el);
+            expect(this.modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible();
+            return expect(this.modLauncherMenuController.$('.bv_menuName')).toBeVisible();
+          });
+        });
+        describe("with current user with roles specified but not required role", function() {
+          beforeEach(function() {
+            window.AppLaunchParams.loginUser.roles = [
+              {
+                id: 3,
+                roleEntry: {
+                  id: 2,
+                  roleDescription: "what Mal is not",
+                  roleName: "king of all indinia",
+                  version: 0
+                },
+                version: 0
+              }
+            ];
+            return $('#fixture').append(this.modLauncherMenuController2.render().el);
+          });
+          it("should disable menu item", function() {
+            expect(this.modLauncherMenuController2.$('.bv_menuName_disabled')).toBeVisible();
+            return expect(this.modLauncherMenuController2.$('.bv_menuName')).not.toBeVisible();
+          });
+          return it("should have title set to support mouse over", function() {
+            return expect($(this.modLauncherMenuController2.el).attr("title")).toContain("not authorized");
+          });
+        });
+        return describe("with current user having allowed role specified", function() {
+          beforeEach(function() {
+            window.AppLaunchParams.loginUser.roles = [
+              {
+                id: 3,
+                roleEntry: {
+                  id: 2,
+                  roleDescription: "data loader",
+                  roleName: "loadData",
+                  version: 0
+                },
+                version: 0
+              }
+            ];
+            return $('#fixture').append(this.modLauncherMenuController2.render().el);
+          });
+          return it("should enable menu item", function() {
+            expect(this.modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible();
+            return expect(this.modLauncherMenuController.$('.bv_menuName')).toBeVisible();
+          });
         });
       });
     });
@@ -198,7 +251,7 @@
     });
     describe("ModuleLauncherMenuListController tests", function() {
       beforeEach(function() {
-        this.modLauncherList = new ModuleLauncherList(this.testMenuItems);
+        this.modLauncherList = new ModuleLauncherList(window.moduleMenusTestJSON.testMenuItems);
         this.ModLauncherMenuListController = new ModuleLauncherMenuListController({
           el: '#fixture',
           collection: this.modLauncherList
@@ -209,8 +262,8 @@
         it("should load the template", function() {
           return expect($('.bv_navList')).toBeDefined();
         });
-        it("should show 4 items", function() {
-          return expect(this.ModLauncherMenuListController.$('li').length).toEqual(4);
+        it("should show 6 items", function() {
+          return expect(this.ModLauncherMenuListController.$('li').length).toEqual(6);
         });
         it("should show a header as specified in the test json", function() {
           return expect(this.ModLauncherMenuListController.$('li :eq(0) ').html()).toEqual("Test Header");
@@ -235,7 +288,7 @@
                 return _this.gotTrigger = true;
               };
             })(this));
-            return this.ModLauncherMenuListController.$('li :eq(2) ').click();
+            return this.ModLauncherMenuListController.$('.bv_menuName :eq(1) ').click();
           });
           return it("should activate the correct menu", function() {
             expect(this.ModLauncherMenuListController.$('li :eq(1)')).not.toHaveClass('active');
@@ -244,10 +297,10 @@
         });
         return describe("when second activated, then first activated", function() {
           return it("should activate the correct menu", function() {
-            this.ModLauncherMenuListController.$('li :eq(2) ').click();
+            this.ModLauncherMenuListController.$('.bv_menuName :eq(1) ').click();
             expect(this.ModLauncherMenuListController.$('li :eq(1)')).not.toHaveClass('active');
             expect(this.ModLauncherMenuListController.$('li :eq(2)')).toHaveClass('active');
-            this.ModLauncherMenuListController.$('li :eq(1) ').click();
+            this.ModLauncherMenuListController.$('.bv_menuName :eq(0) ').click();
             expect(this.ModLauncherMenuListController.$('li :eq(1)')).toHaveClass('active');
             return expect(this.ModLauncherMenuListController.$('li :eq(2)')).not.toHaveClass('active');
           });
@@ -296,7 +349,7 @@
     });
     return describe("ModuleLauncherListController tests", function() {
       beforeEach(function() {
-        this.modLauncherList = new ModuleLauncherList(this.testMenuItems);
+        this.modLauncherList = new ModuleLauncherList(window.moduleMenusTestJSON.testMenuItems);
         this.modLauncherListController = new ModuleLauncherListController({
           el: '#fixture',
           collection: this.modLauncherList
@@ -308,7 +361,7 @@
           return expect($('.bv_moduleWrapper')).toBeDefined();
         });
         return it("Should create and make divs for all the non-header ModuleLauncherControllers", function() {
-          return expect(this.modLauncherListController.$('.bv_moduleWrapper div.bv_moduleContent').length).toEqual(3);
+          return expect(this.modLauncherListController.$('.bv_moduleWrapper div.bv_moduleContent').length).toEqual(5);
         });
       });
     });

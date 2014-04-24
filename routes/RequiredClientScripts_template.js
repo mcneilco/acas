@@ -15,11 +15,13 @@ exports.requiredScripts = [
 	'/src/lib/jqueryFileUpload/js/jquery.fileupload-ui.js',
 	'/src/lib/jqueryFileUpload/js/locale.js',
 	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
-	'/src/lib/dataTables/js/jquery.dataTables.js'
+	'/src/lib/dataTables/js/jquery.dataTables.js',
+	'/src/lib/jstree/jstree.min.js'
 ];
 
 exports.applicationScripts = [
 	'/src/conf/conf.js',
+	"/javascripts/src/UtilityFunctions.js",
 	'/javascripts/src/LSFileInput.js',
 	'/javascripts/src/LSFileChooser.js',
 	'/javascripts/src/LSErrorNotification.js',
@@ -30,7 +32,8 @@ exports.applicationScripts = [
 	'/javascripts/src/Label.js',
 	'/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',
-	'/javascripts/src/Protocol.js'//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
+	'/javascripts/src/Protocol.js',
+	"/javascripts/src/PrimaryScreenExperiment.js"//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
 ];
 
 exports.jasmineScripts = [

@@ -66,7 +66,10 @@ writePropertiesFormat = (conf) ->
 	flatConf = flat.flatten conf
 	configOut = ""
 	for attr, value of flatConf
-		configOut += attr+"="+value+"\n"
+		if value != null
+			configOut += attr+"="+value+"\n"
+		else
+			configOut += attr+"=\n"
 	fs.writeFile "./compiled/conf.properties", configOut
 
 

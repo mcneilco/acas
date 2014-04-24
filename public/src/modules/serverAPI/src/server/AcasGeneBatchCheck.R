@@ -3,11 +3,16 @@
 acasGeneCodeCheck <- function(input) {
   require('RCurl')
   require('rjson')
+  require('racas')
+
   json <- toJSON(input)
+
+  configList <- racas::applicationSettings
+# "localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest",
 
   tryCatch({
 	response <- fromJSON(getURL(
-	  "localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest",
+	  paste0(configList$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
 	  customrequest='POST',
 	  httpheader=c('Content-Type'='application/json'),
 	  postfields=json))
@@ -18,4 +23,3 @@ acasGeneCodeCheck <- function(input) {
     return(response)
 }
 
-#exampleOutput <- "{\n  \"error\": false,\n  \"errorMessages\": [],\n  \"results\": [\n    {\n      \"requestName\": \"CMPD-0000051-01\",\n      \"preferredName\": \"CMPD-0000051-01\"\n    },\n    {\n      \"requestName\": \"CMPD-0000052-01\",\n      \"preferredName\": \"CMPD-0000052-01\"\n    }\n  ]\n}"

@@ -1,16 +1,10 @@
 describe "Module Menu System Testing", ->
 	beforeEach ->
-		@fixture = $.clone($("#fixture").get(0))
-		@testMenuItems = [
-			{isHeader: true, menuName: "Test Header" }
-			{isHeader: false, menuName: "Test Launcher 1", mainControllerClassName: "controllerClassName1"}
-			{isHeader: false, menuName: "Test Launcher 2", mainControllerClassName: "controllerClassName2"}
-			{isHeader: false, menuName: "Test Launcher 3", mainControllerClassName: "controllerClassName3"}
-			]
+		@fixture = $("#fixture")
 
 	afterEach ->
 		$("#fixture").remove()
-		$("body").append $(@fixture)
+		$("body").append '<div id="fixture"></div>'
 
   ##########################################
 	describe "Module Launcher Model Testing", ->
@@ -49,11 +43,11 @@ describe "Module Menu System Testing", ->
 	##########################################
  	describe "Module Launcher List Testing", ->
 		beforeEach ->
-			@modLauncherList = new ModuleLauncherList(@testMenuItems)
+			@modLauncherList = new ModuleLauncherList(window.moduleMenusTestJSON.testMenuItems)
 
 		describe "Existence test", ->
-			it "should instanitate with 4 entries", ->
-				expect(@modLauncherList.length).toEqual 4
+			it "should instanitate with 6 entries", ->
+				expect(@modLauncherList.length).toEqual 6
 
 	##########################################
 	describe "ModuleLauncherMenuController tests", ->
@@ -75,12 +69,16 @@ describe "Module Menu System Testing", ->
 				expect(@modLauncherMenuController.$('.bv_isLoaded')).not.toBeVisible()
 			it "should show that it is not dirty", ->
 				expect(@modLauncherMenuController.$('.bv_isDirty')).not.toBeVisible()
+			it "should should hide disabled mode", ->
+				expect(@modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible()
+			it "should should show enabled mode", ->
+				expect(@modLauncherMenuController.$('.bv_menuName')).toBeVisible()
 
 		describe "When clicked", ->
 			beforeEach ->
 				@modLauncherMenuController.bind "selected", =>
 					@gotTrigger = true
-				$(@modLauncherMenuController.el).click()
+				@modLauncherMenuController.$('.bv_menuName').click()
 			it "should set style active", ->
 				expect(@modLauncherMenuController.el).toHaveClass "active"
 			it "should set the model to active", ->
@@ -104,11 +102,64 @@ describe "Module Menu System Testing", ->
 
 		describe "when deselected", ->
 			it "should change style", ->
-				$(@modLauncherMenuController.el).click()
+				@modLauncherMenuController.$('.bv_menuName').click()
 				expect(@modLauncherMenuController.el).toHaveClass "active"
 				@modLauncherMenuController.clearSelected(new ModuleLauncherMenuController({model: new ModuleLauncher()}))
 				expect($(@modLauncherMenuController.el).hasClass("active")).toBeFalsy()
 				expect(@modLauncherMenuController.model.get('isActive')).toBeFalsy()
+
+		describe "when user not authorized to launch module", ->
+			beforeEach ->
+				@modLauncher2 = new ModuleLauncher
+					isHeader: false
+					menuName: "test launcher"
+					mainControllerClassName: "testLauncherClassName"
+					requireUserRoles: ["admin", "loadData"]
+				@modLauncherMenuController2 = new ModuleLauncherMenuController
+					model: @modLauncher2
+			describe "with current user with no roles attribute", ->
+				it "should enable menu item", ->
+					$('#fixture').append @modLauncherMenuController2.render().el
+					expect(@modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible()
+					expect(@modLauncherMenuController.$('.bv_menuName')).toBeVisible()
+			describe "with current user with roles specified but not required role", ->
+				beforeEach ->
+					window.AppLaunchParams.loginUser.roles =
+						[
+							{
+								id: 3
+								roleEntry:
+									id: 2
+									roleDescription: "what Mal is not"
+									roleName: "king of all indinia"
+									version: 0
+								version: 0
+							}
+						]
+					$('#fixture').append @modLauncherMenuController2.render().el
+				it "should disable menu item", ->
+					expect(@modLauncherMenuController2.$('.bv_menuName_disabled')).toBeVisible()
+					expect(@modLauncherMenuController2.$('.bv_menuName')).not.toBeVisible()
+				it "should have title set to support mouse over", ->
+					expect($(@modLauncherMenuController2.el).attr("title")).toContain "not authorized"
+			describe "with current user having allowed role specified", ->
+				beforeEach ->
+					window.AppLaunchParams.loginUser.roles =
+						[
+							{
+								id: 3
+								roleEntry:
+									id: 2
+									roleDescription: "data loader"
+									roleName: "loadData"
+									version: 0
+								version: 0
+							}
+						]
+					$('#fixture').append @modLauncherMenuController2.render().el
+				it "should enable menu item", ->
+					expect(@modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible()
+					expect(@modLauncherMenuController.$('.bv_menuName')).toBeVisible()
 
 	##########################################
 	describe "ModuleLauncherMenuHeaderController tests", ->
@@ -134,7 +185,7 @@ describe "Module Menu System Testing", ->
 	##########################################
 	describe "ModuleLauncherMenuListController tests", ->
 		beforeEach ->
-			@modLauncherList = new ModuleLauncherList(@testMenuItems)
+			@modLauncherList = new ModuleLauncherList(window.moduleMenusTestJSON.testMenuItems)
 
 			@ModLauncherMenuListController = new ModuleLauncherMenuListController
 				el: '#fixture'
@@ -144,8 +195,8 @@ describe "Module Menu System Testing", ->
 		describe "Upon render", ->
 			it "should load the template", ->
 				expect($('.bv_navList')).toBeDefined()
-			it "should show 4 items", ->
-				expect(@ModLauncherMenuListController.$('li').length).toEqual 4
+			it "should show 6 items", ->
+				expect(@ModLauncherMenuListController.$('li').length).toEqual 6
 			it "should show a header as specified in the test json", ->
 				expect(@ModLauncherMenuListController.$('li :eq(0) ').html()).toEqual "Test Header"
 			it "should show a header with correct class", ->
@@ -161,17 +212,17 @@ describe "Module Menu System Testing", ->
 				beforeEach ->
 					@ModLauncherMenuListController.bind "selectionUpdated", =>
 						@gotTrigger = true
-					@ModLauncherMenuListController.$('li :eq(2) ').click()
+					@ModLauncherMenuListController.$('.bv_menuName :eq(1) ').click()
 				it "should activate the correct menu", ->
 					expect(@ModLauncherMenuListController.$('li :eq(1)')).not.toHaveClass('active')
 					expect(@ModLauncherMenuListController.$('li :eq(2)')).toHaveClass('active')
 
 			describe "when second activated, then first activated", ->
 				it "should activate the correct menu", ->
-					@ModLauncherMenuListController.$('li :eq(2) ').click()
+					@ModLauncherMenuListController.$('.bv_menuName :eq(1) ').click()
 					expect(@ModLauncherMenuListController.$('li :eq(1)')).not.toHaveClass('active')
 					expect(@ModLauncherMenuListController.$('li :eq(2)')).toHaveClass('active')
-					@ModLauncherMenuListController.$('li :eq(1) ').click()
+					@ModLauncherMenuListController.$('.bv_menuName :eq(0) ').click()
 					expect(@ModLauncherMenuListController.$('li :eq(1)')).toHaveClass('active')
 					expect(@ModLauncherMenuListController.$('li :eq(2)')).not.toHaveClass('active')
 
@@ -207,7 +258,7 @@ describe "Module Menu System Testing", ->
 	##########################################
 	describe "ModuleLauncherListController tests", ->
 		beforeEach ->
-			@modLauncherList = new ModuleLauncherList(@testMenuItems)
+			@modLauncherList = new ModuleLauncherList(window.moduleMenusTestJSON.testMenuItems)
 
 			@modLauncherListController = new ModuleLauncherListController
 				el: '#fixture'
@@ -218,5 +269,5 @@ describe "Module Menu System Testing", ->
 			it "Should load its template", ->
 				expect($('.bv_moduleWrapper')).toBeDefined()
 			it "Should create and make divs for all the non-header ModuleLauncherControllers", ->
-				expect(@modLauncherListController.$('.bv_moduleWrapper div.bv_moduleContent').length).toEqual 3
+				expect(@modLauncherListController.$('.bv_moduleWrapper div.bv_moduleContent').length).toEqual 5
 

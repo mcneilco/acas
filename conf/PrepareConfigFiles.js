@@ -85,7 +85,11 @@
     configOut = "";
     for (attr in flatConf) {
       value = flatConf[attr];
-      configOut += attr + "=" + value + "\n";
+      if (value !== null) {
+        configOut += attr + "=" + value + "\n";
+      } else {
+        configOut += attr + "=\n";
+      }
     }
     return fs.writeFile("./compiled/conf.properties", configOut);
   };

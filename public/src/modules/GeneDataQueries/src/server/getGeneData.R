@@ -6,21 +6,61 @@ require('racas')
 
 configList <- racas::applicationSettings
 
-postData <- rawToChar(receiveBin(1024))
-postData.list <- fromJSON(postData)
-genes <- postData.list$geneIDs
+#str(GET) ## to see the values that are passed into the GET params
 
-convertToChar <- function(input){
-	lapply(input, as.character)
+if(is.null(GET$exportCSV)){
+    exportCSV <- FALSE
+#    cat("exportCSV variable not found. Setting to FALSE")
+} else {
+    exportCSV <- as.boolean(GET$exportCSV)
+#    cat("export val found")
 }
-genes.char <- lapply(genes, convertToChar)
-genes.Json <- toJSON(genes.char)
+
+#cat(exportCSV)
+
+postData <- rawToChar(receiveBin(1024))
+#postData <- '{"maxRowsToReturn": -1, "user":"jmcneil", "geneIDs": "1, 2, 15, 17"}'
+postData.list <- fromJSON(postData)
+
+batchCodeList <- list()
+if (!is.null(postData.list$geneIDs)) {
+	geneData <- postData.list$geneIDs
+	geneDataList <- strsplit(geneData, split="\\W")[[1]]
+	geneDataList <- geneDataList[geneDataList!=""]
+
+	if (length(geneDataList) > 0) {
+		requestList <- list()
+		for (i in 1:length(geneDataList)){
+		   requestList[[length(requestList)+1]] <- list(requestName=geneDataList[[i]])
+		}
+		requestObject <- list()
+		requestObject$requests <- requestList
+		geneNameList <- getURL(
+			paste0(configList$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
+#			paste0("http://localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
+			customrequest='POST',
+			httpheader=c('Content-Type'='application/json'),
+			postfields=toJSON(requestObject))
+
+		genes <- fromJSON(geneNameList)$results
+		batchCodeList <- list()
+		for (i in 1:length(genes)){
+		   if (genes[[i]]$referenceName != ""){
+		      batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$referenceName
+		   }
+		}
+	}
+}
+
+batchCodeList <- unique(batchCodeList)
+batchCodeList.Json <- toJSON(batchCodeList)
 
 dataCsv <- getURL(
-	paste0(configList$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData"),
+	paste0(configList$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData?format=csv"),
+#	paste0("http://localhost:8080/acas/", "analysisgroupvalues/geneCodeData?format=csv"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
-	postfields=genes.Json)
+	postfields=batchCodeList.Json)
 
 dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
 dataDT <- as.data.table(dataDF)
@@ -37,7 +77,6 @@ pivotResults <- function(geneId, lsKind, result){
 if (nrow(dataDT) > 0){
 	firstPass <- TRUE
 	for (expt in unique(dataDT$experimentId)){
-		#print(paste0("current experiment ", expt))
 		if(firstPass){
 			outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId) ]
 			codeName <- as.character(unique(outputDT$experimentCodeName))
@@ -107,32 +146,49 @@ if (nrow(dataDT) > 0){
 	responseJson$results$htmlSummary <- "OK"
 	responseJson$hasError <- FALSE
 	responseJson$hasWarning <- FALSE
-	responseJson$errorMessages <- "[]"
+	responseJson$errorMessages <- list()
 	setStatus(status=200L)
 
 } else {
 
 	responseJson <- list()
-	responseJson$results$data$aaData <- '[]'
+	responseJson$results$data$aaData <- list()
 	responseJson$results$data$iTotalRecords <- 0
 	responseJson$results$data$iTotalDisplayRecords <- 0
-	responseJson$results$data$aoColumns <- '[]'
-	responseJson$results$data$groupHeaders <- '[]'
+	responseJson$results$data$aoColumns <- list()
+	responseJson$results$data$groupHeaders <- list()
 	responseJson$results$htmlSummary <- "NO Resulsts"
 	responseJson$hasError <- TRUE	
 	responseJson$hasWarning <- FALSE
 	error1 <- list(errorLevel="error", message="No results found.")
 	error2 <- list(errorLevel="error", message="Please load more data.")
 	responseJson$errorMessages <- list(error1, error2)
-
 	setStatus(status=506L)
 
 }
 
+if (exportCSV){
+    setHeader("Access-Control-Allow-Origin" ,"*");
+    setContentType("application/text")
+	write.csv(outputDT, file="", row.names=FALSE, quote=TRUE)
+} else {
+    setHeader("Access-Control-Allow-Origin" ,"*");
+    setContentType("application/json")
+    cat(toJSON(responseJson))
 
-setHeader("Access-Control-Allow-Origin" ,"*");
-setContentType("application/json")
-cat(toJSON(responseJson))
+#    setHeader(header='Content-Disposition', 'attachment; filename=rpdf.pdf')
+#    setContentType("application/text")
+##    t <- tempfile()
+#    pdf(t)
+##    attach(mtcars)
+#    plot(wt, mpg)
+#    abline(lm(mpg~wt))
+#    title("PDF Report")
+#    dev.off()
+#    setHeader('Content-Length',file.info(t)$size)
+#    sendBin(readBin(t,'raw',n=file.info(t)$size))
+}
+
 
 
 
