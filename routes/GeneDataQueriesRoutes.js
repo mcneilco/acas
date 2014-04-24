@@ -26,7 +26,6 @@
             urlPref = "http://";
           }
           filename = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query.csv';
-          console.log(filename);
           file = fs.createWriteStream('./privateTempFiles/' + filename);
           rem = request(urlPref + 'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv');
           rem.on('data', function(chunk) {
@@ -40,12 +39,52 @@
             });
           });
         } else {
+          config = require('../conf/compiled/conf.js');
           baseurl = config.all.client.service.rapache.fullpath + "getGeneData?format=CSV";
+          request = require('request');
           return request({
             method: 'POST',
             url: baseurl,
-            body: req.body
-          }).pipe(resp);
+            body: JSON.stringify(req.body),
+            json: true
+          }, (function(_this) {
+            return function(error, response, json) {
+              var dirName;
+              if (!error && response.statusCode === 200) {
+                dirName = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query';
+                return fs.mkdir('./privateTempFiles/' + dirName, function(err) {
+                  if (err) {
+                    console.log('there was an error creating a gene id query directory');
+                    console.log(err);
+                    resp.end("gene query directory could not be saved");
+                  } else {
+                    filename = 'GeneQuery.csv';
+                    fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, function(err) {
+                      if (err) {
+                        console.log('there was an error saving a gene id query csv file');
+                        console.log(err);
+                        resp.end("File could not be saved");
+                      } else {
+                        if (config.all.client.use.ssl) {
+                          urlPref = "https://";
+                        } else {
+                          urlPref = "http://";
+                        }
+                        resp.json({
+                          fileURL: urlPref + config.all.client.host + ":" + config.all.client.port + "/tempfiles/" + dirName + "/" + filename
+                        });
+                      }
+                    });
+                  }
+                });
+              } else {
+                console.log('got ajax error trying to get gene data csv from the server');
+                console.log(error);
+                console.log(json);
+                return console.log(response);
+              }
+            };
+          })(this));
         }
       } else {
         return console.log("format requested not supported");
@@ -92,7 +131,6 @@
           return function(error, response, json) {
             console.log(response.statusCode);
             if (!error) {
-              console.log(JSON.stringify(json));
               return resp.end(JSON.stringify(json));
             } else {
               console.log('got ajax error trying to query gene data');
@@ -286,11 +324,50 @@
         } else {
           config = require('../conf/compiled/conf.js');
           baseurl = config.all.client.service.rapache.fullpath + "getFilteredGeneData?format=CSV";
+          request = require('request');
           return request({
             method: 'POST',
             url: baseurl,
-            body: req.body
-          }).pipe(resp);
+            body: JSON.stringify(req.body),
+            json: true
+          }, (function(_this) {
+            return function(error, response, json) {
+              var dirName;
+              if (!error && response.statusCode === 200) {
+                dirName = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query';
+                return fs.mkdir('./privateTempFiles/' + dirName, function(err) {
+                  if (err) {
+                    console.log('there was an error creating a gene id query directory');
+                    console.log(err);
+                    resp.end("gene query directory could not be saved");
+                  } else {
+                    filename = 'GeneQuery.csv';
+                    fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, function(err) {
+                      if (err) {
+                        console.log('there was an error saving a gene id query csv file');
+                        console.log(err);
+                        resp.end("File could not be saved");
+                      } else {
+                        if (config.all.client.use.ssl) {
+                          urlPref = "https://";
+                        } else {
+                          urlPref = "http://";
+                        }
+                        resp.json({
+                          fileURL: urlPref + config.all.client.host + ":" + config.all.client.port + "/tempfiles/" + dirName + "/" + filename
+                        });
+                      }
+                    });
+                  }
+                });
+              } else {
+                console.log('got ajax error trying to get gene data csv from the server');
+                console.log(error);
+                console.log(json);
+                return console.log(response);
+              }
+            };
+          })(this));
         }
       } else {
         return console.log("format requested not supported");
@@ -328,7 +405,7 @@
         return resp.end(JSON.stringify(responseObj));
       } else {
         config = require('../conf/compiled/conf.js');
-        baseurl = config.all.client.service.rapache.fullpath + "getFilteredGeneData/";
+        baseurl = config.all.client.service.rapache.fullpath + "getFilteredGeneData";
         return request({
           method: 'POST',
           url: baseurl,
