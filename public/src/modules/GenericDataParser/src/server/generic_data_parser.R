@@ -619,7 +619,8 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL) {
 }
 organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, 
                                       rawOnlyFormat = FALSE, stateGroups = NULL, splitSubjects = NULL, inputFormat, 
-                                      mainCode, errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL) {
+                                      mainCode, errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL,
+                                      stateAssignments = NULL) {
   # Organizes the calculated results section
   #
   # Args:
@@ -655,28 +656,32 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   calculatedResults <- calculatedResults[1:nrow(calculatedResults) > 1, ]
   
   # Precise column information (or default)
-  stateTypeRow <- rep("data", length(classRow))
-  stateKindRow <- rep("results", length(classRow))
   if (precise) {
     stateTypeRow <- calculatedResults[1:nrow(calculatedResults) == 1, ]
     stateKindRow <- calculatedResults[1:nrow(calculatedResults) == 2, ]
     calculatedResults <- calculatedResults[1:nrow(calculatedResults) > 2, ]
+  } else {
+    stateTypeRow <- rep("data", length(classRow))
+    stateKindRow <- rep("results", length(classRow))
   }
   
   # Get the line containing the value kinds
   calculatedResultsValueKindRow <- calculatedResults[1:nrow(calculatedResults) == 1, ]
   
   # Make sure the mainCode is included
-  if (lockCorpBatchId) {
-    if(calculatedResultsValueKindRow[1] != mainCode && !precise) {
-      stop(paste0("Could not find '", mainCode, "' column. The ", mainCode, 
-                  " column should be the first column of the Calculated Results"))
-    }
-  } else {
-    if(!(mainCode %in% unlist(calculatedResultsValueKindRow)) && !precise) {
-      stop(paste0("Could not find '", mainCode, "' column."))
+  if (!is.null(mainCode)) {
+    if (lockCorpBatchId) {
+      if(calculatedResultsValueKindRow[1] != mainCode && !precise) {
+        stop(paste0("Could not find '", mainCode, "' column. The ", mainCode, 
+                    " column should be the first column of the Calculated Results"))
+      }
+    } else {
+      if (!(mainCode %in% unlist(calculatedResultsValueKindRow)) && !precise) {
+        stop(paste0("Could not find '", mainCode, "' column."))
+      }
     }
   }
+  
   
   if(any(duplicated(unlist(calculatedResultsValueKindRow)))) {
     addError(paste0("These column headings are duplicated: ",
@@ -694,40 +699,53 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   valueKinds <- extractValueKinds(calculatedResultsValueKindRow, ignoreTheseAsValueKinds)
   
   # Add data class and hidden/shown to the valueKinds
-  notMainCode <- calculatedResultsValueKindRow != mainCode & (calculatedResultsValueKindRow != "link" | (is.null(link)))
+  if (!is.null(mainCode)) {
+    notMainCode <- (calculatedResultsValueKindRow != mainCode) & 
+      (is.null(link) | (calculatedResultsValueKindRow != "link"))
+  } else {
+    notMainCode <- (is.null(link) | (calculatedResultsValueKindRow != "link"))
+  }
+  
   valueKinds$dataClass <- classRow[notMainCode]
-  valueKinds$valueType <- translateClassToValueKind(valueKinds$dataClass)
+  valueKinds$valueType <- translateClassToValueType(valueKinds$dataClass)
   valueKinds$stateType <- stateTypeRow[notMainCode]
   valueKinds$stateKind <- stateKindRow[notMainCode]
   valueKinds$publicData <- !hiddenColumns[notMainCode]
   valueKinds$linkColumn <- linkColumns[notMainCode]
+  
+  if (!is.null(stateAssignments)) {
+    valueKinds$stateType <- stateAssignments$stateType[match(valueKinds$valueKind), stateAssignments$stateType]
+  }
   
   # Grab the rows of the calculated data 
   results <- subset(calculatedResults, 1:nrow(calculatedResults) > 1)
   names(results) <- unlist(calculatedResultsValueKindRow)
   
   # Replace fake mainCodes with the column that holds replacements (the column must have the same name that is entered in mainCode)
-  if (mainCode %in% names(results)) {
-    results[[mainCode]] <- as.character(results[[mainCode]])
-    results$originalMainID <- results[[mainCode]]
-    if (!is.null(replaceFakeCorpBatchId) && replaceFakeCorpBatchId != "") {
-      replacementRows <- results[[mainCode]] == replaceFakeCorpBatchId
-      results[[mainCode]][replacementRows] <- as.character(results[replacementRows, replaceFakeCorpBatchId])
+  results$originalMainID <- NA
+  if (!(is.null(mainCode))) {
+    if (mainCode %in% names(results)) {
+      results[[mainCode]] <- as.character(results[[mainCode]])
+      results$originalMainID <- results[[mainCode]]
+      if (!is.null(replaceFakeCorpBatchId) && replaceFakeCorpBatchId != "") {
+        replacementRows <- results[[mainCode]] == replaceFakeCorpBatchId
+        results[[mainCode]][replacementRows] <- as.character(results[replacementRows, replaceFakeCorpBatchId])
+      }
+    } else {
+      results[[mainCode]] <- NA
     }
-  } else {
-    results[[mainCode]] <- NA
-    results$originalMainID <- NA
   }
-  
   
   
   # Add a rowID to keep track of how rows match up
   results$rowID <- seq(1,length(results[[1]]))
   
-  # Link to parent analysis group or subject
+  # Link to parent analysis group or subject, and include batch codes
   results$linkID <- NA
   if (!is.null(link)) {
     results$linkID <- link$rowID[match(results$link, link$stringValue)]
+    if (!is.null(link$originalMainID))
+      results$batchCode <- link$originalMainID[match(results$link, link$stringValue)]
   }
   
   #Temp ids for treatment groups or other grouping
@@ -837,7 +855,9 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   # Clean up the data frame to look nice (remove extra columns)
   row.names(longResults) <- 1:nrow(longResults)
-  longResults$batchCode <- longResults[[mainCode]]
+  if (!is.null(mainCode)) {
+    longResults$batchCode <- longResults[[mainCode]]
+  }
   
   organizedData <- longResults[c("batchCode","valueKind","valueUnit","concentration","concentrationUnit", "time", 
                                  "timeUnit", "numericValue", "stringValue","valueOperator", "dateValue","clobValue",
@@ -2303,88 +2323,31 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       #subjectDataKept <- as.data.table(subjectData)
       #subjectDataKept2 <- subjectDataKept[!(rowID %in% removeRowID), createTreatmentGroupData(.SD), by = groupByColumns]
       
-      createPtgFunction <- function (groupByColumns, excludedRowKinds) {
-        # Create a function that has the groupByColumns filled in
-        function(results, inputFormat, stateGroups, resultTypes) {
-          # stateGroups, inputFormat, and resultTypes not used
-          # Remove rows that have excludedRowKinds
-          keepRows <- as.matrix(is.na(results[excludedRowKinds]))
-          ids <- as.numeric(factor(do.call(paste, results[, groupByColumns])))
-          ids[apply(keepRows, 1, sum) == 0] <- NA
-          return(ids)
-        }
-      }
+      stateAssignments <- data.frame(valuKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
       
-      calculatePreciseTreatmentGroupID <- createPtgFunction(groupByColumns, excludedRowKind)
-      
-      subjectData2 <- as.data.table(organizeCalculatedResults(subjectData, lockCorpBatchId= F, inputFormat= inputFormat, 
-                                               mainCode= mainCode, errorEnv= errorEnv, precise = T, link = link, 
-                                               calculateGroupingID = calculatePreciseTreatmentGroupID))
-      
-      subjectData2[, treatmentGroupID := groupingID]
-      subjectData2[, subjectID := rowID]
-      
-      concatUniqNonNA <- function(y) {
-        if (all(is.na(y))) return (NA)
-        paste0(Filter(function (x) {!is.na(x)}, unique(y)), collapse = "-")
-      }
-      
-      uniqueOrNA <- function(x) {
-        y <- unique(x)
-        ifelse(length(y) == 1, y, NA)
-      }
-      
-      createTreatmentGroupData <- function(x) {
-        uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
-        data.table(
-          numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
-          stringValue = as.character(concatUniqNonNA(x$stringValue)),
-          valueOperator = as.character(uniqueOrNA(x$valueOperator)),
-          # TODO figure out if this should be coerced
-          dateValue = uniqueOrNA(x$dateValue),
-          clobValue = as.character(uniqueOrNA(x$clobValue)),
-          urlValue = as.character(uniqueOrNA(x$urlValue)),
-          fileValue = as.character(uniqueOrNA(x$fileValue)),
-          codeValue = as.character(uniqueOrNA(x$codeValue)),
-          uncertaintyType = if (is.na(uncertainty)) as.character(NA) else "standard deviation",
-          uncertainty = uncertainty
-        )
-      }
-      
-      groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
-      subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit)]
-      treatmentGroupData <- subjectData3[!is.na(groupingID), createTreatmentGroupData(.SD), 
-                                          by = list(groupingID, valueType, valueKind, concentration, 
-                                                    concentrationUnit, time, timeUnit, valueUnit, 
-                                                    valueKindAndUnit, publicData, linkID, stateType,
-                                                    stateKind)]
-      treatmentGroupData[valueKind %in% groupByColumnsNoUnit, c("uncertainty", "uncertainType") := list(NA, NA)]
-      treatmentGroupData[, treatmentGroupID := groupingID]
-      treatmentGroupData[, analysisGroupID := linkID]
-      treatmentGroupData <- as.data.frame(treatmentGroupData)
-      
-      subjectData <- as.data.frame(subjectData2)
+      intermedList <- doStuffWithSubjects(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, errorEnv=errorEnv)
+      subjectData <- intermedList$subjectData
+      treatmentGroupData <- intermedList$treatmentGroupData
     }
   } else {
     # Grab the Raw Results Section
-    rawResults <- getSection(genericDataFileDataFrame, "Raw Results", transpose = FALSE)
-    rawResults <- NULL
-    # Organize the Raw Results into treatmentGroupData and subjectData 
-    # and collect the names of the x, y, and temp labels
-
-    tempIdLabel <- ""
-    if(!is.null(rawResults)) {
-      rawResults <- organizeRawResults(rawResults, calculatedResults, mainCode)
-      # TODO: Should have a validation step to check raw results valueKinds
-      xLabel <- rawResults$xLabel
-      yLabel <- rawResults$yLabel
-      tempIdLabel <- rawResults$tempIdLabel
-      treatmentGroupData <- rawResults$treatmentGroupData
-      subjectData <- rawResults$subjectData
-      
-      # Validate the treatment group data
-      validateTreatmentGroupData(treatmentGroupData,calculatedResults, tempIdLabel)
-    }
+    subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
+    
+    groupByColumns <- c(genericDataFileDataFrame[2, 2], 'batch code')
+    groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
+    keepColumn <- "Response"
+    excludedRowKind <- "flag"
+    
+    link <- calculatedResults[calculatedResults$valueKind == "curve id", c("rowID", "stringValue", "originalMainID")]
+    
+    subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
+    subjectData[2, 1] <- "link"
+    
+    stateAssignments <- data.frame(valuKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+    
+    intermedList <- doStuffWithSubjects(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL, link, precise, stateAssignments, errorEnv)
+    subjectData <- intermedList$subjectData
+    treatmentGroupData <- intermedList$treatmentGroupData
   }
   
   
@@ -2580,8 +2543,8 @@ getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolN
   }
   return(viewerLink)
 }
-translateClassToValueKind <- function(x, reverse = F) {
-  # translates Excel style Number formats to ACAS valueKinds (or reverse)
+translateClassToValueType <- function(x, reverse = F) {
+  # translates Excel style Number formats to ACAS valueTypes (or reverse)
   valueTypeVector <- c("numericValue", "stringValue", "fileValue", "urlValue", "dateValue", "clobValue", "blobValue", "codeValue")
   classVector <- c("Number", "Text", "File", "URL", "Date", "Clob", "Blob", "Code")
   if (reverse) {
@@ -2605,7 +2568,7 @@ parseGenericData <- function(request) {
   options("scipen"=15)
   # This is used for development: outputs the JSON rather than sending it to the
   # server and does not wrap everything in tryCatch so traceback() will work
-  developmentMode <- FALSE
+  developmentMode <- TRUE
   
   # Collect the information from the request
   request <- as.list(request)
@@ -2920,4 +2883,73 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
     savedEntityValues <- saveAcasEntities(entityValues, paste0(acasServerEntity, "values"))
     return(savedEntityValues)
   }
+}
+
+doStuffWithSubjects <- function(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments, errorEnv) {
+  # Returns two data.frames: subjectData and treatmentGroupData
+  
+  createPtgFunction <- function (groupByColumns, excludedRowKinds) {
+    # Create a function that has the groupByColumns filled in
+    function(results, inputFormat, stateGroups, resultTypes) {
+      # stateGroups, inputFormat, and resultTypes not used
+      # Remove rows that have excludedRowKinds
+      keepRows <- as.matrix(is.na(results[excludedRowKinds]))
+      ids <- as.numeric(factor(do.call(paste, results[, groupByColumns])))
+      ids[apply(keepRows, 1, sum) == 0] <- NA
+      return(ids)
+    }
+  }
+  
+  calculatePreciseTreatmentGroupID <- createPtgFunction(groupByColumns, excludedRowKind)
+  
+  subjectData2 <- organizeCalculatedResults(subjectData, lockCorpBatchId= F, inputFormat= inputFormat, 
+                                            mainCode= mainCode, errorEnv= errorEnv, precise = precise, link = link, 
+                                            calculateGroupingID = calculatePreciseTreatmentGroupID, stateAssignments)
+  subjectData2 <- as.data.table(subjectData2)
+  
+  subjectData2[, treatmentGroupID := groupingID]
+  subjectData2[, subjectID := rowID]
+  
+  concatUniqNonNA <- function(y) {
+    if (all(is.na(y))) return (NA)
+    paste0(Filter(function (x) {!is.na(x)}, unique(y)), collapse = "-")
+  }
+  
+  uniqueOrNA <- function(x) {
+    y <- unique(x)
+    ifelse(length(y) == 1, y, NA)
+  }
+  
+  createTreatmentGroupData <- function(x) {
+    uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
+    data.table(
+      numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
+      stringValue = as.character(concatUniqNonNA(x$stringValue)),
+      valueOperator = as.character(uniqueOrNA(x$valueOperator)),
+      # TODO figure out if this should be coerced
+      dateValue = uniqueOrNA(x$dateValue),
+      clobValue = as.character(uniqueOrNA(x$clobValue)),
+      urlValue = as.character(uniqueOrNA(x$urlValue)),
+      fileValue = as.character(uniqueOrNA(x$fileValue)),
+      codeValue = as.character(uniqueOrNA(x$codeValue)),
+      uncertaintyType = if (is.na(uncertainty)) as.character(NA) else "standard deviation",
+      uncertainty = uncertainty
+    )
+  }
+  
+  groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
+  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit)]
+  treatmentGroupData <- subjectData3[!is.na(groupingID), createTreatmentGroupData(.SD), 
+                                     by = list(groupingID, valueType, valueKind, concentration, 
+                                               concentrationUnit, time, timeUnit, valueUnit, 
+                                               valueKindAndUnit, publicData, linkID, stateType,
+                                               stateKind)]
+  treatmentGroupData[valueKind %in% groupByColumnsNoUnit, c("uncertainty", "uncertainType") := list(NA, NA)]
+  treatmentGroupData[, treatmentGroupID := groupingID]
+  treatmentGroupData[, analysisGroupID := linkID]
+  treatmentGroupData <- as.data.frame(treatmentGroupData)
+  
+  subjectData <- as.data.frame(subjectData2)
+  
+  return(list(subjectData=subjectData, treatmentGroupData=treatmentGroupData))
 }
