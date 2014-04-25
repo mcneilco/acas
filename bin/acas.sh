@@ -272,12 +272,13 @@ get_status() {
 ################################################################################
 ################################################################################
  
-scriptPath=$(readlink -f ${BASH_SOURCE[0]})
+scriptPath=$(readlink ${BASH_SOURCE[0]})
 if [ "$scriptPath" == '' ]; then
 	scriptPath=$(readlink -f ${BASH_SOURCE[0]})
 fi
 ACAS_HOME=$(cd "$(dirname "$scriptPath")"/..; pwd)
 echo "ACAS_HOME = $ACAS_HOME"
+cd $ACAS_HOME
 #Get ACAS config variables
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/conf/readproperties.awk)"
 
