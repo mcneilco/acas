@@ -26,6 +26,8 @@
 #   To run:
 #     parseGenericData(list(pathToGenericDataFormatExcelFile, dryRun = TRUE, ...))
 #     Example: 
+#       file.copy("/Users/smeyer/Google Drive/McNeilco/DemoACAS/5_Dose_Response.xls", to="privateUploads/", overwrite = TRUE)
+#       parseGenericData(c(fileToParse="5_Dose_Response.xls", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/explicit_ACAS_format.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/explicit_ACAS_format.xlsx", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/DR_SaveToExistingExperiment.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
@@ -142,8 +144,6 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
     # Find if it is Nullable
     nullable <- expectedDataFormat$isNullable[expectedDataFormat$headers == column]
     
-    
-    
     expectedDataType <- as.character(expectedDataFormat$class[expectedDataFormat$headers == column])
     receivedValue <- matchedColumns[1,m]
     
@@ -176,7 +176,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
   }
   
   if (!is.null(metaData$Project)) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList) 
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, errorEnv) 
   }
   if (!is.null(metaData$Scientist)) {
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList) 
@@ -191,7 +191,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
   
   return(list(validatedMetaData=validatedMetaData, duplicateExperimentNamesAllowed=duplicateExperimentNamesAllowed, useExisting=useExisting))
 }
-validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,tempIdLabel) {
+validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,tempIdLabel, errorEnv) {
   # Valides the treatment group data (for now, this only validates the temp id's)
   #
   # Args:
@@ -221,13 +221,15 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
 #                                       textTempIds, "'. Remove text from all temp id's."))
 #   } else if (length(missingTempIds)>1) {
   if (length(missingTempIds)>1) {
-    errorList <<- c(errorList, paste0("In the Raw Results section, there are temp id's that have no match in the Calculated Results section: '", 
-                                      paste(missingTempIds, collapse="', '"),
-                                      "'. Please ensure that all id's have a matching row in the Calculated Results."))
+    addError(paste0("In the Raw Results section, there are temp id's that have no match in the Calculated Results section: '", 
+                    paste(missingTempIds, collapse="', '"),
+                    "'. Please ensure that all id's have a matching row in the Calculated Results."), 
+             errorEnv = errorEnv)
   } else if (length(missingTempIds)>0) {
-    errorList <<- c(errorList, paste0("In the Raw Results section, there is a temp id that has no match in the Calculated Results section: '", 
+    addError(paste0("In the Raw Results section, there is a temp id that has no match in the Calculated Results section: '", 
                                       missingTempIds,
-                                      "'. Please ensure that all id's have a matching row in the Calculated Results."))
+                                      "'. Please ensure that all id's have a matching row in the Calculated Results."),
+             errorEnv = errorEnv)
   }
   
   # Find if there are temp ids without raw results
@@ -751,7 +753,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   #Temp ids for treatment groups or other grouping
   results$groupingID <- NA
   results$groupingID_2 <- NA
-  if ((rawOnlyFormat || precise)  && is.function(calculateGroupingID)) {
+  if (is.function(calculateGroupingID)) {
     # calculateTreatmentGroupID is in customFunctions.R
     results$groupingID <- calculateGroupingID(results, inputFormat, stateGroups, valueKinds)
     if (!is.null(splitSubjects)) {
@@ -1307,7 +1309,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experiment <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "experiments/", experiment$id))))
   return(experiment)
 }
-validateProject <- function(projectName, configList) {
+validateProject <- function(projectName, configList, errorEnv) {
   require('RCurl')
   require('rjson')
   tryCatch({
@@ -1318,18 +1320,18 @@ validateProject <- function(projectName, configList) {
   tryCatch({
     projectList <- fromJSON(projectList)
   }, error = function(e) {
-    errorList <<- c(errorList, paste("There was an error in validating your project:", projectList))
+    addError(paste("There was an error in validating your project:", projectList), errorEnv = errorEnv)
     return("")
   })
   #projectCodes <- sapply(projectList, function(x) x$code)
   projectNames <- sapply(projectList, function(x) x$name)
-  if(length(projectNames) == 0) {errorList <<- c(errorList, "No projects are available, contact your system administrator")}
+  if(length(projectNames) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
   if (projectName %in% projectNames) {
     return(projectName)
   } else {
     configText <- toJSON(configList)
-    errorList <<- c(errorList, paste0("The project you entered is not an available project. Please enter one of these projects: '",
-                                      paste(projectNames, collapse = "', '"), "'."))
+    addError(paste0("The project you entered is not an available project. Please enter one of these projects: '",
+                                      paste(projectNames, collapse = "', '"), "'."), errorEnv=errorEnv)
     return("")
   }
 }
@@ -2278,10 +2280,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
+  calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
   calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, 
                                                  rawOnlyFormat, stateGroups, splitSubjects, inputFormat, mainCode,
                                                  errorEnv, precise = precise, 
-                                                 calculateGroupingID = ifelse(precise, NA, calculateTreatmemtGroupID))
+                                                 calculateGroupingID = calculateGroupingID)
   if (!is.null(splitSubjects)) {
     calculatedResults$subjectID <- calculatedResults$groupingID_2
     calculatedResults$treatmentGroupID <- calculatedResults$groupingID
@@ -2333,7 +2336,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     # Grab the Raw Results Section
     subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
     
-    groupByColumns <- c(genericDataFileDataFrame[2, 2], 'batch code')
+    groupByColumns <- c(subjectData[2, 2], 'batchCode')
     groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
     keepColumn <- "Response"
     excludedRowKind <- "flag"
@@ -2452,12 +2455,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   summaryInfo$info$"Assay Date" = validatedMetaData$"Assay Date"
   summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
   summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$valueKindAndUnit))
-  summaryInfo$info[[paste0("Unique ",mainCode,"'s")]] = length(unique(calculatedResults[[mainCode]]))
+  summaryInfo$info[[paste0("Unique ", mainCode, "'s")]] = length(unique(calculatedResults[[mainCode]]))
   if (!is.null(subjectData)) {
     # TODO Kelley: figure out what to replace this with rather than pointID
-    summaryInfo$info$"Raw Results Data Points" <- max(subjectData$pointID)
+    summaryInfo$info$"Raw Results Data Points" <- max(subjectData$rowID)
     # TODO Kelley: figure out what to replace this with rather than subjectData$value
-    summaryInfo$info$"Flagged Data Points" <- length(subjectData$value[subjectData$ResultType=="flag" & !is.na(subjectData$value)])
+    summaryInfo$info$"Flagged Data Points" <- sum(subjectData$valueKind == "flag")
   }
   if(!dryRun) {
     summaryInfo$info$"Experiment Code Name" <- experiment$codeName
@@ -2568,7 +2571,7 @@ parseGenericData <- function(request) {
   options("scipen"=15)
   # This is used for development: outputs the JSON rather than sending it to the
   # server and does not wrap everything in tryCatch so traceback() will work
-  developmentMode <- TRUE
+  developmentMode <- FALSE
   
   # Collect the information from the request
   request <- as.list(request)
