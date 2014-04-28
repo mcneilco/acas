@@ -2326,7 +2326,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       #subjectDataKept <- as.data.table(subjectData)
       #subjectDataKept2 <- subjectDataKept[!(rowID %in% removeRowID), createTreatmentGroupData(.SD), by = groupByColumns]
       
-      stateAssignments <- data.frame(valuKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
       
       intermedList <- doStuffWithSubjects(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, errorEnv=errorEnv)
       subjectData <- intermedList$subjectData
