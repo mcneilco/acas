@@ -238,7 +238,6 @@ else
 fi
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{propName:"BatchDocumentsURL", propValue: "'$urlPrefix'://'$client_host':'${server_nodeapi_port}'/files/"},
-{propName:"server_address", propValue:"'$client_host'"},
+{propName:"BatchDocumentsURL", propValue: "'$urlPrefix'://'$client_host':'${client_port}'/dataFiles/"},
 {propName:"batch_code_experiment_url", propValue: "'$urlPrefix'://'$client_host':'${client_port}'/flipr_screening_assay/codeName/"}
 ]' http://"$HOSTNAMEFQDN":8080/acas/applicationsettings/jsonArray
