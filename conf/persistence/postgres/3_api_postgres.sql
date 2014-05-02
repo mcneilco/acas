@@ -644,12 +644,12 @@ join experiment exp on aagr.experiment_id = exp.id;
 
 CREATE OR REPLACE VIEW batch_code_experiment_links AS
 select agv.code_value as batch_code,
-    ('<A HREF="http://' ||
+    ('<A HREF="' ||
     (
         SELECT application_setting.prop_value
         FROM application_setting
-        WHERE application_setting.prop_name = 'server_address'
-    ) || ':3000/flipr_screening_assay/codeName/' ||
+        WHERE application_setting.prop_name = 'batch_code_experiment_url'
+    ) ||
     replace(e.code_name, ' ', '%20') ||
     '">' ||
     p.label_text ||

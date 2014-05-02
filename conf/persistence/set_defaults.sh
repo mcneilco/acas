@@ -231,7 +231,14 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {"digits":8,"groupDigits":false, "labelPrefix":"SITX","labelSeparator":"-","labelTypeAndKind":"id_codeName","latestNumber":1, "thingTypeAndKind":"interaction_subjectContainer"}
 ]' http://"$HOSTNAMEFQDN":8080/acas/labelsequences/jsonArray
 
+if [ "$client_use_ssl" == 'true' ]; then
+ urlPrefix=https
+else
+ urlPrefix=http
+fi
+
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{propName:"BatchDocumentsURL", propValue: "http://'$HOSTNAMEFQDN':${client_service_file_port}/files/"},
-{propName:"server_address", propValue:"'$HOSTNAMEFQDN'"}
+{propName:"BatchDocumentsURL", propValue: "'$urlPrefix'://'$client_host':'${server_nodeapi_port}'/files/"},
+{propName:"server_address", propValue:"'$client_host'"},
+{propName:"batch_code_experiment_url", propValue: "'$urlPrefix'://'$client_host':'${client_port}'/flipr_screening_assay/codeName/"}
 ]' http://"$HOSTNAMEFQDN":8080/acas/applicationsettings/jsonArray
