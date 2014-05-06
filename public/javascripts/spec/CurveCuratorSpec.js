@@ -134,7 +134,6 @@
       });
       return xdescribe("user approved display", function() {
         it("should show thumbs up when user approved", function() {
-          console.log(this.csc.$('.bv_thumbsUp'));
           expect(this.csc.$('.bv_thumbsUp')).toBeVisible();
           return expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
         });
@@ -250,14 +249,21 @@
           it("should set the div id to a unique cid", function() {
             return expect(this.drpc.$('.bv_plotWindow').attr('id')).toEqual("bvID_plotWindow_" + this.drpc.model.cid);
           });
-          return it("should render the points", function() {
-            return console.log(this.drpc.$('.bv_plotWindow').html());
+          it("should have rendered an svg", function() {
+            return expect(this.drpc.$('#bvID_plotWindow_' + this.drpc.model.cid)[0].innerHTML).toContain('<svg');
+          });
+          return it("should have a populated point list", function() {
+            return expect(this.drpc.pointList.length).toBeGreaterThan(0);
           });
         });
-        return describe("plotting of points and curve", function() {
-          return it("should plot points", function() {
-            console.log(this.drpc.$('.bv_plotWindow'));
-            return console.log(this.drpc.$('.bv_plotWindow'));
+        return describe("point knockout/include behavior", function() {
+          it("calling knockout point on a point should update the flag on the model", function() {
+            this.drpc.pointList[0].knockOutPoint('testKnockout');
+            return expect(this.drpc.model.get('points')[this.drpc.pointList[0].idx].flag).toEqual('testKnockout');
+          });
+          return it("calling include point on a point should remove the flag on the model", function() {
+            this.drpc.pointList[0].includePoint();
+            return expect(this.drpc.model.get('points')[this.drpc.pointList[0].idx].flag).toEqual('NA');
           });
         });
       });
@@ -324,6 +330,9 @@
           });
         });
         return describe("dose response plot", function() {
+          it("should have a dose response plot controller", function() {
+            return expect(this.cec.$('.bv_plotWindow')).toBeDefined();
+          });
           return it("should have a dose response plot controller", function() {
             return expect(this.cec.$('.bv_plotWindow')).toBeDefined();
           });
@@ -353,9 +362,10 @@
           runs(function() {
             return this.ccc.getCurvesFromExperimentCode("EXPT-00000018");
           });
-          return waitsFor(function() {
+          waitsFor(function() {
             return this.ccc.model.get('curves').length > 0;
           });
+          return waits(200);
         });
         describe("post fetch display", function() {
           it("should show the curve summary list", function() {
@@ -428,6 +438,7 @@
                 sortOptions: new Backbone.Collection()
               });
               this.ccc.render();
+              waits(200);
               return expect(this.ccc.$('.bv_sortBy').val()).toEqual("none");
             });
           });
@@ -437,6 +448,7 @@
                 sortOptions: new Backbone.Collection()
               });
               this.ccc.render();
+              waits(200);
               expect(this.ccc.$('.bv_sortBy').val()).toEqual("none");
               expect(this.ccc.$(".bv_sortDirection_ascending").prop("disabled")).toEqual(true);
               return expect(this.ccc.$(".bv_sortDirection_descending").prop("disabled")).toEqual(true);
@@ -474,6 +486,7 @@
                 return _this.ccc.$('.bv_reportedValues').length > 0;
               };
             })(this), 500);
+            waits(200);
             return runs(function() {
               return expect(this.ccc.$('.bv_reportedValues').html()).toContain("slope");
             });

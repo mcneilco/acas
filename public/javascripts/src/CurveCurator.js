@@ -319,6 +319,8 @@
     __extends(CurveEditorController, _super);
 
     function CurveEditorController() {
+      this.handleSaveSuccess = __bind(this.handleSaveSuccess, this);
+      this.handleSaveError = __bind(this.handleSaveError, this);
       this.handleUpdateClicked = __bind(this.handleUpdateClicked, this);
       this.handleResetClicked = __bind(this.handleResetClicked, this);
       this.handleParametersChanged = __bind(this.handleParametersChanged, this);
@@ -367,11 +369,17 @@
     };
 
     CurveEditorController.prototype.handlePointsChanged = function() {
-      return this.model.save();
+      return this.model.save({
+        persist: false,
+        user: window.AppLaunchParams.loginUserName
+      });
     };
 
     CurveEditorController.prototype.handleParametersChanged = function() {
-      return this.model.save();
+      return this.model.save({
+        persist: false,
+        user: window.AppLaunchParams.loginUserName
+      });
     };
 
     CurveEditorController.prototype.handleResetClicked = function() {
@@ -379,10 +387,24 @@
     };
 
     CurveEditorController.prototype.handleUpdateClicked = function() {
+      this.oldID = this.model.get('curveid');
       return this.model.save({
         persist: true,
         user: window.AppLaunchParams.loginUserName
+      }, {
+        success: this.handleSaveSuccess,
+        error: this.handleSaveError
       });
+    };
+
+    CurveEditorController.prototype.handleSaveError = function() {
+      return alert("Error saving curve");
+    };
+
+    CurveEditorController.prototype.handleSaveSuccess = function() {
+      var newID;
+      newID = this.model.get('curveid');
+      return this.trigger('curveDetailSaved', this.oldID, newID);
     };
 
     return CurveEditorController;
@@ -393,6 +415,7 @@
     __extends(CurveList, _super);
 
     function CurveList() {
+      this.updatedCurveSummary = __bind(this.updatedCurveSummary, this);
       return CurveList.__super__.constructor.apply(this, arguments);
     }
 
@@ -409,6 +432,17 @@
         });
       });
       return catList;
+    };
+
+    CurveList.prototype.updatedCurveSummary = function(oldID, newCurveID) {
+      var curve;
+      curve = this.findWhere({
+        curveid: oldID
+      });
+      curve.set({
+        curveid: newCurveID
+      });
+      return window.chicken = curve;
     };
 
     return CurveList;
@@ -512,6 +546,7 @@
         }
       }
       this.$('.bv_compoundCode').html(this.model.get('curveAttributes').compoundCode);
+      this.model.on('change', this.render);
       return this;
     };
 
@@ -618,6 +653,7 @@
       this.handleFilterChanged = __bind(this.handleFilterChanged, this);
       this.handleGetCurveDetailReturn = __bind(this.handleGetCurveDetailReturn, this);
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
+      this.handleCurveDetailSaved = __bind(this.handleCurveDetailSaved, this);
       this.render = __bind(this.render, this);
       return CurveCuratorController.__super__.constructor.apply(this, arguments);
     }
@@ -644,6 +680,7 @@
         this.curveEditorController = new CurveEditorController({
           el: this.$('.bv_curveEditor')
         });
+        this.curveEditorController.on('curveDetailSaved', this.handleCurveDetailSaved);
         if (this.model.get('sortOptions').length > 0) {
           this.sortBySelect = new PickListSelectController({
             collection: this.model.get('sortOptions'),
@@ -684,6 +721,10 @@
         this.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
       }
       return this;
+    };
+
+    CurveCuratorController.prototype.handleCurveDetailSaved = function(oldID, newID) {
+      return this.curveListController.collection.updatedCurveSummary(oldID, newID);
     };
 
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode) {
