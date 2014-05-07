@@ -92,7 +92,6 @@ describe "Curve Curator Module testing", ->
 		xdescribe "user approved display", ->
 			#TODO these tests don't work, but implimentation does
 			it "should show thumbs up when user approved", ->
-				console.log @csc.$('.bv_thumbsUp')
 				expect(@csc.$('.bv_thumbsUp')).toBeVisible()
 				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
 			it "should show thumbs down when not user approved", ->
@@ -172,14 +171,17 @@ describe "Curve Curator Module testing", ->
 					expect(@drpc.$('.bv_plotWindow').length).toEqual 1
 				it "should set the div id to a unique cid", ->
 					expect(@drpc.$('.bv_plotWindow').attr('id')).toEqual "bvID_plotWindow_" + @drpc.model.cid
-				it "should render the points", ->
-					console.log @drpc.$('.bv_plotWindow').html()
-			describe "plotting of points and curve", ->
-				it "should plot points", ->
-					console.log @drpc.$('.bv_plotWindow')
-					console.log @drpc.$('.bv_plotWindow')
-
-
+				it "should have rendered an svg", ->
+					expect(@drpc.$('#bvID_plotWindow_' + @drpc.model.cid)[0].innerHTML).toContain('<svg')
+				it "should have a populated point list", ->
+					expect(@drpc.pointList.length).toBeGreaterThan(0)
+			describe "point knockout/include behavior", ->
+				it "calling knockout point on a point should update the flag on the model", ->
+					@drpc.pointList[0].knockOutPoint('testKnockout')
+					expect(@drpc.model.get('points')[@drpc.pointList[0].idx].flag).toEqual('testKnockout')
+				it "calling include point on a point should remove the flag on the model", ->
+					@drpc.pointList[0].includePoint()
+					expect(@drpc.model.get('points')[@drpc.pointList[0].idx].flag).toEqual('NA')
 
 	describe "Curve Editor Controller tests", ->
 			beforeEach ->
@@ -225,6 +227,9 @@ describe "Curve Curator Module testing", ->
 				describe "dose response plot", ->
 					it "should have a dose response plot controller", ->
 						expect(@cec.$('.bv_plotWindow')).toBeDefined()
+					it "should have a dose response plot controller", ->
+						expect(@cec.$('.bv_plotWindow')).toBeDefined()
+
 
 	describe "Curve Curator Controller tests", ->
 		beforeEach ->
@@ -244,6 +249,7 @@ describe "Curve Curator Module testing", ->
 					@ccc.getCurvesFromExperimentCode("EXPT-00000018")
 				waitsFor ->
 					@ccc.model.get('curves').length > 0
+				waits 200
 			describe "post fetch display", ->
 				it "should show the curve summary list", ->
 					runs ->
@@ -294,11 +300,13 @@ describe "Curve Curator Module testing", ->
 					runs ->
 						@ccc.model.set sortOptions: new Backbone.Collection()
 						@ccc.render()
+						waits 200
 						expect(@ccc.$('.bv_sortBy').val()).toEqual "none"
 				it "should disable sortDirection radio buttons if 'none' sortBy option is selected", ->
 					runs ->
 						@ccc.model.set sortOptions: new Backbone.Collection()
 						@ccc.render()
+						waits 200
 						expect(@ccc.$('.bv_sortBy').val()).toEqual "none"
 						expect(@ccc.$(".bv_sortDirection_ascending").prop("disabled")).toEqual true
 						expect(@ccc.$(".bv_sortDirection_descending").prop("disabled")).toEqual true
@@ -322,6 +330,7 @@ describe "Curve Curator Module testing", ->
 					waitsFor =>
 						@ccc.$('.bv_reportedValues').length > 0
 					, 500
+					waits 200
 					runs ->
 						expect(@ccc.$('.bv_reportedValues').html()).toContain "slope"
 

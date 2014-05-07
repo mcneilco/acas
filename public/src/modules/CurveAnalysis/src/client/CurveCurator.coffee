@@ -9,7 +9,6 @@ class window.DoseResponsePlotController extends AbstractFormController
 		@$el.html @template()
 		if @model?
 			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
-			#			@model.on "change", @handlePointsChanged
 			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
 			@
 		else
@@ -131,7 +130,6 @@ class window.DoseResponsePlotController extends AbstractFormController
 			if curve.type == "LL.4"
 				fct = (x) ->
 					curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
-				#drawMin + (drawMax - drawMin) / (1 + exp(-drawHill * log(x / drawEC50)))
 				brd.create('functiongraph', [fct, -3, 20], {strokeWidth:2});
 
 		getMouseCoords = (e) ->
@@ -266,16 +264,24 @@ class window.CurveEditorController extends Backbone.View
 		@model.on 'sync', @render
 
 	handlePointsChanged: =>
-		@model.save()
+		@model.save({persist: false, user: window.AppLaunchParams.loginUserName})
 
 	handleParametersChanged: =>
-		@model.save()
+		@model.save({persist: false, user: window.AppLaunchParams.loginUserName})
 
 	handleResetClicked: =>
 		@model.fetch()
 
 	handleUpdateClicked: =>
-		@model.save({persist: true, user: window.AppLaunchParams.loginUserName})
+		@oldID =  @model.get 'curveid'
+		@model.save({persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleSaveSuccess, error: @handleSaveError})
+
+	handleSaveError: =>
+		alert "Error saving curve"
+
+	handleSaveSuccess: =>
+		newID = @model.get 'curveid'
+		@trigger 'curveDetailSaved', @oldID, newID
 
 class window.CurveList extends Backbone.Collection
 	model: Curve
@@ -288,6 +294,11 @@ class window.CurveList extends Backbone.Collection
 				code: cat
 				name: cat
 		catList
+
+	updatedCurveSummary: (oldID, newCurveID) =>
+		curve = @.findWhere({curveid: oldID})
+		curve.set curveid: newCurveID
+		window.chicken = curve
 
 class window.CurveCurationSet extends Backbone.Model
 	defaults:
@@ -313,7 +324,6 @@ class window.CurveSummaryController extends Backbone.View
 	template: _.template($("#CurveSummaryView").html())
 	tagName: 'div'
 	className: 'bv_curveSummary'
-
 	events:
 		'click': 'setSelected'
 
@@ -343,6 +353,7 @@ class window.CurveSummaryController extends Backbone.View
 			else
 				@$('.bv_thumbsDown').show()
 		@$('.bv_compoundCode').html @model.get('curveAttributes').compoundCode
+		@model.on 'change', @render
 		@
 
 	setSelected: =>
@@ -423,6 +434,7 @@ class window.CurveCuratorController extends Backbone.View
 
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
+			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 
 			if @model.get('sortOptions').length > 0
 				@sortBySelect = new PickListSelectController
@@ -460,6 +472,9 @@ class window.CurveCuratorController extends Backbone.View
 			@$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
 
 		@
+
+	handleCurveDetailSaved: (oldID, newID) =>
+		@curveListController.collection.updatedCurveSummary(oldID, newID)
 
 	getCurvesFromExperimentCode: (exptCode) ->
 		@model = new CurveCurationSet
