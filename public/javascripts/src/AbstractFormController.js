@@ -1,5 +1,6 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var _ref,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -11,7 +12,8 @@
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.attributeChanged = __bind(this.attributeChanged, this);
-      return AbstractFormController.__super__.constructor.apply(this, arguments);
+      _ref = AbstractFormController.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     AbstractFormController.prototype.show = function() {
@@ -44,31 +46,29 @@
     };
 
     AbstractFormController.prototype.validationError = function() {
-      var errors;
+      var errors,
+        _this = this;
       errors = this.model.validationError;
       this.clearValidationErrorStyles();
-      _.each(errors, (function(_this) {
-        return function(err) {
-          _this.$('.bv_group_' + err.attribute).addClass('input_error error');
-          return _this.trigger('notifyError', {
-            owner: _this.errorOwnerName,
-            errorLevel: 'error',
-            message: err.message
-          });
-        };
-      })(this));
+      _.each(errors, function(err) {
+        _this.$('.bv_group_' + err.attribute).addClass('input_error error');
+        return _this.trigger('notifyError', {
+          owner: _this.errorOwnerName,
+          errorLevel: 'error',
+          message: err.message
+        });
+      });
       return this.trigger('invalid');
     };
 
     AbstractFormController.prototype.clearValidationErrorStyles = function() {
-      var errorElms;
+      var errorElms,
+        _this = this;
       errorElms = this.$('.input_error');
       this.trigger('clearErrors', this.errorOwnerName);
-      return _.each(errorElms, (function(_this) {
-        return function(ee) {
-          return $(ee).removeClass('input_error error');
-        };
-      })(this));
+      return _.each(errorElms, function(ee) {
+        return $(ee).removeClass('input_error error');
+      });
     };
 
     AbstractFormController.prototype.isValid = function() {

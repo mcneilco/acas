@@ -17,7 +17,6 @@
 
 
 .bv_curveCurator .bv_curveEditor {
-    height: 700px;
-    min-width: 770px;
-    border: none;
+    margin-left: 0;
+    width: 1120px;
 }

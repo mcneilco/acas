@@ -1,5 +1,6 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var _ref, _ref1,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -9,7 +10,8 @@
     function AppRouter() {
       this.existingDoc = __bind(this.existingDoc, this);
       this.newDoc = __bind(this.newDoc, this);
-      return AppRouter.__super__.constructor.apply(this, arguments);
+      _ref = AppRouter.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     AppRouter.prototype.routes = {
@@ -41,7 +43,8 @@
       this.existingDoc = __bind(this.existingDoc, this);
       this.newDoc = __bind(this.newDoc, this);
       this.render = __bind(this.render, this);
-      return AppController.__super__.constructor.apply(this, arguments);
+      _ref1 = AppController.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     AppController.prototype.template = _.template($('#DocForBatchesAppControllerView').html());
@@ -71,19 +74,16 @@
     };
 
     AppController.prototype.existingDoc = function(docId) {
+      var _this = this;
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/" + docId,
-        success: (function(_this) {
-          return function(json) {
-            return _this.existingDocReturn(json);
-          };
-        })(this),
-        error: (function(_this) {
-          return function(err) {
-            return _this.serviceReturn = null;
-          };
-        })(this),
+        success: function(json) {
+          return _this.existingDocReturn(json);
+        },
+        error: function(err) {
+          return _this.serviceReturn = null;
+        },
         dataType: 'json'
       });
     };

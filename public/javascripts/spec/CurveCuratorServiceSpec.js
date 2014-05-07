@@ -41,16 +41,15 @@
         var self;
         self = this;
         return runs(function() {
+          var _this = this;
           this.syncEvent = false;
           this.testModel = new CurveDetail({
             id: "AG-00068922_522"
           });
-          this.testModel.on('change', (function(_this) {
-            return function() {
-              console.log('sync event true');
-              return _this.syncEvent = true;
-            };
-          })(this));
+          this.testModel.on('change', function() {
+            console.log('sync event true');
+            return _this.syncEvent = true;
+          });
           return this.testModel.fetch();
         });
       });

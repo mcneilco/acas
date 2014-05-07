@@ -8,51 +8,51 @@
 </script>
 
 <script type="text/template" id="CurveSummaryListView" xmlns="http://www.w3.org/1999/html">
-    <div class="span4" style="margin-left:0;width:300px;height:720px;">
-        <div class="bv_curveSummaries"></div>
+    <div class="span4" style="margin-left:5px;width:300px;height:720px;">
+        <div class="bv_curveSummaries well well-small" style="background-color:#ffffff;width:275px;height:705px;"></div>
     </div>
 </script>
 
 <script type="text/template" id="DoseResponsePlotView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_plotWindow" style="height:300px; width:600px">plot view</div>
+    <div class="bv_plotWindow" style="height:300px;width:600px;">plot view</div>
 </script>
 
 <script type="text/template" id="CurveEditorView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="bv_plotWindowWrapper"></div>
+    <div class="bv_plotWindowWrapper span6"></div>
 
-    <div class="bv_fitOptionWrapper">
+    <div class="bv_fitOptionWrapper span5">
         <div class="bv_analysisParameterForm"></div>
     </div>
 
     <div class="bv_curveFitParameters"></div>
 
-    <div class="span5">
+    <div class="span5" style="width:525px;">
         <h5 style="margin-top:0;">Reported Values:</h5>
         <div class="well well-small bv_reportedValues" style="background-color:#ffffff;height:125px;overflow:auto;"></div>
     </div>
 
-    <div class="span5">
+    <div class="span5" style="width:525px;">
         <h5 style="margin-top:0;">Fit Summary:</h5>
         <div class="well well-small bv_fitSummary" style="background-color:#ffffff;height:125px;overflow:auto;"></div>
     </div>
 
-    <div class="span5">
+    <div class="span5" style="width:525px;">
         <h5 style="margin-top:0;">Parameter Std. Errors:</h5>
         <div class="well well-small bv_parameterStdErrors" style="background-color:#ffffff;height:50px;overflow:auto;"></div>
     </div>
 
-    <div class="span5">
+    <div class="span5" style="width:525px;">
         <h5 style="margin-top:0;">Curve Errors:</h5>
         <div class="well well-small bv_curveErrors" style="background-color:#ffffff;height:50px;overflow:auto;"></div>
     </div>
 
-    <div class="span5">
+    <div class="span5" style="width:525px;">
         <h5 style="margin-top:0;">Category:</h5>
         <div class="well well-small bv_category" style="background-color:#ffffff;height:50px;overflow:auto;"></div>
     </div>
 
-    <div class="span10">
+    <div class="span11" style="width:1080px;">
         <button class="btn btn-danger bv_reject" type="button">Reject</button>
         <button class="btn btn-success bv_approve" type="button">Approve</button>
         <button class="btn btn-primary pull-right bv_update" type="button" style="margin-left:4px;">Update</button>
@@ -61,33 +61,38 @@
 </script>
 
 <script type="text/template" id="CurveCuratorView" xmlns="http://www.w3.org/1999/html">
-    <div class=" well well-small span12" style="background-color:#FFFFFF;width:1105px;">
-        <div class="form-horizontal" style="margin-bottom:10px;">
-            <div class="control-group bv_group_category">
-                <label class="control-label" style="width:65px;">Category:</label>
-                <div class="controls" style="margin-left:80px;">
-                    <select class="bv_filterBy">
-                        <option>Sigmoid</option>
-                        <option>All</option>
-                    </select>
+    <div class=" well well-small span12" style="background-color:#FFFFFF;width:1420px;">
+
+        <div class="span3" style="margin-left:0;width:300px;">
+            <div class="form-horizontal" style="margin-bottom:10px;">
+                <div class="control-group bv_group_category">
+                    <label class="control-label" style="width:65px;">Category:</label>
+                    <div class="controls" style="margin-left:80px;">
+                        <select class="bv_filterBy">
+                            <option>Sigmoid</option>
+                            <option>All</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group bv_group_sortBy" style="margin-bottom:10px;">
+                    <label class="control-label" style="width:65px;">Sort By:</label>
+                    <div class="controls" style="margin-left:80px;">
+                        <select class="bv_sortBy">
+                            <option>Compound ID</option>
+                        </select>
+                        <label class="radio" style="padding-left:25px;">
+                            <input type="radio" name="bv_sortDirection" class="bv_sortDirection_ascending" value="ascending" style=""/>ascending
+                        </label>
+                        <label class="radio" style="padding-left:25px;">
+                            <input type="radio" name="bv_sortDirection" class="bv_sortDirection_descending" value="descending" style="margin-right:5px;"/>descending
+                        </label>
+                    </div>
                 </div>
             </div>
-            <div class="control-group bv_group_sortBy" style="margin-bottom:10px;">
-                <label class="control-label" style="width:65px;">Sort By:</label>
-                <div class="controls" style="margin-left:80px;">
-                    <select class="bv_sortBy">
-                        <option>Compound ID</option>
-                    </select>
-                    <label class="radio" style="padding-left:25px;">
-                        <input type="radio" name="bv_sortDirection" class="bv_sortDirection_ascending" value="ascending" style="..."/>ascending
-                    </label>
-                    <label class="radio" style="padding-left:25px;">
-                        <input type="radio" name="bv_sortDirection" class="bv_sortDirection_descending" value="descending" style="margin-right:5px;"/>descending
-                    </label>
-                </div>
-            </div>
+            <div class="bv_curveList" ></div>
         </div>
-        <div class="bv_curveList" ></div>
-        <div class="bv_curveEditor" ></div>
+
+        <div class="bv_curveEditor span11" ></div>
+
     </div>
 </script>

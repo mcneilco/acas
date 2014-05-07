@@ -64,13 +64,12 @@
         beforeEach(function() {
           this.prot = new Protocol(window.protocolServiceTestJSON.stubSavedProtocol[0]);
           return runs(function() {
+            var _this = this;
             this.fetchReturned = false;
             return this.prot.fetch({
-              success: (function(_this) {
-                return function() {
-                  return _this.fetchReturned = true;
-                };
-              })(this)
+              success: function() {
+                return _this.fetchReturned = true;
+              }
             });
           });
         });
@@ -101,23 +100,20 @@
       describe("model composite component conversion", function() {
         beforeEach(function() {
           runs(function() {
+            var _this = this;
             this.saveSucessful = false;
             this.saveComplete = false;
             this.prot = new Protocol(window.protocolServiceTestJSON);
             this.prot.set({
               shortDescription: "new description"
             });
-            this.prot.on('sync', (function(_this) {
-              return function() {
-                _this.saveSucessful = true;
-                return _this.saveComplete = true;
-              };
-            })(this));
-            this.prot.on('invalid', (function(_this) {
-              return function() {
-                return _this.saveComplete = true;
-              };
-            })(this));
+            this.prot.on('sync', function() {
+              _this.saveSucessful = true;
+              return _this.saveComplete = true;
+            });
+            this.prot.on('invalid', function() {
+              return _this.saveComplete = true;
+            });
             return this.prot.save();
           });
           return waitsFor(function() {
@@ -145,6 +141,7 @@
       return describe("model change propogation", function() {
         it("should trigger change when label changed", function() {
           runs(function() {
+            var _this = this;
             this.prot = new Protocol();
             this.protocolChanged = false;
             this.prot.get('lsLabels').setBestName(new Label({
@@ -153,11 +150,9 @@
               recordedBy: this.prot.get('recordedBy'),
               recordedDate: this.prot.get('recordedDate')
             }));
-            this.prot.on('change', (function(_this) {
-              return function() {
-                return _this.protocolChanged = true;
-              };
-            })(this));
+            this.prot.on('change', function() {
+              return _this.protocolChanged = true;
+            });
             this.protocolChanged = false;
             return this.prot.get('lsLabels').setBestName(new Label({
               labelKind: "protocol name",
@@ -175,13 +170,12 @@
         });
         return it("should trigger change when value changed in state", function() {
           runs(function() {
+            var _this = this;
             this.prot = new Protocol(window.protocolServiceTestJSON.fullSavedProtocol);
             this.protocolChanged = false;
-            this.prot.on('change', (function(_this) {
-              return function() {
-                return _this.protocolChanged = true;
-              };
-            })(this));
+            this.prot.on('change', function() {
+              return _this.protocolChanged = true;
+            });
             return this.prot.get('lsStates').at(0).get('lsValues').at(0).set({
               lsKind: 'fred'
             });

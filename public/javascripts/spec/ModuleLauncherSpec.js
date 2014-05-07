@@ -23,19 +23,17 @@
       });
       describe("activation", function() {
         return it("should trigger activation request", function() {
+          var _this = this;
           runs(function() {
-            this.modLauncher.bind('activationRequested', (function(_this) {
-              return function() {
-                return _this.gotTrigger = true;
-              };
-            })(this));
+            var _this = this;
+            this.modLauncher.bind('activationRequested', function() {
+              return _this.gotTrigger = true;
+            });
             return this.modLauncher.requestActivation();
           });
-          waitsFor((function(_this) {
-            return function() {
-              return _this.gotTrigger;
-            };
-          })(this));
+          waitsFor(function() {
+            return _this.gotTrigger;
+          });
           return runs(function() {
             return expect(this.gotTrigger).toBeTruthy();
           });
@@ -43,19 +41,17 @@
       });
       describe("de-activation", function() {
         return it("should trigger deactivation request", function() {
+          var _this = this;
           runs(function() {
-            this.modLauncher.bind('deactivationRequested', (function(_this) {
-              return function() {
-                return _this.gotTrigger = true;
-              };
-            })(this));
+            var _this = this;
+            this.modLauncher.bind('deactivationRequested', function() {
+              return _this.gotTrigger = true;
+            });
             return this.modLauncher.requestDeactivation();
           });
-          waitsFor((function(_this) {
-            return function() {
-              return _this.gotTrigger;
-            };
-          })(this));
+          waitsFor(function() {
+            return _this.gotTrigger;
+          });
           return runs(function() {
             return expect(this.gotTrigger).toBeTruthy();
           });
@@ -105,11 +101,10 @@
       });
       describe("When clicked", function() {
         beforeEach(function() {
-          this.modLauncherMenuController.bind("selected", (function(_this) {
-            return function() {
-              return _this.gotTrigger = true;
-            };
-          })(this));
+          var _this = this;
+          this.modLauncherMenuController.bind("selected", function() {
+            return _this.gotTrigger = true;
+          });
           return this.modLauncherMenuController.$('.bv_menuName').click();
         });
         it("should set style active", function() {
@@ -119,12 +114,11 @@
           return expect(this.modLauncherMenuController.model.get('isActive')).toBeTruthy();
         });
         return it("should trigger a selected event", function() {
+          var _this = this;
           runs(function() {});
-          waitsFor((function(_this) {
-            return function() {
-              return _this.gotTrigger;
-            };
-          })(this));
+          waitsFor(function() {
+            return _this.gotTrigger;
+          });
           return runs(function() {
             return expect(this.gotTrigger).toBeTruthy();
           });
@@ -283,11 +277,10 @@
         });
         describe("when second activated", function() {
           beforeEach(function() {
-            this.ModLauncherMenuListController.bind("selectionUpdated", (function(_this) {
-              return function() {
-                return _this.gotTrigger = true;
-              };
-            })(this));
+            var _this = this;
+            this.ModLauncherMenuListController.bind("selectionUpdated", function() {
+              return _this.gotTrigger = true;
+            });
             return this.ModLauncherMenuListController.$('.bv_menuName :eq(1) ').click();
           });
           return it("should activate the correct menu", function() {

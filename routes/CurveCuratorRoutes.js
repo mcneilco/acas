@@ -7,7 +7,8 @@
   };
 
   exports.getCurveStubs = function(req, resp) {
-    var baseurl, config, curveCuratorTestData, request;
+    var baseurl, config, curveCuratorTestData, request,
+      _this = this;
     if (global.specRunnerTestmode) {
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveCuratorThumbs));
@@ -20,24 +21,23 @@
         method: 'GET',
         url: baseurl + req.params.exptCode,
         json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 200) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to retrieve curve stubs');
-            console.log(error);
-            console.log(json);
-            return console.log(response);
-          }
-        };
-      })(this));
+      }, function(error, response, json) {
+        if (!error && response.statusCode === 200) {
+          console.log(JSON.stringify(json));
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to retrieve curve stubs');
+          console.log(error);
+          console.log(json);
+          return console.log(response);
+        }
+      });
     }
   };
 
   exports.getCurveDetail = function(req, resp) {
-    var baseurl, config, curveCuratorTestData, request;
+    var baseurl, config, curveCuratorTestData, request,
+      _this = this;
     if (global.specRunnerTestmode) {
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
@@ -49,24 +49,23 @@
         method: 'GET',
         url: baseurl + req.params.id,
         json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 200) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to retrieve curve detail');
-            console.log(error);
-            console.log(json);
-            return console.log(response);
-          }
-        };
-      })(this));
+      }, function(error, response, json) {
+        if (!error && response.statusCode === 200) {
+          console.log(JSON.stringify(json));
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to retrieve curve detail');
+          console.log(error);
+          console.log(json);
+          return console.log(response);
+        }
+      });
     }
   };
 
   exports.refitCurve = function(req, resp) {
-    var baseurl, config, curveCuratorTestData, request;
+    var baseurl, config, curveCuratorTestData, request,
+      _this = this;
     if (global.specRunnerTestmode) {
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
@@ -80,15 +79,13 @@
         url: baseurl,
         body: JSON.stringify(req.body),
         json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 200) {
-            return resp.end(JSON.stringify(json));
-          } else {
+      }, function(error, response, json) {
+        if (!error && response.statusCode === 200) {
+          return resp.end(JSON.stringify(json));
+        } else {
 
-          }
-        };
-      })(this));
+        }
+      });
     }
   };
 

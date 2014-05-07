@@ -52,20 +52,18 @@
       });
       return describe("curve fetching", function() {
         beforeEach(function() {
+          var _this = this;
           runs(function() {
-            this.ccs.on('sync', (function(_this) {
-              return function() {
-                return _this.fetchReturn = true;
-              };
-            })(this));
+            var _this = this;
+            this.ccs.on('sync', function() {
+              return _this.fetchReturn = true;
+            });
             this.ccs.setExperimentCode("EXPT-00000018");
             return this.ccs.fetch();
           });
-          return waitsFor((function(_this) {
-            return function() {
-              return _this.fetchReturn;
-            };
-          })(this), 200);
+          return waitsFor(function() {
+            return _this.fetchReturn;
+          }, 200);
         });
         it("should fetch curves set from expt code", function() {
           return runs(function() {
@@ -379,11 +377,10 @@
             });
           });
           return it("should show the curve editor", function() {
-            waitsFor((function(_this) {
-              return function() {
-                return _this.ccc.$('.bv_reportedValues').length > 0;
-              };
-            })(this), 500);
+            var _this = this;
+            waitsFor(function() {
+              return _this.ccc.$('.bv_reportedValues').length > 0;
+            }, 500);
             return runs(function() {
               return expect(this.ccc.$('.bv_reportedValues').length).toBeGreaterThan(0);
             });
@@ -481,11 +478,10 @@
             });
           });
           return it("should show the selected curve details", function() {
-            waitsFor((function(_this) {
-              return function() {
-                return _this.ccc.$('.bv_reportedValues').length > 0;
-              };
-            })(this), 500);
+            var _this = this;
+            waitsFor(function() {
+              return _this.ccc.$('.bv_reportedValues').length > 0;
+            }, 500);
             waits(200);
             return runs(function() {
               return expect(this.ccc.$('.bv_reportedValues').html()).toContain("slope");

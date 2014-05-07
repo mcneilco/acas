@@ -1,5 +1,6 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
+  var _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6,
+    __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -7,7 +8,8 @@
     __extends(ModuleLauncher, _super);
 
     function ModuleLauncher() {
-      return ModuleLauncher.__super__.constructor.apply(this, arguments);
+      _ref = ModuleLauncher.__super__.constructor.apply(this, arguments);
+      return _ref;
     }
 
     ModuleLauncher.prototype.defaults = {
@@ -41,7 +43,8 @@
     __extends(ModuleLauncherList, _super);
 
     function ModuleLauncherList() {
-      return ModuleLauncherList.__super__.constructor.apply(this, arguments);
+      _ref1 = ModuleLauncherList.__super__.constructor.apply(this, arguments);
+      return _ref1;
     }
 
     ModuleLauncherList.prototype.model = ModuleLauncher;
@@ -57,7 +60,8 @@
       this.clearSelected = __bind(this.clearSelected, this);
       this.handleSelect = __bind(this.handleSelect, this);
       this.render = __bind(this.render, this);
-      return ModuleLauncherMenuController.__super__.constructor.apply(this, arguments);
+      _ref2 = ModuleLauncherMenuController.__super__.constructor.apply(this, arguments);
+      return _ref2;
     }
 
     ModuleLauncherMenuController.prototype.template = _.template($("#ModuleLauncherMenuView").html());
@@ -107,8 +111,8 @@
     };
 
     ModuleLauncherMenuController.prototype.clearSelected = function(who) {
-      var _ref;
-      if ((who != null ? (_ref = who.model) != null ? _ref.get("menuName") : void 0 : void 0) !== this.model.get("menuName")) {
+      var _ref3;
+      if ((who != null ? (_ref3 = who.model) != null ? _ref3.get("menuName") : void 0 : void 0) !== this.model.get("menuName")) {
         return this.model.requestDeactivation();
       }
     };
@@ -122,7 +126,8 @@
 
     function ModuleLauncherMenuHeaderController() {
       this.render = __bind(this.render, this);
-      return ModuleLauncherMenuHeaderController.__super__.constructor.apply(this, arguments);
+      _ref3 = ModuleLauncherMenuHeaderController.__super__.constructor.apply(this, arguments);
+      return _ref3;
     }
 
     ModuleLauncherMenuHeaderController.prototype.tagName = 'li';
@@ -149,7 +154,8 @@
       this.selectionUpdated = __bind(this.selectionUpdated, this);
       this.addOne = __bind(this.addOne, this);
       this.render = __bind(this.render, this);
-      return ModuleLauncherMenuListController.__super__.constructor.apply(this, arguments);
+      _ref4 = ModuleLauncherMenuListController.__super__.constructor.apply(this, arguments);
+      return _ref4;
     }
 
     ModuleLauncherMenuListController.prototype.template = _.template($("#ModuleLauncherMenuListView").html());
@@ -206,7 +212,8 @@
       this.handleDeactivation = __bind(this.handleDeactivation, this);
       this.handleActivation = __bind(this.handleActivation, this);
       this.render = __bind(this.render, this);
-      return ModuleLauncherController.__super__.constructor.apply(this, arguments);
+      _ref5 = ModuleLauncherController.__super__.constructor.apply(this, arguments);
+      return _ref5;
     }
 
     ModuleLauncherController.prototype.tagName = 'div';
@@ -231,25 +238,22 @@
     };
 
     ModuleLauncherController.prototype.handleActivation = function() {
+      var _this = this;
       if (!this.model.get('isLoaded')) {
         if (!window.AppLaunchParams.testMode) {
           this.moduleController = new window[this.model.get('mainControllerClassName')]({
             el: this.$('.bv_moduleContent')
           });
-          this.moduleController.bind('amDirty', (function(_this) {
-            return function() {
-              return _this.model.set({
-                isDirty: true
-              });
-            };
-          })(this));
-          this.moduleController.bind('amClean', (function(_this) {
-            return function() {
-              return _this.model.set({
-                isDirty: false
-              });
-            };
-          })(this));
+          this.moduleController.bind('amDirty', function() {
+            return _this.model.set({
+              isDirty: true
+            });
+          });
+          this.moduleController.bind('amClean', function() {
+            return _this.model.set({
+              isDirty: false
+            });
+          });
           this.moduleController.render();
           this.model.set({
             isLoaded: true
@@ -273,7 +277,8 @@
     function ModuleLauncherListController() {
       this.addOne = __bind(this.addOne, this);
       this.render = __bind(this.render, this);
-      return ModuleLauncherListController.__super__.constructor.apply(this, arguments);
+      _ref6 = ModuleLauncherListController.__super__.constructor.apply(this, arguments);
+      return _ref6;
     }
 
     ModuleLauncherListController.prototype.template = _.template($("#ModuleLauncherListView").html());

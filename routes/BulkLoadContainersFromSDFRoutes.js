@@ -1,9 +1,9 @@
-
 /* To install this Module
 
 Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Load Containers From SDF", mainControllerClassName: "BulkLoadContainersFromSDFController"}
- */
+*/
+
 
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
