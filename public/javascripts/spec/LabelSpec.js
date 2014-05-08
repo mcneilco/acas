@@ -187,11 +187,12 @@
           });
           return it("should trigger change when value changed in state", function() {
             runs(function() {
-              var _this = this;
               this.stateChanged = false;
-              this.es.on('change', function() {
-                return _this.stateChanged = true;
-              });
+              this.es.on('change', (function(_this) {
+                return function() {
+                  return _this.stateChanged = true;
+                };
+              })(this));
               return this.es.get('lsValues').at(0).set({
                 valueKind: 'newkind'
               });

@@ -1,8 +1,8 @@
+
 /*
 Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Load Sample Transfer Log", mainControllerClassName: "BulkLoadSampleTransfersController"}
-*/
-
+ */
 
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {

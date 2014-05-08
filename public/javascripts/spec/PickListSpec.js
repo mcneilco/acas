@@ -12,14 +12,15 @@
     describe("PickList Collection", function() {
       beforeEach(function() {
         runs(function() {
-          var _this = this;
           this.serviceReturn = false;
           this.pickListList = new PickListList(window.projectServiceTestJSON.projects);
           this.pickListList.url = "/api/projects";
           this.pickListList.fetch({
-            success: function() {
-              return _this.serviceReturn = true;
-            }
+            success: (function(_this) {
+              return function() {
+                return _this.serviceReturn = true;
+              };
+            })(this)
           });
           return this.pickListList.fetch;
         });

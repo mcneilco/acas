@@ -1,8 +1,8 @@
+
 /* To install this Module
 Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee
 {isHeader: false, menuName: "Annotate Batches with File", mainControllerClassName: "DocForBatchesController"}
-*/
-
+ */
 
 (function() {
   var fixturesData;

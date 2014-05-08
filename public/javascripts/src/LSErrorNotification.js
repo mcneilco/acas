@@ -1,6 +1,5 @@
 (function() {
-  var _ref, _ref1, _ref10, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8, _ref9,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -8,8 +7,7 @@
     __extends(LSNotificationMessageModel, _super);
 
     function LSNotificationMessageModel() {
-      _ref = LSNotificationMessageModel.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return LSNotificationMessageModel.__super__.constructor.apply(this, arguments);
     }
 
     LSNotificationMessageModel.prototype.defaults = {
@@ -27,8 +25,7 @@
     __extends(LSNotificatioMessageCollection, _super);
 
     function LSNotificatioMessageCollection() {
-      _ref1 = LSNotificatioMessageCollection.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      return LSNotificatioMessageCollection.__super__.constructor.apply(this, arguments);
     }
 
     LSNotificatioMessageCollection.prototype.model = LSNotificationMessageModel;
@@ -41,8 +38,7 @@
     __extends(LSAbstractNotificationCounterController, _super);
 
     function LSAbstractNotificationCounterController() {
-      _ref2 = LSAbstractNotificationCounterController.__super__.constructor.apply(this, arguments);
-      return _ref2;
+      return LSAbstractNotificationCounterController.__super__.constructor.apply(this, arguments);
     }
 
     LSAbstractNotificationCounterController.prototype.templateTypeId = null;
@@ -86,8 +82,7 @@
     __extends(LSErrorNotificationCounterController, _super);
 
     function LSErrorNotificationCounterController() {
-      _ref3 = LSErrorNotificationCounterController.__super__.constructor.apply(this, arguments);
-      return _ref3;
+      return LSErrorNotificationCounterController.__super__.constructor.apply(this, arguments);
     }
 
     LSErrorNotificationCounterController.prototype.templateTypeId = '#LSErrorNotificationCount';
@@ -102,8 +97,7 @@
     __extends(LSWarningNotificationCounterController, _super);
 
     function LSWarningNotificationCounterController() {
-      _ref4 = LSWarningNotificationCounterController.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      return LSWarningNotificationCounterController.__super__.constructor.apply(this, arguments);
     }
 
     LSWarningNotificationCounterController.prototype.templateTypeId = '#LSWarningNotificationCount';
@@ -118,8 +112,7 @@
     __extends(LSInfoNotificationCounterController, _super);
 
     function LSInfoNotificationCounterController() {
-      _ref5 = LSInfoNotificationCounterController.__super__.constructor.apply(this, arguments);
-      return _ref5;
+      return LSInfoNotificationCounterController.__super__.constructor.apply(this, arguments);
     }
 
     LSInfoNotificationCounterController.prototype.templateTypeId = '#LSInfoNotificationCount';
@@ -134,8 +127,7 @@
     __extends(LSMessageController, _super);
 
     function LSMessageController() {
-      _ref6 = LSMessageController.__super__.constructor.apply(this, arguments);
-      return _ref6;
+      return LSMessageController.__super__.constructor.apply(this, arguments);
     }
 
     LSMessageController.prototype.message = null;
@@ -167,8 +159,7 @@
     __extends(LSErrorController, _super);
 
     function LSErrorController() {
-      _ref7 = LSErrorController.__super__.constructor.apply(this, arguments);
-      return _ref7;
+      return LSErrorController.__super__.constructor.apply(this, arguments);
     }
 
     LSErrorController.prototype.countController = null;
@@ -210,8 +201,7 @@
     __extends(LSWarningController, _super);
 
     function LSWarningController() {
-      _ref8 = LSWarningController.__super__.constructor.apply(this, arguments);
-      return _ref8;
+      return LSWarningController.__super__.constructor.apply(this, arguments);
     }
 
     LSWarningController.prototype.countController = null;
@@ -253,8 +243,7 @@
     __extends(LSInfoController, _super);
 
     function LSInfoController() {
-      _ref9 = LSInfoController.__super__.constructor.apply(this, arguments);
-      return _ref9;
+      return LSInfoController.__super__.constructor.apply(this, arguments);
     }
 
     LSInfoController.prototype.countController = null;
@@ -298,8 +287,7 @@
     function LSNotificationController() {
       this.clearAllNotificiations = __bind(this.clearAllNotificiations, this);
       this.toggleShowNotificationMessages = __bind(this.toggleShowNotificationMessages, this);
-      _ref10 = LSNotificationController.__super__.constructor.apply(this, arguments);
-      return _ref10;
+      return LSNotificationController.__super__.constructor.apply(this, arguments);
     }
 
     LSNotificationController.prototype.errorController = null;
@@ -359,11 +347,12 @@
     };
 
     LSNotificationController.prototype.addNotifications = function(owner, notes) {
-      var _this = this;
-      return _.each(notes, function(note) {
-        note.owner = owner;
-        return _this.addNotification(note);
-      });
+      return _.each(notes, (function(_this) {
+        return function(note) {
+          note.owner = owner;
+          return _this.addNotification(note);
+        };
+      })(this));
     };
 
     LSNotificationController.prototype.addError = function(message) {

@@ -1,6 +1,5 @@
 (function() {
-  var _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6, _ref7, _ref8,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -8,8 +7,7 @@
     __extends(Curve, _super);
 
     function Curve() {
-      _ref = Curve.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return Curve.__super__.constructor.apply(this, arguments);
     }
 
     return Curve;
@@ -22,8 +20,7 @@
     function DoseResponsePlotController() {
       this.initJSXGraph = __bind(this.initJSXGraph, this);
       this.render = __bind(this.render, this);
-      _ref1 = DoseResponsePlotController.__super__.constructor.apply(this, arguments);
-      return _ref1;
+      return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
     }
 
     DoseResponsePlotController.prototype.template = _.template($("#DoseResponsePlotView").html());
@@ -288,8 +285,7 @@
     function CurveDetail() {
       this.parse = __bind(this.parse, this);
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
-      _ref2 = CurveDetail.__super__.constructor.apply(this, arguments);
-      return _ref2;
+      return CurveDetail.__super__.constructor.apply(this, arguments);
     }
 
     CurveDetail.prototype.url = function() {
@@ -330,8 +326,7 @@
       this.handleParametersChanged = __bind(this.handleParametersChanged, this);
       this.handlePointsChanged = __bind(this.handlePointsChanged, this);
       this.render = __bind(this.render, this);
-      _ref3 = CurveEditorController.__super__.constructor.apply(this, arguments);
-      return _ref3;
+      return CurveEditorController.__super__.constructor.apply(this, arguments);
     }
 
     CurveEditorController.prototype.template = _.template($("#CurveEditorView").html());
@@ -421,8 +416,7 @@
 
     function CurveList() {
       this.updatedCurveSummary = __bind(this.updatedCurveSummary, this);
-      _ref4 = CurveList.__super__.constructor.apply(this, arguments);
-      return _ref4;
+      return CurveList.__super__.constructor.apply(this, arguments);
     }
 
     CurveList.prototype.model = Curve;
@@ -460,8 +454,7 @@
 
     function CurveCurationSet() {
       this.parse = __bind(this.parse, this);
-      _ref5 = CurveCurationSet.__super__.constructor.apply(this, arguments);
-      return _ref5;
+      return CurveCurationSet.__super__.constructor.apply(this, arguments);
     }
 
     CurveCurationSet.prototype.defaults = {
@@ -474,21 +467,24 @@
     };
 
     CurveCurationSet.prototype.parse = function(resp) {
-      var _this = this;
       if (resp.curves != null) {
         if (!(resp.curves instanceof CurveList)) {
           resp.curves = new CurveList(resp.curves);
-          resp.curves.on('change', function() {
-            return _this.trigger('change');
-          });
+          resp.curves.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
       }
       if (resp.sortOptions != null) {
         if (!(resp.sortOptions instanceof Backbone.Collection)) {
           resp.sortOptions = new Backbone.Collection(resp.sortOptions);
-          resp.sortOptions.on('change', function() {
-            return _this.trigger('change');
-          });
+          resp.sortOptions.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
       }
       return resp;
@@ -505,8 +501,7 @@
       this.clearSelected = __bind(this.clearSelected, this);
       this.setSelected = __bind(this.setSelected, this);
       this.render = __bind(this.render, this);
-      _ref6 = CurveSummaryController.__super__.constructor.apply(this, arguments);
-      return _ref6;
+      return CurveSummaryController.__super__.constructor.apply(this, arguments);
     }
 
     CurveSummaryController.prototype.template = _.template($("#CurveSummaryView").html());
@@ -579,8 +574,7 @@
     function CurveSummaryListController() {
       this.selectionUpdated = __bind(this.selectionUpdated, this);
       this.render = __bind(this.render, this);
-      _ref7 = CurveSummaryListController.__super__.constructor.apply(this, arguments);
-      return _ref7;
+      return CurveSummaryListController.__super__.constructor.apply(this, arguments);
     }
 
     CurveSummaryListController.prototype.template = _.template($("#CurveSummaryListView").html());
@@ -592,37 +586,42 @@
     };
 
     CurveSummaryListController.prototype.render = function() {
-      var toRender,
-        _this = this;
+      var toRender;
       this.$el.empty();
       this.$el.html(this.template());
       if (this.filterKey !== 'all') {
-        toRender = new Backbone.Collection(this.collection.filter(function(cs) {
-          return cs.get('category') === _this.filterKey;
-        }));
+        toRender = new Backbone.Collection(this.collection.filter((function(_this) {
+          return function(cs) {
+            return cs.get('category') === _this.filterKey;
+          };
+        })(this)));
       } else {
         toRender = this.collection;
       }
       if (this.sortKey !== 'none') {
-        toRender = toRender.sortBy(function(curve) {
-          var attributes;
-          attributes = curve.get('curveAttributes');
-          return attributes[_this.sortKey];
-        });
+        toRender = toRender.sortBy((function(_this) {
+          return function(curve) {
+            var attributes;
+            attributes = curve.get('curveAttributes');
+            return attributes[_this.sortKey];
+          };
+        })(this));
         if (!this.sortAscending) {
           toRender = toRender.reverse();
         }
         toRender = new Backbone.Collection(toRender);
       }
-      toRender.each(function(cs) {
-        var csController;
-        csController = new CurveSummaryController({
-          model: cs
-        });
-        _this.$('.bv_curveSummaries').append(csController.render().el);
-        csController.on('selected', _this.selectionUpdated);
-        return _this.on('clearSelected', csController.clearSelected);
-      });
+      toRender.each((function(_this) {
+        return function(cs) {
+          var csController;
+          csController = new CurveSummaryController({
+            model: cs
+          });
+          _this.$('.bv_curveSummaries').append(csController.render().el);
+          csController.on('selected', _this.selectionUpdated);
+          return _this.on('clearSelected', csController.clearSelected);
+        };
+      })(this));
       return this;
     };
 
@@ -656,8 +655,7 @@
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
       this.handleCurveDetailSaved = __bind(this.handleCurveDetailSaved, this);
       this.render = __bind(this.render, this);
-      _ref8 = CurveCuratorController.__super__.constructor.apply(this, arguments);
-      return _ref8;
+      return CurveCuratorController.__super__.constructor.apply(this, arguments);
     }
 
     CurveCuratorController.prototype.template = _.template($("#CurveCuratorView").html());
@@ -730,26 +728,28 @@
     };
 
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode) {
-      var _this = this;
       this.model = new CurveCurationSet;
       this.model.setExperimentCode(exptCode);
       return this.model.fetch({
-        success: function() {
-          return _this.render();
-        }
+        success: (function(_this) {
+          return function() {
+            return _this.render();
+          };
+        })(this)
       });
     };
 
     CurveCuratorController.prototype.curveSelectionUpdated = function(who) {
-      var curveDetail,
-        _this = this;
+      var curveDetail;
       curveDetail = new CurveDetail({
         id: who.model.get('curveid')
       });
       return curveDetail.fetch({
-        success: function() {
-          return _this.curveEditorController.setModel(curveDetail);
-        }
+        success: (function(_this) {
+          return function() {
+            return _this.curveEditorController.setModel(curveDetail);
+          };
+        })(this)
       });
     };
 

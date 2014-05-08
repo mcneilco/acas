@@ -1,6 +1,5 @@
 (function() {
-  var _ref,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -21,8 +20,7 @@
       this.handleParseFileRemoved = __bind(this.handleParseFileRemoved, this);
       this.handleParseFileUploaded = __bind(this.handleParseFileUploaded, this);
       this.render = __bind(this.render, this);
-      _ref = BasicFileValidateAndSaveController.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return BasicFileValidateAndSaveController.__super__.constructor.apply(this, arguments);
     }
 
     BasicFileValidateAndSaveController.prototype.notificationController = null;
@@ -123,8 +121,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.validateParseFile = function() {
-      var dataToPost,
-        _this = this;
+      var dataToPost;
       if (this.parseFileUploaded && !this.$(".bv_next").attr('disabled')) {
         this.notificationController.clearAllNotificiations();
         this.$('.bv_validateStatusDropDown').modal({
@@ -137,9 +134,11 @@
           url: this.fileProcessorURL,
           data: dataToPost,
           success: this.handleValidationReturnSuccess,
-          error: function(err) {
-            return _this.$('.bv_validateStatusDropDown').modal("hide");
-          },
+          error: (function(_this) {
+            return function(err) {
+              return _this.$('.bv_validateStatusDropDown').modal("hide");
+            };
+          })(this),
           dataType: 'json'
         });
       }
@@ -181,7 +180,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.handleValidationReturnSuccess = function(json) {
-      var summaryStr, _ref1;
+      var summaryStr, _ref;
       summaryStr = "Validation Results: ";
       if (!json.hasError) {
         this.filePassedValidation = true;
@@ -199,7 +198,7 @@
       this.showFileUploadPhase();
       this.$('.bv_resultStatus').html(summaryStr);
       this.notificationController.addNotifications(this.errorOwnerName, json.errorMessages);
-      if (((_ref1 = json.results) != null ? _ref1.htmlSummary : void 0) != null) {
+      if (((_ref = json.results) != null ? _ref.htmlSummary : void 0) != null) {
         this.$('.bv_htmlSummary').html(json.results.htmlSummary);
       }
       this.$('.bv_validateStatusDropDown').modal("hide");
@@ -280,7 +279,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.showCSVPreview = function(csv) {
-      var csvRows, headCells, r, rowCells, val, _i, _j, _k, _len, _len1, _ref1;
+      var csvRows, headCells, r, rowCells, val, _i, _j, _k, _len, _len1, _ref;
       this.$('.csvPreviewTHead').empty();
       this.$('.csvPreviewTBody').empty();
       csvRows = csv.split('\n');
@@ -292,7 +291,7 @@
             val = headCells[_i];
             this.$('.csvPreviewTHead tr').append("<th>" + val + "</th>");
           }
-          for (r = _j = 1, _ref1 = csvRows.length - 2; 1 <= _ref1 ? _j <= _ref1 : _j >= _ref1; r = 1 <= _ref1 ? ++_j : --_j) {
+          for (r = _j = 1, _ref = csvRows.length - 2; 1 <= _ref ? _j <= _ref : _j >= _ref; r = 1 <= _ref ? ++_j : --_j) {
             this.$('.csvPreviewTBody').append("<tr></tr>");
             rowCells = csvRows[r].split(',');
             for (_k = 0, _len1 = rowCells.length; _k < _len1; _k++) {
