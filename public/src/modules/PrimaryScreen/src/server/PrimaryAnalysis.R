@@ -267,12 +267,11 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, t
   resultTable <- resultTable[!resultTable$fluorescent,]
   
   if(dryRun) {
-    dir.create(racas::getUploadedFilePath("tmp"), showWarnings=FALSE, recursive=TRUE)
-    pdfLocation <- paste0("tmp/",experiment$codeName,"_SummaryDRAFT.pdf")
+    pdfLocation <- paste0("privateTempFiles/",experiment$codeName,"_SummaryDRAFT.pdf")
   } else {
-    pdfLocation <- paste0("experiments/",experiment$codeName,"/analysis/",experiment$codeName,"_Summary.pdf")
+    pdfLocation <- racas::getUploadedFilePath(paste0("experiments/",experiment$codeName,"/analysis/",experiment$codeName,"_Summary.pdf"))
   }
-  pdf(file=racas::getUploadedFilePath(pdfLocation), width=8.5, height=11)
+  pdf(file = pdfLocation, width = 8.5, height = 11)
   if(dryRun) {
     textplot("Validation DRAFT")
   }
@@ -450,6 +449,9 @@ createPlots <- function(resultTable){
 }
 saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, experimentId){
   #save(subjectData, experimentId, file="test.Rda")
+  
+  recordedBy <- user
+  
   originalNames <- names(subjectData)
   subjectData <- as.data.frame(subjectData)
   
@@ -511,14 +513,14 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   resultTypes <- data.frame(
     DataColumn = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 
                    'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
-                   'max time', 'late peak'),
+                   'max time', 'late peak', 'has agonist'),
     Type = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 
              'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
-             'max time', 'late peak'),
-    Units = c(NA, NA, 'rfu', 'rfu', NA, 'sec', 'rfu', subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA),
+             'max time', 'late peak', 'has agonist'),
+    Units = c(NA, NA, 'rfu', 'rfu', NA, 'sec', 'rfu', subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA, NA),
     valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue','clobValue',
                   'clobValue','numericValue','stringValue','numericValue','numericValue','stringValue',
-                  'numericValue','stringValue'),
+                  'numericValue','stringValue', 'stringValue'),
     stringsAsFactors = FALSE)
   
   subjectData$DoseUnit <- NULL
@@ -755,7 +757,8 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   }
   
   treatmentDataStartDT <- as.data.table(treatmentDataStart)
-  keepValueKinds <- c("maximum", "minimum", "Dose", "transformed efficacy","normalized efficacy","over efficacy threshold","max time","late peak")
+  
+  keepValueKinds <- c("maximum", "minimum", "Dose", "transformed efficacy","normalized efficacy","over efficacy threshold","max time","late peak", "has agonist")
   treatmentGroupDataDT <- treatmentDataStartDT[ valueKind %in% keepValueKinds, createRawOnlyTreatmentGroupDataDT(.SD), by = c("analysisGroupID", "treatmentGroupCodeName", "treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex",
                                                                                                                               "batchCode", "valueKind", "valueUnit", "valueType")]
   #setkey(treatmentGroupDataDT, treatmentGroupID)
@@ -793,14 +796,15 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   if (length(analysisGroupIndices > 0)) {
     analysisGroupData <- treatmentGroupDataWithBatchCodeRows
     
-    stop("Need to finish work here")
     ###
-    analysisGroupKeep <- analysisGroupData$analysisGroupID[analysisGroupData$lsKind == "has agonist" & analysisGroupData$stringValue != "yes"]
-    analysisGroupData <- analysisGroupData[analysisGroupData$analysisGroupID %in% analysisGroupKeep]
+    if (any(analysisGroupData$valueKind == "has agonist")) {
+      analysisGroupKeep <- analysisGroupData$analysisGroupID[(analysisGroupData$valueKind == "has agonist" & analysisGroupData$stringValue == "yes")]
+      analysisGroupData <- analysisGroupData[analysisGroupData$analysisGroupID %in% analysisGroupKeep, ]
+    }
+    
     ###
     analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
     
-    #TODO: missing batch codes
     stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
                                                 entityKind = "analysisgroup", 
                                                 stateGroups = stateGroups,
@@ -1084,7 +1088,7 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
   
   return(NULL)
 }
-saveInputParameters <- function(inputParameters, experiment, lsTransaction, user) {
+saveInputParameters <- function(inputParameters, experiment, lsTransaction, recordedBy) {
   # input: inputParameters a string that is JSON
   metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"]
   
@@ -1247,7 +1251,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
   
   } else {
-    experiment <- list(id = experimentId, codeName = "test")
+    experiment <- list(id = experimentId, codeName = "test", version = 0)
   }
   
   if(!dryRun) {
@@ -1365,7 +1369,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                 stDev = sd(values), n=length(values), 
                                                 sdScore = mean(sdScore), threshold = all(threshold),
                                                 latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
-                                         by=list(batchName,fluorescent,concentration,concUnit,hasAgonist)]
+                                         by=list(batchName,fluorescent,concUnit,hasAgonist, wellType)]
   } else if (parameters$aggregateReplicates == "within plates") {
     treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
                                                 stDev = sd(values), 
@@ -1373,7 +1377,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                 sdScore = mean(sdScore),
                                                 threshold = all(threshold),
                                                 latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
-                                         by=list(batchName,fluorescent,barcode,concentration,concUnit,hasAgonist)]
+                                         by=list(batchName,fluorescent,barcode,concUnit,hasAgonist, wellType)]
   } else {
     treatmentGroupData <- batchDataTable[, list(batchName = batchName, 
                                                 fluorescent = fluorescent, 
@@ -1391,7 +1395,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   analysisType <- "primary"
   if (analysisType == "primary" || analysisType == "confirmation") {
-    analysisGroupData <- treatmentGroupData[hasAgonist == T]
+    analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
     analysisGroupData[, analysisGroupId := treatmentGroupId]
   } else if (analysisType == "dose response") {
     analysisGroupData <- treatmentGroupData
@@ -1449,7 +1453,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 #                               "Max Time (s)" = resultTable$maxTime, "Well Type" = resultTable$wellType,
 #                               "Late Peak" = ifelse(resultTable$latePeak, "yes", "no"))
   outputTable <- as.data.table(outputTable)
-  outputTable <- outputTable[order(Hit,Fluorescent,decreasing=TRUE)]
+  outputTable <- outputTable[order(Hit, Fluorescent, decreasing=TRUE)]
   
   summaryInfo <- list(
     info = list(
@@ -1500,8 +1504,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                   format(as.POSIXct(completionDateValue$dateValue/1000, origin="1970-01-01"), "%Y-%m-%d")))
   } else {
     headerSection <- data.frame(c("Format", "Protocol Name", "Experiment Name", "Scientist", "Notebook", "Page", "Assay Date"),
-                                c("Generic", "testProtocol", paste("test", "user override"), "bob", "", "", 
+                                c("Generic", "FLIPR target A biochemical", paste("test", "user override"), "bob", "", "", 
                                   format(as.POSIXct(1395788334, origin="1970-01-01"), "%Y-%m-%d")))
+    protocolName <- "FLIPR target A biochemical"
   }
   names(headerSection) <- as.character(seq(1, length(headerSection)))
   
@@ -1515,21 +1520,23 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #save(experiment, file="experiment.Rda")
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                              threshold = efficacyThreshold, experiment, dryRun)
-    summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$client.host, ":", client.port,
-                                         "/blueimpFiles/tmp/", 
+    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                         racas::applicationSettings$client.port,
+                                         "/tempFiles/", 
                                          experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
     
-    overrideLocation <- paste0("tmp/", experiment$codeName, "_OverrideDRAFT.csv")
-    write.csv(userOverrideFrame, paste0(racas::getUploadedFilePath(overrideLocation)), 
-              na = "", row.names=FALSE)
-    summaryInfo$info$"QC Entry" <- paste0('<a href="', racas::applicationSettings$client.host, ":", client.port,
-                                         "/blueimpFiles/tmp/", 
+    overrideLocation <- paste0("privateTempFiles/", experiment$codeName, "_OverrideDRAFT.csv")
+    write.csv(userOverrideFrame, overrideLocation, na = "", row.names=FALSE)
+    summaryInfo$info$"QC Entry" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                          racas::applicationSettings$client.port,
+                                         "/tempFiles/", 
                                          experiment$codeName,'_OverrideDRAFT.csv" target="_blank">QC Entry</a>')
     
-    resultsLocation <- paste0("tmp/", experiment$codeName, "_ResultsDRAFT.csv")
-    write.csv(outputTable, paste0(racas::getUploadedFilePath(resultsLocation)), row.names=FALSE)
-    summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$client.host, ":", client.port,
-                                         "/blueimpFiles/tmp/", 
+    resultsLocation <- paste0("privateTempFiles/", experiment$codeName, "_ResultsDRAFT.csv")
+    write.csv(outputTable, resultsLocation, row.names=FALSE)
+    summaryInfo$info$"Results" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                         racas::applicationSettings$client.port,
+                                         "/tempFiles/", 
                                          experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
   } else {
     if (!is.null(zipFile)) {
@@ -1541,7 +1548,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
-    experiment <<- experiment
+    #experiment <<- experiment
     deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath){
       response <- getURL(
         paste0(lsServerURL, "experiments/",experiment$id, "?with=analysisgroups"),
@@ -1575,22 +1582,25 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     saveFileLocations(rawResultsLocation, resultsLocation, pdfLocation, experiment, dryRun, user, lsTransaction)
     
     #TODO: allow saving in an external file service
-    summaryInfo$info$"Summary" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
-                                         '/files/experiments/', experiment$codeName,"/analysis/", 
+    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                         racas::applicationSettings$client.port,
+                                         '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
                                          experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
            
-    overrideLocation <- paste0("tmp/", experiment$codeName, "_Override.csv")
+    overrideLocation <- paste0(experiment$codeName, "_Override.csv")
     write.csv(userOverrideFrame, paste0(racas::getUploadedFilePath(overrideLocation)), 
               na = "", row.names=FALSE)
-    summaryInfo$info$"QC Entry" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
-                                                "/files/tmp/", 
-                                                experiment$codeName,'_Override.csv" target="_blank">QC Entry</a>')
+    summaryInfo$info$"QC Entry" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                          racas::applicationSettings$client.port,
+                                          '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
+                                          experiment$codeName,'_Override.csv" target="_blank">QC Entry</a>')
     
-    summaryInfo$info$"Results" <- paste0('<a href="', racas::applicationSettings$server.nodeapi.path,
-                                         '/files/experiments/', experiment$codeName,"/analysis/", 
+    summaryInfo$info$"Results" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                         racas::applicationSettings$client.port,
+                                         '/dataFiles/experiments/', experiment$codeName,"/analysis/", 
                                          experiment$codeName,'_Results.csv" target="_blank">Results</a>')
     
-    if (configList$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
+    if (racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
       experimentName <- paste0(experiment$codeName, "::", experiment$lsLabels[[1]]$labelText)
     } else {
       experimentName <- experiment$lsLabels[[1]]$labelText
@@ -1610,6 +1620,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
   library('racas')
+  options("scipen"=15)
   #save(request, file="request.Rda")
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
