@@ -28,9 +28,21 @@ export client_port=$client_port
 export server_log_path=$server_log_path
 export server_log_suffix=$server_log_suffix
 export server_log_level=$(echo $server_log_level | awk '{print tolower($0)}')
+export client_use_ssl=$client_use_ssl
+export server_ssl_key_file_path=$server_ssl_key_file_path
+export server_ssl_cert_file_path=$server_ssl_key_file_path
+export server_ssl_cert_authority_file_path=$server_ssl_key_file_path
+export server_ssl_cert_passphrase=$server_ssl_key_file_path
+
+if [ "$client_use_ssl" == 'true' ]; then
+ apacheConfFile=apache-ubuntu-ssl.conf
+else
+ apacheConfFile=apache-ubuntu.conf
+fi
+echo $apacheConfFile
+
 
 unamestr=$(uname)
-apacheConfFile=apache-ubuntu.conf
 if [ "$unamestr" == 'Darwin' ]; then
 	suAdd="-i"
 	apacheConfFile=apache-darwin.conf
