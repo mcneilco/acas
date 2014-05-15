@@ -9,26 +9,23 @@
 #######################################################################################
 
 #TODOs
-# Throw an error if files are missing barcodes
-# Confirmation and Dose Response
 # Done but not saving or plotting: Allow aggregation by plate and across plates (break treatment groups on compound and concentration)
 # New Data
 # Analyze Dose Response
-# Analyze Confirmation screens
-# Ask Guy about sd scores (not do for now)
 # Do we want a graph of raw data or treatment groups? (for confirmation and dose response) raw data
-# What if a compound is fluorescent in one location but not another? third category
-# What is a well ID for if we have a well name? nothing
-# Done, but not saving or plotting: add normalization by row order and plate order
-# Give Guy an ACAS map for everything you save
+# Throw a warning when repeat run done on same barcode (this might be hard)
 
-# Questions
-# For Dose Response, there is a read plate name but no barcode...
-# What to do when two runs are done on the same barcode?
-# request = fromJSON('{\"fileToParse\":\"serverOnlyModules/blueimp-file-upload-node/public/files/SinglePointRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\"}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
-# Confirmation
-# file.copy("public/src/modules/PrimaryScreen/spec/ConfirmationRegression.zip", "privateUploads/ConfirmationRegression.zip", overwrite=T)
+# How to run a test
+# Confirmation - Check that createWellTable is getting correct csv in testMode
+# file.copy("public/src/modules/PrimaryScreen/spec/ConfirmationRegression.zip", "privateUploads/", overwrite=T)
 # request = fromJSON('{\"fileToParse\":\"ConfirmationRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"RD36882\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"DMSO\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"SUGAR\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":0.8,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"efficacy\\\",\\\"aggregateReplicates\\\":\\\"within plates\\\"}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
+# runPrimaryAnalysis(request)
+# request$dryRunMode <- FALSE
+# runPrimaryAnalysis(request)
+
+
+# file.copy("public/src/modules/PrimaryScreen/spec/SinglePointRegression.zip", "privateUploads/", overwrite=T)
+# request = fromJSON('{\"fileToParse\":\"SinglePointRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\"}\",\"primaryAnalysisExperimentId\":\"7582\",\"testMode\":\"true\"}')
 # runPrimaryAnalysis(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/PrimaryAnalysisFiles.zip",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=255259))
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
@@ -479,8 +476,8 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                            stateType = "data",
                            stateKind = "results",
                            valueKinds = c("maximum","minimum", "fluorescent", "transformed efficacy", 
-                                          "normalized efficacy", "over efficacy threshold", "fluorescencePoints",
-                                          "timePoints","max time", 'late peak', 'has agonist'),
+                                          "normalized efficacy", "over efficacy threshold",        #"fluorescencePoints", "timePoints",
+                                          "max time", 'late peak', 'has agonist'),
                            includesOthers = FALSE,
                            includesCorpName = FALSE),
                       list(entityKind = "analysis group",
@@ -490,6 +487,18 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                            includesOthers = FALSE,
                            includesCorpName = TRUE),
                       list(entityKind = "analysis group",
+                           stateType = "metadata",
+                           stateKind = "plate information",
+                           valueKinds = c("well type"),
+                           includesOthers = FALSE,
+                           includesCorpName = FALSE),
+                      list(entityKind = "treatment group",
+                           stateType = "data",
+                           stateKind = "results",
+                           valueKinds = c("fluorescent", "normalized efficacy", "over efficacy threshold"),
+                           includesOthers = FALSE,
+                           includesCorpName = TRUE),
+                      list(entityKind = "treatment group",
                            stateType = "metadata",
                            stateKind = "plate information",
                            valueKinds = c("well type"),
@@ -511,15 +520,16 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   
   # TODO: check that all dose units are same
   resultTypes <- data.frame(
-    DataColumn = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 
+    DataColumn = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent',               #'timePoints', 'fluorescencePoints', 
                    'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
                    'max time', 'late peak', 'has agonist'),
-    Type = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent', 'timePoints', 'fluorescencePoints', 
+    Type = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent',                     #'timePoints', 'fluorescencePoints', 
              'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
              'max time', 'late peak', 'has agonist'),
-    Units = c(NA, NA, 'rfu', 'rfu', NA, 'sec', 'rfu', subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA, NA),
-    valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue','clobValue',
-                  'clobValue','numericValue','stringValue','numericValue','numericValue','stringValue',
+    Units = c(NA, NA, 'rfu', 'rfu', NA, #'sec', 'rfu', 
+              subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA, NA),
+    valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue', #'clobValue', 'clobValue',
+                  'numericValue','stringValue','numericValue','numericValue','stringValue',
                   'numericValue','stringValue', 'stringValue'),
     stringsAsFactors = FALSE)
   
@@ -592,6 +602,9 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     longResults$numericValue[which(longResults$valueType=="dateValue")] <- rep(NA, sum(longResults$valueType=="dateValue"))
     longResults$valueOperator[which(longResults$valueType=="dateValue")] <- rep(NA, sum(longResults$valueType=="dateValue"))
     longResults$stringValue[which(longResults$valueType=="dateValue")] <- rep(NA, sum(longResults$valueType=="dateValue"))
+    
+    longResults$stringValue[longResults$stringValue == ""] <- NA
+    longResults$valueOperator[longResults$valueOperator == ""] <- NA
     
     return(longResults)
   }
@@ -707,12 +720,14 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
   savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
-  
+
   #
   #####  
   # Treatment Group states =========================================================================
-  treatmentGroupIndex <- grep("treatment", sapply(stateGroups, getElement, "stateKind"))
-  treatmentValueKinds <- stateGroups[[treatmentGroupIndex]]$valueKinds
+  treatmentGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="treatment group")
+  analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
+  
+  treatmentValueKinds <- unlist(lapply(stateGroups[treatmentGroupIndices], getElement, "valueKinds"))
   listedValueKinds <- do.call(c,lapply(stateGroups, getElement, "valueKinds"))
   otherValueKinds <- setdiff(unique(subjectData$valueKind),listedValueKinds)
   resultsDataValueKinds <- stateGroups[sapply(stateGroups, function(x) x$stateKind)=="results"][[1]]$valueKinds
@@ -764,7 +779,9 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   #setkey(treatmentGroupDataDT, treatmentGroupID)
   treatmentGroupData <- as.data.frame(treatmentGroupDataDT)
   
-  treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
+  treatmentGroupIndices <- c(treatmentGroupIndices,othersGroupIndex)
+  
+  treatmentGroupData$stateID <- paste0(treatmentGroupData$treatmentGroupID, "-", treatmentGroupData$stateGroupIndex)
   
   stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
                                               entityKind = "treatmentgroup", 
@@ -784,6 +801,8 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   if (is.null(treatmentGroupData$stateVersion)) treatmentGroupData$stateVersion <- 0
   
   treatmentGroupDataWithBatchCodeRows <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, batchCodeStateIndices))
+  # This is a hack to fix issues with batch codes
+  treatmentGroupDataWithBatchCodeRows$stateVersion <- 0
   
   savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows, 
                                                         entityKind = "treatmentgroup", 
@@ -792,7 +811,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                                                         lsTransaction = lsTransaction,
                                                         recordedBy=recordedBy)
 
-  analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
+  
   if (length(analysisGroupIndices > 0)) {
     analysisGroupData <- treatmentGroupDataWithBatchCodeRows
     
@@ -1165,26 +1184,6 @@ getExperimentParameters <- function(inputParameters) {
   
   return(parameters)
 }
-getExperimentById <- function(experimentId) {
-  # Gets experiment given an id
-  #
-  # Args:
-  #   experimentId:     An integer of the experiment Id
-  # Returns:
-  #   a list that is an experiment
-  
-  require('RCurl')
-  require('rjson')
-  
-  experiment <- NULL
-  tryCatch({
-    experiment <- getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath,"experiments/", experimentId))
-    experiment <- fromJSON(experiment)
-  }, error = function(e) {
-    stop("Could not get experiment ", experimentId, " from the server")
-  })
-  return(experiment)
-}
 setAnalysisStatus <- function(status, metadataState) {
   # Sets the analysis status
   #
@@ -1460,7 +1459,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       "Sweetener" = parameters$agonist$batchCode,
       "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
       "Compounds analyzed" = length(unique(resultTable$batchName)),
-      "Hits" = sum(analysisGroupData$threshold),
+      "Hits" = sum(analysisGroupData$threshold == "yes"),
       "Threshold" = signif(efficacyThreshold, 3),
       "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
       "Fluorescent compounds" = sum(resultTable$fluorescent),
