@@ -1815,15 +1815,10 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   #   Returns:
   #     NULL
   
+  # TODO: make it possible to save subjects without analysis group or treatment group
+  
   analysisGroupData$lsTransaction <- lsTransaction
   analysisGroupData$recordedBy <- recordedBy
-  
-  treatmentGroupData$lsTransaction <- lsTransaction
-  treatmentGroupData$recordedBy <- recordedBy
-  
-  subjectData$lsTransaction <- lsTransaction
-  subjectData$recordedBy <- recordedBy
-  
   
   ### Analysis Group Data
   # Not all of these will be filled
@@ -1838,34 +1833,56 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   analysisGroupIDandVersion <- saveAnalysisGroupData(analysisGroupData)
   
   ### TreatmentGroup Data
-  matchingID <- match(treatmentGroupData$analysisGroupID, analysisGroupIDandVersion$tempID)
-  treatmentGroupData$analysisGroupID <- analysisGroupIDandVersion$entityID[matchingID]
-  treatmentGroupData$analysisGroupVersion <- analysisGroupIDandVersion$entityVersion[matchingID]
-  
-  treatmentGroupData$stateID <- paste0(treatmentGroupData$treatmentGroupID, "-", treatmentGroupData$stateGroupIndex, "-", 
-                                      treatmentGroupData$concentration, "-", treatmentGroupData$concentrationUnit, "-",
-                                      treatmentGroupData$time, "-", treatmentGroupData$timeUnit, "-", treatmentGroupData$stateKind)
-  
-  treatmentGroupData <- rbind.fill(treatmentGroupData, meltConcentrations(treatmentGroupData))
-  treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes(treatmentGroupData))
-  treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, 0, optionalColumns = "treatmentGroupID"))
-  
-  treatmentGroupIDandVersion <- saveFullEntityData(treatmentGroupData, "treatmentGroup")
-  
+  if (!is.null(treatmentGroupData)) {
+    treatmentGroupData$lsTransaction <- lsTransaction
+    treatmentGroupData$recordedBy <- recordedBy
+    
+    matchingID <- match(treatmentGroupData$analysisGroupID, analysisGroupIDandVersion$tempID)
+    treatmentGroupData$analysisGroupID <- analysisGroupIDandVersion$entityID[matchingID]
+    treatmentGroupData$analysisGroupVersion <- analysisGroupIDandVersion$entityVersion[matchingID]
+    
+    treatmentGroupData$stateID <- paste0(treatmentGroupData$treatmentGroupID, "-", treatmentGroupData$stateGroupIndex, "-", 
+                                         treatmentGroupData$concentration, "-", treatmentGroupData$concentrationUnit, "-",
+                                         treatmentGroupData$time, "-", treatmentGroupData$timeUnit, "-", treatmentGroupData$stateKind)
+    
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltConcentrations(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, 0, optionalColumns = "treatmentGroupID"))
+    
+    treatmentGroupIDandVersion <- saveFullEntityData(treatmentGroupData, "treatmentGroup")
+  }
+
   ### subject Data
-  matchingID <- match(subjectData$treatmentGroupID, treatmentGroupIDandVersion$tempID)
-  subjectData$treatmentGroupID <- treatmentGroupIDandVersion$entityID[matchingID]
-  subjectData$treatmentGroupVersion <- treatmentGroupIDandVersion$entityVersion[matchingID]
+  if (!is.null(subjectData)) {
+    subjectData$lsTransaction <- lsTransaction
+    subjectData$recordedBy <- recordedBy
+    
+    matchingID <- match(subjectData$treatmentGroupID, treatmentGroupIDandVersion$tempID)
+    subjectData$treatmentGroupID <- treatmentGroupIDandVersion$entityID[matchingID]
+    subjectData$treatmentGroupVersion <- treatmentGroupIDandVersion$entityVersion[matchingID]
+    
+    subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
+                                  subjectData$concentration, "-", subjectData$concentrationUnit, "-",
+                                  subjectData$time, "-", subjectData$timeUnit, "-", subjectData$stateKind)
+    
+    subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
+    subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
+    subjectData <- rbind.fill(subjectData, meltBatchCodes(subjectData, 0, optionalColumns = "subjectID"))
+    
+    subjectIDandVersion <- saveFullEntityData(subjectData, "subject")
+  }
   
-  subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
-                                       subjectData$concentration, "-", subjectData$concentrationUnit, "-",
-                                       subjectData$time, "-", subjectData$timeUnit, "-", subjectData$stateKind)
-  
-  subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
-  subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
-  subjectData <- rbind.fill(subjectData, meltBatchCodes(subjectData, 0, optionalColumns = "subjectID"))
-  
-  subjectIDandVersion <- saveFullEntityData(subjectData, "subject")
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, 
+                                                   configList$server.service.external.file.type, 
+                                                   configList$server.service.external.file.service.url)
+  if(!is.null(reportFilePath) && reportFilePath != "") {
+    batchNameList <- unique(analysisGroupData$batchCode)
+    if (configList$server.service.external.report.registration.url != "") {
+      registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
+    } else {
+      addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
+    }
+  }
   
   return (NULL)
   
