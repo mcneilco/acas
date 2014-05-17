@@ -33,12 +33,15 @@ class window.DoseResponsePlotController extends AbstractFormController
 			brd.model = @model
 
 			ii = 0
+			window.points = points
 			while ii < points.length
 				#console.log "Original: " + points.dose[ii] + ", Log: " + Math.log(points.dose[ii], 10)
 				x = log10 points[ii].dose
 				y = points[ii].response
-				flag = points[ii].flag
-				if flag != "NA"
+				flag_user = points[ii].flag_user
+				flag_on_load = points[ii]['flag_on.load']
+				flag_algorithm = points[ii].flag_algorithm
+				if (flag_user != "NA" || flag_on_load != "NA" || flag_algorithm != "NA")
 					p1 = brd.create("point", [x,y],
 						name: points[ii].response_sv_id
 						fixed: true
@@ -65,16 +68,21 @@ class window.DoseResponsePlotController extends AbstractFormController
 					@setAttribute
 						strokecolor: "gray"
 						face: "cross"
-					points[@idx].flag = reason
+					points[@idx].flag_user = reason
+					points[@idx]['flag_on.load'] = "NA"
+					points[@idx].flag_algorithm = "NA"
 					brd.model.set points: points
 				p1.includePoint = ->
 					@setAttribute
 						strokecolor: "blue"
 						face: "circle"
-					points[@idx].flag = "NA"
+					points[@idx].flag_user = "NA"
+					points[@idx]['flag_on.load'] = "NA"
+					points[@idx].flag_algorithm = "NA"
 					brd.model.set points: points
 				p1.handlePointClicked = ->
-					unless points[@idx].flag != "NA"
+					if (points[@idx].flag_user != "NA" || points[@idx]['flag_on_load'] != "NA" || points[@idx].flag_algorithm != "NA")
+						console.log 'yep'
 						reason = brd.getKnockoutReason()
 						@knockOutPoint reason
 					else

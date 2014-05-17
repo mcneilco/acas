@@ -42,7 +42,7 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var brd, createSelection, fct, flag, getMouseCoords, ii, log10, p1, t, x, y;
+      var brd, createSelection, fct, flag_algorithm, flag_on_load, flag_user, getMouseCoords, ii, log10, p1, t, x, y;
       log10 = function(val) {
         return Math.log(val) / Math.LN10;
       };
@@ -62,11 +62,14 @@
         };
         brd.model = this.model;
         ii = 0;
+        window.points = points;
         while (ii < points.length) {
           x = log10(points[ii].dose);
           y = points[ii].response;
-          flag = points[ii].flag;
-          if (flag !== "NA") {
+          flag_user = points[ii].flag_user;
+          flag_on_load = points[ii]['flag_on.load'];
+          flag_algorithm = points[ii].flag_algorithm;
+          if (flag_user !== "NA" || flag_on_load !== "NA" || flag_algorithm !== "NA") {
             p1 = brd.create("point", [x, y], {
               name: points[ii].response_sv_id,
               fixed: true,
@@ -93,7 +96,9 @@
               strokecolor: "gray",
               face: "cross"
             });
-            points[this.idx].flag = reason;
+            points[this.idx].flag_user = reason;
+            points[this.idx]['flag_on.load'] = "NA";
+            points[this.idx].flag_algorithm = "NA";
             return brd.model.set({
               points: points
             });
@@ -103,14 +108,17 @@
               strokecolor: "blue",
               face: "circle"
             });
-            points[this.idx].flag = "NA";
+            points[this.idx].flag_user = "NA";
+            points[this.idx]['flag_on.load'] = "NA";
+            points[this.idx].flag_algorithm = "NA";
             return brd.model.set({
               points: points
             });
           };
           p1.handlePointClicked = function() {
             var reason;
-            if (points[this.idx].flag === "NA") {
+            if (points[this.idx].flag_user !== "NA" || points[this.idx]['flag_on_load'] !== "NA" || points[this.idx].flag_algorithm !== "NA") {
+              console.log('yep');
               reason = brd.getKnockoutReason();
               this.knockOutPoint(reason);
             } else {
