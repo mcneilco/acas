@@ -146,7 +146,7 @@
         category: "inactive"
       }
     ];
-    return exports.curveDetail = {
+    exports.curveDetail = {
       curveid: "AG-00001743_472",
       reportedValues: "<TABLE >\n  <TR> <TD> min </TD> <TD align=\"right\"> 17.16 </TD> </TR>\n  <TR> <TD> max </TD> <TD align=\"right\"> 94.09 </TD> </TR>\n  <TR> <TD> slope </TD> <TD align=\"right\"> 0.87 </TD> </TR>\n  <TR> <TD> ec50 </TD> <TD align=\"right\"> 0.73 </TD> </TR>\n   </TABLE>\n",
       fitSummary: "<br>Model fitted: Log-logistic (ED50 as parameter) (4 parms)<br><br>Parameter estimates:<br><br>                  Estimate Std. Error  t-value p-value<br>slope:(Intercept) -0.87274    0.30120 -2.89752  0.0089<br>min:(Intercept)   17.16475    8.06424  2.12850  0.0459<br>max:(Intercept)   94.09304    6.31208 14.90682  0.0000<br>ec50:(Intercept)   0.73444    0.20070  3.65935  0.0016<br><br>Residual standard error:<br><br> 5.684466 (20 degrees of freedom)",
@@ -432,6 +432,9 @@
         inverseAgonistMode: true
       },
       sessionID: "/var/folders/5b/s62pqy655kx6929zhxrml5c80000gn/T//rSe-8b36628951e0"
+    };
+    return exports.updateCurveUserApproval = {
+      userApproval: true
     };
   })((typeof process === "undefined" || !process.versions ? window.curveCuratorTestJSON = window.curveCuratorTestJSON || {} : exports));
 

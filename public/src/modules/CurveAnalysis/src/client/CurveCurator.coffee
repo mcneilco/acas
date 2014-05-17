@@ -33,18 +33,26 @@ class window.DoseResponsePlotController extends AbstractFormController
 			brd.model = @model
 
 			ii = 0
+			window.points = points
 			while ii < points.length
 				#console.log "Original: " + points.dose[ii] + ", Log: " + Math.log(points.dose[ii], 10)
 				x = log10 points[ii].dose
 				y = points[ii].response
-				flag = points[ii].flag
-				if flag != "NA"
+				flag_user = points[ii].flag_user
+				flag_on_load = points[ii]['flag_on.load']
+				flag_algorithm = points[ii].flag_algorithm
+				if (flag_user != "NA" || flag_on_load != "NA" || flag_algorithm != "NA")
+					color = switch
+						when flag_user != "NA" then 'red'
+						when flag_on_load != "NA" then 'gray'
+						when flag_algorithm != "NA" then 'blue'
+
 					p1 = brd.create("point", [x,y],
 						name: points[ii].response_sv_id
 						fixed: true
 						size: 4
 						face: "cross"
-						strokecolor: "gray"
+						strokecolor: color
 						withLabel: false
 					)
 				else
@@ -63,18 +71,23 @@ class window.DoseResponsePlotController extends AbstractFormController
 				p1.isSelected = false
 				p1.knockOutPoint = (reason) ->
 					@setAttribute
-						strokecolor: "gray"
+						strokecolor: "red"
 						face: "cross"
-					points[@idx].flag = reason
+					points[@idx].flag_user = reason
+					points[@idx]['flag_on.load'] = "NA"
+					points[@idx].flag_algorithm = "NA"
 					brd.model.set points: points
 				p1.includePoint = ->
 					@setAttribute
 						strokecolor: "blue"
 						face: "circle"
-					points[@idx].flag = "NA"
+					points[@idx].flag_user = "NA"
+					points[@idx]['flag_on.load'] = "NA"
+					points[@idx].flag_algorithm = "NA"
 					brd.model.set points: points
 				p1.handlePointClicked = ->
-					unless points[@idx].flag != "NA"
+					if (points[@idx].flag_user != "NA" || points[@idx]['flag_on_load'] != "NA" || points[@idx].flag_algorithm != "NA")
+						console.log 'yep'
 						reason = brd.getKnockoutReason()
 						@knockOutPoint reason
 					else
@@ -84,19 +97,23 @@ class window.DoseResponsePlotController extends AbstractFormController
 					brd.model.trigger 'change'
 					return
 
-				p1.xLabel = JXG.trunc(points[ii].dose, 4)
 				p1.on "mouseup", p1.handlePointClicked, p1
+
+				p1.flagLabel = switch
+					when flag_user != "NA" then flag_user
+					when flag_on_load != "NA" then flag_on_load
+					when flag_algorithm != "NA" then flag_algorithm
+					else ''
+
+				p1.xLabel = JXG.trunc(points[ii].dose, 4)
 				@pointList.push p1
 				brd.highlightInfobox = (x, y, el) ->
-
 					#brd.infobox.setText('<img src="http://www.freesmileys.org/smileys/big/big-smiley-face.gif" alt="Smiley face" width="42" height="42">');
-					brd.infobox.setText "(" + el.xLabel + ", " + y + ")"
+					brd.infobox.setText "(" + el.xLabel + ", " + y + ", " + el.flagLabel + ")"
+					brd.infobox.setProperty {strokeColor: 'black'}
 					return
 				ii++
-			#			console.log @pointList
-			#			window.chicken = @pointList[0]
-			#			@pointList[0].handlePointClicked()
-			#			console.log @pointList[0]
+
 			x = brd.create("line", [
 				[0,0]
 				[1,0]
@@ -231,6 +248,8 @@ class window.CurveEditorController extends Backbone.View
 	events:
 		'click .bv_reset': 'handleResetClicked'
 		'click .bv_update': 'handleUpdateClicked'
+		'click .bv_approve': 'handleApproveClicked'
+		'click .bv_reject': 'handleRejectClicked'
 
 	render: =>
 		@$el.empty()
@@ -276,6 +295,12 @@ class window.CurveEditorController extends Backbone.View
 		@oldID =  @model.get 'curveid'
 		@model.save({persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleSaveSuccess, error: @handleSaveError})
 
+	handleApproveClicked: =>
+		@trigger 'approvedClicked'
+
+	handleRejectClicked: =>
+		@trigger 'curveDetailSaved', @oldID, newID
+
 	handleSaveError: =>
 		alert "Error saving curve"
 
@@ -298,7 +323,6 @@ class window.CurveList extends Backbone.Collection
 	updatedCurveSummary: (oldID, newCurveID) =>
 		curve = @.findWhere({curveid: oldID})
 		curve.set curveid: newCurveID
-		window.chicken = curve
 
 class window.CurveCurationSet extends Backbone.Model
 	defaults:
@@ -337,18 +361,18 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl += @model.get('curveid')+"&height=150&width=250&showAxes=false&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
-		if @model.get('algorithmApproved')
+		if @model.get('algorithmApproved') == true
 			@$('.bv_thumbnail').addClass 'algorithmApproved'
 			@$('.bv_thumbnail').removeClass 'algorithmNotApproved'
 		else
 			@$('.bv_thumbnail').removeClass 'algorithmApproved'
 			@$('.bv_thumbnail').addClass 'algorithmNotApproved'
-		if @model.get('userApproved')
+		if @model.get('userApproved') == true
 			@$('.bv_thumbsUp').show()
 			@$('.bv_thumbsDown').hide()
 		else
 			@$('.bv_thumbsUp').hide()
-			if @model.get('userApproved') == null
+			if @model.get('userApproved') == 'NA'
 				@$('.bv_thumbsDown').hide()
 			else
 				@$('.bv_thumbsDown').show()

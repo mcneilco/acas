@@ -135,25 +135,6 @@
 		category: "inactive"
 	]
 
-	#	exports.curveDetail  =
-	#		fiteParameters: "copy form experiment test jsons"
-	#		div1
-	#		div2
-	#	  div3
-	#		div4
-	#	  plotParams
-	#	  sessionID
-	#		curveid: "126907_AG-00000239"
-	#		algorithmApproved: true
-	#		userApproved: null
-	#		category: "Sigmoid"
-	#		curveAttributes:
-	#			EC50: .005
-	#			SST: 9
-	#			SSE: .8
-	#			rsquare: .95
-	#			compoundCode: "CMPD-0000009"
-
 	exports.curveDetail =
 			curveid: "AG-00001743_472"
 			reportedValues: "<TABLE >\n  <TR> <TD> min </TD> <TD align=\"right\"> 17.16 </TD> </TR>\n  <TR> <TD> max </TD> <TD align=\"right\"> 94.09 </TD> </TR>\n  <TR> <TD> slope </TD> <TD align=\"right\"> 0.87 </TD> </TR>\n  <TR> <TD> ec50 </TD> <TD align=\"right\"> 0.73 </TD> </TR>\n   </TABLE>\n"
@@ -473,6 +454,9 @@
 				inverseAgonistMode: true
 
 			sessionID: "/var/folders/5b/s62pqy655kx6929zhxrml5c80000gn/T//rSe-8b36628951e0"
+
+	exports.updateCurveUserApproval =
+		userApproval: true
 
 ) (if (typeof process is "undefined" or not process.versions) then window.curveCuratorTestJSON = window.curveCuratorTestJSON or {} else exports)
 

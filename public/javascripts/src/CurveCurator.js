@@ -42,7 +42,7 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var brd, createSelection, fct, flag, getMouseCoords, ii, log10, p1, t, x, y;
+      var brd, color, createSelection, fct, flag_algorithm, flag_on_load, flag_user, getMouseCoords, ii, log10, p1, t, x, y;
       log10 = function(val) {
         return Math.log(val) / Math.LN10;
       };
@@ -62,17 +62,30 @@
         };
         brd.model = this.model;
         ii = 0;
+        window.points = points;
         while (ii < points.length) {
           x = log10(points[ii].dose);
           y = points[ii].response;
-          flag = points[ii].flag;
-          if (flag !== "NA") {
+          flag_user = points[ii].flag_user;
+          flag_on_load = points[ii]['flag_on.load'];
+          flag_algorithm = points[ii].flag_algorithm;
+          if (flag_user !== "NA" || flag_on_load !== "NA" || flag_algorithm !== "NA") {
+            color = (function() {
+              switch (false) {
+                case flag_user === "NA":
+                  return 'red';
+                case flag_on_load === "NA":
+                  return 'gray';
+                case flag_algorithm === "NA":
+                  return 'blue';
+              }
+            })();
             p1 = brd.create("point", [x, y], {
               name: points[ii].response_sv_id,
               fixed: true,
               size: 4,
               face: "cross",
-              strokecolor: "gray",
+              strokecolor: color,
               withLabel: false
             });
           } else {
@@ -90,10 +103,12 @@
           p1.isSelected = false;
           p1.knockOutPoint = function(reason) {
             this.setAttribute({
-              strokecolor: "gray",
+              strokecolor: "red",
               face: "cross"
             });
-            points[this.idx].flag = reason;
+            points[this.idx].flag_user = reason;
+            points[this.idx]['flag_on.load'] = "NA";
+            points[this.idx].flag_algorithm = "NA";
             return brd.model.set({
               points: points
             });
@@ -103,14 +118,17 @@
               strokecolor: "blue",
               face: "circle"
             });
-            points[this.idx].flag = "NA";
+            points[this.idx].flag_user = "NA";
+            points[this.idx]['flag_on.load'] = "NA";
+            points[this.idx].flag_algorithm = "NA";
             return brd.model.set({
               points: points
             });
           };
           p1.handlePointClicked = function() {
             var reason;
-            if (points[this.idx].flag === "NA") {
+            if (points[this.idx].flag_user !== "NA" || points[this.idx]['flag_on_load'] !== "NA" || points[this.idx].flag_algorithm !== "NA") {
+              console.log('yep');
               reason = brd.getKnockoutReason();
               this.knockOutPoint(reason);
             } else {
@@ -121,11 +139,26 @@
             });
             brd.model.trigger('change');
           };
-          p1.xLabel = JXG.trunc(points[ii].dose, 4);
           p1.on("mouseup", p1.handlePointClicked, p1);
+          p1.flagLabel = (function() {
+            switch (false) {
+              case flag_user === "NA":
+                return flag_user;
+              case flag_on_load === "NA":
+                return flag_on_load;
+              case flag_algorithm === "NA":
+                return flag_algorithm;
+              default:
+                return '';
+            }
+          })();
+          p1.xLabel = JXG.trunc(points[ii].dose, 4);
           this.pointList.push(p1);
           brd.highlightInfobox = function(x, y, el) {
-            brd.infobox.setText("(" + el.xLabel + ", " + y + ")");
+            brd.infobox.setText("(" + el.xLabel + ", " + y + ", " + el.flagLabel + ")");
+            brd.infobox.setProperty({
+              strokeColor: 'black'
+            });
           };
           ii++;
         }
@@ -321,6 +354,8 @@
     function CurveEditorController() {
       this.handleSaveSuccess = __bind(this.handleSaveSuccess, this);
       this.handleSaveError = __bind(this.handleSaveError, this);
+      this.handleRejectClicked = __bind(this.handleRejectClicked, this);
+      this.handleApproveClicked = __bind(this.handleApproveClicked, this);
       this.handleUpdateClicked = __bind(this.handleUpdateClicked, this);
       this.handleResetClicked = __bind(this.handleResetClicked, this);
       this.handleParametersChanged = __bind(this.handleParametersChanged, this);
@@ -333,7 +368,9 @@
 
     CurveEditorController.prototype.events = {
       'click .bv_reset': 'handleResetClicked',
-      'click .bv_update': 'handleUpdateClicked'
+      'click .bv_update': 'handleUpdateClicked',
+      'click .bv_approve': 'handleApproveClicked',
+      'click .bv_reject': 'handleRejectClicked'
     };
 
     CurveEditorController.prototype.render = function() {
@@ -397,6 +434,14 @@
       });
     };
 
+    CurveEditorController.prototype.handleApproveClicked = function() {
+      return this.trigger('approvedClicked');
+    };
+
+    CurveEditorController.prototype.handleRejectClicked = function() {
+      return this.trigger('curveDetailSaved', this.oldID, newID);
+    };
+
     CurveEditorController.prototype.handleSaveError = function() {
       return alert("Error saving curve");
     };
@@ -439,10 +484,9 @@
       curve = this.findWhere({
         curveid: oldID
       });
-      curve.set({
+      return curve.set({
         curveid: newCurveID
       });
-      return window.chicken = curve;
     };
 
     return CurveList;
@@ -527,19 +571,19 @@
       this.$el.html(this.template({
         curveUrl: curveUrl
       }));
-      if (this.model.get('algorithmApproved')) {
+      if (this.model.get('algorithmApproved') === true) {
         this.$('.bv_thumbnail').addClass('algorithmApproved');
         this.$('.bv_thumbnail').removeClass('algorithmNotApproved');
       } else {
         this.$('.bv_thumbnail').removeClass('algorithmApproved');
         this.$('.bv_thumbnail').addClass('algorithmNotApproved');
       }
-      if (this.model.get('userApproved')) {
+      if (this.model.get('userApproved') === true) {
         this.$('.bv_thumbsUp').show();
         this.$('.bv_thumbsDown').hide();
       } else {
         this.$('.bv_thumbsUp').hide();
-        if (this.model.get('userApproved') === null) {
+        if (this.model.get('userApproved') === 'NA') {
           this.$('.bv_thumbsDown').hide();
         } else {
           this.$('.bv_thumbsDown').show();
