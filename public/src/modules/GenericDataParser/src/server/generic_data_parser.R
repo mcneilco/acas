@@ -3035,7 +3035,8 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
     # Create a function that has the groupByColumns filled in
     function(results, inputFormat, stateGroups, resultTypes) {
       # stateGroups, inputFormat, and resultTypes not used
-      ids <- as.numeric(factor(do.call(paste, results[, groupByColumns])))
+      # Need to coerce to data frame for single column data frames
+      ids <- as.numeric(factor(do.call(paste, as.data.frame(results[, groupByColumns]))))
       return(ids)
     }
   }
