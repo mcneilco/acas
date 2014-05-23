@@ -1830,6 +1830,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, 0, optionalColumns = "analysisGroupID"))
   
+  analysisGroupData$lsTransaction <- lsTransaction
+  analysisGroupData$recordedBy <- recordedBy
+  
   analysisGroupIDandVersion <- saveAnalysisGroupData(analysisGroupData)
   
   ### TreatmentGroup Data
