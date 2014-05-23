@@ -1223,6 +1223,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   parameters <- getExperimentParameters(inputParameters)
   
+  if(is.null(parameters$useRdap)) {
+    useRdap <- FALSE
+  } else {
+    useRdap <- as.logical(parameters$useRdap)
+    rdapTestMode <- as.logical(parameters$rdapTestMode)
+  }
+  
   dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/experiments", showWarnings = FALSE)
   dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName), showWarnings = FALSE)
   
@@ -1262,30 +1269,43 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
     
     ## TODO: Test Structure
-      folderToParse <- "~/Desktop/1_FLIPR_raw_data/" 
-      rdapTestMode <- TRUE
+    #       require(rjson)
+    #       request <- fromJSON('{\"fileToParse\":\"~/Desktop/1_FLIPR_raw_data/\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"unknown\\\",\\\"normalizationRule\\\":\\\"\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\",\\\"useRdap\\\":\\\"true\\\",\\\"rdapTestMode\\\":\\\"true\\\"}\",\"primaryAnalysisExperimentId\":\"1034\",\"testMode\":\"true\"}')
+    #       parameters <- fromJSON(request$inputParameters)
+    #     
+    #       folderToParse <- request$fileToParse
+    #       rdapTestMode <- TRUE
     ## End Test Structure
     require(rdap)
     rdapList <- catchExecuteDap(request=list(filePath=folderToParse, testMode=rdapTestMode))
     
-    currentWD <- getwd()
-    setwd(folderToParse)
+    ## TODO: Test Structure rdap FIXABLE
+      currentWD <- getwd()
+      setwd(folderToParse)
+    ## End Test Structure
     
-    resultTable <- as.data.table(unique(read.table("../output_well_data.srf", header=TRUE, sep="\t", stringsAsFactors=FALSE)[ , c(well="wellReference", "assayBarcode", "cmpdConc", "corp_name")]))
-    setwd(currentWD)
+    
+    resultTable <- as.data.table(unique(read.table("../output_well_data.srf", header=TRUE, sep="\t", stringsAsFactors=FALSE)[ , c(well="wellReference", "assayBarcode", "cmpdConc", "corp_name", "cmpdBatch")]))
+    
+    ## TODO: Test Structure rdap FIXABLE
+      setwd(currentWD)
+    ## End Test Structure
     
     ## Bring in "activity" columns by
     ## activityColumns <- rdapList$value$activity
     
-    setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
+    setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name", "cmpdBatch"), c("well", "barcode", "concentration", "batchName", "batchCode"))
     
     ## TODO: Test Sructure
-      resultTable$concUnit <- "uM"
-      resultTable$fileName <- folderToParse
-      parameters <- fromJSON("{\"positiveControl\":{\"batchCode\":\"CMPD-0000006-1\",\"concentration\":2,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-0000001-1\",\"concentration\":null,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-0000002-1\",\"concentration\":20,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"transformationRule\":\"unknown\",\"normalizationRule\":\"plate order\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\"}")
-    
-      # normalization
-      normalization <- ""
+       resultTable$concentrationUnit <- "uM"
+    #       resultTable$fileName <- folderToParse
+    #     
+    #       
+    #     
+    # #       parameters <- fromJSON("{\"positiveControl\":{\"batchCode\":\"CMPD-0000006-1\",\"concentration\":2,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-0000001-1\",\"concentration\":null,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-0000002-1\",\"concentration\":20,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"transformationRule\":\"unknown\",\"normalizationRule\":\"plate order\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\"}")
+    #     
+    #       # normalization
+       normalization <- ""
     
     ## End Test Structure
   } else {
@@ -1471,6 +1491,23 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     library('plyr')
     userOverrideFrame <- rbind.fill(headerSection, columnTypeSection, columnNamesSection, dataSection)
     names(userOverrideFrame) <- c("Experiment Meta Data", rep("", length(userOverrideFrame) - 1))
+  } else {
+    summaryInfo <- list(
+      info = list(
+        "Sweetener" = parameters$agonist$batchCode,
+        "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
+        "Compounds analyzed" = length(unique(resultTable$batchName)),
+        # "Hits" = sum(analysisGroupData$threshold),
+        # "Threshold" = signif(efficacyThreshold, 3),
+        # "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
+        "Fluorescent compounds" = sum(resultTable$fluorescent),
+        # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
+        # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
+        # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
+        # "Robust Z" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test"& !resultTable$fluorescent]),digits=3,nsmall=3),
+        "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
+      )
+    )
   }
 
 
@@ -1505,13 +1542,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     lsTransaction <- createLsTransaction()$id
     
-#     if (!is.null(zipFile)) {
-#       file.rename(zipFile, 
-#                   paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/rawData/", 
-#                          basename(zipFile)))
-#     }
+    #     if (!is.null(zipFile)) {
+    #       file.rename(zipFile, 
+    #                   paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/rawData/", 
+    #                          basename(zipFile)))
+    #     }
     
-#     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
+    #     dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
     deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath){
       response <- getURL(
@@ -1541,6 +1578,57 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
       
       lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
+    } else {
+      
+      meltStuff <- function(resultTable, resultTypes) {
+        ## this could be done as a data table. Check out http://stackoverflow.com/questions/6902087/proper-fastest-way-to-reshape-a-data-table
+        resultTable <- as.data.frame(resultTable)
+        
+        
+        
+        longResults <- reshape(resultTable, idvar = c("id"), ids = row.names(resultTable), 
+                               v.names = "UnparsedValue", 
+                               timevar = "valueKind", varying=list(resultTypes$columnName),
+                               direction = "long", times=resultTypes$valueKind, drop="fileName")
+        
+        longResults <- merge(longResults, resultTypes)
+        
+        for (value in unique(longResults$valueType)) {
+          longResults[[value]] <- NA
+          longResults[[value]][longResults$valueType==value] <- longResults$UnparsedValue[longResults$valueType==value]
+        }
+        
+        return(longResults)  
+      }
+      
+      # transformed and normalized should be included if they are not null
+      # resultKinds should include activityColumns, numericValue, data, results
+      resultTypes <- data.frame(valueKind=c("barcode", "well name", "well type"), valueType=c("codeValue", "stringValue", "stringValue"), 
+                                columnName=c("barcode", "well", "wellType"), 
+                                stateType=c("metadata","metadata","metadata"), stateKind=c("plate information", "plate information", "plate information"), 
+                                stringsAsFactors=FALSE) 
+      
+      analysisGroupData <- meltStuff(resultTable, resultTypes)
+      
+      # Removes rows that have no compound data
+      analysisGroupData <- analysisGroupData[ analysisGroupData$batchCode != "NA::NA", ]
+      
+      analysisGroupData$analysisGroupID <- analysisGroupData$index
+      
+      ## TODO Fix racas bugs, then remove
+        # analysisGroupData$stateGroupIndex <- 1 #meltBatchcodes
+        # analysisGroupData$publicData <- TRUE #meltBatchCodes
+        # analysisGroupData$time <- NA #meltTimes
+        # meltConcentrations fix to do other than treatmentGroup
+        # add in acasEntityHierarchySpace
+        # acasEntityHierarchySpace <- c("protocol", "experiment", "analysis group", "treatment group", "subject")
+      ## End fix racas
+      
+      lsTransaction <- uploadData(analysisGroupData=analysisGroupData, recordedBy=user, lsTransaction=lsTransaction)
+      
+      analysisGroupData$experimentID <- experiment$id
+      analysisGroupData$experimentVersion <- experiment$version
+      
     }
 
     saveInputParameters(inputParameters, experiment, lsTransaction, user)
@@ -1585,6 +1673,329 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   return(summaryInfo)
 }
+
+saveFullEntityData <- function(entityData, entityKind) {
+  
+  ### local names
+  # entityData[[paste0(entityKind, "ID")]] must be numeric
+  acasEntity <- changeEntityMode(entityKind, "camel", "lowercase")
+  entityID <- paste0(entityKind, "ID")
+  tempIds <- c()
+  
+  ### Error checking
+  if (!(entityID %in% names(entityData))) {
+    stop(paste0("Internal Error: Column ", entityID, " is not a missing from entityData"))
+  }
+  
+  ### main code
+  thingTypeAndKind <- paste0("document_", changeEntityMode(entityKind, "camel", "space"))
+  entityCodeNameList <- unlist(getAutoLabels(thingTypeAndKind=thingTypeAndKind, 
+                                             labelTypeAndKind="id_codeName", 
+                                             numberOfLabels=max(entityData[[entityID]], na.rm=TRUE)),
+                               use.names=FALSE)
+  
+  entityData$analysisGroupCodeName <- entityCodeNameList[entityData[[entityID]]]
+  
+  createEntity <- function(codeName, lsType, lsKind, recordedBy, lsTransaction) {
+    return(list(
+      codeName=codeName,
+      lsType=lsType,
+      lsKind=lsKind,
+      recordedBy=recordedBy,
+      lsTransaction=lsTransaction))
+  }
+  
+  createEntityFromDF <- function(dfData, currentEntity) {
+    entity <- createEntity(
+      lsType = "default",
+      lsKind = "default",
+      codeName=dfData[[paste0(currentEntity, "CodeName")]][1],
+      recordedBy=dfData$recordedBy[1],
+      lsTransaction=dfData$lsTransaction[1])
+    upperAcasEntity <- acasEntityHierarchyCamel[which(currentEntity == acasEntityHierarchyCamel) - 1]
+    if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
+      stop("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data")
+    }
+    if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
+      stop("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data")
+    }
+    entity[[upperAcasEntity]] <- list(id=dfData[[paste0(upperAcasEntity, "ID")]][1],
+                                      version=dfData[[paste0(upperAcasEntity, "Version")]][1])
+    return(entity)
+  }
+  
+  entities <- dlply(.data=entityData, .variables = paste0(entityKind, "ID"), createEntityFromDF, currentEntity=entityKind)
+  tempIds <- as.numeric(names(entities))
+  
+  names(entities) <- NULL
+  savedEntities <- saveAcasEntities(entities, paste0(acasEntity, "s"))
+  
+  if (length(savedEntities) != length(entities)) {
+    stop(paste0("Internal Error: roo server did not respond with the same number of ", acasEntity, "s after a post"))
+  }
+  
+  entityIds <- sapply(savedEntities, getElement, "id")
+  entityVersions <- sapply(savedEntities, getElement, "version")
+  
+  entityData[[entityID]] <- entityIds[match(entityData[[entityID]], tempIds)]
+  
+  ###### entity States #######
+  
+  stateAndVersion <- saveStatesFromExplicitFormat(entityData, entityKind)
+  entityData$stateID <- stateAndVersion$entityStateId
+  entityData$stateVersion <- stateAndVersion$entityStateVersion
+  
+  ### entity Values ======================================================================= 
+  
+  savedEntityValues <- saveValuesFromExplicitFormat(entityData, entityKind)
+  #
+  
+  return(data.frame(tempID = tempIds, entityID = entityIds, entityVersion = entityVersions))
+}
+
+saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE) {
+  #TODO: should allow containers or interactions
+  idColumn = "stateID"
+  entityID = paste0(entityKind, "ID")
+  entityVersion = paste0(entityKind, "Version")
+  
+  acasServerEntity <- changeEntityMode(entityKind, "camel", "lowercase")
+  
+  
+  # If no version given, assume version 0
+  if (!(entityVersion %in% names(entityData))) {
+    entityData[[entityVersion]] <- 0
+  }
+  
+  if (!(idColumn %in% names(entityData))) {
+    stop(paste0("Internal Error: ", idColumn, " must be a column in entityData"))
+  }
+  
+  if (!(entityKind %in% racas::acasEntityHierarchyCamel)) {
+    stop("Internal Error: entityKind must be in racas::acasEntityHierarchyCamel")
+  }
+  
+  if (!(entityID %in% names(entityData))) {
+    stop("Internal Error: ", entityID, " must be included in entityData")
+  }
+  
+  createExplicitLsState <- function(entityData, entityKind) {
+    # TODO: add stateType and StateKind to meltBatchCodes
+    lsType <- entityData$stateType[1]
+    lsKind <- entityData$stateKind[1]
+    lsState <- list(lsType = entityData$stateType[1],
+                    lsKind = entityData$stateKind[1],
+                    recordedBy = entityData$recordedBy[1],
+                    lsTransaction = entityData$lsTransaction[1])
+    # e.g. lsState$analysisGroup <- list(id=entityData$analysisGroupID[1], version=0)
+    lsState[[entityKind]] <- list(id = entityData[[entityID]][1], version = entityData[[entityVersion]][1])
+    return(lsState)
+  }
+  
+  lsStates <- dlply(.data=entityData, .variables=idColumn, .fun=createExplicitLsState, entityKind=entityKind)
+  originalStateIds <- names(lsStates)
+  names(lsStates) <- NULL
+  if (testMode) {
+    lsStates <- lapply(lsStates, function(x) {x$recordedDate <- 1381939115000; return (x)})
+    return(toJSON(lsStates))
+  } else {
+    savedLsStates <- saveAcasEntities(lsStates, paste0(acasServerEntity, "states"))
+  }
+  
+  lsStateIds <- sapply(savedLsStates, getElement, "id")
+  lsStateVersions <- sapply(savedLsStates, getElement, "version")
+  entityStateTranslation <- data.frame(entityStateId = lsStateIds, 
+                                       originalStateId = originalStateIds, 
+                                       entityStateVersion = lsStateVersions)
+  stateIdAndVersion <- entityStateTranslation[match(entityData[[idColumn]], 
+                                                    entityStateTranslation$originalStateId),
+                                              c("entityStateId", "entityStateVersion")]
+  return(stateIdAndVersion)
+}
+
+saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE) {
+  ### static variables
+  #TODO: should allow containers or interactions
+  idColumn = "stateID"
+  acasServerEntity <- changeEntityMode(entityKind, "camel", "lowercase")
+  
+  #create a uniqueID to split on
+  entityData$uniqueID <- 1:(nrow(entityData))
+  
+  optionalColumns <- c("fileValue", "urlValue", "codeValue", "numericValue", "dateValue",
+                       "valueOperator", "valueUnit", "clobValue", "blobValue", "numberOfReplicates",
+                       "uncertainty", "uncertaintyType", "comments")
+  missingOptionalColumns <- Filter(function(x) !(x %in% names(entityData)),
+                                   optionalColumns)
+  entityData[missingOptionalColumns] <- NA
+  
+  ### Error Checking
+  requiredColumns <- c("valueType", "valueKind", "publicData", "stateVersion", "stateID")
+  if (any(!(requiredColumns %in% names(entityData)))) {
+    stop("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", "))
+  }
+  
+  # Turns factors to character
+  factorColumns <- vapply(entityData, is.factor, c(TRUE))
+  entityData[factorColumns] <- lapply(entityData[factorColumns], as.character)
+  
+  if (is.character(entityData$dateValue)) {
+    entityData$dateValue[entityData$dateValue == ""] <- NA
+    entityData$dateValue <- as.numeric(format(as.Date(entityData$dateValue,origin="1970-01-01"), "%s"))*1000
+  } else if (is.numeric(entityData$dateValue)) {
+    # No change
+  } else if (is.null(entityData$dateValue) || all(is.na(entityData$dateValue))) {
+    entityData$dateValue <- as.character(NA)
+  } else {
+    stop("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue))
+  }
+  
+  
+  
+  ### Helper function
+  createLocalStateValue <- function(valueData) {
+    stateValue <- with(valueData, {
+      createStateValue(
+        lsState = list(id = stateID, version = stateVersion),
+        lsType = if (valueType %in% c("stringValue", "fileValue", "urlValue", "dateValue", "clobValue", "blobValue", "numericValue", "codeValue")) {
+          valueType
+        } else {"numericValue"},
+        lsKind = valueKind,
+        stringValue = if (is.character(stringValue) && !is.na(stringValue)) {stringValue} else {NULL},
+        dateValue = if(is.numeric(stringValue)) {dateValue} else {NULL},
+        clobValue = if(is.character(clobValue) && !is.na(clobValue)) {clobValue} else {NULL},
+        blobValue = if(!is.null(blobValue) && !is.na(blobValue)) {blobValue} else {NULL},
+        codeValue = if(is.character(codeValue) && !is.na(codeValue)) {codeValue} else {NULL},
+        fileValue = if(is.character(fileValue) && !is.na(fileValue)) {fileValue} else {NULL},
+        urlValue = if(is.character(urlValue) && !is.na(urlValue)) {urlValue} else {NULL},
+        valueOperator = if(is.character(valueOperator) && !is.na(valueOperator)) {valueOperator} else {NULL},
+        operatorType = if(is.character(operatorType) && !is.na(operatorType)) {operatorType} else {NULL},
+        numericValue = if(is.numeric(numericValue) && !is.na(numericValue)) {numericValue} else {NULL},
+        valueUnit = if(is.character(valueUnit) && !is.na(valueUnit)) {valueUnit} else {NULL},
+        unitType = if(is.character(unitType) && !is.na(unitType)) {unitType} else {NULL},
+        publicData = publicData,
+        lsTransaction = lsTransaction,
+        numberOfReplicates = if(is.numeric(numberOfReplicates) && !is.na(numberOfReplicates)) {numberOfReplicates} else {NULL},
+        uncertainty = if(is.numeric(uncertainty) && !is.na(uncertainty)) {uncertainty} else {NULL},
+        uncertaintyType = if(is.character(uncertaintyType) && !is.na(uncertaintyType)) {uncertaintyType} else {NULL},
+        recordedBy = recordedBy,
+        comments = if(is.character(comments) && !is.na(comments)) {comments} else {NULL}
+      )
+    })
+    return(stateValue)
+  }
+  entityValues <- plyr::dlply(.data = entityData, 
+                              .variables = .(uniqueID), 
+                              .fun = createLocalStateValue)
+  
+  names(entityValues) <- NULL
+  
+  if (testMode) {
+    entityValues <- lapply(entityValues, function(x) {x$recordedDate <- 42; return (x)})
+    return(toJSON(entityValues))
+  } else {
+    savedEntityValues <- saveAcasEntities(entityValues, paste0(acasServerEntity, "values"))
+    return(savedEntityValues)
+  }
+}
+
+changeEntityMode <- function(entityKind, currentMode, desiredMode) {
+  entityKindIndex <- switch(
+    currentMode,
+    lowercase = which(entityKind == acasEntityHierarchy),
+    camel = which(entityKind == acasEntityHierarchyCamel),
+    space = which(entityKind == acasEntityHierarchySpace),
+    stop(paste0("Internal error: ", currentMode, " is not a valid mode")))
+  
+  return(switch(
+    desiredMode,
+    lowercase = acasEntityHierarchy[entityKindIndex],
+    camel = acasEntityHierarchyCamel[entityKindIndex],
+    space = acasEntityHierarchySpace[entityKindIndex],
+    stop(paste0("Internal error: ", desiredMode, " is not a valid mode"))))
+}
+
+uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=NULL,subjectData=NULL,
+                       recordedBy) {
+  # Uploads all the data to the server
+  # 
+  # Args:
+  #   metaData:               A data frame of the meta data
+  #   lsTransaction:          An id of the transaction
+  #   calculatedResults:      A data frame of the calculated results (analysis group data)
+  #   treatmentGroupData:     A data frame of the treatment group data
+  #   rawResults:             A data frame of the raw results (subject group data)
+  #   xLabel:                 A string with the name of the variable that is in the 'x' column
+  #   yLabel:                 A string with the name of the variable that is in the 'y' column
+  #   tempIdLabel:            A string with the name of the variable that is in the 'temp id' column
+  #   testOutputLocation:     A string with the file location to output a JSON file to when dryRun is TRUE
+  #   developmentMode:        A boolean that marks if the JSON request should be saved to a file
+  #
+  #   Returns:
+  #     lsTransaction
+  
+  library('plyr')
+  
+  if(is.null(lsTransaction)) {
+    lsTransaction <- createLsTransaction()$id
+  }
+  
+  analysisGroupData$lsTransaction <- lsTransaction
+  analysisGroupData$recordedBy <- recordedBy
+  
+  ### Analysis Group Data
+  # Not all of these will be filled
+  analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex, "-", 
+                                      analysisGroupData$concentration, "-", analysisGroupData$concentrationUnit, "-",
+                                      analysisGroupData$time, "-", analysisGroupData$timeUnit, "-", analysisGroupData$stateKind)
+  
+  analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
+  analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
+  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, 0, optionalColumns = "analysisGroupID"))
+  
+  analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup")
+  
+  if(!is.null(treatmentGroupData)) {
+    ### TreatmentGroup Data
+    treatmentGroupData$lsTransaction <- lsTransaction
+    treatmentGroupData$recordedBy <- recordedBy
+    
+    matchingID <- match(treatmentGroupData$analysisGroupID, analysisGroupIDandVersion$tempID)
+    treatmentGroupData$analysisGroupID <- analysisGroupIDandVersion$entityID[matchingID]
+    treatmentGroupData$analysisGroupVersion <- analysisGroupIDandVersion$entityVersion[matchingID]
+    
+    treatmentGroupData$stateID <- paste0(treatmentGroupData$treatmentGroupID, "-", treatmentGroupData$stateGroupIndex, "-", 
+                                         treatmentGroupData$concentration, "-", treatmentGroupData$concentrationUnit, "-",
+                                         treatmentGroupData$time, "-", treatmentGroupData$timeUnit, "-", treatmentGroupData$stateKind)
+    
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltConcentrations(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, 0, optionalColumns = "treatmentGroupID"))
+    
+    treatmentGroupIDandVersion <- saveFullEntityData(treatmentGroupData, "treatmentGroup")
+    
+    ### subject Data
+    subjectData$lsTransaction <- lsTransaction
+    subjectData$recordedBy <- recordedBy
+    
+    matchingID <- match(subjectData$treatmentGroupID, treatmentGroupIDandVersion$tempID)
+    subjectData$treatmentGroupID <- treatmentGroupIDandVersion$entityID[matchingID]
+    subjectData$treatmentGroupVersion <- treatmentGroupIDandVersion$entityVersion[matchingID]
+    
+    subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
+                                  subjectData$concentration, "-", subjectData$concentrationUnit, "-",
+                                  subjectData$time, "-", subjectData$timeUnit, "-", subjectData$stateKind)
+    
+    subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
+    subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
+    subjectData <- rbind.fill(subjectData, meltBatchCodes(subjectData, 0, optionalColumns = "subjectID"))
+    
+    subjectIDandVersion <- saveFullEntityData(subjectData, "subject")
+  }
+  
+  return (lsTransaction)
+}
+
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
   require('racas')
@@ -1599,7 +2010,6 @@ runPrimaryAnalysis <- function(request) {
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
-  testMode <- TRUE
   # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
   errorHandlingBox <- list(errorList = list())
   attach(errorHandlingBox)
