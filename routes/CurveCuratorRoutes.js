@@ -3,7 +3,6 @@
     app.get('/api/curves/stubs/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs);
     app.get('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail);
     app.put('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.refitCurve);
-    app.put('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurveUserApproval);
     return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
   };
 

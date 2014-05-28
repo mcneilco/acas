@@ -5,7 +5,12 @@ if(!is.null(GET)) {
 } else {
     postData <- rawToChar(receiveBin())
     if(!is.null(postData)) {
-        commandOutput <- capture.output(detail <- racas::api_doseResponse_fit_curve(postData))
+        POST <- jsonlite::fromJSON(postData)
+        if(is.null(POST$approval)) {
+            commandOutput <- capture.output(detail <- racas::api_doseResponse_fit_curve(POST))
+        } else {
+             commandOutput <- capture.output(detail <- racas::api_doseResponse_update_curve_user_approval(POST))
+        }
     }
 }
 

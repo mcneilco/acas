@@ -1,5 +1,3 @@
-class window.Curve extends Backbone.Model
-
 class window.DoseResponsePlotController extends AbstractFormController
 	template: _.template($("#DoseResponsePlotView").html())
 	initialize: ->
@@ -296,17 +294,29 @@ class window.CurveEditorController extends Backbone.View
 		@model.save({persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleSaveSuccess, error: @handleSaveError})
 
 	handleApproveClicked: =>
-		@trigger 'approvedClicked'
+		@model.save({userApproval: 'user', persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
 
 	handleRejectClicked: =>
-		@trigger 'curveDetailSaved', @oldID, newID
+		@model.save({userApproval: 'NA', persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
 
 	handleSaveError: =>
 		alert "Error saving curve"
 
+	handleUpdateError: =>
+		alert "Error updating curve"
+
 	handleSaveSuccess: =>
 		newID = @model.get 'curveid'
 		@trigger 'curveDetailSaved', @oldID, newID
+
+	handleUpdateSuccess: =>
+		curveid = @model.get 'curveid'
+		userApproved = @model.get 'userApproved'
+		console.log userApproved
+		@trigger 'curveDetailUpdated', curveid, userApproved
+
+class window.Curve extends Backbone.Model
+
 
 class window.CurveList extends Backbone.Collection
 	model: Curve
@@ -323,6 +333,10 @@ class window.CurveList extends Backbone.Collection
 	updatedCurveSummary: (oldID, newCurveID) =>
 		curve = @.findWhere({curveid: oldID})
 		curve.set curveid: newCurveID
+
+	updateCurveUserApproved: (curveid, userApproved) =>
+		curve = @.findWhere({curveid: curveid})
+		curve.set userApproved: userApproved
 
 class window.CurveCurationSet extends Backbone.Model
 	defaults:
@@ -350,6 +364,8 @@ class window.CurveSummaryController extends Backbone.View
 	className: 'bv_curveSummary'
 	events:
 		'click': 'setSelected'
+	initialize: ->
+		@model.on 'change', @render
 
 	render: =>
 		@$el.empty()
@@ -367,14 +383,15 @@ class window.CurveSummaryController extends Backbone.View
 		else
 			@$('.bv_thumbnail').removeClass 'algorithmApproved'
 			@$('.bv_thumbnail').addClass 'algorithmNotApproved'
-		if @model.get('userApproved') == true
-			@$('.bv_thumbsUp').show()
+		if @model.get('userApproved') == 'NA'
+			@$('.bv_thumbsUp').hide()
 			@$('.bv_thumbsDown').hide()
 		else
-			@$('.bv_thumbsUp').hide()
-			if @model.get('userApproved') == 'NA'
+			if @model.get('userApproved') == true
+				@$('.bv_thumbsUp').show()
 				@$('.bv_thumbsDown').hide()
 			else
+				@$('.bv_thumbsUp').hide()
 				@$('.bv_thumbsDown').show()
 		@$('.bv_compoundCode').html @model.get('curveAttributes').compoundCode
 		@model.on 'change', @render
@@ -459,6 +476,7 @@ class window.CurveCuratorController extends Backbone.View
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
+			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
 
 			if @model.get('sortOptions').length > 0
 				@sortBySelect = new PickListSelectController
@@ -498,7 +516,10 @@ class window.CurveCuratorController extends Backbone.View
 		@
 
 	handleCurveDetailSaved: (oldID, newID) =>
-		@curveListController.collection.updatedCurveSummary(oldID, newID)
+		@curveListController.collection.updateCurveSummary(oldID, newID)
+
+	handleCurveDetailUpdated: (curveid, userApproved) =>
+		@curveListController.collection.updateCurveUserApproved(curveid, userApproved)
 
 	getCurvesFromExperimentCode: (exptCode) ->
 		@model = new CurveCurationSet

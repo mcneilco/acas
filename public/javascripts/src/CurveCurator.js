@@ -1,18 +1,7 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
-
-  window.Curve = (function(_super) {
-    __extends(Curve, _super);
-
-    function Curve() {
-      return Curve.__super__.constructor.apply(this, arguments);
-    }
-
-    return Curve;
-
-  })(Backbone.Model);
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.DoseResponsePlotController = (function(_super) {
     __extends(DoseResponsePlotController, _super);
@@ -352,7 +341,9 @@
     __extends(CurveEditorController, _super);
 
     function CurveEditorController() {
+      this.handleUpdateSuccess = __bind(this.handleUpdateSuccess, this);
       this.handleSaveSuccess = __bind(this.handleSaveSuccess, this);
+      this.handleUpdateError = __bind(this.handleUpdateError, this);
       this.handleSaveError = __bind(this.handleSaveError, this);
       this.handleRejectClicked = __bind(this.handleRejectClicked, this);
       this.handleApproveClicked = __bind(this.handleApproveClicked, this);
@@ -435,15 +426,33 @@
     };
 
     CurveEditorController.prototype.handleApproveClicked = function() {
-      return this.trigger('approvedClicked');
+      return this.model.save({
+        userApproval: 'user',
+        persist: true,
+        user: window.AppLaunchParams.loginUserName
+      }, {
+        success: this.handleUpdateSuccess,
+        error: this.handleUpdateError
+      });
     };
 
     CurveEditorController.prototype.handleRejectClicked = function() {
-      return this.trigger('curveDetailSaved', this.oldID, newID);
+      return this.model.save({
+        userApproval: 'NA',
+        persist: true,
+        user: window.AppLaunchParams.loginUserName
+      }, {
+        success: this.handleUpdateSuccess,
+        error: this.handleUpdateError
+      });
     };
 
     CurveEditorController.prototype.handleSaveError = function() {
       return alert("Error saving curve");
+    };
+
+    CurveEditorController.prototype.handleUpdateError = function() {
+      return alert("Error updating curve");
     };
 
     CurveEditorController.prototype.handleSaveSuccess = function() {
@@ -452,14 +461,34 @@
       return this.trigger('curveDetailSaved', this.oldID, newID);
     };
 
+    CurveEditorController.prototype.handleUpdateSuccess = function() {
+      var curveid, userApproved;
+      curveid = this.model.get('curveid');
+      userApproved = this.model.get('userApproved');
+      console.log(userApproved);
+      return this.trigger('curveDetailUpdated', curveid, userApproved);
+    };
+
     return CurveEditorController;
 
   })(Backbone.View);
+
+  window.Curve = (function(_super) {
+    __extends(Curve, _super);
+
+    function Curve() {
+      return Curve.__super__.constructor.apply(this, arguments);
+    }
+
+    return Curve;
+
+  })(Backbone.Model);
 
   window.CurveList = (function(_super) {
     __extends(CurveList, _super);
 
     function CurveList() {
+      this.updateCurveUserApproved = __bind(this.updateCurveUserApproved, this);
       this.updatedCurveSummary = __bind(this.updatedCurveSummary, this);
       return CurveList.__super__.constructor.apply(this, arguments);
     }
@@ -486,6 +515,16 @@
       });
       return curve.set({
         curveid: newCurveID
+      });
+    };
+
+    CurveList.prototype.updateCurveUserApproved = function(curveid, userApproved) {
+      var curve;
+      curve = this.findWhere({
+        curveid: curveid
+      });
+      return curve.set({
+        userApproved: userApproved
       });
     };
 
@@ -558,6 +597,10 @@
       'click': 'setSelected'
     };
 
+    CurveSummaryController.prototype.initialize = function() {
+      return this.model.on('change', this.render);
+    };
+
     CurveSummaryController.prototype.render = function() {
       var curveUrl;
       this.$el.empty();
@@ -578,14 +621,15 @@
         this.$('.bv_thumbnail').removeClass('algorithmApproved');
         this.$('.bv_thumbnail').addClass('algorithmNotApproved');
       }
-      if (this.model.get('userApproved') === true) {
-        this.$('.bv_thumbsUp').show();
+      if (this.model.get('userApproved') === 'NA') {
+        this.$('.bv_thumbsUp').hide();
         this.$('.bv_thumbsDown').hide();
       } else {
-        this.$('.bv_thumbsUp').hide();
-        if (this.model.get('userApproved') === 'NA') {
+        if (this.model.get('userApproved') === true) {
+          this.$('.bv_thumbsUp').show();
           this.$('.bv_thumbsDown').hide();
         } else {
+          this.$('.bv_thumbsUp').hide();
           this.$('.bv_thumbsDown').show();
         }
       }
@@ -697,6 +741,7 @@
       this.handleFilterChanged = __bind(this.handleFilterChanged, this);
       this.handleGetCurveDetailReturn = __bind(this.handleGetCurveDetailReturn, this);
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
+      this.handleCurveDetailUpdated = __bind(this.handleCurveDetailUpdated, this);
       this.handleCurveDetailSaved = __bind(this.handleCurveDetailSaved, this);
       this.render = __bind(this.render, this);
       return CurveCuratorController.__super__.constructor.apply(this, arguments);
@@ -725,6 +770,7 @@
           el: this.$('.bv_curveEditor')
         });
         this.curveEditorController.on('curveDetailSaved', this.handleCurveDetailSaved);
+        this.curveEditorController.on('curveDetailUpdated', this.handleCurveDetailUpdated);
         if (this.model.get('sortOptions').length > 0) {
           this.sortBySelect = new PickListSelectController({
             collection: this.model.get('sortOptions'),
@@ -768,7 +814,11 @@
     };
 
     CurveCuratorController.prototype.handleCurveDetailSaved = function(oldID, newID) {
-      return this.curveListController.collection.updatedCurveSummary(oldID, newID);
+      return this.curveListController.collection.updateCurveSummary(oldID, newID);
+    };
+
+    CurveCuratorController.prototype.handleCurveDetailUpdated = function(curveid, userApproved) {
+      return this.curveListController.collection.updateCurveUserApproved(curveid, userApproved);
     };
 
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode) {
