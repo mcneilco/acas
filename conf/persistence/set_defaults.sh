@@ -122,7 +122,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "concentration", lsType:{id:7, version:0}},
 {kindName: "volume", lsType:{id:7, version:0}},
 {kindName: "date prepared", lsType:{id:4, version:0}},
-
+{kindName: "report file", lsType:{id:2, version:0}},
 {kindName: "target", lsType:{id:1, version:0}},
 {kindName: "assay format", lsType:{id:1, version:0}},
 {kindName: "experiment status", lsType:{id:1, version:0}},
@@ -136,7 +136,6 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "curve min", lsType:{id:7, version:0}},
 {kindName: "curve max", lsType:{id:7, version:0}},
 {kindName: "replicate aggregation", lsType:{id:1, version:0}},
-
 {kindName: "barcode", lsType:{id:8, version:0}},
 {kindName: "seq file", lsType:{id:2, version:0}},
 {kindName: "min file", lsType:{id:2, version:0}},
@@ -144,7 +143,6 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "raw r results location", lsType:{id:2, version:0}},
 {kindName: "data results location", lsType:{id:2, version:0}},
 {kindName: "summary location", lsType:{id:2, version:0}},
-
 {kindName: "well type", lsType:{id:1, version:0}},
 {kindName: "well name", lsType:{id:1, version:0}},
 {kindName: "maximum", lsType:{id:7, version:0}},
