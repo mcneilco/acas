@@ -443,6 +443,9 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
       classRow[i][grep(pattern = "double", classRow[i], ignore.case = TRUE)] <- "Number"
       classRow[i][grep(pattern = "date", classRow[i], ignore.case = TRUE)] <- "Date"
       classRow[i][grep(pattern = "clob", classRow[i], ignore.case = TRUE)] <- "Clob"
+      classRow[i][grep(pattern = "comment", classRow[i], ignore.case = TRUE)] <- "comments"
+      classRow[i][grep(pattern = "sd", classRow[i], ignore.case = TRUE)] <- "standard deviation"
+      classRow[i][grep(pattern = "dev", classRow[i], ignore.case = TRUE)] <- "standard deviation"      
       if (classRow[i] != oldClassRow[i] & !is.na(LabelRow[i])) {
         warning(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
                        "' as a datatype and interpreted it as '", classRow[i], 
@@ -674,7 +677,12 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   clobColumns <- vapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255), c(TRUE))
   
-  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])),as.character(unlist(calculatedResults[2,])), lockCorpBatchId, clobColumns, errorEnv)
+  if (precise) {
+    labelRow <- as.character(unlist(calculatedResults[4, ]))
+  } else {
+    labelRow <- as.character(unlist(calculatedResults[2, ]))
+  }
+  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])), labelRow, lockCorpBatchId, clobColumns, errorEnv)
   
   if(any(clobColumns & !(classRow=="Clob"))) {
     warning("One of your entries had more than 255 characters, so it will be saved as a 'Clob'. In the future, you should use this for your column header.")
@@ -809,7 +817,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   results$groupingID <- NA
   results$groupingID_2 <- NA
   if (is.function(calculateGroupingID)) {
-    # calculateTreatmentGroupID is in customFunctions.R
+    # calculateTreatmentGroupID is often defined in customFunctions.R
     results$groupingID <- calculateGroupingID(results, inputFormat, stateGroups, valueKinds)
     if (!is.null(splitSubjects)) {
       results$groupingID_2 <- as.numeric(as.factor(do.call(paste0, args=as.list(results[splitSubjects]))))
@@ -1797,7 +1805,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
 uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupData,subjectData,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
                        protocol,experiment, fileStartLocation, configList, reportFilePath, 
-                       reportFileSummary, recordedBy, annotationType, mainCode) {
+                       reportFileSummary, recordedBy, annotationType, mainCode, appendCodeNameList) {
   # Uploads all the data to the server
   # 
   # Args:
@@ -1811,6 +1819,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   #   tempIdLabel:            A string with the name of the variable that is in the 'temp id' column
   #   testOutputLocation:     A string with the file location to output a JSON file to when dryRun is TRUE
   #   developmentMode:        A boolean that marks if the JSON request should be saved to a file
+  #   appendCodeName:         A vector of lsKinds that should have the code name appended to them
   #
   #   Returns:
   #     NULL
@@ -1833,7 +1842,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   analysisGroupData$lsTransaction <- lsTransaction
   analysisGroupData$recordedBy <- recordedBy
   
-  analysisGroupIDandVersion <- saveAnalysisGroupData(analysisGroupData)
+  analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup", appendCodeNameList$analysisGroup)
   
   ### TreatmentGroup Data
   if (!is.null(treatmentGroupData)) {
@@ -2244,16 +2253,16 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   }
   return(NULL)
 }
-saveAnalysisGroupData <- function(analysisGroupData) {
-  saveFullEntityData(analysisGroupData, "analysisGroup")
-}
 
-saveFullEntityData <- function(entityData, entityKind) {
+saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
+  # appendCodeName is a vector of lsKinds that should have 
+  # Does not work for containers
   
   ### local names
   # entityData[[paste0(entityKind, "ID")]] must be numeric
   acasEntity <- changeEntityMode(entityKind, "camel", "lowercase")
   entityID <- paste0(entityKind, "ID")
+  entityCodeName <- paste0(entityKind, "CodeName")
   tempIds <- c()
   
   ### Error checking
@@ -2268,7 +2277,9 @@ saveFullEntityData <- function(entityData, entityKind) {
                                                     numberOfLabels=max(entityData[[entityID]])),
                                       use.names=FALSE)
   
-  entityData$analysisGroupCodeName <- entityCodeNameList[entityData[[entityID]]]
+  entityData[[entityCodeName]] <- entityCodeNameList[entityData[[entityID]]]
+  
+  entityData$stringValue[entityData$valueKind %in% appendCodeName] <- paste0(entityData$stringValue[entityData$valueKind %in% appendCodeName], "_", entityData[entityData$valueKind == appendCodeName, entityCodeName])
   
   createEntity <- function(codeName, lsType, lsKind, recordedBy, lsTransaction) {
     return(list(
@@ -2441,7 +2452,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     if (treatmentGroupData[1, 1] == "Group By") {
       treatmentGroupData <- getSection(genericDataFileDataFrame, lookFor = "Treatment Group Results", transpose = TRUE)
       
-      groupByColumns <- splitOnSemicolon(treatmentGroupData$"Group By")
+      groupByColumns <- c(splitOnSemicolon(treatmentGroupData$"Group By"), "link")
       groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
       keepColumn <- splitOnSemicolon(treatmentGroupData$Include)
       excludedRowKinds <- splitOnSemicolon(treatmentGroupData$"Remove Results With") # Removes results with a value for a certain valueKind
@@ -2565,7 +2576,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData, subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
-                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType, mainCode)
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType, 
+                 mainCode, appendCodeNameList = list(analysisGroup = "curve id"))
     }
   }
   
@@ -2594,7 +2606,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   summaryInfo$info$"Assay Date" = validatedMetaData$"Assay Date"
   summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
   summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$valueKindAndUnit))
-  summaryInfo$info[[paste0("Unique ", mainCode, "'s")]] = length(unique(calculatedResults[[mainCode]]))
+  summaryInfo$info[[paste0("Unique ", mainCode, "'s")]] = length(unique(calculatedResults$batchCode))
   if (!is.null(subjectData)) {
     # TODO Kelley: figure out what to replace this with rather than pointID
     summaryInfo$info$"Raw Results Data Points" <- max(subjectData$rowID)
