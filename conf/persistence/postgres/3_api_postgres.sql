@@ -8,9 +8,11 @@ DROP VIEW API_SUBJECT_RESULTS;
 drop view api_container_contents;
 DROP VIEW api_curve_params;
 DROP VIEW api_dose_response;
+DROP VIEW api_experiment_results;
 DROP VIEW api_analysis_group_results;
 DROP VIEW p_api_analysis_group_results;
 DROP VIEW api_all_data;
+DROP VIEW batch_code_experiment_links;
 DROP VIEW api_protocol;
 DROP VIEW api_experiment;
 
@@ -75,7 +77,8 @@ CASE
 	ELSE agv3.unit_kind
 END	
 AS tested_conc_unit, 
-agv.id AS agv_id, 
+agv.id AS agv_id,
+agv.ls_type as ls_type,
 agv.ls_kind as ls_kind, 
 agv.operator_kind, 
  CASE 
@@ -116,6 +119,7 @@ WHEN agv.ls_type = 'dateValue'
 	THEN to_char(agv.date_value, 'yyyy-mm-dd')
 	ELSE agv.string_value
 END AS string_value,
+agv.clob_value,
 agv.comments, 
 agv.recorded_date::timestamp::date,
 agv.public_data
@@ -182,6 +186,7 @@ FROM api_analysis_group_results api_agsvb JOIN treatment_GROUP tg on api_agsvb.a
 	JOIN subject_state ss ON ss.subject_id = s.id
 	JOIN subject_value sv ON sv.subject_state_id = ss.id
 WHERE api_agsvb.ls_kind like '%curve id'
+	and sv.ignored = FALSE
 	GROUP by s.id, api_agsvb.string_value;
 	
 CREATE OR REPLACE VIEW api_container_contents
@@ -631,3 +636,32 @@ LEFT OUTER JOIN itx_subject_container isc ON isc.subject_id=s.id
 LEFT OUTER JOIN container c ON c.id = isc.container_id
 LEFT OUTER JOIN container_state cs ON cs.container_id = c.id
 LEFT OUTER JOIN container_value cv ON cv.container_state_id = cs.id;
+
+CREATE OR REPLACE VIEW api_experiment_results
+as
+select exp.code_name as expt_code_name, aagr.* from api_analysis_group_results aagr
+join experiment exp on aagr.experiment_id = exp.id;
+
+CREATE OR REPLACE VIEW batch_code_experiment_links AS
+select agv.code_value as batch_code,
+    ('<A HREF="' ||
+    (
+        SELECT application_setting.prop_value
+        FROM application_setting
+        WHERE application_setting.prop_name = 'batch_code_experiment_url'
+    ) ||
+    replace(e.code_name, ' ', '%20') ||
+    '">' ||
+    p.label_text ||
+    '::' ||
+    e.experiment_name ||
+' (' ||
+    to_char(e.RECORDED_DATE, 'yyyy-mm-dd') ||
+    ')' ||
+    '</A>'
+    ) as experiment_code_link
+FROM api_protocol p
+join api_experiment e on p.PROTOCOL_ID = e.PROTOCOL_ID
+JOIN analysis_GROUP ag ON ag.EXPERIMENT_ID=e.id
+JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
+JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind = 'batch code';

@@ -104,11 +104,11 @@
 	routeSet_14 = require("./routes/ServerUtilityFunctions.js");
 	routeSet_14.setupRoutes(app, loginRoutes);
 
-    app.get('/dataFiles/:filename', loginRoutes.ensureAuthenticated, function(req, resp) {
-      return resp.sendfile(__dirname + '/privateUploads/' + req.params.filename);
+    app.get('/dataFiles/*', loginRoutes.ensureAuthenticated, function(req, resp) {
+      return resp.sendfile(__dirname + '/privateUploads/' + req.params[0]);
     });
-    app.get('/tempFiles/:filename', loginRoutes.ensureAuthenticated, function(req, resp) {
-      return resp.sendfile(__dirname + '/privateTempFiles/' + req.params.filename);
+    app.get('/tempfiles/*', loginRoutes.ensureAuthenticated, function(req, resp) {
+      return resp.sendfile(__dirname + '/privateTempFiles/' + req.params[0]);
     });
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {
