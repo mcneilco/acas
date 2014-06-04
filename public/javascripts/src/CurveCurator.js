@@ -116,8 +116,7 @@
           };
           p1.handlePointClicked = function() {
             var reason;
-            if (points[this.idx].flag_user !== "NA" || points[this.idx]['flag_on_load'] !== "NA" || points[this.idx].flag_algorithm !== "NA") {
-              console.log('yep');
+            if (points[this.idx].flag_user === "NA" & points[this.idx]['flag_on.load'] === "NA" & points[this.idx].flag_algorithm === "NA") {
               reason = brd.getKnockoutReason();
               this.knockOutPoint(reason);
             } else {
@@ -489,7 +488,7 @@
 
     function CurveList() {
       this.updateCurveUserApproved = __bind(this.updateCurveUserApproved, this);
-      this.updatedCurveSummary = __bind(this.updatedCurveSummary, this);
+      this.updateCurveSummary = __bind(this.updateCurveSummary, this);
       return CurveList.__super__.constructor.apply(this, arguments);
     }
 
@@ -508,7 +507,7 @@
       return catList;
     };
 
-    CurveList.prototype.updatedCurveSummary = function(oldID, newCurveID) {
+    CurveList.prototype.updateCurveSummary = function(oldID, newCurveID) {
       var curve;
       curve = this.findWhere({
         curveid: oldID
@@ -741,7 +740,7 @@
       this.handleFilterChanged = __bind(this.handleFilterChanged, this);
       this.handleGetCurveDetailReturn = __bind(this.handleGetCurveDetailReturn, this);
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
-      this.handleCurveDetailUpdated = __bind(this.handleCurveDetailUpdated, this);
+      this.handleCurveDetaily = __bind(this.handleCurveDetaily, this);
       this.handleCurveDetailSaved = __bind(this.handleCurveDetailSaved, this);
       this.render = __bind(this.render, this);
       return CurveCuratorController.__super__.constructor.apply(this, arguments);
@@ -817,7 +816,7 @@
       return this.curveListController.collection.updateCurveSummary(oldID, newID);
     };
 
-    CurveCuratorController.prototype.handleCurveDetailUpdated = function(curveid, userApproved) {
+    CurveCuratorController.prototype.handleCurveDetaily = function(curveid, userApproved) {
       return this.curveListController.collection.updateCurveUserApproved(curveid, userApproved);
     };
 

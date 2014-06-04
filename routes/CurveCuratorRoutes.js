@@ -29,7 +29,8 @@
             console.log('got ajax error trying to retrieve curve stubs');
             console.log(error);
             console.log(json);
-            return console.log(response);
+            console.log(response);
+            return resp.end('error');
           }
         };
       })(this));
@@ -58,7 +59,8 @@
             console.log('got ajax error trying to retrieve curve detail');
             console.log(error);
             console.log(json);
-            return console.log(response);
+            console.log(response);
+            return resp.end('error');
           }
         };
       })(this));
@@ -88,7 +90,8 @@
             console.log('got ajax error trying to refit curve');
             console.log(error);
             console.log(json);
-            return console.log(response);
+            console.log(response);
+            return resp.end('error');
           }
         };
       })(this));
@@ -118,7 +121,8 @@
             console.log('got ajax error trying to refit curve');
             console.log(error);
             console.log(json);
-            return console.log(response);
+            console.log(response);
+            return resp.end(json);
           }
         };
       })(this));

@@ -173,15 +173,9 @@ describe "Curve Curator Module testing", ->
 					expect(@drpc.$('.bv_plotWindow').attr('id')).toEqual "bvID_plotWindow_" + @drpc.model.cid
 				it "should have rendered an svg", ->
 					expect(@drpc.$('#bvID_plotWindow_' + @drpc.model.cid)[0].innerHTML).toContain('<svg')
+					window.blah = @drpc.$('#bvID_plotWindow_' + @drpc.model.cid)
 				it "should have a populated point list", ->
 					expect(@drpc.pointList.length).toBeGreaterThan(0)
-			describe "point knockout/include behavior", ->
-				it "calling knockout point on a point should update the flag on the model", ->
-					@drpc.pointList[0].knockOutPoint('testKnockout')
-					expect(@drpc.model.get('points')[@drpc.pointList[0].idx].flag).toEqual('testKnockout')
-				it "calling include point on a point should remove the flag on the model", ->
-					@drpc.pointList[0].includePoint()
-					expect(@drpc.model.get('points')[@drpc.pointList[0].idx].flag).toEqual('NA')
 
 	describe "Curve Editor Controller tests", ->
 			beforeEach ->

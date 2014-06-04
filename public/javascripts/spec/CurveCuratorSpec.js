@@ -242,7 +242,7 @@
           });
           return this.drpc.render();
         });
-        describe("basic plot rendering", function() {
+        return describe("basic plot rendering", function() {
           it("should load the template", function() {
             return expect(this.drpc.$('.bv_plotWindow').length).toEqual(1);
           });
@@ -250,20 +250,11 @@
             return expect(this.drpc.$('.bv_plotWindow').attr('id')).toEqual("bvID_plotWindow_" + this.drpc.model.cid);
           });
           it("should have rendered an svg", function() {
-            return expect(this.drpc.$('#bvID_plotWindow_' + this.drpc.model.cid)[0].innerHTML).toContain('<svg');
+            expect(this.drpc.$('#bvID_plotWindow_' + this.drpc.model.cid)[0].innerHTML).toContain('<svg');
+            return window.blah = this.drpc.$('#bvID_plotWindow_' + this.drpc.model.cid);
           });
           return it("should have a populated point list", function() {
             return expect(this.drpc.pointList.length).toBeGreaterThan(0);
-          });
-        });
-        return describe("point knockout/include behavior", function() {
-          it("calling knockout point on a point should update the flag on the model", function() {
-            this.drpc.pointList[0].knockOutPoint('testKnockout');
-            return expect(this.drpc.model.get('points')[this.drpc.pointList[0].idx].flag).toEqual('testKnockout');
-          });
-          return it("calling include point on a point should remove the flag on the model", function() {
-            this.drpc.pointList[0].includePoint();
-            return expect(this.drpc.model.get('points')[this.drpc.pointList[0].idx].flag).toEqual('NA');
           });
         });
       });

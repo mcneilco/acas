@@ -33,7 +33,6 @@ class window.DoseResponsePlotController extends AbstractFormController
 			ii = 0
 			window.points = points
 			while ii < points.length
-				#console.log "Original: " + points.dose[ii] + ", Log: " + Math.log(points.dose[ii], 10)
 				x = log10 points[ii].dose
 				y = points[ii].response
 				flag_user = points[ii].flag_user
@@ -84,8 +83,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 					points[@idx].flag_algorithm = "NA"
 					brd.model.set points: points
 				p1.handlePointClicked = ->
-					if (points[@idx].flag_user != "NA" || points[@idx]['flag_on_load'] != "NA" || points[@idx].flag_algorithm != "NA")
-						console.log 'yep'
+					if (points[@idx].flag_user == "NA" & points[@idx]['flag_on.load'] == "NA" & points[@idx].flag_algorithm == "NA")
 						reason = brd.getKnockoutReason()
 						@knockOutPoint reason
 					else
@@ -330,7 +328,7 @@ class window.CurveList extends Backbone.Collection
 				name: cat
 		catList
 
-	updatedCurveSummary: (oldID, newCurveID) =>
+	updateCurveSummary: (oldID, newCurveID) =>
 		curve = @.findWhere({curveid: oldID})
 		curve.set curveid: newCurveID
 
@@ -518,7 +516,7 @@ class window.CurveCuratorController extends Backbone.View
 	handleCurveDetailSaved: (oldID, newID) =>
 		@curveListController.collection.updateCurveSummary(oldID, newID)
 
-	handleCurveDetailUpdated: (curveid, userApproved) =>
+	handleCurveDetaily: (curveid, userApproved) =>
 		@curveListController.collection.updateCurveUserApproved(curveid, userApproved)
 
 	getCurvesFromExperimentCode: (exptCode) ->

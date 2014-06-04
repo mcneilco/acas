@@ -147,272 +147,433 @@
       }
     ];
     exports.curveDetail = {
-      curveid: "AG-00001743_472",
-      reportedValues: "<TABLE >\n  <TR> <TD> min </TD> <TD align=\"right\"> 17.16 </TD> </TR>\n  <TR> <TD> max </TD> <TD align=\"right\"> 94.09 </TD> </TR>\n  <TR> <TD> slope </TD> <TD align=\"right\"> 0.87 </TD> </TR>\n  <TR> <TD> ec50 </TD> <TD align=\"right\"> 0.73 </TD> </TR>\n   </TABLE>\n",
-      fitSummary: "<br>Model fitted: Log-logistic (ED50 as parameter) (4 parms)<br><br>Parameter estimates:<br><br>                  Estimate Std. Error  t-value p-value<br>slope:(Intercept) -0.87274    0.30120 -2.89752  0.0089<br>min:(Intercept)   17.16475    8.06424  2.12850  0.0459<br>max:(Intercept)   94.09304    6.31208 14.90682  0.0000<br>ec50:(Intercept)   0.73444    0.20070  3.65935  0.0016<br><br>Residual standard error:<br><br> 5.684466 (20 degrees of freedom)",
-      parameterStdErrors: "<TABLE >\n<TR> <TH> name </TH> <TH> pValue </TH> <TH> stdErr </TH> <TH> tValue </TH>  </TR>\n  <TR> <TD> ec50 </TD> <TD align=\"right\"> 0.00 </TD> <TD align=\"right\"> 0.20 </TD> <TD align=\"right\"> 3.66 </TD> </TR>\n  <TR> <TD> max </TD> <TD align=\"right\"> 0.00 </TD> <TD align=\"right\"> 6.31 </TD> <TD align=\"right\"> 14.91 </TD> </TR>\n  <TR> <TD> min </TD> <TD align=\"right\"> 0.05 </TD> <TD align=\"right\"> 8.06 </TD> <TD align=\"right\"> 2.13 </TD> </TR>\n  <TR> <TD> slope </TD> <TD align=\"right\"> 0.01 </TD> <TD align=\"right\"> 0.30 </TD> <TD align=\"right\"> -2.90 </TD> </TR>\n   </TABLE>\n",
-      curveErrors: "<TABLE >\n  <TR> <TD> SSE </TD> <TD align=\"right\"> 646.26 </TD> </TR>\n  <TR> <TD> SST </TD> <TD align=\"right\"> 21152.22 </TD> </TR>\n  <TR> <TD> rSquared </TD> <TD align=\"right\"> 0.97 </TD> </TR>\n   </TABLE>\n",
+      curveid: "AG-00104866_796",
+      reportedValues: "<TABLE >\n  <TR> <TD> min </TD> <TD align=\"right\"> 12.04 </TD> </TR>\n  <TR> <TD> max </TD> <TD align=\"right\"> 98.23 </TD> </TR>\n  <TR> <TD> slope </TD> <TD align=\"right\"> 1.34 </TD> </TR>\n  <TR> <TD> ec50 </TD> <TD align=\"right\"> 0.70 </TD> </TR>\n   </TABLE>\n",
+      fitSummary: "<br>Model fitted: Log-logistic (ED50 as parameter) (4 parms)<br><br>Parameter estimates:<br><br>                  Estimate Std. Error  t-value p-value<br>slope:(Intercept) -1.33846    0.30222 -4.42881  0.0001<br>min:(Intercept)   12.04285    5.13460  2.34543  0.0246<br>max:(Intercept)   98.23250    4.32905 22.69149  0.0000<br>ec50:(Intercept)   0.70085    0.11958  5.86116  0.0000<br><br>Residual standard error:<br><br> 10.13257 (36 degrees of freedom)",
+      parameterStdErrors: "<TABLE >\n<TR> <TH> name </TH> <TH> pValue </TH> <TH> stdErr </TH> <TH> tValue </TH>  </TR>\n  <TR> <TD> ec50 </TD> <TD align=\"right\"> 0.00 </TD> <TD align=\"right\"> 0.12 </TD> <TD align=\"right\"> 5.86 </TD> </TR>\n  <TR> <TD> max </TD> <TD align=\"right\"> 0.00 </TD> <TD align=\"right\"> 4.33 </TD> <TD align=\"right\"> 22.69 </TD> </TR>\n  <TR> <TD> min </TD> <TD align=\"right\"> 0.02 </TD> <TD align=\"right\"> 5.13 </TD> <TD align=\"right\"> 2.35 </TD> </TR>\n  <TR> <TD> slope </TD> <TD align=\"right\"> 0.00 </TD> <TD align=\"right\"> 0.30 </TD> <TD align=\"right\"> -4.43 </TD> </TR>\n   </TABLE>\n",
+      curveErrors: "<TABLE >\n  <TR> <TD> SSE </TD> <TD align=\"right\"> 3696.08 </TD> </TR>\n  <TR> <TD> SST </TD> <TD align=\"right\"> 46130.70 </TD> </TR>\n  <TR> <TD> rSquared </TD> <TD align=\"right\"> 0.92 </TD> </TR>\n   </TABLE>\n",
       category: "sigmoid",
-      algorithmApproved: null,
+      algorithmApproved: true,
+      userApproved: "NA",
       curveAttributes: {
-        EC50: 0.73,
+        EC50: 0.7,
         Operator: null,
-        SST: 21152.22,
-        SSE: 646.26,
-        rSquared: 0.97,
-        compoundCode: "CMPD-0000002-01A"
+        SST: 46130.7,
+        SSE: 3696.08,
+        rSquared: 0.92,
+        compoundCode: "CMPD-0000001-01A"
       },
       plotData: {
-        plotWindow: [-2, 96.26925, 2, -4.1785],
+        plotWindow: [-2, 102.36725, 2, -22.25725],
         points: [
           {
-            response_sv_id: 480440,
-            dose: 20,
-            doseunits: "uM",
-            response: 88.72,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480445,
-            dose: 20,
-            doseunits: "uM",
-            response: 86.93,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480446,
-            dose: 20,
-            doseunits: "uM",
-            response: 94.18,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480453,
-            dose: 0.31,
-            doseunits: "uM",
-            response: 22.2,
-            responseunits: "efficacy",
-            flag: "Outlier",
-            flagchanged: false
-          }, {
-            response_sv_id: 480454,
-            dose: 0.31,
-            doseunits: "uM",
-            response: 38.42,
-            responseunits: "efficacy",
-            flag: "Outlier",
-            flagchanged: false
-          }, {
-            response_sv_id: 480459,
-            dose: 0.31,
-            doseunits: "uM",
-            response: 38.2,
-            responseunits: "efficacy",
-            flag: "Outlier",
-            flagchanged: false
-          }, {
-            response_sv_id: 480462,
-            dose: 10,
-            doseunits: "uM",
-            response: 84.16,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480465,
-            dose: 10,
-            doseunits: "uM",
-            response: 85.21,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480470,
-            dose: 10,
-            doseunits: "uM",
-            response: 91.26,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480473,
-            dose: 5,
-            doseunits: "uM",
-            response: 80.95,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480478,
-            dose: 5,
-            doseunits: "uM",
-            response: 80.13,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480481,
-            dose: 5,
-            doseunits: "uM",
-            response: 83.71,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480486,
-            dose: 0.04,
-            doseunits: "uM",
-            response: 29.3,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480487,
-            dose: 0.04,
-            doseunits: "uM",
-            response: 10.61,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480490,
-            dose: 0.04,
-            doseunits: "uM",
-            response: 26.91,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480497,
+            response_sv_id: 958496,
             dose: 1.25,
             doseunits: "uM",
-            response: 63.91,
+            response: 70.25,
             responseunits: "efficacy",
-            flag: "NA",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }, {
-            response_sv_id: 480498,
+            response_sv_id: 958499,
             dose: 1.25,
             doseunits: "uM",
-            response: 67.94,
+            response: 69.46,
             responseunits: "efficacy",
-            flag: "NA",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }, {
-            response_sv_id: 480503,
+            response_sv_id: 958500,
             dose: 1.25,
             doseunits: "uM",
-            response: 57.7,
+            response: 69.4,
             responseunits: "efficacy",
-            flag: "NA",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }, {
-            response_sv_id: 480508,
-            dose: 2.5,
+            response_sv_id: 958503,
+            dose: 1.25,
             doseunits: "uM",
-            response: 68.54,
+            response: 75.3,
             responseunits: "efficacy",
-            flag: "NA",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }, {
-            response_sv_id: 480509,
-            dose: 2.5,
-            doseunits: "uM",
-            response: 80.05,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480512,
-            dose: 2.5,
-            doseunits: "uM",
-            response: 79.01,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480519,
-            dose: 0.08,
-            doseunits: "uM",
-            response: 22.72,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480522,
-            dose: 0.08,
-            doseunits: "uM",
-            response: 20.93,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480525,
-            dose: 0.08,
-            doseunits: "uM",
-            response: 38.94,
-            responseunits: "efficacy",
-            flag: "NA",
-            flagchanged: false
-          }, {
-            response_sv_id: 480530,
+            response_sv_id: 958510,
             dose: 0.16,
             doseunits: "uM",
-            response: 17.27,
+            response: 8.63,
             responseunits: "efficacy",
-            flag: "Outlier",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }, {
-            response_sv_id: 480531,
+            response_sv_id: 958511,
             dose: 0.16,
             doseunits: "uM",
-            response: 34.31,
+            response: 37.22,
             responseunits: "efficacy",
-            flag: "Outlier",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }, {
-            response_sv_id: 480536,
+            response_sv_id: 958514,
             dose: 0.16,
             doseunits: "uM",
-            response: 20.03,
+            response: 23.34,
             responseunits: "efficacy",
-            flag: "Outlier",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }, {
-            response_sv_id: 480541,
-            dose: 0.63,
+            response_sv_id: 958517,
+            dose: 0.16,
             doseunits: "uM",
-            response: 56.58,
+            response: 37.44,
             responseunits: "efficacy",
-            flag: "NA",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }, {
-            response_sv_id: 480542,
-            dose: 0.63,
+            response_sv_id: 958524,
+            dose: 0.04,
             doseunits: "uM",
-            response: 54.04,
+            response: 20.87,
             responseunits: "efficacy",
-            flag: "NA",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }, {
-            response_sv_id: 480547,
+            response_sv_id: 958527,
+            dose: 0.04,
+            doseunits: "uM",
+            response: 25.53,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958528,
+            dose: 0.04,
+            doseunits: "uM",
+            response: -19.29,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958531,
+            dose: 0.04,
+            doseunits: "uM",
+            response: 37.95,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958538,
+            dose: 0.31,
+            doseunits: "uM",
+            response: 23.34,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958539,
+            dose: 0.31,
+            doseunits: "uM",
+            response: 25.53,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958544,
+            dose: 0.31,
+            doseunits: "uM",
+            response: 32.39,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958547,
+            dose: 0.31,
+            doseunits: "uM",
+            response: 38.79,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958550,
+            dose: 2.5,
+            doseunits: "uM",
+            response: 80.64,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958553,
+            dose: 2.5,
+            doseunits: "uM",
+            response: 80.86,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958558,
+            dose: 2.5,
+            doseunits: "uM",
+            response: 87.49,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958561,
+            dose: 2.5,
+            doseunits: "uM",
+            response: 83.28,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958564,
+            dose: 20,
+            doseunits: "uM",
+            response: 95.97,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958569,
+            dose: 20,
+            doseunits: "uM",
+            response: 98.61,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958570,
+            dose: 20,
+            doseunits: "uM",
+            response: 95.58,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958573,
+            dose: 20,
+            doseunits: "uM",
+            response: 98.05,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958580,
+            dose: 5,
+            doseunits: "uM",
+            response: 89.91,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958581,
+            dose: 5,
+            doseunits: "uM",
+            response: 96.93,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958584,
+            dose: 5,
+            doseunits: "uM",
+            response: 92.15,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958589,
+            dose: 5,
+            doseunits: "uM",
+            response: 92.83,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958594,
+            dose: 10,
+            doseunits: "uM",
+            response: 98.67,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958595,
+            dose: 10,
+            doseunits: "uM",
+            response: 99.4,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958600,
+            dose: 10,
+            doseunits: "uM",
+            response: 93.67,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958601,
+            dose: 10,
+            doseunits: "uM",
+            response: 94.74,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958608,
+            dose: 0.08,
+            doseunits: "uM",
+            response: 12.84,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958611,
+            dose: 0.08,
+            doseunits: "uM",
+            response: 14.86,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958614,
+            dose: 0.08,
+            doseunits: "uM",
+            response: 3.34,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958615,
+            dose: 0.08,
+            doseunits: "uM",
+            response: 16.88,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958622,
             dose: 0.63,
             doseunits: "uM",
-            response: 48.96,
+            response: 69.63,
             responseunits: "efficacy",
-            flag: "NA",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958625,
+            dose: 0.63,
+            doseunits: "uM",
+            response: 47.95,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958628,
+            dose: 0.63,
+            doseunits: "uM",
+            response: 37.05,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
+            flagchanged: false
+          }, {
+            response_sv_id: 958629,
+            dose: 0.63,
+            doseunits: "uM",
+            response: 63.39,
+            responseunits: "efficacy",
+            flag_user: "NA",
+            "flag_on.load": "NA",
+            flag_algorithm: "NA",
             flagchanged: false
           }
         ],
         curve: {
           type: "LL.4",
-          slope: -0.87,
-          ec50: 0.73,
-          min: 17.16,
-          max: 94.09
+          ec50: 0.7,
+          min: 12.04,
+          slope: -1.34,
+          max: 98.23
         }
       },
       fitSettings: {
@@ -428,10 +589,10 @@
           limitType: "none",
           value: 0.6
         },
-        inactiveThreshold: 25,
+        inactiveThreshold: 20,
         inverseAgonistMode: true
       },
-      sessionID: "/var/folders/5b/s62pqy655kx6929zhxrml5c80000gn/T//rSe-8b36628951e0"
+      sessionID: "/var/folders/5b/s62pqy655kx6929zhxrml5c80000gn/T//rSe-1bf048a9588"
     };
     return exports.updateCurveUserApproval = {
       userApproval: true

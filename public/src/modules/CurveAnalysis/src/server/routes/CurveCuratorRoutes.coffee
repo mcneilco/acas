@@ -27,6 +27,7 @@ exports.getCurveStubs = (req, resp) ->
 				console.log error
 				console.log json
 				console.log response
+				resp.end 'error'
 		)
 
 exports.getCurveDetail = (req, resp) ->
@@ -50,6 +51,7 @@ exports.getCurveDetail = (req, resp) ->
 				console.log error
 				console.log json
 				console.log response
+				resp.end 'error'
 		)
 
 exports.updateCurveUserApproval = (req, resp) ->
@@ -74,6 +76,7 @@ exports.updateCurveUserApproval = (req, resp) ->
 				console.log error
 				console.log json
 				console.log response
+				resp.end 'error'
 		)
 
 exports.refitCurve = (req, resp) ->
@@ -98,6 +101,7 @@ exports.refitCurve = (req, resp) ->
 				console.log error
 				console.log json
 				console.log response
+				resp.end json
 		)
 
 exports.curveCuratorIndex = (req, resp) ->
@@ -126,4 +130,3 @@ exports.curveCuratorIndex = (req, resp) ->
 			testMode: global.specRunnerTestmode
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
-
