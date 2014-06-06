@@ -6,10 +6,10 @@
 <script type="text/template" id="DoseResponseAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
 
 	<div class="span5" style="margin-left:0;">
-    <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:450px;height:370px;background-color:#ffffff;">
+    <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:350px;height:370px;background-color:#ffffff;">
         <form class="form-inline" style="margin-bottom:10px;">
             <strong style="font-size:18px;">Global Fit Criteria</strong>
-            <label class="checkbox bv_group_inverseAgonistMode" style="margin-left:135px;">
+            <label class="checkbox bv_group_inverseAgonistMode" style="margin-left:40px;">
                 <input type="checkbox" class="bv_inverseAgonistMode" style="margin-right:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%>  /> Inverse Agonist Mode
             </label>
         </form>
@@ -29,7 +29,7 @@
                 </label>
             </form>
             <div class="control-group bv_group_max_value">
-                <input type="text" class=" bv_max_value" style="width:415px;" value="<%= max.value%>" <% if (max.limitType=="none"){ %> disabled="disabled"<% }%> />
+                <input type="text" class=" bv_max_value" style="width:315px;" value="<%= max.value%>" <% if (max.limitType=="none"){ %> disabled="disabled"<% }%> />
             </div>
 
 
@@ -46,7 +46,7 @@
                 </label>
             </form>
 	        <div class="control-group bv_group_min_value">
-	            <input type="text" class="bv_group_min_value bv_min_value" style="width:415px;" value="<%= min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
+	            <input type="text" class="bv_group_min_value bv_min_value" style="width:315px;" value="<%= min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
 		    </div>
 
             <form class="form-inline bv_group_slope" style="margin-bottom:10px;">
@@ -62,7 +62,7 @@
                 </label>
             </form>
 	        <div class="control-group bv_group_slope_value">
-		        <input type="text" class="bv_group_slope_value bv_slope_value" style="width:415px;" value="<%= slope.value%>" <% if (slope.limitType=="none"){ %> disabled="disabled"<% }%> />
+		        <input type="text" class="bv_group_slope_value bv_slope_value" style="width:315px;" value="<%= slope.value%>" <% if (slope.limitType=="none"){ %> disabled="disabled"<% }%> />
 		    </div>
 
         </div>
@@ -70,7 +70,7 @@
         <h5>Inactive Threshold</h5>
         <div class="bv_group_inactiveThreshold">
 
-	        <div class="bv_inactiveThreshold pull-left" style="width:380px;margin-top:8px;margin-left:10px;"></div>
+	        <div class="bv_inactiveThreshold pull-left" style="width:280px;margin-top:8px;margin-left:10px;"></div>
 	        <div class="bv_inactiveThresholdDisplay well well-small pull-right" style="margin-bottom:5px;padding-top:5px;padding-right:7px;padding-bottom:5px;padding-left:7px;width:25px;"></div>
 
         </div>

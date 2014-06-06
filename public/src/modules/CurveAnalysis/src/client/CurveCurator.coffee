@@ -272,42 +272,87 @@ class window.CurveEditorController extends Backbone.View
 			@$('.bv_category').html @model.get('category')
 		else
 			@$el.html "No curve selected"
+		if @model.get('algorithmApproved') == true
+			@$('.bv_pass').show()
+			@$('.bv_fail').hide()
+		else
+			@$('.bv_pass').hide()
+			@$('.bv_fail').show()
+		if @model.get('userApproved') == 'NA'
+			@$('.bv_na').show()
+			@$('.bv_thumbsUp').hide()
+			@$('.bv_thumbsDown').hide()
+		else
+		if @model.get('userApproved') == true
+			@$('.bv_na').hide()
+			@$('.bv_thumbsUp').show()
+			@$('.bv_thumbsDown').hide()
+		else
+			@$('.bv_na').hide()
+			@$('.bv_thumbsUp').hide()
+			@$('.bv_thumbsDown').show()
 
 	setModel: (model)->
 		@model = model
+		console.log "got set model"
 		@render()
-		@model.on 'sync', @render
+		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
+		@model.on 'sync', @handleModelSync
+
+	handleModelSync: =>
+		console.log "got sync"
+		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		@render()
 
 	handlePointsChanged: =>
+		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@model.save({persist: false, user: window.AppLaunchParams.loginUserName})
 
 	handleParametersChanged: =>
+		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@model.save({persist: false, user: window.AppLaunchParams.loginUserName})
 
 	handleResetClicked: =>
-		@model.fetch()
+		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
+		@model.fetch
+			success: @handleResetSuccess
+			error: @handleResetError
 
 	handleUpdateClicked: =>
+		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@oldID =  @model.get 'curveid'
 		@model.save({persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleSaveSuccess, error: @handleSaveError})
 
 	handleApproveClicked: =>
+		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@model.save({userApproval: 'user', persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
 
 	handleRejectClicked: =>
+		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@model.save({userApproval: 'NA', persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
 
+	handleResetSuccess: =>
+		#UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+
+	handleResetError: =>
+		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
+		alert "Error resetting"
+
 	handleSaveError: =>
+		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
 		alert "Error saving curve"
 
 	handleUpdateError: =>
+		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
 		alert "Error updating curve"
 
 	handleSaveSuccess: =>
+		@handleModelSync()
 		newID = @model.get 'curveid'
 		@trigger 'curveDetailSaved', @oldID, newID
 
 	handleUpdateSuccess: =>
+		@handleModelSync()
 		curveid = @model.get 'curveid'
 		userApproved = @model.get 'userApproved'
 		console.log userApproved
@@ -376,19 +421,22 @@ class window.CurveSummaryController extends Backbone.View
 		@$el.html @template
 			curveUrl: curveUrl
 		if @model.get('algorithmApproved') == true
-			@$('.bv_thumbnail').addClass 'algorithmApproved'
-			@$('.bv_thumbnail').removeClass 'algorithmNotApproved'
+			@$('.bv_pass').show()
+			@$('.bv_fail').hide()
 		else
-			@$('.bv_thumbnail').removeClass 'algorithmApproved'
-			@$('.bv_thumbnail').addClass 'algorithmNotApproved'
-		if @model.get('userApproved') == 'NA'
+			@$('.bv_pass').hide()
+			@$('.bv_fail').show()
+		if @model.get('userApproved') == null
+			@$('.bv_na').show()
 			@$('.bv_thumbsUp').hide()
 			@$('.bv_thumbsDown').hide()
 		else
 			if @model.get('userApproved') == true
+				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').show()
 				@$('.bv_thumbsDown').hide()
 			else
+				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').hide()
 				@$('.bv_thumbsDown').show()
 		@$('.bv_compoundCode').html @model.get('curveAttributes').compoundCode

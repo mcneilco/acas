@@ -1,22 +1,35 @@
 .bv_curveCurator .selected {
     border-width: 3px;
     border-style: solid;
-    border-color: #696969;
+    border-color: #55B779 !important;
 }
 
 .bv_curveCurator .bv_curveList .bv_curveSummaries {
-    height: 684px;
+    /*height: 684px;*/
     width: 265px;
     overflow-y: auto;
 }
 
 .bv_curveCurator .bv_curveSummary {
     width: 250px;
-    height: 200px;
+    height: 150px;
+    margin-bottom: 10px;
+    border-color: #e3e3e3;
+    border-style: solid;
+    border-width: 3px;
 }
 
 
 .bv_curveCurator .bv_curveEditor {
     margin-left: 0;
-    width: 1120px;
+    width: 1010px;
+}
+
+.bv_curveCurator .bv_plotWindow {
+    border-style: solid;
+    border-width: 1px;
+    border-color: #e3e3e3;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 }

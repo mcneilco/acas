@@ -82,13 +82,13 @@ describe "Curve Curator Module testing", ->
 				expect(@csc.$el.hasClass('selected')).toBeTruthy()
 		describe "algorithm approved display", ->
 			it "should show approved when algorithm approved", ->
-				expect(@csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeTruthy()
-				expect(@csc.$('.bv_thumbnail').hasClass('algorithmNotApproved')).toBeFalsy()
+				expect(@csc.$('.bv_pass')).toBeVisible()
+				expect(@csc.$('.bv_fail')).toBeHidden()
 			it "should show not approved when algorithm not approved", ->
 				@csc.model.set algorithmApproved: false
 				@csc.render()
-				expect(@csc.$('.bv_thumbnail').hasClass('algorithmNotApproved')).toBeTruthy()
-				expect(@csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeFalsy()
+				expect(@csc.$('.bv_pass')).toBeHidden()
+				expect(@csc.$('.bv_fail')).toBeVisible()
 		xdescribe "user approved display", ->
 			#TODO these tests don't work, but implimentation does
 			it "should show thumbs up when user approved", ->
