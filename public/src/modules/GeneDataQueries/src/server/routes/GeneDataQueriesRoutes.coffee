@@ -5,7 +5,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes
 	app.post '/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced
 	config = require '../conf/compiled/conf.js'
-#	if config.all.client.require.login
+	#	if config.all.client.require.login
 	app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
 
 
@@ -16,19 +16,14 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 	fs = require 'fs'
 	crypto = require('crypto');
 	config = require '../conf/compiled/conf.js'
-
 	if req.query.format?
 		if req.query.format=="csv"
 			if global.specRunnerTestmode
-				# the following is really elegant, but the client won't support an ajax call returning a file, so start over....
-#				request.get('http://localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv').pipe(resp)
 				if config.all.client.use.ssl
 					urlPref = "https://"
 				else
 					urlPref = "http://"
-
 				filename = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query.csv';
-				console.log filename
 				file = fs.createWriteStream './privateTempFiles/'+filename
 				rem = request urlPref+'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
 				rem.on 'data', (chunk) ->
@@ -38,16 +33,47 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 					console.log "file written"
 					resp.json
 						fileURL: urlPref+"localhost:3000/tempFiles/"+filename
-
-
 			else
-				#TODO this implementation is not tested!!!
+				config = require '../conf/compiled/conf.js'
 				baseurl = config.all.client.service.rapache.fullpath+"getGeneData?format=CSV"
+				request = require 'request'
 				request(
 					method: 'POST'
 					url: baseurl
-					body: req.body
-				).pipe(resp)
+					body: JSON.stringify req.body
+					json: true
+				, (error, response, json) =>
+					if !error && response.statusCode == 200
+						dirName = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query';
+						fs.mkdir('./privateTempFiles/' + dirName, (err) ->
+							if err
+								console.log 'there was an error creating a gene id query directory'
+								console.log err
+								resp.end "gene query directory could not be saved"
+							else
+								filename = 'GeneQuery.csv';
+								fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, (err) ->
+									if err
+										console.log 'there was an error saving a gene id query csv file'
+										console.log err
+										resp.end "File could not be saved"
+									else
+										if config.all.client.use.ssl
+											urlPref = "https://"
+										else
+											urlPref = "http://"
+										resp.json
+											fileURL: urlPref + config.all.client.host + ":" + config.all.client.port + "/tempfiles/" + dirName + "/" + filename
+									return
+								)
+							return
+						)
+					else
+						console.log 'got ajax error trying to get gene data csv from the server'
+						console.log error
+						console.log json
+						console.log response
+				)
 
 		else
 			console.log "format requested not supported"
@@ -80,7 +106,6 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 			, (error, response, json) =>
 				console.log response.statusCode
 				if !error
-					console.log JSON.stringify json
 					resp.end JSON.stringify json
 				else
 					console.log 'got ajax error trying to query gene data'
@@ -225,15 +250,46 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 					resp.json
 						fileURL: urlPref+"localhost:3000/tempFiles/"+filename
 			else
-				#TODO this implementation is not tested!!!
 				config = require '../conf/compiled/conf.js'
 				baseurl = config.all.client.service.rapache.fullpath+"getFilteredGeneData?format=CSV"
+				request = require 'request'
 				request(
 					method: 'POST'
 					url: baseurl
-					body: req.body
-				).pipe(resp)
-
+					body: JSON.stringify req.body
+					json: true
+				, (error, response, json) =>
+					if !error && response.statusCode == 200
+						dirName = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query';
+						fs.mkdir('./privateTempFiles/' + dirName, (err) ->
+							if err
+								console.log 'there was an error creating a gene id query directory'
+								console.log err
+								resp.end "gene query directory could not be saved"
+							else
+								filename = 'GeneQuery.csv';
+								fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, (err) ->
+									if err
+										console.log 'there was an error saving a gene id query csv file'
+										console.log err
+										resp.end "File could not be saved"
+									else
+										if config.all.client.use.ssl
+											urlPref = "https://"
+										else
+											urlPref = "http://"
+										resp.json
+											fileURL: urlPref + config.all.client.host + ":" + config.all.client.port + "/tempfiles/" + dirName + "/" + filename
+									return
+								)
+							return
+						)
+					else
+						console.log 'got ajax error trying to get gene data csv from the server'
+						console.log error
+						console.log json
+						console.log response
+				)
 		else
 			console.log "format requested not supported"
 	else
@@ -257,7 +313,7 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 			resp.end JSON.stringify responseObj
 		else
 			config = require '../conf/compiled/conf.js'
-			baseurl = config.all.client.service.rapache.fullpath+"getFilteredGeneData/"
+			baseurl = config.all.client.service.rapache.fullpath+"getFilteredGeneData"
 			request(
 				method: 'POST'
 				url: baseurl

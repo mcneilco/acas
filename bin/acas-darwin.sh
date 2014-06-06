@@ -4,7 +4,7 @@
 # processname: node
 
 scriptPath=$(readlink ${BASH_SOURCE[0]})
-ACAS_HOME=$(cd "$(dirname "$scriptPath")"/..; pwd)
+ACAS_HOME=$(cd "$(dirname $0)"/..; /bin/pwd)
 
 #Get ACAS config variables
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/conf/readproperties.awk)"
@@ -32,24 +32,22 @@ if [ "$unamestr" == 'Darwin' ]; then
 	suAdd="-i"
 	apacheConfFile=apache-darwin.conf
 fi
+if [ ! -d "$server_log_path" ]; then
+    if [ $(whoami) == $ACAS_USER ]; then
+        mkdir $server_log_path
+    else
+        eval "su - $ACAS_USER mkdir $server_log_path"
+    fi
+fi
+
 case $1 in
 start)
-        for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
-        do
-		if [ -e $dir/app.js ]; then
-			app=app.js
-		fi
-		if [ -e $dir/server.js ]; then
-			app=server.js
-		fi
+		logname=$server_log_path/acas${server_log_suffix}.log
+		logout=$server_log_path/acas${server_log_suffix}_stdout.log
+		logerr=$server_log_path/acas${server_log_suffix}_stderr.log
 
-		dirname=`basename $dir`
-		logname=$server_log_path/${dirname}${server_log_suffix}.log
-		logout=$server_log_path/${dirname}${server_log_suffix}_stdout.log
-		logerr=$server_log_path/${dirname}${server_log_suffix}_stderr.log
-
-        echo "starting $dirname/$app"
-		startCommand="cd $dir && forever start --append -l $logname -o $logout -e $logerr $app"
+        echo "starting acas/app.js"
+		startCommand="cd $ACAS_HOME && forever start --append -l $logname -o $logout -e $logerr app.js"
 		if [ $(whoami) == $ACAS_USER ]; then
 			eval $startCommand
 		else
@@ -57,28 +55,16 @@ start)
 			eval $command
 		fi
 
-        echo "$dirname/$app started"
-        done
-        
+        echo "acas/app.js started"
+
 		echo "starting apache instance $ACAS_HOME/conf/$apacheConfFile"
 		/usr/sbin/httpd -f $ACAS_HOME/conf/$apacheConfFile -k start
 		echo "apache instance $ACAS_HOME/conf/$apacheConfFile started"
 	;;
 stop)
-        for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
-        do
-		if [ -e $dir/app.js ]; then
-			app=app.js
-		fi
-		if [ -e $dir/server.js ]; then
-			app=server.js
-		fi
+        echo "stopping acas/app.js"
 
-		dirname=`basename $dir`
-
-        echo "stopping $dirname/$app"
-
-        stopCommand="cd $dir && forever stop $app"
+        stopCommand="cd $ACAS_HOME && forever stop app.js"
 		if [ $(whoami) == $ACAS_USER ]; then
 			eval $stopCommand
 		else
@@ -86,9 +72,8 @@ stop)
 			eval $command
 		fi
 
-        echo "$dirname/$app stopped"
-        done
-        
+        echo "acas/app.js stopped"
+
 		echo "stoppping apache instance $ACAS_HOME/conf/$apacheConfFile"
 		/usr/sbin/httpd -f $ACAS_HOME/conf/$apacheConfFile -k stop
 		echo "apache instance $ACAS_HOME/conf/$apacheConfFile stopped"
