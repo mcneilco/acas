@@ -232,10 +232,7 @@ get_status() {
 ################################################################################
 ################################################################################
 
-scriptPath=$(readlink ${BASH_SOURCE[0]})
-if [ "$scriptPath" == '' ]; then
-    scriptPath=$(readlink -f ${BASH_SOURCE[0]})
-fi
+scriptPath=$(readlink -f ${BASH_SOURCE[0]})
 ACAS_HOME=$(cd "$(dirname "$scriptPath")"/..; pwd)
 echo "ACAS_HOME = $ACAS_HOME"
 cd $ACAS_HOME
