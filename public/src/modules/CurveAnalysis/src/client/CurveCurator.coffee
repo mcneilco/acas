@@ -417,7 +417,7 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl += @model.get('curveid')+".png"
 		else
 			curveUrl = window.conf.service.rapache.fullpath+"curve/render/dr/?legend=false&curveIds="
-			curveUrl += @model.get('curveid')+"&height=150&width=250&showAxes=false&labelAxes=false"
+			curveUrl += @model.get('curveid')+"&height=120&width=250&showAxes=false&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
 		if @model.get('algorithmApproved') == true
