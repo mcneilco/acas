@@ -35,7 +35,7 @@ returnExampleError =
 		status: "error"
 	hasError: true
 	hasWarning: true
-	errorMessages: [
+	errorMessages: [1
 		{errorLevel: "warning", message: "some warning"},
 		{errorLevel: "error", message: "Cannot find file"},
 	]
