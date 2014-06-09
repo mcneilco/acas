@@ -21,7 +21,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 				axis: false #we do this later (log axis reasons)
 				showCopyright: false
 				zoom : {
-					wheel: true
+					wheel: false
 				},
 			)
 			brd.getKnockoutReason = ->
@@ -272,25 +272,30 @@ class window.CurveEditorController extends Backbone.View
 			@$('.bv_category').html @model.get('category')
 		else
 			@$el.html "No curve selected"
-		if @model.get('algorithmApproved') == true
-			@$('.bv_pass').show()
-			@$('.bv_fail').hide()
-		else
+		if @model.get('algorithmApproved') == 'NA'
 			@$('.bv_pass').hide()
 			@$('.bv_fail').show()
+		else
+			if @model.get('algorithmApproved') == true
+				@$('.bv_pass').show()
+				@$('.bv_fail').hide()
+			else
+				@$('.bv_pass').hide()
+				@$('.bv_fail').show()
+		console.log @model.get('userApproved')
 		if @model.get('userApproved') == 'NA'
 			@$('.bv_na').show()
 			@$('.bv_thumbsUp').hide()
 			@$('.bv_thumbsDown').hide()
 		else
-		if @model.get('userApproved') == true
-			@$('.bv_na').hide()
-			@$('.bv_thumbsUp').show()
-			@$('.bv_thumbsDown').hide()
-		else
-			@$('.bv_na').hide()
-			@$('.bv_thumbsUp').hide()
-			@$('.bv_thumbsDown').show()
+			if @model.get('userApproved') == true
+				@$('.bv_na').hide()
+				@$('.bv_thumbsUp').show()
+				@$('.bv_thumbsDown').hide()
+			else
+				@$('.bv_na').hide()
+				@$('.bv_thumbsUp').hide()
+				@$('.bv_thumbsDown').show()
 
 	setModel: (model)->
 		@model = model

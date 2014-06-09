@@ -41,7 +41,7 @@
           axis: false,
           showCopyright: false,
           zoom: {
-            wheel: true
+            wheel: false
           }
         });
         brd.getKnockoutReason = function() {
@@ -344,12 +344,15 @@
       this.handleSaveSuccess = __bind(this.handleSaveSuccess, this);
       this.handleUpdateError = __bind(this.handleUpdateError, this);
       this.handleSaveError = __bind(this.handleSaveError, this);
+      this.handleResetError = __bind(this.handleResetError, this);
+      this.handleResetSuccess = __bind(this.handleResetSuccess, this);
       this.handleRejectClicked = __bind(this.handleRejectClicked, this);
       this.handleApproveClicked = __bind(this.handleApproveClicked, this);
       this.handleUpdateClicked = __bind(this.handleUpdateClicked, this);
       this.handleResetClicked = __bind(this.handleResetClicked, this);
       this.handleParametersChanged = __bind(this.handleParametersChanged, this);
       this.handlePointsChanged = __bind(this.handlePointsChanged, this);
+      this.handleModelSync = __bind(this.handleModelSync, this);
       this.render = __bind(this.render, this);
       return CurveEditorController.__super__.constructor.apply(this, arguments);
     }
@@ -383,19 +386,56 @@
         this.$('.bv_fitSummary').html(this.model.get('fitSummary'));
         this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));
         this.$('.bv_curveErrors').html(this.model.get('curveErrors'));
-        return this.$('.bv_category').html(this.model.get('category'));
+        this.$('.bv_category').html(this.model.get('category'));
       } else {
-        return this.$el.html("No curve selected");
+        this.$el.html("No curve selected");
+      }
+      if (this.model.get('algorithmApproved') === 'NA') {
+        this.$('.bv_pass').hide();
+        this.$('.bv_fail').show();
+      } else {
+        if (this.model.get('algorithmApproved') === true) {
+          this.$('.bv_pass').show();
+          this.$('.bv_fail').hide();
+        } else {
+          this.$('.bv_pass').hide();
+          this.$('.bv_fail').show();
+        }
+      }
+      console.log(this.model.get('userApproved'));
+      if (this.model.get('userApproved') === 'NA') {
+        this.$('.bv_na').show();
+        this.$('.bv_thumbsUp').hide();
+        return this.$('.bv_thumbsDown').hide();
+      } else {
+        if (this.model.get('userApproved') === true) {
+          this.$('.bv_na').hide();
+          this.$('.bv_thumbsUp').show();
+          return this.$('.bv_thumbsDown').hide();
+        } else {
+          this.$('.bv_na').hide();
+          this.$('.bv_thumbsUp').hide();
+          return this.$('.bv_thumbsDown').show();
+        }
       }
     };
 
     CurveEditorController.prototype.setModel = function(model) {
       this.model = model;
+      console.log("got set model");
       this.render();
-      return this.model.on('sync', this.render);
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
+      return this.model.on('sync', this.handleModelSync);
+    };
+
+    CurveEditorController.prototype.handleModelSync = function() {
+      console.log("got sync");
+      UtilityFunctions.prototype.hideProgressModal(this.$('.bv_statusDropDown'));
+      return this.render();
     };
 
     CurveEditorController.prototype.handlePointsChanged = function() {
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
         persist: false,
         user: window.AppLaunchParams.loginUserName
@@ -403,6 +443,7 @@
     };
 
     CurveEditorController.prototype.handleParametersChanged = function() {
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
         persist: false,
         user: window.AppLaunchParams.loginUserName
@@ -410,10 +451,15 @@
     };
 
     CurveEditorController.prototype.handleResetClicked = function() {
-      return this.model.fetch();
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
+      return this.model.fetch({
+        success: this.handleResetSuccess,
+        error: this.handleResetError
+      });
     };
 
     CurveEditorController.prototype.handleUpdateClicked = function() {
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       this.oldID = this.model.get('curveid');
       return this.model.save({
         persist: true,
@@ -425,6 +471,7 @@
     };
 
     CurveEditorController.prototype.handleApproveClicked = function() {
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
         userApproval: 'user',
         persist: true,
@@ -436,6 +483,7 @@
     };
 
     CurveEditorController.prototype.handleRejectClicked = function() {
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
         userApproval: 'NA',
         persist: true,
@@ -446,22 +494,33 @@
       });
     };
 
+    CurveEditorController.prototype.handleResetSuccess = function() {};
+
+    CurveEditorController.prototype.handleResetError = function() {
+      UtilityFunctions.prototype.hideProgressModal(this.$('.bv_statusDropDown'));
+      return alert("Error resetting");
+    };
+
     CurveEditorController.prototype.handleSaveError = function() {
+      UtilityFunctions.prototype.hideProgressModal(this.$('.bv_statusDropDown'));
       return alert("Error saving curve");
     };
 
     CurveEditorController.prototype.handleUpdateError = function() {
+      UtilityFunctions.prototype.hideProgressModal(this.$('.bv_statusDropDown'));
       return alert("Error updating curve");
     };
 
     CurveEditorController.prototype.handleSaveSuccess = function() {
       var newID;
+      this.handleModelSync();
       newID = this.model.get('curveid');
       return this.trigger('curveDetailSaved', this.oldID, newID);
     };
 
     CurveEditorController.prototype.handleUpdateSuccess = function() {
       var curveid, userApproved;
+      this.handleModelSync();
       curveid = this.model.get('curveid');
       userApproved = this.model.get('userApproved');
       console.log(userApproved);
@@ -608,26 +667,29 @@
         curveUrl += this.model.get('curveid') + ".png";
       } else {
         curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&curveIds=";
-        curveUrl += this.model.get('curveid') + "&height=150&width=250&showAxes=false&labelAxes=false";
+        curveUrl += this.model.get('curveid') + "&height=120&width=250&showAxes=false&labelAxes=false";
       }
       this.$el.html(this.template({
         curveUrl: curveUrl
       }));
       if (this.model.get('algorithmApproved') === true) {
-        this.$('.bv_thumbnail').addClass('algorithmApproved');
-        this.$('.bv_thumbnail').removeClass('algorithmNotApproved');
+        this.$('.bv_pass').show();
+        this.$('.bv_fail').hide();
       } else {
-        this.$('.bv_thumbnail').removeClass('algorithmApproved');
-        this.$('.bv_thumbnail').addClass('algorithmNotApproved');
+        this.$('.bv_pass').hide();
+        this.$('.bv_fail').show();
       }
-      if (this.model.get('userApproved') === 'NA') {
+      if (this.model.get('userApproved') === null) {
+        this.$('.bv_na').show();
         this.$('.bv_thumbsUp').hide();
         this.$('.bv_thumbsDown').hide();
       } else {
         if (this.model.get('userApproved') === true) {
+          this.$('.bv_na').hide();
           this.$('.bv_thumbsUp').show();
           this.$('.bv_thumbsDown').hide();
         } else {
+          this.$('.bv_na').hide();
           this.$('.bv_thumbsUp').hide();
           this.$('.bv_thumbsDown').show();
         }

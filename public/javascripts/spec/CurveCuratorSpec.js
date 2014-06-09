@@ -120,16 +120,16 @@
       });
       describe("algorithm approved display", function() {
         it("should show approved when algorithm approved", function() {
-          expect(this.csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeTruthy();
-          return expect(this.csc.$('.bv_thumbnail').hasClass('algorithmNotApproved')).toBeFalsy();
+          expect(this.csc.$('.bv_pass')).toBeVisible();
+          return expect(this.csc.$('.bv_fail')).toBeHidden();
         });
         return it("should show not approved when algorithm not approved", function() {
           this.csc.model.set({
             algorithmApproved: false
           });
           this.csc.render();
-          expect(this.csc.$('.bv_thumbnail').hasClass('algorithmNotApproved')).toBeTruthy();
-          return expect(this.csc.$('.bv_thumbnail').hasClass('algorithmApproved')).toBeFalsy();
+          expect(this.csc.$('.bv_pass')).toBeHidden();
+          return expect(this.csc.$('.bv_fail')).toBeVisible();
         });
       });
       return xdescribe("user approved display", function() {
