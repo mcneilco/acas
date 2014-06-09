@@ -6,7 +6,7 @@
 #
 # Sam Meyer
 # sam@mcneilco.com
-# Copyright 2012 John McNeil & Co. Inc.
+# Copyright 2012-2014 John McNeil & Co. Inc.
 #########################################################################
 # Parses a "Generic" formatted excel file into an upload file for ACAS
 #########################################################################
@@ -26,6 +26,14 @@
 #   To run:
 #     parseGenericData(list(pathToGenericDataFormatExcelFile, dryRun = TRUE, ...))
 #     Example: 
+#       file.copy("~/Desktop/6_Standard_Deviation.xlsx", to="privateUploads/", overwrite = TRUE)
+
+#       file.copy("/Users/smeyer/Google Drive/McNeilco/DemoACAS/5_Dose_Response.xls", to="privateUploads/", overwrite = TRUE)
+#       parseGenericData(c(fileToParse="5_Dose_Response.xls", dryRunMode = "true", user="smeyer"))
+#       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/explicit_ACAS_format.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/explicit_ACAS_format.xlsx", dryRunMode = "true", user="smeyer"))
+#       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/DR_SaveToExistingExperiment.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
+#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/DR_SaveToExistingExperiment.xlsx", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/Mia-Paca.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/Mia-Paca.xls", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
@@ -40,225 +48,13 @@
 
 #########################################################################
 
-require(racas)
+library(racas)
 source("public/src/conf/customFunctions.R")
 source("public/src/conf/genericDataParserConfiguration.R")
 
 #####
 # Define Functions
-getSection <- function(genericDataFileDataFrame, lookFor, transpose = FALSE) {
-  # Retrieves a section of the generic excel file
-  #
-  # Args:
-  #   genericDataFileDataFrame: A data frame of lines 
-  #    lookFor: A string identifier to user as regext for the line before the start of the seciton
-  #    transpose: a boolean to set if the data should be transposed
-  # Returns:
-  #   A dataframe of the of section in the generic excel file
-  
-  require('gdata')
-  
-  # Get the first line matching the section
-  listMatch <- sapply(genericDataFileDataFrame,grep,pattern = lookFor,ignore.case = TRUE, perl = TRUE)
-  firstInstanceInEachColumn <- suppressWarnings(unlist(lapply(listMatch, min)))
-  startSection <- firstInstanceInEachColumn[is.finite(firstInstanceInEachColumn)][1]
-  if(is.na(startSection) && lookFor =="Raw Results") {
-    return(NULL)
-  }
-  if(is.na(startSection)) {
-    stop("The spreadsheet appears to be missing an important section header. The loader needs '",lookFor,"' to be somewhere in the spreadsheet.",sep="")
-  }
-  
-  if((startSection+2)>length(genericDataFileDataFrame[[1]])) {
-    stop(paste0("There must be at least two rows filled in after '", lookFor, 
-                "'. Either there is extra data that you need to fill in, or you may wish to remove '", 
-                lookFor, "' entirely."))
-  }
-  
-  # Get the indexes of columns in the section, using the longest of either of the first two rows
-  sectionHeaderRow <- genericDataFileDataFrame[startSection + 1,]
-  secondRow <- genericDataFileDataFrame[startSection + 2,]
-  sectionHeaderColumns <- grepl(pattern="\\S", sapply(sectionHeaderRow,as.character))
-  secondHeaderColumns <- grepl(pattern="\\S", sapply(secondRow,as.character))
-  if (all(!c(sectionHeaderColumns, secondHeaderColumns))) {
-    stop(paste0("There must be at least two rows filled in after '", lookFor, "'."))
-  }
-  if (any(!secondHeaderColumns & !sectionHeaderColumns)) {
-    dataColumnIndexes <- 1:(min(which(!secondHeaderColumns & !sectionHeaderColumns)) - 1)
-  } else {
-    dataColumnIndexes <- 1:length(sectionHeaderRow)
-  }
-  
-  # Get the last line matching the section
-  sectionColumn <- genericDataFileDataFrame[,names(startSection)]
-  sectionColumnSubset <- subset(sectionColumn, 1:length(sectionColumn) > startSection)
-  sectionLength <- which(is.na(sectionColumnSubset) | sectionColumnSubset %in% "")[1]
-  if(is.na(sectionLength)) {
-    sectionLength <- length(sectionColumnSubset) + 1
-  }
-  endSection <- startSection + sectionLength
-  
-  #Use the start and end variables to grab the data frame
-  startSectionColumnNumber <- match(names(startSection),names(genericDataFileDataFrame))
-  foundData <- subset(x = genericDataFileDataFrame, subset = 1:nrow(genericDataFileDataFrame) > startSection & 1:nrow(genericDataFileDataFrame) < endSection, select = dataColumnIndexes)
-  
-  # Transpose the data frame if option is set
-  if(transpose == TRUE) {
-    row.names(foundData) <- foundData[,1]
-    foundData <- subset(foundData,select = 2:length(foundData))
-    foundData <- as.data.frame(t(foundData), stringsAsFactors=FALSE)
-  }
-  
-  foundData <- as.data.frame(lapply(foundData, trim), optional=TRUE, stringsAsFactors=FALSE)
-  
-  return(foundData)
-}
-validateDate <- function(inputValue, expectedFormat = "%Y-%m-%d", secondaryFormat = "%m/%d/%Y") {
-  # Validates and/or coerces a given string to a specified date format
-  #
-  # Args:
-  #   inputValue: A string representing a date 
-  #  expectedFormat: A character string representing the desired date format. (see ?format.POSIXct)
-  # Returns:
-  #   A date coerced or maintained to be in the expectedFormat
-  
-  returnDate <- ""
-  
-  if (is.na(inputValue) | inputValue == "") {return (NA)}
-  
-  # Function to attempt to coerce the date into a given format
-  coerceToDate <- function(format, inputValue) {
-    # Coerces a string to a given format
-    #
-    # Args:
-    #	format: A character string representing the desired date format. (see ?format.POSIXct)
-    #	inputValue: A string representing a date
-    # Returns:
-    #	A coerced date object or an NA if unable to coerce properly
-    return(as.Date(as.character(inputValue), format))
-  }
-  isInFormat <- function(format, inputValue) {
-    # Coerces a string to a given format, and then evaluates whether it is reasonable or not
-    #
-    # Args:
-    #	format: A character string representing the desired date format. (see ?format.POSIXct)
-    #	inputValue: A string representing a date
-    # Returns:
-    #	A boolean as to whether the date is correctly coercible to the given format
-    
-    # Coerce the date
-    coercedDate <- coerceToDate(format, inputValue)
-    if(!is.na(coercedDate)) {
-      # If the value was coerced then evaluate how many years into the future or in the paste it is
-      numYearsFromToday <- as.numeric(format(coercedDate, "%Y")) - as.numeric(format(Sys.Date(), "%Y"))
-      if(numYearsFromToday > -50 && numYearsFromToday < 1) {
-        # If the date is less than 50 years in the paste or less than 1 year in the future, then it is somewhat reasonable
-        return(TRUE)
-      }
-    }
-    return(FALSE)
-  }
-  
-  # Check if can be coerced to the expected format
-  if(!isInFormat(expectedFormat, inputValue )) {
-    
-    # Let the secondary format pass through
-    if(isInFormat(secondaryFormat, inputValue)) {
-      return(coerceToDate(secondaryFormat, inputValue))
-    }
-    
-    # Return an error for Excel Date formats
-    if(inputValue == "A_date_was_in_Excel_Date_format") {
-      errorList <<- c(errorList, paste0("A date was has a Number Format of 'Date' or 'General' in Excel rather than 'Text'. ",
-                                        "Please format the dates as Excel 'Text' and use the format YYYY-MM-DD. ",
-                                        "Excel stores dates in a format we cannot accept."))
-      return(NA)       
-    }
-    
-    #First try substituting out the seperators in the inputValue for those in the expected format
-    expectedSeperator <- ifelse(grepl("-",expectedFormat),"-", "/")
-    inputValueWExpectedSeperator <- gsub("-|/",expectedSeperator,inputValue)
-    
-    #Test again with new seperators
-    if(!isInFormat(expectedFormat, inputValueWExpectedSeperator)) {
-      #This means the value is still not in the expected format, now check for other common formats to see if any of them are reasonable
-      commonFormats <- c("%Y-%m-%d","%y-%M-%d","%d-%m-%y","%m-%d-%y","%m-%d-%Y","%b-%d-%Y","%b-%d-%Y")
-      formatsAbleToCoerce <- commonFormats[unlist(lapply(commonFormats,isInFormat, inputValue = inputValueWExpectedSeperator))]
-      if(length(formatsAbleToCoerce) > 0) {
-        # If any of the formats were coercible then we will attempt to pick the best one by getting the one value closest to today
-        possibleDates <- do.call("c",lapply(formatsAbleToCoerce, coerceToDate, inputValueWExpectedSeperator))
-        possibleDatesInExpectedFormat <- as.Date(format(possibleDates, expectedFormat))
-        daysFromToday <- abs(as.Date(format(Sys.Date(), expectedFormat)) - possibleDates)
-        minDaysFromToday <- min(daysFromToday)
-        bestMatchingDate <- possibleDatesInExpectedFormat[daysFromToday == minDaysFromToday][1]
-        
-        # Add to the warnings that we coerced the date to a "Best Match"
-        warning(paste0("A date is not in the proper format. Found: \"",inputValue,"\" This was interpreted as \"",bestMatchingDate, 
-                       "\". Please enter dates as YYYY-MM-DD, or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a>  for more information."))
-        returnDate <- bestMatchingDate
-      } else {
-        # If we couldn't parse the data into any of the formats, then we add this to the erorrs and return no date
-        errorList <<- c(errorList,paste0("The loader was unable to change the date '", inputValue, 
-                                         "' to the proper format. Please change it to the format YYYY-MM-DD, ",
-                                         " or click  <a href=\"http://xkcd.com/1179/\" target=\"_blank\">here</a> for more information."))
-      }
-    } else {
-      # If the change in the seperators fixed the issue, then we add this to the warnings and return the coerced date
-      warning(paste0("A date is not in the proper format. Found: \"",inputValue,"\" This was interpreted as \"",
-                     inputValueWExpectedSeperator, 
-                     "\". Please enter dates as YYYY-MM-DD."))
-      returnDate <- inputValueWExpectedSeperator
-    }
-  } else {
-    # If the date was coercible to the given format with no changes, then good, just return what they gave us as a date
-    returnDate <- coerceToDate(expectedFormat, inputValue)
-  }
-  # Return the date
-  return(returnDate)	
-}
-validateCharacter <- function(inputValue) {
-  # Validates and/or coerces an input to a character format
-  #
-  # Args:
-  #   inputValue: A string representing a character 
-  #
-  # Returns:
-  #   A character string
-  
-  # Checks if the entry is NULL
-  if (is.null(inputValue)) {
-    errorList <<- c(errorList,paste("An entry was expected to be a set of characters but the entry was: NULL"))
-    return (NULL)
-  }
-  
-  
-  #Checks if the input is similar enough as a character to be interpreted as one
-  if (as.character(inputValue)!=inputValue) {
-    # If it cannot be coerced to character, throw an error
-    if (is.na(as.character(inputValue))) {
-      errorList <<- c(errorList,paste("An entry was expected to be a set of characters but the entry was:", inputValue))
-    }
-    warning(paste("An entry was expected to be a set of characters but the entry was:", inputValue))
-  }
-  # Returns the input as a character
-  return(as.character(inputValue))
-}
-validateNumeric <- function(inputValue) {
-  # Validates and/or coerces an input to a numeric format
-  #
-  # Args:
-  #   inputValue: A value representing a number
-  #
-  # Returns:
-  #   A numeric value
-  
-  isCoercibleToNumeric <- !is.na(suppressWarnings(as.numeric(gsub(",", "", as.character(inputValue)))))
-  if(!isCoercibleToNumeric) {
-    errorList <<- c(errorList,paste0("An entry was expected to be a number but was: '", inputValue, "'. Please enter a number instead."))
-  }
-  return(suppressWarnings(as.numeric(gsub(",", "", as.character(inputValue)))))
-}
-validateMetaData <- function(metaData, configList, formatSettings = list()) {
+validateMetaData <- function(metaData, configList, formatSettings = list(), errorEnv = NULL) {
   # Valides the meta data section
   #
   # Args:
@@ -278,13 +74,14 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   names(metaData) <- metaDataNames
   
   # Check if extra data was picked up that should not be
-  if (length(metaData[[1]])>1) {
+  if (length(metaData[[1]]) > 1) {
     extraData <- c(as.character(metaData[[1]][2:length(metaData[[1]])]),
                    as.character(metaData[[2]][2:length(metaData[[2]])]))
     extraData <- extraData[extraData!=""]
-    errorList <<- c(errorList, paste0("Extra data were found next to the Experiment Meta Data ",
-                                      "and should be removed: '",
-                                      paste(extraData, collapse="', '"), "'"))
+    addError(paste0("Extra data were found next to the Experiment Meta Data ",
+                    "and should be removed: '",
+                    paste(extraData, collapse="', '"), "'"),
+             errorEnv)
     metaData <- metaData[1,]
   }
   
@@ -292,22 +89,33 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
     stop("A Format must be entered in the Experiment Meta Data.")
   }
   
-  expectedDataFormat <- data.frame(
-    headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", 
-                "Short Description", "Experiment Keywords", "Page","Assay Date"),
-    class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
-    isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
-  )
+  useExisting <- metaData$Format %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   
-  if (!is.null(configList$client.include.project) && configList$client.include.project) {
-    expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
-  }
-  if (length(formatSettings) > 0) {
-    expectedDataFormat <- rbind(expectedDataFormat, formatSettings[[as.character(metaData$Format)]]$extraHeaders)
-  }
-  
-  if ("Assay Completion Date" %in% names(metaData)) {
-    names(metaData)[names(metaData) == "Assay Completion Date"] <- "Assay Date"
+  if (useExisting) {
+    expectedDataFormat <- data.frame(
+      headers = c("Format","Experiment Code Name"),
+      class = c("Text", "Text"),
+      isNullable = c(FALSE, FALSE)
+    )
+  } else {
+    expectedDataFormat <- data.frame(
+      headers = c("Format","Protocol Name","Experiment Name","Scientist","Notebook","In Life Notebook", 
+                  "Short Description", "Experiment Keywords", "Page","Assay Date"),
+      class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
+      isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
+    )
+    
+    if (!is.null(configList$client.include.project) && configList$client.include.project && !useExisting) {
+      expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
+    }
+    if (length(formatSettings) > 0) {
+      expectedDataFormat <- rbind(expectedDataFormat, formatSettings[[as.character(metaData$Format)]]$extraHeaders)
+    }
+    
+    # Allows Assay Completion Date to be the same as Assay Date
+    if ("Assay Completion Date" %in% names(metaData)) {
+      names(metaData)[names(metaData) == "Assay Completion Date"] <- "Assay Date"
+    }
   }
   
   # Extract the expected headers from the input variable
@@ -317,12 +125,19 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   missingColumns <- expectedHeaders[is.na(match(toupper(expectedHeaders),toupper(names(metaData)))) 
                                     & !(expectedDataFormat$isNullable)]
   for(m in missingColumns) {
-    errorList <<- c(errorList,paste("The loader could not find required Experiment Meta Data row:",m))
+    addError(paste("The loader could not find required Experiment Meta Data row:",m), errorEnv)
   }
   
   # Validate that the matched columns are of the same data type and non-nullable fields are not null
   # return modified metaData with results of the validation of each field
-  matchedColumns <- metaData[,!is.na(match(toupper(names(metaData)), toupper(expectedHeaders)))]
+  matchedColumnVector <- !is.na(match(toupper(names(metaData)), toupper(expectedHeaders)))
+  matchedColumns <- metaData[, matchedColumnVector]
+  
+  # Deals with R returning a vector rather than a data.frame when only one is selected
+  if (sum(matchedColumnVector) == 1) {
+    matchedColumns <- as.data.frame(matchedColumns)
+    names(matchedColumns) <- names(metaData)[matchedColumnVector]
+  }
   validatedMetaData <- metaData
   for(m in 1:length(matchedColumns)) {
     # Get the name of the column
@@ -331,13 +146,11 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
     # Find if it is Nullable
     nullable <- expectedDataFormat$isNullable[expectedDataFormat$headers == column]
     
-    
-    
     expectedDataType <- as.character(expectedDataFormat$class[expectedDataFormat$headers == column])
     receivedValue <- matchedColumns[1,m]
     
     if(!nullable && (is.null(receivedValue) | receivedValue==""  | receivedValue=="")) {
-      errorList <<- c(errorList,paste0("The loader could not find an entry for '", column, "' in the Experiment Meta Data"))
+      addError(paste0("The loader could not find an entry for '", column, "' in the Experiment Meta Data"), errorEnv = errorEnv)
     }
     
     validationFunction <- switch(expectedDataType, 
@@ -352,8 +165,8 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   
   # Add warnings for additional columns sent that are not expected
   additionalColumns <- names(metaData)[is.na(match(names(metaData),expectedHeaders))]
-  if (length(additionalColumns)>0) {
-    if (length(additionalColumns)==1) {
+  if (length(additionalColumns) > 0) {
+    if (length(additionalColumns) == 1) {
       warning(paste0("The loader found an extra Experiment Meta Data row that will be ignored: '", 
                      additionalColumns, 
                      "'. Please remove this row."))
@@ -365,22 +178,22 @@ validateMetaData <- function(metaData, configList, formatSettings = list()) {
   }
   
   if (!is.null(metaData$Project)) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList) 
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, errorEnv) 
   }
   if (!is.null(metaData$Scientist)) {
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList) 
   }
   
-  if(grepl("CREATETHISEXPERIMENT$", validatedMetaData$"Experiment Name")) {
+  if(!is.null(validatedMetaData$"Experiment Name") && grepl("CREATETHISEXPERIMENT$", validatedMetaData$"Experiment Name")) {
     validatedMetaData$"Experiment Name" <- trim(gsub("CREATETHISEXPERIMENT$", "", validatedMetaData$"Experiment Name"))
     duplicateExperimentNamesAllowed <- TRUE
   } else {
     duplicateExperimentNamesAllowed <- FALSE
   }
   
-  return(list(validatedMetaData=validatedMetaData, duplicateExperimentNamesAllowed=duplicateExperimentNamesAllowed))
+  return(list(validatedMetaData=validatedMetaData, duplicateExperimentNamesAllowed=duplicateExperimentNamesAllowed, useExisting=useExisting))
 }
-validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,tempIdLabel) {
+validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,tempIdLabel, errorEnv) {
   # Valides the treatment group data (for now, this only validates the temp id's)
   #
   # Args:
@@ -392,10 +205,10 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   #   NULL
   
   # Get a list of any temp id's that are text (not allowed)
-  #textTempIds <- grep("\\S",calculatedResults$"Result Desc"[calculatedResults$"Result Type"==tempIdLabel],value=TRUE)
+  #textTempIds <- grep("\\S",calculatedResults$"stringValue"[calculatedResults$"valueKind"==tempIdLabel],value=TRUE)
   
   # Get a list of the temporary id's in the calculated results
-  tempIdList <- calculatedResults$"Result Desc"[calculatedResults$"Result Type"==tempIdLabel]
+  tempIdList <- calculatedResults$"stringValue"[calculatedResults$"valueKind"==tempIdLabel]
   
   # Find if any of the temporoary id's for the treatment groups do not have a match in the list
   missingTempIds <- setdiff(treatmentGroupData[,tempIdLabel],tempIdList)
@@ -410,13 +223,15 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
 #                                       textTempIds, "'. Remove text from all temp id's."))
 #   } else if (length(missingTempIds)>1) {
   if (length(missingTempIds)>1) {
-    errorList <<- c(errorList, paste0("In the Raw Results section, there are temp id's that have no match in the Calculated Results section: '", 
-                                      paste(missingTempIds, collapse="', '"),
-                                      "'. Please ensure that all id's have a matching row in the Calculated Results."))
+    addError(paste0("In the Raw Results section, there are temp id's that have no match in the Calculated Results section: '", 
+                    paste(missingTempIds, collapse="', '"),
+                    "'. Please ensure that all id's have a matching row in the Calculated Results."), 
+             errorEnv = errorEnv)
   } else if (length(missingTempIds)>0) {
-    errorList <<- c(errorList, paste0("In the Raw Results section, there is a temp id that has no match in the Calculated Results section: '", 
+    addError(paste0("In the Raw Results section, there is a temp id that has no match in the Calculated Results section: '", 
                                       missingTempIds,
-                                      "'. Please ensure that all id's have a matching row in the Calculated Results."))
+                                      "'. Please ensure that all id's have a matching row in the Calculated Results."),
+             errorEnv = errorEnv)
   }
   
   # Find if there are temp ids without raw results
@@ -431,7 +246,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, errorEnv = NULL) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -448,7 +263,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
-  batchIds <- unique(calculatedResults[[mainCode]][batchesToCheck])
+  batchIds <- unique(calculatedResults$batchCode[batchesToCheck])
   newBatchIds <- getPreferredId(batchIds, testMode=testMode)
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
@@ -459,7 +274,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   # Give warning and error messages for changed or missing id's
   for (batchId in newBatchIds) {
     if (batchId["preferredName"] == "") {
-      errorList <<- c(errorList, paste0(mainCode, " '", batchId["requestName"], 
+      addError(paste0(mainCode, " '", batchId["requestName"], 
                                         "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
       warning(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
@@ -469,9 +284,9 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   }
 
   # Put the batch id's into a useful format
-  preferredIdFrame <- as.data.frame(do.call("rbind",newBatchIds), stringsAsFactors=FALSE)
+  preferredIdFrame <- as.data.frame(do.call("rbind", newBatchIds), stringsAsFactors=FALSE)
   names(preferredIdFrame) <- names(newBatchIds[[1]])
-  preferredIdFrame <- as.data.frame(lapply(preferredIdFrame,unlist), stringsAsFactors=FALSE)
+  preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
 
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
   if (!is.null(preferredIdFrame$referenceName)) {
@@ -484,7 +299,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   }
   
   #### ================= Check the value kinds =======================================================
-  neededValueKinds <- c(calculatedResults$"Result Type", curveNames)
+  neededValueKinds <- c(calculatedResults$"valueKind", curveNames)
   neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
   
   validateValueKinds(neededValueKinds, neededValueKindTypes, dryRun)
@@ -492,7 +307,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   # Return the validated results
   return(calculatedResults)
 }
-getHiddenColumns <- function(classRow) {
+getHiddenColumns <- function(classRow, errorEnv) {
   # Get information about which columns to hide (publicData = FALSE)
   #
   # Args:
@@ -510,21 +325,58 @@ getHiddenColumns <- function(classRow) {
   unknownColumns <- which(!hiddenColumns & !shownColumns & !defaultColumns)
   
   # Error handling for unknown entries rather than 'shown' or 'hidden'
-  if(length(unknownColumns)>0) {
-    if(length(unknownColumns)==1) {
-      errorList <<- c(errorList,paste0("In Datatype column ",getExcelColumnFromNumber(unknownColumns),", there is an entry in the parentheses that cannot be understood: '", 
+  if(length(unknownColumns) > 0) {
+    if(length(unknownColumns) == 1) {
+      addError(paste0("In Datatype column ",getExcelColumnFromNumber(unknownColumns),", there is an entry in the parentheses that cannot be understood: '", 
                                        dataShown[unknownColumns],
-                                       "'. Please enter 'shown' or 'hidden'."))
+                                       "'. Please enter 'shown' or 'hidden'."), errorEnv)
     } else {
-      errorList <<- c(errorList,paste0("In Datatype columns ",paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "), 
+      addError(paste0("In Datatype columns ",paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "), 
                                        ", there are unknown entries in the parentheses that cannot be understood: '", 
                                        paste0(dataShown[unknownColumns], collapse="', '"),
-                                       "'. Please enter 'shown' or 'hidden'."))
+                                       "'. Please enter 'shown' or 'hidden'."), errorEnv)
     }
   }
   return(hiddenColumns)
 }
-validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId = TRUE, clobColumns=c()) {
+getLinkColumns <- function(classRow, errorEnv) {
+  # Get information about which column is a link to lower levels
+  #
+  # Args:
+  #   classRow:     	A character vector of the Datatypes of the calculated results with [link] to mark links
+  #
+  # Returns:
+  #	  a numeric vector of which results are links
+  
+  # Pull out info about hidden columns
+  dataShown <- gsub(".*\\[(.*)\\].*||.*", "\\1",classRow)
+  dataShown[is.na(dataShown)] <- ""
+  linkColumns <- grepl("link",dataShown)
+  defaultColumns <- dataShown %in% ""
+  unknownColumns <- which(!linkColumns & !defaultColumns)
+  
+  # Error handling for unknown entries rather than 'link'
+  if(length(unknownColumns) > 0) {
+    if(length(unknownColumns) == 1) {
+      addError(paste0("In Datatype column ", getExcelColumnFromNumber(unknownColumns),
+                      ", there is an entry in the brackets that cannot be understood: '", 
+                      dataShown[unknownColumns],
+                      "'. Please enter 'link' or nothing."), errorEnv)
+    } else {
+      addError(paste0("In Datatype columns ", paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "), 
+                      ", there are unknown entries in the brackets that cannot be understood: '", 
+                      paste0(dataShown[unknownColumns], collapse="', '"),
+                      "'. Please enter 'link' or nothing."), errorEnv)
+    }
+  }
+  
+  if (sum(linkColumns) > 1) {
+    stop("Only one column may be marked as [link].")
+  }
+  
+  return(linkColumns)
+}
+validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId = TRUE, clobColumns=c(), errorEnv = NULL) {
   # Checks that datatypes entered in the Datatype row of the calculated results are valid
   #
   # Args:
@@ -540,23 +392,27 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   if(lockCorpBatchId) {
     # Check that the first entry says Datatype (users may try to enter data if we don't warn them)
     if (classRow[1]!="Datatype") {
-      errorList <<- c(errorList,paste0("The first row below 'Calculated Results' must begin with 'Datatype'. ",
-                                       "Right now, it is '", classRow[1], "'."))
+      addError(paste0("The first row below 'Calculated Results' must begin with 'Datatype'. ",
+                                       "Right now, it is '", classRow[1], "'."), errorEnv)
     }
   }
   
   # Remove the hidden/shown info
   classRow <- trim(gsub("\\(.*)","",classRow))
   
+  # Remove the link info
+  # Remove the hidden/shown info
+  classRow <- trim(gsub("\\[.*]","",classRow))
+  
   classRow[clobColumns] <- "Clob"
   
   # Check if the datatypes are entered correctly
-  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob","", NA))
+  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob", "Code","", "standard deviation", "comments", NA))
   
   # Let the user know about empty datatypes
-  emptyClasses <- which(is.na(classRow) | trim(classRow)=="")
-  if(length(emptyClasses)>0) {
-    if(length(emptyClasses)==1) {
+  emptyClasses <- which(is.na(classRow) | trim(classRow) == "")
+  if(length(emptyClasses) > 0) {
+    if(length(emptyClasses) == 1) {
       warning(paste0("Column ", getExcelColumnFromNumber(emptyClasses), " (" , LabelRow[emptyClasses], ") does not have a Datatype entered. ",
                      "The loader will attempt to interpret entries in column ", 
                      getExcelColumnFromNumber(emptyClasses), 
@@ -574,7 +430,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
     classRow[is.na(classRow) | classRow==""] <- "Number"
   }
   
-  if(length(badClasses)>0) {
+  if(length(badClasses) > 0) {
     # Change common datatypes to those used by R
     oldClassRow <- classRow
     for(i in which(classRow %in% badClasses)) {
@@ -587,6 +443,9 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
       classRow[i][grep(pattern = "double", classRow[i], ignore.case = TRUE)] <- "Number"
       classRow[i][grep(pattern = "date", classRow[i], ignore.case = TRUE)] <- "Date"
       classRow[i][grep(pattern = "clob", classRow[i], ignore.case = TRUE)] <- "Clob"
+      classRow[i][grep(pattern = "comment", classRow[i], ignore.case = TRUE)] <- "comments"
+      classRow[i][grep(pattern = "sd", classRow[i], ignore.case = TRUE)] <- "standard deviation"
+      classRow[i][grep(pattern = "dev", classRow[i], ignore.case = TRUE)] <- "standard deviation"      
       if (classRow[i] != oldClassRow[i] & !is.na(LabelRow[i])) {
         warning(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
                        "' as a datatype and interpreted it as '", classRow[i], 
@@ -595,12 +454,12 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
     }
     
     # Those that can't be interpreted throw errors
-    unhandledClasses <- setdiff(classRow[1:length(classRow)>1],c("Text","Number","Date","Clob",""))
+    unhandledClasses <- setdiff(tolower(classRow[1:length(classRow) > 1]), 
+                                c("text","number","date","clob","code","standard deviation","comments",""))
     if (length(unhandledClasses)>0) {
-      errorList <<- c(errorList,paste0("The loader found classes in the Datatype row that it does not understand: '",
-                                       paste(unhandledClasses,collapse = "', '"),
-                                       "'. Please enter 'Number','Text', or 'Date'."))
-      
+      addError(paste0("The loader found classes in the Datatype row that it does not understand: '",
+                      paste(unhandledClasses,collapse = "', '"),
+                      "'. Please enter 'Number','Text', or 'Date'."), errorEnv)
     }
   }
   
@@ -725,34 +584,48 @@ getExcelColumnFromNumber <- function(number) {
     }
   }))
 }
-extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
+extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaintyType, uncertaintyCodeWord, commentCol, commentCodeWord) {
   # Extracts result types, units, conc, and conc units from a list of strings
   #
   # Args:
-  #   resultTypesVector: A charactor vector containing result types in the format "Result Type (units) [Conc ConcUnits]"
+  #   valueKindsVector: A charactor vector containing result types in the format "Value Kind (units) [Conc ConcUnits]"
   #
   # Returns:
-  #  A data frame containing the Result Type, Units, Conc, and ConcUnits for each item in the result types character vector
+  #  A data frame containing the Value Kind, Units, concentration, and ConcUnits for each item in the result types character vector
   
   require('gdata')
-  emptyResultTypes <- is.na(resultTypesVector) | (trim(resultTypesVector) == "")
-  if (any(emptyResultTypes)) {
-    stop(paste0("Column ", paste(getExcelColumnFromNumber(which(emptyResultTypes)), collapse=", "), " has a blank column header. ",
+  
+  valueKindWoExtras <- valueKindsVector[is.na(uncertaintyType) & !commentCol]
+  
+  if(any(duplicated(unlist(valueKindWoExtras)))) {
+    addError(paste0("These column headings are duplicated: ",
+                    paste(unlist(valueKindWoExtras[duplicated(unlist(valueKindWoExtras))]),collapse=", "),
+                    ". All column headings must be unique."), errorEnv)
+  }
+  
+  emptyValueKinds <- is.na(valueKindsVector) | (trim(valueKindsVector) == "")
+  if (any(emptyValueKinds)) {
+    stop(paste0("Column ", paste(getExcelColumnFromNumber(which(emptyValueKinds)), collapse=", "), " has a blank column header. ",
                 "Please enter a column header before reuploading."))
   }
   
   dataColumns <- c()
-  for(col in 1:length(resultTypesVector)) {
-    column <- as.character(resultTypesVector[[col]])
+  for(col in 1:length(valueKindsVector)) {
+    column <- as.character(valueKindsVector[[col]])
     if(!toupper(column) %in% toupper(ignoreHeaders)) {
       dataColumns <- c(dataColumns,column)
     }
   }
-  returnDataFrame <- data.frame("DataColumn" = array(dim = length(dataColumns)), "Type" = array(dim = length(dataColumns)), "Units" = array(dim = length(dataColumns)), "Conc" = array(dim = length(dataColumns)), "ConcUnits" = array(dim = length(dataColumns)))
+  
+  fillerArray <- array(dim = length(dataColumns))
+  
+  returnDataFrame <- data.frame("DataColumn" = fillerArray, "valueKind" = fillerArray, 
+                                "Units" = fillerArray, "Conc" = fillerArray, 
+                                "ConcUnits" = fillerArray, "reshapeName" = fillerArray)
   returnDataFrame$DataColumn <- dataColumns
-  returnDataFrame$Type <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
+  returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
   # This removes "Reported" from all columns
-  returnDataFrame$Type <- trim(gsub("Reported","",returnDataFrame$Type))
+  returnDataFrame$valueKind <- trim(gsub("Reported","",returnDataFrame$valueKind))
   returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
   returnDataFrame$Conc <- as.numeric(gsub("[^0-9\\.]", "", concAndUnits))
@@ -760,11 +633,21 @@ extractResultTypes <- function(resultTypesVector, ignoreHeaders = NULL) {
   timeAndUnits <- gsub("([^\\{]+)(\\{(.*)\\})?.*", "\\3", dataColumns) 
   returnDataFrame$time <- as.numeric(gsub("[^0-9\\.]", "", timeAndUnits))
   returnDataFrame$timeUnit <- as.character(gsub("[^a-zA-Z]", "", timeAndUnits))
+  # Mark standard deviation and comments with a text string
+  returnDataFrame$reshapeText <- ifelse(!is.na(uncertaintyType[2:length(uncertaintyType)]), 
+                                        paste0(uncertaintyCodeWord, dataColumns), dataColumns)
+  returnDataFrame$reshapeText <- ifelse(commentCol[2:length(commentCol)], 
+                                        paste0(commentCodeWord, returnDataFrame$reshapeText), returnDataFrame$reshapeText)
+  returnDataFrame$uncertaintyType <- uncertaintyType[2:length(uncertaintyType)]
+  returnDataFrame$isComment <- commentCol[2:length(commentCol)]
   
   # Return the validated Meta Data
   return(returnDataFrame)
 }
-organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, rawOnlyFormat = FALSE, stateGroups = NULL, splitSubjects = NULL, inputFormat, mainCode) {
+organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, 
+                                      rawOnlyFormat = FALSE, stateGroups = NULL, splitSubjects = NULL, inputFormat, 
+                                      mainCode, errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL,
+                                      stateAssignments = NULL) {
   # Organizes the calculated results section
   #
   # Args:
@@ -772,347 +655,520 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   #   lockCorpBatchId:        A boolean which marks if the mainCode is locked as the left column
   #   replaceFakeCorpBatchId: A string that is not a mainCode, will be ignored by the batch check, and will be replaced by a column of the same name
   #   rawOnlyFormat:          A boolean that describes the data format, subject based or analysis group based
+  #   entityLevel:            "analysisGroup", "treatmentGroup", or "subject"
   #
   # Returns:
   #	  a data frame containing the organized calculated data
   
-  require('reshape')
-  require('gdata')
+  library('reshape')
+  library('gdata')
+  library('plyr')
   
-  if(ncol(calculatedResults)==1) {
+  uncertaintyCodeWord <- "uncertainty@coDeWoRD@"
+  commentCodeWord <- "comment@coDeWoRD@"
+  
+  if(ncol(calculatedResults) == 1) {
     stop("The rows below Calculated Results must have at least two columns filled: one for ", mainCode, "'s and one for data.")
   }
   
   # Check the Datatype row and get information from it
-  hiddenColumns <- getHiddenColumns(as.character(unlist(calculatedResults[1,])))
+  hiddenColumns <- getHiddenColumns(as.character(unlist(calculatedResults[1,])), errorEnv)
+  linkColumns <- getLinkColumns(as.character(unlist(calculatedResults[1,])), errorEnv)
   
   clobColumns <- vapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255), c(TRUE))
-
-  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])),as.character(unlist(calculatedResults[2,])), lockCorpBatchId, clobColumns)
+  
+  if (precise) {
+    labelRow <- as.character(unlist(calculatedResults[4, ]))
+  } else {
+    labelRow <- as.character(unlist(calculatedResults[2, ]))
+  }
+  classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])), labelRow, lockCorpBatchId, clobColumns, errorEnv)
   
   if(any(clobColumns & !(classRow=="Clob"))) {
     warning("One of your entries had more than 255 characters, so it will be saved as a 'Clob'. In the future, you should use this for your column header.")
   }
   
   # Remove Datatype Row
-  calculatedResults <- calculatedResults[1:nrow(calculatedResults)>1,]
+  calculatedResults <- calculatedResults[1:nrow(calculatedResults) > 1, ]
   
-  # Get the line containing the result types
-  calculatedResultsResultTypeRow <- calculatedResults[1:nrow(calculatedResults)==1,]
-  
-  # Make sure the mainCode is included
-  if (lockCorpBatchId) {
-    if(calculatedResultsResultTypeRow[1]!=mainCode) {
-      stop(paste0("Could not find '", mainCode, "' column. The ", mainCode, " column should be the first column of the Calculated Results"))
-    }
+  # Precise column information (or default)
+  if (precise) {
+    stateTypeRow <- calculatedResults[1:nrow(calculatedResults) == 1, ]
+    stateKindRow <- calculatedResults[1:nrow(calculatedResults) == 2, ]
+    calculatedResults <- calculatedResults[1:nrow(calculatedResults) > 2, ]
   } else {
-    if(!(mainCode %in% unlist(calculatedResultsResultTypeRow))) {
-      stop(paste0("Could not find '", mainCode, "' column."))
-    }
+    stateTypeRow <- rep("data", length(classRow))
+    stateKindRow <- rep("results", length(classRow))
   }
   
-  if(any(duplicated(unlist(calculatedResultsResultTypeRow)))) {
-    errorList <<- c(errorList,paste0("These column headings are duplicated: ",
-                                     paste(unlist(calculatedResultsResultTypeRow[duplicated(unlist(calculatedResultsResultTypeRow))]),collapse=", "),
-                                     ". All column headings must be unique."))
+  # Get the line containing the value kinds
+  calculatedResultsValueKindRow <- calculatedResults[1:nrow(calculatedResults) == 1, ]
+  
+  # Make sure the mainCode is included
+  if (!is.null(mainCode)) {
+    if (lockCorpBatchId) {
+      if(calculatedResultsValueKindRow[1] != mainCode && !precise) {
+        stop(paste0("Could not find '", mainCode, "' column. The ", mainCode, 
+                    " column should be the first column of the Calculated Results"))
+      }
+    } else {
+      if (!(mainCode %in% unlist(calculatedResultsValueKindRow)) && !precise) {
+        stop(paste0("Could not find '", mainCode, "' column."))
+      }
+    }
   }
   
   # These columns are not result types and should not be pivoted into long format
-  ignoreTheseAsResultTypes <- c(mainCode, "originalMainID")
-  
-  # Call the function that extracts result type names, units, conc, concunits from the headers
-  resultTypes <- extractResultTypes(calculatedResultsResultTypeRow, ignoreTheseAsResultTypes)
-  
-  # Add data class and hidden/shown to the resultTypes
-  resultTypes$dataClass <- classRow[calculatedResultsResultTypeRow!=mainCode]
-  resultTypes$hidden <- hiddenColumns[calculatedResultsResultTypeRow!=mainCode]
-  
-  # Grab the rows of the calculated data 
-  results <- subset(calculatedResults,1:nrow(calculatedResults) > 1)
-  names(results) <- unlist(calculatedResultsResultTypeRow)
-  
-  # Replace fake mainCodes with the column that holds replacements (the column must have the same name that is entered in mainCode)
-  results[[mainCode]] <- as.character(results[[mainCode]])
-  results$originalMainID <- results[[mainCode]]
-  if (!is.null(replaceFakeCorpBatchId)) {
-    replacementRows <- results[[mainCode]]==replaceFakeCorpBatchId
-    results[[mainCode]][replacementRows] <- as.character(results[replacementRows,replaceFakeCorpBatchId])
+  ignoreTheseAsValueKinds <- c(mainCode, "originalMainID")
+  if (!is.null(link)) {
+    ignoreTheseAsValueKinds <- c(ignoreTheseAsValueKinds, "link")
   }
   
-  # Add a temporary analysisGroupID to keep track of how rows match up
-  results$analysisGroupID <- seq(1,length(results[[1]]))
+  # Mark standard deviation columns (designed to allow standard error as well in future)
+  uncertaintyType <- rep(NA, length(classRow))
+  uncertaintyType[tolower(classRow) == "standard deviation"] <- tolower(classRow)[tolower(classRow) == "standard deviation"]
   
-  #Temp for treatment groups
-  if (rawOnlyFormat) {
-    if (!is.null(splitSubjects)) {
-      results$subjectID <- as.numeric(as.factor(do.call(paste0, args=as.list(results[splitSubjects]))))
-    } else {
-      results$subjectID <- NA
-    }
-    # calculateTreatmentGroupID is in customFunctions.R
-    results$treatmentGroupID <- calculateTreatmemtGroupID(results, inputFormat, stateGroups, resultTypes)
+  # Mark Comment columns
+  commentCol <- tolower(classRow) == "comments"
+  
+  # Call the function that extracts valueKinds, units, conc, concunits from the headers
+  valueKinds <- extractValueKinds(calculatedResultsValueKindRow, ignoreTheseAsValueKinds, uncertaintyType, uncertaintyCodeWord, commentCol, commentCodeWord)
+  
+  if (any(duplicated(valueKinds$reshapeText[!is.na(valueKinds$uncertaintyType)]))) {
+    stop("Only one standard deviation may be assigned for a column. Remove the duplicate standard deviation.")
+  }
+  if (any(duplicated(valueKinds$reshapeText[valueKinds$isComment]))) {
+    stop("Only one comment may be assigned for a column. Remove the duplicate comments.")
+  }
+  
+  # Check for standard deviation without parent column
+  missingUncertaintyParent <- !(valueKinds$DataColumn[!is.na(valueKinds$uncertaintyType)] %in% valueKinds$DataColumn[is.na(valueKinds$uncertaintyType)])
+  if (any(missingUncertaintyParent)) {
+    stop(paste0("All standard deviation columns must have a column header that matches their parent column. ",
+                "There is no main column named: '", 
+                paste(valueKinds$DataColumn[missingUncertaintyParent], collapse = "'', '"),
+                "'.")
+         )
+  }
+  
+  missingCommentParent <- !(valueKinds$DataColumn[valueKinds$isComment] %in% valueKinds$DataColumn[!valueKinds$isComment])
+  if (any(missingCommentParent)) {
+    stop(paste0("All comment columns must have a column header that matches their parent column. ",
+                "There is no main column named: '", 
+                paste(valueKinds$DataColumn[missingCommentParent], collapse = "'', '"),
+                "'.")
+    )
+  }
+  
+  # Add data class and hidden/shown to the valueKinds
+  if (!is.null(mainCode)) {
+    notMainCode <- (calculatedResultsValueKindRow != mainCode) & 
+      (is.null(link) | (calculatedResultsValueKindRow != "link"))
   } else {
-    results$treatmentGroupID <- NA
-    results$subjectID <- NA
+    notMainCode <- (is.null(link) | (calculatedResultsValueKindRow != "link"))
+  }
+  
+  valueKinds$dataClass <- classRow[notMainCode]
+  valueKinds$valueType <- translateClassToValueType(valueKinds$dataClass)
+  valueKinds$stateType <- stateTypeRow[notMainCode]
+  valueKinds$stateKind <- stateKindRow[notMainCode]
+  valueKinds$publicData <- !hiddenColumns[notMainCode]
+  valueKinds$linkColumn <- linkColumns[notMainCode]
+  
+  if (!is.null(stateAssignments)) {
+    valueKinds$stateType <- stateAssignments$stateType[match(valueKinds$valueKind), stateAssignments$stateType]
+  }
+  
+  # Grab the rows of the calculated data 
+  results <- subset(calculatedResults, 1:nrow(calculatedResults) > 1)
+  names(results) <- unlist(calculatedResultsValueKindRow)
+  
+  names(results)[!is.na(uncertaintyType)] <- paste0(uncertaintyCodeWord, names(results)[!is.na(uncertaintyType)])
+  names(results)[commentCol] <- paste0(commentCodeWord, names(results)[commentCol])
+  
+  # Replace fake mainCodes with the column that holds replacements (the column must have the same name that is entered in mainCode)
+  results$originalMainID <- NA
+  if (!(is.null(mainCode))) {
+    if (mainCode %in% names(results)) {
+      results[[mainCode]] <- as.character(results[[mainCode]])
+      results$originalMainID <- results[[mainCode]]
+      if (!is.null(replaceFakeCorpBatchId) && replaceFakeCorpBatchId != "") {
+        replacementRows <- results[[mainCode]] == replaceFakeCorpBatchId
+        results[[mainCode]][replacementRows] <- as.character(results[replacementRows, replaceFakeCorpBatchId])
+      }
+    } else {
+      results[[mainCode]] <- NA
+    }
+  }
+  
+  
+  # Add a rowID to keep track of how rows match up
+  results$rowID <- seq(1,length(results[[1]]))
+  
+  # Link to parent analysis group or subject, and include batch codes
+  results$linkID <- NA
+  if (!is.null(link)) {
+    results$linkID <- link$rowID[match(results$link, link$stringValue)]
+    if (!is.null(link$originalMainID))
+      results$batchCode <- link$originalMainID[match(results$link, link$stringValue)]
+  }
+  
+  #Temp ids for treatment groups or other grouping
+  results$groupingID <- NA
+  results$groupingID_2 <- NA
+  if (is.function(calculateGroupingID)) {
+    # calculateTreatmentGroupID is often defined in customFunctions.R
+    results$groupingID <- calculateGroupingID(results, inputFormat, stateGroups, valueKinds)
+    if (!is.null(splitSubjects)) {
+      results$groupingID_2 <- as.numeric(as.factor(do.call(paste0, args=as.list(results[splitSubjects]))))
+    }
   }
   
   # Remove blank columns
-  blankSpaces <- lapply(as.list(results),function(x) return (x != ""))
+  blankSpaces <- lapply(as.list(results), function(x) return (x != ""))
   emptyColumns <- unlist(lapply(blankSpaces, sum) == 0)
-  resultTypes <- resultTypes[!(resultTypes$DataColumn %in% names(results)[emptyColumns]),]
+  valueKinds <- valueKinds[!(valueKinds$DataColumn %in% names(results)[emptyColumns]),]
   
   #Convert the results to long format
   longResults <- reshape(results, idvar=c("id"), ids=row.names(results), v.names="UnparsedValue",
-                         times=resultTypes$DataColumn, timevar="resultTypeAndUnit",
-                         varying=list(resultTypes$DataColumn), direction="long", drop = names(results)[emptyColumns])
+                         times=valueKinds$reshapeText, timevar="reshapeText",
+                         varying=list(valueKinds$reshapeText), direction="long", drop = names(results)[emptyColumns])
   
-  # Add the extract result types information to the long format
-  longResults$"Result Units" <- resultTypes$Units[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$"Conc" <- resultTypes$Conc[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$"Conc Units" <- resultTypes$concUnits[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  #longResults$"Result Units" <- resultTypes$Units[match(longResults$"Result Type",resultTypes$Type)]
-  longResults$Class <- resultTypes$dataClass[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$"Result Type" <- resultTypes$Type[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$Hidden <- resultTypes$hidden[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$time <- resultTypes$time[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
-  longResults$timeUnit <- resultTypes$timeUnit[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+  if (!is.null(mainCode)) {
+    longResults$batchCode <- longResults[[mainCode]]
+  } else {
+    longResults$batchCode <- NA
+  }
+  
+  # Merge uncertainty
+  matchOrder <- match(longResults$reshapeText, valueKinds$reshapeText)
+  longResults$valueKindAndUnit <- valueKinds$DataColumn[matchOrder]
+  longResults$uncertaintyType <- valueKinds$uncertaintyType[matchOrder]
+  longResults$isComment <- valueKinds$isComment[matchOrder]
+  longResults <- ddply(longResults, c("rowID", "valueKindAndUnit"), function(df) {
+    output <- data.frame(originalMainID = unique(df$originalMainID),
+                         rowID = unique(df$rowID),
+                         linkID = unique(df$linkID),
+                         groupingID = unique(df$groupingID),
+                         groupingID_2 = unique(df$groupingID_2),
+                         valueKindAndUnit = unique(df$valueKindAndUnit),
+                         id = unique(df$id),
+                         batchCode = unique(df$batchCode),
+                         stringsAsFactors= FALSE)
+    if (nrow(df) > 1) {
+      output$UnparsedValue <- df$UnparsedValue[is.na(df$uncertaintyType) & !df$isComment]
+      if (any(!is.na(df$uncertaintyType))) {
+        output$uncertainty <- df$UnparsedValue[!is.na(df$uncertaintyType)]
+        output$uncertaintyType <- df$uncertaintyType[!is.na(df$uncertaintyType)]
+      } else {
+        output$uncertainty <- NA
+        output$uncertaintyType <- NA
+      }
+      
+      if (any(df$isComment)) {
+        output$comments <- df$UnparsedValue[df$isComment]
+      } else {
+        output$comments <- NA
+      }
+    } else {
+      output$UnparsedValue <- df$UnparsedValue
+      output$uncertainty <- NA
+      output$uncertaintyType <- NA
+      output$comments <- NA
+    }
+    return(output)
+  })
+  
+  badUncertainty <- !is.na(longResults$uncertainty) & suppressWarnings(is.na(as.numeric(longResults$uncertainty)))
+  if (any(badUncertainty)) {
+    addError(paste0("Uncertainties (standard deviation) must be numbers. Entries ", 
+                    paste(longResults$uncertainty[badUncertainty], collapse = ", "),
+                    " are not valid numbers."),
+             errorEnv)
+  }
+  longResults$uncertainty <- suppressWarnings(as.numeric(longResults$uncertainty))
+  
+  # Add the extractValueKinds information to the long format
+  matchOrder <- match(longResults$"valueKindAndUnit",valueKinds$reshapeText)
+  longResults$"valueUnit" <- valueKinds$Units[matchOrder]
+  longResults$"concentration" <- valueKinds$Conc[matchOrder]
+  longResults$"concentrationUnit" <- valueKinds$concUnits[matchOrder]
+  longResults$Class <- valueKinds$dataClass[matchOrder]
+  longResults$valueType <- valueKinds$valueType[matchOrder]
+  longResults$"valueKind" <- valueKinds$valueKind[matchOrder]
+  longResults$publicData <- valueKinds$publicData[matchOrder]
+  longResults$time <- valueKinds$time[matchOrder]
+  longResults$timeUnit <- valueKinds$timeUnit[matchOrder]
+  longResults$stateType <- valueKinds$stateType[matchOrder]
+  longResults$stateKind <- valueKinds$stateKind[matchOrder]
+  longResults$linkColumn <- valueKinds$linkColumn[matchOrder]
+  longResults$valueKindAndUnit <- valueKinds$DataColumn[matchOrder]
   
   longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
   
   # Parse numeric data from the unparsed values
   matches <- is.na(suppressWarnings(as.numeric(gsub("^(>|<)(.*)", "\\2", gsub(",","",longResults$"UnparsedValue")))))
-  longResults$"Result Value" <- longResults$"UnparsedValue"
-  longResults$"Result Value"[matches] <- ""
+  longResults$"numericValue" <- longResults$"UnparsedValue"
+  longResults$"numericValue"[matches] <- ""
   
   # Parse string values from the unparsed values
-  longResults$"Result Desc" <- as.character(longResults$"UnparsedValue")
-  longResults$"Result Desc"[!matches & longResults$Class != "Text"] <- ""
+  longResults$"stringValue" <- as.character(longResults$"UnparsedValue")
+  longResults$"stringValue"[!matches & longResults$Class != "Text"] <- ""
   
   longResults$clobValue <- as.character(longResults$"UnparsedValue")
-  longResults$clobValue[!longResults$Class=="Clob"] <- NA
-  longResults$"Result Desc"[longResults$Class=="Clob"] <- ""
+  longResults$clobValue[!longResults$Class == "Clob"] <- NA
+  longResults$"stringValue"[longResults$Class == "Clob"] <- ""
   
   # Parse Operators from the unparsed value
   matchExpression <- ">|<"
-  longResults$"Result Operator" <- longResults$"Result Value"
-  matches <- gregexpr(matchExpression,longResults$"Result Value")
-  regmatches(longResults$"Result Operator",matches, invert = TRUE) <- ""
+  longResults$"valueOperator" <- longResults$"numericValue"
+  matches <- gregexpr(matchExpression,longResults$"numericValue")
+  regmatches(longResults$"valueOperator",matches, invert = TRUE) <- ""
   
   # Turn result values to numeric values
-  longResults$"Result Value" <-  as.numeric(gsub(",","",gsub(matchExpression,"",longResults$"Result Value")))
+  longResults$"numericValue" <-  as.numeric(gsub(",","",gsub(matchExpression,"",longResults$"numericValue")))
   
-  # For the results marked as "Text":
-  #   Set the Result Desc to the original value
+  ### For the results marked as "Text":
+  #   Set the stringValue to the original value
   #   Clear the other categories
-  longResults$"Result Value"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
-  longResults$"Result Operator"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
+  longResults$"numericValue"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
+  longResults$"valueOperator"[which(longResults$Class=="Text")] <- rep(NA, sum(longResults$Class=="Text", na.rm = TRUE))
   
-  # For the results marked as "Date":
+  ### For the results marked as "Date":
   #   Apply the function validateDate to each entry
-  longResults$"Result Date" <- rep(NA, length(longResults$analysisGroupID))
+  longResults$"dateValue" <- rep(NA, length(longResults$rowID))
   if (length(which(longResults$Class=="Date")) > 0) {
     dateTranslation <- lapply(unique(longResults$UnparsedValue[which(longResults$Class=="Date")]), validateDate)
     names(dateTranslation) <- unique(longResults$UnparsedValue[which(longResults$Class=="Date")])
-    longResults$"Result Date"[which(longResults$Class=="Date" & 
+    longResults$"dateValue"[which(longResults$Class=="Date" & 
                                       !is.na(longResults$UnparsedValue) &
                                       longResults$UnparsedValue != "")] <- unlist(dateTranslation[longResults$UnparsedValue[which(longResults$Class=="Date" & 
                                                                                                 !is.na(longResults$UnparsedValue))]])
   }
-  longResults$"Result Value"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
-  longResults$"Result Operator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
-  longResults$"Result Desc"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
+  longResults$"numericValue"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
+  longResults$"valueOperator"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
+  longResults$"stringValue"[which(longResults$Class=="Date")] <- rep(NA, sum(longResults$Class=="Date", na.rm=TRUE))
+  
+  moveResults <- function(longResults, valueType) {
+    longResults[valueType] <- rep(NA, nrow(longResults))
+    if (any(longResults$valueType == valueType)) {
+      naVector <- rep(NA, sum(longResults$valueType == valueType, na.rm=T))
+      longResults$"numericValue"[longResults$valueType == valueType] <- naVector
+      longResults$"valueOperator"[longResults$valueType == valueType] <- naVector
+      longResults$"stringValue"[longResults$valueType == valueType] <- naVector
+      longResults[longResults$valueType == valueType, valueType] <- as.character(longResults$"UnparsedValue")[longResults$valueType == valueType]
+    }
+    return(longResults)
+  }
+  
+  ### For the results marked as "Code":
+  longResults <- moveResults(longResults, "codeValue")
+    
+  ### For the results marked as "URL":
+  longResults <- moveResults(longResults, "urlValue")
+  
+  ### For the results marked as "File":
+  longResults <- moveResults(longResults, "fileValue")
   
   # Clean up the data frame to look nice (remove extra columns)
   row.names(longResults) <- 1:nrow(longResults)
-  organizedData <- longResults[c(mainCode,"Result Type","Result Units","Conc","Conc Units", "time", "timeUnit", "Result Value",
-                                 "Result Desc","Result Operator","analysisGroupID","Result Date","clobValue","Class",
-                                 "resultTypeAndUnit","Hidden", "originalMainID", "treatmentGroupID", "subjectID")]
+  
+  organizedData <- longResults[c("batchCode","valueKind","valueUnit","concentration","concentrationUnit", "time", 
+                                 "timeUnit", "numericValue", "stringValue","valueOperator", "dateValue","clobValue",
+                                 "urlValue", "fileValue", "codeValue",
+                                 "Class", "valueType", "valueKindAndUnit","publicData", "originalMainID", 
+                                 "groupingID", "groupingID_2", "rowID", "stateType", "stateKind", "linkColumn", "linkID",
+                                 "uncertainty", "uncertaintyType", "comments")]
   
   # Turn empty string into NA
   organizedData[organizedData==" " | organizedData=="" | is.na(organizedData)] <- NA
   
   # Remove rows
-  organizedData <-organizedData[!(is.na(organizedData$"Result Value") 
-                                  & is.na(organizedData$"Result Desc") 
-                                  & is.na(organizedData$"Result Operator")
-                                  & is.na(organizedData$"Result Date")
-                                  & is.na(organizedData$clobValue)), ]
+  organizedData <- organizedData[!(is.na(organizedData$"numericValue") 
+                                   & is.na(organizedData$"stringValue") 
+                                   & is.na(organizedData$"valueOperator")
+                                   & is.na(organizedData$"dateValue")
+                                   & is.na(organizedData$clobValue)
+                                   & is.na(organizedData$urlValue)
+                                   & is.na(organizedData$fileValue)
+                                   & is.na(organizedData$codeValue)
+                                   ), ]
   
   return(organizedData)
 }
-organizeRawResults <- function(rawResults, calculatedResults, mainCode) {
-  # Valides and organizes the calculated results section
-  #
-  # Args:
-  #   rawResults: 			  A "data.frame" of the columns containing the raw results for the experiment
-  #   calculatedResults:  A "data.frame" of the columns containing the calculated results for the experiment
-  #                         It is here used to connect the mainCodes
-  #
-  # Returns:
-  #  A list containting:
-  #	  subjectData: A data.frame of the subject data
-  #   treatmentGroupData: A data.frame of the treatment group data
-  #   xLabel: A string of the x Label
-  #   yLabel: A string of the y Label
-  
-  require('reshape')
-  
-  # Sets the required names for the beginning of Raw Results
-  rawResultsRequiredNames <- c("temp id","x","y","flag")
-  
-  # Check that Raw Results has the correct header
-  if (length(unlist(rawResults[1,]))!=4 || sum(unlist(rawResults[1,]) != rawResultsRequiredNames)>0) {
-    stop(paste("'Raw Results' must have four columns below it: 'temp id', 'x', 'y', and 'flag' --- Found:", 
-               paste(unlist(sapply(rawResults[1,],as.character)), collapse=", ")))
-  }
-  
-  #Check if Raw Results is empty
-  if (length(rawResults[[1]])<2) {
-    stop("The cell two below 'Raw Results' is empty. Either add a label for the '", rawResults[1,1], 
-         "' column, or, if you do not wish to upload Raw Results, delete the section completely.")
-  }
-  
-  # Turn the first row into headers
-  names(rawResults) <- as.character(unlist(rawResults[1,]))
-  rawResults <- subset(rawResults,1:nrow(rawResults) > 1)
-  
-  # Get the results row
-  rawResultsTypeRow <- rawResults[1,]
-  
-  # Get the labels as individual values
-  tempIdLabel <- as.character(rawResultsTypeRow[rawResultsRequiredNames=="temp id"][[1]])
-  xLabelWithUnit <-as.character(rawResultsTypeRow[rawResultsRequiredNames=="x"][[1]])
-  yLabelWithUnit <-as.character(rawResultsTypeRow[rawResultsRequiredNames=="y"][[1]])
-  flagLabel <- as.character(rawResultsTypeRow[rawResultsRequiredNames=="flag"][[1]])
-  
-  # Error handling of missing labels
-  missingLabels <- list()
-  if (tempIdLabel == "") {
-    missingLabels <- c(missingLabels,"temp id")
-  }
-  if (xLabelWithUnit == "") {
-    missingLabels <- c(missingLabels,"x")
-  }
-  if (yLabelWithUnit == "") {
-    missingLabels <- c(missingLabels,"y")
-  }
-  if (flagLabel == "") {
-    missingLabels <- c(missingLabels,"flag")
-  }
-  if (length(missingLabels)>0) {
-    if (length(missingLabels)==1) {
-      stop(paste0("In the Raw Results, add a label for column: '", paste0(missingLabels, collapse = "', '"), "'"))
-    } else {
-      stop(paste0("In the Raw Results, add labels for columns: '", paste0(missingLabels, collapse = "', '"), "'"))
-    }
-  }
-  
-  # Collect the result types' units
-  resultTypes <- extractResultTypes(rawResultsTypeRow)
-  
-  # Get the x and y labels without units
-  xLabel <- resultTypes$Type[match(xLabelWithUnit,resultTypes$DataColumn)]
-  yLabel <- resultTypes$Type[match(yLabelWithUnit,resultTypes$DataColumn)]
-  
-  # Force them to use Dose and Response (would add a flag later for other similar formats that are not Dose Respose)
-  if (xLabel != "Dose") {
-    errorList <<- c(errorList, "The x Raw Result must be 'Dose' for this format.")
-  }
-  if (yLabel != "Response") {
-    errorList <<- c(errorList, "The y Raw Result must be 'Response' for this format.")
-  }
-  
-  #Drop Columns that are unnecessary in this context
-  resultTypes <- resultTypes[,c("DataColumn","Type","Units")]
-  
-  # Add sd(standard deviation) and n (number of results) as result types
-  resultTypes <- rbind(resultTypes, c("sd","sd",NA))
-  resultTypes <- rbind(resultTypes, c("n","n",NA))
-  
-  # The headers for this object are stored in the first row of the data frame
-  results <- subset(rawResults,1:nrow(rawResults) > 1)
-  
-  # Add a temporary pointID to keep track of which data goes together
-  results$pointID <- seq(1,length(results[[1]]))
-  
-  # Create treatment group results (TODO performance: could not figure out how to make vector based)
-  treatmentGroupResults <- unique(results[,c("temp id","x")])
-  treatmentGroupResults$avg <- NA
-  treatmentGroupResults$sd <- NA
-  treatmentGroupResults$n <- NA
-  
-  # For each treatment group, find the unflagged data points that are included
-  for (i in seq(1,length(treatmentGroupResults$"temp id"))) {
-    valueSet <- (sapply(results$y[results$"temp id"==treatmentGroupResults$"temp id"[i] 
-                                  & results$x==treatmentGroupResults$x[i]
-                                  & results$flag==""],as.numeric))
-    
-    # Set the mean, standard deviation, and number of points
-    if (length(valueSet>0)) {
-      treatmentGroupResults$avg[i] <- mean(valueSet)
-      treatmentGroupResults$sd[i] <- sd(valueSet)
-      treatmentGroupResults$n[i] <- length(valueSet)
-      
-      # Or if all points were flagged, set n=0
-    } else {
-      treatmentGroupResults$n[i] <- 0
-    }
-  }
-  
-  #Use the names which were given on the spreadsheet
-  names(treatmentGroupResults) <- c(resultTypes$DataColumn[1],xLabelWithUnit,yLabelWithUnit,"sd","n")
-  
-  # Add an Id for each treatment Group
-  treatmentGroupResults$treatmentBatch <- seq(1,length(treatmentGroupResults[[1]]))
-  
-  
-  # Change to long format
-  savedNames <- names(treatmentGroupResults)[ which(!(names(treatmentGroupResults) %in% c("treatmentBatch",tempIdLabel,"n","sd"))) ] 
-  
-  
-  # For melt to work right, you need to reverse the order of the measure.vars. I have no idea why.
-  savedNames <- rev(savedNames)
-  longTreatmentGroupResults <- melt(treatmentGroupResults, id.vars = c("treatmentBatch",tempIdLabel, "n", "sd"), measure.vars = savedNames, variable_name = "ResultType")
-  
-  # Break results into multiple columns
-  tempIdTable <- calculatedResults[calculatedResults$"Result Type" == tempIdLabel,]
-  longTreatmentGroupResults[[mainCode]] <- tempIdTable[[mainCode]][match(longTreatmentGroupResults[,tempIdLabel],tempIdTable$"Result Value")]
-  longTreatmentGroupResults$"Result Units" <- resultTypes$Units[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
-  longTreatmentGroupResults$"Conc" <- resultTypes$Conc[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
-  longTreatmentGroupResults$"Conc Units" <- resultTypes$concUnits[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
-  longTreatmentGroupResults$ResultType <- resultTypes$Type[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
-  
-  # Get Subject data
-  
-  # Add a point ID to keep track of the points
-  names(results) <- c(sapply(unlist(rawResultsTypeRow),as.character),"pointID")
-  
-  # Change to a long format
-  longResults <- melt(results, id.vars = c("pointID", tempIdLabel), variable_name = "ResultType") 
-  
-  # Connect Batch ID's
-  tempIdTable <- calculatedResults[calculatedResults$"Result Type" == tempIdLabel,]
-  longResults[[mainCode]] <- tempIdTable[[mainCode]][match(longResults[,tempIdLabel],tempIdTable$"Result Value")]
-  
-  # Add units
-  longResults$"Result Units" <- resultTypes$Units[match(longResults$"ResultType",resultTypes$DataColumn)]
-  longResults$"Conc" <- resultTypes$Conc[match(longResults$"ResultType",resultTypes$DataColumn)]
-  longResults$"Conc Units" <- resultTypes$concUnits[match(longResults$"ResultType",resultTypes$DataColumn)]
-  longResults$ResultType <- resultTypes$Type[match(longResults$"ResultType",resultTypes$DataColumn)]
-  
-  # Remove blank spaces from the data
-  longTreatmentGroupResults[longTreatmentGroupResults==" " | longTreatmentGroupResults=="" | is.na(longTreatmentGroupResults)] <- NA
-  longResults[longResults==" " | longResults=="" | is.na(longResults)] <- NA
-  
-  # Remove blank rows
-  longTreatmentGroupResults <-longTreatmentGroupResults[!(is.na(longTreatmentGroupResults$value)),]
-  longResults <-longResults[!(is.na(longResults$value)),]
-  
-  # Return
-  return(list(subjectData = longResults, xLabel = xLabel, yLabel = yLabel, tempIdLabel = tempIdLabel,
-              treatmentGroupData = longTreatmentGroupResults))
-}
-getProtocolByName <- function(protocolName, configList, formFormat) {
+# organizeRawResults <- function(rawResults, calculatedResults, mainCode) {
+#   # Valides and organizes the calculated results section
+#   #
+#   # Args:
+#   #   rawResults: 			  A "data.frame" of the columns containing the raw results for the experiment
+#   #   calculatedResults:  A "data.frame" of the columns containing the calculated results for the experiment
+#   #                         It is here used to connect the mainCodes
+#   #
+#   # Returns:
+#   #  A list containting:
+#   #	  subjectData: A data.frame of the subject data
+#   #   treatmentGroupData: A data.frame of the treatment group data
+#   #   xLabel: A string of the x Label
+#   #   yLabel: A string of the y Label
+#   
+#   require('reshape')
+#   
+#   # Sets the required names for the beginning of Raw Results
+#   rawResultsRequiredNames <- c("temp id","x","y","flag")
+#   
+#   # Check that Raw Results has the correct header
+#   if (length(unlist(rawResults[1,]))!=4 || sum(unlist(rawResults[1,]) != rawResultsRequiredNames)>0) {
+#     stop(paste("'Raw Results' must have four columns below it: 'temp id', 'x', 'y', and 'flag' --- Found:", 
+#                paste(unlist(sapply(rawResults[1,],as.character)), collapse=", ")))
+#   }
+#   
+#   #Check if Raw Results is empty
+#   if (length(rawResults[[1]])<2) {
+#     stop("The cell two below 'Raw Results' is empty. Either add a label for the '", rawResults[1,1], 
+#          "' column, or, if you do not wish to upload Raw Results, delete the section completely.")
+#   }
+#   
+#   # Turn the first row into headers
+#   names(rawResults) <- as.character(unlist(rawResults[1,]))
+#   rawResults <- subset(rawResults,1:nrow(rawResults) > 1)
+#   rawResults <- NULL
+#   # Get the results row
+#   rawResultsTypeRow <- rawResults[1,]
+#   
+#   # Get the labels as individual values
+#   tempIdLabel <- as.character(rawResultsTypeRow[rawResultsRequiredNames=="temp id"][[1]])
+#   xLabelWithUnit <-as.character(rawResultsTypeRow[rawResultsRequiredNames=="x"][[1]])
+#   yLabelWithUnit <-as.character(rawResultsTypeRow[rawResultsRequiredNames=="y"][[1]])
+#   flagLabel <- as.character(rawResultsTypeRow[rawResultsRequiredNames=="flag"][[1]])
+#   
+#   # Error handling of missing labels
+#   missingLabels <- list()
+#   if (tempIdLabel == "") {
+#     missingLabels <- c(missingLabels,"temp id")
+#   }
+#   if (xLabelWithUnit == "") {
+#     missingLabels <- c(missingLabels,"x")
+#   }
+#   if (yLabelWithUnit == "") {
+#     missingLabels <- c(missingLabels,"y")
+#   }
+#   if (flagLabel == "") {
+#     missingLabels <- c(missingLabels,"flag")
+#   }
+#   if (length(missingLabels)>0) {
+#     if (length(missingLabels)==1) {
+#       stop(paste0("In the Raw Results, add a label for column: '", paste0(missingLabels, collapse = "', '"), "'"))
+#     } else {
+#       stop(paste0("In the Raw Results, add labels for columns: '", paste0(missingLabels, collapse = "', '"), "'"))
+#     }
+#   }
+#   
+#   # Collect the result types' units
+#   valueKinds <- extractValueKinds(rawResultsTypeRow)
+#   
+#   # Get the x and y labels without units
+#   xLabel <- valueKinds$Type[match(xLabelWithUnit,valueKinds$DataColumn)]
+#   yLabel <- valueKinds$Type[match(yLabelWithUnit,resultTypes$DataColumn)]
+#   
+#   # Force them to use Dose and Response (would add a flag later for other similar formats that are not Dose Respose)
+#   if (xLabel != "Dose") {
+#     errorList <<- c(errorList, "The x Raw Result must be 'Dose' for this format.")
+#   }
+#   if (yLabel != "Response") {
+#     errorList <<- c(errorList, "The y Raw Result must be 'Response' for this format.")
+#   }
+#   
+#   #Drop Columns that are unnecessary in this context
+#   resultTypes <- resultTypes[,c("DataColumn","Type","Units")]
+#   
+#   # Add sd(standard deviation) and n (number of results) as result types
+#   resultTypes <- rbind(resultTypes, c("sd","sd",NA))
+#   resultTypes <- rbind(resultTypes, c("n","n",NA))
+#   
+#   # The headers for this object are stored in the first row of the data frame
+#   results <- subset(rawResults,1:nrow(rawResults) > 1)
+#   
+#   # Add a temporary pointID to keep track of which data goes together
+#   results$pointID <- seq(1,length(results[[1]]))
+#   
+#   # Create treatment group results (TODO performance: could not figure out how to make vector based)
+#   treatmentGroupResults <- unique(results[,c("temp id","x")])
+#   treatmentGroupResults$avg <- NA
+#   treatmentGroupResults$sd <- NA
+#   treatmentGroupResults$n <- NA
+#   
+#   # For each treatment group, find the unflagged data points that are included
+#   for (i in seq(1,length(treatmentGroupResults$"temp id"))) {
+#     valueSet <- (sapply(results$y[results$"temp id"==treatmentGroupResults$"temp id"[i] 
+#                                   & results$x==treatmentGroupResults$x[i]
+#                                   & results$flag==""],as.numeric))
+#     
+#     # Set the mean, standard deviation, and number of points
+#     if (length(valueSet>0)) {
+#       treatmentGroupResults$avg[i] <- mean(valueSet)
+#       treatmentGroupResults$sd[i] <- sd(valueSet)
+#       treatmentGroupResults$n[i] <- length(valueSet)
+#       
+#       # Or if all points were flagged, set n=0
+#     } else {
+#       treatmentGroupResults$n[i] <- 0
+#     }
+#   }
+#   
+#   #Use the names which were given on the spreadsheet
+#   names(treatmentGroupResults) <- c(resultTypes$DataColumn[1],xLabelWithUnit,yLabelWithUnit,"sd","n")
+#   
+#   # Add an Id for each treatment Group
+#   treatmentGroupResults$treatmentBatch <- seq(1,length(treatmentGroupResults[[1]]))
+#   
+#   
+#   # Change to long format
+#   savedNames <- names(treatmentGroupResults)[ which(!(names(treatmentGroupResults) %in% c("treatmentBatch",tempIdLabel,"n","sd"))) ] 
+#   
+#   
+#   # For melt to work right, you need to reverse the order of the measure.vars. I have no idea why.
+#   savedNames <- rev(savedNames)
+#   longTreatmentGroupResults <- melt(treatmentGroupResults, id.vars = c("treatmentBatch",tempIdLabel, "n", "sd"), measure.vars = savedNames, variable_name = "ResultType")
+#   
+#   # Break results into multiple columns
+#   tempIdTable <- calculatedResults[calculatedResults$"valueKind" == tempIdLabel,]
+#   longTreatmentGroupResults[[mainCode]] <- tempIdTable[[mainCode]][match(longTreatmentGroupResults[,tempIdLabel],tempIdTable$"numericValue")]
+#   longTreatmentGroupResults$"valueUnit" <- resultTypes$Units[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
+#   longTreatmentGroupResults$"concentration" <- resultTypes$Conc[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
+#   longTreatmentGroupResults$"concentrationUnit" <- resultTypes$concUnits[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
+#   longTreatmentGroupResults$ResultType <- resultTypes$Type[match(longTreatmentGroupResults$"ResultType",resultTypes$DataColumn)]
+#   
+#   # Get Subject data
+#   
+#   # Add a point ID to keep track of the points
+#   names(results) <- c(sapply(unlist(rawResultsTypeRow),as.character),"pointID")
+#   
+#   # Change to a long format
+#   longResults <- melt(results, id.vars = c("pointID", tempIdLabel), variable_name = "ResultType") 
+#   
+#   # Connect Batch ID's
+#   tempIdTable <- calculatedResults[calculatedResults$"valueKind" == tempIdLabel,]
+#   longResults[[mainCode]] <- tempIdTable[[mainCode]][match(longResults[,tempIdLabel],tempIdTable$"numericValue")]
+#   
+#   # Add units
+#   longResults$"valueUnit" <- resultTypes$Units[match(longResults$"ResultType",resultTypes$DataColumn)]
+#   longResults$"concentration" <- resultTypes$Conc[match(longResults$"ResultType",resultTypes$DataColumn)]
+#   longResults$"concentrationUnit" <- resultTypes$concUnits[match(longResults$"ResultType",resultTypes$DataColumn)]
+#   longResults$ResultType <- resultTypes$Type[match(longResults$"ResultType",resultTypes$DataColumn)]
+#   
+#   # Remove blank spaces from the data
+#   longTreatmentGroupResults[longTreatmentGroupResults==" " | longTreatmentGroupResults=="" | is.na(longTreatmentGroupResults)] <- NA
+#   longResults[longResults==" " | longResults=="" | is.na(longResults)] <- NA
+#   
+#   # Remove blank rows
+#   longTreatmentGroupResults <-longTreatmentGroupResults[!(is.na(longTreatmentGroupResults$value)),]
+#   longResults <-longResults[!(is.na(longResults$value)),]
+#   
+#   # Return
+#   return(list(subjectData = longResults, xLabel = xLabel, yLabel = yLabel, tempIdLabel = tempIdLabel,
+#               treatmentGroupData = longTreatmentGroupResults))
+# }
+getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
   # Gets the protocol entered as an input
   # 
   # Args:
@@ -1341,8 +1397,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   
   # Create LS Tags
   if("Experiment Keywords" %in% names(metaData)) {
-    tagList <- strsplit(metaData$"Experiment Keywords"[[1]], ";")[[1]]
-    tagList <- trim(tagList)
+    tagList <- splitOnSemicolon(metaData$"Experiment Keywords"[[1]])
     lsTags <- lapply(tagList, createTag)
   } else {
     lsTags <- NULL
@@ -1367,7 +1422,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experiment <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "experiments/", experiment$id))))
   return(experiment)
 }
-validateProject <- function(projectName, configList) {
+validateProject <- function(projectName, configList, errorEnv) {
   require('RCurl')
   require('rjson')
   tryCatch({
@@ -1378,18 +1433,18 @@ validateProject <- function(projectName, configList) {
   tryCatch({
     projectList <- fromJSON(projectList)
   }, error = function(e) {
-    errorList <<- c(errorList, paste("There was an error in validating your project:", projectList))
+    addError(paste("There was an error in validating your project:", projectList), errorEnv = errorEnv)
     return("")
   })
   #projectCodes <- sapply(projectList, function(x) x$code)
   projectNames <- sapply(projectList, function(x) x$name)
-  if(length(projectNames) == 0) {errorList <<- c(errorList, "No projects are available, contact your system administrator")}
+  if(length(projectNames) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
   if (projectName %in% projectNames) {
     return(projectName)
   } else {
     configText <- toJSON(configList)
-    errorList <<- c(errorList, paste0("The project you entered is not an available project. Please enter one of these projects: '",
-                                      paste(projectNames, collapse = "', '"), "'."))
+    addError(paste0("The project you entered is not an available project. Please enter one of these projects: '",
+                                      paste(projectNames, collapse = "', '"), "'."), errorEnv=errorEnv)
     return("")
   }
 }
@@ -1428,7 +1483,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                               includeTreatmentGroupData, inputFormat, mainCode) {
   # For use in uploading when the results go into subjects rather than analysis groups
   
-  require('plyr')
+  library('plyr')
   
   #Change in naming convention
   if (rowMeaning=="subject") {
@@ -1437,7 +1492,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   } else if (rowMeaning=="subjectState") {
     names(subjectData)[names(subjectData) == "analysisGroupID"] <- "subjectStateID"
   }
-  if(hideAllData) subjectData$Hidden <- TRUE
+  if(hideAllData) subjectData$publicData <- FALSE
   
   
   # code names
@@ -1479,15 +1534,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   subjectData$treatmentGroupID <- treatmentGroupIds[match(subjectData$treatmentGroupID,1:length(treatmentGroupIds))]
   
   # Reorganization to match formats
-  nameChange <- c(mainCode='batchCode','Result Type'='valueKind','Result Units'='valueUnit','Conc'='concentration',
-                  'Conc Units'='concentrationUnit','time'='time','timeUnit'='timeUnit','Result Value'='numericValue',
-                  'Result Desc'='stringValue','Result Operator'='valueOperator','subjectStateID'='subjectStateID',
-                  'Result Date'='dateValue','clobValue'='clobValue','Class'='valueType','resultTypeAndUnit'='resultTypeAndUnit',
-                  'Hidden'='publicData','originalMainID'='originalBatchCode','treatmentGroupID'='treatmentGroupID',
-                  'subjectID'='subjectID')
+  nameChange <- c(mainCode='batchCode', 'originalMainID'='originalBatchCode')
   names(subjectData)[names(subjectData) %in% names(nameChange)] <- nameChange[names(subjectData)]
-  subjectData$publicData <- !subjectData$publicData
-  subjectData$valueType <- c("numericValue","stringValue","dateValue", "clobValue")[match(subjectData$valueType,c("Number","Text","Date", "Clob"))]
+  #subjectData$publicData <- !subjectData$publicData
+  #subjectData$valueType <- c("numericValue","stringValue","dateValue", "clobValue")[match(subjectData$valueType,c("Number","Text","Date", "Clob"))]
   
   # Subjects
   subjectData$subjectCodeName <- subjectCodeNameList[subjectData$subjectID]
@@ -1517,7 +1567,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     includedRows <- subjectData$valueKind %in% stateGroup$valueKinds
     newRows <- subjectData[includedRows & !is.na(subjectData$stateGroupIndex), ]
     subjectData$stateGroupIndex[includedRows & is.na(subjectData$stateGroupIndex)] <- stateGroupIndex
-    if (nrow(newRows)>0) newRows$stateGroupIndex <- stateGroupIndex
+    if (nrow(newRows) > 0) newRows$stateGroupIndex <- stateGroupIndex
     subjectData <- rbind.fill(subjectData,newRows)
     stateGroupIndex <- stateGroupIndex + 1
   }
@@ -1525,16 +1575,13 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   othersGroupIndex <- which(sapply(stateGroups, function(x) x$includesOthers))
   subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
   
-  names(subjectData)[names(subjectData) == "Conc"] <- "concentration"
-  names(subjectData)[names(subjectData) == "Conc Units"] <- "concentrationUnit"
-  
   makeUniqueSubjects <- function(subjectData) {
     subjectData$subjectStateID <- subjectData$subjectStateID[1]
     subjectData$batchCode <- subjectData$batchCode[1]
     subjectData$originalBatchCode <- subjectData$originalBatchCode[1]
     output <- unique(subjectData)
     if (nrow(output) > 1) {
-      stop("Values in ", unique(subjectData$resultTypeAndUnit), " are expected to be the same for each subject.")
+      stop("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject.")
     }
     return(output)
   }
@@ -1543,7 +1590,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     subjectData <- ddply(subjectData, c("stateGroupIndex"), .fun = function(subjectData) {
       if (subjectData$stateGroupIndex[1] == i && !is.null(stateGroup$collapseGroupBy)) {
         subjectData <- ddply(subjectData, 
-                             c("resultTypeAndUnit","subjectID","stateGroupIndex"),
+                             c("valueKindAndUnit","subjectID","stateGroupIndex"),
                              .fun=makeUniqueSubjects)
       }
       return(subjectData)
@@ -1584,7 +1631,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                       & !(subjectData$subjectID %in% excludedSubjects),]
     
     # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
-    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
+    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
     treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
     if (nrow(treatmentGroupData) > 0) {
       stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
@@ -1755,15 +1802,15 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   }
   return(lsTransaction)
 }
-uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults,
+uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupData,subjectData,
                        xLabel,yLabel,tempIdLabel,testOutputLocation = NULL,developmentMode,
                        protocol,experiment, fileStartLocation, configList, reportFilePath, 
-                       reportFileSummary, recordedBy, annotationType, mainCode) {
+                       reportFileSummary, recordedBy, annotationType, mainCode, appendCodeNameList) {
   # Uploads all the data to the server
   # 
   # Args:
   #   metaData:     	        A data frame of the meta data
-  #   lsTransaction:          A list with information on the transaction
+  #   lsTransaction:          An id of the transaction
   #   calculatedResults:      A data frame of the calculated results (analysis group data)
   #   treatmentGroupData:     A data frame of the treatment group data
   #   rawResults:             A data frame of the raw results (subject group data)
@@ -1772,14 +1819,161 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   #   tempIdLabel:            A string with the name of the variable that is in the 'temp id' column
   #   testOutputLocation:     A string with the file location to output a JSON file to when dryRun is TRUE
   #   developmentMode:        A boolean that marks if the JSON request should be saved to a file
+  #   appendCodeName:         A vector of lsKinds that should have the code name appended to them
   #
   #   Returns:
   #     NULL
   
-  # Get a list of codes
-  analysisGroupCodeNameList <- getAutoLabels(thingTypeAndKind="document_analysis group", 
-                                             labelTypeAndKind="id_codeName", 
-                                             numberOfLabels=max(calculatedResults$analysisGroupID)) 
+  # TODO: make it possible to save subjects without analysis group or treatment group
+  
+  analysisGroupData$lsTransaction <- lsTransaction
+  analysisGroupData$recordedBy <- recordedBy
+  
+  ### Analysis Group Data
+  # Not all of these will be filled
+  analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex, "-", 
+                                analysisGroupData$concentration, "-", analysisGroupData$concentrationUnit, "-",
+                                analysisGroupData$time, "-", analysisGroupData$timeUnit, "-", analysisGroupData$stateKind)
+  
+  analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
+  analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
+  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, 0, optionalColumns = "analysisGroupID"))
+  
+  analysisGroupData$lsTransaction <- lsTransaction
+  analysisGroupData$recordedBy <- recordedBy
+  
+  analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup", appendCodeNameList$analysisGroup)
+  
+  ### TreatmentGroup Data
+  if (!is.null(treatmentGroupData)) {
+    treatmentGroupData$lsTransaction <- lsTransaction
+    treatmentGroupData$recordedBy <- recordedBy
+    
+    matchingID <- match(treatmentGroupData$analysisGroupID, analysisGroupIDandVersion$tempID)
+    treatmentGroupData$analysisGroupID <- analysisGroupIDandVersion$entityID[matchingID]
+    treatmentGroupData$analysisGroupVersion <- analysisGroupIDandVersion$entityVersion[matchingID]
+    
+    treatmentGroupData$stateID <- paste0(treatmentGroupData$treatmentGroupID, "-", treatmentGroupData$stateGroupIndex, "-", 
+                                         treatmentGroupData$concentration, "-", treatmentGroupData$concentrationUnit, "-",
+                                         treatmentGroupData$time, "-", treatmentGroupData$timeUnit, "-", treatmentGroupData$stateKind)
+    
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltConcentrations(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, 0, optionalColumns = "treatmentGroupID"))
+    
+    treatmentGroupIDandVersion <- saveFullEntityData(treatmentGroupData, "treatmentGroup")
+  }
+
+  ### subject Data
+  if (!is.null(subjectData)) {
+    subjectData$lsTransaction <- lsTransaction
+    subjectData$recordedBy <- recordedBy
+    
+    matchingID <- match(subjectData$treatmentGroupID, treatmentGroupIDandVersion$tempID)
+    subjectData$treatmentGroupID <- treatmentGroupIDandVersion$entityID[matchingID]
+    subjectData$treatmentGroupVersion <- treatmentGroupIDandVersion$entityVersion[matchingID]
+    
+    subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
+                                  subjectData$concentration, "-", subjectData$concentrationUnit, "-",
+                                  subjectData$time, "-", subjectData$timeUnit, "-", subjectData$stateKind)
+    
+    subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
+    subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
+    subjectData <- rbind.fill(subjectData, meltBatchCodes(subjectData, 0, optionalColumns = "subjectID"))
+    
+    subjectIDandVersion <- saveFullEntityData(subjectData, "subject")
+  }
+  
+  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, 
+                                                   configList$server.service.external.file.type, 
+                                                   configList$server.service.external.file.service.url)
+  if(!is.null(reportFilePath) && reportFilePath != "") {
+    batchNameList <- unique(analysisGroupData$batchCode)
+    if (configList$server.service.external.report.registration.url != "") {
+      registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
+    } else {
+      addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
+    }
+  }
+  
+  return (NULL)
+  
+   ######################
+  analysisGroupData <<- analysisGroupData
+  analysisGroupIDandVersion <<- analysisGroupIDandVersion
+  #return()
+  
+  
+  subjects <- dlply(.data= subjectData, .variables= .(subjectID), .fun= createRawOnlySubject)
+  names(subjects) <- NULL
+  
+  savedSubjects <- saveAcasEntities(subjects, "subjects")
+  
+  subjectIds <- sapply(savedSubjects, function(x) x$id)
+  
+  subjectData$subjectID <- subjectIds[subjectData$subjectID]
+  
+  ### Subject States ===============================================
+  #######  
+  stateGroupIndex <- 1
+  subjectData$stateGroupIndex <- NA
+  for (stateGroup in stateGroups) {
+    includedRows <- subjectData$valueKind %in% stateGroup$valueKinds
+    newRows <- subjectData[includedRows & !is.na(subjectData$stateGroupIndex), ]
+    subjectData$stateGroupIndex[includedRows & is.na(subjectData$stateGroupIndex)] <- stateGroupIndex
+    if (nrow(newRows) > 0) newRows$stateGroupIndex <- stateGroupIndex
+    subjectData <- rbind.fill(subjectData,newRows)
+    stateGroupIndex <- stateGroupIndex + 1
+  }
+  
+  othersGroupIndex <- which(sapply(stateGroups, function(x) x$includesOthers))
+  subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
+  
+  makeUniqueSubjects <- function(subjectData) {
+    subjectData$subjectStateID <- subjectData$subjectStateID[1]
+    subjectData$batchCode <- subjectData$batchCode[1]
+    subjectData$originalBatchCode <- subjectData$originalBatchCode[1]
+    output <- unique(subjectData)
+    if (nrow(output) > 1) {
+      stop("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject.")
+    }
+    return(output)
+  }
+  for (i in 1:length(stateGroups)) {
+    stateGroup <- stateGroups[[i]]
+    subjectData <- ddply(subjectData, c("stateGroupIndex"), .fun = function(subjectData) {
+      if (subjectData$stateGroupIndex[1] == i && !is.null(stateGroup$collapseGroupBy)) {
+        subjectData <- ddply(subjectData, 
+                             c("valueKindAndUnit","subjectID","stateGroupIndex"),
+                             .fun=makeUniqueSubjects)
+      }
+      return(subjectData)
+    })
+  }
+  
+  subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
+                                subjectData$concentration, "-", subjectData$concentrationUnit, "-",
+                                subjectData$time, "-", subjectData$timeUnit, "-", subjectData$subjectStateID)
+  
+  subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
+  
+  subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
+  
+  stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
+  subjectData$stateID <- stateAndVersion$entityStateId
+  subjectData$stateVersion <- stateAndVersion$entityStateVersion
+  
+  ### Subject Values ======================================================================= 
+  batchCodeStateIndices <- which(sapply(stateGroups, getElement, "includesCorpName"))
+  if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
+  subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices, replaceFakeCorpBatchId))
+  
+  savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
+  
+  
+  
+  
+  
   analysisGroupCodeNameNumber <- 1
   
   if(!is.null(rawResults)) {
@@ -1830,25 +2024,25 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
         analysisGroupValues <- list()
         for (i in which(selectedRows)) {
           # Prepare the date value
-          dateValue <- as.numeric(format(as.Date(calculatedResults$"Result Date"[i],origin="1970-01-01"), "%s"))*1000
+          dateValue <- as.numeric(format(as.Date(calculatedResults$"dateValue"[i],origin="1970-01-01"), "%s"))*1000
           # The main value (whether it is a numeric, string, or date) creates one value    
           analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                                                                                   lsType = if (calculatedResults$"Result Type"[i]==tempIdLabel) {"stringValue"
+                                                                                   lsType = if (calculatedResults$"valueKind"[i]==tempIdLabel) {"stringValue"
                                                                                    } else if (calculatedResults$"Class"[i]=="Text") {"stringValue"
                                                                                    } else if (calculatedResults$"Class"[i]=="Date") {"dateValue"
                                                                                    } else if (calculatedResults$"Class"[i]=="Clob") {"clobValue"
                                                                                    } else {"numericValue"},
-                                                                                   lsKind = calculatedResults$"Result Type"[i],
-                                                                                   stringValue = if(calculatedResults$"Result Type"[i]==tempIdLabel) {
-                                                                                     paste0(calculatedResults$"Result Desc"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
-                                                                                   } else if (!is.na(calculatedResults$"Result Desc"[i])) {calculatedResults$"Result Desc"[i]} else {NULL},
+                                                                                   lsKind = calculatedResults$"valueKind"[i],
+                                                                                   stringValue = if(calculatedResults$"valueKind"[i]==tempIdLabel) {
+                                                                                     paste0(calculatedResults$"stringValue"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
+                                                                                   } else if (!is.na(calculatedResults$"stringValue"[i])) {calculatedResults$"stringValue"[i]} else {NULL},
                                                                                    clobValue = if (!is.na(calculatedResults$clobValue[i])) {calculatedResults$clobValue[i]} else {NULL},
                                                                                    dateValue = if(is.na(dateValue)) {NULL} else {dateValue},
-                                                                                   valueOperator = if(is.na(calculatedResults$"Result Operator"[i])) {NULL} else {calculatedResults$"Result Operator"[i]},
-                                                                                   numericValue = if(is.na(calculatedResults$"Result Value"[i]) | calculatedResults$"Result Type"[i]==tempIdLabel) {NULL} 
-                                                                                   else {calculatedResults$"Result Value"[i]},
-                                                                                   valueUnit = if(is.na(calculatedResults$"Result Units"[i])) {NULL} else {calculatedResults$"Result Units"[i]},
-                                                                                   publicData = !calculatedResults$Hidden[i],
+                                                                                   valueOperator = if(is.na(calculatedResults$"valueOperator"[i])) {NULL} else {calculatedResults$"valueOperator"[i]},
+                                                                                   numericValue = if(is.na(calculatedResults$"numericValue"[i]) | calculatedResults$"valueKind"[i]==tempIdLabel) {NULL} 
+                                                                                   else {calculatedResults$"numericValue"[i]},
+                                                                                   valueUnit = if(is.na(calculatedResults$"valueUnit"[i])) {NULL} else {calculatedResults$"valueUnit"[i]},
+                                                                                   publicData = calculatedResults$publicData[i],
                                                                                    lsTransaction = lsTransaction)
         }
         
@@ -1858,7 +2052,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
                                                                                    lsType = "codeValue",
                                                                                    lsKind = "batch code",
                                                                                    codeValue = as.character(calculatedResults[[mainCode]][analysisGroupID == calculatedResults$analysisGroupID][1]),
-                                                                                   publicData = !calculatedResults$Hidden[i],
+                                                                                   publicData = calculatedResults$publicData[i],
                                                                                    lsTransaction = lsTransaction)
           
           # Adds a value for the concentration if there is one
@@ -1866,9 +2060,9 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
             analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
                                                                                      lsType = "numericValue",
                                                                                      lsKind = "tested concentration",
-                                                                                     valueUnit= if(is.na(calculatedResults$"Conc Units"[i])){NULL} else {calculatedResults$"Conc Units"[i]},
+                                                                                     valueUnit= if(is.na(calculatedResults$"concentrationUnit"[i])){NULL} else {calculatedResults$"concentrationUnit"[i]},
                                                                                      numericValue = calculatedResults$"Conc"[i],
-                                                                                     publicData = !calculatedResults$Hidden[i],
+                                                                                     publicData = calculatedResults$publicData[i],
                                                                                      lsTransaction = lsTransaction)
           }
           
@@ -1880,7 +2074,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
               lsKind = "time",
               valueUnit= if(is.na(calculatedResults$"timeUnit"[i])){NULL} else {calculatedResults$"timeUnit"[i]},
               numericValue = calculatedResults$"time"[i],
-              publicData = !calculatedResults$Hidden[i],
+              publicData = calculatedResults$publicData[i],
               lsTransaction = lsTransaction)
           }
           # Creates the state
@@ -1897,7 +2091,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
     
     if(!is.null(rawResults)) {
       # Gets the temp and batch Id's for the current analysis group
-      tempID <- calculatedResults$"Result Desc"[calculatedResults$analysisGroupID == analysisGroupID & calculatedResults$"Result Type" == tempIdLabel][1]
+      tempID <- calculatedResults$"stringValue"[calculatedResults$analysisGroupID == analysisGroupID & calculatedResults$"valueKind" == tempIdLabel][1]
       batchID <- as.character(calculatedResults[[mainCode]][calculatedResults$analysisGroupID == analysisGroupID][1])
       if (!is.na(tempID) & tempID!="") {
         for (group in unique(treatmentGroupData$treatmentBatch[treatmentGroupData[,tempIdLabel]==tempID])) {
@@ -1911,7 +2105,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
               uncertainty= if(is.na(treatmentGroupData$sd[i])) {NULL} else treatmentGroupData$sd[i],
               uncertaintyType= "standard deviation",
               numberOfReplicates= treatmentGroupData$n[i],
-              valueUnit= if(is.na(treatmentGroupData$"Result Units"[i])) {NULL} else {treatmentGroupData$"Result Units"[i]},
+              valueUnit= if(is.na(treatmentGroupData$"valueUnit"[i])) {NULL} else {treatmentGroupData$"valueUnit"[i]},
               lsTransaction= lsTransaction)
             
             treatmentGroupStates[[length(treatmentGroupStates)+1]] <- createTreatmentGroupState(
@@ -1930,7 +2124,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
               lsType= "numericValue", #numericValue or stringValue
               lsKind= treatmentGroupData$ResultType[i], #the label
               numericValue= if(is.na(treatmentGroupData$value[i])) {NULL} else as.numeric(as.character(treatmentGroupData$value[i])),
-              valueUnit= if(is.na(treatmentGroupData$"Result Units"[i])) {NULL} else {treatmentGroupData$"Result Units"[i]},
+              valueUnit= if(is.na(treatmentGroupData$"valueUnit"[i])) {NULL} else {treatmentGroupData$"valueUnit"[i]},
               lsTransaction= lsTransaction)
             
             # Add a value for the batchCode
@@ -1966,7 +2160,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
                 lsKind = rawResults$ResultType[i], #the label
                 stringValue = if(rawResults$ResultType[i]=="flag" & !is.na(rawResults$value[i])) {rawResults$value[i]} else {NULL},
                 numericValue=if(rawResults$ResultType[i]!="flag") {as.numeric(as.character(rawResults$value[i]))} else {NULL},
-                valueUnit=if(is.na(rawResults$"Result Units"[i])) {NULL} else {rawResults$"Result Units"[i]},
+                valueUnit=if(is.na(rawResults$"valueUnit"[i])) {NULL} else {rawResults$"valueUnit"[i]},
                 lsTransaction=lsTransaction)
             }
             
@@ -1984,7 +2178,7 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
                 lsType = "numericValue",
                 lsKind = rawResults$ResultType[i], #the label
                 numericValue=as.numeric(as.character(rawResults$value[i])),
-                valueUnit=if(is.na(rawResults$"Result Units"[i])) {NULL} else {rawResults$"Result Units"[i]},
+                valueUnit=if(is.na(rawResults$"valueUnit"[i])) {NULL} else {rawResults$"valueUnit"[i]},
                 lsTransaction=lsTransaction)
               
               # Add a value for the batchCode
@@ -2059,14 +2253,101 @@ uploadData <- function(metaData,lsTransaction,calculatedResults,treatmentGroupDa
   }
   return(NULL)
 }
+
+saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
+  # appendCodeName is a vector of lsKinds that should have 
+  # Does not work for containers
+  
+  ### local names
+  # entityData[[paste0(entityKind, "ID")]] must be numeric
+  acasEntity <- changeEntityMode(entityKind, "camel", "lowercase")
+  entityID <- paste0(entityKind, "ID")
+  entityCodeName <- paste0(entityKind, "CodeName")
+  tempIds <- c()
+  
+  ### Error checking
+  if (!(entityID %in% names(entityData))) {
+    stop(paste0("Internal Error: Column ", entityID, " is not a missing from entityData"))
+  }
+  
+  ### main code
+  thingTypeAndKind <- paste0("document_", changeEntityMode(entityKind, "camel", "space"))
+  entityCodeNameList <- unlist(getAutoLabels(thingTypeAndKind=thingTypeAndKind, 
+                                                    labelTypeAndKind="id_codeName", 
+                                                    numberOfLabels=max(entityData[[entityID]])),
+                                      use.names=FALSE)
+  
+  entityData[[entityCodeName]] <- entityCodeNameList[entityData[[entityID]]]
+  
+  entityData$stringValue[entityData$valueKind %in% appendCodeName] <- paste0(entityData$stringValue[entityData$valueKind %in% appendCodeName], "_", entityData[entityData$valueKind == appendCodeName, entityCodeName])
+  
+  createEntity <- function(codeName, lsType, lsKind, recordedBy, lsTransaction) {
+    return(list(
+      codeName=codeName,
+      lsType=lsType,
+      lsKind=lsKind,
+      recordedBy=recordedBy,
+      lsTransaction=lsTransaction))
+  }
+  
+  createEntityFromDF <- function(dfData, currentEntity) {
+    entity <- createEntity(
+      lsType = "default",
+      lsKind = "default",
+      codeName=dfData[[paste0(currentEntity, "CodeName")]][1],
+      recordedBy=dfData$recordedBy[1],
+      lsTransaction=dfData$lsTransaction[1])
+    upperAcasEntity <- acasEntityHierarchyCamel[which(currentEntity == acasEntityHierarchyCamel) - 1]
+    if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
+      stop("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data")
+    }
+    if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
+      stop("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data")
+    }
+    entity[[upperAcasEntity]] <- list(id=dfData[[paste0(upperAcasEntity, "ID")]][1],
+                                      version=dfData[[paste0(upperAcasEntity, "Version")]][1])
+    return(entity)
+  }
+  
+  entities <- dlply(.data=entityData, .variables = paste0(entityKind, "ID"), createEntityFromDF, currentEntity=entityKind)
+  tempIds <- as.numeric(names(entities))
+  
+  names(entities) <- NULL
+  savedEntities <- saveAcasEntities(entities, paste0(acasEntity, "s"))
+  
+  if (length(savedEntities) != length(entities)) {
+    stop(paste0("Internal Error: roo server did not respond with the same number of ", acasEntity, "s after a post"))
+  }
+  
+  entityIds <- sapply(savedEntities, getElement, "id")
+  entityVersions <- sapply(savedEntities, getElement, "version")
+  
+  entityData[[entityID]] <- entityIds[match(entityData[[entityID]], tempIds)]
+  
+  ###### entity States #######
+  
+  stateAndVersion <- saveStatesFromExplicitFormat(entityData, entityKind)
+  entityData$stateID <- stateAndVersion$entityStateId
+  entityData$stateVersion <- stateAndVersion$entityStateVersion
+  
+  ### entity Values ======================================================================= 
+  
+  savedEntityValues <- saveValuesFromExplicitFormat(entityData, entityKind)
+  #
+  
+  return(data.frame(tempID = tempIds, entityID = entityIds, entityVersion = entityVersions))
+}
+splitOnSemicolon <- function(x) {
+  # splits a semicolon delimited list
+  unlist(trim(strsplit(x, ";")))
+}
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
-                    configList, testMode = FALSE, recordedBy) {
+                    configList, testMode = FALSE, recordedBy, errorEnv = NULL) {
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   
-  require('XLConnect')
-  require('RCurl')
+  library('RCurl')
   
   pathToGenericDataFormatExcelFile <- racas::getUploadedFilePath(pathToGenericDataFormatExcelFile)
   reportFilePath <- racas::getUploadedFilePath(reportFilePath)
@@ -2081,31 +2362,17 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     stop("Cannot find input file")
   }
   
-  if (grepl("\\.xlsx?$",pathToGenericDataFormatExcelFile)) {
-    tryCatch({
-      wb <- loadWorkbook(pathToGenericDataFormatExcelFile)
-      genericDataFileDataFrame <- readWorksheet(wb, sheet=1, header = FALSE, dateTimeFormat="A_date_was_in_Excel_Date_format")
-    }, error = function(e) {
-      stop("Cannot read input excel file")
-    })
-  } else if (grepl("\\.csv$",pathToGenericDataFormatExcelFile)){
-    tryCatch({
-      genericDataFileDataFrame <- read.csv(pathToGenericDataFormatExcelFile, header = FALSE, stringsAsFactors=FALSE)
-    }, error = function(e) {
-      stop("Cannot read input csv file")
-    })
-  } else {
-    stop("The input file must have extension .xls, .xlsx, or .csv")
-  }
+  genericDataFileDataFrame <- readExcelOrCsv(pathToGenericDataFormatExcelFile)
   
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
   
   formatSettings <- getFormatSettings()
   
-  validatedMetaDataList <- validateMetaData(metaData, configList, formatSettings)
+  validatedMetaDataList <- validateMetaData(metaData, configList, formatSettings, errorEnv)
   validatedMetaData <- validatedMetaDataList$validatedMetaData
   duplicateExperimentNamesAllowed <- validatedMetaDataList$duplicateExperimentNamesAllowed
+  useExisting <- validatedMetaDataList$useExisting
   
   inputFormat <- as.character(validatedMetaData$Format)
   
@@ -2136,7 +2403,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     }
   } else {
     # TODO: generate the list dynamically
-    if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data"))) {
+    if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data", "Use Existing Experiment", "Precise For Existing Experiment"))) {
       stop("The Format must be 'Generic', 'Dose Response', or some custom format that you have been given.")
     }
     lookFor <- "Calculated Results"
@@ -2148,60 +2415,131 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     annotationType <- "s_general"
     splitSubjects <- NULL
   }
+  precise <- inputFormat %in% c("Precise For Existing Experiment", "Precise")
   
   # Grab the Calculated Results Section
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
-  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, rawOnlyFormat, stateGroups, splitSubjects, inputFormat, mainCode)
+  calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
+  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, 
+                                                 rawOnlyFormat, stateGroups, splitSubjects, inputFormat, mainCode,
+                                                 errorEnv=errorEnv, precise = precise, 
+                                                 calculateGroupingID = calculateGroupingID)
+  if (!is.null(splitSubjects)) {
+    calculatedResults$subjectID <- calculatedResults$groupingID_2
+    calculatedResults$treatmentGroupID <- calculatedResults$groupingID
+    calculatedResults$subjectStateID <- calculatedResults$rowID
+  } else if(rawOnlyFormat) {
+    calculatedResults$subjectID <- calculatedResults$rowID
+    calculatedResults$treatmentGroupID <- calculatedResults$groupingID
+  } else {
+    calculatedResults$analysisGroupID <- calculatedResults$rowID
+    calculatedResults$stateGroupIndex <- 0
+  }
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(calculatedResults,
                                                  dryRun, curveNames, testMode=testMode, 
                                                  replaceFakeCorpBatchId=replaceFakeCorpBatchId, mainCode)
   
-  # Grab the Raw Results Section
-  rawResults <- getSection(genericDataFileDataFrame, "Raw Results", transpose = FALSE)
-  
-  # Organize the Raw Results into treatmentGroupData and subjectData 
-  # and collect the names of the x, y, and temp labels
+  # Subject and TreatmentGroupData
   subjectData <- NULL
   treatmentGroupData <- NULL
-  tempIdLabel <- ""
-  if(!is.null(rawResults)) {
-    rawResults <- organizeRawResults(rawResults, calculatedResults, mainCode)
-    # TODO: Should have a validation step to check raw results valueKinds
-    xLabel <- rawResults$xLabel
-    yLabel <- rawResults$yLabel
-    tempIdLabel <-rawResults$tempIdLabel
-    treatmentGroupData <- rawResults$treatmentGroupData
-    subjectData <- rawResults$subjectData
+  if (precise) {
+    subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
+    link <- calculatedResults[calculatedResults$linkColumn, c("rowID", "stringValue")]
+    treatmentGroupData <- getSection(genericDataFileDataFrame, lookFor = "Treatment Group Results")
+    if (treatmentGroupData[1, 1] == "Group By") {
+      treatmentGroupData <- getSection(genericDataFileDataFrame, lookFor = "Treatment Group Results", transpose = TRUE)
+      
+      groupByColumns <- c(splitOnSemicolon(treatmentGroupData$"Group By"), "link")
+      groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
+      keepColumn <- splitOnSemicolon(treatmentGroupData$Include)
+      excludedRowKinds <- splitOnSemicolon(treatmentGroupData$"Remove Results With") # Removes results with a value for a certain valueKind
+      
+      # Other possibilities: average type (geometric or arithmetic), significant figures, SD vs SE, text rules... name of file to run...
+      # Could create a new config setting for new function (use default here if not)
+      
+      
+      #removeRowID <- subjectData$rowID[subjectData$valueKind %in% excludedRowKind] # If they were blank, they were not recorded
+      #subjectDataKept$treatmentGroupID <- paste(subjectDataKept[groupByColumnsNoUnit], collapse = "-")
+      #subjectDataKept <- as.data.table(subjectData)
+      #subjectDataKept2 <- subjectDataKept[!(rowID %in% removeRowID), createTreatmentGroupData(.SD), by = groupByColumns]
+      
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      
+      intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, keepColumn=keepColumn, errorEnv=errorEnv)
+      subjectData <- intermedList$subjectData
+      treatmentGroupData <- intermedList$treatmentGroupData
+    }
+  } else {
+    # Grab the Raw Results Section
+    subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
     
-    # Validate the treatment group data
-    validateTreatmentGroupData(treatmentGroupData,calculatedResults, tempIdLabel)
+    groupByColumns <- c(subjectData[2, 2], 'batchCode')
+    groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
+    
+    keepColumn <- "Response"
+    excludedRowKinds <- "flag"
+    
+    link <- calculatedResults[calculatedResults$valueKind == "curve id", c("rowID", "stringValue", "originalMainID")]
+    if (!is.null(subjectData)) {
+      
+      if (!all(unlist(subjectData[1, 1:4]) == c("temp id", "x", "y", "flag"))) {
+        stop("The first row in Raw Results must be 'temp id', 'x', 'y', 'flag'")
+      }
+      subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
+      
+      if (subjectData[2, 1] != "curve id") {
+        stop("The second row in Raw Results must start with curve id")
+      }
+      subjectData[2, 1] <- "link"
+      
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      
+      intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL, link, precise, stateAssignments, keepColumn, errorEnv=errorEnv)
+      subjectData <- intermedList$subjectData
+      treatmentGroupData <- intermedList$treatmentGroupData
+    }
   }
+  
   
   # If there are errors, do not allow an upload
   errorFree <- length(errorList)==0
   
   # When not on a dry run, creates a transaction for all of these
-  if(!dryRun  && errorFree) {
+  lsTransaction <- NULL
+  if(!dryRun && errorFree) {
     lsTransaction <- createLsTransaction(comments = lsTranscationComments)$id
-  } else {
-    lsTransaction <- NULL
   }
   
   # Get the protocol and experiment and, when not on a dry run, create them if they do not exist
-  protocol <- getProtocolByName(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
-  newProtocol <- is.na(protocol[[1]])
-  if (!newProtocol) {
-    metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
+  newProtocol <- FALSE
+  if (!useExisting) {
+    protocol <- getProtocolByNameAndFormat(protocolName = validatedMetaData$'Protocol Name'[1], configList, inputFormat)
+    newProtocol <- is.na(protocol[[1]])
+    if (!newProtocol) {
+      metaData$'Protocol Name'[1] <- getPreferredProtocolName(protocol, validatedMetaData$'Protocol Name'[1])
+    }
   }
   
   if (!dryRun && newProtocol && errorFree) {
     protocol <- createNewProtocol(metaData = validatedMetaData, lsTransaction, recordedBy)
   }
-  experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
+  
+  useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
+  if (useExistingExperiment) {
+    experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
+    if (length(experiment) == 0) {
+      stop ("Experiment Code Name not found ", validatedMetaData$'Experiment Code Name'[1])
+    }
+    protocol <- getProtocolById(experiment$protocol$id)
+    validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
+    validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
+  } else {
+    experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
+  }
   
   # Checks if we have a new experiment
   newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
@@ -2210,26 +2548,22 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   errorFree <- length(errorList)==0
   
   # Delete any old data under the same experiment name (delete and reload)
+  deletedExperimentCodes <- NULL
   if(!dryRun && !newExperiment && errorFree) {
-    if(configList$server.delete.files.on.reload == "true") {
-      deleteSourceFile(experiment, configList)
-      deleteAnnotation(experiment, configList)
-    }
-
-    deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
-    deleteExperiment(experiment)
-  } else {
-    deletedExperimentCodes <- NULL
+    deletedExperimentCodes <- deleteOldData(experiment, useExistingExperiment)
   }
   
-  if (!dryRun && errorFree) {
+  if (!dryRun && errorFree && !useExistingExperiment) {
     experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, 
                                       recordedBy, configList, deletedExperimentCodes)
+    
+    # If an error occurs, this allows the experiment to still be accessed
     assign(x="experiment", value=experiment, envir=parent.frame())
   }
   
   # Upload the data if this is not a dry run
   if(!dryRun & errorFree) {
+    
     reportFileSummary <- paste0(validatedMetaData$'Protocol Name', " - ", validatedMetaData$'Experiment Name')
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
@@ -2238,41 +2572,17 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                         replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning, includeTreatmentGroupData, 
                         inputFormat, mainCode)
     } else {
-      uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData,rawResults = subjectData,
+      calculatedResults$experimentID <- experiment$id
+      calculatedResults$experimentVersion <- experiment$version
+      uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData, subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
-                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType, mainCode)
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType, 
+                 mainCode, appendCodeNameList = list(analysisGroup = "curve id"))
     }
   }
   
-  # Add name modifier to protocol name for viewer
-  if (is.list(protocol)) {
-    protocolPostfixStates <- protocol$lsStates[lapply(protocol$lsStates, getElement, "lsTypeAndKind") == "metadata_name modifier"]
-  } else {
-    protocolPostfixStates <- list()
-  }
-  if (length(protocolPostfixStates) > 0) {
-    protocolPostfixState <- protocolPostfixStates[[1]]
-    protocolPostfixValues <- protocolPostfixState$lsValues[lapply(protocolPostfixState$lsValues, getElement, "lsTypeAndKind") == "stringValue_postfix"]
-    protocolPostfix <- protocolPostfixValues[[1]]$stringValue
-  } else {
-    protocolPostfix <- ""
-  }
-  
-  if (!is.null(configList$client.service.result.viewer.protocolPrefix)) {
-    protocolName <- paste0(validatedMetaData$"Protocol Name", protocolPostfix)
-    if (is.list(experiment) && configList$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
-      experimentName <- paste0(experiment$codeName, "::", validatedMetaData$"Experiment Name")
-    } else {
-      experimentName <- validatedMetaData$"Experiment Name"
-    }
-    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, 
-                         URLencode(protocolName, reserved=TRUE), 
-                         configList$client.service.result.viewer.experimentPrefix,
-                         URLencode(experimentName, reserved=TRUE))
-  } else {
-    viewerLink <- NULL
-  }
+  viewerLink <- getViewerLink(protocol, experiment, validatedMetaData$'Experiment Name')
   
   summaryInfo <- list(
     format = inputFormat,
@@ -2285,8 +2595,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   summaryInfo$info$"Format" <- as.character(validatedMetaData$Format)
   summaryInfo$info$"Protocol" <- as.character(validatedMetaData$"Protocol Name")
   summaryInfo$info$"Experiment" <- as.character(validatedMetaData$"Experiment Name")
-  summaryInfo$info$"Scientist" <- as.character(validatedMetaData$Scientist)
-  summaryInfo$info$"Notebook" <- as.character(validatedMetaData$Notebook)
+  summaryInfo$info$"Scientist" <- validatedMetaData$Scientist
+  summaryInfo$info$"Notebook" <- validatedMetaData$Notebook
   if(!is.null(validatedMetaData$Page)) {
     summaryInfo$info$"Page" <- as.character(validatedMetaData$Page)
   }
@@ -2294,13 +2604,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     notebookIndex <- which(names(summaryInfo$info) == "Notebook")[1]
     summaryInfo$info$"In Life Notebook" <- as.character(validatedMetaData$"In Life Notebook")
   }
-  summaryInfo$info$"Assay Date" = as.character(validatedMetaData$"Assay Date")
+  summaryInfo$info$"Assay Date" = validatedMetaData$"Assay Date"
   summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
-  summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$resultTypeAndUnit))
-  summaryInfo$info[[paste0("Unique ",mainCode,"'s")]] = length(unique(calculatedResults[[mainCode]]))
+  summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$valueKindAndUnit))
+  summaryInfo$info[[paste0("Unique ", mainCode, "'s")]] = length(unique(calculatedResults$batchCode))
   if (!is.null(subjectData)) {
-    summaryInfo$info$"Raw Results Data Points" <- max(subjectData$pointID)
-    summaryInfo$info$"Flagged Data Points" <- length(subjectData$value[subjectData$ResultType=="flag" & !is.na(subjectData$value)])
+    # TODO Kelley: figure out what to replace this with rather than pointID
+    summaryInfo$info$"Raw Results Data Points" <- max(subjectData$rowID)
+    # TODO Kelley: figure out what to replace this with rather than subjectData$value
+    summaryInfo$info$"Flagged Data Points" <- sum(subjectData$valueKind == "flag")
   }
   if(!dryRun) {
     summaryInfo$info$"Experiment Code Name" <- experiment$codeName
@@ -2312,73 +2624,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   return(summaryInfo)
 }
-moveFileToExperimentFolder <- function(fileStartLocation, experiment, recordedBy, lsTransaction, fileServiceType, fileService) {
-  # Creates a folder for the excel file that was parsed and puts the file there. Returns the new location.
-  # 
-  # Args:
-  #   fileStartLocation:            A character vector of the original location of the file
-  #   experimentCodeName:           A character vector of the experiment code name
-  #
-  # Returns:
-  #  The new file location
-  
-  fileName <- basename(fileStartLocation)
-  
-  experimentCodeName <- experiment$codeName
-  
-  if (fileServiceType == "blueimp") {
-    experimentFolderLocation <- file.path(dirname(fileStartLocation), "experiments")
-    dir.create(experimentFolderLocation, showWarnings = FALSE)
-    
-    fullFolderLocation <- file.path(experimentFolderLocation, experimentCodeName)
-    dir.create(fullFolderLocation, showWarnings = FALSE)
-    
-    # Move the file
-    file.rename(from=fileStartLocation, to=file.path(fullFolderLocation, fileName))
-    
-    serverFileLocation <- file.path("experiments", experimentCodeName, fileName)
-  } else if (fileServiceType == "custom") {
-    serverFileLocation <- customSourceFileMove(fileStartLocation, fileName, fileService, experiment, recordedBy)
-  } else {
-    stop("Invalid file service type")
-  }
-
-  locationState <- experiment$lsStates[lapply(experiment$lsStates, function(x) x$"lsKind")=="raw results locations"]
-  
-  # Record the location
-  if (length(locationState)> 0) {
-    locationState <- locationState[[1]]
-  } else {
-    locationState <- createExperimentState(
-      recordedBy=recordedBy,
-      experiment = experiment,
-      lsType="metadata",
-      lsKind="raw results locations",
-      lsTransaction=lsTransaction)
-    
-    tryCatch({
-    locationState <- saveExperimentState(locationState)
-    }, error = function(e) {
-      stop("Internal Error: Could not save the source file state")
-    })
-  }
-  
-  tryCatch({
-    locationValue <- createStateValue(
-      recordedBy = recordedBy,
-      lsType = "fileValue",
-      lsKind = "source file",
-      fileValue = serverFileLocation,
-      lsState = locationState,
-      lsTransaction = lsTransaction)
-    
-    saveExperimentValues(list(locationValue))
-  }, error = function(e) {
-    stop("Internal Error: Could not save the source file location")
-  })
-  
-  return(serverFileLocation)
-}
 getStateGroups <- function(formatSettings) {
   #Gets stateGroups from configuration list
   
@@ -2389,11 +2634,79 @@ getStateGroups <- function(formatSettings) {
   })
   return(stateGroups)
 }
+deleteOldData <- function(experiment, useExistingExperiment) {
+  # Deletes old data, either the whole experiment or just the analysisgroups
+  deletedExperimentCodes <- NULL
+  if(racas::applicationSettings$server.delete.files.on.reload == "true") {
+    deleteSourceFile(experiment, racas::applicationSettings)
+    deleteAnnotation(experiment, racas::applicationSettings)
+  }
+  if(useExistingExperiment) {
+    deleteAnalysisGroupByExperiment(experiment)
+  } else {
+    deletedExperimentCodes <- c(experiment$codeName, getPreviousExperimentCodes(experiment))
+    deleteExperiment(experiment)
+  }
+  return(deletedExperimentCodes)
+}
 getPreviousExperimentCodes <- function(experiment) {
   metadataState <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]
   previousCodeValues <- getValuesByTypeAndKind(metadataState, "codeValue_previous experiment code")
   previousExperimentCodes <- lapply(previousCodeValues, getElement, "codeValue")
   return(previousExperimentCodes)
+}
+getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolName = NULL) {
+  # Returns url link for viewer
+  
+  if(is.null(experimentName)) {
+    experimentName <- getPreferredName(experiment)
+  }
+  
+  # Add name modifier to protocol name for viewer
+  protocolPostfixStates <- list()
+  if (is.list(protocol$lsStates)) {
+    protocolPostfixStates <- Filter(function(x) {x$lsTypeAndKind == "metadata_name modifier"}, 
+                                    protocol$lsStates)
+  }
+  
+  protocolPostfix <- ""
+  if (length(protocolPostfixStates) > 0) {
+    protocolPostfixState <- protocolPostfixStates[[1]]
+    protocolPostfixValues <- Filter(function(x) {x$lsTypeAndKind == "stringValue_postfix"},
+                                    protocolPostfixState)
+    protocolPostfix <- protocolPostfixValues[[1]]$stringValue
+  }
+  
+  if (!is.null(racas::applicationSettings$client.service.result.viewer.protocolPrefix)) {
+    if (!(is.null(protocolName))) {
+      protocolName <- paste0(protocolName, protocolPostfix)
+    } else {
+      protocol <- getProtocolById(protocol$id)
+      
+      protocolName <- getPreferredName(protocol)
+    }
+    
+    if (is.list(experiment) && racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
+      experimentName <- paste0(experiment$codeName, "::", experimentName)
+    }
+    viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
+                         URLencode(protocolName, reserved=TRUE), 
+                         racas::applicationSettings$client.service.result.viewer.experimentPrefix,
+                         URLencode(experimentName, reserved=TRUE))
+  } else {
+    viewerLink <- NULL
+  }
+  return(viewerLink)
+}
+translateClassToValueType <- function(x, reverse = F) {
+  # translates Excel style Number formats to ACAS valueTypes (or reverse)
+  valueTypeVector <- c("numericValue", "stringValue", "fileValue", "urlValue", "dateValue", "clobValue", "blobValue", "codeValue")
+  classVector <- c("Number", "Text", "File", "URL", "Date", "Clob", "Blob", "Code")
+  if (reverse) {
+    return(classVector[match(x, valueTypeVector)])
+  } else {
+    return(valueTypeVector[match(x, classVector)])
+  }
 }
 parseGenericData <- function(request) {
   # Highest level function
@@ -2408,8 +2721,8 @@ parseGenericData <- function(request) {
   require('compiler')
   enableJIT(3)
   options("scipen"=15)
-  save(request, file="request.Rda")
-  # This is used for outputting the JSON rather than sending it to the server
+  # This is used for development: outputs the JSON rather than sending it to the
+  # server and does not wrap everything in tryCatch so traceback() will work
   developmentMode <- FALSE
   
   # Collect the information from the request
@@ -2432,20 +2745,32 @@ parseGenericData <- function(request) {
   
   experiment <- NULL
   
-  # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
-  errorHandlingBox <- list(errorList = list())
-  attach(errorHandlingBox)
   # If there is a global defined by another R code, this will overwrite it
   errorList <<- list()
   
+  # Make this local once all are fixed
+  errorEnv <- globalenv()
+  
   # Run the function and save output (value), errors, and warnings
-  loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
-                                     reportFilePath = reportFilePath,
-                                     dryRun = dryRun,
-                                     developmentMode = developmentMode,
-                                     configList=configList, 
-                                     testMode=testMode,
-                                     recordedBy=recordedBy))
+  if (developmentMode) {
+    return(list(runMain(pathToGenericDataFormatExcelFile,
+                        reportFilePath = reportFilePath,
+                        dryRun = dryRun,
+                        developmentMode = developmentMode,
+                        configList=configList, 
+                        testMode=testMode,
+                        recordedBy=recordedBy,
+                        errorEnv = errorEnv)))
+  } else {
+    loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
+                                       reportFilePath = reportFilePath,
+                                       dryRun = dryRun,
+                                       developmentMode = developmentMode,
+                                       configList=configList, 
+                                       testMode=testMode,
+                                       recordedBy=recordedBy,
+                                       errorEnv = errorEnv))
+  }
   
   # If the output has class simpleError or is not a list, save it as an error
   if(class(loadResult$value)[1]=="simpleError") {
@@ -2489,9 +2814,6 @@ parseGenericData <- function(request) {
   # Create the HTML to display
   htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
   
-  # Detach the box for error handling
-  detach(errorHandlingBox)
-  
   if(!dryRun) {
     htmlSummary <- saveAnalysisResults(experiment=experiment, hasError, htmlSummary, loadResult$value$lsTransactionId)
   }
@@ -2511,4 +2833,281 @@ parseGenericData <- function(request) {
     hasWarning= hasWarning,
     errorMessages= errorMessages)
   return(response)
+}
+
+
+#' Save states from a long format
+#'
+#' This function saves states to the database specified in \code{\link{applicationSettings}}
+#' 
+#'
+#' @param entityData a data.frame, including one column named 'stateGroupIndex', one that matches idColumn, and one of the form 'entityID'
+#' @param entityKind a string, the kind of the state, limited to "protocol", "experiment", "analysisgroup", "treatmentgroup", "subject", "container", "itxcontainercontainer"
+#' @param stateGroups a list of lists, each of which includes details about how to save states (TODO link later)
+#' @param stateGroupIndices an integer vector of indices to use from stateGroups
+#' @param idColumn a string, the name of the column used to separate states (often stateID)
+#' @param recordedBy a string, the name of the person recording the data
+#' @param lsTransaction an integer, the id of the lsTransaction
+#' @param  testMode A boolean marking if the function should return JSON instead of saving values
+#' @return A data.frame with columns "entityStateId" and "entityStateVersion", which are often added back to the original data.frame
+#' @keywords save, format, stateGroups
+#' @details Assumes all higher level entities are new, i.e. version = 0.
+#' Does not allow containers or interactions
+#' @export
+
+saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE) {
+  #TODO: should allow containers or interactions
+  idColumn = "stateID"
+  entityID = paste0(entityKind, "ID")
+  entityVersion = paste0(entityKind, "Version")
+  
+  acasServerEntity <- changeEntityMode(entityKind, "camel", "lowercase")
+  
+  
+  # If no version given, assume version 0
+  if (!(entityVersion %in% names(entityData))) {
+    entityData[[entityVersion]] <- 0
+  }
+  
+  if (!(idColumn %in% names(entityData))) {
+    stop(paste0("Internal Error: ", idColumn, " must be a column in entityData"))
+  }
+  
+  if (!(entityKind %in% racas::acasEntityHierarchyCamel)) {
+    stop("Internal Error: entityKind must be in racas::acasEntityHierarchyCamel")
+  }
+  
+  if (!(entityID %in% names(entityData))) {
+    stop("Internal Error: ", entityID, " must be included in entityData")
+  }
+  
+  createExplicitLsState <- function(entityData, entityKind) {
+    # TODO: add stateType and StateKind to meltBatchCodes
+    lsType <- entityData$stateType[1]
+    lsKind <- entityData$stateKind[1]
+    lsState <- list(lsType = entityData$stateType[1],
+                    lsKind = entityData$stateKind[1],
+                    recordedBy = entityData$recordedBy[1],
+                    lsTransaction = entityData$lsTransaction[1])
+    # e.g. lsState$analysisGroup <- list(id=entityData$analysisGroupID[1], version=0)
+    lsState[[entityKind]] <- list(id = entityData[[entityID]][[1]], version = entityData[[entityVersion]][1])
+    return(lsState)
+  }
+  
+  lsStates <- dlply(.data=entityData, .variables=idColumn, .fun=createExplicitLsState, entityKind=entityKind)
+  originalStateIds <- names(lsStates)
+  names(lsStates) <- NULL
+  if (testMode) {
+    lsStates <- lapply(lsStates, function(x) {x$recordedDate <- 1381939115000; return (x)})
+    return(toJSON(lsStates))
+  } else {
+    savedLsStates <- saveAcasEntities(lsStates, paste0(acasServerEntity, "states"))
+  }
+  
+  if (!is.list(savedLsStates) || length(savedLsStates) != length(lsStates)) {
+    stop ("Internal error: the roo server did not respond correctly to saving states")
+  }
+  
+  lsStateIds <- sapply(savedLsStates, getElement, "id")
+  lsStateVersions <- sapply(savedLsStates, getElement, "version")
+  entityStateTranslation <- data.frame(entityStateId = lsStateIds, 
+                                       originalStateId = originalStateIds, 
+                                       entityStateVersion = lsStateVersions)
+  stateIdAndVersion <- entityStateTranslation[match(entityData[[idColumn]], 
+                                                    entityStateTranslation$originalStateId),
+                                              c("entityStateId", "entityStateVersion")]
+  return(stateIdAndVersion)
+}
+
+#' saves "raw only" values
+#' 
+#' Saves values from a specific format
+#' 
+#' @param entityData A data frame that includes columns:
+#'    \describe{
+#'    \item{stateGroupIndex}{Integer vector marking the index of the state group for each row}
+#'    \item{operatorType}{String: the type of the operator}
+#'    \item{unitType}{String: the type of the unit}
+#'     \item{stateID}{An integer that is the ID of the state for each value}
+#'     \item{valueType}{A string of "stringValue", "dateValue", or "numericValue"}
+#'     \item{valueKind}{A string value ofthe kind of value}
+#'     \item{publicData}{Boolean: Marks if each value should be hidden}
+#'     \item{stateVersion}{An integer that is the version of the state for each value}
+#'     \item{stringValue}{String: a string value (optional)}
+#'     \item{codeValue}{String: a code, such as a batch code (optional)}
+#'     \item{fileValue}{String: a code that refers to a file, or a path extension of the blueimp public folder (optional)}
+#'     \item{urlValue}{String: a url (optional)}
+#'     \item{numericValue}{Number: a number (optional)}
+#'     \item{dateValue}{A Date value (optional)}
+#'     \item{valueOperator}{String: The operator for each value (optional)}
+#'     \item{valueUnit}{String: The units for each value (optional)}
+#'     \item{clobValue}{String: for very long strings (optional)}
+#'     \item{blobValue}{Anything: no case that exists right now (optional)}
+#'     \item{numberOfReplicates}{Integer: The number of replicates (optional)}
+#'     \item{uncertainty}{Numeric: the uncertainty (optional)}
+#'     \item{uncertaintyType}{String: the type of uncertainty, such as standard deviation (optional)}
+#'     \item{comments}{String: mainly used for filenames (fileValue is filled with codes) (optional)}
+#'     }
+#' @param  entityKind          String: the kind of the state, allowed values are: "protocol", "experiment", "analysisgroup", 
+#' "subject", "treatmentgroup", "container", "itxcontainercontainer", "itxsubjectcontainer"
+#' @param  stateGroups          A list of lists, each of which includes details about how to save states
+#' @param  stateGroupIndices    An integer vector of the indices to use from stateGroups (others are removed)
+#' @param  lsTransaction        An id of an lsTransaction
+#' @param  testMode             A boolean marking if the function should return JSON instead of saving values
+#' @param recordedBy String: the username recording the data
+#' @return A list of value objects (lists)
+#' @details In longFormatSave.R
+#' Will coerce all factors to character
+saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE) {
+  ### static variables
+  #TODO: should allow containers or interactions
+  idColumn = "stateID"
+  acasServerEntity <- changeEntityMode(entityKind, "camel", "lowercase")
+  
+  #create a uniqueID to split on
+  entityData$uniqueID <- 1:(nrow(entityData))
+  
+  optionalColumns <- c("fileValue", "urlValue", "codeValue", "numericValue", "dateValue",
+                       "valueOperator", "valueUnit", "clobValue", "blobValue", "numberOfReplicates",
+                       "uncertainty", "uncertaintyType", "comments")
+  missingOptionalColumns <- Filter(function(x) !(x %in% names(entityData)),
+                                   optionalColumns)
+  entityData[missingOptionalColumns] <- NA
+  
+  ### Error Checking
+  requiredColumns <- c("valueType", "valueKind", "publicData", "stateVersion", "stateID")
+  if (any(!(requiredColumns %in% names(entityData)))) {
+    stop("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", "))
+  }
+  
+  # Turns factors to character
+  factorColumns <- vapply(entityData, is.factor, c(TRUE))
+  entityData[factorColumns] <- lapply(entityData[factorColumns], as.character)
+  
+  if (is.character(entityData$dateValue)) {
+    entityData$dateValue[entityData$dateValue == ""] <- NA
+    entityData$dateValue <- as.numeric(format(as.Date(entityData$dateValue,origin="1970-01-01"), "%s"))*1000
+  } else if (is.numeric(entityData$dateValue)) {
+    # No change
+  } else if (is.null(entityData$dateValue) || all(is.na(entityData$dateValue))) {
+    entityData$dateValue <- as.character(NA)
+  } else {
+    stop("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue))
+  }
+  
+  
+  
+  ### Helper function
+  createLocalStateValue <- function(valueData) {
+    stateValue <- with(valueData, {
+      createStateValue(
+        lsState = list(id = stateID, version = stateVersion),
+        lsType = if (valueType %in% c("stringValue", "fileValue", "urlValue", "dateValue", "clobValue", "blobValue", "numericValue", "codeValue")) {
+          valueType
+        } else {"numericValue"},
+        lsKind = valueKind,
+        stringValue = if (is.character(stringValue) && !is.na(stringValue)) {stringValue} else {NULL},
+        dateValue = if(is.numeric(stringValue)) {dateValue} else {NULL},
+        clobValue = if(is.character(clobValue) && !is.na(clobValue)) {clobValue} else {NULL},
+        blobValue = if(!is.null(blobValue) && !is.na(blobValue)) {blobValue} else {NULL},
+        codeValue = if(is.character(codeValue) && !is.na(codeValue)) {codeValue} else {NULL},
+        fileValue = if(is.character(fileValue) && !is.na(fileValue)) {fileValue} else {NULL},
+        urlValue = if(is.character(urlValue) && !is.na(urlValue)) {urlValue} else {NULL},
+        valueOperator = if(is.character(valueOperator) && !is.na(valueOperator)) {valueOperator} else {NULL},
+        operatorType = if(is.character(operatorType) && !is.na(operatorType)) {operatorType} else {NULL},
+        numericValue = if(is.numeric(numericValue) && !is.na(numericValue)) {numericValue} else {NULL},
+        valueUnit = if(is.character(valueUnit) && !is.na(valueUnit)) {valueUnit} else {NULL},
+        unitType = if(is.character(unitType) && !is.na(unitType)) {unitType} else {NULL},
+        publicData = publicData,
+        lsTransaction = lsTransaction,
+        numberOfReplicates = if(is.numeric(numberOfReplicates) && !is.na(numberOfReplicates)) {numberOfReplicates} else {NULL},
+        uncertainty = if(is.numeric(uncertainty) && !is.na(uncertainty)) {uncertainty} else {NULL},
+        uncertaintyType = if(is.character(uncertaintyType) && !is.na(uncertaintyType)) {uncertaintyType} else {NULL},
+        recordedBy = recordedBy,
+        comments = if(is.character(comments) && !is.na(comments)) {comments} else {NULL}
+      )
+    })
+    return(stateValue)
+  }
+  entityValues <- plyr::dlply(.data = entityData, 
+                              .variables = .(uniqueID), 
+                              .fun = createLocalStateValue)
+  
+  names(entityValues) <- NULL
+  
+  if (testMode) {
+    entityValues <- lapply(entityValues, function(x) {x$recordedDate <- 42; return (x)})
+    return(toJSON(entityValues))
+  } else {
+    savedEntityValues <- saveAcasEntities(entityValues, paste0(acasServerEntity, "values"))
+    return(savedEntityValues)
+  }
+}
+
+organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments, keepColumn, errorEnv) {
+  # Returns two data.frames: subjectData and treatmentGroupData
+  
+  createPtgFunction <- function (groupByColumns) {
+    # Create a function that has the groupByColumns filled in
+    function(results, inputFormat, stateGroups, resultTypes) {
+      # stateGroups, inputFormat, and resultTypes not used
+      # Need to coerce to data frame for single column data frames
+      ids <- as.numeric(factor(do.call(paste, as.data.frame(results[, groupByColumns]))))
+      return(ids)
+    }
+  }
+  
+  preciseTreatmentGroupID <- createPtgFunction(groupByColumns)
+  
+  subjectData2 <- organizeCalculatedResults(subjectData, lockCorpBatchId= F, inputFormat= inputFormat, 
+                                            mainCode= mainCode, errorEnv= errorEnv, precise = precise, link = link, 
+                                            calculateGroupingID = preciseTreatmentGroupID, stateAssignments)
+  subjectData2 <- as.data.table(subjectData2)
+  
+  subjectData2[, treatmentGroupID := groupingID]
+  subjectData2[, subjectID := rowID]
+  
+  concatUniqNonNA <- function(y) {
+    if (all(is.na(y))) return (NA)
+    paste0(Filter(function (x) {!is.na(x)}, unique(y)), collapse = "-")
+  }
+  
+  uniqueOrNA <- function(x) {
+    y <- unique(x)
+    ifelse(length(y) == 1, y, NA)
+  }
+  
+  createTreatmentGroupData <- function(x) {
+    uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
+    data.table(
+      numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
+      stringValue = as.character(concatUniqNonNA(x$stringValue)),
+      valueOperator = as.character(uniqueOrNA(x$valueOperator)),
+      # TODO figure out if this should be coerced
+      dateValue = uniqueOrNA(x$dateValue),
+      clobValue = as.character(uniqueOrNA(x$clobValue)),
+      urlValue = as.character(uniqueOrNA(x$urlValue)),
+      fileValue = as.character(uniqueOrNA(x$fileValue)),
+      codeValue = as.character(uniqueOrNA(x$codeValue)),
+      uncertaintyType = if (is.na(uncertainty)) as.character(NA) else "standard deviation",
+      uncertainty = uncertainty
+    )
+  }
+  
+  groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
+  excludedSubjects <- subjectData2$subjectID[subjectData2$valueKind %in% excludedRowKinds]
+  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit)]
+  treatmentGroupData <- subjectData3[!is.na(groupingID), createTreatmentGroupData(.SD), 
+                                     by = list(groupingID, valueType, valueKind, concentration, 
+                                               concentrationUnit, time, timeUnit, valueUnit, 
+                                               valueKindAndUnit, publicData, linkID, stateType,
+                                               stateKind)]
+  treatmentGroupData[valueKind %in% groupByColumnsNoUnit, c("uncertainty", "uncertainType") := list(NA, NA)]
+  treatmentGroupData[, treatmentGroupID := groupingID]
+  treatmentGroupData[, analysisGroupID := linkID]
+  treatmentGroupData <- as.data.frame(treatmentGroupData)
+  
+  subjectData <- as.data.frame(subjectData2)
+  
+  return(list(subjectData=subjectData, treatmentGroupData=treatmentGroupData))
 }
