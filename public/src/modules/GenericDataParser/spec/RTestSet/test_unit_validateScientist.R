@@ -1,6 +1,5 @@
 # Unit tests for data validation functions
-# Author: Jennifer Rogers, modifying tests
-#         by Sam Meyer
+# Author: Jennifer Rogers
 # These are NOT integration tests -- we do
 # not test that the information from the internet
 # works correctly, just that the function
