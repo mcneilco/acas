@@ -76,9 +76,15 @@
     indexRoutes.setupRoutes(app, loginRoutes);
 
     /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */
-    app.get('/dataFiles/*', loginRoutes.ensureAuthenticated, function(req, resp) {
-      return resp.sendfile(__dirname + '/privateUploads/' + req.params[0]);
-    });
+    if (config.all.server.datafiles.without.login) {
+      app.get('/dataFiles/*', function(req, resp) {
+        return resp.sendfile(__dirname + '/privateUploads/' + req.params[0]);
+      });
+    } else {
+      app.get('/dataFiles/*', loginRoutes.ensureAuthenticated, function(req, resp) {
+        return resp.sendfile(__dirname + '/privateUploads/' + req.params[0]);
+      });
+    }
     app.get('/tempfiles/*', loginRoutes.ensureAuthenticated, function(req, resp) {
       return resp.sendfile(__dirname + '/privateTempFiles/' + req.params[0]);
     });
