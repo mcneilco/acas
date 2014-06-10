@@ -9,7 +9,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 ]' http://"$HOSTNAMEFQDN":8080/acas/protocoltypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{kindName: "default", lsType:{id:1, version:0}}
+{kindName: "default", lsType:{id:1, version:0}},
+{kindName: "flipr screening assay", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAMEFQDN":8080/acas/protocolkinds/jsonArray
 
 
@@ -153,7 +154,13 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "over efficacy threshold", lsType:{id:1, version:0}},
 {kindName: "fluorescencePoints", lsType:{id:5, version:0}},
 {kindName: "timePoints", lsType:{id:5, version:0}},
-{kindName: "previous experiment code", lsType:{id:8, version:0}}
+{kindName: "data analysis parameters", lsType:{id:5, version:0}},
+{kindName: "description", lsType:{id:5, version:0}},
+{kindName: "comparison graph", lsType: {id:1, version:0}},
+{kindName: "previous experiment code", lsType:{id:8, version:0}},
+{kindName: "late peak", lsType:{id:1, version:0}},
+{kindName: "max time", lsType:{id:7, version:0}},
+{kindName: "has agonist", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAMEFQDN":8080/acas/valuekinds/jsonArray
 
 
