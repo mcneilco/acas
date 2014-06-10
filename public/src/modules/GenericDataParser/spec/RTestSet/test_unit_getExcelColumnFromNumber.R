@@ -3,6 +3,9 @@
 # Author: Jennifer Rogers, modifying code
 # from Sam Meyer
 
+library(testthat)
+source("public/src/modules/GenericDataParser/src/server/generic_data_parser.R")
+
 test_that("getExcelColumnFromNumber gets the right column", {
   expect_equal("A", getExcelColumnFromNumber(1))
   expect_equal("AP", getExcelColumnFromNumber(42))
