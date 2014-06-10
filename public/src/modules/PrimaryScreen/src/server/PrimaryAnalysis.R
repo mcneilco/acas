@@ -18,6 +18,7 @@
 # How to run a test
 # Confirmation - Check that createWellTable is getting correct csv in testMode
 # file.copy("public/src/modules/PrimaryScreen/spec/ConfirmationRegression.zip", "privateUploads/", overwrite=T)
+# library(rjson)
 # request = fromJSON('{\"fileToParse\":\"ConfirmationRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"RD36882\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"DMSO\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"SUGAR\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":0.8,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"efficacy\\\",\\\"aggregateReplicates\\\":\\\"within plates\\\"}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
 # runPrimaryAnalysis(request)
 # request$dryRunMode <- FALSE
@@ -457,7 +458,8 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     'well'='well name', 'Maximum'='maximum', 'Minimum'='minimum', 'sequence'='fluorescencePoints', 
     'batchName'='batchCode', 'concentration'='Dose', 'concUnit'='DoseUnit', 'wellType' = 'well type', 
     'transformed'='transformed efficacy','normalized'='normalized efficacy', 'maxTime' = 'max time', 
-    'latePeak'='late peak', 'threshold'='over efficacy threshold', 'hasAgonist' = 'has agonist')
+    'latePeak'='late peak', 'threshold'='over efficacy threshold', 'hasAgonist' = 'has agonist',
+    'comparisonTraceFile'='comparison graph')
   names(subjectData)[names(subjectData) %in% names(nameChange)] <- nameChange[names(subjectData)[names(subjectData) %in% names(nameChange)]]
   
   stateGroups <- list(list(entityKind = "subject",
@@ -483,7 +485,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                       list(entityKind = "analysis group",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("fluorescent", "normalized efficacy", "over efficacy threshold"),
+                           valueKinds = c("fluorescent", "normalized efficacy", "over efficacy threshold", "normalized efficacy without sweetener", "comparison graph"),
                            includesOthers = FALSE,
                            includesCorpName = TRUE),
                       list(entityKind = "analysis group",
@@ -522,15 +524,15 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   resultTypes <- data.frame(
     DataColumn = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent',               #'timePoints', 'fluorescencePoints', 
                    'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
-                   'max time', 'late peak', 'has agonist'),
+                   'max time', 'late peak', 'has agonist', 'comparison graph'),
     Type = c('barcode', 'well name', 'maximum', 'minimum', 'fluorescent',                     #'timePoints', 'fluorescencePoints', 
              'Dose', 'well type', 'transformed efficacy', 'normalized efficacy', 'over efficacy threshold',
-             'max time', 'late peak', 'has agonist'),
+             'max time', 'late peak', 'has agonist', 'comparison graph'),
     Units = c(NA, NA, 'rfu', 'rfu', NA, #'sec', 'rfu', 
-              subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA, NA),
+              subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA, NA, NA),
     valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue', #'clobValue', 'clobValue',
                   'numericValue','stringValue','numericValue','numericValue','stringValue',
-                  'numericValue','stringValue', 'stringValue'),
+                  'numericValue','stringValue', 'stringValue', 'stringValue'),
     stringsAsFactors = FALSE)
   
   subjectData$DoseUnit <- NULL
@@ -608,7 +610,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     
     return(longResults)
   }
-  meltedSubjectData <- makeLongData(subjectData, resultTypes=resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode"))
+  meltedSubjectData <- makeLongData(subjectData, resultTypes=resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode", "barcode"))
   experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath,"experiments/",experimentId)))
   
   subjectData <- meltedSubjectData
@@ -728,13 +730,14 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
   
   treatmentValueKinds <- unlist(lapply(stateGroups[treatmentGroupIndices], getElement, "valueKinds"))
+  analysisValueKinds <- unlist(lapply(stateGroups[analysisGroupIndices], getElement, "valueKinds"))
   listedValueKinds <- do.call(c,lapply(stateGroups, getElement, "valueKinds"))
   otherValueKinds <- setdiff(unique(subjectData$valueKind),listedValueKinds)
   resultsDataValueKinds <- stateGroups[sapply(stateGroups, function(x) x$stateKind)=="results"][[1]]$valueKinds
   extraDataValueKinds <- stateGroups[sapply(stateGroups, function(x) x$stateKind)=="plate information"][[1]]$valueKinds
   treatmentDataValueKinds <- c(treatmentValueKinds, otherValueKinds, resultsDataValueKinds, extraDataValueKinds)
   excludedSubjects <- subjectData$subjectID[subjectData$valueKind == "Exclude"]
-  treatmentDataStart <- subjectData[subjectData$valueKind %in% treatmentDataValueKinds 
+  treatmentDataStart <- subjectData[subjectData$valueKind %in% c(treatmentDataValueKinds, analysisValueKinds)
                                     & !(subjectData$subjectID %in% excludedSubjects),]
   
   createRawOnlyTreatmentGroupDataDT <- function(subjectData) {
@@ -761,7 +764,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       "stringValue" = if (length(unique(subjectData$stringValue)) == 1) {subjectData$stringValue[1]}
       else if (all(subjectData$stringValue %in% c("yes", "no"))) {"sometimes"}
       else if (is.nan(resultValue)) {'NA'}
-      else {NA},
+      else {as.character(NA)},
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
       "publicData" = subjectData$publicData[1],
@@ -773,7 +776,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   
   treatmentDataStartDT <- as.data.table(treatmentDataStart)
   
-  keepValueKinds <- c("maximum", "minimum", "Dose", "transformed efficacy","normalized efficacy","over efficacy threshold","max time","late peak", "has agonist")
+  keepValueKinds <- c("maximum", "minimum", "Dose", "transformed efficacy","normalized efficacy","over efficacy threshold","max time","late peak", "has agonist", "comparison graph")
   treatmentGroupDataDT <- treatmentDataStartDT[ valueKind %in% keepValueKinds, createRawOnlyTreatmentGroupDataDT(.SD), by = c("analysisGroupID", "treatmentGroupCodeName", "treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex",
                                                                                                                               "batchCode", "valueKind", "valueUnit", "valueType")]
   #setkey(treatmentGroupDataDT, treatmentGroupID)
@@ -816,9 +819,18 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     analysisGroupData <- treatmentGroupDataWithBatchCodeRows
     
     ###
+    # Correction for non-agonist data to put in separate column
     if (any(analysisGroupData$valueKind == "has agonist")) {
-      analysisGroupKeep <- analysisGroupData$analysisGroupID[(analysisGroupData$valueKind == "has agonist" & analysisGroupData$stringValue == "yes")]
-      analysisGroupData <- analysisGroupData[analysisGroupData$analysisGroupID %in% analysisGroupKeep, ]
+      #analysisGroupKeep <- analysisGroupData$analysisGroupID[(analysisGroupData$valueKind == "has agonist" & analysisGroupData$stringValue == "yes")]
+      #analysisGroupData <- analysisGroupData[analysisGroupData$analysisGroupID %in% analysisGroupKeep, ]
+      
+      analysisGroupHasAgonist <- analysisGroupData$analysisGroupID[(analysisGroupData$valueKind == "has agonist" & analysisGroupData$stringValue == "yes")]      
+      analysisGroupDataNoAgonist <- analysisGroupData[!(analysisGroupData$analysisGroupID %in% analysisGroupHasAgonist), ]
+      analysisGroupDataHasAgonist <- analysisGroupData[(analysisGroupData$analysisGroupID %in% analysisGroupHasAgonist), ]
+      
+      analysisGroupDataNoAgonist$valueKind[analysisGroupDataNoAgonist$valueKind == "normalized efficacy"] <- "normalized efficacy without sweetener"
+      analysisGroupDataNoAgonist <- analysisGroupDataNoAgonist[!(analysisGroupDataNoAgonist$valueKind %in% c("over efficacy threshold", "comparison graph")), ]
+      analysisGroupData <- rbind.fill(analysisGroupDataNoAgonist, analysisGroupDataHasAgonist)
     }
     
     ###
@@ -1572,6 +1584,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                              threshold = efficacyThreshold, experiment)
     
+    source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
+    resultTable <- saveComparisonTraces(resultTable, paste0("experiments/",experiment$codeName,"/analysis/compoundGraph"))
+    resultTable[!is.na(comparisonTraceFile), comparisonTraceFile := paste0(experiment$codeName, "::", basename(comparisonTraceFile))]
     #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
     lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
