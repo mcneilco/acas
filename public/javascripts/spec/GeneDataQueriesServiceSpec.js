@@ -178,7 +178,7 @@ This service takes a list of geneids and returns related experimental data,
           });
         });
       });
-      return describe('when run with invalid input file', function() {
+      describe('when run with invalid input', function() {
         beforeEach(function() {
           return runs(function() {
             return $.ajax({
@@ -207,6 +207,31 @@ This service takes a list of geneids and returns related experimental data,
             expect(this.serviceReturn.hasError).toBeTruthy();
             expect(this.serviceReturn.errorMessages.length).toBeGreaterThan(0);
             return expect(this.serviceReturn.errorMessages[1].errorLevel).toEqual('error');
+          });
+        });
+      });
+      return describe('when run with valid input data and format is CSV', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'POST',
+              url: "api/geneDataQuery?format=csv",
+              data: {
+                geneIDs: "fiona"
+              },
+              success: (function(_this) {
+                return function(res) {
+                  console.log(res);
+                  return _this.serviceReturn = res;
+                };
+              })(this)
+            });
+          });
+        });
+        return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 300);
+          return runs(function() {
+            return expect(this.serviceReturn.fileURL).toContain("http");
           });
         });
       });
@@ -481,7 +506,7 @@ This service takes a list of geneids and returns related experimental data,
           });
         });
       });
-      return describe('when run with invalid input file', function() {
+      describe('when run with invalid input file', function() {
         beforeEach(function() {
           return runs(function() {
             goodAdvancedRequest.maxRowsToReturn = -1;
@@ -511,6 +536,29 @@ This service takes a list of geneids and returns related experimental data,
             expect(this.serviceReturn.hasError).toBeTruthy();
             expect(this.serviceReturn.errorMessages.length).toBeGreaterThan(0);
             return expect(this.serviceReturn.errorMessages[1].errorLevel).toEqual('error');
+          });
+        });
+      });
+      return describe('when run with valid input data and format is CSV', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'POST',
+              url: "api/geneDataQueryAdvanced?format=csv",
+              data: goodAdvancedRequest,
+              success: (function(_this) {
+                return function(res) {
+                  console.log(res);
+                  return _this.serviceReturn = res;
+                };
+              })(this)
+            });
+          });
+        });
+        return it('should return no errors, dry run mode, hasWarning, and an html summary', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 500);
+          return runs(function() {
+            return expect(this.serviceReturn.fileURL).toContain("http");
           });
         });
       });

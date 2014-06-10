@@ -11,12 +11,11 @@
 
 # TODO: Check if the information has already been uploaded
 # TODO: Save status, as this will take a long time with 30 plates
-# Question: Will there be multiple plates in one SDF file? Will all the plates be new?
+# TODO: validate corporate batch ids
 
 # How to run:
 #   Before running: 
-#     Set your working directory to the checkout of SeuratAddOns
-#     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
+#   file.copy("public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/Shipment_9814_with_DMSO.csv", "privateUploads/", overwrite=T)
 #   To run: 
 #     bulkLoadContainersFromSDF(list(fileName,dryRun,user))
 #   Example:
@@ -44,28 +43,39 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   library('plyr')
   library('iterators')
   
-  testMode <- TRUE
+  fileName <- getUploadedFilePath(fileName)
+  
+  testMode <- FALSE
   
   # fileName <- "public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf"
   
-  if (!grepl("\\.sdf$",fileName)) {
-    stop("The input file must have extension .sdf")
+  if (!grepl("\\.sdf$|\\.csv$",fileName)) {
+    stop("The input file must have extension .sdf or .csv")
   }
   
   tryCatch({
-    moleculeList <- iload.molecules(fileName, type="sdf")
-    firstMolecule <- nextElem(moleculeList)
+    if (grepl("\\.sdf$",fileName)) {
+      moleculeList <- iload.molecules(fileName, type="sdf")
+      firstMolecule <- nextElem(moleculeList)
+    } else if (grepl("\\.csv$",fileName)) {
+      moleculeList <- read.csv(fileName, blank.lines.skip=TRUE)
+    }
   }, error = function(e) {
     stop(paste("Error in loading the file:",e))
   })
   
-  fileLines <- readLines(fileName)
-  compoundNumber <- sum(fileLines == "$$$$")
+  if (grepl("\\.sdf$",fileName)) {
+    fileLines <- readLines(fileName)
+    compoundNumber <- sum(fileLines == "$$$$")
+    availableProperties <- names(get.properties(firstMolecule))
+  } else if (grepl("\\.csv$",fileName)) {
+    fileLines <- read.csv(fileName, blank.lines.skip=TRUE, check.names=F, stringsAsFactors=F)
+    compoundNumber <- nrow(fileLines)
+    availableProperties <- colnames(fileLines)
+  }
   
   requiredProperties <- c("ALIQUOT_PLATE_BARCODE","ALIQUOT_WELL_ID","SAMPLE_ID","ALIQUOT_SOLVENT","ALIQUOT_CONC","ALIQUOT_CONC_UNIT",
                           "ALIQUOT_VOLUME","ALIQUOT_VOLUME_UNIT","ALIQUOT_DATE")
-  
-  availableProperties <- names(get.properties(firstMolecule))
   
   differences <- setdiff(requiredProperties,availableProperties)
   
@@ -82,20 +92,29 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     ))
   
   if (!dryRun) {
-    propertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(firstMolecule, key=property)))
-    names(propertyTable) <- requiredProperties
-    while(hasNext(moleculeList)) {
-      mol <- nextElem(moleculeList)
-      newPropertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(mol, key=property)))
-      names(newPropertyTable) <- requiredProperties
-      propertyTable <- rbind.fill(propertyTable, newPropertyTable)
+    if (grepl("\\.sdf$",fileName)) {
+      propertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(firstMolecule, key=property)))
+      names(propertyTable) <- requiredProperties
+      while(hasNext(moleculeList)) {
+        mol <- nextElem(moleculeList)
+        newPropertyTable <- as.data.frame(lapply(requiredProperties, function(property) get.property(mol, key=property)))
+        names(newPropertyTable) <- requiredProperties
+        propertyTable <- rbind.fill(propertyTable, newPropertyTable)
+      }
+    } else if (grepl("\\.csv$",fileName)) {
+      propertyTable <- as.data.frame(subset(fileLines, select= c(requiredProperties, "Corporate Batch ID")))
     }
     
     summaryInfo$info$"Number of wells loaded" <- nrow(propertyTable)
     
-    sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
+    if (racas::applicationSettings$client.service.external.preferred.batchid.type == "SeuratCmpdReg") {
+      sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
+      propertyTable$batchName <- sampleIdTranslationList$COMPOUND_NAME[match(propertyTable$"SAMPLE_ID", sampleIdTranslationList$PROPERTY_VALUE)]
+    } else {
+      propertyTable$batchName <- NA
+    }
     
-    propertyTable$batchName <- sampleIdTranslationList$COMPOUND_NAME[match(propertyTable$"SAMPLE_ID", sampleIdTranslationList$PROPERTY_VALUE)]
+    propertyTable$batchName[!is.na(propertyTable$"Corporate Batch ID")] <- propertyTable$"Corporate Batch ID"[!is.na(propertyTable$"Corporate Batch ID")]
     
     if (any(is.na(propertyTable$batchName))) {
       missingCompounds <- propertyTable$"SAMPLE_ID"[!(propertyTable$"SAMPLE_ID" %in% sampleIdTranslationList$PROPERTY_VALUE)]
@@ -113,6 +132,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       stop("Some of the concentrations or volumes are not numbers")
     }
     
+    # Convert 'mM' to 'uM'
     propertyTable$ALIQUOT_CONC[propertyTable$ALIQUOT_CONC_UNIT == "mM"] <- propertyTable$ALIQUOT_CONC[propertyTable$ALIQUOT_CONC_UNIT == "mM"] * 1000
     propertyTable$ALIQUOT_CONC_UNIT[propertyTable$ALIQUOT_CONC_UNIT == "mM"] <- "uM"
     
@@ -121,15 +141,15 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     }
     
     # Save plate
-    if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")) {
-      dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedPlates/")
+    if(!file.exists(racas::getUploadedFilePath("uploadedPlates"))) {
+      dir.create(racas::getUploadedFilePath("uploadedPlates"))
     }
     newFileName <- paste0("uploadedPlates/", basename(fileName))
     
     if(!file.exists(fileName)) {
       stop(paste("Missing file", fileName))
     }
-    file.rename(fileName, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", newFileName))
+    file.rename(fileName, paste0(racas::getUploadedFilePath(newFileName)))
     
     lsTransaction <- createLsTransaction(comments="Bulk load from .sdf file")$id
     
@@ -314,7 +334,7 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
 }
 
 bulkLoadContainersFromSDF <- function(request) {
-  require('racas')
+  library('racas')
   options(stringsAsFactors = FALSE)
   
   # Collect the information from the request

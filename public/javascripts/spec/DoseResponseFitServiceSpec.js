@@ -42,7 +42,7 @@ This service takes an experiment code,
     hasError: true,
     hasWarning: true,
     errorMessages: [
-      {
+      1, {
         errorLevel: "warning",
         message: "some warning"
       }, {

@@ -26,6 +26,11 @@
     config = require('../conf/compiled/conf.js');
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     rScriptCommand = config.all.server.rscript;
+    if (config.all.server.rscript != null) {
+      rScriptCommand = config.all.server.rscript;
+    } else {
+      rScriptCommand = "Rscript";
+    }
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
     csUtilities.logUsage("About to call R function: " + rFunction, JSON.stringify(request.body), request.body.user);
     if (preValidationFunction != null) {
@@ -52,6 +57,7 @@
     rCommand += '	cat(toJSON(returnValues));';
     rCommand += '},error = function(ex) {cat(paste("R Execution Error:",ex));})';
     rCommandFile.writeFileSync(rCommand);
+    console.log(rCommand);
     command = rScriptCommand + " " + rCommandFile.path + " 2> /dev/null";
     return child = exec(command, function(error, stdout, stderr) {
       var message, result;

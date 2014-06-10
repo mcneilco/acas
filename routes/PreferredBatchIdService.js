@@ -1,16 +1,13 @@
-
-/* To install this Module
-1) Add these lines to app.coffee:
-preferredBatchIdRoutes = require './public/src/modules/02_serverAPI/src/server/routes/PreferredBatchIdService.js'
-preferredBatchIdRoutes.setupRoutes(app)
- */
-
 (function() {
   var checkBatch_TestMode;
 
-  exports.setupRoutes = function(app) {
-    app.post('/api/preferredBatchId', exports.preferredBatchId);
-    return app.post('/api/testRoute', exports.testRoute);
+  exports.setupAPIRoutes = function(app) {
+    return app.post('/api/preferredBatchId', exports.preferredBatchId);
+  };
+
+  exports.setupRoutes = function(app, loginRoutes) {
+    app.post('/api/preferredBatchId', loginRoutes.ensureAuthenticated, exports.preferredBatchId);
+    return app.post('/api/testRoute', loginRoutes.ensureAuthenticated, exports.testRoute);
   };
 
   exports.preferredBatchId = function(req, resp) {

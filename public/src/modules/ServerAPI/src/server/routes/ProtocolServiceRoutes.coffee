@@ -1,18 +1,12 @@
-### To install this Module
-1) Add these lines to app.coffee:
-	protocolRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ProtocolServiceRoutes.js'
-	protocolRoutes.setupRoutes(app)
 
 
-###
-exports.setupRoutes = (app) ->
-	app.get '/api/protocols/codename/:code', exports.protocolByCodename
-	app.get '/api/protocols/:id', exports.protocolById
-	app.post '/api/protocols', exports.postProtocol
-	app.put '/api/protocols', exports.putProtocol
-	app.get '/api/protocollabels', exports.lsLabels
-	app.get '/api/protocolCodes', exports.protocolCodeList
-	app.get '/api/protocolCodes/filter/:str', exports.protocolCodeList
+exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/api/protocols/codename/:code', loginRoutes.ensureAuthenticated, exports.protocolByCodename
+	app.get '/api/protocols/:id', loginRoutes.ensureAuthenticated, exports.protocolById
+	app.post '/api/protocols', loginRoutes.ensureAuthenticated, exports.postProtocol
+	app.put '/api/protocols', loginRoutes.ensureAuthenticated, exports.putProtocol
+	app.get '/api/protocollabels', loginRoutes.ensureAuthenticated, exports.lsLabels
+	app.get '/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList
 
 exports.protocolByCodename = (req, resp) ->
 	console.log req.params.code
@@ -97,18 +91,23 @@ exports.lsLabels = (req, resp) ->
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.protocolCodeList = (req, resp) ->
-	console.log req.params
-	if req.params.str?
-		shouldFilter = true
-		filterString = req.params.str.toUpperCase()
+	if req.query.protocolName?
+		shouldFilterByName = true
+		filterString = req.query.protocolName.toUpperCase()
+	else if req.query.protocolKind?
+		shouldFilterByKind = true
+		filterString = req.query.protocolKind.toUpperCase()
 	else
-		shouldFilter = false
+		shouldFilterByName = false
+		shouldFilterByKind = false
 
 	translateToCodes = (labels) ->
 		protCodes = []
 		for label in labels
-			if shouldFilter
+			if shouldFilterByName
 				match = label.labelText.toUpperCase().indexOf(filterString) > -1
+			else if shouldFilterByKind
+				match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1
 			else
 				match = true
 			if !label.ignored and !label.protocol.ignored and label.lsType=="name" and match
@@ -126,8 +125,10 @@ exports.protocolCodeList = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocollabels/codetable"
-		if shouldFilter
+		if shouldFilterByName
 			baseurl += "/?protocolName="+filterString
+		else if shouldFilterByKind
+			baseurl += "/?protocolKind="+filterString
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -142,6 +143,5 @@ exports.protocolCodeList = (req, resp) ->
 				console.log json
 				console.log response
 		)
-
 
 

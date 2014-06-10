@@ -22,7 +22,7 @@ class window.AbstractParserFormController extends AbstractFormController
 	setupProtocolSelect: (search) ->
 		@protocolList = new PickListList()
 		#		@protocolList.url = "api/protocolCodes"
-		@protocolList.url = "api/protocolCodes/filter/"+search
+		@protocolList.url = "api/protocolCodes/?protocolName="+search
 		@protocolListController = new PickListSelectController
 			el: @$('.bv_protocolName')
 			collection: @protocolList

@@ -1,16 +1,11 @@
-### To install this Module
-1) Add these lines to app.coffee:
-	experimentRoutes = require './public/src/modules/02_serverAPI/src/server/routes/ExperimentServiceRoutes.js'
-	experimentRoutes.setupRoutes(app)
 
 
-###
-exports.setupRoutes = (app) ->
-	app.get '/api/experiments/codename/:code', exports.experimentByCodename
-	app.get '/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename
-	app.get '/api/experiments/:id', exports.experimentById
-	app.post '/api/experiments', exports.postExperiment
-	app.put '/api/experiments/:id', exports.putExperiment
+exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
+	app.get '/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename
+	app.get '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById
+	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
+	app.put '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment
 
 exports.experimentByCodename = (request, response) ->
 	console.log request.params.code

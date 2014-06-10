@@ -464,7 +464,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
       warning(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
                      "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
-                     "'. If this is not what you intended, replace the ", maincode, " with the correct ID."))
+                     "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
     }
   }
 
@@ -1371,7 +1371,7 @@ validateProject <- function(projectName, configList) {
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(paste0(configList$client.host, ":", configList$client.port, configList$client.service.project.path))
+  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.project.path))
   }, error = function(e) {
     stop("The project service did not respond correctly, contact your system administrator")
   })
@@ -1401,7 +1401,7 @@ validateScientist <- function(scientistName, configList) {
   response <- NULL
   username <- "username"
   tryCatch({
-    response <- getURL(URLencode(paste0(configList$client.host, ":", configList$client.port, configList$client.service.users.path, "/", scientistName)))
+    response <- getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.users.path, "/", scientistName)))
     if (response == "") {
       errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
       return("")
@@ -2067,6 +2067,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   require('XLConnect')
   require('RCurl')
+  
+  pathToGenericDataFormatExcelFile <- racas::getUploadedFilePath(pathToGenericDataFormatExcelFile)
+  reportFilePath <- racas::getUploadedFilePath(reportFilePath)
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
   

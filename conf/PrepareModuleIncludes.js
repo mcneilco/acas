@@ -113,7 +113,7 @@
 
   insertToLayoutTemplate("//SPECSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES", ",\n" + specScriptLines, "../routes/RequiredClientScripts.js", "../routes/RequiredClientScripts.js");
 
-  prepRouteIncludes = function() {
+  prepRouteIncludes = function(apiMode) {
     var fname, includeStr, path, routeFiles, routeLines, routeNum;
     routeFiles = makeFileNameHash(glob.sync('../routes/*.js'));
     routeFiles = _.omit(routeFiles, ["index.js", "loginRoutes.js", "RequiredClientScripts.js", "RequiredClientScripts_template.js", "user.js"]);
@@ -122,15 +122,24 @@
     for (fname in routeFiles) {
       path = routeFiles[fname];
       includeStr = '\trouteSet_' + routeNum + ' = require("./routes/' + fname + '");\n';
-      includeStr += '\trouteSet_' + routeNum + '.setupRoutes(app, loginRoutes);\n';
+      if (apiMode) {
+        includeStr += '\tif (routeSet_' + routeNum + '.setupAPIRoutes) {\n';
+        includeStr += '\t\trouteSet_' + routeNum + '.setupAPIRoutes(app); }\n';
+      } else {
+        includeStr += '\trouteSet_' + routeNum + '.setupRoutes(app, loginRoutes);\n';
+      }
       routeLines += includeStr;
       routeNum++;
     }
     return routeLines;
   };
 
-  routeLines = prepRouteIncludes();
+  routeLines = prepRouteIncludes(false);
 
   insertToLayoutTemplate("  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "../app_template.js", "../app.js");
+
+  routeLines = prepRouteIncludes(true);
+
+  insertToLayoutTemplate("  /*TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */", routeLines, "../app_api_template.js", "../app_api.js");
 
 }).call(this);

@@ -145,8 +145,8 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
   #   }
   
   wellTypes[!hasAgonist] <- "no agonist"
-  
-  return(wellTypes)
+
+	return(wellTypes)
 }
 computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
@@ -230,19 +230,19 @@ createWellTable <- function(barcodeList, testMode) {
   if (testMode) {
     wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsConfirmation.csv")
     #wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContents.csv")
-    #     fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
-    #     fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
-    #     fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
-    #     fakeAPI$BARCODE <- gsub("BF00007390","TL00098003",fakeAPI$BARCODE)
-    #     fakeAPI$BARCODE <- gsub("BF00007395","TL00098004",fakeAPI$BARCODE)
-    #     wellTable <- fakeAPI[fakeAPI$BARCODE %in% barcodeList, ]
-    #     wellTable$BATCH_CODE <- gsub("CRA-024169-1", "CRA-000399-1", wellTable$BATCH_CODE)
-    #     wellTable$BATCH_CODE <- gsub("CRA-024184-1", "CRA-000396-1", wellTable$BATCH_CODE)
-    #     wellTable$BATCH_CODE <- gsub("CRA-024074-1", "CRA-000399-1", wellTable$BATCH_CODE)
-    #     wellTable$BATCH_CODE <- gsub("CRA-024087-1", "CRA-000396-1", wellTable$BATCH_CODE)
-    #     # different test, remove after nextval deploy
-    #     load("public/src/modules/PrimaryScreen/spec/wellTable.Rda")
-    #     wellTable <- wellTable[!(wellTable$BATCH_CODE=="FL0073897-1-1" & (wellTable$CONCENTRATION < 0.2 | wellTable$CONCENTRATION>49.6)), ]
+#     fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
+#     fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
+#     fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
+#     fakeAPI$BARCODE <- gsub("BF00007390","TL00098003",fakeAPI$BARCODE)
+#     fakeAPI$BARCODE <- gsub("BF00007395","TL00098004",fakeAPI$BARCODE)
+#     wellTable <- fakeAPI[fakeAPI$BARCODE %in% barcodeList, ]
+#     wellTable$BATCH_CODE <- gsub("CRA-024169-1", "CRA-000399-1", wellTable$BATCH_CODE)
+#     wellTable$BATCH_CODE <- gsub("CRA-024184-1", "CRA-000396-1", wellTable$BATCH_CODE)
+#     wellTable$BATCH_CODE <- gsub("CRA-024074-1", "CRA-000399-1", wellTable$BATCH_CODE)
+#     wellTable$BATCH_CODE <- gsub("CRA-024087-1", "CRA-000396-1", wellTable$BATCH_CODE)
+#     # different test, remove after nextval deploy
+#     load("public/src/modules/PrimaryScreen/spec/wellTable.Rda")
+#     wellTable <- wellTable[!(wellTable$BATCH_CODE=="FL0073897-1-1" & (wellTable$CONCENTRATION < 0.2 | wellTable$CONCENTRATION>49.6)), ]
   } else {
     wellTable <- query(paste0(
       "SELECT *
@@ -722,7 +722,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
   savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
-  
+
   #
   #####  
   # Treatment Group states =========================================================================
@@ -812,7 +812,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                                                         stateGroupIndices = treatmentGroupIndices, 
                                                         lsTransaction = lsTransaction,
                                                         recordedBy=recordedBy)
-  
+
   
   if (length(analysisGroupIndices > 0)) {
     analysisGroupData <- treatmentGroupDataWithBatchCodeRows
@@ -1269,8 +1269,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     rdapTestMode <- as.logical(parameters$rdapTestMode)
   }
   
-  dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/experiments", showWarnings = FALSE)
-  dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName), showWarnings = FALSE)
+  dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
+  dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
   
   # If the folderToParse is actually a zip file
   zipFile <- NULL
@@ -1370,8 +1370,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   ### END FLIPR reading function
   
-  resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, resultTable$concUnit, resultTable$hasAgonist, parameters$positiveControl, parameters$negativeControl, testMode)
-  
+  resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, 
+                                       resultTable$concUnit, resultTable$hasAgonist, 
+                                       parameters$positiveControl, parameters$negativeControl, testMode)
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformationRule)
   
@@ -1404,11 +1405,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   #     resultTable <- resultTable[!is.na(resultTable$batchName), ]
   #   }
   
-  hitSelection <- parameters$thresholdType #Other choice is "efficacyThreshold"
-  if (hitSelection == "sd") {
-    efficacyThreshold <- meanValue + sdValue * parameters$hitSDThreshold
-  } else {
-    efficacyThreshold <- parameters$hitEfficacyThreshold
+  #TODO: remove once real data is in place
+  if (any(is.na(resultTable$batchName))) {
+    warning("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
+    resultTable <- resultTable[!is.na(resultTable$batchName), ]
   }
   
   if(useRdap) {
@@ -1647,8 +1647,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     
     lsTransaction <- createLsTransaction()$id
-    dir.create(paste0("serverOnlyModules/blueimp-file-upload-node/public/files/experiments/",experiment$codeName,"/analysis"), showWarnings = FALSE)
-    
+    dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
+    #experiment <<- experiment
     deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath){
       response <- getURL(
         paste0(lsServerURL, "experiments/",experiment$id, "?with=analysisgroups"),

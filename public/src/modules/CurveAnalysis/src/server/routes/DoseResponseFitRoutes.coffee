@@ -1,6 +1,6 @@
 
-exports.setupRoutes = (app) ->
-	app.post '/api/doseResponseCurveFit', exports.fitDoseResponse
+exports.setupRoutes = (app, loginRoutes) ->
+	app.post '/api/doseResponseCurveFit', loginRoutes.ensureAuthenticated, exports.fitDoseResponse
 
 exports.fitDoseResponse = (request, response)  ->
 	request.connection.setTimeout 600000

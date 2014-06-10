@@ -24,6 +24,10 @@ parseGenericData <- function(request) {
 		errorMessages= errorMessages
 	)
 
+	if(dryRun=="false") {
+	    response$results$experimentCode = "EXPT-000001"
+	}
+
 	return( response)
 
 }

@@ -37,7 +37,7 @@
 
     BasicFileValidateAndSaveController.prototype.loadReportFile = false;
 
-    BasicFileValidateAndSaveController.prototype.filePath = "serverOnlyModules/blueimp-file-upload-node/public/files/";
+    BasicFileValidateAndSaveController.prototype.filePath = "";
 
     BasicFileValidateAndSaveController.prototype.additionalData = {
       experimentId: 1234,
@@ -66,7 +66,7 @@
       this.parseFileController = new LSFileInputController({
         el: this.$('.bv_parseFile'),
         inputTitle: '',
-        url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
+        url: UtilityFunctions.prototype.getFileServiceURL(),
         fieldIsRequired: false,
         allowedFileTypes: this.allowedFileTypes,
         maxFileSize: this.maxFileSize
@@ -78,7 +78,7 @@
         this.reportFileController = new LSFileInputController({
           el: this.$('.bv_reportFile'),
           inputTitle: '',
-          url: "http://" + window.conf.host + ":" + window.conf.service.file.port,
+          url: UtilityFunctions.prototype.getFileServiceURL(),
           fieldIsRequired: false,
           allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
         });
@@ -217,6 +217,7 @@
       }
       this.notificationController.addNotifications(this.errorOwnerName, json.errorMessages);
       this.$('.bv_htmlSummary').html(json.results.htmlSummary);
+      this.newExperimentCode = json.results.experimentCode;
       this.showFileUploadCompletePhase();
       this.$('.bv_resultStatus').html(summaryStr);
       this.$('.bv_saveStatusDropDown').modal("hide");
@@ -302,6 +303,10 @@
           return this.$('.bv_csvPreviewContainer').show();
         }
       }
+    };
+
+    BasicFileValidateAndSaveController.prototype.getNewExperimentCode = function() {
+      return this.newExperimentCode;
     };
 
     return BasicFileValidateAndSaveController;

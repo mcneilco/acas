@@ -24,6 +24,8 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   require(plyr)
   require(RCurl)
   
+  fileName <- getUploadedFilePath(fileName)
+  
   logFile <- read.csv(fileName, stringsAsFactors = FALSE)
   
   summaryInfo <- list(info = list(
@@ -108,12 +110,12 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   # Save things
   lsTransaction <- createLsTransaction(comments="Sample Transfer load")$id
   
-  if(!file.exists("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedLogFiles/")) {
-    dir.create("serverOnlyModules/blueimp-file-upload-node/public/files/uploadedLogFiles/")
+  if(!file.exists(racas::getUploadedFilePath("uploadedLogFiles"))) {
+    dir.create(racas::getUploadedFilePath("uploadedLogFiles"))
   }
   newFileName <- paste0("uploadedLogFiles/", basename(fileName))
   # TODO: safe rename that will not overwrite
-  file.rename(fileName, paste0("serverOnlyModules/blueimp-file-upload-node/public/files/", newFileName))
+  file.rename(fileName, paste0(racas::getUploadedFilePath(""), newFileName))
   
   ### Save new plates (but not contents yet)
   wellTranslation <- saveNewWells(newBarcodeList, logFile, lsTransaction, recordedBy, newFileName)
@@ -444,6 +446,7 @@ getCompoundPlateInfo <- function(barcodeList, testMode = FALSE) {
   } else {
     wellTable <- query(paste0("SELECT * FROM api_container_contents WHERE barcode IN ('", barcodeQuery, "')"))
   }
+  names(wellTable) <- toupper(names(wellTable))
   wellTable <- wellTable[wellTable$BARCODE %in% barcodeList, ]
   
   return(wellTable)

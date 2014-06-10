@@ -2,7 +2,6 @@ describe 'User authentication Service testing', ->
 	beforeEach ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
-		@serviceType = window.conf.authentication.user.type
 
 
 	describe 'when auth service called', ->
@@ -47,14 +46,14 @@ describe 'User authentication Service testing', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				if window.conf.require.login
-					expect(@serviceReturn.firstName).toEqual "Bob"
+					expect(@serviceReturn.firstName).toEqual "bob"
 				else
 					expect(@serviceReturn.firstName).toEqual ""
 		it 'should return lastName', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				if window.conf.require.login
-					expect(@serviceReturn.lastName).toEqual "Roberts"
+					expect(@serviceReturn.lastName).toEqual "bob"
 				else
 					expect(@serviceReturn.lastName).toEqual "bob"
 		it 'should return email', ->
