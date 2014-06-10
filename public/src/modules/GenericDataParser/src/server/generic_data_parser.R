@@ -391,7 +391,10 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   
   if(lockCorpBatchId) {
     # Check that the first entry says Datatype (users may try to enter data if we don't warn them)
-    if (classRow[1]!="Datatype") {
+    if (is.na(classRow[1])) {
+      addError(paste0("The first row below 'Calculated Results' must begin with 'Datatype'. ",
+                      "Right now, 'Datatype' is missing."), errorEnv)
+    } else if (classRow[1]!="Datatype") {
       addError(paste0("The first row below 'Calculated Results' must begin with 'Datatype'. ",
                                        "Right now, it is '", classRow[1], "'."), errorEnv)
     }
@@ -669,6 +672,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   if(ncol(calculatedResults) == 1) {
     stop("The rows below Calculated Results must have at least two columns filled: one for ", mainCode, "'s and one for data.")
+  } else if (nrow(calculatedResults) == 0) {
+    stop("The first row below 'Calculated Results' must begin with 'Datatype'. Right now, 'Datatype' is missing.")
   }
   
   # Check the Datatype row and get information from it
@@ -2725,7 +2730,7 @@ parseGenericData <- function(request) {
   #   warningList (a character vector)
   #   errorList (a character vector)
   #   error (a boolean)
-  
+
   # Set up high level needs
   require('compiler')
   enableJIT(3)

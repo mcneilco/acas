@@ -4,6 +4,7 @@
 # Sam Meyer
 
 library(testthat)
+
 source("public/src/modules/GenericDataParser/src/server/generic_data_parser.R")
 
 context("validateCalculatedResultDatatypes")
