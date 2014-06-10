@@ -155,12 +155,103 @@ test_that("The function gives the right warnings when interpreting datatypes", {
 
 
 test_that("lockCorpBatchId works as expected", {
-  
+  # This should give an error because "Boxes" isn't an okay field name
+  errorList <<- list()
+  expect_identica(c("Boxes", "comments", "Text"), validateCalculatedResultDatatypes(c("Boxes", "comments", "Text"), 
+                                    c("Corporate Batch ID", "Boxes", "Refrigerators"), FALSE))
+  expect_identical(1, length(errorList))
 })
 
 
 test_that("Empty datatypes are handled correctly", {
-  # Line 412
+  errorList <<- list()
+  suppressWarninges(expect_identical(c("Datatype", "Number", "Number", "Number"),
+                   validateCalculatedResultDatatypes(c("Datatype", "()", "Number", "Number"),
+                                                     c("Corporate Batch ID", "Rendering Hint", "curve id", "Max"))))
+  expect_identical(list(), errorList)
+  
+  errorList <<- list()
+  suppressWarnings(expect_identical(c("Datatype", "Number", "Text"),
+                   validateCalculatedResultDatatypes(c("Datatype", "([link])", "Text"),
+                                                     c("Herring", "Shrubbery", "Ni"))))
+  expect_identical(list(), errorList)
+  
+  errorList <<- list()
+  suppressWarnings(expect_identical(c("Datatype", "Number", "Text"),
+                                    validateCalculatedResultDatatypes(c("Datatype", "", "Text"), c())))
+  expect_identical(list(), errorList)
+  
+  errorList <<- list()
+  suppressWarnings(expect_identica(c("Datatype", "Number", "Text"),
+                                   validateCalculatedResultDatatypes(c("Datatype", NA, "Text"), 
+                                                                     c("Data", "DataType", NA_character_))))
+  expect_identical(list(), errorList)
+  
+  errorList <<- list()
+  suppressWarnings(expect_identical(c("Datatype", "Number", "Text"),
+                                    validateCalculatedResultDatatypes(c("Datatype", "", "Text"), 
+                                                     c())))
+  suppressWarnings(expect_identical(c("Datatype", "Number", "Text"),
+                                    validateCalculatedResultDatatypes(c("Datatype", "", "Text"), 
+                                                                      c("", "", ""))))
+  suppressWarnings(expect_identical(c("Datatype", "Number", "Text"),
+                                    validateCalculatedResultDatatypes(c("Datatype", "", "Text"), 
+                                                                      c("Nothing", NA_character_, ""))))
+  suppressWarnings(expect_identical(c("Datatype", "Number", "Text"),
+                                    validateCalculatedResultDatatypes(c("Datatype", "", "Text"), 
+                                                                      c("Nothing"))))
+  expect_identical(list(), errorList)
+  
+})
+
+
+test_that("Empty datatypes throw the correct warning", {
+  # These go with the tests above -- here we are just checking the warning message
+  expect_that(validateCalculatedResultDatatypes(c("Datatype", "()", "Number", "Number"),
+                                                     c("Corporate Batch ID", "Rendering Hint", "curve id", "Max")),
+              gives_warning("Column B (Rendering Hint) does not have a Datatype entered. The loader will attempt to interpret entries in column B as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+
+  expect_that(validateCalculatedResultDatatypes(c("Datatype", "([link])", "Text"),
+                                                c("Herring", "Shrubbery", "Ni")),
+              gives_warning("Column B (Shrubbery) does not have a Datatype entered. The loader will attempt to interpret entries in column B as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+
+  expect_that(validateCalculatedResultDatatypes(c("Datatype", NA, "Text"), 
+                                                c("Data", "DataType", NA_character_)),
+              gives_warning("Column B (DataType) does not have a Datatype entered. The loader will attempt to interpret entries in column B as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+  
+  # The following aren't necessarily THE BEST behavior, but they are the current behavior, so if they
+  # change, it should be noted
+  
+  expect_that(validateCalculatedResultDatatypes(c("Datatype", "", "Text"), 
+                                                c()),
+              gives_warning("Column B () does not have a Datatype entered. The loader will attempt to interpret entries in column B as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+  
+  expect_that(validateCalculatedResultDatatypes(c("Datatype", "", "Text"), 
+                                                c("", "", "")),
+              gives_warning("Column B () does not have a Datatype entered. The loader will attempt to interpret entries in column B as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+
+  expect_that(validateCalculatedResultDatatypes(c("Datatype", "", "Text"), 
+                                                c("Nothing", NA_character_, "")),
+              gives_warning("Column B (NA) does not have a Datatype entered. The loader will attempt to interpret entries in column B as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+
+  expect_that(validateCalculatedResultDatatypes(c("Datatype", "", "Text"), 
+                                                c("Nothing")),
+              gives_warning("Column B (NA) does not have a Datatype entered. The loader will attempt to interpret entries in column B as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+})
+
+test_that("The system gracefully handles the 'Datatype' field being blank", {
+  errorList <<- list()
+  supporessWarnings(validateCalculatedResultDatatypes(c(NA,"Text","Number","Date"),
+                                    c("Corporate Batch ID","Rendering Hint","curve id","Max")))
+  expect_identical(list(),
+                   list("The first row below 'Calculated Results' must begin with 'Datatype'. Right now, 'Datatype' is missing."),)
+
+  errorList <<- list()
+  supporessWarnings(validateCalculatedResultDatatypes(c(NA,NA,NA,NA),
+                                                      c("Corporate Batch ID","Rendering Hint","curve id","Max")))
+  expect_identical(list(),
+                   list("The first row below 'Calculated Results' must begin with 'Datatype'. Right now, 'Datatype' is missing."),)
+  
 })
 
 
