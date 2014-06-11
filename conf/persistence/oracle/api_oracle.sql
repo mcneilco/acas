@@ -79,7 +79,11 @@ END
 AS tested_conc_unit, 
 agv.id AS agv_id,
 agv.ls_type as ls_type,
-agv.ls_kind as ls_kind, 
+CASE
+    WHEN agv.ls_type = 'inlineFileValue'
+    THEN agv.ls_type_and_kind
+ELSE agv.ls_kind
+END AS ls_kind,
 agv.operator_kind, 
  CASE 
     WHEN agv.ls_kind like '%curve id' THEN null
@@ -104,6 +108,8 @@ THEN
         ')' ||
         '</A>'
 		)
+WHEN agv.ls_type = 'inlineFileValue'
+THEN agv.file_value
 WHEN agv.ls_type = 'urlValue' 
 THEN 
 		('<A HREF="' || 
