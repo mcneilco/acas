@@ -448,8 +448,9 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
       classRow[i][grep(pattern = "clob", classRow[i], ignore.case = TRUE)] <- "Clob"
       classRow[i][grep(pattern = "comment", classRow[i], ignore.case = TRUE)] <- "Comments"
       classRow[i][grep(pattern = "sd", classRow[i], ignore.case = TRUE)] <- "Standard Deviation"
-      classRow[i][grep(pattern = "dev", classRow[i], ignore.case = TRUE)] <- "Standard Deviation"      
-      if (classRow[i] != oldClassRow[i] & !is.na(LabelRow[i])) {
+      classRow[i][grep(pattern = "dev", classRow[i], ignore.case = TRUE)] <- "Standard Deviation"
+      # Accept differences in capitalization
+      if (tolower(classRow[i]) != tolower(oldClassRow[i]) & !is.na(LabelRow[i])) {
         warning(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
                        "' as a datatype and interpreted it as '", classRow[i], 
                        "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
@@ -457,8 +458,8 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
     }
     
     # Those that can't be interpreted throw errors
-    unhandledClasses <- setdiff(tolower(classRow[1:length(classRow) > 1]), 
-                                c("text","number","date","clob","code","standard deviation","comments",""))
+    unhandledClasses <- setdiff(classRow[1:length(classRow) > 1], 
+                                c("Text","Number","Date","Clob","Code","Standard Deviation","Comments",""))
     if (length(unhandledClasses)>0) {
       addError(paste0("The loader found classes in the Datatype row that it does not understand: '",
                       paste(unhandledClasses,collapse = "', '"),
@@ -516,7 +517,8 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     stop(paste0("The column header ", sqliz(reservedValueKinds), " is reserved and cannot be used"))
   }
   
-  if(any(wrongValueTypes)) {
+  # Use na.rm = TRUE because any types of NA will already have thrown an error (in validateCalculatedResultDatatypes)
+  if(any(wrongValueTypes, na.rm = TRUE)) {
     problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
     problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
     problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
@@ -601,9 +603,10 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   valueKindWoExtras <- valueKindsVector[is.na(uncertaintyType) & !commentCol]
   
   if(any(duplicated(unlist(valueKindWoExtras)))) {
-    addError(paste0("These column headings are duplicated: ",
+    # This has to be a stop, otherwise it throws unexpected errors
+    stop(paste0("These column headings are duplicated: ",
                     paste(unlist(valueKindWoExtras[duplicated(unlist(valueKindWoExtras))]),collapse=", "),
-                    ". All column headings must be unique."), errorEnv)
+                    ". All column headings must be unique."))
   }
   
   emptyValueKinds <- is.na(valueKindsVector) | (trim(valueKindsVector) == "")
@@ -961,7 +964,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   moveResults <- function(longResults, valueType) {
     longResults[valueType] <- rep(NA, nrow(longResults))
-    if (any(longResults$valueType == valueType)) {
+    if (any(longResults$valueType == valueType, na.rm = TRUE)) {
       naVector <- rep(NA, sum(longResults$valueType == valueType, na.rm=T))
       longResults$"numericValue"[longResults$valueType == valueType] <- naVector
       longResults$"valueOperator"[longResults$valueType == valueType] <- naVector
