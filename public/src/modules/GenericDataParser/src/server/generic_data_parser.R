@@ -792,7 +792,12 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   names(results)[commentCol] <- paste0(commentCodeWord, names(results)[commentCol])
   
   # Replace fake mainCodes with the column that holds replacements (the column must have the same name that is entered in mainCode)
-  results$originalMainID <- NA
+  if (nrow(results) == 0) {
+    stop("The 'Raw Results' section is present, but contains no data. Please either enter data or remove the section.")
+  } else {
+    results$originalMainID <- NA 
+  }
+  
   if (!(is.null(mainCode))) {
     if (mainCode %in% names(results)) {
       results[[mainCode]] <- as.character(results[[mainCode]])
