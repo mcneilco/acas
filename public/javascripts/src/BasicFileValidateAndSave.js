@@ -217,6 +217,7 @@
       }
       this.notificationController.addNotifications(this.errorOwnerName, json.errorMessages);
       this.$('.bv_htmlSummary').html(json.results.htmlSummary);
+      this.newExperimentCode = json.results.experimentCode;
       this.showFileUploadCompletePhase();
       this.$('.bv_resultStatus').html(summaryStr);
       this.$('.bv_saveStatusDropDown').modal("hide");
@@ -302,6 +303,10 @@
           return this.$('.bv_csvPreviewContainer').show();
         }
       }
+    };
+
+    BasicFileValidateAndSaveController.prototype.getNewExperimentCode = function() {
+      return this.newExperimentCode;
     };
 
     return BasicFileValidateAndSaveController;

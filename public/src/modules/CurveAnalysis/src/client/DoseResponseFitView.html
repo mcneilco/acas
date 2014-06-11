@@ -1,0 +1,52 @@
+<script type="text/template" id="DoseResponseFitView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="bv_fitOptionWrapper">
+        <div class="bv_analysisParameterForm"></div>
+    </div>
+
+    <div class="bv_group_modelFitStatus span8" style="margin-left:20px;">
+        <button class="btn btn-default pull-right bv_fitModelButton" type="button" style="margin-right:47px;">Fit Data</button>
+    </div>
+
+    <div class="span6 bv_group_resultsContainer" style="margin-left:10px;margin-top:5px;width:470px;">
+        <div class="well well-small bv_resultsContainer hide" style="margin-bottom:10px;">
+            <div class="bv_modelFitResultsHTML"></div>
+        </div>
+    </div>
+
+    <div class='modal bv_fitStatusDropDown hide'>
+        <div class="modal-header">
+            <h3>Fitting Curves</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <br />
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</script>
+
+
+<script type="text/template" id="DoseResponseFitWorkflowView" xmlns="http://www.w3.org/1999/html">
+    <h2>Dose Response Fit Module</h2>
+    <div class="tabbable span8">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#tab1" class="bv_uploadDataTabLink" data-toggle="tab">Upload Data</a></li>
+            <li><a href="#tab3" class="bv_modelFitTabLink" data-toggle="tab">Model Fit</a></li>
+        </ul>
+
+        <div class="tab-content span12">
+            <div class="tab-pane active bv_dataParser" id="tab1"></div>
+            <div class="tab-pane bv_doseResponseAnalysis" id="tab3" style="overflow:hidden;"></div>
+        </div>
+        <div class="bv_completeControlContainer hide pull-right">
+            <div class='btn bv_loadAnother'>Load and Fit Another</div>
+        </div>
+    </div>
+</script>
+

@@ -11,12 +11,11 @@
 
 # TODO: Check if the information has already been uploaded
 # TODO: Save status, as this will take a long time with 30 plates
-# Question: Will there be multiple plates in one SDF file? Will all the plates be new?
+# TODO: validate corporate batch ids
 
 # How to run:
 #   Before running: 
-#     Set your working directory to the checkout of SeuratAddOns
-#     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
+#   file.copy("public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/Shipment_9814_with_DMSO.csv", "privateUploads/", overwrite=T)
 #   To run: 
 #     bulkLoadContainersFromSDF(list(fileName,dryRun,user))
 #   Example:
@@ -44,6 +43,8 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   library('plyr')
   library('iterators')
   
+  fileName <- getUploadedFilePath(fileName)
+  
   testMode <- FALSE
   
   # fileName <- "public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf"
@@ -68,7 +69,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     compoundNumber <- sum(fileLines == "$$$$")
     availableProperties <- names(get.properties(firstMolecule))
   } else if (grepl("\\.csv$",fileName)) {
-    fileLines <- read.csv(fileName, blank.lines.skip=TRUE)
+    fileLines <- read.csv(fileName, blank.lines.skip=TRUE, check.names=F, stringsAsFactors=F)
     compoundNumber <- nrow(fileLines)
     availableProperties <- colnames(fileLines)
   }
@@ -101,14 +102,19 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
         propertyTable <- rbind.fill(propertyTable, newPropertyTable)
       }
     } else if (grepl("\\.csv$",fileName)) {
-      propertyTable <- as.data.frame(subset(fileLines, select=requiredProperties))
+      propertyTable <- as.data.frame(subset(fileLines, select= c(requiredProperties, "Corporate Batch ID")))
     }
-      
+    
     summaryInfo$info$"Number of wells loaded" <- nrow(propertyTable)
     
-    sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
+    if (racas::applicationSettings$client.service.external.preferred.batchid.type == "SeuratCmpdReg") {
+      sampleIdTranslationList <- query("select ss.alias_id || '-' || scl.lot_id as \"COMPOUND_NAME\", data1 as \"PROPERTY_VALUE\" from seurat.syn_sample ss join seurat.syn_compound_lot scl on ss.sample_id=scl.sample_id")
+      propertyTable$batchName <- sampleIdTranslationList$COMPOUND_NAME[match(propertyTable$"SAMPLE_ID", sampleIdTranslationList$PROPERTY_VALUE)]
+    } else {
+      propertyTable$batchName <- NA
+    }
     
-    propertyTable$batchName <- sampleIdTranslationList$COMPOUND_NAME[match(propertyTable$"SAMPLE_ID", sampleIdTranslationList$PROPERTY_VALUE)]
+    propertyTable$batchName[!is.na(propertyTable$"Corporate Batch ID")] <- propertyTable$"Corporate Batch ID"[!is.na(propertyTable$"Corporate Batch ID")]
     
     if (any(is.na(propertyTable$batchName))) {
       missingCompounds <- propertyTable$"SAMPLE_ID"[!(propertyTable$"SAMPLE_ID" %in% sampleIdTranslationList$PROPERTY_VALUE)]
@@ -126,6 +132,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       stop("Some of the concentrations or volumes are not numbers")
     }
     
+    # Convert 'mM' to 'uM'
     propertyTable$ALIQUOT_CONC[propertyTable$ALIQUOT_CONC_UNIT == "mM"] <- propertyTable$ALIQUOT_CONC[propertyTable$ALIQUOT_CONC_UNIT == "mM"] * 1000
     propertyTable$ALIQUOT_CONC_UNIT[propertyTable$ALIQUOT_CONC_UNIT == "mM"] <- "uM"
     
@@ -327,7 +334,7 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
 }
 
 bulkLoadContainersFromSDF <- function(request) {
-  require('racas')
+  library('racas')
   options(stringsAsFactors = FALSE)
   
   # Collect the information from the request

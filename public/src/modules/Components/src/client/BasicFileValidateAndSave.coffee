@@ -150,6 +150,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			summaryStr += "Failed due to errors "
 		@notificationController.addNotifications(@errorOwnerName, json.errorMessages)
 		@$('.bv_htmlSummary').html(json.results.htmlSummary)
+		@newExperimentCode = json.results.experimentCode
 		@showFileUploadCompletePhase()
 		@$('.bv_resultStatus').html(summaryStr)
 		@$('.bv_saveStatusDropDown').modal("hide")
@@ -219,3 +220,6 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 					for val in rowCells
 						@$('.csvPreviewTBody tr:last').append "<td>"+val+"</td>"
 				@$('.bv_csvPreviewContainer').show()
+
+	getNewExperimentCode: ->
+		@newExperimentCode

@@ -13,6 +13,10 @@ window.ModuleMenusConfiguration =
 		requireUserRoles: ["admin", "loadData"]
 	,
 		isHeader: false
+		menuName: "Dose-Response Fit"
+		mainControllerClassName: "DoseResponseFitWorkflowController"
+	,
+		isHeader: false
 		menuName: "Analyze FLIPR Data"
 		mainControllerClassName: "PrimaryScreenExperimentController"
 		autoLaunchName:"flipr_screening_assay"
