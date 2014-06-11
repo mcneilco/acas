@@ -319,8 +319,8 @@ getHiddenColumns <- function(classRow, errorEnv) {
   # Pull out info about hidden columns
   dataShown <- gsub(".*\\((.*)\\).*||.*", "\\1",classRow)
   dataShown[is.na(dataShown)] <- ""
-  hiddenColumns <- grepl("hidden",dataShown)
-  shownColumns <- grepl("shown",dataShown)
+  hiddenColumns <- grepl("hidden",dataShown,ignore.case=TRUE)
+  shownColumns <- grepl("shown",dataShown,ignore.case=TRUE)
   defaultColumns <- dataShown %in% ""
   unknownColumns <- which(!hiddenColumns & !shownColumns & !defaultColumns)
   
