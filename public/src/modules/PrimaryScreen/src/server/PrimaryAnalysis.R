@@ -532,7 +532,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
               subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA, NA, NA),
     valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue', #'clobValue', 'clobValue',
                   'numericValue','stringValue','numericValue','numericValue','stringValue',
-                  'numericValue','stringValue', 'stringValue', 'stringValue'),
+                  'numericValue','stringValue', 'stringValue', 'inlineFileValue'),
     stringsAsFactors = FALSE)
   
   subjectData$DoseUnit <- NULL
@@ -559,6 +559,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     longResults$concentrationUnit <- resultTypes$concUnits[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
     longResults$valueType <- resultTypes$valueType[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
     longResults$valueKind <- resultTypes$Type[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+    longResults$comments <- NA
     
     longResults$UnparsedValue <- trim(as.character(longResults$"UnparsedValue"))
     
@@ -574,6 +575,12 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     longResults$clobValue <- as.character(longResults$"UnparsedValue")
     longResults$clobValue[!longResults$valueType=="clobValue"] <- NA
     longResults$stringValue[longResults$valueType=="clobValue"] <- NA
+    
+    longResults$fileValue <- as.character(longResults$"UnparsedValue")
+    fileValueRows <- longResults$valueType %in% c("fileValue", "inlineFileValue")
+    longResults$fileValue[!fileValueRows] <- NA
+    longResults$comments[fileValueRows] <- basename(longResults$fileValue[fileValueRows])
+    longResults$stringValue[fileValueRows] <- NA
     
     longResults$codeValue <- as.character(longResults$"UnparsedValue")
     longResults$codeValue[!longResults$valueType=="codeValue"] <- NA
@@ -767,6 +774,8 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       else {as.character(NA)},
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
+      "fileValue" = if (length(unique(subjectData$fileValue)) == 1) subjectData$fileValue[1] else NA,
+      "comments" = if (length(unique(subjectData$comments)) == 1) subjectData$comments[1] else NA,
       "publicData" = subjectData$publicData[1],
       "numberOfReplicates" = nrow(subjectData),
       "uncertaintyType" = if(is.numeric(resultValue)) "standard deviation" else NA,
@@ -831,6 +840,9 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       analysisGroupDataNoAgonist$valueKind[analysisGroupDataNoAgonist$valueKind == "normalized efficacy"] <- "normalized efficacy without sweetener"
       analysisGroupDataNoAgonist <- analysisGroupDataNoAgonist[!(analysisGroupDataNoAgonist$valueKind %in% c("over efficacy threshold", "comparison graph")), ]
       analysisGroupData <- rbind.fill(analysisGroupDataNoAgonist, analysisGroupDataHasAgonist)
+      # Remove empty comparison graphs (happens for controls across plates)
+      analysisGroupDataRemove <- analysisGroupData$valueKind == "comparison graph" & is.na(analysisGroupData$fileValue)
+      analysisGroupData <- analysisGroupData[!analysisGroupDataRemove, ]
     }
     
     ###
@@ -1585,8 +1597,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                              threshold = efficacyThreshold, experiment)
     
     source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
-    resultTable <- saveComparisonTraces(resultTable, paste0("experiments/",experiment$codeName,"/analysis/compoundGraph"))
-    resultTable[!is.na(comparisonTraceFile), comparisonTraceFile := paste0(experiment$codeName, "::", basename(comparisonTraceFile))]
+    resultTable <- saveComparisonTraces(resultTable, paste0("experiments/", experiment$codeName, "/images"))
     #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
     lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)

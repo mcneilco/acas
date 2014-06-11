@@ -95,7 +95,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {typeName: "clobValue"},
 {typeName: "blobValue"},
 {typeName: "numericValue"},
-{typeName: "codeValue"}
+{typeName: "codeValue"},
+{typeName: "inlineFileValue"}
 ]' http://"$HOSTNAMEFQDN":8080/acas/valuetypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
@@ -156,7 +157,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "timePoints", lsType:{id:5, version:0}},
 {kindName: "data analysis parameters", lsType:{id:5, version:0}},
 {kindName: "description", lsType:{id:5, version:0}},
-{kindName: "comparison graph", lsType: {id:1, version:0}},
+{kindName: "comparison graph", lsType: {id:9, version:0}},
 {kindName: "previous experiment code", lsType:{id:8, version:0}},
 {kindName: "late peak", lsType:{id:1, version:0}},
 {kindName: "max time", lsType:{id:7, version:0}},
