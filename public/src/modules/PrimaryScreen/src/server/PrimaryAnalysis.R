@@ -1262,6 +1262,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   parameters <- getExperimentParameters(inputParameters)
   # TODO: store this in protocol
   parameters$latePeakTime <- 80
+  
   if(is.null(parameters$useRdap)) {
     useRdap <- FALSE
   } else {
@@ -1341,6 +1342,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     ## TODO: Test Sructure
       resultTable$hasAgonist <- FALSE
       resultTable$concentrationUnit <- "uM"
+      # remove DNS batchCodes to make this work in host4
+      rdapBatchCodes <- unique(resultTable$batchCode)
+      fakeRdapBatchCodes <- c("CMPD-0000001-01A","CMPD-0000002-01A","CMPD-0000003-01A","CMPD-0000004-01A","CMPD-0000005-01A",
+                              "CMPD-0000006-01A","CMPD-0000007-01A","CMPD-0000008-01A","CMPD-0000009-01A","CMPD-0000010-01A",
+                              "CMPD-0000011-01A","CMPD-0000012-01A","CMPD-0000013-01A","CMPD-0000014-01A")
+      i <- 1
+      for( i in 1:length(rdapBatchCodes)) {
+        if(rdapBatchCodes[i] != "NA::NA") {
+          resultTable$batchCode <- gsub(rdapBatchCodes[i], fakeRdapBatchCodes[i], resultTable$batchCode)
+        }
+      }
     #       resultTable$fileName <- folderToParse
     #     
     #       
@@ -1707,9 +1719,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       # transformed and normalized should be included if they are not null
       # resultKinds should include activityColumns, numericValue, data, results
-      resultTypes <- data.frame(valueKind=c("barcode", "well name", "well type", "transformed efficacy"), valueType=c("codeValue", "stringValue", "stringValue", "numericValue"), 
+      resultTypes <- data.frame(valueKind=c("barcode", "well name", "well type", "transformed efficacy"), 
+                                valueType=c("codeValue", "stringValue", "stringValue", "numericValue"), 
                                 columnName=c("barcode", "well", "wellType", "transformed"), 
-                                stateType=c("metadata","metadata","metadata","data"), stateKind=c("plate information", "plate information", "plate information", "results"), 
+                                stateType=c("metadata","metadata","metadata", "data"), 
+                                stateKind=c("plate information", "plate information", "plate information", "results"), 
                                 stringsAsFactors=FALSE) 
       
       analysisGroupData <- meltStuff(resultTable, resultTypes)
@@ -1731,8 +1745,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       analysisGroupData$experimentID <- experimentId
       
       lsTransaction <- uploadData(analysisGroupData=analysisGroupData, recordedBy=user, lsTransaction=lsTransaction)
-      
-      analysisGroupData$experimentID <- experiment$id
+
       analysisGroupData$experimentVersion <- experiment$version
       
     }
@@ -1778,6 +1791,40 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   summaryInfo$experiment <- experiment
   
   return(summaryInfo)
+}
+
+meltConcentrations <- function(entityData, entityKind = "treatmentGroup") {
+  parentEntityKind <- parentAcasEntity(entityKind, "camel")
+  parentEntityID <- paste0(parentEntityKind, "ID")
+  
+  createConcentrationRows <- function(entityData) {
+    if(any(is.na(entityData$concentration))) {
+      return(data.frame())
+    } else {
+      output <- data.frame(batchCode = entityData$batchCode[1], 
+                           valueKind = "tested concentration", 
+                           valueType = "numericValue",
+                           numericValue = entityData$concentration[1],
+                           valueUnit = entityData$concentrationUnit[1],
+                           stateID = entityData$stateID[1],
+                           stateGroupIndex = entityData$stateGroupIndex[1],
+                           stateType = entityData$stateType[1],
+                           stateKind = entityData$stateKind[1],
+                           publicData = entityData$publicData[1],
+                           resultTypeAndUnit = paste("INTERNAL---tested concentration", 
+                                                     entityData$concentration[1], 
+                                                     entityData$concentrationUnit[1], 
+                                                     entityData$time[1], 
+                                                     entityData$timeUnit[1]),
+                           stringsAsFactors = FALSE)
+      if(!is.null(entityData[[parentEntityID]]) && !is.na(entityData[[parentEntityID]])) {
+        output[[parentEntityID]] <- entityData[[parentEntityID]][1]
+      }
+      return(output)
+    }
+  }
+  output <- ddply(.data=entityData, .variables = c("stateID"), .fun = createConcentrationRows)
+  return(output)
 }
 
 getExperimentById <- function(experimentId, include="", errorEnv=NULL, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
@@ -2150,9 +2197,9 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
     analysisGroupData$stateGroupIndex <- 1
   }
   
-  analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
+  analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData, "analysisGroup"))
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
-  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, 0, optionalColumns = "analysisGroupID"))
+  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices=1, optionalColumns = "analysisGroupID"))
   
   analysisGroupData$lsTransaction <- lsTransaction
   analysisGroupData$recordedBy <- recordedBy
