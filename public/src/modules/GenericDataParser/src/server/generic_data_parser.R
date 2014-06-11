@@ -351,7 +351,7 @@ getLinkColumns <- function(classRow, errorEnv) {
   # Pull out info about hidden columns
   dataShown <- gsub(".*\\[(.*)\\].*||.*", "\\1",classRow)
   dataShown[is.na(dataShown)] <- ""
-  linkColumns <- grepl("link",dataShown)
+  linkColumns <- grepl("link",dataShown,ignore.case=TRUE)
   defaultColumns <- dataShown %in% ""
   unknownColumns <- which(!linkColumns & !defaultColumns)
   
