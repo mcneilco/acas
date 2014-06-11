@@ -410,7 +410,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
   classRow[clobColumns] <- "Clob"
   
   # Check if the datatypes are entered correctly
-  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob", "Code","", "standard deviation", "comments", NA))
+  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob", "Code","", "Standard Deviation", "Comments", NA))
   
   # Let the user know about empty datatypes
   emptyClasses <- which(is.na(classRow) | trim(classRow) == "")
@@ -419,7 +419,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
       warning(paste0("Column ", getExcelColumnFromNumber(emptyClasses), " (" , LabelRow[emptyClasses], ") does not have a Datatype entered. ",
                      "The loader will attempt to interpret entries in column ", 
                      getExcelColumnFromNumber(emptyClasses), 
-                     " as numbers, but it may not work very well. Please enter 'Number','Text', or 'Date'."))
+                     " as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
     } else {
       warning(paste("Columns", 
                     paste(sapply(emptyClasses[1:length(emptyClasses)-1],getExcelColumnFromNumber),collapse=", "), 
@@ -428,7 +428,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
                     "The loader will attempt to interpret entries in columns",
                     paste(sapply(emptyClasses[1:length(emptyClasses)-1],getExcelColumnFromNumber),collapse=", "), 
                     "and", getExcelColumnFromNumber(tail(emptyClasses,n=1)),
-                    "as numbers, but it may not work very well. Please enter 'Number','Text', or 'Date'."))
+                    "as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
     }
     classRow[is.na(classRow) | classRow==""] <- "Number"
   }
@@ -446,13 +446,13 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
       classRow[i][grep(pattern = "double", classRow[i], ignore.case = TRUE)] <- "Number"
       classRow[i][grep(pattern = "date", classRow[i], ignore.case = TRUE)] <- "Date"
       classRow[i][grep(pattern = "clob", classRow[i], ignore.case = TRUE)] <- "Clob"
-      classRow[i][grep(pattern = "comment", classRow[i], ignore.case = TRUE)] <- "comments"
-      classRow[i][grep(pattern = "sd", classRow[i], ignore.case = TRUE)] <- "standard deviation"
-      classRow[i][grep(pattern = "dev", classRow[i], ignore.case = TRUE)] <- "standard deviation"      
+      classRow[i][grep(pattern = "comment", classRow[i], ignore.case = TRUE)] <- "Comments"
+      classRow[i][grep(pattern = "sd", classRow[i], ignore.case = TRUE)] <- "Standard Deviation"
+      classRow[i][grep(pattern = "dev", classRow[i], ignore.case = TRUE)] <- "Standard Deviation"      
       if (classRow[i] != oldClassRow[i] & !is.na(LabelRow[i])) {
         warning(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
                        "' as a datatype and interpreted it as '", classRow[i], 
-                       "'. Please enter 'Number','Text', or 'Date'."))
+                       "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
       }
     }
     
@@ -462,7 +462,7 @@ validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId
     if (length(unhandledClasses)>0) {
       addError(paste0("The loader found classes in the Datatype row that it does not understand: '",
                       paste(unhandledClasses,collapse = "', '"),
-                      "'. Please enter 'Number','Text', or 'Date'."), errorEnv)
+                      "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."), errorEnv)
     }
   }
   
