@@ -26,7 +26,6 @@ filePathToTests <- file.path(racas::applicationSettings$appHome,
                                       "RTestSet")
 
 testGenericDataParser <- function() {
-  # File path to R tests (all file names should start with 'test')
   test_dir(filePathToTests)
 }
 
@@ -57,4 +56,8 @@ testValidateScientist <- function() {
 
 testValidationFunctions <- function() {
   test_file(file.path(filePathToTests, "test_unit_validatingFunctions.R"))
+}
+
+testExtractValueKinds <- function() {
+  test_file(file.path(filePathToTests, "test_unit_extractValueKinds.R"))
 }
