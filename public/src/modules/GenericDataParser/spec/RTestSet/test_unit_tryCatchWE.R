@@ -11,6 +11,8 @@ source(file.path("public","src","modules","GenericDataParser","src","server","ge
 
 context("tryCatch.W.E")
 
+errorList <<- list()
+
 test_that ("tryCatch.W.E (from racas > errorLogging) correctly throws no errors", {
   throwNoErrors <- function() {return("hello world!")}
   expect_identical(list(value="hello world!",warningList=list()), tryCatch.W.E(throwNoErrors()))

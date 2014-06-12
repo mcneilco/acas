@@ -11,6 +11,8 @@ source(file.path("public","src","modules","GenericDataParser","src","server","ge
 
 context("getExcelColumnFromNumber")
 
+errorList <<- list()
+
 test_that("getExcelColumnFromNumber gets the right column", {
   expect_equal("A", getExcelColumnFromNumber(1))
   expect_equal("AP", getExcelColumnFromNumber(42))

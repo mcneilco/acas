@@ -11,6 +11,8 @@ source(file.path("public","src","modules","GenericDataParser","src","server","ge
 
 context("getHiddenColumns")
 
+errorList <<- list()
+
 test_that("getHiddenColumns handles cases without errors", {
   errorList <<- list()
   expect_identical(c(FALSE,TRUE,TRUE,FALSE,FALSE), getHiddenColumns(c("Text(shown)","Text (hidden)","Date(hidden)","String","NotADatatype("), errorEnv = NULL))

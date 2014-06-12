@@ -11,6 +11,7 @@ source(file.path("public","src","modules","GenericDataParser","src","server","ge
 
 context("validateCalculatedResultDatatypes")
 
+errorList <<- list()
 
 test_that("Typical use cases work as expected", {
   errorList <<- list()

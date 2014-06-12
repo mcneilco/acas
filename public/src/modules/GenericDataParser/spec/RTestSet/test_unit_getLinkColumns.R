@@ -11,6 +11,8 @@ source(file.path("public","src","modules","GenericDataParser","src","server","ge
 
 context("getLinkColumns")
 
+errorList <<- list()
+
 test_that("getLinkColumns handles cases without errors", {
   errorList <<- list()
   expect_identical(c(TRUE,FALSE,FALSE,FALSE,FALSE), getLinkColumns(c("Text[link]","Text (link)","Date[]","String","NotADatatype("), errorEnv = NULL))

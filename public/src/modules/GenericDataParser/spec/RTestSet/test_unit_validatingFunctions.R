@@ -8,7 +8,9 @@ library(testthat)
 setwd(racas::applicationSettings$appHome)
 source(file.path("public","src","modules","GenericDataParser","src","server","generic_data_parser.R"))
 
-context("validation functions")
+context("validationFunctions")
+
+errorList <<- list()
 
 test_that("validateCharacter (from racas) works in normal cases", {
   expect_equal("hello world!", validateCharacter("hello world!"))
