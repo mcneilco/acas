@@ -10,6 +10,8 @@
 #       If you change the location of the tests, be sure the change the
 #       path here. If you change the location of generic_data_parser, be
 #       sure to change it in ALL the test files
+#       This file will run regardless of where it is located in the ACAS
+#       file structure.
 
 library(racas)
 library(testthat)
