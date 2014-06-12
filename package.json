@@ -24,6 +24,7 @@
 	"flat": "*",
 	"glob": "*",
 	"ncp": "*",
-	"forever-monitor": "*"
+	"forever-monitor": "*",
+	"cron": "*"
   }
 }

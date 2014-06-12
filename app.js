@@ -4,13 +4,15 @@
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, child, config, express, flash, forever, fs, http, https, indexRoutes, loginRoutes, options, passport, path, sslOptions, testModeOverRide, upload, user, util;
+    var LocalStrategy, child, config, cron, express, flash, forever, fs, http, https, indexRoutes, loginRoutes, options, passport, path, sslOptions, testModeOverRide, upload, user, util;
     config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
     http = require('http');
     path = require('path');
     upload = require('./node_modules_customized/jquery-file-upload-middleware');
+    cron = require('./serverOnlyModules/cron/cron.js');
+    cron.startCron();
     flash = require('connect-flash');
     passport = require('passport');
     util = require('util');

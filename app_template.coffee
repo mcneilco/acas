@@ -8,6 +8,8 @@ startApp = ->
 	http = require 'http'
 	path = require 'path'
 	upload = require './node_modules_customized/jquery-file-upload-middleware'
+	cron = require './serverOnlyModules/cron/cron.js'
+	cron.startCron()
 
 	# Added for logging support
 	flash = require 'connect-flash'

@@ -104,9 +104,9 @@
     } else {
       rScriptCommand = "Rscript";
     }
-    console.log("About to call R script: " + rScript);
     exec = require('child_process').exec;
-    command = rScriptCommand + " " + rScript + " 2> /dev/null";
+    command = "export R_LIBS=r_libs && " + rScriptCommand + " " + rScript + " 2> /dev/null";
+    console.log("About to call R script using command: " + command);
     return child = exec(command, function(error, stdout, stderr) {
       console.log("stderr: " + stderr);
       return console.log("stdout: " + stdout);

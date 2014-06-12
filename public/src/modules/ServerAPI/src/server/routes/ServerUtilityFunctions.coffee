@@ -92,15 +92,13 @@ exports.runRScript = (rScript) ->
 	else
 		rScriptCommand = "Rscript"
 
-	console.log "About to call R script: "+rScript
-
 	exec = require('child_process').exec
-
-	command = rScriptCommand + " " + rScript + " 2> /dev/null"
-
+	command = "export R_LIBS=r_libs && "+ rScriptCommand + " " + rScript + " 2> /dev/null"
+	console.log "About to call R script using command: "+command
 	child = exec command,  (error, stdout, stderr) ->
 		console.log "stderr: " + stderr
 		console.log "stdout: " + stdout
+
 
 ### To allow following test routes to work, install this Module
 	# ServerUtility function testing routes
