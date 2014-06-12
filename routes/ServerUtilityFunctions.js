@@ -94,6 +94,25 @@
     });
   };
 
+  exports.runRScript = function(rScript) {
+    var child, command, config, exec, rScriptCommand, serverUtilityFunctions;
+    config = require('../conf/compiled/conf.js');
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    rScriptCommand = config.all.server.rscript;
+    if (config.all.server.rscript != null) {
+      rScriptCommand = config.all.server.rscript;
+    } else {
+      rScriptCommand = "Rscript";
+    }
+    console.log("About to call R script: " + rScript);
+    exec = require('child_process').exec;
+    command = rScriptCommand + " " + rScript + " 2> /dev/null";
+    return child = exec(command, function(error, stdout, stderr) {
+      console.log("stderr: " + stderr);
+      return console.log("stdout: " + stdout);
+    });
+  };
+
 
   /* To allow following test routes to work, install this Module
   	 * ServerUtility function testing routes
