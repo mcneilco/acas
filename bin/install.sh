@@ -138,7 +138,7 @@ node PrepareConfigFiles.js $DEPLOYMODE
 echo "Preparing module includes"
 node PrepareModuleIncludes.js
 echo "Installing racas"
-Rscript install.R $ACAS_BRANCH $BITBUCKET_USER $BITBUCKET_PASSWORD
+Rscript install.R $BITBUCKET_USER $BITBUCKET_PASSWORD
 if [ -z "config.R" ]; then
     echo "Running custom config.R file"
 	Rscript config.R
