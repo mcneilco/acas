@@ -6,8 +6,11 @@
 # performs as expected if the response from
 # the internet is as expected
 
+library(racas)
 library(testthat)
-source("public/src/modules/GenericDataParser/src/server/generic_data_parser.R")
+
+setwd(racas::applicationSettings$appHome)
+source(file.path("public","src","modules","GenericDataParser","src","server","generic_data_parser.R"))
 
 context("validateScientist")
 
