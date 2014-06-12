@@ -627,7 +627,7 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   
   returnDataFrame <- data.frame("DataColumn" = fillerArray, "valueKind" = fillerArray, 
                                 "Units" = fillerArray, "Conc" = fillerArray, 
-                                "ConcUnits" = fillerArray, "reshapeName" = fillerArray)
+                                "concUnits" = fillerArray, "reshapeText" = fillerArray)
   returnDataFrame$DataColumn <- dataColumns
   returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
   # This removes "Reported" from all columns
