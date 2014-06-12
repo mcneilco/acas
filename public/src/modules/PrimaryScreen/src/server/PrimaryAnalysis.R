@@ -19,7 +19,7 @@
 # Confirmation - Check that createWellTable is getting correct csv in testMode
 # file.copy("public/src/modules/PrimaryScreen/spec/ConfirmationRegression.zip", "privateUploads/", overwrite=T)
 # library(rjson)
-# request = fromJSON('{\"fileToParse\":\"ConfirmationRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"RD36882\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"DMSO\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"SUGAR\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":0.8,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"efficacy\\\",\\\"aggregateReplicates\\\":\\\"within plates\\\"}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
+# request = fromJSON('{\"fileToParse\":\"ConfirmationRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"RD36882\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"DMSO\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"SUGAR\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"PBS\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":0.8,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"efficacy\\\",\\\"aggregateReplicates\\\":\\\"within plates\\\"}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
 # runPrimaryAnalysis(request)
 # request$dryRunMode <- FALSE
 # runPrimaryAnalysis(request)
@@ -119,6 +119,19 @@ getAgonist <- function(agonist, wellTable) {
          "'. Please contact your system administrator.")
   }
   
+  return(wellTable)
+}
+removeVehicle <- function(vehicle, wellTable) {
+  #Removes rows with a vehicle that are part of another well
+  # If the vehicle is the only compound in a well, it is kept
+  library(plyr)
+  
+  vehicleRows <- wellTable$BATCH_CODE == vehicle$batchCode
+    #wellTable$CONCENTRATION <= agonist$concentration & wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
+  compoundCount <- ddply(wellTable, "WELL_ID", summarise, count = length(BATCH_CODE))
+  hasMoreThanOneCompound <- compoundCount$WELL_ID[compoundCount$count > 1]
+  vehicleIds <- wellTable$ID[vehicleRows & wellTable$WELL_ID %in% hasMoreThanOneCompound]
+  wellTable <- wellTable[!(wellTable$ID %in% vehicleIds), ]
   return(wellTable)
 }
 getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgonist, positiveControl, negativeControl, testMode=F) {
@@ -1319,8 +1332,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   wellTable <- createWellTable(barcodeList, testMode)
   
-  wellTable <- getAgonist(parameters$agonistControl, wellTable)
+  wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
   
+  wellTable <- getAgonist(parameters$agonistControl, wellTable)
+    
   batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
 
