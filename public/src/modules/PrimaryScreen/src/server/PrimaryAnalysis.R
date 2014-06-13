@@ -1350,6 +1350,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, 
                                        resultTable$concUnit, resultTable$hasAgonist, 
                                        parameters$positiveControl, parameters$negativeControl, testMode)
+  
+  if (!any(resultTable$wellType == "PC")) {
+    stop("The positive control was not found in the plates. Make sure all transfers have been loaded and your postive control is defined correctly.")
+  }
+  
+  if (!any(resultTable$wellType == "NC")) {
+    stop("The negative control was not found in the plates. Make sure all transfers have been loaded and your negative control is defined correctly.")
+  }
+  
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformation)
   
