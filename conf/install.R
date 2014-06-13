@@ -43,8 +43,9 @@ Sys.setenv(R_LIBS=rLibs)
 .libPaths(rLibs)
 
 tryInstall <- function(auth_user, password, attempts = 3) {
+	repos <- paste0('http://',auth_user,':',password,'@repo.labsynch.com/R')
 	for(i in 1:attempts) {
-		outcome <- try(install.packages(repos=paste0('http://',auth_user,':',password,'@repo.labsynch.com/R'), method='curl', pkgs='racas', dep= c("Depends", "Imports", "LinkingTo")))
+		outcome <- try(install.packages(repos=repos, method='curl', pkgs='racas', dep= c("Depends", "Imports", "LinkingTo")))
 		if(class(outcome) == "try-error") {
 			if(i < attempts) {
 				auth_user <- userPrompt("username", "repo.labsynch.com")
@@ -53,13 +54,15 @@ tryInstall <- function(auth_user, password, attempts = 3) {
 				stop(outcome)
 			}
 		} else {
+			#When racas loads it attempts to load the package specified for database connectons
+			#The following option will make it so it automatically installs this package when loaded
+			#options(repos = repos)
+			options(repos = "http://cran.rstudio.com")
+			options(racasInstallDep = TRUE)
+			library(racas, lib.loc = rLibs)
 			break
 		}
 	}
 }
 tryInstall(auth_user = auth_user, password = password, attempts = 3)
 
-#When racas loads it attempts to load the package specified for database connectons
-#The following option will make it so it automatically installs this package when loaded
-options(racasInstallDep = TRUE)
-library(racas, lib.loc = rLibs)
