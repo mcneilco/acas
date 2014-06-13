@@ -8,7 +8,6 @@ exports.startCron = ->
 			try
 				new CronJob(config.all.server.cron.pingpong, ->
 					console.log 'running ping pong cron'
-					console.log process.cwd()
 					serverUtilityFunctions.runRScript('serverOnlyModules/PingPongTables/pingPong.R')
 					return
 				, # This function is executed when the job starts

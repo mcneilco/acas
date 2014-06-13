@@ -9,7 +9,6 @@
         try {
           new CronJob(config.all.server.cron.pingpong, function() {
             console.log('running ping pong cron');
-            console.log(process.cwd());
             serverUtilityFunctions.runRScript('serverOnlyModules/PingPongTables/pingPong.R');
           }, null, true, null);
           console.log('installed Ping Pong cron on schedule: ' + config.all.server.cron.pingpong);
