@@ -1,2 +1,2 @@
 library(racas)
-cat(toJSON(generateSummaryStatistics())
+cat(toJSON(generateSummaryStatistics()))
