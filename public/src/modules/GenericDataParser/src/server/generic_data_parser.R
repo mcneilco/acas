@@ -590,18 +590,23 @@ getExcelColumnFromNumber <- function(number) {
   }))
 }
 extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaintyType, uncertaintyCodeWord, commentCol, commentCodeWord) {
-  # Extracts result types, units, conc, and conc units from a list of strings
+  # Extracts result types, units, conc, and conc units from a data frame
   #
   # Args:
-  #   valueKindsVector: A charactor vector containing result types in the format "Value Kind (units) [Conc ConcUnits]"
+  #   valueKindsVector: A data frame containing result types in the format "Value Kind (units) [Conc ConcUnits]"
+  #   ignoreHeaders: A character vector of headings whose value kinds we do not need to extract (like "link")
+  #   uncertaintyType: A character vector with the type of uncertainty associated with that column (or NA, if no uncertainty)
+  #   commentCol: A logical vector indicating whether each column is a comment
+  #   uncertaintyCodeWord and commentCodeWord: Reserved words that will not appear in the input
   #
   # Returns:
-  #  A data frame containing the Value Kind, Units, concentration, and ConcUnits for each item in the result types character vector
+  #  A data frame containing the column heading, Value Kind, Units, concentration, ConcUnits, reshapeText,
+  #       time, timeUnit, uncertaintyType, and isComment, with one row for each non-ignored header
   
   require('gdata')
   
   valueKindWoExtras <- valueKindsVector[is.na(uncertaintyType) & !commentCol]
-  
+
   if(any(duplicated(unlist(valueKindWoExtras)))) {
     # This has to be a stop, otherwise it throws unexpected errors
     stop(paste0("These column headings are duplicated: ",
@@ -647,9 +652,10 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   returnDataFrame$uncertaintyType <- uncertaintyType[2:length(uncertaintyType)]
   returnDataFrame$isComment <- commentCol[2:length(commentCol)]
   
-  # Return the validated Meta Data
+  # Return a data frame with the units separated from the type, and with uncertainties and comments marked
   return(returnDataFrame)
 }
+
 organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, 
                                       rawOnlyFormat = FALSE, stateGroups = NULL, splitSubjects = NULL, inputFormat, 
                                       mainCode, errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL,
@@ -2679,7 +2685,7 @@ getPreviousExperimentCodes <- function(experiment) {
 }
 getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolName = NULL) {
   # Returns url link for viewer
-  
+
   if(is.null(experimentName)) {
     experimentName <- getPreferredName(experiment)
   }
