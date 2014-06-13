@@ -278,11 +278,13 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, t
   resultTable <- resultTable[!resultTable$fluorescent,]
   
   if(dryRun) {
-    pdfLocation <- paste0("privateTempFiles/",experiment$codeName,"_SummaryDRAFT.pdf")
+    pdfLocation <- paste0(experiment$codeName, "_SummaryDRAFT.pdf")
+    pdfSave <- paste0("privateTempFiles/", pdfLocation)
   } else {
-    pdfLocation <- racas::getUploadedFilePath(paste0("experiments/",experiment$codeName,"/analysis/",experiment$codeName,"_Summary.pdf"))
+    pdfLocation <- paste0("experiments/",experiment$codeName,"/analysis/",experiment$codeName,"_Summary.pdf")
+    pdfSave <- racas::getUploadedFilePath(pdfLocation)
   }
-  pdf(file = pdfLocation, width = 8.5, height = 11)
+  pdf(file = pdfSave, width = 8.5, height = 11)
   if(dryRun) {
     textplot("Validation DRAFT")
   }
