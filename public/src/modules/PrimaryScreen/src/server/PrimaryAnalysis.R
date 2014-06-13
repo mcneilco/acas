@@ -775,7 +775,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       resultOperator <- "<"
       resultValue <- min(subjectData$numericValue)
     } else {
-      resultOperator <- NA
+      resultOperator <- as.character(NA)
       resultValue <- mean(subjectData$numericValue)
     }
     return(list(
@@ -788,11 +788,11 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       else {as.character(NA)},
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
-      "fileValue" = if (length(unique(subjectData$fileValue)) == 1) subjectData$fileValue[1] else NA,
-      "comments" = if (length(unique(subjectData$comments)) == 1) subjectData$comments[1] else NA,
+      "fileValue" = if (length(unique(subjectData$fileValue)) == 1) subjectData$fileValue[1] else as.character(NA),
+      "comments" = if (length(unique(subjectData$comments)) == 1) subjectData$comments[1] else as.character(NA),
       "publicData" = subjectData$publicData[1],
       "numberOfReplicates" = nrow(subjectData),
-      "uncertaintyType" = if(is.numeric(resultValue)) "standard deviation" else NA,
+      "uncertaintyType" = if(is.numeric(resultValue)) "standard deviation" else as.character(NA),
       "uncertainty" = sd(subjectData$numericValue)
     ))
   }
