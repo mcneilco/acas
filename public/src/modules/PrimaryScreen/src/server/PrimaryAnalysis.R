@@ -88,7 +88,6 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
   #   barcode:        A vector of the barcodes
   #   well:           A vector of the wells
   #   wellTabe:       A data.frame with columns of BARCODE, WELL_NAME, BATCH_CODE,CONCENTRATION,CONCENTRATION_UNIT
-  #   agonist:        A list with names: batchCode, concentration, concentrationUnits
   # Returns:
   #   A data.frame with batchName,concentration, and concUnit that matches the order of the input barcodes and wells
   
@@ -1333,6 +1332,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   barcodeList <- levels(resultTable$barcode)
   
   wellTable <- createWellTable(barcodeList, testMode)
+  
+  # apply dilution
+  if (!is.null(parameters$dilutionRatio)) {
+    wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
+  }
   
   wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
   
