@@ -631,7 +631,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     
     return(longResults)
   }
-  meltedSubjectData <- makeLongData(subjectData, resultTypes=resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode", "barcode"))
+  meltedSubjectData <- makeLongData(subjectData, resultTypes=resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode", "barcode", "well type"))
   experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath,"experiments/",experimentId)))
   
   subjectData <- meltedSubjectData
@@ -1284,15 +1284,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     metadataState <- Filter(function(x) x$lsKind == "experiment metadata", 
                             x = experiment$lsStates)[[1]]
-    
-    # metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
-  
+    if(!dryRun) {
+      setAnalysisStatus(status = "parsing", metadataState)
+    }
   } else {
     experiment <- list(id = experimentId, codeName = "test", version = 0)
-  }
-  
-  if(!dryRun) {
-    #setAnalysisStatus(status="parsing", metadataState)
   }
   
   parameters <- getExperimentParameters(inputParameters)
@@ -1420,7 +1416,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if (parameters$aggregateReplicates == "across plates") {
     treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
                                                 stDev = sd(values), n=length(values), 
-                                                sdScore = mean(sdScore), threshold = all(threshold),
+                                                sdScore = mean(sdScore), 
+                                                threshold = ifelse(all(threshold), "yes", "no"),
                                                 latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
                                          by=list(batchName,fluorescent,concUnit,hasAgonist, wellType)]
   } else if (parameters$aggregateReplicates == "within plates") {
@@ -1428,7 +1425,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                 stDev = sd(values), 
                                                 n=length(values),
                                                 sdScore = mean(sdScore),
-                                                threshold = all(threshold),
+                                                threshold = ifelse(all(threshold), "yes", "no"),
                                                 latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
                                          by=list(batchName,fluorescent,barcode,concUnit,hasAgonist, wellType)]
   } else {
