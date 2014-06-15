@@ -3,6 +3,7 @@
 #npm install -g forever
 #npm install -g grunt-cli
 #npm install -g grunt
+#install_directory is the folder that holds the acas installs
 usage ()
 {
   echo 'Usage : Script -d <install_directory> -u <bitbucket_user> -p <bitbucket_password>'
