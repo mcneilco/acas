@@ -549,6 +549,10 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                   'numericValue','stringValue', 'stringValue', 'inlineFileValue'),
     stringsAsFactors = FALSE)
   
+  if(is.null(subjectData$"comparison graph")) {
+    resultTypes <- resultTypes[resultTypes$DataColumn != 'comparison graph', ]
+  }
+  
   subjectData$DoseUnit <- NULL
   subjectData$fileName <- NULL
   
@@ -1623,8 +1627,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                              threshold = efficacyThreshold, experiment)
     
-    source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
-    resultTable <- saveComparisonTraces(resultTable, paste0("experiments/", experiment$codeName, "/images"))
+    if (parameters$aggregateReplicates != "no") {
+      source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
+      resultTable <- saveComparisonTraces(resultTable, paste0("experiments/", experiment$codeName, "/images"))
+    }
+
     #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
     lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
