@@ -2477,7 +2477,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     # Grab the Raw Results Section
     subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
     
-    groupByColumns <- c(subjectData[2, 2], 'batchCode')
+    groupByColumns <- c(subjectData[2, 2], 'link')
     groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
     
     keepColumn <- "Response"
