@@ -1224,6 +1224,10 @@ getExperimentParameters <- function(inputParameters) {
     parameters$aggregateReplicates<- "no"
   }
   
+  if (is.null(parameters$dilutionRatio)) {
+    parameters$dilutionRatio <- 2
+  }
+  
   return(parameters)
 }
 setAnalysisStatus <- function(status, metadataState) {
