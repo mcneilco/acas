@@ -1,10 +1,10 @@
 # Unit tests for data validation functions
 # Author: Jennifer Rogers
 # These are NOT integration tests -- we do
-# not test that the information from the internet
-# works correctly, just that the function
+# not test that the roo services
+# work correctly, just that the function
 # performs as expected if the response from
-# the internet is as expected
+# the roo services is as expected
 
 library(testthat)
 source("public/src/modules/GenericDataParser/src/server/generic_data_parser.R")
