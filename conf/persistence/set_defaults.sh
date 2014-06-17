@@ -83,7 +83,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 
 {kindName: "protocol metadata", lsType:{id:1, version:0}},
 
-{kindName: "plate information", lsType:{id:1, version:0}}
+{kindName: "plate information", lsType:{id:1, version:0}},
+{kindName: "subject metadata", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAMEFQDN":8080/acas/statekinds/jsonArray
 
 
