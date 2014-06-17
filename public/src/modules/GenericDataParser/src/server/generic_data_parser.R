@@ -1448,32 +1448,42 @@ validateProject <- function(projectName, configList, errorEnv) {
     return("")
   }
 }
-validateScientist <- function(scientistName, configList) {
+validateScientist <- function(scientistName, configList, testMode = FALSE) {
   require('utils')
   require('RCurl')
   require('rjson')
   
   response <- NULL
   username <- "username"
-  tryCatch({
-    response <- getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.users.path, "/", scientistName)))
-    if (response == "") {
-      errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
+  
+  if (!testMode) {
+    response <- tryCatch({
+      getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.users.path, "/", scientistName)))
+    }, error = function(e) {
+      errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
       return("")
+    }) 
+  } else { # In test mode, provide the three possible answers
+    if (scientistName == "unknownUser") {
+      response <- ""
+    } else if (scientistName == "") {
+      response <- "Cannot GET /api/users/"
+    } else {
+      response <- toJSON(list(username = scientistName))
     }
+  }
+  
+  if (response == "") {
+    errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
+    return("")
+  }
+  
+  username <- tryCatch({
+    fromJSON(response)$username
   }, error = function(e) {
     errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
     return("")
   })
-  
-  if (!is.null(response)) {
-    tryCatch({
-      username <- fromJSON(response)$username
-    }, error = function(e) {
-      errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
-      return("")
-    })
-  }
   
   return(username)
 }
