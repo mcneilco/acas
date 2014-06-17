@@ -54,15 +54,14 @@ source("public/src/conf/genericDataParserConfiguration.R")
 
 #####
 # Define Functions
-validateMetaData <- function(metaData, configList, formatSettings = list(), errorEnv = NULL) {
+validateMetaData <- function(metaData, configList, formatSettings = list(), errorEnv = NULL, testMode = FALSE) {
   # Valides the meta data section
   #
   # Args:
   #   metaData: 			A "data.frame" of two columns containing the Meta data for the experiment
-  #	expectedDataFormat:	A "data.frame" of three columns and the same number of rows as metaData describing the Meta data data frame and it's expected classes
-  #							Column 1) headers		- String values of the experiment meta data to extract
-  #							Column 2) class		- String value of the expected class of the given value
-  #							Column 3) isNullable	- Boolean containing whether the field is nullable or not
+  #	  configList:     Also known as racas::applicationSettings
+  #   formatSettings: A nested list containing types of experiments and extra information about
+  #                   them (particularly relevant here is the "extraHeaders" column)
   # Returns:
   #  A data frame containing the validated meta data
   
@@ -181,7 +180,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
     validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, errorEnv) 
   }
   if (!is.null(metaData$Scientist)) {
-    validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList) 
+    validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList, testMode) 
   }
   
   if(!is.null(validatedMetaData$"Experiment Name") && grepl("CREATETHISEXPERIMENT$", validatedMetaData$"Experiment Name")) {
