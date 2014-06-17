@@ -241,8 +241,8 @@ test_that("Error messages for unrecognized columns respect capitalization", {
 })
 
 
-test_that("Leading and trailing whitespace is trimmed", {
-  # Currently a known error
+test_that("Leading and trailing whitespace is trimmed (bug 195)", {
+  # Currently a known error, bug #195
   errorList <<- list()
   expect_identical(c("Datatype", "Text", "Number", "Date"), 
                    validateCalculatedResultDatatypes(c("Datatype", "  Text", "Number", "Date  "),
@@ -257,8 +257,8 @@ test_that("Leading and trailing whitespace is trimmed", {
 })
 
 
-test_that("lockCorpBatchId works as expected", {
-  # Currently a known error
+test_that("lockCorpBatchId works as expected (bug 198)", {
+  # Currently a known error, bug #198
   errorList <<- list()
   expect_identical(c("Boxes", "Comments", "Text"), validateCalculatedResultDatatypes(c("Boxes", "comments", "Text"), 
                                                                                      c("Corporate Batch ID", "Boxes", "Refrigerators"), FALSE))
