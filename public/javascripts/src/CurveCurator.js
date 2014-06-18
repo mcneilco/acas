@@ -3,11 +3,76 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
+  window.DoseResponseKnockoutPanelController = (function(_super) {
+    __extends(DoseResponseKnockoutPanelController, _super);
+
+    function DoseResponseKnockoutPanelController() {
+      this.handleDoseResponseKnockoutPanelHidden = __bind(this.handleDoseResponseKnockoutPanelHidden, this);
+      this.setupKnockoutReasonPicklist = __bind(this.setupKnockoutReasonPicklist, this);
+      this.show = __bind(this.show, this);
+      this.render = __bind(this.render, this);
+      return DoseResponseKnockoutPanelController.__super__.constructor.apply(this, arguments);
+    }
+
+    DoseResponseKnockoutPanelController.prototype.template = _.template($("#DoseResponseKnockoutPanelView").html());
+
+    DoseResponseKnockoutPanelController.prototype.render = function() {
+      this.$el.empty();
+      this.$el.html(this.template());
+      this.setupKnockoutReasonPicklist();
+      this.$('.bv_doseResponseKnockoutPanel').on("show", (function(_this) {
+        return function() {
+          return _this.$('.bv_dataDictPicklist').focus();
+        };
+      })(this));
+      this.$('.bv_doseResponseKnockoutPanel').on("keypress", (function(_this) {
+        return function(key) {
+          if (key.keyCode === 13) {
+            return _this.$('.bv_doseResponseKnockoutPanelOKBtn').click();
+          }
+        };
+      })(this));
+      this.$('.bv_doseResponseKnockoutPanel').on("hidden", (function(_this) {
+        return function() {
+          return _this.handleDoseResponseKnockoutPanelHidden();
+        };
+      })(this));
+      return this;
+    };
+
+    DoseResponseKnockoutPanelController.prototype.show = function() {
+      this.$('.bv_doseResponseKnockoutPanel').modal({
+        backdrop: "static"
+      });
+      return this.$('.bv_doseResponseKnockoutPanel').modal("show");
+    };
+
+    DoseResponseKnockoutPanelController.prototype.setupKnockoutReasonPicklist = function() {
+      this.knockoutReasonList = new PickListList();
+      this.knockoutReasonList.url = "/api/dataDict/wellflags";
+      return this.knockoutReasonListController = new PickListSelectController({
+        el: this.$('.bv_dataDictPicklist'),
+        collection: this.knockoutReasonList
+      });
+    };
+
+    DoseResponseKnockoutPanelController.prototype.handleDoseResponseKnockoutPanelHidden = function() {
+      var reason;
+      reason = this.knockoutReasonListController.getSelectedCode();
+      return this.trigger('reasonSelected', reason);
+    };
+
+    return DoseResponseKnockoutPanelController;
+
+  })(Backbone.View);
+
   window.DoseResponsePlotController = (function(_super) {
     __extends(DoseResponsePlotController, _super);
 
     function DoseResponsePlotController() {
       this.initJSXGraph = __bind(this.initJSXGraph, this);
+      this.knockoutPoints = __bind(this.knockoutPoints, this);
+      this.showDoseResponseKnockoutPanel = __bind(this.showDoseResponseKnockoutPanel, this);
       this.render = __bind(this.render, this);
       return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
     }
@@ -23,6 +88,10 @@
       this.$el.html(this.template());
       if (this.model != null) {
         this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
+        this.doseResponseKnockoutPanelController = new DoseResponseKnockoutPanelController({
+          el: this.$('.bv_doseResponseKnockoutPanel')
+        });
+        this.doseResponseKnockoutPanelController.render();
         this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
         return this;
       } else {
@@ -30,8 +99,33 @@
       }
     };
 
+    DoseResponsePlotController.prototype.showDoseResponseKnockoutPanel = function(selectedPoints) {
+      this.doseResponseKnockoutPanelController.show();
+      this.doseResponseKnockoutPanelController.on('reasonSelected', (function(_this) {
+        return function(reason) {
+          return _this.knockoutPoints(selectedPoints, reason);
+        };
+      })(this));
+    };
+
+    DoseResponsePlotController.prototype.knockoutPoints = function(selectedPoints, reason) {
+      selectedPoints.forEach((function(_this) {
+        return function(selectedPoint) {
+          _this.points[selectedPoint.idx].flag_user = reason;
+          _this.points[selectedPoint.idx]['flag_on.load'] = "NA";
+          _this.points[selectedPoint.idx].flag_algorithm = "NA";
+          return selectedPoint.drawAsKnockedOut();
+        };
+      })(this));
+      this.model.set({
+        points: this.points
+      });
+      this.model.trigger('change');
+    };
+
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var brd, color, createSelection, fct, flag_algorithm, flag_on_load, flag_user, getMouseCoords, ii, log10, p1, t, x, y;
+      var brd, color, createSelection, fct, flag_algorithm, flag_on_load, flag_user, getMouseCoords, ii, includePoints, log10, p1, promptForKnockout, t, x, y;
+      this.points = points;
       log10 = function(val) {
         return Math.log(val) / Math.LN10;
       };
@@ -44,14 +138,26 @@
             wheel: false
           }
         });
-        brd.getKnockoutReason = function() {
-          var reason;
-          reason = prompt("Please enter a reason", "Outlier");
-          return reason;
-        };
-        brd.model = this.model;
+        promptForKnockout = (function(_this) {
+          return function(selectedPoints) {
+            return _this.showDoseResponseKnockoutPanel(selectedPoints);
+          };
+        })(this);
+        includePoints = (function(_this) {
+          return function(selectedPoints) {
+            selectedPoints.forEach(function(selectedPoint) {
+              _this.points[selectedPoint.idx].flag_user = "NA";
+              _this.points[selectedPoint.idx]['flag_on.load'] = "NA";
+              _this.points[selectedPoint.idx].flag_algorithm = "NA";
+              return selectedPoint.drawAsIncluded();
+            });
+            _this.model.set({
+              points: _this.points
+            });
+            _this.model.trigger('change');
+          };
+        })(this);
         ii = 0;
-        window.points = points;
         while (ii < points.length) {
           x = log10(points[ii].dose);
           y = points[ii].response;
@@ -77,6 +183,7 @@
               strokecolor: color,
               withLabel: false
             });
+            p1.knockedOut = true;
           } else {
             p1 = brd.create("point", [x, y], {
               name: points[ii].response_sv_id,
@@ -86,46 +193,31 @@
               strokecolor: "blue",
               withLabel: false
             });
+            p1.knockedOut = false;
           }
           p1.idx = ii;
           p1.isDoseResponsePoint = true;
           p1.isSelected = false;
-          p1.knockOutPoint = function(reason) {
-            this.setAttribute({
+          p1.drawAsKnockedOut = function() {
+            return this.setAttribute({
               strokecolor: "red",
-              face: "cross"
-            });
-            points[this.idx].flag_user = reason;
-            points[this.idx]['flag_on.load'] = "NA";
-            points[this.idx].flag_algorithm = "NA";
-            return brd.model.set({
-              points: points
+              face: "cross",
+              knockedOut: true
             });
           };
-          p1.includePoint = function() {
-            this.setAttribute({
+          p1.drawAsIncluded = function() {
+            return this.setAttribute({
               strokecolor: "blue",
-              face: "circle"
-            });
-            points[this.idx].flag_user = "NA";
-            points[this.idx]['flag_on.load'] = "NA";
-            points[this.idx].flag_algorithm = "NA";
-            return brd.model.set({
-              points: points
+              face: "circle",
+              knockedOut: false
             });
           };
           p1.handlePointClicked = function() {
-            var reason;
-            if (points[this.idx].flag_user === "NA" & points[this.idx]['flag_on.load'] === "NA" & points[this.idx].flag_algorithm === "NA") {
-              reason = brd.getKnockoutReason();
-              this.knockOutPoint(reason);
+            if (!this.knockedOut) {
+              promptForKnockout([this]);
             } else {
-              this.includePoint();
+              includePoints([this]);
             }
-            brd.model.set({
-              points: points
-            });
-            brd.model.trigger('change');
           };
           p1.on("mouseup", p1.handlePointClicked, p1);
           p1.flagLabel = (function() {
@@ -228,7 +320,7 @@
           };
           selection.on('update', selection.update, selection);
           brd.mouseUp = function() {
-            var knockoutMode, reason, selected;
+            var knockoutMode, selected;
             selection = brd.elementsByName.selection;
             if (selection != null) {
               knockoutMode = selection.knockoutMode;
@@ -241,16 +333,10 @@
               if (selected != null) {
                 if (selected.length > 0) {
                   if (knockoutMode) {
-                    reason = brd.getKnockoutReason();
+                    return promptForKnockout(selected);
+                  } else {
+                    return includePoints(selected);
                   }
-                  selected.forEach(function(point) {
-                    if (knockoutMode) {
-                      return point.knockOutPoint(reason);
-                    } else {
-                      return point.includePoint();
-                    }
-                  });
-                  return brd.model.trigger('change');
                 }
               }
             }
@@ -402,7 +488,6 @@
           this.$('.bv_fail').show();
         }
       }
-      console.log(this.model.get('userApproved'));
       if (this.model.get('userApproved') === 'NA') {
         this.$('.bv_na').show();
         this.$('.bv_thumbsUp').hide();
@@ -422,14 +507,12 @@
 
     CurveEditorController.prototype.setModel = function(model) {
       this.model = model;
-      console.log("got set model");
       this.render();
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.on('sync', this.handleModelSync);
     };
 
     CurveEditorController.prototype.handleModelSync = function() {
-      console.log("got sync");
       UtilityFunctions.prototype.hideProgressModal(this.$('.bv_statusDropDown'));
       return this.render();
     };
@@ -523,7 +606,6 @@
       this.handleModelSync();
       curveid = this.model.get('curveid');
       userApproved = this.model.get('userApproved');
-      console.log(userApproved);
       return this.trigger('curveDetailUpdated', curveid, userApproved);
     };
 

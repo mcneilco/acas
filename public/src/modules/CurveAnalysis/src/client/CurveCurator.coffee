@@ -1,20 +1,74 @@
+class window.DoseResponseKnockoutPanelController extends Backbone.View
+	template: _.template($("#DoseResponseKnockoutPanelView").html())
+
+	render: =>
+		@$el.empty()
+		@$el.html @template()
+		@setupKnockoutReasonPicklist()
+		@$('.bv_doseResponseKnockoutPanel').on "show", =>
+			@$('.bv_dataDictPicklist').focus()
+		@$('.bv_doseResponseKnockoutPanel').on "keypress", (key)=>
+			if key.keyCode == 13
+				@$('.bv_doseResponseKnockoutPanelOKBtn').click()
+		@$('.bv_doseResponseKnockoutPanel').on "hidden", =>
+			@handleDoseResponseKnockoutPanelHidden()
+		@
+
+	show: =>
+		@$('.bv_doseResponseKnockoutPanel').modal
+			backdrop: "static"
+		@$('.bv_doseResponseKnockoutPanel').modal "show"
+
+	setupKnockoutReasonPicklist: =>
+		@knockoutReasonList = new PickListList()
+		@knockoutReasonList.url = "/api/dataDict/wellflags"
+		@knockoutReasonListController = new PickListSelectController
+			el: @$('.bv_dataDictPicklist')
+			collection: @knockoutReasonList
+
+	handleDoseResponseKnockoutPanelHidden: =>
+		 reason = @knockoutReasonListController.getSelectedCode()
+		 @trigger 'reasonSelected', reason
+
 class window.DoseResponsePlotController extends AbstractFormController
 	template: _.template($("#DoseResponsePlotView").html())
 	initialize: ->
 		@pointList = []
+
 	render: =>
 		@$el.empty()
 		@$el.html @template()
 		if @model?
 			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
+			@doseResponseKnockoutPanelController= new DoseResponseKnockoutPanelController
+				el: @$('.bv_doseResponseKnockoutPanel')
+			@doseResponseKnockoutPanelController.render()
 			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
 			@
 		else
 			@$el.html "Plot data not loaded"
 
+	showDoseResponseKnockoutPanel: (selectedPoints) =>
+		@doseResponseKnockoutPanelController.show()
+		@doseResponseKnockoutPanelController.on 'reasonSelected', (reason) =>
+			@knockoutPoints(selectedPoints,reason)
+		return
+
+	knockoutPoints: (selectedPoints, reason) =>
+			selectedPoints.forEach (selectedPoint) =>
+				@points[selectedPoint.idx].flag_user = reason
+				@points[selectedPoint.idx]['flag_on.load'] = "NA"
+				@points[selectedPoint.idx].flag_algorithm = "NA"
+				selectedPoint.drawAsKnockedOut()
+			@model.set points: @points
+			@model.trigger 'change'
+			return
+
 	initJSXGraph: (points, curve, plotWindow, divID) =>
+		@points = points
 		log10 = (val) ->
 			Math.log(val) / Math.LN10
+
 		if typeof (brd) is "undefined"
 			brd = JXG.JSXGraph.initBoard(divID,
 				boundingbox: plotWindow
@@ -24,14 +78,21 @@ class window.DoseResponsePlotController extends AbstractFormController
 					wheel: false
 				},
 			)
-			brd.getKnockoutReason = ->
-				reason = prompt("Please enter a reason","Outlier");
-				return reason
 
-			brd.model = @model
+			promptForKnockout = (selectedPoints) =>
+				@showDoseResponseKnockoutPanel selectedPoints
+
+			includePoints = (selectedPoints) =>
+				selectedPoints.forEach (selectedPoint) =>
+					@points[selectedPoint.idx].flag_user = "NA"
+					@points[selectedPoint.idx]['flag_on.load'] = "NA"
+					@points[selectedPoint.idx].flag_algorithm = "NA"
+					selectedPoint.drawAsIncluded()
+				@model.set points: @points
+				@model.trigger 'change'
+				return
 
 			ii = 0
-			window.points = points
 			while ii < points.length
 				x = log10 points[ii].dose
 				y = points[ii].response
@@ -52,6 +113,8 @@ class window.DoseResponsePlotController extends AbstractFormController
 						strokecolor: color
 						withLabel: false
 					)
+					p1.knockedOut = true
+
 				else
 					p1 = brd.create("point", [x,y],
 						name: points[ii].response_sv_id
@@ -60,37 +123,27 @@ class window.DoseResponsePlotController extends AbstractFormController
 						face: "circle"
 						strokecolor: "blue"
 						withLabel: false
-
 					)
+					p1.knockedOut = false
 
 				p1.idx = ii
 				p1.isDoseResponsePoint = true
 				p1.isSelected = false
-				p1.knockOutPoint = (reason) ->
+				p1.drawAsKnockedOut = ->
 					@setAttribute
 						strokecolor: "red"
 						face: "cross"
-					points[@idx].flag_user = reason
-					points[@idx]['flag_on.load'] = "NA"
-					points[@idx].flag_algorithm = "NA"
-					brd.model.set points: points
-				p1.includePoint = ->
+						knockedOut: true
+				p1.drawAsIncluded = ->
 					@setAttribute
 						strokecolor: "blue"
 						face: "circle"
-					points[@idx].flag_user = "NA"
-					points[@idx]['flag_on.load'] = "NA"
-					points[@idx].flag_algorithm = "NA"
-					brd.model.set points: points
+						knockedOut: false
 				p1.handlePointClicked = ->
-					if (points[@idx].flag_user == "NA" & points[@idx]['flag_on.load'] == "NA" & points[@idx].flag_algorithm == "NA")
-						reason = brd.getKnockoutReason()
-						@knockOutPoint reason
+					if (!@knockedOut)
+						promptForKnockout([@])
 					else
-						@includePoint()
-					brd.model.set points: points
-
-					brd.model.trigger 'change'
+						includePoints([@])
 					return
 
 				p1.on "mouseup", p1.handlePointClicked, p1
@@ -186,13 +239,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 						if selected?
 							if selected.length > 0
 								if knockoutMode
-									reason = brd.getKnockoutReason()
-								selected.forEach (point) ->
-									if knockoutMode
-										point.knockOutPoint(reason)
-									else
-										point.includePoint()
-								brd.model.trigger 'change'
+									promptForKnockout(selected)
+								else
+									includePoints(selected)
 
 				brd.on 'mouseup', brd.mouseUp, brd
 				brd.followSelection = (e) ->
@@ -272,23 +321,18 @@ class window.CurveEditorController extends Backbone.View
 			@$('.bv_category').html @model.get('category')
 		else
 			@$el.html "No curve selected"
-		if @model.get('algorithmApproved') == 'NA'
+		if @model.get('flagAlgorithm') == 'NA'
+			@$('.bv_pass').show()
+			@$('.bv_fail').hide()
+		else
 			@$('.bv_pass').hide()
 			@$('.bv_fail').show()
-		else
-			if @model.get('algorithmApproved') == true
-				@$('.bv_pass').show()
-				@$('.bv_fail').hide()
-			else
-				@$('.bv_pass').hide()
-				@$('.bv_fail').show()
-		console.log @model.get('userApproved')
-		if @model.get('userApproved') == 'NA'
+		if @model.get('flagUser') == 'NA'
 			@$('.bv_na').show()
 			@$('.bv_thumbsUp').hide()
 			@$('.bv_thumbsDown').hide()
 		else
-			if @model.get('userApproved') == true
+			if @model.get('flagUser') == 'Approved'
 				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').show()
 				@$('.bv_thumbsDown').hide()
@@ -299,13 +343,11 @@ class window.CurveEditorController extends Backbone.View
 
 	setModel: (model)->
 		@model = model
-		console.log "got set model"
 		@render()
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@model.on 'sync', @handleModelSync
 
 	handleModelSync: =>
-		console.log "got sync"
 		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
 		@render()
 
@@ -360,7 +402,6 @@ class window.CurveEditorController extends Backbone.View
 		@handleModelSync()
 		curveid = @model.get 'curveid'
 		userApproved = @model.get 'userApproved'
-		console.log userApproved
 		@trigger 'curveDetailUpdated', curveid, userApproved
 
 class window.Curve extends Backbone.Model
@@ -425,18 +466,22 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl += @model.get('curveid')+"&height=120&width=250&showAxes=false&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
-		if @model.get('algorithmApproved') == true
+		if @model.get('flagAlgorithm') == 'NA'
 			@$('.bv_pass').show()
 			@$('.bv_fail').hide()
 		else
-			@$('.bv_pass').hide()
-			@$('.bv_fail').show()
-		if @model.get('userApproved') == null
+			if @model.get('flagAlgorithm') == true
+				@$('.bv_pass').show()
+				@$('.bv_fail').hide()
+			else
+				@$('.bv_pass').hide()
+				@$('.bv_fail').show()
+		if @model.get('flagUser') == 'NA'
 			@$('.bv_na').show()
 			@$('.bv_thumbsUp').hide()
 			@$('.bv_thumbsDown').hide()
 		else
-			if @model.get('userApproved') == true
+			if @model.get('flagUser') == true
 				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').show()
 				@$('.bv_thumbsDown').hide()
