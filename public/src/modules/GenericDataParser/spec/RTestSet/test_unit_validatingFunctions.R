@@ -12,6 +12,7 @@ context("validationFunctions")
 
 errorList <<- list()
 
+
 test_that("validateCharacter (from racas) works in normal cases", {
   expect_equal("hello world!", validateCharacter("hello world!"))
   expect_equal("42", validateCharacter(42))
@@ -85,4 +86,9 @@ test_that("validateNumeric gives NA for non-numeric values", {
   errorList<<-list()
   expect_true(is.na(validateNumeric(as.Date("2013-01-04"))))
   expect_identical(list("An entry was expected to be a number but was: '2013-01-04'. Please enter a number instead."), errorList)
+})
+
+test_that("validateDate consistently returns a date (bug RACAS#6)", {
+  expect_that(validateDate("2012-11-07"), is_a("Date"))
+  expect_that(validateDate("2012/11/07"), is_a("Date"))
 })
