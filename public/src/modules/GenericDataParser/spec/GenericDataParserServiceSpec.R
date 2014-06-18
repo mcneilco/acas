@@ -29,6 +29,20 @@ testGenericDataParser <- function() {
   test_dir(filePathToTests)
 }
 
+# Our own expectation: gives_no_warning()
+# Please copy/paste into any unit test file
+# where you want to use it
+gives_no_warning <- function() {
+  function(expr)
+  {
+    warnings <- evaluate_promise(expr)$warnings
+    expectation(
+      length(warnings) == 0,
+      paste0(length(warnings), " warnings created")
+    )
+  }
+}
+
 
 testGetExcelColumnFromNumber <- function() {
   test_file(file.path(filePathToTests, "test_unit_getExcelColumnFromNumber.R"))
