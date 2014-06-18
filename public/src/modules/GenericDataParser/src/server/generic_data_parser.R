@@ -2350,7 +2350,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   library('RCurl')
   
   pathToGenericDataFormatExcelFile <- racas::getUploadedFilePath(pathToGenericDataFormatExcelFile)
-  reportFilePath <- racas::getUploadedFilePath(reportFilePath)
+  if (!is.null(reportFilePath) && reportFilePath != "") {
+    reportFilePath <- racas::getUploadedFilePath(reportFilePath)
+  }
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
   
