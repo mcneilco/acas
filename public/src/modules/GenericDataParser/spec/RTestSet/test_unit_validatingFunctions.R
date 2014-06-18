@@ -90,5 +90,5 @@ test_that("validateNumeric gives NA for non-numeric values", {
 
 test_that("validateDate consistently returns a date (bug RACAS#6)", {
   expect_that(validateDate("2012-11-07"), is_a("Date"))
-  expect_that(validateDate("2012/11/07"), is_a("Date"))
+  expect_that(suppressWarnings(validateDate("2012/11/07")), is_a("Date"))
 })
