@@ -42,39 +42,42 @@
 	routeSet_3 = require("./routes/CurveCuratorRoutes.js");
 	if (routeSet_3.setupAPIRoutes) {
 		routeSet_3.setupAPIRoutes(app); }
-	routeSet_4 = require("./routes/DocForBatchesRoutes.js");
+	routeSet_4 = require("./routes/DataDictionaryServiceRoutes.js");
 	if (routeSet_4.setupAPIRoutes) {
 		routeSet_4.setupAPIRoutes(app); }
-	routeSet_5 = require("./routes/DoseResponseFitRoutes.js");
+	routeSet_5 = require("./routes/DocForBatchesRoutes.js");
 	if (routeSet_5.setupAPIRoutes) {
 		routeSet_5.setupAPIRoutes(app); }
-	routeSet_6 = require("./routes/ExperimentBrowserRoutes.js");
+	routeSet_6 = require("./routes/DoseResponseFitRoutes.js");
 	if (routeSet_6.setupAPIRoutes) {
 		routeSet_6.setupAPIRoutes(app); }
-	routeSet_7 = require("./routes/ExperimentServiceRoutes.js");
+	routeSet_7 = require("./routes/ExperimentBrowserRoutes.js");
 	if (routeSet_7.setupAPIRoutes) {
 		routeSet_7.setupAPIRoutes(app); }
-	routeSet_8 = require("./routes/GeneDataQueriesRoutes.js");
+	routeSet_8 = require("./routes/ExperimentServiceRoutes.js");
 	if (routeSet_8.setupAPIRoutes) {
 		routeSet_8.setupAPIRoutes(app); }
-	routeSet_9 = require("./routes/GenericDataParserRoutes.js");
+	routeSet_9 = require("./routes/GeneDataQueriesRoutes.js");
 	if (routeSet_9.setupAPIRoutes) {
 		routeSet_9.setupAPIRoutes(app); }
-	routeSet_10 = require("./routes/PreferredBatchIdService.js");
+	routeSet_10 = require("./routes/GenericDataParserRoutes.js");
 	if (routeSet_10.setupAPIRoutes) {
 		routeSet_10.setupAPIRoutes(app); }
-	routeSet_11 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_11 = require("./routes/PreferredBatchIdService.js");
 	if (routeSet_11.setupAPIRoutes) {
 		routeSet_11.setupAPIRoutes(app); }
-	routeSet_12 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_12 = require("./routes/ProjectServiceRoutes.js");
 	if (routeSet_12.setupAPIRoutes) {
 		routeSet_12.setupAPIRoutes(app); }
-	routeSet_13 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_13 = require("./routes/ProtocolServiceRoutes.js");
 	if (routeSet_13.setupAPIRoutes) {
 		routeSet_13.setupAPIRoutes(app); }
-	routeSet_14 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_14 = require("./routes/RunPrimaryAnalysisRoutes.js");
 	if (routeSet_14.setupAPIRoutes) {
 		routeSet_14.setupAPIRoutes(app); }
+	routeSet_15 = require("./routes/ServerUtilityFunctions.js");
+	if (routeSet_15.setupAPIRoutes) {
+		routeSet_15.setupAPIRoutes(app); }
 
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("ACAS API server listening on port " + app.get('port'));
