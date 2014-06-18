@@ -195,6 +195,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
 }
 validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,tempIdLabel, errorEnv) {
   # Valides the treatment group data (for now, this only validates the temp id's)
+  # As of 2014-06-18, this function appears to be unused.
   #
   # Args:
   #   treatmentGroupData: 	A "data.frame" of the treatment group data
@@ -1192,9 +1193,8 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
   # 
   # Args:
   #   protocolName:     	    A string name of the protocol
-  #   lsTransaction:          A list that is a lsTransaction tag
-  #   recordedBy:             A string that is the scientist name
-  #   dryRun:                 A boolean that marks if information should be saved to the server
+  #   configList:             Also known as racas::applicationSettings
+  #   formFormat:             The format of the data (as a string). For example, "Dose Response"
   #
   # Returns:
   #  A list that is a protocol
