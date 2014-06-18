@@ -63,7 +63,8 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
   #   formatSettings: A nested list containing types of experiments and extra information about
   #                   them (particularly relevant here is the "extraHeaders" column)
   # Returns:
-  #  A data frame containing the validated meta data
+  #  A list containing data frame with the validated meta data, a boolean indicating whether duplicate experiment
+  #    names are allowed, and a boolean indicating whether the format is "use existing experiment"
   
   require('gdata')
   
