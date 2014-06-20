@@ -27,7 +27,7 @@
 #     parseGenericData(list(pathToGenericDataFormatExcelFile, dryRun = TRUE, ...))
 #     Example: 
 #       file.copy("~/Desktop/6_Standard_Deviation.xlsx", to="privateUploads/", overwrite = TRUE)
-
+#
 #       file.copy("/Users/smeyer/Google Drive/McNeilco/DemoACAS/5_Dose_Response.xls", to="privateUploads/", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="5_Dose_Response.xls", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/explicit_ACAS_format.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
@@ -313,7 +313,7 @@ getHiddenColumns <- function(classRow, errorEnv) {
   # Get information about which columns to hide (publicData = FALSE)
   #
   # Args:
-  #   classRow:   		A character vector of the Datatypes of the calculated results with (hidden) to mark hidden points
+  #   classRow:   		A character vector of the Datatypes of the calculated results, with (hidden) to mark hidden points
   #
   # Returns:
   #	  a boolean vector of which results are hidden
