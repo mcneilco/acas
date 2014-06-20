@@ -79,3 +79,4 @@ testExtractValueKinds <- function() {
 testValidateMetaData <- function() {
   test_file(file.path(filePathToTests, "test_unit_validateMetaData.R"))
 }
+
