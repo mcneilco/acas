@@ -252,10 +252,11 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #
   # Args:
   #	  calculatedResuluts:	      A "data.frame" of the calculated results
-  #   testMode:                 A boolean
   #   dryRun:                   A boolean
-  #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #   curveNames:               A character vector of curveNames that will be needed as extra valueKinds
+  #   testMode:                 A boolean
+  #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
+  #   mainCode:                 A string, normally the corporate batch ID
   #
   # Returns:
   #   a "data.frame" of the validated calculated results
@@ -347,7 +348,7 @@ getLinkColumns <- function(classRow, errorEnv) {
   #   classRow:     	A character vector of the Datatypes of the calculated results with [link] to mark links
   #
   # Returns:
-  #	  a numeric vector of which results are links
+  #	  a logical vector of which results are links
   
   # Pull out info about hidden columns
   dataShown <- gsub(".*\\[(.*)\\].*||.*", "\\1",classRow)
@@ -377,16 +378,18 @@ getLinkColumns <- function(classRow, errorEnv) {
   
   return(linkColumns)
 }
-validateCalculatedResultDatatypes <- function(classRow,LabelRow, lockCorpBatchId = TRUE, clobColumns=c(), errorEnv = NULL) {
+
+validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchId = TRUE, clobColumns=c(), errorEnv = NULL) {
   # Checks that datatypes entered in the Datatype row of the calculated results are valid
   #
   # Args:
-  #   classRow:     	  A character vector of the Datatypes of the calculated results (with hidden information as well)
-  #   labelRow:         A character vector with the labels for each column
+  #   classRow:     	  A character vector of the Datatypes of the calculated results (with hidden and link information as well)
+  #   LabelRow:         A character vector with the labels for each column
   #   lockCorpBatchId:  A boolean marking whether the corp batch id must be in the leftmost column
+  #   clobColumns:      Which columns have text more than 255 characters long (and need to be saved in a special format)?
   #
   # Returns:
-  #	  a character vector of the datatypes
+  #	  a character vector of the datatypes (without 'hidden' or 'link' information)
   
   require('gdata')
   
@@ -477,6 +480,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   # Args:
   #   neededValueKinds:       A character vector listed column headers
   #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds
+  #   dryRun:                 A boolean indicating whether the data should be saved
   #
   # Returns:
   #	  NULL
@@ -665,10 +669,15 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   #
   # Args:
   #   calculatedResults: 			A "data.frame" of the columns containing the calculated results for the experiment
+  #                              It can also contain other results, such as raw results
   #   lockCorpBatchId:        A boolean which marks if the mainCode is locked as the left column
   #   replaceFakeCorpBatchId: A string that is not a mainCode, will be ignored by the batch check, and will be replaced by a column of the same name
   #   rawOnlyFormat:          A boolean that describes the data format, subject based or analysis group based
-  #   entityLevel:            "analysisGroup", "treatmentGroup", or "subject"
+  #   stateGroups:            A list of state groups and their attributes, from getFormatSettings
+  #   splitSubjects:          from getFormatSettings
+  #   inputFormat:            The experiment format, such as "Dose Response"
+  #   calculateGroupingID:    Potentially a function, which will determine the ID for each group (such as a treatmentGroupID)
+  #   stateAssignments:       from getFormatSettings
   #
   # Returns:
   #	  a data frame containing the organized calculated data
@@ -1230,16 +1239,14 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
     protocol <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "protocols/", protocolList[[1]]$id))))
   }
   return(protocol)
-  
 }
 getExperimentByName <- function(experimentName, protocol, configList, duplicateNamesAllowed = FALSE) {
   # Gets the experiment entered as an input, warns if it does exist, and throws an error if it is in the wrong protocol
   # 
   # Args:
   #   experimentName:   		  A string name of the experiment
-  #   protocol:               A list that is a protocol
-  #   lsTransaction:          A list that is a lsTransaction tag
-  #   recordedBy:             A string that is the scientist name
+  #   protocol:               A list that is a protocol (containing its name, associated experiments, and other data)
+  #   configList:             Also known as racas::applicationSettings
   #   duplicatedNamesAllowed: A boolean marking if experiment names can be repeated in multiple protocols
   #
   # Returns:
@@ -1304,6 +1311,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   # Args:
   #   metaData:     	        A data.frame including "Scientist" and "Protocol Name"
   #   lsTransaction:          A list that is a lsTransaction tag
+  #   recordedBy:             A string
   #
   # Returns:
   #  A list that is a protocol
@@ -1335,6 +1343,10 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   #   metaData:               A data.frame including "Experiment Name", "Scientist", "Notebook", "Page", and "Assay Date"
   #   protocol:               A list that is a protocol
   #   lsTransaction:          A list that is a lsTransaction tag
+  #   pathToGenericDataFormatExcelFile: Currently unused; the file path to the uploaded Excel file
+  #   recordedby:             A string of the user who recorded the experiment
+  #   configList:             Also known as racas::applicationSettings
+  #   replacedExperimentCodes: Used to create a state noting what the experiment code used to be
   #
   # Returns:
   #  A list that is an experiment
@@ -1442,6 +1454,14 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   return(experiment)
 }
 validateProject <- function(projectName, configList, errorEnv) {
+  # checks with Roo services to ensure that a project is available and correct
+  # 
+  # Args:
+  #   projectName:         A string naming the project
+  #   configList:          Also known as racas::applicationSettings
+  #
+  # Returns:
+  #  The projectName if validation was successful, or the empty string if it was not
   require('RCurl')
   require('rjson')
   tryCatch({
@@ -1468,6 +1488,15 @@ validateProject <- function(projectName, configList, errorEnv) {
   }
 }
 validateScientist <- function(scientistName, configList, testMode = FALSE) {
+  # validates that the supplied scientist's name is on file with Roo services
+  # 
+  # Args:
+  #   scientistName:          A string
+  #   configList:             Also known as racas::applicationSettings
+  #   testMode:               If true, the function bypasses Roo services and gives a database-independent answer
+  #
+  # Returns:
+  #  The scientist's name if they are registered, and the empty string if they are not
   require('utils')
   require('RCurl')
   require('rjson')
@@ -1846,7 +1875,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   #   xLabel:                 A string with the name of the variable that is in the 'x' column
   #   yLabel:                 A string with the name of the variable that is in the 'y' column
   #   tempIdLabel:            A string with the name of the variable that is in the 'temp id' column
-  #   testOutputLocation:     A string with the file location to output a JSON file to when dryRun is TRUE
+  #   testOutputLocation:     When dryRun is TRUE, a string naming a file that will hold JSON output
   #   developmentMode:        A boolean that marks if the JSON request should be saved to a file
   #   appendCodeName:         A vector of lsKinds that should have the code name appended to them
   #
@@ -1928,359 +1957,360 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   return (NULL)
   
    ######################
-  analysisGroupData <<- analysisGroupData
-  analysisGroupIDandVersion <<- analysisGroupIDandVersion
-  #return()
-  
-  
-  subjects <- dlply(.data= subjectData, .variables= .(subjectID), .fun= createRawOnlySubject)
-  names(subjects) <- NULL
-  
-  savedSubjects <- saveAcasEntities(subjects, "subjects")
-  
-  subjectIds <- sapply(savedSubjects, function(x) x$id)
-  
-  subjectData$subjectID <- subjectIds[subjectData$subjectID]
-  
-  ### Subject States ===============================================
-  #######  
-  stateGroupIndex <- 1
-  subjectData$stateGroupIndex <- NA
-  for (stateGroup in stateGroups) {
-    includedRows <- subjectData$valueKind %in% stateGroup$valueKinds
-    newRows <- subjectData[includedRows & !is.na(subjectData$stateGroupIndex), ]
-    subjectData$stateGroupIndex[includedRows & is.na(subjectData$stateGroupIndex)] <- stateGroupIndex
-    if (nrow(newRows) > 0) newRows$stateGroupIndex <- stateGroupIndex
-    subjectData <- rbind.fill(subjectData,newRows)
-    stateGroupIndex <- stateGroupIndex + 1
-  }
-  
-  othersGroupIndex <- which(sapply(stateGroups, function(x) x$includesOthers))
-  subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
-  
-  makeUniqueSubjects <- function(subjectData) {
-    subjectData$subjectStateID <- subjectData$subjectStateID[1]
-    subjectData$batchCode <- subjectData$batchCode[1]
-    subjectData$originalBatchCode <- subjectData$originalBatchCode[1]
-    output <- unique(subjectData)
-    if (nrow(output) > 1) {
-      stop("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject.")
-    }
-    return(output)
-  }
-  for (i in 1:length(stateGroups)) {
-    stateGroup <- stateGroups[[i]]
-    subjectData <- ddply(subjectData, c("stateGroupIndex"), .fun = function(subjectData) {
-      if (subjectData$stateGroupIndex[1] == i && !is.null(stateGroup$collapseGroupBy)) {
-        subjectData <- ddply(subjectData, 
-                             c("valueKindAndUnit","subjectID","stateGroupIndex"),
-                             .fun=makeUniqueSubjects)
-      }
-      return(subjectData)
-    })
-  }
-  
-  subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
-                                subjectData$concentration, "-", subjectData$concentrationUnit, "-",
-                                subjectData$time, "-", subjectData$timeUnit, "-", subjectData$subjectStateID)
-  
-  subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
-  
-  subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
-  
-  stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
-  subjectData$stateID <- stateAndVersion$entityStateId
-  subjectData$stateVersion <- stateAndVersion$entityStateVersion
-  
-  ### Subject Values ======================================================================= 
-  batchCodeStateIndices <- which(sapply(stateGroups, getElement, "includesCorpName"))
-  if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
-  subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices, replaceFakeCorpBatchId))
-  
-  savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
-  
-  
-  
-  
-  
-  analysisGroupCodeNameNumber <- 1
-  
-  if(!is.null(rawResults)) {
-    subjectCodeNameList <- getAutoLabels(thingTypeAndKind="document_subject", 
-                                         labelTypeAndKind="id_codeName", 
-                                         numberOfLabels=max(rawResults$pointID))
-    subjectCodeNameNumber <- 1
-    
-    # Get a list of codes for the treatment groups
-    treatmentGroupCodeNameList <- getAutoLabels(thingTypeAndKind="document_treatment group", 
-                                                labelTypeAndKind="id_codeName", 
-                                                numberOfLabels=max(treatmentGroupData$treatmentBatch))
-    treatmentGroupCodeNameNumber <- 1
-  }
-  
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, 
-                                                   configList$server.service.external.file.type, 
-                                                   configList$server.service.external.file.service.url)
-  if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(calculatedResults[[mainCode]])
-    if (configList$server.service.external.report.registration.url != "") {
-      registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
-    } else {
-      addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
-    }
-  }
-  
-  # Each analysisGroupID creates an analysis group
-  analysisGroups <- list()
-  for (analysisGroupID in unique(calculatedResults$analysisGroupID)) {
-    
-    # Each row in the table calculatedResults creates a state
-    analysisGroupStates <- list()
-    for (concentration in unique(calculatedResults$Conc[analysisGroupID == calculatedResults$analysisGroupID])) {
-      
-      # Get the rows, but NA's are a special case
-      if(is.na(concentration)) {
-        selectedRowsConc <- analysisGroupID == calculatedResults$analysisGroupID & is.na(calculatedResults$Conc)
-      } else {
-        selectedRowsConc <- analysisGroupID == calculatedResults$analysisGroupID & concentration == calculatedResults$Conc
-      }
-      for (timePoint in unique(calculatedResults$time[selectedRowsConc])) {
-        if(is.na(timePoint)) {
-          selectedRows <- selectedRowsConc & is.na(calculatedResults$time)
-        } else {
-          selectedRows <- selectedRowsConc & timePoint == calculatedResults$time
-        }
-        analysisGroupValues <- list()
-        for (i in which(selectedRows)) {
-          # Prepare the date value
-          dateValue <- as.numeric(format(as.Date(calculatedResults$"dateValue"[i],origin="1970-01-01"), "%s"))*1000
-          # The main value (whether it is a numeric, string, or date) creates one value    
-          analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                                                                                   lsType = if (calculatedResults$"valueKind"[i]==tempIdLabel) {"stringValue"
-                                                                                   } else if (calculatedResults$"Class"[i]=="Text") {"stringValue"
-                                                                                   } else if (calculatedResults$"Class"[i]=="Date") {"dateValue"
-                                                                                   } else if (calculatedResults$"Class"[i]=="Clob") {"clobValue"
-                                                                                   } else {"numericValue"},
-                                                                                   lsKind = calculatedResults$"valueKind"[i],
-                                                                                   stringValue = if(calculatedResults$"valueKind"[i]==tempIdLabel) {
-                                                                                     paste0(calculatedResults$"stringValue"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
-                                                                                   } else if (!is.na(calculatedResults$"stringValue"[i])) {calculatedResults$"stringValue"[i]} else {NULL},
-                                                                                   clobValue = if (!is.na(calculatedResults$clobValue[i])) {calculatedResults$clobValue[i]} else {NULL},
-                                                                                   dateValue = if(is.na(dateValue)) {NULL} else {dateValue},
-                                                                                   valueOperator = if(is.na(calculatedResults$"valueOperator"[i])) {NULL} else {calculatedResults$"valueOperator"[i]},
-                                                                                   numericValue = if(is.na(calculatedResults$"numericValue"[i]) | calculatedResults$"valueKind"[i]==tempIdLabel) {NULL} 
-                                                                                   else {calculatedResults$"numericValue"[i]},
-                                                                                   valueUnit = if(is.na(calculatedResults$"valueUnit"[i])) {NULL} else {calculatedResults$"valueUnit"[i]},
-                                                                                   publicData = calculatedResults$publicData[i],
-                                                                                   lsTransaction = lsTransaction)
-        }
-        
-        if(!is.null(i)) {
-          # Adds a value for the batchCode (mainCode (Corporate Batch ID/Gene ID))
-          analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                                                                                   lsType = "codeValue",
-                                                                                   lsKind = "batch code",
-                                                                                   codeValue = as.character(calculatedResults[[mainCode]][analysisGroupID == calculatedResults$analysisGroupID][1]),
-                                                                                   publicData = calculatedResults$publicData[i],
-                                                                                   lsTransaction = lsTransaction)
-          
-          # Adds a value for the concentration if there is one
-          if (!is.na(concentration)) {
-            analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                                                                                     lsType = "numericValue",
-                                                                                     lsKind = "tested concentration",
-                                                                                     valueUnit= if(is.na(calculatedResults$"concentrationUnit"[i])){NULL} else {calculatedResults$"concentrationUnit"[i]},
-                                                                                     numericValue = calculatedResults$"Conc"[i],
-                                                                                     publicData = calculatedResults$publicData[i],
-                                                                                     lsTransaction = lsTransaction)
-          }
-          
-          # Adds a value for the time if there is one
-          if (!is.na(timePoint)) {
-            analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
-              recordedBy = recordedBy,
-              lsType = "numericValue",
-              lsKind = "time",
-              valueUnit= if(is.na(calculatedResults$"timeUnit"[i])){NULL} else {calculatedResults$"timeUnit"[i]},
-              numericValue = calculatedResults$"time"[i],
-              publicData = calculatedResults$publicData[i],
-              lsTransaction = lsTransaction)
-          }
-          # Creates the state
-          analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
-                                                                                            recordedBy=recordedBy,
-                                                                                            lsType="data",
-                                                                                            lsKind=metaData$Format[1],
-                                                                                            analysisGroupValues=analysisGroupValues)
-        }
-      }
-    }
-    # Creates Treatment Groups based on rawResults
-    treatmentGroupList <- list()
-    
-    if(!is.null(rawResults)) {
-      # Gets the temp and batch Id's for the current analysis group
-      tempID <- calculatedResults$"stringValue"[calculatedResults$analysisGroupID == analysisGroupID & calculatedResults$"valueKind" == tempIdLabel][1]
-      batchID <- as.character(calculatedResults[[mainCode]][calculatedResults$analysisGroupID == analysisGroupID][1])
-      if (!is.na(tempID) & tempID!="") {
-        for (group in unique(treatmentGroupData$treatmentBatch[treatmentGroupData[,tempIdLabel]==tempID])) {
-          treatmentGroupStates <- list()
-          treatmentGroupValues <- list()
-          for (i in which(treatmentGroupData$treatmentBatch==group & treatmentGroupData$ResultType==yLabel)) {
-            treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue(recordedBy = recordedBy, 
-              lsType= "numericValue", #numericValue or stringValue
-              lsKind= treatmentGroupData$ResultType[i], #the label
-              numericValue= if(is.na(treatmentGroupData$value[i])) {NULL} else as.numeric(as.character(treatmentGroupData$value[i])),
-              uncertainty= if(is.na(treatmentGroupData$sd[i])) {NULL} else treatmentGroupData$sd[i],
-              uncertaintyType= "standard deviation",
-              numberOfReplicates= treatmentGroupData$n[i],
-              valueUnit= if(is.na(treatmentGroupData$"valueUnit"[i])) {NULL} else {treatmentGroupData$"valueUnit"[i]},
-              lsTransaction= lsTransaction)
-            
-            treatmentGroupStates[[length(treatmentGroupStates)+1]] <- createTreatmentGroupState(
-              treatmentGroupValues=treatmentGroupValues,
-              recordedBy=recordedBy,
-              lsType="data",
-              lsKind="results",
-              comments=NULL,
-              lsTransaction=lsTransaction)
-            
-            treatmentGroupValues <- list()
-          }
-          
-          for (i in which(treatmentGroupData$treatmentBatch==group & treatmentGroupData$ResultType==xLabel)) {
-            treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue(recordedBy = recordedBy, 
-              lsType= "numericValue", #numericValue or stringValue
-              lsKind= treatmentGroupData$ResultType[i], #the label
-              numericValue= if(is.na(treatmentGroupData$value[i])) {NULL} else as.numeric(as.character(treatmentGroupData$value[i])),
-              valueUnit= if(is.na(treatmentGroupData$"valueUnit"[i])) {NULL} else {treatmentGroupData$"valueUnit"[i]},
-              lsTransaction= lsTransaction)
-            
-            # Add a value for the batchCode
-            treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue(recordedBy = recordedBy, 
-              lsType= "codeValue",
-              lsKind= "batch code",
-              codeValue= batchID,
-              lsTransaction= lsTransaction)
-            
-            treatmentGroupStates[[length(treatmentGroupStates)+1]] <- createTreatmentGroupState(
-              treatmentGroupValues=treatmentGroupValues,
-              recordedBy= recordedBy,
-              lsType= "data",
-              lsKind= "test compound treatment",
-              lsTransaction= lsTransaction)
-          }
-          
-          
-          
-          subjectList <- list()
-          
-          # xValue is the value of the data in the x column for that treatmentGroup
-          xValue <- treatmentGroupData$value[treatmentGroupData$ResultType==xLabel & treatmentGroupData$treatmentBatch==group]
-          for(pointID in unique(rawResults$pointID[rawResults$ResultType==xLabel 
-                                                   & suppressWarnings(as.numeric(as.character(rawResults$value))==as.numeric(xValue))
-                                                   & rawResults[,tempIdLabel]==tempID])) {
-            
-            subjectStates <- list()
-            subjectValues <- list()
-            for (i in which(rawResults$pointID == pointID & rawResults$ResultType %in% c(yLabel,"flag"))) {
-              subjectValues[[length(subjectValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                lsType = if(rawResults$ResultType[i]=="flag") {"stringValue"} else {"numericValue"},
-                lsKind = rawResults$ResultType[i], #the label
-                stringValue = if(rawResults$ResultType[i]=="flag" & !is.na(rawResults$value[i])) {rawResults$value[i]} else {NULL},
-                numericValue=if(rawResults$ResultType[i]!="flag") {as.numeric(as.character(rawResults$value[i]))} else {NULL},
-                valueUnit=if(is.na(rawResults$"valueUnit"[i])) {NULL} else {rawResults$"valueUnit"[i]},
-                lsTransaction=lsTransaction)
-            }
-            
-            subjectStates[[length(subjectStates)+1]] <- createSubjectState( 
-              lsTransaction=lsTransaction, 
-              recordedBy=recordedBy,
-              lsType="data", 
-              lsKind="results",
-              subjectValues=subjectValues)
-            
-            subjectValues <- list()
-            
-            for (i in which(rawResults$pointID == pointID & rawResults$ResultType %in% c(xLabel))) {
-              subjectValues[[length(subjectValues)+1]] <- createStateValue(recordedBy = recordedBy,
-                lsType = "numericValue",
-                lsKind = rawResults$ResultType[i], #the label
-                numericValue=as.numeric(as.character(rawResults$value[i])),
-                valueUnit=if(is.na(rawResults$"valueUnit"[i])) {NULL} else {rawResults$"valueUnit"[i]},
-                lsTransaction=lsTransaction)
-              
-              # Add a value for the batchCode
-              subjectValues[[length(subjectValues)+1]] <- createStateValue(recordedBy = recordedBy, 
-                lsType="codeValue",
-                lsKind="batch code",
-                codeValue=batchID,
-                lsTransaction=lsTransaction)
-              
-              subjectStates[[length(subjectStates)+1]] <- createSubjectState( 
-                lsTransaction=lsTransaction, 
-                recordedBy=recordedBy,
-                lsType="data", 
-                lsKind="test compound treatment",
-                subjectValues=subjectValues)
-              
-              subjectValues <- list()
-            }
-            
-            
-            
-            subjectList[[length(subjectList)+1]] <- createSubject(
-              codeName = subjectCodeNameList[[subjectCodeNameNumber]][[1]],
-              subjectStates = subjectStates,
-              recordedBy=recordedBy,
-              comments="",
-              lsTransaction=lsTransaction)
-            
-            subjectCodeNameNumber <- subjectCodeNameNumber + 1
-          }
-          
-          treatmentGroupList[[length(treatmentGroupList)+1]] <- createTreatmentGroup(
-            codeName = treatmentGroupCodeNameList[[treatmentGroupCodeNameNumber]][[1]],
-            subjects=subjectList,
-            treatmentGroupStates=treatmentGroupStates,
-            recordedBy=recordedBy,
-            comments="",
-            lsTransaction=lsTransaction)
-          
-          treatmentGroupCodeNameNumber <- treatmentGroupCodeNameNumber + 1
-        }
-      }
-    }
-    
-    if (length(treatmentGroupList) == 0) {
-      treatmentGroupList <- NULL
-    }
-    
-    # Put it all together in Analysis Groups
-    analysisGroups[[length(analysisGroups)+1]] <- createAnalysisGroup(
-      codeName = analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]],
-      lsKind=metaData$Format[1],
-      experiment = experiment,
-      recordedBy=recordedBy,
-      lsTransaction=lsTransaction,
-      analysisGroupStates = analysisGroupStates,
-      treatmentGroups = treatmentGroupList
-    )
-    
-    analysisGroupCodeNameNumber <- analysisGroupCodeNameNumber + 1
-  }
-  
-  if(developmentMode) {
-    # Write the data to a file for debugging
-    print(testOutputLocation)
-    write(toJSON(analysisGroups), file = testOutputLocation)
-  } else {
-    # Write the data to the server. The response is unused.
-    response <- saveAcasEntities(analysisGroups, "analysisgroups")
-    # Used during testing
-    #cat(toJSON(saveAnalysisGroups(analysisGroups)))
-  }
-  return(NULL)
+#   analysisGroupData <<- analysisGroupData
+#   analysisGroupIDandVersion <<- analysisGroupIDandVersion
+#   #return()
+#   
+#   
+#   subjects <- dlply(.data= subjectData, .variables= .(subjectID), .fun= createRawOnlySubject)
+#   names(subjects) <- NULL
+#   
+#   savedSubjects <- saveAcasEntities(subjects, "subjects")
+#   
+#   subjectIds <- sapply(savedSubjects, function(x) x$id)
+#   
+#   subjectData$subjectID <- subjectIds[subjectData$subjectID]
+#   
+#   ### Subject States ===============================================
+#   #######  
+#   stateGroupIndex <- 1
+#   subjectData$stateGroupIndex <- NA
+#   for (stateGroup in stateGroups) {
+#     includedRows <- subjectData$valueKind %in% stateGroup$valueKinds
+#     newRows <- subjectData[includedRows & !is.na(subjectData$stateGroupIndex), ]
+#     subjectData$stateGroupIndex[includedRows & is.na(subjectData$stateGroupIndex)] <- stateGroupIndex
+#     if (nrow(newRows) > 0) newRows$stateGroupIndex <- stateGroupIndex
+#     subjectData <- rbind.fill(subjectData,newRows)
+#     stateGroupIndex <- stateGroupIndex + 1
+#   }
+#   
+#   othersGroupIndex <- which(sapply(stateGroups, function(x) x$includesOthers))
+#   subjectData$stateGroupIndex[is.na(subjectData$stateGroupIndex)] <- othersGroupIndex
+#   
+#   makeUniqueSubjects <- function(subjectData) {
+#     subjectData$subjectStateID <- subjectData$subjectStateID[1]
+#     subjectData$batchCode <- subjectData$batchCode[1]
+#     subjectData$originalBatchCode <- subjectData$originalBatchCode[1]
+#     output <- unique(subjectData)
+#     if (nrow(output) > 1) {
+#       stop("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject.")
+#     }
+#     return(output)
+#   }
+#   for (i in 1:length(stateGroups)) {
+#     stateGroup <- stateGroups[[i]]
+#     subjectData <- ddply(subjectData, c("stateGroupIndex"), .fun = function(subjectData) {
+#       if (subjectData$stateGroupIndex[1] == i && !is.null(stateGroup$collapseGroupBy)) {
+#         subjectData <- ddply(subjectData, 
+#                              c("valueKindAndUnit","subjectID","stateGroupIndex"),
+#                              .fun=makeUniqueSubjects)
+#       }
+#       return(subjectData)
+#     })
+#   }
+#   
+#   subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
+#                                 subjectData$concentration, "-", subjectData$concentrationUnit, "-",
+#                                 subjectData$time, "-", subjectData$timeUnit, "-", subjectData$subjectStateID)
+#   
+#   subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
+#   
+#   subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
+#   
+#   stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
+#   subjectData$stateID <- stateAndVersion$entityStateId
+#   subjectData$stateVersion <- stateAndVersion$entityStateVersion
+#   
+#   ### Subject Values ======================================================================= 
+#   batchCodeStateIndices <- which(sapply(stateGroups, getElement, "includesCorpName"))
+#   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
+#   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices, replaceFakeCorpBatchId))
+#   
+#   savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
+#   
+#   
+#   
+#   
+#   
+#   analysisGroupCodeNameNumber <- 1
+#   
+#   if(!is.null(rawResults)) {
+#     subjectCodeNameList <- getAutoLabels(thingTypeAndKind="document_subject", 
+#                                          labelTypeAndKind="id_codeName", 
+#                                          numberOfLabels=max(rawResults$pointID))
+#     subjectCodeNameNumber <- 1
+#     
+#     # Get a list of codes for the treatment groups
+#     treatmentGroupCodeNameList <- getAutoLabels(thingTypeAndKind="document_treatment group", 
+#                                                 labelTypeAndKind="id_codeName", 
+#                                                 numberOfLabels=max(treatmentGroupData$treatmentBatch))
+#     treatmentGroupCodeNameNumber <- 1
+#   }
+#   
+#   serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, 
+#                                                    configList$server.service.external.file.type, 
+#                                                    configList$server.service.external.file.service.url)
+#   if(!is.null(reportFilePath) && reportFilePath != "") {
+#     batchNameList <- unique(calculatedResults[[mainCode]])
+#     if (configList$server.service.external.report.registration.url != "") {
+#       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
+#     } else {
+#       addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
+#     }
+#   }
+#   
+#   # Each analysisGroupID creates an analysis group
+#   analysisGroups <- list()
+#   for (analysisGroupID in unique(calculatedResults$analysisGroupID)) {
+#     
+#     # Each row in the table calculatedResults creates a state
+#     analysisGroupStates <- list()
+#     for (concentration in unique(calculatedResults$Conc[analysisGroupID == calculatedResults$analysisGroupID])) {
+#       
+#       # Get the rows, but NA's are a special case
+#       if(is.na(concentration)) {
+#         selectedRowsConc <- analysisGroupID == calculatedResults$analysisGroupID & is.na(calculatedResults$Conc)
+#       } else {
+#         selectedRowsConc <- analysisGroupID == calculatedResults$analysisGroupID & concentration == calculatedResults$Conc
+#       }
+#       for (timePoint in unique(calculatedResults$time[selectedRowsConc])) {
+#         if(is.na(timePoint)) {
+#           selectedRows <- selectedRowsConc & is.na(calculatedResults$time)
+#         } else {
+#           selectedRows <- selectedRowsConc & timePoint == calculatedResults$time
+#         }
+#         analysisGroupValues <- list()
+#         for (i in which(selectedRows)) {
+#           # Prepare the date value
+#           dateValue <- as.numeric(format(as.Date(calculatedResults$"dateValue"[i],origin="1970-01-01"), "%s"))*1000
+#           # The main value (whether it is a numeric, string, or date) creates one value    
+#           analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+#                                                                                    lsType = if (calculatedResults$"valueKind"[i]==tempIdLabel) {"stringValue"
+#                                                                                    } else if (calculatedResults$"Class"[i]=="Text") {"stringValue"
+#                                                                                    } else if (calculatedResults$"Class"[i]=="Date") {"dateValue"
+#                                                                                    } else if (calculatedResults$"Class"[i]=="Clob") {"clobValue"
+#                                                                                    } else {"numericValue"},
+#                                                                                    lsKind = calculatedResults$"valueKind"[i],
+#                                                                                    stringValue = if(calculatedResults$"valueKind"[i]==tempIdLabel) {
+#                                                                                      paste0(calculatedResults$"stringValue"[i],"_",analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]])
+#                                                                                    } else if (!is.na(calculatedResults$"stringValue"[i])) {calculatedResults$"stringValue"[i]} else {NULL},
+#                                                                                    clobValue = if (!is.na(calculatedResults$clobValue[i])) {calculatedResults$clobValue[i]} else {NULL},
+#                                                                                    dateValue = if(is.na(dateValue)) {NULL} else {dateValue},
+#                                                                                    valueOperator = if(is.na(calculatedResults$"valueOperator"[i])) {NULL} else {calculatedResults$"valueOperator"[i]},
+#                                                                                    numericValue = if(is.na(calculatedResults$"numericValue"[i]) | calculatedResults$"valueKind"[i]==tempIdLabel) {NULL} 
+#                                                                                    else {calculatedResults$"numericValue"[i]},
+#                                                                                    valueUnit = if(is.na(calculatedResults$"valueUnit"[i])) {NULL} else {calculatedResults$"valueUnit"[i]},
+#                                                                                    publicData = calculatedResults$publicData[i],
+#                                                                                    lsTransaction = lsTransaction)
+#         }
+#         
+#         if(!is.null(i)) {
+#           # Adds a value for the batchCode (mainCode (Corporate Batch ID/Gene ID))
+#           analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+#                                                                                    lsType = "codeValue",
+#                                                                                    lsKind = "batch code",
+#                                                                                    codeValue = as.character(calculatedResults[[mainCode]][analysisGroupID == calculatedResults$analysisGroupID][1]),
+#                                                                                    publicData = calculatedResults$publicData[i],
+#                                                                                    lsTransaction = lsTransaction)
+#           
+#           # Adds a value for the concentration if there is one
+#           if (!is.na(concentration)) {
+#             analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(recordedBy = recordedBy,
+#                                                                                      lsType = "numericValue",
+#                                                                                      lsKind = "tested concentration",
+#                                                                                      valueUnit= if(is.na(calculatedResults$"concentrationUnit"[i])){NULL} else {calculatedResults$"concentrationUnit"[i]},
+#                                                                                      numericValue = calculatedResults$"Conc"[i],
+#                                                                                      publicData = calculatedResults$publicData[i],
+#                                                                                      lsTransaction = lsTransaction)
+#           }
+#           
+#           # Adds a value for the time if there is one
+#           if (!is.na(timePoint)) {
+#             analysisGroupValues[[length(analysisGroupValues)+1]] <- createStateValue(
+#               recordedBy = recordedBy,
+#               lsType = "numericValue",
+#               lsKind = "time",
+#               valueUnit= if(is.na(calculatedResults$"timeUnit"[i])){NULL} else {calculatedResults$"timeUnit"[i]},
+#               numericValue = calculatedResults$"time"[i],
+#               publicData = calculatedResults$publicData[i],
+#               lsTransaction = lsTransaction)
+#           }
+#           # Creates the state
+#           analysisGroupStates[[length(analysisGroupStates)+1]] <- createAnalysisGroupState( lsTransaction=lsTransaction, 
+#                                                                                             recordedBy=recordedBy,
+#                                                                                             lsType="data",
+#                                                                                             lsKind=metaData$Format[1],
+#                                                                                             analysisGroupValues=analysisGroupValues)
+#         }
+#       }
+#     }
+#     # Creates Treatment Groups based on rawResults
+#     treatmentGroupList <- list()
+#     
+#     if(!is.null(rawResults)) {
+#       # Gets the temp and batch Id's for the current analysis group
+#       tempID <- calculatedResults$"stringValue"[calculatedResults$analysisGroupID == analysisGroupID & calculatedResults$"valueKind" == tempIdLabel][1]
+#       batchID <- as.character(calculatedResults[[mainCode]][calculatedResults$analysisGroupID == analysisGroupID][1])
+#       if (!is.na(tempID) & tempID!="") {
+#         for (group in unique(treatmentGroupData$treatmentBatch[treatmentGroupData[,tempIdLabel]==tempID])) {
+#           treatmentGroupStates <- list()
+#           treatmentGroupValues <- list()
+#           for (i in which(treatmentGroupData$treatmentBatch==group & treatmentGroupData$ResultType==yLabel)) {
+#             treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue(recordedBy = recordedBy, 
+#               lsType= "numericValue", #numericValue or stringValue
+#               lsKind= treatmentGroupData$ResultType[i], #the label
+#               numericValue= if(is.na(treatmentGroupData$value[i])) {NULL} else as.numeric(as.character(treatmentGroupData$value[i])),
+#               uncertainty= if(is.na(treatmentGroupData$sd[i])) {NULL} else treatmentGroupData$sd[i],
+#               uncertaintyType= "standard deviation",
+#               numberOfReplicates= treatmentGroupData$n[i],
+#               valueUnit= if(is.na(treatmentGroupData$"valueUnit"[i])) {NULL} else {treatmentGroupData$"valueUnit"[i]},
+#               lsTransaction= lsTransaction)
+#             
+#             treatmentGroupStates[[length(treatmentGroupStates)+1]] <- createTreatmentGroupState(
+#               treatmentGroupValues=treatmentGroupValues,
+#               recordedBy=recordedBy,
+#               lsType="data",
+#               lsKind="results",
+#               comments=NULL,
+#               lsTransaction=lsTransaction)
+#             
+#             treatmentGroupValues <- list()
+#           }
+#           
+#           for (i in which(treatmentGroupData$treatmentBatch==group & treatmentGroupData$ResultType==xLabel)) {
+#             treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue(recordedBy = recordedBy, 
+#               lsType= "numericValue", #numericValue or stringValue
+#               lsKind= treatmentGroupData$ResultType[i], #the label
+#               numericValue= if(is.na(treatmentGroupData$value[i])) {NULL} else as.numeric(as.character(treatmentGroupData$value[i])),
+#               valueUnit= if(is.na(treatmentGroupData$"valueUnit"[i])) {NULL} else {treatmentGroupData$"valueUnit"[i]},
+#               lsTransaction= lsTransaction)
+#             
+#             # Add a value for the batchCode
+#             treatmentGroupValues[[length(treatmentGroupValues)+1]] <- createStateValue(recordedBy = recordedBy, 
+#               lsType= "codeValue",
+#               lsKind= "batch code",
+#               codeValue= batchID,
+#               lsTransaction= lsTransaction)
+#             
+#             treatmentGroupStates[[length(treatmentGroupStates)+1]] <- createTreatmentGroupState(
+#               treatmentGroupValues=treatmentGroupValues,
+#               recordedBy= recordedBy,
+#               lsType= "data",
+#               lsKind= "test compound treatment",
+#               lsTransaction= lsTransaction)
+#           }
+#           
+#           
+#           
+#           subjectList <- list()
+#           
+#           # xValue is the value of the data in the x column for that treatmentGroup
+#           xValue <- treatmentGroupData$value[treatmentGroupData$ResultType==xLabel & treatmentGroupData$treatmentBatch==group]
+#           for(pointID in unique(rawResults$pointID[rawResults$ResultType==xLabel 
+#                                                    & suppressWarnings(as.numeric(as.character(rawResults$value))==as.numeric(xValue))
+#                                                    & rawResults[,tempIdLabel]==tempID])) {
+#             
+#             subjectStates <- list()
+#             subjectValues <- list()
+#             for (i in which(rawResults$pointID == pointID & rawResults$ResultType %in% c(yLabel,"flag"))) {
+#               subjectValues[[length(subjectValues)+1]] <- createStateValue(recordedBy = recordedBy,
+#                 lsType = if(rawResults$ResultType[i]=="flag") {"stringValue"} else {"numericValue"},
+#                 lsKind = rawResults$ResultType[i], #the label
+#                 stringValue = if(rawResults$ResultType[i]=="flag" & !is.na(rawResults$value[i])) {rawResults$value[i]} else {NULL},
+#                 numericValue=if(rawResults$ResultType[i]!="flag") {as.numeric(as.character(rawResults$value[i]))} else {NULL},
+#                 valueUnit=if(is.na(rawResults$"valueUnit"[i])) {NULL} else {rawResults$"valueUnit"[i]},
+#                 lsTransaction=lsTransaction)
+#             }
+#             
+#             subjectStates[[length(subjectStates)+1]] <- createSubjectState( 
+#               lsTransaction=lsTransaction, 
+#               recordedBy=recordedBy,
+#               lsType="data", 
+#               lsKind="results",
+#               subjectValues=subjectValues)
+#             
+#             subjectValues <- list()
+#             
+#             for (i in which(rawResults$pointID == pointID & rawResults$ResultType %in% c(xLabel))) {
+#               subjectValues[[length(subjectValues)+1]] <- createStateValue(recordedBy = recordedBy,
+#                 lsType = "numericValue",
+#                 lsKind = rawResults$ResultType[i], #the label
+#                 numericValue=as.numeric(as.character(rawResults$value[i])),
+#                 valueUnit=if(is.na(rawResults$"valueUnit"[i])) {NULL} else {rawResults$"valueUnit"[i]},
+#                 lsTransaction=lsTransaction)
+#               
+#               # Add a value for the batchCode
+#               subjectValues[[length(subjectValues)+1]] <- createStateValue(recordedBy = recordedBy, 
+#                 lsType="codeValue",
+#                 lsKind="batch code",
+#                 codeValue=batchID,
+#                 lsTransaction=lsTransaction)
+#               
+#               subjectStates[[length(subjectStates)+1]] <- createSubjectState( 
+#                 lsTransaction=lsTransaction, 
+#                 recordedBy=recordedBy,
+#                 lsType="data", 
+#                 lsKind="test compound treatment",
+#                 subjectValues=subjectValues)
+#               
+#               subjectValues <- list()
+#             }
+#             
+#             
+#             
+#             subjectList[[length(subjectList)+1]] <- createSubject(
+#               codeName = subjectCodeNameList[[subjectCodeNameNumber]][[1]],
+#               subjectStates = subjectStates,
+#               recordedBy=recordedBy,
+#               comments="",
+#               lsTransaction=lsTransaction)
+#             
+#             subjectCodeNameNumber <- subjectCodeNameNumber + 1
+#           }
+#           
+#           treatmentGroupList[[length(treatmentGroupList)+1]] <- createTreatmentGroup(
+#             codeName = treatmentGroupCodeNameList[[treatmentGroupCodeNameNumber]][[1]],
+#             subjects=subjectList,
+#             treatmentGroupStates=treatmentGroupStates,
+#             recordedBy=recordedBy,
+#             comments="",
+#             lsTransaction=lsTransaction)
+#           
+#           treatmentGroupCodeNameNumber <- treatmentGroupCodeNameNumber + 1
+#         }
+#       }
+#     }
+#     
+#     if (length(treatmentGroupList) == 0) {
+#       treatmentGroupList <- NULL
+#     }
+#     
+#     # Put it all together in Analysis Groups
+#     analysisGroups[[length(analysisGroups)+1]] <- createAnalysisGroup(
+#       codeName = analysisGroupCodeNameList[[analysisGroupCodeNameNumber]][[1]],
+#       lsKind=metaData$Format[1],
+#       experiment = experiment,
+#       recordedBy=recordedBy,
+#       lsTransaction=lsTransaction,
+#       analysisGroupStates = analysisGroupStates,
+#       treatmentGroups = treatmentGroupList
+#     )
+#     
+#     analysisGroupCodeNameNumber <- analysisGroupCodeNameNumber + 1
+#   }
+#   
+#   if(developmentMode) {
+#     # Write the data to a file for debugging
+#     print(testOutputLocation)
+#     write(toJSON(analysisGroups), file = testOutputLocation)
+#   } else {
+#     # Write the data to the server. The response is unused.
+#     response <- saveAcasEntities(analysisGroups, "analysisgroups")
+#     # Used during testing
+#     #cat(toJSON(saveAnalysisGroups(analysisGroups)))
+#   }
+#   return(NULL)
+  ######################
 }
 
 saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
@@ -2375,9 +2405,23 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                     configList, testMode = FALSE, recordedBy, errorEnv = NULL) {
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
+  #
+  # Args:
+  #       pathToGenericDataFormatExcelFile: The path, relative to privateUploads, where the Excel file is located
+  #       reportFilePath:                   An (optional) location to which the report file will be saved
+  #       dryRun:                           A boolean; if TRUE, the data is not recorded in the database
+  #       developmentMode:                  Used for testing; see parseGenericData
+  #       testOutputLocation:               When dryRun is TRUE, a string naming a file that will hold JSON output
+  #       configList:                       Also known as racas::applicationSettings
+  #       testMode:                         Used for getPreferredId (from racas)
+  #       recordedBy:                       A string containing a username
+  #       errorEnv:                         Used to collect errors across multiple function calls
+  #
+  # Returns: a list of the validated, organized data in the Excel file
+  #
   
   library('RCurl')
-  
+
   pathToGenericDataFormatExcelFile <- racas::getUploadedFilePath(pathToGenericDataFormatExcelFile)
   
   lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
@@ -2454,6 +2498,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                                                  rawOnlyFormat, stateGroups, splitSubjects, inputFormat, mainCode,
                                                  errorEnv=errorEnv, precise = precise, 
                                                  calculateGroupingID = calculateGroupingID)
+
   if (!is.null(splitSubjects)) {
     calculatedResults$subjectID <- calculatedResults$groupingID_2
     calculatedResults$treatmentGroupID <- calculatedResults$groupingID
