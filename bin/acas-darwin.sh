@@ -21,6 +21,10 @@ export ACAS_HOME=$ACAS_HOME
 export client_service_rapache_port=$client_service_rapache_port
 export client_service_rapache_path=$client_service_rapache_path
 export client_host=$client_host
+export rapache_binding_address=$rapache_binding_address
+if [ "rapache_binding_address" == "" ] || [ "rapache_binding_address" == "null" ]; then
+    export rapache_binding_address=$client_host
+fi
 export client_port=$client_port
 export server_log_path=$server_log_path
 export server_log_suffix=$server_log_suffix
