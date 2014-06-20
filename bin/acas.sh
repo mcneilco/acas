@@ -291,6 +291,10 @@ fi
 
 export ACAS_GROUP=$(id -g -n $ACAS_USER)
 export ACAS_HOME=$ACAS_HOME
+export server_rapache_host=$server_rapache_host
+if [ "$server_rapache_host" == "" ] || [ "$server_rapache_host" == "null" ]; then
+    export server_rapache_host=*
+fi
 export client_service_rapache_port=$client_service_rapache_port
 export client_service_rapache_path=$client_service_rapache_path
 export client_host=$client_host
