@@ -304,7 +304,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   neededValueKinds <- c(calculatedResults$"valueKind", curveNames)
   neededValueKindTypes <- c(calculatedResults$Class, rep("Text", length(curveNames)))
   
-  validateValueKinds(neededValueKinds, neededValueKindTypes, dryRun)
+  validateValueKinds(neededValueKinds, neededValueKindTypes, dryRun, configList=configList)
   
   # Return the validated results
   return(calculatedResults)
@@ -474,13 +474,14 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
   # Return classRow
   return(classRow)
 }
-validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
+validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, configList) {
   # Checks that column headers are valid valueKinds (or creates them if they are new)
   #
   # Args:
   #   neededValueKinds:       A character vector listed column headers
   #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds
   #   dryRun:                 A boolean indicating whether the data should be saved
+  #   configList:             Also known as racas::applicationSettings
   #
   # Returns:
   #	  NULL
@@ -496,7 +497,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   }
   
   tryCatch({
-    currentValueKindsList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds/")))
+    currentValueKindsList <- fromJSON(getURL(paste0(configList$client.service.persistence.fullpath, "valuekinds/")))
   }, error = function(e) {
     stop("Internal Error: Could not get current value kinds")
   })
@@ -544,7 +545,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     if (!dryRun) {
       # Create the new valueKinds, using the correct valueType
       # TODO: also check that valueKinds have the correct valueType when being loaded a second time
-      valueTypesList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuetypes")))
+      valueTypesList <- fromJSON(getURL(paste0(configList$client.service.persistence.fullpath, "valuetypes")))
       valueTypes <- sapply(valueTypesList, getElement, "typeName")
       valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
       valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob"))]
@@ -557,7 +558,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
                                     SIMPLIFY = F, USE.NAMES = F)
       tryCatch({
         response <- getURL(
-          paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds/jsonArray"),
+          paste0(configList$client.service.persistence.fullpath, "valuekinds/jsonArray"),
           customrequest='POST',
           httpheader=c('Content-Type'='application/json'),
           postfields=toJSON(newValueKindsUpload))
@@ -1465,7 +1466,7 @@ validateProject <- function(projectName, configList, errorEnv) {
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.project.path))
+  projectList <- getURL(paste0(configList$server.nodeapi.path, configList$client.service.project.path))
   }, error = function(e) {
     stop("The project service did not respond correctly, contact your system administrator")
   })
@@ -1506,7 +1507,7 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
   
   if (!testMode) {
     response <- tryCatch({
-      getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.users.path, "/", scientistName)))
+      getURL(URLencode(paste0(configList$server.nodeapi.path, configList$client.service.users.path, "/", scientistName)))
     }, error = function(e) {
       errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
       return("")
@@ -1877,6 +1878,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   #   tempIdLabel:            A string with the name of the variable that is in the 'temp id' column
   #   testOutputLocation:     When dryRun is TRUE, a string naming a file that will hold JSON output
   #   developmentMode:        A boolean that marks if the JSON request should be saved to a file
+  #   configList:             Also known as racas::applicationSettings
   #   appendCodeName:         A vector of lsKinds that should have the code name appended to them
   #
   #   Returns:
@@ -2514,7 +2516,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(calculatedResults,
                                                  dryRun, curveNames, testMode=testMode, 
-                                                 replaceFakeCorpBatchId=replaceFakeCorpBatchId, mainCode)
+                                                 replaceFakeCorpBatchId=replaceFakeCorpBatchId, mainCode,
+                                                 configList=configList)
   
   # Subject and TreatmentGroupData
   subjectData <- NULL
@@ -2623,7 +2626,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Delete any old data under the same experiment name (delete and reload)
   deletedExperimentCodes <- NULL
   if(!dryRun && !newExperiment && errorFree) {
-    deletedExperimentCodes <- deleteOldData(experiment, useExistingExperiment)
+    deletedExperimentCodes <- deleteOldData(experiment, useExistingExperiment, configList)
   }
   
   if (!dryRun && errorFree && !useExistingExperiment) {
@@ -2655,7 +2658,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     }
   }
   
-  viewerLink <- getViewerLink(protocol, experiment, validatedMetaData$'Experiment Name')
+  viewerLink <- getViewerLink(protocol, experiment, validatedMetaData$'Experiment Name', configList=configList)
   
   summaryInfo <- list(
     format = inputFormat,
@@ -2707,12 +2710,12 @@ getStateGroups <- function(formatSettings) {
   })
   return(stateGroups)
 }
-deleteOldData <- function(experiment, useExistingExperiment) {
+deleteOldData <- function(experiment, useExistingExperiment, configList) {
   # Deletes old data, either the whole experiment or just the analysisgroups
   deletedExperimentCodes <- NULL
-  if(racas::applicationSettings$server.delete.files.on.reload == "true") {
-    deleteSourceFile(experiment, racas::applicationSettings)
-    deleteAnnotation(experiment, racas::applicationSettings)
+  if(configList$server.delete.files.on.reload == "true") {
+    deleteSourceFile(experiment, configList)
+    deleteAnnotation(experiment, configList)
   }
   if(useExistingExperiment) {
     deleteAnalysisGroupByExperiment(experiment)
@@ -2728,7 +2731,7 @@ getPreviousExperimentCodes <- function(experiment) {
   previousExperimentCodes <- lapply(previousCodeValues, getElement, "codeValue")
   return(previousExperimentCodes)
 }
-getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolName = NULL) {
+getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolName = NULL, configList) {
   # Returns url link for viewer
 
   if(is.null(experimentName)) {
@@ -2750,7 +2753,7 @@ getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolN
     protocolPostfix <- protocolPostfixValues[[1]]$stringValue
   }
   
-  if (!is.null(racas::applicationSettings$client.service.result.viewer.protocolPrefix)) {
+  if (!is.null(configList$client.service.result.viewer.protocolPrefix)) {
     if (!(is.null(protocolName))) {
       protocolName <- paste0(protocolName, protocolPostfix)
     } else {
@@ -2759,12 +2762,12 @@ getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolN
       protocolName <- getPreferredName(protocol)
     }
     
-    if (is.list(experiment) && racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
+    if (is.list(experiment) && configList$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
       experimentName <- paste0(experiment$codeName, "::", experimentName)
     }
-    viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
+    viewerLink <- paste0(configList$client.service.result.viewer.protocolPrefix, 
                          URLencode(protocolName, reserved=TRUE), 
-                         racas::applicationSettings$client.service.result.viewer.experimentPrefix,
+                         configList$client.service.result.viewer.experimentPrefix,
                          URLencode(experimentName, reserved=TRUE))
   } else {
     viewerLink <- NULL
