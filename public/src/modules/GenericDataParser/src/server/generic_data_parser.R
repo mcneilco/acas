@@ -217,10 +217,10 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   
   # Report any errors
 #   if (length(textTempIds)>1) {
-#     errorList <<- c(errorList, paste0("In the Calculated Results section, there are ", tempIdLabel, "'s that have text: '", 
+#     addError(paste0("In the Calculated Results section, there are ", tempIdLabel, "'s that have text: '", 
 #                                       paste(textTempIds, collapse="', '"), "'. Remove text from all temp id's."))
 #   } else if (length(textTempIds)>0) {
-#     errorList <<- c(errorList, paste0("In the Calculated Results section, there is a ", tempIdLabel, " that has text: '", 
+#     addError( paste0("In the Calculated Results section, there is a ", tempIdLabel, " that has text: '", 
 #                                       textTempIds, "'. Remove text from all temp id's."))
 #   } else if (length(missingTempIds)>1) {
   if (length(missingTempIds)>1) {
@@ -530,9 +530,9 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     problemFrame <- problemFrame[wrongValueTypes, ]
     
     for (row in 1:nrow(problemFrame)) {
-      errorList <<- c(errorList, paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
+      addError( paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
                                         "' instead of '", problemFrame$oldValueKindTypes[row], "'. Please enter '", problemFrame$matchingValueKindTypes[row],
-                                        "' in the Datatype row for '", problemFrame$oldValueKinds[row], "'."))
+                                        "' in the Datatype row for '", problemFrame$oldValueKinds[row], "'."),)
     }
   }
   
@@ -562,7 +562,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
           httpheader=c('Content-Type'='application/json'),
           postfields=toJSON(newValueKindsUpload))
       }, error = function(e) {
-        errorList <<- c(errorList,paste("Error in saving new column headers:", e$message))
+        addError(paste("Error in saving new column headers:", e$message))
       })
     }
   }
@@ -1101,10 +1101,10 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
 #   
 #   # Force them to use Dose and Response (would add a flag later for other similar formats that are not Dose Respose)
 #   if (xLabel != "Dose") {
-#     errorList <<- c(errorList, "The x Raw Result must be 'Dose' for this format.")
+#     addError( "The x Raw Result must be 'Dose' for this format.")
 #   }
 #   if (yLabel != "Response") {
-#     errorList <<- c(errorList, "The y Raw Result must be 'Response' for this format.")
+#     addError( "The y Raw Result must be 'Response' for this format.")
 #   }
 #   
 #   #Drop Columns that are unnecessary in this context
@@ -1230,7 +1230,7 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
     if (formFormat %in% allowedCreationFormats || forceProtocolCreation) {
       warning(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
     } else {
-      errorList <<- c(errorList, paste0("Protocol '", protocolName, "' does not exist. Please enter a protocol name that exists. Contact your system administrator if you would like to create a new protocol."))
+      addError( paste0("Protocol '", protocolName, "' does not exist. Please enter a protocol name that exists. Contact your system administrator if you would like to create a new protocol."))
     }
     # A flag for when the protocol will be created new
     protocol <- NA
@@ -1282,7 +1282,7 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
-        errorList <<- c(errorList,paste0("Experiment '",experimentName,
+        addError(paste0("Experiment '",experimentName,
                                          "' does not exist in the protocol that you entered, but it does exist in '", getPreferredProtocolName(protocolOfExperiment), 
                                          "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
         experiment <- experimentList[[1]]
@@ -1508,7 +1508,7 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
     response <- tryCatch({
       getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.users.path, "/", scientistName)))
     }, error = function(e) {
-      errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+      addError( paste("There was an error in validating the scientist's name:", scientistName))
       return("")
     }) 
   } else { # In test mode, provide the three possible answers
@@ -1522,14 +1522,14 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
   }
   
   if (response == "") {
-    errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
+    addError( paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
     return("")
   }
   
   username <- tryCatch({
     fromJSON(response)$username
   }, error = function(e) {
-    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+    addError( paste("There was an error in validating the scientist's name:", scientistName))
     return("")
   })
   
