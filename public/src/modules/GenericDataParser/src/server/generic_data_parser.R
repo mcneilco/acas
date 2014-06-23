@@ -247,7 +247,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, errorEnv = NULL, configList=configList) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, errorEnv = NULL) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -257,7 +257,6 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #   testMode:                 A boolean
   #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #   mainCode:                 A string, normally the corporate batch ID
-  #   configList:               Also known as racas::applicationSettings
   #
   # Returns:
   #   a "data.frame" of the validated calculated results
