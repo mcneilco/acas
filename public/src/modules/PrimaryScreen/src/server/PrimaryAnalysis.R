@@ -1391,33 +1391,37 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     ## End Test Structure
   } else {
-  fileNameTable <- validateInputFiles(folderToParse)
-  
-  # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
-  
-  resultList <- apply(fileNameTable,1,combineFiles)
-  resultTable <- as.data.table(do.call("rbind",resultList))
-  barcodeList <- levels(resultTable$barcode)
-  
-  wellTable <- createWellTable(barcodeList, testMode)
-  
-  # apply dilution
-  if (!is.null(parameters$dilutionRatio)) {
-    wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
-  }
-  
-  wellTable <- getAgonist(parameters$agonistControl, wellTable)
-
-  wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
-  
-  if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
-    stop("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
-         paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
-         "'. Please contact your system administrator.")
-  }
-  
-  batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
-  resultTable <- cbind(resultTable,batchNamesAndConcentrations)
+    fileNameTable <- validateInputFiles(folderToParse)
+    
+    # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
+    
+    resultList <- apply(fileNameTable,1,combineFiles)
+    resultTable <- as.data.table(do.call("rbind",resultList))
+    barcodeList <- levels(resultTable$barcode)
+    
+    wellTable <- createWellTable(barcodeList, testMode)
+    
+    # apply dilution
+    if (!is.null(parameters$dilutionRatio)) {
+      wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
+    }
+    
+    wellTable <- getAgonist(parameters$agonistControl, wellTable)
+    
+    wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
+    
+    if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
+      stop("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
+           paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
+           "'. Please contact your system administrator.")
+    }
+    
+    batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
+    resultTable <- cbind(resultTable,batchNamesAndConcentrations)
+    
+    normalization <- parameters$normalizationRule
+    
+    # Jennifer add flags here
   }
   ### END FLIPR reading function
   
