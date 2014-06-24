@@ -500,7 +500,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   }, error = function(e) {
     stopUser("Internal Error: Could not get current value kinds")
   })
-  if (length(currentValueKindsList)==0) stopUser ("Setup error: valueKinds are missing")
+  if (length(currentValueKindsList)==0) stopUser("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
   
@@ -690,7 +690,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   commentCodeWord <- "comment@coDeWoRD@"
   
   if(ncol(calculatedResults) == 1) {
-    stopUser("The rows below Calculated Results must have at least two columns filled: one for ", mainCode, "'s and one for data.")
+    stopUser(paste0("The rows below Calculated Results must have at least two columns filled: one for ", mainCode, "'s and one for data."))
   } else if (nrow(calculatedResults) == 0) {
     stopUser("The first row below 'Calculated Results' must begin with 'Datatype'. Right now, 'Datatype' is missing.")
   }
@@ -1053,8 +1053,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
 #   
 #   #Check if Raw Results is empty
 #   if (length(rawResults[[1]])<2) {
-#     stopUser("The cell two below 'Raw Results' is empty. Either add a label for the '", rawResults[1,1], 
-#          "' column, or, if you do not wish to upload Raw Results, delete the section completely.")
+#     stopUser(paste0("The cell two below 'Raw Results' is empty. Either add a label for the '", rawResults[1,1], 
+#          "' column, or, if you do not wish to upload Raw Results, delete the section completely."))
 #   }
 #   
 #   # Turn the first row into headers
@@ -1639,7 +1639,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     subjectData$originalBatchCode <- subjectData$originalBatchCode[1]
     output <- unique(subjectData)
     if (nrow(output) > 1) {
-      stopUser("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject.")
+      stopUser(paste0("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject."))
     }
     return(output)
   }
@@ -1993,7 +1993,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
 #     subjectData$originalBatchCode <- subjectData$originalBatchCode[1]
 #     output <- unique(subjectData)
 #     if (nrow(output) > 1) {
-#       stopUser("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject.")
+#       stopUser(paste0("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject."))
 #     }
 #     return(output)
 #   }
@@ -2358,10 +2358,10 @@ saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
       lsTransaction=dfData$lsTransaction[1])
     upperAcasEntity <- acasEntityHierarchyCamel[which(currentEntity == acasEntityHierarchyCamel) - 1]
     if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stopUser("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data")
+      stopUser(paste0("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data"))
     }
     if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stopUser("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data")
+      stopUser(paste0("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data"))
     }
     entity[[upperAcasEntity]] <- list(id=dfData[[paste0(upperAcasEntity, "ID")]][1],
                                       version=dfData[[paste0(upperAcasEntity, "Version")]][1])
@@ -2605,7 +2605,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   if (useExistingExperiment) {
     experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
     if (length(experiment) == 0) {
-      stopUser ("Experiment Code Name not found ", validatedMetaData$'Experiment Code Name'[1])
+      stopUser(paste0("Experiment Code Name not found ", validatedMetaData$'Experiment Code Name'[1]))
     }
     protocol <- getProtocolById(experiment$protocol$id)
     validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
@@ -2957,7 +2957,7 @@ saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   }
   
   if (!(entityID %in% names(entityData))) {
-    stopUser("Internal Error: ", entityID, " must be included in entityData")
+    stopUser(paste0("Internal Error: ", entityID, " must be included in entityData"))
   }
   
   createExplicitLsState <- function(entityData, entityKind) {
@@ -2984,7 +2984,7 @@ saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   }
   
   if (!is.list(savedLsStates) || length(savedLsStates) != length(lsStates)) {
-    stopUser ("Internal error: the roo server did not respond correctly to saving states")
+    stopUser("Internal error: the roo server did not respond correctly to saving states")
   }
   
   lsStateIds <- sapply(savedLsStates, getElement, "id")
@@ -3056,7 +3056,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   ### Error Checking
   requiredColumns <- c("valueType", "valueKind", "publicData", "stateVersion", "stateID")
   if (any(!(requiredColumns %in% names(entityData)))) {
-    stopUser("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", "))
+    stopUser(paste0("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", ")))
   }
   
   # Turns factors to character
@@ -3071,7 +3071,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   } else if (is.null(entityData$dateValue) || all(is.na(entityData$dateValue))) {
     entityData$dateValue <- as.character(NA)
   } else {
-    stopUser("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue))
+    stopUser(paste0("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue)))
   }
   
   
