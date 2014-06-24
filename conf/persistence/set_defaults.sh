@@ -9,7 +9,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 ]' http://"$HOSTNAMEFQDN":8080/acas/protocoltypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
-{kindName: "default", lsType:{id:1, version:0}}
+{kindName: "default", lsType:{id:1, version:0}},
+{kindName: "flipr screening assay", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAMEFQDN":8080/acas/protocolkinds/jsonArray
 
 
@@ -82,7 +83,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 
 {kindName: "protocol metadata", lsType:{id:1, version:0}},
 
-{kindName: "plate information", lsType:{id:1, version:0}}
+{kindName: "plate information", lsType:{id:1, version:0}},
+{kindName: "subject metadata", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAMEFQDN":8080/acas/statekinds/jsonArray
 
 
@@ -94,7 +96,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {typeName: "clobValue"},
 {typeName: "blobValue"},
 {typeName: "numericValue"},
-{typeName: "codeValue"}
+{typeName: "codeValue"},
+{typeName: "inlineFileValue"}
 ]' http://"$HOSTNAMEFQDN":8080/acas/valuetypes/jsonArray
 
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
@@ -122,7 +125,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "concentration", lsType:{id:7, version:0}},
 {kindName: "volume", lsType:{id:7, version:0}},
 {kindName: "date prepared", lsType:{id:4, version:0}},
-
+{kindName: "report file", lsType:{id:2, version:0}},
 {kindName: "target", lsType:{id:1, version:0}},
 {kindName: "assay format", lsType:{id:1, version:0}},
 {kindName: "experiment status", lsType:{id:1, version:0}},
@@ -136,7 +139,6 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "curve min", lsType:{id:7, version:0}},
 {kindName: "curve max", lsType:{id:7, version:0}},
 {kindName: "replicate aggregation", lsType:{id:1, version:0}},
-
 {kindName: "barcode", lsType:{id:8, version:0}},
 {kindName: "seq file", lsType:{id:2, version:0}},
 {kindName: "min file", lsType:{id:2, version:0}},
@@ -144,7 +146,6 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "raw r results location", lsType:{id:2, version:0}},
 {kindName: "data results location", lsType:{id:2, version:0}},
 {kindName: "summary location", lsType:{id:2, version:0}},
-
 {kindName: "well type", lsType:{id:1, version:0}},
 {kindName: "well name", lsType:{id:1, version:0}},
 {kindName: "maximum", lsType:{id:7, version:0}},
@@ -155,7 +156,13 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "over efficacy threshold", lsType:{id:1, version:0}},
 {kindName: "fluorescencePoints", lsType:{id:5, version:0}},
 {kindName: "timePoints", lsType:{id:5, version:0}},
-{kindName: "previous experiment code", lsType:{id:8, version:0}}
+{kindName: "data analysis parameters", lsType:{id:5, version:0}},
+{kindName: "description", lsType:{id:5, version:0}},
+{kindName: "comparison graph", lsType: {id:9, version:0}},
+{kindName: "previous experiment code", lsType:{id:8, version:0}},
+{kindName: "late peak", lsType:{id:1, version:0}},
+{kindName: "max time", lsType:{id:7, version:0}},
+{kindName: "has agonist", lsType:{id:1, version:0}}
 ]' http://"$HOSTNAMEFQDN":8080/acas/valuekinds/jsonArray
 
 
