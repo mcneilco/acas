@@ -67,12 +67,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
   #    names are allowed, and a boolean indicating whether the format is "use existing experiment"
   
   require('gdata')
-  
-  # Turn NA into "NA"
-  metaDataNames <- names(metaData)
-  metaData <- as.data.frame(lapply(metaData, function(x) if(is.na(x)) "NA" else x), stringsAsFactors=FALSE)
-  names(metaData) <- metaDataNames
-  
+
   # Check if extra data was picked up that should not be
   if (length(metaData[[1]]) > 1) {
     extraData <- c(as.character(metaData[[1]][2:length(metaData[[1]])]),
@@ -84,6 +79,11 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
              errorEnv)
     metaData <- metaData[1,]
   }
+  
+  # Turn NA into "NA"
+  metaDataNames <- names(metaData)
+  metaData <- as.data.frame(lapply(metaData, function(x) if(is.na(x)) "NA" else x), stringsAsFactors=FALSE)
+  names(metaData) <- metaDataNames
   
   if (is.null(metaData$Format)) {
     stopUser("A Format must be entered in the Experiment Meta Data.")
