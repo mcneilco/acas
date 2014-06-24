@@ -217,10 +217,10 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   
   # Report any errors
 #   if (length(textTempIds)>1) {
-#     errorList <<- c(errorList, paste0("In the Calculated Results section, there are ", tempIdLabel, "'s that have text: '", 
+#     addError(paste0("In the Calculated Results section, there are ", tempIdLabel, "'s that have text: '", 
 #                                       paste(textTempIds, collapse="', '"), "'. Remove text from all temp id's."))
 #   } else if (length(textTempIds)>0) {
-#     errorList <<- c(errorList, paste0("In the Calculated Results section, there is a ", tempIdLabel, " that has text: '", 
+#     addError( paste0("In the Calculated Results section, there is a ", tempIdLabel, " that has text: '", 
 #                                       textTempIds, "'. Remove text from all temp id's."))
 #   } else if (length(missingTempIds)>1) {
   if (length(missingTempIds)>1) {
@@ -500,7 +500,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   }, error = function(e) {
     stop("Internal Error: Could not get current value kinds")
   })
-  if (length(currentValueKindsList)==0) stop ("Setup error: valueKinds are missing")
+  if (length(currentValueKindsList)==0) stopUser("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
   
@@ -530,9 +530,9 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     problemFrame <- problemFrame[wrongValueTypes, ]
     
     for (row in 1:nrow(problemFrame)) {
-      errorList <<- c(errorList, paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
+      addError( paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
                                         "' instead of '", problemFrame$oldValueKindTypes[row], "'. Please enter '", problemFrame$matchingValueKindTypes[row],
-                                        "' in the Datatype row for '", problemFrame$oldValueKinds[row], "'."))
+                                        "' in the Datatype row for '", problemFrame$oldValueKinds[row], "'."),)
     }
   }
   
@@ -562,7 +562,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
           httpheader=c('Content-Type'='application/json'),
           postfields=toJSON(newValueKindsUpload))
       }, error = function(e) {
-        errorList <<- c(errorList,paste("Error in saving new column headers:", e$message))
+        addError(paste("Error in saving new column headers:", e$message))
       })
     }
   }
@@ -690,7 +690,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   commentCodeWord <- "comment@coDeWoRD@"
   
   if(ncol(calculatedResults) == 1) {
-    stop("The rows below Calculated Results must have at least two columns filled: one for ", mainCode, "'s and one for data.")
+    stopUser(paste0("The rows below Calculated Results must have at least two columns filled: one for ", mainCode, "'s and one for data."))
   } else if (nrow(calculatedResults) == 0) {
     stop("The first row below 'Calculated Results' must begin with 'Datatype'. Right now, 'Datatype' is missing.")
   }
@@ -1053,8 +1053,8 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
 #   
 #   #Check if Raw Results is empty
 #   if (length(rawResults[[1]])<2) {
-#     stop("The cell two below 'Raw Results' is empty. Either add a label for the '", rawResults[1,1], 
-#          "' column, or, if you do not wish to upload Raw Results, delete the section completely.")
+#     stopUser(paste0("The cell two below 'Raw Results' is empty. Either add a label for the '", rawResults[1,1], 
+#          "' column, or, if you do not wish to upload Raw Results, delete the section completely."))
 #   }
 #   
 #   # Turn the first row into headers
@@ -1101,10 +1101,10 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
 #   
 #   # Force them to use Dose and Response (would add a flag later for other similar formats that are not Dose Respose)
 #   if (xLabel != "Dose") {
-#     errorList <<- c(errorList, "The x Raw Result must be 'Dose' for this format.")
+#     addError( "The x Raw Result must be 'Dose' for this format.")
 #   }
 #   if (yLabel != "Response") {
-#     errorList <<- c(errorList, "The y Raw Result must be 'Response' for this format.")
+#     addError( "The y Raw Result must be 'Response' for this format.")
 #   }
 #   
 #   #Drop Columns that are unnecessary in this context
@@ -1230,7 +1230,7 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
     if (formFormat %in% allowedCreationFormats || forceProtocolCreation) {
       warning(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
     } else {
-      errorList <<- c(errorList, paste0("Protocol '", protocolName, "' does not exist. Please enter a protocol name that exists. Contact your system administrator if you would like to create a new protocol."))
+      addError( paste0("Protocol '", protocolName, "' does not exist. Please enter a protocol name that exists. Contact your system administrator if you would like to create a new protocol."))
     }
     # A flag for when the protocol will be created new
     protocol <- NA
@@ -1282,7 +1282,7 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
-        errorList <<- c(errorList,paste0("Experiment '",experimentName,
+        addError(paste0("Experiment '",experimentName,
                                          "' does not exist in the protocol that you entered, but it does exist in '", getPreferredProtocolName(protocolOfExperiment), 
                                          "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
         experiment <- experimentList[[1]]
@@ -1508,7 +1508,7 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
     response <- tryCatch({
       getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.users.path, "/", scientistName)))
     }, error = function(e) {
-      errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+      addError( paste("There was an error in validating the scientist's name:", scientistName))
       return("")
     }) 
   } else { # In test mode, provide the three possible answers
@@ -1522,14 +1522,14 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
   }
   
   if (response == "") {
-    errorList <<- c(errorList, paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
+    addError( paste0("The Scientist you supplied, '", scientistName, "', is not a valid name. Please enter the scientist's login name."))
     return("")
   }
   
   username <- tryCatch({
     fromJSON(response)$username
   }, error = function(e) {
-    errorList <<- c(errorList, paste("There was an error in validating the scientist's name:", scientistName))
+    addError( paste("There was an error in validating the scientist's name:", scientistName))
     return("")
   })
   
@@ -1639,7 +1639,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     subjectData$originalBatchCode <- subjectData$originalBatchCode[1]
     output <- unique(subjectData)
     if (nrow(output) > 1) {
-      stop("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject.")
+      stopUser(paste0("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject."))
     }
     return(output)
   }
@@ -1993,7 +1993,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
 #     subjectData$originalBatchCode <- subjectData$originalBatchCode[1]
 #     output <- unique(subjectData)
 #     if (nrow(output) > 1) {
-#       stop("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject.")
+#       stopUser(paste0("Values in ", unique(subjectData$valueKindAndUnit), " are expected to be the same for each subject."))
 #     }
 #     return(output)
 #   }
@@ -2358,10 +2358,10 @@ saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
       lsTransaction=dfData$lsTransaction[1])
     upperAcasEntity <- acasEntityHierarchyCamel[which(currentEntity == acasEntityHierarchyCamel) - 1]
     if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stop("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data")
+      stopUser(paste0("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data"))
     }
     if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stop("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data")
+      stopUser(paste0("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data"))
     }
     entity[[upperAcasEntity]] <- list(id=dfData[[paste0(upperAcasEntity, "ID")]][1],
                                       version=dfData[[paste0(upperAcasEntity, "Version")]][1])
@@ -2605,7 +2605,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   if (useExistingExperiment) {
     experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
     if (length(experiment) == 0) {
-      stop ("Experiment Code Name not found ", validatedMetaData$'Experiment Code Name'[1])
+      stopUser(paste0("Experiment Code Name not found ", validatedMetaData$'Experiment Code Name'[1]))
     }
     protocol <- getProtocolById(experiment$protocol$id)
     validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
@@ -2656,7 +2656,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   if(!dryRun) {
-    viewerLink <- getViewerLink(protocol, experiment, validatedMetaData$'Experiment Name', configList=configList) 
+    viewerLink <- getViewerLink(protocol, experiment, validatedMetaData$'Experiment Name') 
   }
   
   summaryInfo <- list(
@@ -2953,7 +2953,7 @@ saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   }
   
   if (!(entityID %in% names(entityData))) {
-    stop("Internal Error: ", entityID, " must be included in entityData")
+    stopUser(paste0("Internal Error: ", entityID, " must be included in entityData"))
   }
   
   createExplicitLsState <- function(entityData, entityKind) {
@@ -2980,7 +2980,7 @@ saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   }
   
   if (!is.list(savedLsStates) || length(savedLsStates) != length(lsStates)) {
-    stop ("Internal error: the roo server did not respond correctly to saving states")
+    stopUser("Internal error: the roo server did not respond correctly to saving states")
   }
   
   lsStateIds <- sapply(savedLsStates, getElement, "id")
@@ -3052,7 +3052,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   ### Error Checking
   requiredColumns <- c("valueType", "valueKind", "publicData", "stateVersion", "stateID")
   if (any(!(requiredColumns %in% names(entityData)))) {
-    stop("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", "))
+    stopUser(paste0("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", ")))
   }
   
   # Turns factors to character
@@ -3067,7 +3067,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   } else if (is.null(entityData$dateValue) || all(is.na(entityData$dateValue))) {
     entityData$dateValue <- as.character(NA)
   } else {
-    stop("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue))
+    stopUser(paste0("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue)))
   }
   
   

@@ -20,9 +20,9 @@ test_that("getExcelColumnFromNumber gets the right column", {
 })
 
 test_that("getExcelColumnFromNumber refuses bad column numbers", {
-  load("public/src/modules/GenericDataParser/spec/RTestSet/IO_for_test_files/getExcelColumn0.Rda")
-  expect_identical(getExcelColumn0, tryCatch.W.E(getExcelColumnFromNumber(0)))
+  expect_equal("none", tryCatch.W.E(getExcelColumnFromNumber(0))$value)
+  expect_equal(2, length(tryCatch.W.E(getExcelColumnFromNumber(0))))
   
-  load("public/src/modules/GenericDataParser/spec/RTestSet/IO_for_test_files/getExcelColumnNegative1.Rda")
-  expect_identical(getExcelColumnNegative1, tryCatch.W.E(getExcelColumnFromNumber(-1)))
+  expect_equal("none", tryCatch.W.E(getExcelColumnFromNumber(-1))$value)
+  expect_equal(2, length(tryCatch.W.E(getExcelColumnFromNumber(-1))))
 })
