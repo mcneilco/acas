@@ -2656,7 +2656,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   if(!dryRun) {
-    viewerLink <- getViewerLink(protocol, experiment, validatedMetaData$'Experiment Name', configList=configList) 
+    viewerLink <- getViewerLink(protocol, experiment, validatedMetaData$'Experiment Name') 
   }
   
   summaryInfo <- list(
