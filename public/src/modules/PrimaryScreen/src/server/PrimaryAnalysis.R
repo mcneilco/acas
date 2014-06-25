@@ -1255,26 +1255,40 @@ setAnalysisStatus <- function(status, metadataState) {
   })
   return(NULL)
 }
-computeNormalized  <- function(values, wellType) {
-  # Computes normalized version of the given values based on the positive and negative controls included
+computeNormalized  <- function(values, wellType, flagged) {
+  # Computes normalized version of the given values based on the unflagged positive and 
+  # negative controls
   #
   # Args:
   #   values:   A vector of numeric values
   #   wellType: A vector of the same length as values which marks the type of each
+  #   flagged:  A vector of the same length as values, with text if the well was flagged, and NA otherwise
   # Returns:
-  #   A numeric vector of the same length as the inputs that is normalized
+  #   A numeric vector of the same length as the inputs that is normalized.
   
-  #find min (mean of Negative Controls)
-  minLevel <- mean(values[(wellType=='NC')])
-  #find max (mean of Positive Controls)
-  maxLevel <- mean(values[(wellType=='PC')])
+  # Error handling -- what if there are no unflagged PC's or NC's? 
+  # (Note, we checked for a complete absence of either control earlier)
+  if (length(values[(wellType == 'NC' & is.na(flagged))]) == 0) {
+    stop("All negative controls appear to have been flagged, so the data cannot be normalized.")
+  }
+  if (length(values[(wellType == 'PC' & is.na(flagged))]) == 0) {
+    stop("All positive controls appear to have been flagged, so the data cannot be normalized.")
+  }
+  
+  #find min (mean of unflagged Negative Controls)
+  minLevel <- mean(values[(wellType=='NC' & is.na(flagged))])
+  #find max (mean of unflagged Positive Controls)
+  maxLevel <- mean(values[(wellType=='PC' & is.na(flagged))])
   
   return((values - minLevel) / (maxLevel - minLevel))
 }
 
 ####### Main function
-runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters) {
+runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL) {
   # Runs main functions that are inside the tryCatch.W.E
+  # flaggedWells: the name of a csv or Excel file that lists each well's barcode, 
+  #               well number, and if it's flagged. If NULL, the file did not exist,
+  #               and no wells are flagged.
   
   folderToParse <- racas::getUploadedFilePath(folderToParse)
   
@@ -1421,7 +1435,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     normalization <- parameters$normalizationRule
     
-    # Jennifer add flags here
   }
   ### END FLIPR reading function
   
@@ -1440,13 +1453,28 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformationRule)
   
+  #Jennifer
+  
+  # Add flags to the results. If there was no file name given, then all flags are NA
+  if (is.null(flaggedWells)) {
+    flaggedWells <- racas::getUploadedFilePath(flaggedWells)
+    
+    # Order the resultTable and the flags in the same way. This works because barcode + well is unique
+    resultTable[order(barcode, well)]
+    flaggedWells[order(Barcode, Well)]
+    
+    resultTable <- cbind(resultTable, flagged = flaggedWells$Flag)
+  } else {
+    resultTable$flagged <- rep(NA, nrow(resultTable))
+  }
+  
   # normalization
   
   if (normalization=="plate order") {
-    resultTable[,normalized:=computeNormalized(transformed,wellType), by= barcode]
+    resultTable[,normalized:=computeNormalized(transformed,wellType,flagged), by= barcode]
   } else if (normalization=="row order") {
     resultTable[,plateRow:=gsub("\\d", "",well)]
-    resultTable[,normalized:=computeNormalized(transformed,wellType), by= list(barcode,plateRow)]
+    resultTable[,normalized:=computeNormalized(transformed,wellType,flagged), by= list(barcode,plateRow)]
   } else {
     resultTable$normalized <- resultTable$transformed
   }
@@ -1483,10 +1511,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   if(useRdap) {
-    batchDataTable <- data.table(values = resultTable$normalized, 
-                                 batchName = resultTable$batchName,
-                                 wellType = resultTable$wellType,
-                                 barcode = resultTable$barcode)
+    batchDataTable <- data.table(values = flaglessTable$normalized, 
+                                 batchName = flaglessTable$batchName,
+                                 wellType = flaglessTable$wellType,
+                                 barcode = flaglessTable$barcode)
   } else {
     # Get the late peak points
     resultTable$latePeak <- (resultTable$overallMaxTime > parameters$latePeakTime) & 
@@ -1495,20 +1523,20 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     resultTable$threshold <- (resultTable$normalized > efficacyThreshold) & !resultTable$fluorescent & 
       resultTable$wellType=="test" & !resultTable$latePeak
     
-    
-    batchDataTable <- data.table(values = resultTable$normalized, 
-                                 batchName = resultTable$batchName,
-                                 fluorescent = resultTable$fluorescent,
-                                 sdScore = resultTable$sdScore,
-                                 wellType = resultTable$wellType,
-                                 barcode = resultTable$barcode,
-                                 maxTime = resultTable$maxTime,
-                                 overallMaxTime = resultTable$overallMaxTime,
-                                 threshold = resultTable$threshold,
-                                 hasAgonist = resultTable$hasAgonist,
-                                 latePeak = resultTable$latePeak,
-                                 concentration = resultTable$concentration,
-                                 concUnit = resultTable$concUnit)
+    # Omit the flagged results when calculating treatment group data
+    batchDataTable <- data.table(values = flaglessTable$normalized, 
+                                 batchName = flaglessTable$batchName,
+                                 fluorescent = flaglessTable$fluorescent,
+                                 sdScore = flaglessTable$sdScore,
+                                 wellType = flaglessTable$wellType,
+                                 barcode = flaglessTable$barcode,
+                                 maxTime = flaglessTable$maxTime,
+                                 overallMaxTime = flaglessTable$overallMaxTime,
+                                 threshold = flaglessTable$threshold,
+                                 hasAgonist = flaglessTable$hasAgonist,
+                                 latePeak = flaglessTable$latePeak,
+                                 concentration = flaglessTable$concentration,
+                                 concUnit = flaglessTable$concUnit)
   }
 
   if(!useRdap) {
@@ -2289,6 +2317,7 @@ runPrimaryAnalysis <- function(request) {
   user <- request$user
   testMode <- request$testMode
   inputParameters <- request$inputParameters
+  flaggedWells <- request$flaggedWells
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
@@ -2298,7 +2327,13 @@ runPrimaryAnalysis <- function(request) {
   # If there is a global defined by another R code, this will overwrite it
   errorList <<- list()
   
-  loadResult <- tryCatch.W.E(runMain(folderToParse, user, dryRun, testMode, experimentId, inputParameters))
+  loadResult <- tryCatch.W.E(runMain(folderToParse, 
+                                     user, 
+                                     dryRun, 
+                                     testMode, 
+                                     experimentId, 
+                                     inputParameters,
+                                     flaggedWells))
   
   # If the output has class simpleError or is not a list, save it as an error
   if(class(loadResult$value)[1]=="simpleError") {
