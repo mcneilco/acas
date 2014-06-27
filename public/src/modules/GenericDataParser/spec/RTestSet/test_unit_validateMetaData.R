@@ -264,7 +264,6 @@ test_that("validateMetaData rejects extra headers", {
 })
 
 test_that("validateMetaData responds correctly to the client.include.project setting", {
-  errorList <<- list()
   validatedMetaData <- metaData
   validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
   duplicateExperimentNamesAllowed <- FALSE
@@ -279,9 +278,22 @@ test_that("validateMetaData responds correctly to the client.include.project set
   utils::assignInNamespace("applicationSettings",newSettings, ns="racas")
   
   # Run the test; should validate data and add an error
+  errorList <<- list()
   expect_identical(validateMetaData(metaData, racas::applicationSettings, testMode = TRUE),
                    list(validatedMetaData = validatedMetaData, 
                         duplicateExperimentNamesAllowed = duplicateExperimentNamesAllowed,
                         useExisting = useExisting))
   expect_equal(1, length(errorList))
+  
+  # Set new application settings, if the condition is null
+  newSettings$client.include.project <- NULL
+  utils::assignInNamespace("applicationSettings",newSettings, ns="racas")
+  
+  # Run the test; should validate data without an error
+  errorList <<- list()
+  expect_identical(validateMetaData(metaData, racas::applicationSettings, testMode = TRUE),
+                   list(validatedMetaData = validatedMetaData, 
+                        duplicateExperimentNamesAllowed = duplicateExperimentNamesAllowed,
+                        useExisting = useExisting))
+  expect_equal(0, length(errorList))
 })
