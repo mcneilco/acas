@@ -79,7 +79,11 @@ END
 AS tested_conc_unit, 
 agv.id AS agv_id,
 agv.ls_type as ls_type,
-agv.ls_kind as ls_kind, 
+CASE
+    WHEN agv.ls_type = 'inlineFileValue'
+    THEN agv.ls_type_and_kind
+ELSE agv.ls_kind
+END AS ls_kind,
 agv.operator_kind, 
  CASE 
     WHEN agv.ls_kind like '%curve id' THEN null
@@ -104,6 +108,8 @@ THEN
         ')' ||
         '</A>'
 		)
+WHEN agv.ls_type = 'inlineFileValue'
+THEN agv.file_value
 WHEN agv.ls_type = 'urlValue' 
 THEN 
 		('<A HREF="' || 
@@ -646,12 +652,12 @@ join experiment exp on aagr.experiment_id = exp.id;
 
 CREATE OR REPLACE VIEW batch_code_experiment_links AS
 select agv.code_value as batch_code,
-    ('<A HREF="http://' ||
+    ('<A HREF="' ||
     (
         SELECT application_setting.prop_value
         FROM application_setting
-        WHERE application_setting.prop_name = 'server_address'
-    ) || ':3000/flipr_screening_assay/codeName/' ||
+        WHERE application_setting.prop_name = 'batch_code_experiment_url'
+    ) ||
     replace(e.code_name, ' ', '%20') ||
     '">' ||
     p.label_text ||
