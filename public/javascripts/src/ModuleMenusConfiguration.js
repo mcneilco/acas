@@ -6,7 +6,8 @@
     }, {
       isHeader: false,
       menuName: "Load Experiment",
-      mainControllerClassName: "GenericDataParserController"
+      mainControllerClassName: "GenericDataParserController",
+      autoLaunchName: "generic_data_parser"
     }, {
       isHeader: false,
       menuName: "Load Experiment",

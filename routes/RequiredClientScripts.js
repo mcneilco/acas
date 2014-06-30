@@ -85,6 +85,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/curveCuratorTestFixtures.js",
 	"/src/modules/DocForBatches/spec/DocForBatchesSpec.js",
+	"/src/modules/ExperimentBrowser/spec/ProtocolStub.js",
 	"/javascripts/spec/AbstractFormControllerSpec.js",
 	"/javascripts/spec/AnalysisGroupSpec.js",
 	"/javascripts/spec/AuthenticationServiceSpec.js",

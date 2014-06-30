@@ -4,11 +4,13 @@
     app.get('/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById);
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
-    return app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
+    app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
+    app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
+    return app.get('/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect);
   };
 
   exports.experimentByCodename = function(request, response) {
-    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, experimentServiceTestJSON;
     console.log(request.params.code);
     console.log(request.query.testMode);
     if (request.query.testMode || global.specRunnerTestmode) {
@@ -17,8 +19,12 @@
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + request.params.code;
-      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-      return serverUtilityFunctions.getFromACASServer(baseurl, response);
+      if (request.query.fullObject) {
+        baseurl += "?" + fullObjectFlag;
+        return serverUtilityFunctions.getSingleObjectFromACASServer(baseurl, response);
+      } else {
+        return serverUtilityFunctions.getFromACASServer(baseurl, response);
+      }
     }
   };
 
@@ -109,6 +115,34 @@
           }
         };
       })(this));
+    }
+  };
+
+  exports.genericExperimentSearch = function(req, res) {
+    var experimentServiceTestJSON, json;
+    if (global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return res.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
+    } else {
+      json = {
+        message: "genericExperimentSearch not implemented yet"
+      };
+      return res.end(JSON.stringify(json));
+    }
+  };
+
+  exports.editExperimentLookupAndRedirect = function(req, res) {
+    var json;
+    if (global.specRunnerTestmode) {
+      json = {
+        message: "got to edit experiment redirect"
+      };
+      return res.end(JSON.stringify(json));
+    } else {
+      json = {
+        message: "genericExperimentSearch not implemented yet"
+      };
+      return res.end(JSON.stringify(json));
     }
   };
 

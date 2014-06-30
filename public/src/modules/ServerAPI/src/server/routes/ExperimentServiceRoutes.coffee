@@ -6,6 +6,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById
 	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
 	app.put '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment
+	app.get '/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch
+	app.get '/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect
 
 exports.experimentByCodename = (request, response) ->
 	console.log request.params.code
@@ -17,8 +19,11 @@ exports.experimentByCodename = (request, response) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+request.params.code
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServer(baseurl, response)
+		if request.query.fullObject
+			baseurl += "?#{fullObjectFlag}"
+			serverUtilityFunctions.getSingleObjectFromACASServer(baseurl, response)
+		else
+			serverUtilityFunctions.getFromACASServer(baseurl, response)
 
 exports.experimentsByProtocolCodename = (request, response) ->
 	console.log request.params.code
@@ -94,6 +99,18 @@ exports.putExperiment = (req, resp) ->
 				console.log response
 		)
 
+exports.genericExperimentSearch = (req, res) ->
+	if global.specRunnerTestmode
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		res.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+	else
+		json = {message: "genericExperimentSearch not implemented yet"}
+		res.end JSON.stringify json
 
-
-
+exports.editExperimentLookupAndRedirect = (req, res) ->
+	if global.specRunnerTestmode
+		json = {message: "got to edit experiment redirect"}
+		res.end JSON.stringify json
+	else
+		json = {message: "genericExperimentSearch not implemented yet"}
+		res.end JSON.stringify json

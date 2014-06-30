@@ -97,7 +97,8 @@ exports.protocolCodeList = (req, resp) ->
 		filterString = req.query.protocolName.toUpperCase()
 	else if req.query.protocolKind?
 		shouldFilterByKind = true
-		filterString = req.query.protocolKind.toUpperCase()
+		#filterString = req.query.protocolKind.toUpperCase()
+		filterString = req.query.protocolKind
 	else
 		shouldFilterByName = false
 		shouldFilterByKind = false
@@ -125,11 +126,15 @@ exports.protocolCodeList = (req, resp) ->
 
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"protocollabels/codetable"
+		#baseurl = config.all.client.service.persistence.fullpath+"protocollabels/codetable"
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/codetable"
+
 		if shouldFilterByName
 			baseurl += "/?protocolName="+filterString
 		else if shouldFilterByKind
-			baseurl += "/?protocolKind="+filterString
+			#baseurl += "/?protocolKind="+filterString
+			baseurl += "?lskind="+filterString
+
 		request = require 'request'
 		request(
 			method: 'GET'
