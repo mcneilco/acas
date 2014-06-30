@@ -89,33 +89,23 @@
 	routeSet_6.setupRoutes(app, loginRoutes);
 	routeSet_7 = require("./routes/ExperimentServiceRoutes.js");
 	routeSet_7.setupRoutes(app, loginRoutes);
-	routeSet_8 = require("./routes/GeneDataQueriesRoutes.js");
+	routeSet_8 = require("./routes/FileServices.js");
 	routeSet_8.setupRoutes(app, loginRoutes);
-	routeSet_9 = require("./routes/GenericDataParserRoutes.js");
+	routeSet_9 = require("./routes/GeneDataQueriesRoutes.js");
 	routeSet_9.setupRoutes(app, loginRoutes);
-	routeSet_10 = require("./routes/PreferredBatchIdService.js");
+	routeSet_10 = require("./routes/GenericDataParserRoutes.js");
 	routeSet_10.setupRoutes(app, loginRoutes);
-	routeSet_11 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_11 = require("./routes/PreferredBatchIdService.js");
 	routeSet_11.setupRoutes(app, loginRoutes);
-	routeSet_12 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_12 = require("./routes/ProjectServiceRoutes.js");
 	routeSet_12.setupRoutes(app, loginRoutes);
-	routeSet_13 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_13 = require("./routes/ProtocolServiceRoutes.js");
 	routeSet_13.setupRoutes(app, loginRoutes);
-	routeSet_14 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_14 = require("./routes/RunPrimaryAnalysisRoutes.js");
 	routeSet_14.setupRoutes(app, loginRoutes);
+	routeSet_15 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_15.setupRoutes(app, loginRoutes);
 
-    if (config.all.server.datafiles.without.login) {
-      app.get('/dataFiles/*', function(req, resp) {
-        return resp.sendfile(__dirname + '/privateUploads/' + req.params[0]);
-      });
-    } else {
-      app.get('/dataFiles/*', loginRoutes.ensureAuthenticated, function(req, resp) {
-        return resp.sendfile(__dirname + '/privateUploads/' + req.params[0]);
-      });
-    }
-    app.get('/tempfiles/*', loginRoutes.ensureAuthenticated, function(req, resp) {
-      return resp.sendfile(__dirname + '/privateTempFiles/' + req.params[0]);
-    });
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {
         return console.log("Express server listening on port " + app.get('port'));
