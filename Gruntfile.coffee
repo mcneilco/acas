@@ -184,6 +184,16 @@ module.exports = (grunt) ->
 					src: ["**"]
 					dest: "./public/src/modules"
 				]
+		replace:
+			clientHost:
+				src: ["conf/config.properties"]
+				overwrite: true
+				replacements: [
+						from: /\nclient.host=.*/i
+						to: ->
+							os = require 'os'
+							return '\n' + 'client.host=' + os.hostname()
+					]
 		watch:
 			coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
@@ -255,9 +265,13 @@ module.exports = (grunt) ->
 
 
 
+
+
+
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-contrib-watch"
 	grunt.loadNpmTasks "grunt-contrib-copy"
+	grunt.loadNpmTasks "grunt-text-replace"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]
