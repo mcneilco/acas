@@ -114,6 +114,55 @@ getAgonist <- function(agonist, wellTable) {
   
   return(wellTable)
 }
+getFlags <- function(flaggedWells, resultTable) {
+  # Reads the flagged wells from an input csv or Excel file
+  # Input: flaggedWells, the name of a file in privateUploads that contains well-flagging information
+  #        resultTable, a data.table that must contain all of the barcodes and wells for the data set
+  # Returns: a data.table with each barcode, well, and associated flag. All column names are lowercase.
+  
+  # If we don't have a file, make all flags NA
+  if(is.null(flaggedWells) || flaggedWells == "") {
+    flaggedWells <- data.table(barcode = resultTable$barcode, well = resultTable$well, flag = c(NA_character_))
+  } else {
+    flaggedWells <- racas::getUploadedFilePath(flaggedWells)
+    flagData <- readExcelOrCsv(flaggedWells, header = FALSE)
+    
+    # We want to accept two formats: the file we output, which the user has edited, and a file
+    # that contains just the barcode, well, and flag information
+    flagData <- tryCatch({
+      flagData <- racas::getSection(flagData, lookFor = "Calculated Results")
+      # Remove "Editable" Row
+      flagData <- flagData[1:nrow(flagData)>1,]
+      # Get the headers in the appropriate place
+      names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
+      flagData <- flagData[1:nrow(flagData)>1,]
+    }, error = function(e) {
+      if (any(class(e) == "userStop")) {
+        # If we received an error that we defined, it means the section heading wasn't there
+        # (or there were too few rows); we assume we just had the basic csv file
+        names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
+        flagData <- flagData[1:nrow(flagData)>1,]
+        return(flagData)
+      } else {
+        stopUser("The system encountered an error while reading the flagged wells.")
+      }
+    })
+    # Ensure that the data is in the proper form, and remove unneeded columns
+    flagData <- validateFlagData(flagData, resultTable)
+    flagData <- data.table(barcode = flagData$barcode, well = flagData$well, flag = flagData$flag)
+    
+    flagData <- as.data.table(flagData)
+    # readExcelOrCsv reads nonexistent entries as empty strings, not NA, so we fix that:
+    flagData[flag == ""]$flag <- NA_character_
+    
+    # If the table is blank, readExcelOrCsv decides all of the column types should be "logical",
+    # so we change them to "character"
+    if (nrow(flagData) == 0) {
+      flagData <- as.data.table(sapply(flagData, as.character))
+    }
+  }
+  return(flagData)
+}
 removeVehicle <- function(vehicle, wellTable) {
   #Removes rows with a vehicle that are part of another well
   # If the vehicle is the only compound in a well, it is kept
@@ -952,6 +1001,43 @@ validateInputFiles <- function(dataDirectory) {
   
   return(fileNameTable)
 }
+validateFlagData <- function(flagData, resultTable) {
+  # Ensures that the flagData is in a reasonable format, so we can throw helpful
+  #   errors before the rest of the code generates unhelpful (R) errors
+  #
+  # flagData:    A data.frame that should contain (at a minimum) the barcode, well, and flag
+  #                for flagged wells
+  # resultTable: A data.table containing, among other fields, a complete list of barcodes and wells
+  # Returns: the input data frame, with accumulated warnings and errors
+
+  columnsIncluded <- c("well", "barcode", "flag") %in% names(flagData)
+  if (!all(columnsIncluded)) {
+    stopUser(paste0("An important column appears to be missing from the input. ",
+                    "Please ensure that the uploaded file contains columns for Well,", 
+                    "Barcode, and Flag. If the uploaded file contained calculated ", 
+                    "results, please ensure that you only modified the columns marked ",
+                    "as editable."))
+  }
+  
+  duplicateIndices <- duplicated(data.frame(flagData$barcode, flagData$well))
+  if (any(duplicateIndices)) {
+    duplicateTests <- unique(data.frame(flagData$barcode[duplicateIndices], flagData$well[duplicateIndices]))
+    stopUser(paste0("The same barcode and well combination was listed multiple times in the flag file. Please remove ",
+             "duplicates for ", paste(duplicateTests[[1]], duplicateTests[[2]], collapse = ", "), "."))
+  }
+  
+  results <- data.table(barcode = resultTable$barcode, well = resultTable$well)
+  flags <- data.table(barcode = flagData$barcode, well = flagData$well)
+  setkey(flags, barcode, well)
+  extraTests <- flags[!results]
+  if (nrow(extraTests) > 0) {
+    warning(paste0("Some of the wells listed in the flag file were not found in the experiment ",
+            "data, and will be ignored. Please remove or modify ", 
+            paste(extraTests[[1]], extraTests[[2]], collapse = ", "), "."))
+  }
+  
+  return(flagData)
+}
 findFluorescents <- function(seqData) {
   # Finds fluorescent compounds by initial slope
   #
@@ -1459,26 +1545,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformationRule)
   
-  #Jennifer
+  # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
+  flaggedWells <- getFlags(flaggedWells, resultTable)
   
-  # Add flags to the results. If there was no file name given, then all flags are NA
-  if (!is.null(flaggedWells)) {
-    flaggedWells <- racas::getUploadedFilePath(flaggedWells)
-    flaggedWells <- as.data.table(readExcelOrCsv(flaggedWells, header = TRUE))
-    
-    # readExcelOrCsv reads nonexistent entries as empty strings, not NA, so we fix that:
-    flaggedWells[Flag == ""]$Flag <- NA_character_
-  } else {
-    flaggedWells <- data.table(Barcode = resultTable$barcode, Well = resultTable$well, Flag = c(NA))
-  }
+  # In order to merge with a data.table, the columns have to have the same name
+  resultTable <- merge(resultTable, flaggedWells, by = c("barcode", "well"), all.x = TRUE, all.y = FALSE)
   
-  # Order the resultTable and the flags in the same way. This works because barcode + well is unique
-  setkey(flaggedWells, Barcode, Well)
-  resultTable[order(barcode, well)]
-  flaggedWells[order(Barcode, Well)]
-  
-  resultTable <- cbind(resultTable, flag = flaggedWells$Flag)
-  save(resultTable, file = 'rt.rda')
   # Error handling -- what if there are no unflagged PC's or NC's? 
   if (!any(is.na(resultTable$flag))) { 
     stop("All data points appear to have been flagged, so the data cannot be analyzed")
@@ -1621,7 +1693,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     if (TRUE) {
       # May need to return to using analysisGroupData eventually
       outputTable <- ddply(resultTable, c("batchName", "hasAgonist", "barcode", "wellType"), function(idf) {
-        data.frame("Corporate Batch ID" = as.character(idf$batchName),
+        data.frame("Flag" = idf$flag,
+          "Corporate Batch ID" = as.character(idf$batchName),
           "Barcode" = as.character(idf$barcode),
           "Well" = as.character(idf$well),
           "Well Hit" = ifelse(idf$threshold, "yes", "no"),
@@ -1634,7 +1707,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
           "Well Type" = idf$wellType,
           "Late Peak" = ifelse(idf$latePeak, "yes", "no"),
           "Has Agonist" = ifelse(idf$hasAgonist, "yes", "no"),
-          "Flag" = idf$flag,
           check.names = FALSE,
           stringsAsFactors = FALSE)
       })
@@ -1667,8 +1739,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Hits" = sum(analysisGroupData$threshold == "yes"),
         "Threshold" = signif(efficacyThreshold, 3),
         "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
-        "Fluorescent compounds" = sum(resultTable$fluorescent),
-        "Flagged compounds" = sum(!is.na(resultTable$flag)),
+        "Fluorescent wells" = sum(resultTable$fluorescent),
+        "Flagged wells" = sum(!is.na(resultTable$flag)),
         "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC" & is.na(resultTable$flag)], resultTable$transformed[resultTable$wellType=="NC" & is.na(resultTable$flag)]),digits=3,nsmall=3),
         "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC" & is.na(resultTable$flag)], resultTable$transformed[resultTable$wellType=="NC" & is.na(resultTable$flag)]),digits=3,nsmall=3),
         "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC" & is.na(resultTable$flag)], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent & is.na(resultTable$flag)]),digits=3,nsmall=3),
@@ -1687,7 +1759,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       uniqueString <- paste(outputTableReloadColumns$"Corporate Batch ID", outputTable$"Well Type")
     }
     outputTableReloadColumns$"Hit"[duplicated(uniqueString)] <- ""
-    outputTableReloadColumns$"unique" <- NULL
     names(outputTableReloadColumns) <- c("Corporate Batch ID", "User Override Hit")
     protocol <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "protocols/", experiment$protocol$id)))
     protocolName <- protocol$lsLabels[[1]]$labelText
@@ -1731,8 +1802,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         # "Hits" = sum(analysisGroupData$threshold),
         # "Threshold" = signif(efficacyThreshold, 3),
         # "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
-        "Fluorescent compounds" = sum(resultTable$fluorescent),
-        "Flagged compounds" = sum(!is.na(resultTable$flag)),
+        "Fluorescent wells" = sum(resultTable$fluorescent),
+        "Flagged wells" = sum(!is.na(resultTable$flag)),
         # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
@@ -1809,7 +1880,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                                threshold = efficacyThreshold, experiment)
-          if (parameters$aggregateReplicates != "no") {
+      if (parameters$aggregateReplicates != "no") {
+        setkey(resultTable, barcode, batchName) #This is so they are factors, for saveComparisonTraces
+        save(resultTable, file = 'k.rda')
         source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
         resultTable <- saveComparisonTraces(resultTable, paste0("experiments/", experiment$codeName, "/images"))
     }
