@@ -1759,18 +1759,33 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       uniqueString <- paste(outputTableReloadColumns$"Corporate Batch ID", outputTable$"Well Type")
     }
     outputTableReloadColumns$"Hit"[duplicated(uniqueString)] <- ""
-    names(outputTableReloadColumns) <- c("Corporate Batch ID", "User Override Hit")
+    names(outputTableReloadColumns) <- c("Corporate Batch ID", "User Defined Hit")
+    outputTable$"Corporate Batch ID" <- NULL  # Don't want this showing up twice
     protocol <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "protocols/", experiment$protocol$id)))
     protocolName <- protocol$lsLabels[[1]]$labelText
     metadataState <- experiment$lsStates[lapply(experiment$lsStates, getElement, "lsKind") == "experiment metadata"][[1]]
     completionDateValue <- metadataState$lsValues[lapply(metadataState$lsValues, getElement, "lsKind") == "completion date"][[1]]
     
-    dataSection <- cbind(outputTableReloadColumns, data.frame("removeMe"=rep(NA, nrow(outputTable))), outputTable)
+    dataSection <- cbind(outputTableReloadColumns, outputTable)
     headerRow <- names(dataSection)
     columnNamesSection <- as.data.frame(t(headerRow), stringsAsFactors=F)
     names(columnNamesSection) <- as.character(seq(1, length(columnNamesSection)))
-    columnNamesSection[1, 3] <- NA
-    columnTypeSection <- data.frame(c(NA, "Calculated Results", "Datatype"), c(NA, NA, "Text"), stringsAsFactors=F)
+    columnTypeSection <- data.frame(c(NA, "Calculated Results", "Reference"), 
+                                    c(NA, NA, "Editable"), 
+                                    c(NA, NA, "Editable"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    c(NA, NA, "Reference"),
+                                    stringsAsFactors=F)
     names(columnTypeSection) <- as.character(seq(1, length(columnTypeSection)))
     names(dataSection) <- as.character(seq(1, length(dataSection)))
     
