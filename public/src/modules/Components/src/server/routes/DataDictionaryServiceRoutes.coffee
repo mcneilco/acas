@@ -9,4 +9,6 @@ exports.getDataDictValues = (req, resp) ->
 		dataDictServiceTestJSON = require '../public/javascripts/spec/testFixtures/dataDictServiceTestJSON.js'
 		resp.end JSON.stringify dataDictServiceTestJSON.dataDictValues
 	else
-		console.log 'not implemented yet'
+		dataDictServiceTestJSON = require '../public/javascripts/spec/testFixtures/dataDictServiceTestJSON.js'
+		resp.end JSON.stringify dataDictServiceTestJSON.dataDictValues
+

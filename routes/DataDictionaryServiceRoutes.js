@@ -13,7 +13,8 @@
       dataDictServiceTestJSON = require('../public/javascripts/spec/testFixtures/dataDictServiceTestJSON.js');
       return resp.end(JSON.stringify(dataDictServiceTestJSON.dataDictValues));
     } else {
-      return console.log('not implemented yet');
+      dataDictServiceTestJSON = require('../public/javascripts/spec/testFixtures/dataDictServiceTestJSON.js');
+      return resp.end(JSON.stringify(dataDictServiceTestJSON.dataDictValues));
     }
   };
 

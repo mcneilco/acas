@@ -5,8 +5,6 @@ myMessenger$logger <- logger(logName = "com.acas.doseresponse.fit.experiment", l
 myMessenger$logger$debug("dose response fit experiment initiated")
 
 fitDoseResponse <- function(request){
-  myMessenger$logger$debug("got here man")
-  saveSession("~/Desktop/blahl")
   request <- as.list(request)
   myMessenger$logger$debug(toJSON(request))
 

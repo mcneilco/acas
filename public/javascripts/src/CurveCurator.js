@@ -476,24 +476,19 @@
       } else {
         this.$el.html("No curve selected");
       }
-      if (this.model.get('algorithmApproved') === 'NA') {
+      if (this.model.get('flagAlgorithm') === 'NA') {
+        this.$('.bv_pass').show();
+        this.$('.bv_fail').hide();
+      } else {
         this.$('.bv_pass').hide();
         this.$('.bv_fail').show();
-      } else {
-        if (this.model.get('algorithmApproved') === true) {
-          this.$('.bv_pass').show();
-          this.$('.bv_fail').hide();
-        } else {
-          this.$('.bv_pass').hide();
-          this.$('.bv_fail').show();
-        }
       }
-      if (this.model.get('userApproved') === 'NA') {
+      if (this.model.get('flagUser') === 'NA') {
         this.$('.bv_na').show();
         this.$('.bv_thumbsUp').hide();
         return this.$('.bv_thumbsDown').hide();
       } else {
-        if (this.model.get('userApproved') === true) {
+        if (this.model.get('flagUser') === 'Approved') {
           this.$('.bv_na').hide();
           this.$('.bv_thumbsUp').show();
           return this.$('.bv_thumbsDown').hide();
@@ -754,19 +749,24 @@
       this.$el.html(this.template({
         curveUrl: curveUrl
       }));
-      if (this.model.get('algorithmApproved') === true) {
+      if (this.model.get('flagAlgorithm') === 'NA') {
         this.$('.bv_pass').show();
         this.$('.bv_fail').hide();
       } else {
-        this.$('.bv_pass').hide();
-        this.$('.bv_fail').show();
+        if (this.model.get('flagAlgorithm') === true) {
+          this.$('.bv_pass').show();
+          this.$('.bv_fail').hide();
+        } else {
+          this.$('.bv_pass').hide();
+          this.$('.bv_fail').show();
+        }
       }
-      if (this.model.get('userApproved') === null) {
+      if (this.model.get('flagUser') === 'NA') {
         this.$('.bv_na').show();
         this.$('.bv_thumbsUp').hide();
         this.$('.bv_thumbsDown').hide();
       } else {
-        if (this.model.get('userApproved') === true) {
+        if (this.model.get('flagUser') === true) {
           this.$('.bv_na').hide();
           this.$('.bv_thumbsUp').show();
           this.$('.bv_thumbsDown').hide();

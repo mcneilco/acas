@@ -2,6 +2,7 @@ library(racas)
 
 handler <- function(e) {
   myMessenger$logger$error('got error')
+  myMessenger$logger$error(e$message)
   setHeader("Access-Control-Allow-Origin" ,"*")
   setContentType("text/plain")
   setStatus(500L)
@@ -23,7 +24,7 @@ tryCatch({
       POST <- jsonlite::fromJSON(postData)
       myMessenger$logger$debug(paste0('updating fit with postData: ', postData))
       if(is.null(POST$approval)) {
-        commandOutput <- capture.output(detail <- racas::api_doseResponse_fit_curve(POST))
+        commandOutput <- capture.output(detail <- racas::api_doseResponse.curve(POST))
       } else {
         commandOutput <- capture.output(detail <- racas::api_doseResponse_update_curve_user_approval(POST))
       }
