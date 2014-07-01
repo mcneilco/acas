@@ -1896,9 +1896,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                                threshold = efficacyThreshold, experiment)
       if (parameters$aggregateReplicates != "no") {
-        setkey(resultTable, barcode, batchName) #This is so they are factors, for saveComparisonTraces
-        save(resultTable, file = 'k.rda')
         source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
+        # They should be factors for saveComparisonTraces
+        resultTable$barcode <- as.factor(resultTable$barcode)
+        resultTable$batchName <- as.factor(resultTable$batchName)
         resultTable <- saveComparisonTraces(resultTable, paste0("experiments/", experiment$codeName, "/images"))
     }
     
