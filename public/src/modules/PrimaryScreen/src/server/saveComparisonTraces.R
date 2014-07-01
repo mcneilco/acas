@@ -132,7 +132,7 @@ plotMany <- function(timePoints, sequence, Minimum, Maximum, wellType,
     if (!file.exists(fullPath)) {
       dir.create(fullPath, recursive = TRUE)
     }
-    png(file.path(fullPath, paste(barcodeFactor[code], "_", batchFactor[batchName], ".png", sep = "")))
+    png(file.path(fullPath, paste(barcodeFactor[code], "_", batchName, ".png", sep = "")))
   }
   
   sampleRange <- max(Maximum) - min(Minimum)
@@ -142,7 +142,7 @@ plotMany <- function(timePoints, sequence, Minimum, Maximum, wellType,
        type = 'n', 
        xlab = "Time (sec)",
        ylab = "Activity (rfu)")
-  title(main = paste(barcodeFactor[code], ": ", batchFactor[batchName], sep = ""))
+  title(main = paste(barcodeFactor[code], ": ", batchName, sep = ""))
   
   mapply(plotOne, splitx, splity, wellType, normalizingIndex)
 

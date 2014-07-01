@@ -19,14 +19,14 @@
 # Confirmation - Check that createWellTable is getting correct csv in testMode
 # file.copy("public/src/modules/PrimaryScreen/spec/ConfirmationRegression.zip", "privateUploads/", overwrite=T)
 # library(rjson)
-# request = fromJSON('{\"fileToParse\":\"ConfirmationRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"RD36882\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"DMSO\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"SUGAR\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":0.8,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"efficacy\\\",\\\"aggregateReplicates\\\":\\\"within plates\\\"}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
+# request = fromJSON('{\"fileToParse\":\"ConfirmationRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"RD36882\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"DMSO\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\",\\\"includeAgonist\\\":\\\"true\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"SUGAR\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"PBS\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":0.8,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"efficacy\\\",\\\"aggregateReplicates\\\":\\\"within plates\\\",\\\"dilutionRatio\\\":1}\",\"primaryAnalysisExperimentId\":\"6507\",\"testMode\":\"true\"}')
 # runPrimaryAnalysis(request)
 # request$dryRunMode <- FALSE
 # runPrimaryAnalysis(request)
 
 
 # file.copy("public/src/modules/PrimaryScreen/spec/SinglePointRegression.zip", "privateUploads/", overwrite=T)
-# request = fromJSON('{\"fileToParse\":\"SinglePointRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\"}\",\"primaryAnalysisExperimentId\":\"7582\",\"testMode\":\"true\"}')
+# request = fromJSON('{\"fileToParse\":\"SinglePointRegression.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"(maximum-minimum)/minimum\\\",\\\"normalizationRule\\\":\\\"plate order\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\",\\\"dilutionRatio\\\":1}\",\"primaryAnalysisExperimentId\":\"7582\",\"testMode\":\"true\"}')
 # runPrimaryAnalysis(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/PrimaryAnalysisFiles.zip",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=255259))
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
@@ -88,7 +88,6 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
   #   barcode:        A vector of the barcodes
   #   well:           A vector of the wells
   #   wellTabe:       A data.frame with columns of BARCODE, WELL_NAME, BATCH_CODE,CONCENTRATION,CONCENTRATION_UNIT
-  #   agonist:        A list with names: batchCode, concentration, concentrationUnits
   # Returns:
   #   A data.frame with batchName,concentration, and concUnit that matches the order of the input barcodes and wells
   
@@ -113,12 +112,19 @@ getAgonist <- function(agonist, wellTable) {
   
   wellTable <- wellTable[!agonistRows, ]
   
-  if(anyDuplicated(wellTable$tableAndWell)) {
-    stop("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
-         paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
-         "'. Please contact your system administrator.")
-  }
+  return(wellTable)
+}
+removeVehicle <- function(vehicle, wellTable) {
+  #Removes rows with a vehicle that are part of another well
+  # If the vehicle is the only compound in a well, it is kept
+  library(plyr)
   
+  vehicleRows <- wellTable$BATCH_CODE == vehicle$batchCode
+    #wellTable$CONCENTRATION <= agonist$concentration & wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
+  compoundCount <- ddply(wellTable, "WELL_ID", summarise, count = length(BATCH_CODE))
+  hasMoreThanOneCompound <- compoundCount$WELL_ID[compoundCount$count > 1]
+  vehicleIds <- wellTable$ID[vehicleRows & wellTable$WELL_ID %in% hasMoreThanOneCompound]
+  wellTable <- wellTable[!(wellTable$ID %in% vehicleIds), ]
   return(wellTable)
 }
 getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgonist, positiveControl, negativeControl, testMode=F) {
@@ -265,11 +271,13 @@ createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, t
   resultTable <- resultTable[!resultTable$fluorescent,]
   
   if(dryRun) {
-    pdfLocation <- paste0("privateTempFiles/",experiment$codeName,"_SummaryDRAFT.pdf")
+    pdfLocation <- paste0(experiment$codeName, "_SummaryDRAFT.pdf")
+    pdfSave <- paste0("privateTempFiles/", pdfLocation)
   } else {
-    pdfLocation <- racas::getUploadedFilePath(paste0("experiments/",experiment$codeName,"/analysis/",experiment$codeName,"_Summary.pdf"))
+    pdfLocation <- paste0("experiments/",experiment$codeName,"/analysis/",experiment$codeName,"_Summary.pdf")
+    pdfSave <- racas::getUploadedFilePath(pdfLocation)
   }
-  pdf(file = pdfLocation, width = 8.5, height = 11)
+  pdf(file = pdfSave, width = 8.5, height = 11)
   if(dryRun) {
     textplot("Validation DRAFT")
   }
@@ -485,7 +493,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                       list(entityKind = "analysis group",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("fluorescent", "normalized efficacy", "over efficacy threshold", "normalized efficacy without sweetener", "comparison graph"),
+                           valueKinds = c("fluorescent", "normalized efficacy", "transformed efficacy", "transformed efficacy without sweetener", "over efficacy threshold", "normalized efficacy without sweetener", "comparison graph"),
                            includesOthers = FALSE,
                            includesCorpName = TRUE),
                       list(entityKind = "analysis group",
@@ -497,7 +505,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                       list(entityKind = "treatment group",
                            stateType = "data",
                            stateKind = "results",
-                           valueKinds = c("fluorescent", "normalized efficacy", "over efficacy threshold"),
+                           valueKinds = c("fluorescent", "normalized efficacy", "over efficacy threshold", "transformed efficacy"),
                            includesOthers = FALSE,
                            includesCorpName = TRUE),
                       list(entityKind = "treatment group",
@@ -532,8 +540,12 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
               subjectData$DoseUnit[1], NA, NA, NA, NA, 'sec', NA, NA, NA),
     valueType = c('codeValue','stringValue', 'numericValue','numericValue','stringValue', #'clobValue', 'clobValue',
                   'numericValue','stringValue','numericValue','numericValue','stringValue',
-                  'numericValue','stringValue', 'stringValue', 'stringValue'),
+                  'numericValue','stringValue', 'stringValue', 'inlineFileValue'),
     stringsAsFactors = FALSE)
+  
+  if(is.null(subjectData$"comparison graph")) {
+    resultTypes <- resultTypes[resultTypes$DataColumn != 'comparison graph', ]
+  }
   
   subjectData$DoseUnit <- NULL
   subjectData$fileName <- NULL
@@ -559,6 +571,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     longResults$concentrationUnit <- resultTypes$concUnits[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
     longResults$valueType <- resultTypes$valueType[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
     longResults$valueKind <- resultTypes$Type[match(longResults$"resultTypeAndUnit",resultTypes$DataColumn)]
+    longResults$comments <- NA
     
     longResults$UnparsedValue <- trim(as.character(longResults$"UnparsedValue"))
     
@@ -574,6 +587,12 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     longResults$clobValue <- as.character(longResults$"UnparsedValue")
     longResults$clobValue[!longResults$valueType=="clobValue"] <- NA
     longResults$stringValue[longResults$valueType=="clobValue"] <- NA
+    
+    longResults$fileValue <- as.character(longResults$"UnparsedValue")
+    fileValueRows <- longResults$valueType %in% c("fileValue", "inlineFileValue")
+    longResults$fileValue[!fileValueRows] <- NA
+    longResults$comments[fileValueRows] <- basename(longResults$fileValue[fileValueRows])
+    longResults$stringValue[fileValueRows] <- NA
     
     longResults$codeValue <- as.character(longResults$"UnparsedValue")
     longResults$codeValue[!longResults$valueType=="codeValue"] <- NA
@@ -610,7 +629,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
     
     return(longResults)
   }
-  meltedSubjectData <- makeLongData(subjectData, resultTypes=resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode", "barcode"))
+  meltedSubjectData <- makeLongData(subjectData, resultTypes=resultTypes, splitTreatmentGroupsBy=c("Dose","batchCode", "barcode", "well type"))
   experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath,"experiments/",experimentId)))
   
   subjectData <- meltedSubjectData
@@ -754,7 +773,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       resultOperator <- "<"
       resultValue <- min(subjectData$numericValue)
     } else {
-      resultOperator <- NA
+      resultOperator <- as.character(NA)
       resultValue <- mean(subjectData$numericValue)
     }
     return(list(
@@ -767,9 +786,11 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       else {as.character(NA)},
       "valueOperator" = resultOperator,
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
+      "fileValue" = if (length(unique(subjectData$fileValue)) == 1) subjectData$fileValue[1] else as.character(NA),
+      "comments" = if (length(unique(subjectData$comments)) == 1) subjectData$comments[1] else as.character(NA),
       "publicData" = subjectData$publicData[1],
       "numberOfReplicates" = nrow(subjectData),
-      "uncertaintyType" = if(is.numeric(resultValue)) "standard deviation" else NA,
+      "uncertaintyType" = if(is.numeric(resultValue)) "standard deviation" else as.character(NA),
       "uncertainty" = sd(subjectData$numericValue)
     ))
   }
@@ -829,8 +850,12 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       analysisGroupDataHasAgonist <- analysisGroupData[(analysisGroupData$analysisGroupID %in% analysisGroupHasAgonist), ]
       
       analysisGroupDataNoAgonist$valueKind[analysisGroupDataNoAgonist$valueKind == "normalized efficacy"] <- "normalized efficacy without sweetener"
+      analysisGroupDataNoAgonist$valueKind[analysisGroupDataNoAgonist$valueKind == "transformed efficacy"] <- "transformed efficacy without sweetener"
       analysisGroupDataNoAgonist <- analysisGroupDataNoAgonist[!(analysisGroupDataNoAgonist$valueKind %in% c("over efficacy threshold", "comparison graph")), ]
       analysisGroupData <- rbind.fill(analysisGroupDataNoAgonist, analysisGroupDataHasAgonist)
+      # Remove empty comparison graphs (happens for controls across plates)
+      analysisGroupDataRemove <- analysisGroupData$valueKind == "comparison graph" & is.na(analysisGroupData$fileValue)
+      analysisGroupData <- analysisGroupData[!analysisGroupDataRemove, ]
     }
     
     ###
@@ -1194,6 +1219,10 @@ getExperimentParameters <- function(inputParameters) {
     parameters$aggregateReplicates<- "no"
   }
   
+  if (is.null(parameters$dilutionRatio)) {
+    parameters$dilutionRatio <- 2
+  }
+  
   return(parameters)
 }
 setAnalysisStatus <- function(status, metadataState) {
@@ -1258,15 +1287,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     metadataState <- Filter(function(x) x$lsKind == "experiment metadata", 
                             x = experiment$lsStates)[[1]]
-    
-    # metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
-  
+    if(!dryRun) {
+      setAnalysisStatus(status = "parsing", metadataState)
+    }
   } else {
     experiment <- list(id = experimentId, codeName = "test", version = 0)
-  }
-  
-  if(!dryRun) {
-    #setAnalysisStatus(status="parsing", metadataState)
   }
   
   parameters <- getExperimentParameters(inputParameters)
@@ -1307,8 +1332,21 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   wellTable <- createWellTable(barcodeList, testMode)
   
+  # apply dilution
+  if (!is.null(parameters$dilutionRatio)) {
+    wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
+  }
+  
   wellTable <- getAgonist(parameters$agonistControl, wellTable)
   
+  wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
+  
+  if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
+    stop("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
+         paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
+         "'. Please contact your system administrator.")
+  }
+    
   batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
 
@@ -1317,6 +1355,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, 
                                        resultTable$concUnit, resultTable$hasAgonist, 
                                        parameters$positiveControl, parameters$negativeControl, testMode)
+  
+  if (!any(resultTable$wellType == "PC")) {
+    stop("The positive control was not found in the plates. Make sure all transfers have been loaded and your postive control is defined correctly.")
+  }
+  
+  if (!any(resultTable$wellType == "NC")) {
+    stop("The negative control was not found in the plates. Make sure all transfers have been loaded and your negative control is defined correctly.")
+  }
+  
   #calculations
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformation)
   
@@ -1378,7 +1425,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if (parameters$aggregateReplicates == "across plates") {
     treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
                                                 stDev = sd(values), n=length(values), 
-                                                sdScore = mean(sdScore), threshold = all(threshold),
+                                                sdScore = mean(sdScore), 
+                                                threshold = ifelse(all(threshold), "yes", "no"),
                                                 latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
                                          by=list(batchName,fluorescent,concUnit,hasAgonist, wellType)]
   } else if (parameters$aggregateReplicates == "within plates") {
@@ -1386,7 +1434,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                 stDev = sd(values), 
                                                 n=length(values),
                                                 sdScore = mean(sdScore),
-                                                threshold = all(threshold),
+                                                threshold = ifelse(all(threshold), "yes", "no"),
                                                 latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
                                          by=list(batchName,fluorescent,barcode,concUnit,hasAgonist, wellType)]
   } else {
@@ -1436,6 +1484,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Well Hit" = ifelse(idf$threshold, "yes", "no"),
         "Hit" = rep(ifelse(all(idf$threshold), "yes", "no"), length.out = nrow(idf)),
         "SD Score" = idf$sdScore,
+        "Activity" = idf$transformed,
         "Normalized Activity" = idf$normalized,
         "Fluorescent"= ifelse(idf$fluorescent, "yes", "no"),
         "Max Time (s)" = idf$maxTime,
@@ -1584,9 +1633,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
                              threshold = efficacyThreshold, experiment)
     
-    source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
-    resultTable <- saveComparisonTraces(resultTable, paste0("experiments/",experiment$codeName,"/analysis/compoundGraph"))
-    resultTable[!is.na(comparisonTraceFile), comparisonTraceFile := paste0(experiment$codeName, "::", basename(comparisonTraceFile))]
+    if (parameters$aggregateReplicates != "no") {
+      source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
+      resultTable <- saveComparisonTraces(resultTable, paste0("experiments/", experiment$codeName, "/images"))
+    }
+
     #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
     lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
