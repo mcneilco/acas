@@ -84,14 +84,15 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			value: @model.get('inactiveThreshold')
 			min: 0
 			max: 100
-		@$('.bv_inactiveThreshold').on 'slide', @handleInactiveThresholdChanged
-		@updateThresholdDisplay()
-		@setThresholdEnabledState()
+		@$('.bv_inactiveThreshold').on 'slide', @handleInactiveThresholdMoved
+		@$('.bv_inactiveThreshold').on 'slidestop', @handleInactiveThresholdChanged
+		@updateThresholdDisplay(@model.get 'inactiveThreshold')
+#		@setThresholdEnabledState()
 
 		@
 
-	updateThresholdDisplay: ->
-		@$('.bv_inactiveThresholdDisplay').html @model.get('inactiveThreshold')
+	updateThresholdDisplay: (val)->
+		@$('.bv_inactiveThresholdDisplay').html val
 
 	setThresholdEnabledState: ->
 		if @model.get 'inverseAgonistMode'
@@ -110,12 +111,15 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 
 	handleInactiveThresholdChanged: (event, ui) =>
 		@model.set 'inactiveThreshold': ui.value
-		@updateThresholdDisplay()
+		@updateThresholdDisplay(@model.get 'inactiveThreshold')
 		@attributeChanged
+
+	handleInactiveThresholdMoved: (event, ui) =>
+		@updateThresholdDisplay(ui.value)
 
 	handleInverseAgonistModeChanged: =>
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked")
-		@setThresholdEnabledState()
+#		@setThresholdEnabledState()
 		@attributeChanged()
 
 	handleMaxLimitTypeChanged: =>

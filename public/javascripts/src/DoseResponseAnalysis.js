@@ -105,6 +105,7 @@
       this.handleMinLimitTypeChanged = __bind(this.handleMinLimitTypeChanged, this);
       this.handleMaxLimitTypeChanged = __bind(this.handleMaxLimitTypeChanged, this);
       this.handleInverseAgonistModeChanged = __bind(this.handleInverseAgonistModeChanged, this);
+      this.handleInactiveThresholdMoved = __bind(this.handleInactiveThresholdMoved, this);
       this.handleInactiveThresholdChanged = __bind(this.handleInactiveThresholdChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
@@ -146,14 +147,14 @@
         min: 0,
         max: 100
       });
-      this.$('.bv_inactiveThreshold').on('slide', this.handleInactiveThresholdChanged);
-      this.updateThresholdDisplay();
-      this.setThresholdEnabledState();
+      this.$('.bv_inactiveThreshold').on('slide', this.handleInactiveThresholdMoved);
+      this.$('.bv_inactiveThreshold').on('slidestop', this.handleInactiveThresholdChanged);
+      this.updateThresholdDisplay(this.model.get('inactiveThreshold'));
       return this;
     };
 
-    DoseResponseAnalysisParametersController.prototype.updateThresholdDisplay = function() {
-      return this.$('.bv_inactiveThresholdDisplay').html(this.model.get('inactiveThreshold'));
+    DoseResponseAnalysisParametersController.prototype.updateThresholdDisplay = function(val) {
+      return this.$('.bv_inactiveThresholdDisplay').html(val);
     };
 
     DoseResponseAnalysisParametersController.prototype.setThresholdEnabledState = function() {
@@ -180,15 +181,18 @@
       this.model.set({
         'inactiveThreshold': ui.value
       });
-      this.updateThresholdDisplay();
+      this.updateThresholdDisplay(this.model.get('inactiveThreshold'));
       return this.attributeChanged;
+    };
+
+    DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdMoved = function(event, ui) {
+      return this.updateThresholdDisplay(ui.value);
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInverseAgonistModeChanged = function() {
       this.model.set({
         inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
       });
-      this.setThresholdEnabledState();
       return this.attributeChanged();
     };
 
