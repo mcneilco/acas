@@ -274,14 +274,32 @@ module.exports = (grunt) ->
 				files: "acas_custom/modules/**"
 				tasks: "copy:custom_modules"
 			prepare_module_includes:
-				files: "conf/PrepareModuleIncludes.js"
+				files:[
+						"conf/PrepareModuleIncludes.js"
+						#styleFiles
+						'public/src/modules/*/src/client/*.css'
+						#templateFiles
+						'/public/src/modules/*/src/client/*.html'
+						#appScriptsInModules
+						'public/src/modules/*/src/client/*.js'
+						#appScriptsInJavascripts
+						'public/javascripts/src/*.js'
+						#testJSONInModules
+						'public/src/modules/*/spec/testFixtures/*.js'
+						#testJSONInJavascripts
+						'public/javascripts/spec/testFixtures/*.js'
+						#specScriptsInModules
+						'public/src/modules/*/spec/*.js'
+						#specScriptsInJavascripts
+						'public/javascripts/spec/*.js'
+					]
 				tasks: "execute:prepare_module_includes"
 			prepare_config_files:
 				files: [
 					"conf/PrepareConfigFiles.js"
 					"conf/conf*.properties"
-					]
-				tasks: "execute:prepare_module_includes"
+				]
+				tasks: "execute:prepare_config_files"
 
 
 
