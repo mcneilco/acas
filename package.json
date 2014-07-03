@@ -26,6 +26,8 @@
 	"flat": "*",
 	"glob": "*",
 	"ncp": "*",
+	"shelljs": "*",
+	"os": "*",
 	"forever-monitor": "*"
   }
 }
