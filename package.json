@@ -13,6 +13,7 @@
 	"grunt-contrib-watch": "*",
 	"grunt-contrib-copy": "*",
 	"grunt-text-replace": "*",
+	"grunt-execute": "*",
 	"request": "2.12.0",
 	"passport": ">= 0.0.0",
 	"passport-local": ">= 0.0.0",

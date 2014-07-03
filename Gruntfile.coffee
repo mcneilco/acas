@@ -184,6 +184,15 @@ module.exports = (grunt) ->
 					src: ["**"]
 					dest: "./public/src/modules"
 				]
+		execute:
+			prepare_module_includes:
+				options:
+					cwd: 'conf'
+				src: 'conf/PrepareModuleIncludes.js'
+			prepare_config_files:
+				options:
+					cwd: 'conf'
+				src: 'conf/PrepareConfigFiles.js'
 		replace:
 			clientHost:
 				src: ["conf/config.properties"]
@@ -264,6 +273,15 @@ module.exports = (grunt) ->
 			copy_custom_modules:
 				files: "acas_custom/modules/**"
 				tasks: "copy:custom_modules"
+			prepare_module_includes:
+				files: "conf/PrepareModuleIncludes.js"
+				tasks: "execute:prepare_module_includes"
+			prepare_config_files:
+				files: [
+					"conf/PrepareConfigFiles.js"
+					"conf/conf*.properties"
+					]
+				tasks: "execute:prepare_module_includes"
 
 
 
@@ -274,6 +292,7 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-contrib-watch"
 	grunt.loadNpmTasks "grunt-contrib-copy"
 	grunt.loadNpmTasks "grunt-text-replace"
+	grunt.loadNpmTasks "grunt-execute"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]
