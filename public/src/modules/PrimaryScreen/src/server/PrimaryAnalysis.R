@@ -114,54 +114,66 @@ getAgonist <- function(agonist, wellTable) {
   
   return(wellTable)
 }
-getFlags <- function(flaggedWells, resultTable) {
+getWellFlags <- function(flaggedWells, resultTable) {
   # Reads the flagged wells from an input csv or Excel file
   # Input: flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #        resultTable, a data.table that must contain all of the barcodes and wells for the data set
   # Returns: a data.table with each barcode, well, and associated flag. All column names are lowercase.
   
-  # If we don't have a file, make all flags NA
-  if(is.null(flaggedWells) || flaggedWells == "") {
-    flaggedWells <- data.table(barcode = resultTable$barcode, well = resultTable$well, flag = c(NA_character_))
-  } else {
-    flaggedWells <- racas::getUploadedFilePath(flaggedWells)
-    flagData <- readExcelOrCsv(flaggedWells, header = FALSE)
-    
-    # We want to accept two formats: the file we output, which the user has edited, and a file
-    # that contains just the barcode, well, and flag information
-    flagData <- tryCatch({
-      flagData <- racas::getSection(flagData, lookFor = "Calculated Results")
-      # Remove "Editable" Row
-      flagData <- flagData[1:nrow(flagData)>1,]
-      # Get the headers in the appropriate place
-      names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
-      flagData <- flagData[1:nrow(flagData)>1,]
-    }, error = function(e) {
-      if (any(class(e) == "userStop")) {
-        # If we received an error that we defined, it means the section heading wasn't there
-        # (or there were too few rows); we assume we just had the basic csv file
-        names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
-        flagData <- flagData[1:nrow(flagData)>1,]
-        return(flagData)
-      } else {
-        stopUser("The system encountered an error while reading the flagged wells.")
-      }
-    })
-    # Ensure that the data is in the proper form, and remove unneeded columns
-    flagData <- validateFlagData(flagData, resultTable)
-    flagData <- data.table(barcode = flagData$barcode, well = flagData$well, flag = flagData$flag)
-    
-    flagData <- as.data.table(flagData)
-    # readExcelOrCsv reads nonexistent entries as empty strings, not NA, so we fix that:
-    flagData[flag == ""]$flag <- NA_character_
-    
-    # If the table is blank, readExcelOrCsv decides all of the column types should be "logical",
-    # so we change them to "character"
-    if (nrow(flagData) == 0) {
-      flagData <- as.data.table(sapply(flagData, as.character))
-    }
+  # Extract information from the flag file
+  flagData <- parseWellFlagFile(flaggedWells, resultTable)
+  
+  # Ensure that the data is in the proper form, and remove unneeded columns
+  flagData <- validateWellFlagData(flagData, resultTable)
+  flagData <- data.table(barcode = flagData$barcode, well = flagData$well, flag = flagData$flag)
+  
+  flagData <- as.data.table(flagData)
+  # readExcelOrCsv reads nonexistent entries as empty strings, not NA, so we fix that:
+  flagData[flag == ""]$flag <- NA_character_
+  
+  # If the table is blank, readExcelOrCsv decides all of the column types should be "logical",
+  # so we change them to "character"
+  if (nrow(flagData) == 0) {
+    flagData <- as.data.table(sapply(flagData, as.character))
   }
+  
   return(flagData)
+}
+getUserHits <- function(analysisGroupData, flaggedWells, resultTable, replicateType) {
+  # Determines which analysis groups the user believes should count as a 'hit'
+  #
+  # Input:   analysisGroupData, a table containing (at minumum) the barcode, batch ID, and
+  #             threshold (system-defined hit) for each analysis group
+  #          flaggedWells, a string containing the name of the file in privateUploads that 
+  #             has flagging information
+  #          resultTable, a data frame containing, at the minumum, the barcode, threshold,
+  #             batchName and well for each test
+  #          replicateType, a string that defines an analysis group (ie, "across plate")
+  # Returns: analysisGroupData: the original table, including a column indicating whether the user specified
+  #             an analysis group as a hit or a miss
+  #          validatedFlagData: enough information to identify an analysis group, as well
+  #             as the wellType and hit information
+  
+  # Extract information from the flag file
+  flagData <- parseAnalysisFlagFile(flaggedWells, resultTable)
+  
+  # Ensure that the data is in the proper form
+  validatedFlagData <- validateAnalysisFlagData(flagData, analysisGroupData, replicateType)
+  
+  # If the validation returned null, then there wasn't enough information. We threw a warning
+  # to tell the user that we're not flagging analysis groups, but we don't want to stop the
+  # function because they may have just uploaded a file with well-level flags
+  if (is.null(validatedFlagData)) {
+    analysisGroupData$userHit <- analysisGroupData$threshold
+  } else {
+    # Get a data table of the identifying analysis group columns (eg, batch and barcode) 
+    # along with the user-defined hit, for all groups that had a hit defined (also handles errors)
+    testFlagData <- removeControls(validatedFlagData)
+    minimalFlagInformation <- summarizeAnalysisFlags(testFlagData, replicateType)
+    analysisGroupData <- fillAnalysisFlags(replicateType, analysisGroupData, minimalFlagInformation)
+  }
+  
+  return(list(analysisGroupData = analysisGroupData, flagData = validatedFlagData))
 }
 removeVehicle <- function(vehicle, wellTable) {
   #Removes rows with a vehicle that are part of another well
@@ -175,6 +187,25 @@ removeVehicle <- function(vehicle, wellTable) {
   vehicleIds <- wellTable$ID[vehicleRows & wellTable$WELL_ID %in% hasMoreThanOneCompound]
   wellTable <- wellTable[!(wellTable$ID %in% vehicleIds), ]
   return(wellTable)
+}
+removeControls <- function(validatedFlagData) {
+  # Remove all rows that are not labeled "test", and adds warnings if you try to flag a non-test well
+  #
+  # Input: validatedFlagData, a data.table which should contain columns labeled "wellType", "hit", and "userHit"
+  # Returns: The same data frame, with only the rows with a wellType of "test"
+  
+  testOnly <- validatedFlagData[wellType == "test"]
+  controlOnly <- validatedFlagData[wellType != "test"]
+  
+  flaggedControls <- controlOnly[!is.na(userHit) & userHit != ""]
+  diffList <- which(flaggedControls$hit != flaggedControls$userHit)
+  if (length(diffList) > 0) {
+    stopUser(paste0("Only hits in wells marked as 'test' can be overriden by the user. Please ensure ",
+                    "that the 'User Defined Hit' matches the 'Hit' column for non-test wells in the following ",
+                    "coroprate batch IDs: ", paste0(flaggedControls[diffList]$batchName, collapse = ", ")))
+  }
+  
+  return(testOnly)
 }
 getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgonist, positiveControl, negativeControl, testMode=F) {
   # Takes vectors of batchNames, concentrations, and concunits 
@@ -203,6 +234,23 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
   wellTypes[!hasAgonist] <- "no agonist"
 
 	return(wellTypes)
+}
+getAnalysisGroupColumns <- function(replicateType) {
+  # Determines what data is necessary to define an analysis group
+  # Input: replicateType, a string indicating the type of well grouping in the experiment
+  # Output: a vector of strings indicating what characteristics are required to uniquely define
+  #         an analysis group
+  switch(replicateType,
+         "across plates" = {
+           requiredColumns <- c("batchName")
+         },
+         "within plates" = {
+           requiredColumns <- c("batchName", "barcode")
+         },
+          {
+            requiredColumns <- c("well")
+          })
+  return(requiredColumns)
 }
 computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
@@ -1001,7 +1049,7 @@ validateInputFiles <- function(dataDirectory) {
   
   return(fileNameTable)
 }
-validateFlagData <- function(flagData, resultTable) {
+validateWellFlagData <- function(flagData, resultTable) {
   # Ensures that the flagData is in a reasonable format, so we can throw helpful
   #   errors before the rest of the code generates unhelpful (R) errors
   #
@@ -1036,6 +1084,52 @@ validateFlagData <- function(flagData, resultTable) {
             paste(extraTests[[1]], extraTests[[2]], collapse = ", "), "."))
   }
   
+  return(flagData)
+}
+validateAnalysisFlagData <- function(flagData, analysisGroupData, replicateType) {
+  # Ensures that the flag data is in a reasonable format, so we can throw errors now
+  #  instead of R throwing them later
+  #
+  # flagData:    A data.frame that should contain (at a minimum) the barcode, well, and flag
+  #                for flagged wells
+  #              Could be NULL, if no flag data was found in the file.
+  # analysisGroupData: A data.table containing, among other fields, the threshold for each
+  #                analysis group
+  # replicateType: a string that defines an analysis group (ie, "across plate")
+  # Returns: the input data frame, with accumulated warnings and errors
+  #          NULL if we don't have enough information to flag analysis groups
+  
+  if(is.null(flagData)) {
+    return(flagData)
+  }
+  # Get a list of all the columns we need to work with analysis group flags
+  analysisColumns <- getAnalysisGroupColumns(replicateType)
+  requiredColumns <- c("userHit", "wellType", "hit", analysisColumns)
+  
+  columnsIncluded <- requiredColumns %in% names(flagData)
+
+  if (!all(columnsIncluded)) {
+    warning(paste0("The flag file does not appear to contain enough information ",
+                   "to modify which trials were hits and which were not. If you only ",
+                   "intended to flag individual wells, you may proceed without concern."))
+    flagData <- NULL
+  } else {
+    # replace missing values with the 'default' value
+    replaceMissing <- function(userHit, systemHit) {
+      #userHit will be the collection of user-defined hits for the analysis group
+      registeredHits <- userHit[!is.na(userHit) & userHit != ""]
+      if(length(registeredHits) == 0) {
+        return(systemHit)
+      } else {
+        # We have enough specificity that these should be the same, or else they will err elsewhere
+        return(registeredHits[1])
+      }
+    }
+    
+    flagData <- flagData[, userHit := replaceMissing(userHit, hit), by = c(analysisColumns, "wellType")]
+    
+  }
+
   return(flagData)
 }
 findFluorescents <- function(seqData) {
@@ -1153,6 +1247,178 @@ parseSeqFile <- function(fileName) {
   outputData[] <- lapply(outputData, as.numeric)
   
   return(outputData)
+}
+parseAnalysisFlagFile <- function(flaggedWells, resultTable) {
+  # Turns a csv or Excel file into a table of analysis group level flag information
+  #
+  # Input:  flaggedWells, the name of a file in privateUploads that contains well-flagging information
+  #         resultTable, a table containing, among other columns, the barcode, well, and batch code for
+  #             every test
+  # Returns: a data.frame containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
+  #             in the flaggedWells file (which may not include all the tests in resultTable). If the user
+  #             didn't define a hit, it is left as NA
+  #          OR "NULL" if the data frame wasn't given, or was in the wrong format
+
+  # If we don't have a file, send it back as "null" and don't do the analysis
+  if(is.null(flaggedWells) || flaggedWells == "") {
+    return(NULL)
+  } else {
+    flaggedWellPath <- racas::getUploadedFilePath(flaggedWells)
+    flagData <- readExcelOrCsv(flaggedWellPath, header = FALSE)
+    
+    # Check if there is a 'calculated results' section
+    flagData <- tryCatch({
+      flagData <- racas::getSection(flagData, lookFor = "Calculated Results")
+      # Remove "Editable" Row
+      flagData <- flagData[1:nrow(flagData)>1,]
+      # Get the headers in the appropriate place
+      names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
+      flagData <- flagData[1:nrow(flagData)>1,]
+    }, error = function(e) {
+      if (any(class(e) == "userStop")) {
+        # If we received an error that we defined, it means the section heading wasn't there
+        # (or there were too few rows), so we probably got the basic csv file, and we don't have
+        # any analysis flags
+        return(NULL)
+      } else {
+        stopUser("The system encountered an error while reading the flagged wells.")
+      }
+    })
+    flagData <- as.data.table(flagData)
+    setnames(flagData, "user defined hit", "userHit")
+    setnames(flagData, "corporate batch id", "batchName")
+    setnames(flagData, "well type", "wellType")
+  }
+  return(flagData)
+}
+parseWellFlagFile <- function(flaggedWells, resultTable) {
+  # Turns a csv or Excel file into a table of well-level flag information
+  #
+  # Input:  flaggedWells, the name of a file in privateUploads that contains well-flagging information
+  #         resultTable, a table containing, among other columns, the barcode, well, and batch code for
+  #             every test
+  # Returns: a data.frame containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
+  #             in the flaggedWells file (which may not include all the tests in resultTable). If the user
+  #             didn't define a hit, it is left as NA
+  
+  # If we don't have a file, make all flags NA
+  if(is.null(flaggedWells) || flaggedWells == "") {
+    flagData <- data.table(barcode = resultTable$barcode, 
+                           well = resultTable$well, 
+                           batchName = resultTable$batchName,
+                           flag = c(NA_character_))
+  } else {
+    flaggedWellPath <- racas::getUploadedFilePath(flaggedWells)
+    flagData <- readExcelOrCsv(flaggedWellPath, header = FALSE)
+    
+    # We want to accept two formats: the file we output, which the user has edited, and a file
+    # that contains just the barcode, well, and flag information
+    flagData <- tryCatch({
+      flagData <- racas::getSection(flagData, lookFor = "Calculated Results")
+      # Remove "Editable" Row
+      flagData <- flagData[1:nrow(flagData)>1,]
+      # Get the headers in the appropriate place
+      names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
+      flagData <- flagData[1:nrow(flagData)>1,]
+    }, error = function(e) {
+      if (any(class(e) == "userStop")) {
+        # If we received an error that we defined, it means the section heading wasn't there
+        # (or there were too few rows); we assume we just had the basic csv file
+        names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
+        flagData <- flagData[1:nrow(flagData)>1,]
+        return(flagData)
+      } else {
+        stopUser("The system encountered an error while reading the flagged wells.")
+      }
+    })
+    flagData <- as.data.table(flagData)
+  }
+  return(flagData)
+}
+summarizeAnalysisFlags <- function(validatedFlagData, replicateType) {
+  # Ensures that all flags were entered appropriately, and massages the data
+  #   into a summarized format. Flags must be either 'yes' or 'no', and no
+  #   compound can be flagged with two different flags
+  # Inputs: validatedFlagData, a data.table containing the identifying information
+  #         for an analysis group, along with userHits. Should already have been
+  #         checked for correct column headers
+  #         replicateType, (string) how analysis groups are defined in the experiment
+  # Returns: A data.table with columns for each defining feature of an analysis group
+  #          (ie, batchName and barcode), as well as a column of userHits, for each
+  #          analysis group where such a hit was recorded
+  
+  analysisColumns <- getAnalysisGroupColumns(replicateType)
+  
+  collectFlags <- function(hitVector) {
+    # Determines how a user intended to flag an analysis group
+    # Input: hitVector, a vector of all the flags listed for a given analysis group
+    #        Normally, we hope that one of them is "yes" or "no", and the others are
+    #        either in agreement or missing
+    # Returns: The flag, if unambiguous. Errors if the flag is ambiguous (if it's something
+    #          other than 'yes' or 'no', or if multiple flags are present). If no flag is
+    #          specified, returns NULL.
+    cleanedVector <- unique(hitVector[!(is.na(hitVector) | hitVector == "")])
+    if(length(cleanedVector) == 0) {
+      # Everything must have been empty; don't include this flag
+      return(NULL)
+    } else if (length(cleanedVector) == 1) {
+      # There was agreement about what the flag was
+      if (tolower(cleanedVector) == 'yes' || tolower(cleanedVector) == 'no') {
+        return(cleanedVector)
+      } else {
+        stopUser(paste0("Unrecognized value in 'User Defined Hits': ", cleanedVector, 
+                        ". Please enter 'yes' or 'no'."))
+      }
+    } else {
+      stopUser(paste0("There were ", length(cleanedVector), " different entries under ",
+                      "'User Defined Hits' for a single ",
+                      paste0(analysisColumns, collapse = "/"), " grouping: ",
+                      paste0(cleanedVector, collapse = ", "), ". Please enter either 'yes'",
+                      " or 'no'."))
+    }
+  }
+  
+  # The file we gave to users to edit has more than one entry for each analysis group.
+  # Merge them together, being mindful that users could get the input format wrong.
+  hitData <- validatedFlagData[, collectFlags(userHit), by = eval(paste0(analysisColumns, collapse = ","))]
+  
+  # Check if we didn't put a third column in (there were no flags)
+  if(ncol(hitData) == length(analysisColumns)) {
+    userHit <- character()
+    hitData <- cbind(hitData, userHit)
+  } else {
+    setnames(hitData, length(analysisColumns)+1, "userHit") 
+  }
+  
+  return(hitData)
+}
+fillAnalysisFlags <- function(replicateType, analysisGroupData, minimalFlagInformation) {
+  # Adds a column to the analysis group table that records the user's preference for whether the
+  # analysis group is a hit or a miss (or the system's record, if the user hasn't specified a flag)
+  #
+  # Input: replicateType: a string indicating how analysis groups are determined
+  #        analysisGroupData: a data.table containing the columns needed to specify an analysis group,
+  #            as well as a "threshold" column indicating whether the system thought the group was a hit
+  #
+  # Output: the analysis group data, with a column labeled 'userHit' that contains the user's preference
+  #         for whether a group should be flagged or not
+  
+  analysisColumns <- getAnalysisGroupColumns(replicateType)
+  
+  allData <- merge(minimalFlagInformation, analysisGroupData, by = analysisColumns, all.x = FALSE, all.y = TRUE)
+  
+  replaceNAorEmpty <- function(userHit, Id) {
+    # If the userHit is absent, we use the default
+    # userHit should be one element
+    if(is.na(userHit) || userHit == "") {
+      userHit <- analysisGroupData[analysisGroupId == Id]$threshold
+    } else {
+      return(userHit)
+    }
+  }
+  filledData <- allData[, userHit := replaceNAorEmpty(userHit, analysisGroupId)]
+  
+  return(filledData)
 }
 normalizeWellNames <- function(wellName) {
   # Turns A1 into A01
@@ -1546,10 +1812,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformationRule)
   
   # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
-  flaggedWells <- getFlags(flaggedWells, resultTable)
+  flagData <- getWellFlags(flaggedWells, resultTable)
   
   # In order to merge with a data.table, the columns have to have the same name
-  resultTable <- merge(resultTable, flaggedWells, by = c("barcode", "well"), all.x = TRUE, all.y = FALSE)
+  resultTable <- merge(resultTable, flagData, by = c("barcode", "well"), all.x = TRUE, all.y = FALSE)
   
   # Error handling -- what if there are no unflagged PC's or NC's? 
   if (!any(is.na(resultTable$flag))) { 
@@ -1675,7 +1941,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       analysisGroupData <- treatmentGroupData
       analysisGroupData$analysisGroupId <- as.numeric(factor(analysisGroupData$batchName))
     }
-    
+    # add a "userHit" column to the table
+    userHitList <- getUserHits(analysisGroupData, flaggedWells, resultTable, parameters$aggregateReplicates)
+    analysisGroupData <- userHitList$analysisGroupData
+    flagData <- userHitList$flagData
     #analysisGroupData$threshold <- analysisGroupData$sdScore > parameters$hitSDThreshold & !analysisGroupData$fluorescent & analysisGroupData$wellType=="test"
     
     if (parameters$aggregateReplicates == "no") {
@@ -1736,7 +2005,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Sweetener" = parameters$agonist$batchCode,
         "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
         "Compounds analyzed" = length(unique(resultTable$batchName)),
-        "Hits" = sum(analysisGroupData$threshold == "yes"),
+        "Hits" = sum(analysisGroupData$userHit == "yes"),
         "Threshold" = signif(efficacyThreshold, 3),
         "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
         "Fluorescent wells" = sum(resultTable$fluorescent),
@@ -1750,7 +2019,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     )
     library('RCurl')
     row.names(outputTable) <- NULL
-    outputTableReloadColumns <- as.data.frame(outputTable)[, c("Corporate Batch ID", "Hit")]
+    # Check if we have to create the "User Defined Hit" column from scratch, or if we can
+    # reuse the old one (if the data is bad enough that we don't want to write it again, we
+    # would have already thrown an error)
+    if (is.null(flagData)) {
+      outputTableReloadColumns <- as.data.frame(outputTable)[, c("Corporate Batch ID", "Hit")]
+    } else {
+      outputTableReloadColumns <- as.data.frame(flagData)[, c("batchName", "userHit")]
+    }
     if (parameters$aggregateReplicates == "within plates") {
       uniqueString <- paste(outputTable$"Corporate Batch ID", outputTable$"Barcode", outputTable$"Well Type")
     } else if (parameters$aggregateReplicates == "no") {
@@ -1758,8 +2034,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     } else {
       uniqueString <- paste(outputTableReloadColumns$"Corporate Batch ID", outputTable$"Well Type")
     }
-    outputTableReloadColumns$"Hit"[duplicated(uniqueString)] <- ""
     names(outputTableReloadColumns) <- c("Corporate Batch ID", "User Defined Hit")
+    outputTableReloadColumns$"User Defined Hit"[duplicated(uniqueString)] <- ""
     outputTable$"Corporate Batch ID" <- NULL  # Don't want this showing up twice
     protocol <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "protocols/", experiment$protocol$id)))
     protocolName <- protocol$lsLabels[[1]]$labelText
@@ -1855,7 +2131,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
       
       flagLocation <- paste0("privateTempFiles/", experiment$codeName, "_flagDRAFT.csv")
-      write.csv(flaggedWells, flagLocation, na = "", row.names=FALSE)
+      write.csv(flagData, flagLocation, na = "", row.names=FALSE)
       summaryInfo$info$"Flags" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                            racas::applicationSettings$client.port,
                                            "/tempFiles/", 
@@ -1904,7 +2180,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     flagLocation <- paste0("experiments/", experiment$codeName,"/analysis/",experiment$codeName, "_Flags.csv")
-    write.csv(flaggedWells, paste0(racas::getUploadedFilePath(flagLocation)), na = "", row.names=FALSE)
+    write.csv(flagData, paste0(racas::getUploadedFilePath(flagLocation)), na = "", row.names=FALSE)
     
     #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
@@ -1960,7 +2236,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       ## End fix racas
       
       analysisGroupData$experimentID <- experimentId
-      
       lsTransaction <- uploadData(analysisGroupData=analysisGroupData, recordedBy=user, lsTransaction=lsTransaction)
       
       analysisGroupData$experimentID <- experiment$id
@@ -1994,7 +2269,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            experiment$codeName,'_Results.csv" target="_blank">Results</a>')
       
       flagLocation <- paste0(experiment$codeName, "_flag.csv")
-      write.csv(flaggedWells, paste0(racas::getUploadedFilePath(flagLocation)), na = "",row.names=FALSE)
+      write.csv(flagData, paste0(racas::getUploadedFilePath(flagLocation)), na = "",row.names=FALSE)
       summaryInfo$info$"Flags" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                          racas::applicationSettings$client.port,
                                          '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
