@@ -2134,13 +2134,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            racas::applicationSettings$client.port,
                                            "/tempFiles/", 
                                            experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
-      
-      flagLocation <- paste0("privateTempFiles/", experiment$codeName, "_flagDRAFT.csv")
-      write.csv(flagData, flagLocation, na = "", row.names=FALSE)
-      summaryInfo$info$"Flags" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
-                                           racas::applicationSettings$client.port,
-                                           "/tempFiles/", 
-                                           experiment$codeName,'_flagDRAFT.csv" target="_blank">Flags</a>')
     }
   } else { #This section is "If not dry run"
     if (!is.null(zipFile)) {
@@ -2183,9 +2176,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         resultTable$batchName <- as.factor(resultTable$batchName)
         resultTable <- saveComparisonTraces(resultTable, paste0("experiments/", experiment$codeName, "/images"))
     }
-    
-    flagLocation <- paste0("experiments/", experiment$codeName,"/analysis/",experiment$codeName, "_Flags.csv")
-    write.csv(flagData, paste0(racas::getUploadedFilePath(flagLocation)), na = "", row.names=FALSE)
     
     #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
     
@@ -2272,13 +2262,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            racas::applicationSettings$client.port,
                                            '/dataFiles/experiments/', experiment$codeName,"/analysis/", 
                                            experiment$codeName,'_Results.csv" target="_blank">Results</a>')
-      
-      flagLocation <- paste0(experiment$codeName, "_flag.csv")
-      write.csv(flagData, paste0(racas::getUploadedFilePath(flagLocation)), na = "",row.names=FALSE)
-      summaryInfo$info$"Flags" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
-                                         racas::applicationSettings$client.port,
-                                         '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
-                                         experiment$codeName,'_Flags.csv" target="_blank">Flags</a>')
     }
     
     if (racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
