@@ -298,6 +298,7 @@ module.exports = (grunt) ->
 				files: [
 					"conf/PrepareConfigFiles.js"
 					"conf/conf*.properties"
+					"public/src/modules/*/src/server/*.R"
 				]
 				tasks: "execute:prepare_config_files"
 
