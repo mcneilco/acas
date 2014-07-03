@@ -15,27 +15,8 @@ if [ "$ACAS_USER" == "" ] || [ "$ACAS_USER" == "null" ]; then
     echo "Setting ACAS_USER to $(whoami)"
     export ACAS_USER=$(whoami)
 fi
+suAdd="-i"
 
-export ACAS_GROUP=$(id -g -n $ACAS_USER)
-export ACAS_HOME=$ACAS_HOME
-export server_rapache_host=$server_rapache_host
-if [ "$server_rapache_host" == "" ] || [ "$server_rapache_host" == "null" ]; then
-    export server_rapache_host=*
-fi
-export client_service_rapache_port=$client_service_rapache_port
-export client_service_rapache_path=$client_service_rapache_path
-export client_host=$client_host
-export client_port=$client_port
-export server_log_path=$server_log_path
-export server_log_suffix=$server_log_suffix
-export server_log_level=$(echo $server_log_level | awk '{print tolower($0)}')
-
-unamestr=$(uname)
-apacheConfFile=apache.conf
-if [ "$unamestr" == 'Darwin' ]; then
-	suAdd="-i"
-	apacheConfFile=apache-darwin.conf
-fi
 case $1 in
 start)
         for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
@@ -64,9 +45,9 @@ start)
         echo "$dirname/$app started"
         done
         
-		echo "starting apache instance $ACAS_HOME/conf/$apacheConfFile"
-		/usr/sbin/httpd -f $ACAS_HOME/conf/$apacheConfFile -k start
-		echo "apache instance $ACAS_HOME/conf/$apacheConfFile started"
+		echo "starting apache instance $ACAS_HOME/conf/compiled/apache.conf"
+		/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k start
+		echo "apache instance $ACAS_HOME/conf/compiled/apache.conf started"
 	;;
 stop)
         for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
@@ -93,13 +74,13 @@ stop)
         echo "$dirname/$app stopped"
         done
         
-		echo "stoppping apache instance $ACAS_HOME/conf/$apacheConfFile"
-		/usr/sbin/httpd -f $ACAS_HOME/conf/$apacheConfFile -k stop
-		echo "apache instance $ACAS_HOME/conf/$apacheConfFile stopped"
+		echo "stoppping apache instance $ACAS_HOME/conf/compiled/apache.conf"
+		/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k stop
+		echo "apache instance $ACAS_HOME/conf/compiled/apache.conf stopped"
 	;;
 reload)
-		echo "reloading apache config $ACAS_HOME/conf/$apacheConfFile"
-		/usr/sbin/httpd -f $ACAS_HOME/conf/$apacheConfFile -k graceful
-		echo "apache config $ACAS_HOME/conf/$apacheConfFile reloaded"
+		echo "reloading apache config $ACAS_HOME/conf/compiled/apache.conf"
+		/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k graceful
+		echo "apache config $ACAS_HOME/conf/compiled/apache.conf reloaded"
 	;;
 esac

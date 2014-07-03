@@ -81,17 +81,17 @@ apache_running() {
 }
 
 start_apache() {
-	/usr/sbin/httpd -f $ACAS_HOME/conf/$apacheConfFile -k start 2>&1 >/dev/null
+	/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k start 2>&1 >/dev/null
 	return $?
 }
 
 stop_apache() {
-	/usr/sbin/httpd -f $ACAS_HOME/conf/$apacheConfFile -k stop 2>&1 >/dev/null
+	/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k stop 2>&1 >/dev/null
 	return $?
 }
 
 apache_reload() {
-	/usr/sbin/httpd -f $ACAS_HOME/conf/$apacheConfFile -k graceful 2>&1 >/dev/null
+	/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k graceful 2>&1 >/dev/null
 	return $?
 }
  
@@ -287,32 +287,6 @@ export ACAS_USER=${server_run_user}
 if [ "$ACAS_USER" == "" ] || [ "$ACAS_USER" == "null" ]; then
     #echo "Setting ACAS_USER to $(whoami)"
     export ACAS_USER=$(whoami)
-fi
-
-export ACAS_GROUP=$(id -g -n $ACAS_USER)
-export ACAS_HOME=$ACAS_HOME
-export server_rapache_host=$server_rapache_host
-if [ "$server_rapache_host" == "" ] || [ "$server_rapache_host" == "null" ]; then
-    export server_rapache_host=*
-fi
-export client_service_rapache_port=$client_service_rapache_port
-export client_service_rapache_path=$client_service_rapache_path
-export client_host=$client_host
-export client_port=$client_port
-export server_log_path=$server_log_path
-export server_log_suffix=$server_log_suffix
-export server_log_level=$(echo $server_log_level | awk '{print tolower($0)}')
-export client_use_ssl=$client_use_ssl
-export server_ssl_key_file_path=$server_ssl_key_file_path
-export server_ssl_cert_file_path=$server_ssl_key_file_path
-export server_ssl_cert_authority_file_path=$server_ssl_key_file_path
-export server_ssl_cert_passphrase=$server_ssl_key_file_path
-
-unamestr=$(uname)
-apacheConfFile=apache.conf
-if [ "$unamestr" == 'Darwin' ]; then
-	suAdd="-i"
-	apacheConfFile=apache-darwin.conf
 fi
 
 case "$1" in
