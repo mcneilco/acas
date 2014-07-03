@@ -127,16 +127,6 @@ getWellFlags <- function(flaggedWells, resultTable) {
   flagData <- validateWellFlagData(flagData, resultTable)
   flagData <- data.table(barcode = flagData$barcode, well = flagData$well, flag = flagData$flag)
   
-  flagData <- as.data.table(flagData)
-  # readExcelOrCsv reads nonexistent entries as empty strings, not NA, so we fix that:
-  flagData[flag == ""]$flag <- NA_character_
-  
-  # If the table is blank, readExcelOrCsv decides all of the column types should be "logical",
-  # so we change them to "character"
-  if (nrow(flagData) == 0) {
-    flagData <- as.data.table(sapply(flagData, as.character))
-  }
-  
   return(flagData)
 }
 getUserHits <- function(analysisGroupData, flaggedWells, resultTable, replicateType) {
@@ -1056,7 +1046,7 @@ validateWellFlagData <- function(flagData, resultTable) {
   # flagData:    A data.frame that should contain (at a minimum) the barcode, well, and flag
   #                for flagged wells
   # resultTable: A data.table containing, among other fields, a complete list of barcodes and wells
-  # Returns: the input data frame, with accumulated warnings and errors
+  # Returns: the input data frame, with accumulated warnings and errors, and with empty strings as NA
 
   columnsIncluded <- c("well", "barcode", "flag") %in% names(flagData)
   if (!all(columnsIncluded)) {
@@ -1083,6 +1073,15 @@ validateWellFlagData <- function(flagData, resultTable) {
             "data, and will be ignored. Please remove or modify ", 
             paste(extraTests[[1]], extraTests[[2]], collapse = ", "), "."))
   }
+  
+  # If the table is blank, readExcelOrCsv decides all of the column types should be "logical",
+  # so we change them to "character"
+  if (nrow(flagData) == 0) {
+    flagData <- as.data.table(sapply(flagData, as.character))
+  }
+  
+  # readExcelOrCsv reads nonexistent entries as empty strings, not NA, so we fix that:
+  flagData[flag == ""]$flag <- NA_character_
   
   return(flagData)
 }
@@ -1128,6 +1127,12 @@ validateAnalysisFlagData <- function(flagData, analysisGroupData, replicateType)
     
     flagData <- flagData[, userHit := replaceMissing(userHit, hit), by = c(analysisColumns, "wellType")]
     
+  }
+  
+  # If the table is blank, readExcelOrCsv decides all of the column types should be "logical",
+  # so we change them to "character"
+  if (nrow(flagData) == 0) {
+    flagData <- as.data.table(sapply(flagData, as.character))
   }
 
   return(flagData)
