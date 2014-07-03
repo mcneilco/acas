@@ -147,7 +147,7 @@
   };
 
   getApacheCompileOptions = function() {
-    var compileOptionStrings, compileOptions, compileString, modulesPath, option, _i, _len;
+    var apacheConfPath, compileOptionStrings, compileOptions, compileString, defaultApacheConf, defaultApacheConfPath, defaultApacheConfString, line, matched, modulesPath, option, typesConfig, _i, _j, _len, _len1;
     if (!shell.which('apachectl')) {
       if (!shell.which('httpd')) {
         shell.echo('Cannot find apachectl or httpd commands');
@@ -177,6 +177,36 @@
         compileOptions.push(option);
       }
     }
+    apacheConfPath = _.findWhere(compileOptions, {
+      option: 'SERVER_CONFIG_FILE'
+    }).value.replace(/\"/g, "");
+    if (apacheConfPath.charAt(0) === "/") {
+      defaultApacheConfPath = apacheConfPath;
+    } else {
+      defaultApacheConfPath = path.resolve(_.findWhere(compileOptions, {
+        option: 'HTTPD_ROOT'
+      }).value.replace(/\"/g, ""), apacheConfPath);
+    }
+    defaultApacheConfString = fs.readFileSync(defaultApacheConfPath, "utf8", function(err) {
+      if (err) {
+        return console.log(err);
+      }
+    });
+    defaultApacheConf = defaultApacheConfString.split("\n");
+    for (_j = 0, _len1 = defaultApacheConf.length; _j < _len1; _j++) {
+      line = defaultApacheConf[_j];
+      line = line.trim();
+      line = line.replace(/^#.*/, '');
+      matched = line.match('TypesConfig.*');
+      if (matched != null) {
+        break;
+      }
+    }
+    typesConfig = line.split(' ');
+    compileOptions.push({
+      option: 'TypesConfig',
+      value: typesConfig[1]
+    });
     if (os.type() === "Darwin") {
       modulesPath = 'libexec/apache2/';
     } else {
@@ -227,8 +257,8 @@
       option: 'modulesPath'
     }).value + "mod_mime.so");
     confs.push('TypesConfig ' + _.findWhere(apacheCompileOptions, {
-      option: 'AP_TYPES_CONFIG_FILE'
-    }).value.replace(/\"/g, ""));
+      option: 'TypesConfig'
+    }).value);
     confs.push('LoadModule log_config_module ' + _.findWhere(apacheCompileOptions, {
       option: 'modulesPath'
     }).value + "mod_log_config.so");
@@ -249,8 +279,8 @@
       }).value + "mod_ssl.so");
       confs.push('SSLEngine on');
       confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path);
-      confs.push('SSLCertificateFile ' + config.all.server.ssl.key.file.path);
-      confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.authority.file.path);
+      confs.push('SSLCertificateKeyFile ' + config.all.server.ssl.key.file.path);
+      confs.push('SSLCACertificateFile ' + config.all.server.ssl.cert.authority.file.path);
     }
     confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>');
     confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>');

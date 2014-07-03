@@ -120,12 +120,29 @@ getApacheCompileOptions = ->
 			option = option.split('=')
 			option = {option: option[0], value: option[1]}
 			compileOptions.push(option)
+
+	apacheConfPath = _.findWhere(compileOptions, {option: 'SERVER_CONFIG_FILE'}).value.replace(/\"/g,"")
+	if apacheConfPath.charAt(0) == "/"
+		defaultApacheConfPath = apacheConfPath
+	else
+		defaultApacheConfPath = path.resolve(_.findWhere(compileOptions, {option: 'HTTPD_ROOT'}).value.replace(/\"/g,""),apacheConfPath)
+
+	defaultApacheConfString = fs.readFileSync defaultApacheConfPath, "utf8", (err) ->
+		return console.log(err) if err
+	defaultApacheConf = defaultApacheConfString.split("\n")
+	for line in defaultApacheConf
+		line = line.trim()
+		line = line.replace(/^#.*/, '')
+		matched = line.match('TypesConfig.*')
+		if matched?
+			break
+	typesConfig = line.split(' ')
+	compileOptions.push(option: 'TypesConfig', value: typesConfig[1])
 	if os.type() == "Darwin"
 		modulesPath = 'libexec/apache2/'
 	else
 		modulesPath = 'modules/'
 	compileOptions.push(option: 'modulesPath', value: modulesPath)
-
 	compileOptions
 
 getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
@@ -146,7 +163,7 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.push('HostnameLookups ' + _.findWhere(apacheHardCodedConfigs, {directive: 'HostnameLookups'}).value)
 	confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerAdmin'}).value)
 	confs.push('LoadModule mime_module ' + _.findWhere(apacheCompileOptions, {option: 'modulesPath'}).value + "mod_mime.so")
-	confs.push('TypesConfig ' + _.findWhere(apacheCompileOptions, {option: 'AP_TYPES_CONFIG_FILE'}).value.replace(/\"/g,""))
+	confs.push('TypesConfig ' + _.findWhere(apacheCompileOptions, {option: 'TypesConfig'}).value)
 	confs.push('LoadModule log_config_module ' + _.findWhere(apacheCompileOptions, {option: 'modulesPath'}).value + "mod_log_config.so")
 	confs.push('LoadModule logio_module ' + _.findWhere(apacheCompileOptions, {option: 'modulesPath'}).value + "mod_logio.so")
 	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
@@ -158,8 +175,8 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 		confs.push('LoadModule ssl_module ' + _.findWhere(apacheCompileOptions, {option: 'modulesPath'}).value + "mod_ssl.so")
 		confs.push('SSLEngine on')
 		confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path)
-		confs.push('SSLCertificateFile ' + config.all.server.ssl.key.file.path)
-		confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.authority.file.path)
+		confs.push('SSLCertificateKeyFile ' + config.all.server.ssl.key.file.path)
+		confs.push('SSLCACertificateFile ' + config.all.server.ssl.cert.authority.file.path)
 
 	confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>')
 	confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>')
