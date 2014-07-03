@@ -249,8 +249,8 @@
       }).value + "mod_ssl.so");
       confs.push('SSLEngine on');
       confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path);
-      confs.push('SSLCertificateFile ' + config.all.server.ssl.key.file.path);
-      confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.authority.file.path);
+      confs.push('SSLCertificateKeyFile ' + config.all.server.ssl.key.file.path);
+      confs.push('SSLCACertificateFile ' + config.all.server.ssl.cert.authority.file.path);
     }
     confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>');
     confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>');
