@@ -103,14 +103,16 @@ getRFileHandlerString = (rFilesWithRoute, config, acasHome)->
 	routes.join('\n\n')
 
 getApacheCompileOptions = ->
-	if not shell.which 'apachectl'
-		if not shell.which 'httpd'
-			shell.echo 'Cannot find apachectl or httpd commands'
-			shell.exit 1
-		else
-			compileString = shell.exec('httpd -V', {silent:true})
-	else
-		compileString = shell.exec('apachectl -V', {silent:true})
+	posssibleCommands = ['apachectl', 'httpd', '/usr/sbin/apachectl']
+	for possibleCommand in posssibleCommands
+		if shell.which(possibleCommand)
+			apacheCommand = possibleCommand
+			break;
+	if not apacheCommand?
+		console.log 'Could not find apache command in list: ' + posssibleCommands.join(', ')
+		shell.exit 1
+
+	compileString = shell.exec(apacheCommand + ' -V', {silent:true})
 	compileOptionStrings =  compileString.output.split("\n");
 	compileOptions = []
 	apacheVersion = ''
@@ -122,7 +124,7 @@ getApacheCompileOptions = ->
 				if os.type() == "Darwin"
 					apacheVersion = 'Darwin'
 				else
-					modulesPath = 'Redhat'
+					apacheVersion = 'Redhat'
 		else
 			option = option.match(/^ -D .*/)
 			if option?
@@ -130,7 +132,7 @@ getApacheCompileOptions = ->
 				option = option.split('=')
 				option = {option: option[0], value: option[1]}
 				compileOptions.push(option)
-
+	console.log apacheVersion
 	compileOptions.push(option: 'ApacheVersion', value: apacheVersion)
 
 #	if apacheType == "Darwin"
@@ -146,13 +148,14 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	if config.all.server.run?
 		if config.all.server.run.user?
 			runUser = server.run.user
-	switch _.findWhere(apacheCompileOptions, {option: 'ApacheVersion'}).value
+	apacheVersion = _.findWhere(apacheCompileOptions, {option: 'ApacheVersion'}).value
+	switch apacheVersion
 		when 'Ubuntu'
 			serverRoot = '\"/usr/lib/apache2\"'
 			modulesDir = 'modules/'
 			typesConfig = '/etc/mime.types'
 		when 'Redhat'
-			serverRoot = '\"/usr\"'
+			serverRoot = '\"/etc/httpd\"'
 			modulesDir = 'modules/'
 			typesConfig = '/etc/mime.types'
 		when 'Darwin'
@@ -172,8 +175,9 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerAdmin'}).value)
 	confs.push('LoadModule mime_module ' + modulesDir + "mod_mime.so")
 	confs.push('TypesConfig ' + typesConfig)
-	confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
-	confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
+	if apacheVersion in ['Redhat', 'Darwin']
+		confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
+		confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
 	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
 	confs.push('ErrorLog ' + config.all.server.log.path + '/racas.log')
 	confs.push('LogLevel ' + config.all.server.log.level.toLowerCase())

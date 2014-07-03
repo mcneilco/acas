@@ -147,26 +147,27 @@
   };
 
   getApacheCompileOptions = function() {
-    var apacheVersion, compileOptionStrings, compileOptions, compileString, modulesPath, option, _i, _len;
-    if (!shell.which('apachectl')) {
-      if (!shell.which('httpd')) {
-        shell.echo('Cannot find apachectl or httpd commands');
-        shell.exit(1);
-      } else {
-        compileString = shell.exec('httpd -V', {
-          silent: true
-        });
+    var apacheCommand, apacheVersion, compileOptionStrings, compileOptions, compileString, option, possibleCommand, posssibleCommands, _i, _j, _len, _len1;
+    posssibleCommands = ['apachectl', 'httpd', '/usr/sbin/apachectl'];
+    for (_i = 0, _len = posssibleCommands.length; _i < _len; _i++) {
+      possibleCommand = posssibleCommands[_i];
+      if (shell.which(possibleCommand)) {
+        apacheCommand = possibleCommand;
+        break;
       }
-    } else {
-      compileString = shell.exec('apachectl -V', {
-        silent: true
-      });
     }
+    if (apacheCommand == null) {
+      console.log('Could not find apache command in list: ' + posssibleCommands.join(', '));
+      shell.exit(1);
+    }
+    compileString = shell.exec(apacheCommand + ' -V', {
+      silent: true
+    });
     compileOptionStrings = compileString.output.split("\n");
     compileOptions = [];
     apacheVersion = '';
-    for (_i = 0, _len = compileOptionStrings.length; _i < _len; _i++) {
-      option = compileOptionStrings[_i];
+    for (_j = 0, _len1 = compileOptionStrings.length; _j < _len1; _j++) {
+      option = compileOptionStrings[_j];
       if (option.match('Server version')) {
         if (option.match('Ubuntu')) {
           apacheVersion = 'Ubuntu';
@@ -174,7 +175,7 @@
           if (os.type() === "Darwin") {
             apacheVersion = 'Darwin';
           } else {
-            modulesPath = 'Redhat';
+            apacheVersion = 'Redhat';
           }
         }
       } else {
@@ -190,6 +191,7 @@
         }
       }
     }
+    console.log(apacheVersion);
     compileOptions.push({
       option: 'ApacheVersion',
       value: apacheVersion
@@ -198,7 +200,7 @@
   };
 
   getApacheConfsString = function(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) {
-    var confs, modulesDir, runUser, serverRoot, typesConfig;
+    var apacheVersion, confs, modulesDir, runUser, serverRoot, typesConfig;
     confs = [];
     runUser = shell.exec('whoami', {
       silent: true
@@ -208,16 +210,17 @@
         runUser = server.run.user;
       }
     }
-    switch (_.findWhere(apacheCompileOptions, {
-          option: 'ApacheVersion'
-        }).value) {
+    apacheVersion = _.findWhere(apacheCompileOptions, {
+      option: 'ApacheVersion'
+    }).value;
+    switch (apacheVersion) {
       case 'Ubuntu':
         serverRoot = '\"/usr/lib/apache2\"';
         modulesDir = 'modules/';
         typesConfig = '/etc/mime.types';
         break;
       case 'Redhat':
-        serverRoot = '\"/usr\"';
+        serverRoot = '\"/etc/httpd\"';
         modulesDir = 'modules/';
         typesConfig = '/etc/mime.types';
         break;
@@ -249,8 +252,10 @@
     }).value);
     confs.push('LoadModule mime_module ' + modulesDir + "mod_mime.so");
     confs.push('TypesConfig ' + typesConfig);
-    confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so");
-    confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so");
+    if (apacheVersion === 'Redhat' || apacheVersion === 'Darwin') {
+      confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so");
+      confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so");
+    }
     confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {
       directive: 'LogFormat'
     }).value);
