@@ -27,7 +27,6 @@
 	"glob": "*",
 	"ncp": "*",
 	"shelljs": "*",
-	"os": "*",
 	"forever-monitor": "*"
   }
 }
