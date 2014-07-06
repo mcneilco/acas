@@ -141,8 +141,7 @@ getUserHits <- function(analysisGroupData, flaggedWells, resultTable, replicateT
   #          replicateType, a string that defines an analysis group (ie, "across plate")
   # Returns: analysisGroupData: the original table, including a column indicating whether the user specified
   #             an analysis group as a hit or a miss
-  #          validatedFlagData: enough information to identify an analysis group, as well
-  #             as the wellType and hit information
+  #          summaryFlagData: the batchName and userHit columns for every piece of data
   
   # Extract information from the flag file
   flagData <- parseAnalysisFlagFile(flaggedWells, resultTable)
@@ -163,7 +162,11 @@ getUserHits <- function(analysisGroupData, flaggedWells, resultTable, replicateT
     analysisGroupData <- fillAnalysisFlags(replicateType, analysisGroupData, minimalFlagInformation)
   }
   
-  return(list(analysisGroupData = analysisGroupData, flagData = validatedFlagData))
+  summaryFlagData <- data.frame(userHit = validatedFlagData$userHit, 
+                                batchName = validatedFlagData$batchName,
+                                stringsAsFactors = FALSE)
+  
+  return(list(analysisGroupData = analysisGroupData, flagData = summaryFlagData))
 }
 removeVehicle <- function(vehicle, wellTable) {
   #Removes rows with a vehicle that are part of another well
@@ -188,11 +191,11 @@ removeControls <- function(validatedFlagData) {
   controlOnly <- validatedFlagData[wellType != "test"]
   
   flaggedControls <- controlOnly[!is.na(userHit) & userHit != ""]
-  diffList <- which(flaggedControls$hit != flaggedControls$userHit)
+  diffList <- which(flaggedControls$hit != tolower(flaggedControls$userHit))
   if (length(diffList) > 0) {
     stopUser(paste0("Only hits in wells marked as 'test' can be overriden by the user. Please ensure ",
                     "that the 'User Defined Hit' matches the 'Hit' column for non-test wells in the following ",
-                    "coroprate batch IDs: ", paste0(flaggedControls[diffList]$batchName, collapse = ", ")))
+                    "coroprate batch IDs: ", paste0(unique(flaggedControls[diffList]$batchName), collapse = ", ")))
   }
   
   return(testOnly)
@@ -1051,7 +1054,7 @@ validateWellFlagData <- function(flagData, resultTable) {
   columnsIncluded <- c("well", "barcode", "flag") %in% names(flagData)
   if (!all(columnsIncluded)) {
     stopUser(paste0("An important column appears to be missing from the input. ",
-                    "Please ensure that the uploaded file contains columns for Well,", 
+                    "Please ensure that the uploaded file contains columns for Well, ", 
                     "Barcode, and Flag. If the uploaded file contained calculated ", 
                     "results, please ensure that you only modified the columns marked ",
                     "as editable."))
@@ -1116,12 +1119,18 @@ validateAnalysisFlagData <- function(flagData, analysisGroupData, replicateType)
     # replace missing values with the 'default' value
     replaceMissing <- function(userHit, systemHit) {
       #userHit will be the collection of user-defined hits for the analysis group
-      registeredHits <- userHit[!is.na(userHit) & userHit != ""]
+      userHit <- tolower(userHit)
+      registeredHits <- unique(userHit[!is.na(userHit) & userHit != ""])
       if(length(registeredHits) == 0) {
         return(systemHit)
+      } else if (length(registeredHits) == 1) {
+        return(registeredHits)
       } else {
-        # We have enough specificity that these should be the same, or else they will err elsewhere
-        return(registeredHits[1])
+        stopUser(paste0("There were ", length(registeredHits), " different entries under ",
+                        "'User Defined Hits' for a single ",
+                        paste0(analysisColumns, collapse = "/"), " grouping: ",
+                        paste0(registeredHits, collapse = ", "), ". Please enter either 'yes'",
+                        " or 'no'."))
       }
     }
     
@@ -1131,7 +1140,7 @@ validateAnalysisFlagData <- function(flagData, analysisGroupData, replicateType)
   
   # If the table is blank, readExcelOrCsv decides all of the column types should be "logical",
   # so we change them to "character"
-  if (nrow(flagData) == 0) {
+  if (!is.null(flagData) && nrow(flagData) == 0) {
     flagData <- as.data.table(sapply(flagData, as.character))
   }
 
@@ -1279,6 +1288,7 @@ parseAnalysisFlagFile <- function(flaggedWells, resultTable) {
       # Get the headers in the appropriate place
       names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
       flagData <- flagData[1:nrow(flagData)>1,]
+      flagData <- as.data.table(flagData)
     }, error = function(e) {
       if (any(class(e) == "userStop")) {
         # If we received an error that we defined, it means the section heading wasn't there
@@ -1286,13 +1296,20 @@ parseAnalysisFlagFile <- function(flaggedWells, resultTable) {
         # any analysis flags
         return(NULL)
       } else {
-        stopUser("The system encountered an error while reading the flagged wells.")
+        stopUser("The system encountered an error while reading the user-defined hits.")
       }
     })
-    flagData <- as.data.table(flagData)
-    setnames(flagData, "user defined hit", "userHit")
-    setnames(flagData, "corporate batch id", "batchName")
-    setnames(flagData, "well type", "wellType")
+    # If possible, set these names. Otherwise, the user will get told about it in the validation function
+    if ("user defined hit" %in% names(flagData)) {setnames(flagData, "user defined hit", "userHit")}
+    if ("well type" %in% names(flagData)) {setnames(flagData, "well type", "wellType")}
+    if ("corporate batch id" %in% names(flagData)) {setnames(flagData, "corporate batch id", "batchName")}
+    
+    # If there aren't enough wells given, we're going to have a hard time filling in the appropriate
+    # default flag, so we stop the user (because we know this isn't the 'basic csv' format)
+    if (!is.null(flagData) && NROW(resultTable) != NROW(flagData)) {
+      stopUser(paste0("There were ", NROW(flagData), " rows of flag data in the given file, but the experiment has ",
+                     NROW(resultTable), " wells. If any rows were deleted from the QC file, please download it again."))
+    }
   }
   return(flagData)
 }
@@ -2010,7 +2027,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Sweetener" = parameters$agonist$batchCode,
         "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
         "Compounds analyzed" = length(unique(resultTable$batchName)),
-        "Hits" = sum(analysisGroupData$userHit == "yes"),
+        "Hits" = sum(tolower(analysisGroupData$userHit) == "yes"),
         "Threshold" = signif(efficacyThreshold, 3),
         "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
         "Fluorescent wells" = sum(resultTable$fluorescent),
@@ -2027,7 +2044,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # Check if we have to create the "User Defined Hit" column from scratch, or if we can
     # reuse the old one (if the data is bad enough that we don't want to write it again, we
     # would have already thrown an error)
-    if (is.null(flagData)) {
+    if (is.null(flagData) || length(flagData) == 0) {
       outputTableReloadColumns <- as.data.frame(outputTable)[, c("Corporate Batch ID", "Hit")]
     } else {
       outputTableReloadColumns <- as.data.frame(flagData)[, c("batchName", "userHit")]
