@@ -386,7 +386,7 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
   #   classRow:     	  A character vector of the Datatypes of the calculated results (with hidden and link information as well)
   #   LabelRow:         A character vector with the labels for each column
   #   lockCorpBatchId:  A boolean marking whether the corp batch id must be in the leftmost column
-  #   clobColumns:      Which columns have text more than 255 characters long (and need to be saved in a special format)?
+  #   clobColumns:      Which columns have text more than 255 characters long (and need to be saved as a clobValue)
   #
   # Returns:
   #	  a character vector of the datatypes (without 'hidden' or 'link' information)
