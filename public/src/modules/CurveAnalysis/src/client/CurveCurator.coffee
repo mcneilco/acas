@@ -353,11 +353,11 @@ class window.CurveEditorController extends Backbone.View
 
 	handlePointsChanged: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
-		@model.save({persist: false, user: window.AppLaunchParams.loginUserName})
+		@model.save({action: 'pointsChanged', user: window.AppLaunchParams.loginUserName})
 
 	handleParametersChanged: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
-		@model.save({persist: false, user: window.AppLaunchParams.loginUserName})
+		@model.save({action: 'parametersChanged', user: window.AppLaunchParams.loginUserName})
 
 	handleResetClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
@@ -368,15 +368,15 @@ class window.CurveEditorController extends Backbone.View
 	handleUpdateClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@oldID =  @model.get 'curveid'
-		@model.save({persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleSaveSuccess, error: @handleSaveError})
+		@model.save({action: 'save', user: window.AppLaunchParams.loginUserName}, {success :@handleSaveSuccess, error: @handleSaveError})
 
 	handleApproveClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
-		@model.save({userApproval: 'user', persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
+		@model.save({action: 'flagUser', flagUser: 'NA', user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
 
 	handleRejectClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
-		@model.save({userApproval: 'NA', persist: true, user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
+		@model.save({action: 'flagUser', flagUser: 'user', user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
 
 	handleResetSuccess: =>
 		#UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
@@ -401,8 +401,8 @@ class window.CurveEditorController extends Backbone.View
 	handleUpdateSuccess: =>
 		@handleModelSync()
 		curveid = @model.get 'curveid'
-		userApproved = @model.get 'userApproved'
-		@trigger 'curveDetailUpdated', curveid, userApproved
+		flagUser = @model.get 'flagUser'
+		@trigger 'curveDetailUpdated', curveid, flagUser
 
 class window.Curve extends Backbone.Model
 
@@ -423,9 +423,9 @@ class window.CurveList extends Backbone.Collection
 		curve = @.findWhere({curveid: oldID})
 		curve.set curveid: newCurveID
 
-	updateCurveUserApproved: (curveid, userApproved) =>
+	updateCurveFlagUser: (curveid, flagUser) =>
 		curve = @.findWhere({curveid: curveid})
-		curve.set userApproved: userApproved
+		curve.set flagUser: flagUser
 
 class window.CurveCurationSet extends Backbone.Model
 	defaults:
@@ -614,8 +614,8 @@ class window.CurveCuratorController extends Backbone.View
 	handleCurveDetailSaved: (oldID, newID) =>
 		@curveListController.collection.updateCurveSummary(oldID, newID)
 
-	handleCurveDetaily: (curveid, userApproved) =>
-		@curveListController.collection.updateCurveUserApproved(curveid, userApproved)
+	handleCurveDetailUpdated: (curveid, flagUser) =>
+		@curveListController.collection.updateCurveFlagUser(curveid, flagUser)
 
 	getCurvesFromExperimentCode: (exptCode) ->
 		@model = new CurveCurationSet

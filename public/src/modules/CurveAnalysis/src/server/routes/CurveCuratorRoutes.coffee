@@ -2,7 +2,7 @@
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/curves/stubs/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs
 	app.get '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail
-	app.put '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.refitCurve
+	app.put '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurve
 	app.get '/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex
 
 exports.getCurveStubs = (req, resp) ->
@@ -54,13 +54,13 @@ exports.getCurveDetail = (req, resp) ->
 				resp.end 'error'
 		)
 
-exports.updateCurveUserApproval = (req, resp) ->
+exports.updateCurveUserFlag = (req, resp) ->
 	if global.specRunnerTestmode
 		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
-		resp.end JSON.stringify curveCuratorTestData.updateCurveUserApproval
+		resp.end JSON.stringify curveCuratorTestData.curveDetail
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.rapache.fullpath+"/curve/detail/approval"
+		baseurl = config.all.client.service.rapache.fullpath+"/curve/flag/user"
 		request = require 'request'
 		console.log JSON.stringify req.body
 		request(
@@ -72,20 +72,20 @@ exports.updateCurveUserApproval = (req, resp) ->
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
 			else
-				console.log 'got ajax error trying to refit curve'
+				console.log 'got ajax error trying to update user flag'
 				console.log error
 				console.log json
 				console.log response
-				resp.end 'error'
+				resp.end json
 		)
 
-exports.refitCurve = (req, resp) ->
+exports.updateCurve = (req, resp) ->
 	if global.specRunnerTestmode
 		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveDetail
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.rapache.fullpath+"/curve/detail"
+		baseurl = config.all.client.service.rapache.fullpath+"/curve/detail/"
 		request = require 'request'
 		console.log JSON.stringify req.body
 		request(

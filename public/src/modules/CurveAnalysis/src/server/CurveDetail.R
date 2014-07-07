@@ -1,3 +1,5 @@
+# ROUTE: /curve/detail
+
 library(racas)
 
 handler <- function(e) {
@@ -17,27 +19,22 @@ myMessenger$logger$debug("curve detail initiated")
 tryCatch({
   if(!is.null(GET)) {
     myMessenger$logger$debug(paste0('getting curve detail with get json: ', GET))
-    commandOutput <- capture.output(detail <- racas::api_doseResponse_get_curve_detail(GET))
+    commandOutput <- capture.output(response <- racas::api_doseResponse_get_curve_detail(GET))
   } else {
     postData <- rawToChar(receiveBin())
-    if(!is.null(postData)) {
-      POST <- jsonlite::fromJSON(postData)
-      myMessenger$logger$debug(paste0('updating fit with postData: ', postData))
-      if(is.null(POST$approval)) {
-        commandOutput <- capture.output(detail <- racas::api_doseResponse.curve(POST))
-      } else {
-        commandOutput <- capture.output(detail <- racas::api_doseResponse_update_curve_user_approval(POST))
-      }
-    } else {
-        myMessenger$logger$error("no post or get data received")
-    }
+    POST <- jsonlite::fromJSON(postData)
+    myMessenger$logger$debug(paste0('updating fit with postData: ', postData))
+    commandOutput <- capture.output(response <- switch(POST$action,
+        'save' = racas::api_doseResponse_save_session(POST$sessionID, POST$user),
+        'pointsChanged' = racas::api_doseResponse_refit(POST),
+        'parametersChanged' = racas::api_doseResponse_refit(POST),
+        'flagUser' = racas::api_doseResponse_update_user_flag(POST$sessionID,POST$flagUser, POST$user))
+    )
+
   }
-    myMessenger$logger$debug(paste0("curve detail response: ", detail))
-
-
   setHeader("Access-Control-Allow-Origin" ,"*")
   setContentType("application/json")
-  cat(detail)
+  cat(response)
   DONE
 }, error = function(e) {
     handler(e)

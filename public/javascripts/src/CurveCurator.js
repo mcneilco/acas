@@ -515,7 +515,7 @@
     CurveEditorController.prototype.handlePointsChanged = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
-        persist: false,
+        action: 'pointsChanged',
         user: window.AppLaunchParams.loginUserName
       });
     };
@@ -523,7 +523,7 @@
     CurveEditorController.prototype.handleParametersChanged = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
-        persist: false,
+        action: 'parametersChanged',
         user: window.AppLaunchParams.loginUserName
       });
     };
@@ -540,7 +540,7 @@
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       this.oldID = this.model.get('curveid');
       return this.model.save({
-        persist: true,
+        action: 'save',
         user: window.AppLaunchParams.loginUserName
       }, {
         success: this.handleSaveSuccess,
@@ -551,8 +551,8 @@
     CurveEditorController.prototype.handleApproveClicked = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
-        userApproval: 'user',
-        persist: true,
+        action: 'flagUser',
+        flagUser: 'NA',
         user: window.AppLaunchParams.loginUserName
       }, {
         success: this.handleUpdateSuccess,
@@ -563,8 +563,8 @@
     CurveEditorController.prototype.handleRejectClicked = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
-        userApproval: 'NA',
-        persist: true,
+        action: 'flagUser',
+        flagUser: 'user',
         user: window.AppLaunchParams.loginUserName
       }, {
         success: this.handleUpdateSuccess,
@@ -597,11 +597,11 @@
     };
 
     CurveEditorController.prototype.handleUpdateSuccess = function() {
-      var curveid, userApproved;
+      var curveid, flagUser;
       this.handleModelSync();
       curveid = this.model.get('curveid');
-      userApproved = this.model.get('userApproved');
-      return this.trigger('curveDetailUpdated', curveid, userApproved);
+      flagUser = this.model.get('flagUser');
+      return this.trigger('curveDetailUpdated', curveid, flagUser);
     };
 
     return CurveEditorController;
@@ -623,7 +623,7 @@
     __extends(CurveList, _super);
 
     function CurveList() {
-      this.updateCurveUserApproved = __bind(this.updateCurveUserApproved, this);
+      this.updateCurveFlagUser = __bind(this.updateCurveFlagUser, this);
       this.updateCurveSummary = __bind(this.updateCurveSummary, this);
       return CurveList.__super__.constructor.apply(this, arguments);
     }
@@ -653,13 +653,13 @@
       });
     };
 
-    CurveList.prototype.updateCurveUserApproved = function(curveid, userApproved) {
+    CurveList.prototype.updateCurveFlagUser = function(curveid, flagUser) {
       var curve;
       curve = this.findWhere({
         curveid: curveid
       });
       return curve.set({
-        userApproved: userApproved
+        flagUser: flagUser
       });
     };
 
@@ -884,7 +884,7 @@
       this.handleFilterChanged = __bind(this.handleFilterChanged, this);
       this.handleGetCurveDetailReturn = __bind(this.handleGetCurveDetailReturn, this);
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
-      this.handleCurveDetaily = __bind(this.handleCurveDetaily, this);
+      this.handleCurveDetailUpdated = __bind(this.handleCurveDetailUpdated, this);
       this.handleCurveDetailSaved = __bind(this.handleCurveDetailSaved, this);
       this.render = __bind(this.render, this);
       return CurveCuratorController.__super__.constructor.apply(this, arguments);
@@ -960,8 +960,8 @@
       return this.curveListController.collection.updateCurveSummary(oldID, newID);
     };
 
-    CurveCuratorController.prototype.handleCurveDetaily = function(curveid, userApproved) {
-      return this.curveListController.collection.updateCurveUserApproved(curveid, userApproved);
+    CurveCuratorController.prototype.handleCurveDetailUpdated = function(curveid, flagUser) {
+      return this.curveListController.collection.updateCurveFlagUser(curveid, flagUser);
     };
 
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode) {
