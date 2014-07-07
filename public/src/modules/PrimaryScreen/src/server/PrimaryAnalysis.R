@@ -1841,14 +1841,20 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   # Error handling -- what if there are no unflagged PC's or NC's? 
   if (!any(is.na(resultTable$flag))) { 
-    stop("All data points appear to have been flagged, so the data cannot be analyzed")
+    stopUser("All data points appear to have been flagged, so the data cannot be analyzed")
   }
   if (!any(resultTable$wellType == "NC" & is.na(resultTable$flag))) {
-    stop("All negative controls appear to have been flagged, so the data cannot be normalized.")
+    stopUser("All negative controls appear to have been flagged, so the data cannot be normalized.")
   }
   if (!any(resultTable$wellType == "PC" & is.na(resultTable$flag))) {
-    stop("All positive controls appear to have been flagged, so the data cannot be normalized.")
+    stopUser("All positive controls appear to have been flagged, so the data cannot be normalized.")
   }
+  if (!any(resultTable$wellType == "test" & is.na(resultTable$flag))) {
+    stopUser("All of the test wells appear to have been flagged, so there is no data to analyze.")
+  } else if (length(which(resultTable$wellType == "test" & is.na(resultTable$flag))) == 1) {
+    stopUser("Only one of the test wells is unflagged, so there is not enough data to analyze.")
+  }
+  
   
   # normalization
   
