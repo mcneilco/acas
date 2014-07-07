@@ -6,10 +6,15 @@
 # performs as expected if the response from
 # the roo services is as expected
 
+library(racas)
 library(testthat)
-source("public/src/modules/GenericDataParser/src/server/generic_data_parser.R")
+
+setwd(racas::applicationSettings$appHome)
+source(file.path("public","src","modules","GenericDataParser","src","server","generic_data_parser.R"))
 
 context("validateScientist")
+
+errorList <<- list()
 
 test_that("Scientists in the database are returned with no errors", {
   # Note: Because this is in test mode, they don't actually have to be in the database
