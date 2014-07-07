@@ -1,3 +1,6 @@
+# The next line is used by PrepareConfigFiles to include this file as a route in rapache, do not modify unless you intend to modify rapache routes (it can be anywhere in the files though)
+# ROUTE: /curve/render/dr
+
 renderCurve <- function(getParams) {
 	# Get data
 	if(is.null(getParams$ymin)) {
