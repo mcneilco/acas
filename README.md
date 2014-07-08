@@ -300,3 +300,36 @@ Finally, add the change and continue the rebase
  
 [1]:https://confluence.atlassian.com/display/BITBUCKET/Displaying+README+Text+on+the+Overview#DisplayingREADMETextontheOverview-ExampleMarkdownREADME
 [2]: http://hashify.me/
+
+
+## Creating a patch file
+
+###Prerequisites
+You need to know these things before creating a patch file
+1. The commit you are patching (this should be a tag in the repository (e.g. 1.1.0)
+2. The commit you are applying (this should also be a tagged release in the repository (e.g. 1.1.1)
+<br/>
+<br/>
+
+###Steps
+1. From source tree > Right click the commit you are patching (e.g. 1.1.0)
+2. Choose "Create Patch"
+3. Choose "Patch From Commits" (tab on top)
+4. Scroll up to the commit you are applying and select it (e.g. 1.1.1)
+5. Name the patch file (e.g. 1.1.0-1.1.1-patch.diff)
+6. Upload the patch.diff file to ACAS_HOME on the instance you are patching
+7. Apply the patch in dry-run mode
+
+
+e.g.
+
+     patch --dry-run -p1 < 1.1.0-1.1.1-patch.diff
+
+
+8. It will print the changes it plans to make, if this looks ok then proceed
+9. Apply the patch
+
+
+e.g.
+
+    patch -p1 < 1.1.0-1.1.1-patch.diff
