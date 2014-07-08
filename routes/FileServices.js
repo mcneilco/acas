@@ -1,5 +1,5 @@
 (function() {
-  var ensureExists;
+  var ensureExists, makeAbsolutePath, setupRoutes;
 
   ensureExists = function(path, mask, cb) {
     var fs;
@@ -18,19 +18,34 @@
     });
   };
 
-  exports.setupAPIRoutes = function(app, loginRoutes) {};
+  makeAbsolutePath = function(relativePath) {
+    var acasPath, d, dotMatches, numDotDots, _i;
+    acasPath = process.env.PWD;
+    dotMatches = relativePath.match(/\.\.\//g);
+    if (dotMatches != null) {
+      numDotDots = relativePath.match(/\.\.\//g).length;
+      relativePath = relativePath.replace(/\.\.\//g, '');
+      for (d = _i = 1; 1 <= numDotDots ? _i <= numDotDots : _i >= numDotDots; d = 1 <= numDotDots ? ++_i : --_i) {
+        acasPath = acasPath.replace(/[^\/]+\/?$/, '');
+      }
+    } else {
+      acasPath += '/';
+    }
+    console.log(acasPath + relativePath + '/');
+    return acasPath + relativePath + '/';
+  };
 
-  exports.setupRoutes = function(app, loginRoutes) {
+  setupRoutes = function(app, loginRoutes, requireLogin) {
     var config, dataFilesPath, tempFilesPath;
     config = require('../conf/compiled/conf.js');
-    dataFilesPath = process.env.PWD + '/' + config.all.server.datafiles.relative_path + '/';
-    tempFilesPath = process.env.PWD + '/' + config.all.server.tempfiles.relative_path + '/';
+    dataFilesPath = makeAbsolutePath(config.all.server.datafiles.relative_path);
+    tempFilesPath = makeAbsolutePath(config.all.server.tempfiles.relative_path);
     ensureExists(dataFilesPath, 0x1e4, function(err) {
       if (err != null) {
         console.log("Can't find or create data files dir: " + dataFilesPath);
         return process.exit(-1);
       } else {
-        if (config.all.server.datafiles.without.login) {
+        if (config.all.server.datafiles.without.login || !requireLogin) {
           return app.get('/dataFiles/*', function(req, resp) {
             console.log(dataFilesPath);
             return resp.sendfile(dataFilesPath + req.params[0]);
@@ -48,11 +63,25 @@
         console.log("Can't find or create temp files dir: " + dataFilesPath);
         return process.exit(-1);
       } else {
-        return app.get('/tempfiles/*', loginRoutes.ensureAuthenticated, function(req, resp) {
-          return resp.sendfile(tempFilesPath + req.params[0]);
-        });
+        if (requireLogin) {
+          return app.get('/tempfiles/*', loginRoutes.ensureAuthenticated, function(req, resp) {
+            return resp.sendfile(tempFilesPath + req.params[0]);
+          });
+        } else {
+          return app.get('/tempfiles/*', function(req, resp) {
+            return resp.sendfile(tempFilesPath + req.params[0]);
+          });
+        }
       }
     });
+  };
+
+  exports.setupAPIRoutes = function(app, loginRoutes) {
+    return setupRoutes(app, loginRoutes, false);
+  };
+
+  exports.setupRoutes = function(app, loginRoutes) {
+    return setupRoutes(app, loginRoutes, true);
   };
 
 }).call(this);
