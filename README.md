@@ -320,16 +320,10 @@ You need to know these things before creating a patch file
 6. Upload the patch.diff file to ACAS_HOME on the instance you are patching
 7. Apply the patch in dry-run mode
 
-
-e.g.
-
      patch --dry-run -p1 < 1.1.0-1.1.1-patch.diff
-
 
 8. It will print the changes it plans to make, if this looks ok then proceed
 9. Apply the patch
 
-
-e.g.
-
     patch -p1 < 1.1.0-1.1.1-patch.diff
+    
