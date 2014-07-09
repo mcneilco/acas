@@ -167,11 +167,11 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
   additionalColumns <- names(metaData)[is.na(match(names(metaData),expectedHeaders))]
   if (length(additionalColumns) > 0) {
     if (length(additionalColumns) == 1) {
-      warning(paste0("The loader found an extra Experiment Meta Data row that will be ignored: '", 
+      warningUser(paste0("The loader found an extra Experiment Meta Data row that will be ignored: '", 
                      additionalColumns, 
                      "'. Please remove this row."))
     } else {
-      warning(paste0("The loader found extra Experiment Meta Data rows that will be ignored: '", 
+      warningUser(paste0("The loader found extra Experiment Meta Data rows that will be ignored: '", 
                      paste(additionalColumns,collapse="' ,'"), 
                      "'. Please remove these rows."))
     }
@@ -239,10 +239,10 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   extraTempIds <- setdiff(tempIdList,treatmentGroupData[,tempIdLabel])
   extraTempIds <- extraTempIds[!is.na(extraTempIds)]
   if (length(extraTempIds)>1) {
-    warning(paste0("In the Calculated Results section, there are ", tempIdLabel, "'s that have no matching data in the Raw Results section: '", 
+    warningUser(paste0("In the Calculated Results section, there are ", tempIdLabel, "'s that have no matching data in the Raw Results section: '", 
                    paste(extraTempIds, collapse="', '"), "'. Without raw data, a curve cannot be drawn throught the points."))
   } else if (length(extraTempIds)>0) {
-    warning(paste0("In the Calculated Results section, there is a ", tempIdLabel, " that has no match in the Raw Results section: '", 
+    warningUser(paste0("In the Calculated Results section, there is a ", tempIdLabel, " that has no match in the Raw Results section: '", 
                    extraTempIds, "'. Without raw data, a curve cannot be drawn throught the points."))
   }
   return(NULL) 
@@ -279,7 +279,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
       addError(paste0(mainCode, " '", batchId["requestName"], 
                                         "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
-      warning(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
+      warningUser(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
                      "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
                      "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
     }
@@ -420,12 +420,12 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
   emptyClasses <- which(is.na(classRow) | trim(classRow) == "")
   if(length(emptyClasses) > 0) {
     if(length(emptyClasses) == 1) {
-      warning(paste0("Column ", getExcelColumnFromNumber(emptyClasses), " (" , LabelRow[emptyClasses], ") does not have a Datatype entered. ",
+      warningUser(paste0("Column ", getExcelColumnFromNumber(emptyClasses), " (" , LabelRow[emptyClasses], ") does not have a Datatype entered. ",
                      "The loader will attempt to interpret entries in column ", 
                      getExcelColumnFromNumber(emptyClasses), 
                      " as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
     } else {
-      warning(paste("Columns", 
+      warningUser(paste("Columns", 
                     paste(sapply(emptyClasses[1:length(emptyClasses)-1],getExcelColumnFromNumber),collapse=", "), 
                     "and", getExcelColumnFromNumber(tail(emptyClasses,n=1)), 
                     "do not have a Datatype entered.",
@@ -455,7 +455,7 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
       classRow[i][grep(pattern = "dev", classRow[i], ignore.case = TRUE)] <- "Standard Deviation"
       # Accept differences in capitalization
       if (tolower(classRow[i]) != tolower(oldClassRow[i]) & !is.na(LabelRow[i])) {
-        warning(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
+        warningUser(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
                        "' as a datatype and interpreted it as '", classRow[i], 
                        "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
       }
@@ -538,7 +538,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   
   # Warn about any new valueKinds
   if (length(newValueKinds) > 0) {
-    warning(paste0("The following column headers have never been loaded in an experiment before: '", 
+    warningUser(paste0("The following column headers have never been loaded in an experiment before: '", 
                    paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar experiment before, please use the same",
                    " headers that were used previously. If this is a new protocol, you can proceed without worry."))
     if (!dryRun) {
@@ -580,7 +580,7 @@ getExcelColumnFromNumber <- function(number) {
   #   An excel-style set of column names (i.e. "B" or "AR")
   
   if (any(number < 1)) {
-    warning(paste("An invalid column number was attempted to be turned into a letter:",number))
+    warningUser(paste("An invalid column number was attempted to be turned into a letter:",number))
     return("none")
   }
   
@@ -709,7 +709,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   classRow <- validateCalculatedResultDatatypes(as.character(unlist(calculatedResults[1,])), labelRow, lockCorpBatchId, clobColumns, errorEnv)
   
   if(any(clobColumns & !(classRow=="Clob"))) {
-    warning("One of your entries had more than 255 characters, so it will be saved as a 'Clob'. In the future, you should use this for your column header.")
+    warningUser("One of your entries had more than 255 characters, so it will be saved as a 'Clob'. In the future, you should use this for your column header.")
   }
   
   # Remove Datatype Row
@@ -1228,7 +1228,7 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
     allowedCreationFormats <- configList$server.allow.protocol.creation.formats
     allowedCreationFormats <- unlist(strsplit(allowedCreationFormats, ","))
     if (formFormat %in% allowedCreationFormats || forceProtocolCreation) {
-      warning(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
+      warningUser(paste0("Protocol '", protocolName, "' does not exist, so it will be created. No user action is needed if you intend to create a new protocol."))
     } else {
       addError( paste0("Protocol '", protocolName, "' does not exist. Please enter a protocol name that exists. Contact your system administrator if you would like to create a new protocol."))
     }
@@ -1288,7 +1288,7 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
         experiment <- experimentList[[1]]
       }
     } else {
-      warning(paste0("Experiment '",experimentName,"' already exists, so the loader will delete its current data and replace it with your new upload.",
+      warningUser(paste0("Experiment '",experimentName,"' already exists, so the loader will delete its current data and replace it with your new upload.",
                      " If you do not intend to delete and reload data, enter a new experiment name."))
       experiment <- experimentList[[1]]
     }
@@ -1300,7 +1300,7 @@ getPreferredProtocolName <- function(protocol, protocolName = NULL) {
   # gets the preferred protocol name from the protocol and checks that it is the same as the current protocol name
   preferredName <- protocol$lsLabels[vapply(protocol$lsLabels, getElement, c(TRUE), "preferred")][[1]]$labelText
   if (!is.null(protocolName) && preferredName != protocolName) {
-    warning(paste0("The protocol name that you entered, '", protocolName, 
+    warningUser(paste0("The protocol name that you entered, '", protocolName, 
                    "', was replaced by the preferred name '", preferredName, "'"))
   }
   return(preferredName)
@@ -2866,7 +2866,14 @@ parseGenericData <- function(request) {
   }
   
   # Save warning messages but not the function call, which is only useful while programming
-  loadResult$warningList <- lapply(loadResult$warningList,function(x) x$message)
+  # Paste "Internal Warning: " to the front of errors we didn't intend to throw
+  loadResult$warningList <- lapply(loadResult$warningList,function(x) {
+    if(any(class(x) == "userWarning")) {
+      x$message
+      } else {
+        paste0("The system has encountered an internal warning: ", x$message)
+        }
+    })
   if (length(loadResult$warningList)>0) {
     loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
   }
