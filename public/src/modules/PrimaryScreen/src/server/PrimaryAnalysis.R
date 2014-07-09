@@ -2848,21 +2848,32 @@ runPrimaryAnalysis <- function(request) {
                                      flaggingStage = flaggingStage))
   
   # If the output has class simpleError or is not a list, save it as an error
-  if(class(loadResult$value)[1]=="simpleError") {
+  if (sum(class(loadResult$value)=="userStop") > 0) {
     errorList <- c(errorList,list(loadResult$value$message))
     loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="SQLException")>0) {
+  } else if (sum(class(loadResult$value)=="SQLException") > 0) {
     errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
-                                         racas::applicationSettings$erver.database.url, ":", 
+                                         configList$server.database.host,configList$server.database.port, ":", 
                                          as.character(loadResult$value), ". Please contact your system administrator.")))
     loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="error")>0 || class(loadResult$value)!="list") {
+  } else if (sum(class(loadResult$value)=="simpleError") > 0) {
+    errorList <- c(errorList, list(paste0("The system has encountered an internal error: ", 
+                                          as.character(loadResult$value$message))))
+    loadResult$value <- NULL
+  } else if (sum(class(loadResult$value)=="error") > 0 || class(loadResult$value)!="list") {
     errorList <- c(errorList,list(as.character(loadResult$value)))
     loadResult$value <- NULL
   }
   
   # Save warning messages but not the function call, which is only useful while programming
-  loadResult$warningList <- lapply(loadResult$warningList, getElement, "message")
+  # Paste "Internal Warning: " to the front of errors we didn't intend to throw
+  loadResult$warningList <- lapply(loadResult$warningList,function(x) {
+    if(any(class(x) == "userWarning")) {
+      x$message
+    } else {
+      paste0("The system has encountered an internal warning: ", x$message)
+    }
+  })
   if (length(loadResult$warningList)>0) {
     loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
   }
