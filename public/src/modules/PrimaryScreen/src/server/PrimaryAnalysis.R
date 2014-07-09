@@ -100,7 +100,7 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
 getAgonist <- function(agonist, wellTable) {
   # TODO: does not deal with multiple compounds in one well
   if((length(agonist) > 0) && !(agonist$batchCode %in% wellTable$BATCH_CODE)) {
-    stop("The agonist was not found in the plates. Have all transfers been loaded?")
+    stopUser("The agonist was not found in the plates. Have all transfers been loaded?")
   }
   
   agonistRows <- wellTable$BATCH_CODE == agonist$batchCode & 
@@ -1029,14 +1029,14 @@ validateInputFiles <- function(dataDirectory) {
   
   # the program exits when there are no files
   if (length(fileList) == 0) {
-    stop("No files found")
+    stopUser("No files found")
   }
   
   stat1List <- grep("\\.stat1$", fileList, value="TRUE")
   stat2List <- grep("\\.stat2$", fileList, value="TRUE")
   
   if (length(stat1List) != length(stat2List) | length(stat1List) != length(seqFileList)) {
-    stop("Number of Maximum and Minimum and sequence files do not match")
+    stopUser("Number of Maximum and Minimum and sequence files do not match")
   }
   
   fileNameTable <- data.frame(stat1= sort(stat1List),
@@ -1051,7 +1051,7 @@ validateInputFiles <- function(dataDirectory) {
   
   # TODO: tell user which ones
   if (any(apply(fileNameTable,1,checkSameName))) {
-    stop("File names do not match")
+    stopUser("File names do not match")
   }
   
   return(fileNameTable)
@@ -1318,7 +1318,7 @@ parseStatFile <- function(fileName) {
     statData$startReadMin <- startRead
     statData$endReadMin <- endRead
   } else {
-    stop (paste("Unknown Statistic in ", fileName))
+    stopUser (paste("Unknown Statistic in ", fileName))
   }
   
   return(statData)
@@ -1603,7 +1603,7 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
     
     saveExperimentValues(list(rawLocationValue,resultsLocationValue,pdfLocationValue,overrideLocationValue))
   }, error = function(e) {
-    stop("Could not save the summary and result locations")
+    stopUser("Could not save the summary and result locations")
   })
   
   
@@ -1630,7 +1630,7 @@ saveInputParameters <- function(inputParameters, experiment, lsTransaction, reco
     tryCatch({
       metadataState <- saveExperimentState(metadataState)
     }, error = function(e) {
-      stop("Could not save the input parameters")
+      stopUser("Could not save the input parameters")
     })
   }
   
@@ -1642,7 +1642,7 @@ saveInputParameters <- function(inputParameters, experiment, lsTransaction, reco
       lsState = metadataState)
     saveExperimentValues(list(inputParametersValue))
   }, error = function(e) {
-    stop("Could not save the input parameters")
+    stopUser("Could not save the input parameters")
   })
   
   
@@ -1715,7 +1715,7 @@ setAnalysisStatus <- function(status, metadataState) {
     
     saveExperimentValues(list(statusValue))
   }, error = function(e) {
-    stop("Could not save the experiment status")
+    stopUser("Could not save the experiment status")
   })
   return(NULL)
 }
@@ -1731,10 +1731,10 @@ computeNormalized  <- function(values, wellType, flag) {
   #   A numeric vector of the same length as the inputs that is normalized.
 
   if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
-    stop("All of the negative controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
+    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
   }
   if ((length((values[(wellType == 'PC' & is.na(flag))])) == 0)) {
-    stop("All of the positive controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
+    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
   }
   
   #find min (mean of unflagged Negative Controls)
@@ -1757,7 +1757,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   folderToParse <- racas::getUploadedFilePath(folderToParse)
   
   if (!file.exists(folderToParse)) {
-    stop("Input file not found")
+    stopUser("Input file not found")
   }
   
   require("data.table")
@@ -1793,7 +1793,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   zipFile <- NULL
   if (!file.info(folderToParse)$isdir) {
     if(!grepl("\\.zip$", folderToParse)) {
-      stop("The file provided must be a zip file or a directory")
+      stopUser("The file provided must be a zip file or a directory")
     }
     zipFile <- folderToParse
     filesLocation <- paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData")
@@ -1889,9 +1889,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
     
     if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
-      stop("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
+      stopUser(paste0("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
            paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
-           "'. Please contact your system administrator.")
+           "'. Please contact your system administrator."))
     }
     
     batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
@@ -1907,11 +1907,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                        parameters$positiveControl, parameters$negativeControl, testMode)
   
   if (!any(resultTable$wellType == "PC")) {
-    stop("The positive control was not found in the plates. Make sure all transfers have been loaded and your postive control is defined correctly.")
+    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded and your postive control is defined correctly.")
   }
   
   if (!any(resultTable$wellType == "NC")) {
-    stop("The negative control was not found in the plates. Make sure all transfers have been loaded and your negative control is defined correctly.")
+    stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded and your negative control is defined correctly.")
   }
   
   #calculations
