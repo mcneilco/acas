@@ -326,4 +326,7 @@ You need to know these things before creating a patch file
 9. Apply the patch
 
     patch -p1 < 1.1.0-1.1.1-patch.diff
-    
+
+###Reverting a patch file
+
+    patch -p1 -R < 1.1.0-1.1.1-patch.diff
