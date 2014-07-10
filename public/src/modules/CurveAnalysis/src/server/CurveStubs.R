@@ -3,7 +3,7 @@
 library(racas)
 
 handler <- function(e) {
-  myMessenger$logger$error('got error')
+  myMessenger$logger$error(e)
   setHeader("Access-Control-Allow-Origin" ,"*")
   setContentType("text/plain")
   setStatus(500L)
@@ -14,7 +14,7 @@ tryCatch({
   myMessenger <- Messenger$new()
   myMessenger$logger <- logger(logName = "com.acas.doseresponse.fit.curve.detail", logToConsole = FALSE)
   myMessenger$logger$info(paste0("curve stubs initiated with: ", GET))
-  myMessenger$captureOutput("commandOutput <- capture.output(stubs <- racas::api_doseResponse_get_curve_stubs(GET))", userError = paste0("There was an error retrieving curves for '", GET, "'"))
+  myMessenger$capture_output("commandOutput <- capture.output(stubs <- racas::api_doseResponse_get_curve_stubs(GET))", userError = paste0("There was an error retrieving curves for '", GET, "'"))
   if(myMessenger$hasErrors()) {
     myMessenger$logger$error(paste0("got errors in response: ", myMessenger$toJSON()))
     stubs <- myMessenger$userErrors
