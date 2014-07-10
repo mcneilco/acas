@@ -1779,6 +1779,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   parameters <- getExperimentParameters(inputParameters)
   # TODO: store this in protocol
   parameters$latePeakTime <- 80
+  
   if(is.null(parameters$useRdap)) {
     useRdap <- FALSE
   } else {
@@ -1812,35 +1813,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   if(useRdap) {
     
-    #   fileNameTable <- validateInputFiles(folderToParse)
-    #   
-    #   # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
-    #   
-    #   resultList <- apply(fileNameTable,1,combineFiles)
-    #   resultTable <- as.data.table(do.call("rbind",resultList))
-    #   barcodeList <- levels(resultTable$barcode)
-    #   
-    #   wellTable <- createWellTable(barcodeList, testMode)
-    #   
-    #   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
-    
-    ## TODO: Test Structure
-    #       require(rjson)
-    #       request <- fromJSON('{\"fileToParse\":\"~/Desktop/1_FLIPR_raw_data/\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"unknown\\\",\\\"normalizationRule\\\":\\\"\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"sd\\\",\\\"useRdap\\\":\\\"true\\\",\\\"rdapTestMode\\\":\\\"true\\\"}\",\"primaryAnalysisExperimentId\":\"1034\",\"testMode\":\"true\"}')
-    #       request <- fromJSON('{\"fileToParse\":\"Archive.zip\",\"reportFile\":\"\",\"dryRunMode\":\"true\",\"user\":\"bob\",\"inputParameters\":\"{\\\"positiveControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000006-1\\\",\\\"concentration\\\":2,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"negativeControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000001-1\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"agonistControl\\\":{\\\"batchCode\\\":\\\"CMPD-0000002-1\\\",\\\"concentration\\\":20,\\\"concentrationUnits\\\":\\\"uM\\\"},\\\"vehicleControl\\\":{\\\"batchCode\\\":\\\"CMPD-00000001-01\\\",\\\"concentration\\\":null,\\\"concentrationUnits\\\":null},\\\"transformationRule\\\":\\\"unknown\\\",\\\"normalizationRule\\\":\\\"none\\\",\\\"hitEfficacyThreshold\\\":42,\\\"hitSDThreshold\\\":5,\\\"thresholdType\\\":\\\"\\\",\\\"useRdap\\\":\\\"true\\\",\\\"rdapTestMode\\\":\\\"true\\\"}\",\"primaryAnalysisExperimentId\":\"186149\",\"testMode\":\"false\"}')
-    #       parameters <- fromJSON(request$inputParameters)
-    #     
-    #       folderToParse <- request$fileToParse
-    #       rdapTestMode <- TRUE
-    ## End Test Structure
+    # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
+
     require(rdap)
     rdapList <- catchExecuteDap(request=list(filePath=file.path(getwd(), folderToParse), testMode=rdapTestMode))
-    
-    ## TODO: Test Structure rdap FIXABLE
-    #          currentWD <- getwd()
-    #          setwd(file.path(currentWD, folderToParse))
-    ## End Test Structure
-    
+    # TODO: GUI will ask more things. These need to be passed through:
+    #   (InstrumentType, list(readOrder[1], readName[luminescence], matchReadName[t/f]))
+        
     resultTable <- as.data.table(unique(read.table(file.path(dirname(folderToParse), "output_well_data.srf"),
                                                    header=TRUE, 
                                                    sep="\t", 
@@ -1858,12 +1837,30 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     ## TODO: Test Sructure
       resultTable$hasAgonist <- FALSE
       resultTable$concentrationUnit <- "uM"
+      # remove DNS batchCodes to make this work in localhost
+      rdapBatchCodes <- unique(resultTable$batchCode)
+      rdapBatchNames <- unique(resultTable$batchName)
+      fakeRdapBatchCodes <- list()
+      fakeRdapBatchNames <- list()
+      i <- 1
+      for (i in 1:max(length(rdapBatchCodes), length(rdapBatchNames), na.rm=TRUE)) {
+        fakeRdapBatchNames[i] <- paste0("CMPD-", sprintf("%07d", i))
+        fakeRdapBatchCodes[i] <- paste0(fakeRdapBatchNames[i], "-01A")
+      }
+      
+      i <- 1
+      if(length(rdapBatchCodes) > length(rdapBatchNames)){
+        stop("Error with fakeRdap test structure")
+      }
+      for( i in 1:length(rdapBatchCodes)) {
+        if(rdapBatchCodes[i] != "NA::NA") {
+          resultTable$batchCode <- gsub(rdapBatchCodes[i], fakeRdapBatchCodes[[i]], resultTable$batchCode)
+        }
+        if(rdapBatchNames[i] != "") {
+          resultTable$batchName <- gsub(rdapBatchNames[i], fakeRdapBatchNames[[i]], resultTable$batchName)
+        }
+      }
     #       resultTable$fileName <- folderToParse
-    #     
-    #       
-    #     
-    # #       parameters <- fromJSON("{\"positiveControl\":{\"batchCode\":\"CMPD-0000006-1\",\"concentration\":2,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-0000001-1\",\"concentration\":null,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-0000002-1\",\"concentration\":20,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"transformationRule\":\"unknown\",\"normalizationRule\":\"plate order\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\"}")
-    #     
     #       # normalization
     normalization <- ""
     
@@ -1938,8 +1935,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else if (length(which(resultTable$wellType == "test" & is.na(resultTable$flag))) == 1) {
     stopUser("Only one of the test wells is unflagged, so there is not enough data to analyze.")
   }
-  
-  
+
   # normalization
   
   if (normalization=="plate order") {
@@ -2322,9 +2318,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       # transformed and normalized should be included if they are not null
       # resultKinds should include activityColumns, numericValue, data, results
-      resultTypes <- data.frame(valueKind=c("barcode", "well name", "well type", "transformed efficacy"), valueType=c("codeValue", "stringValue", "stringValue", "numericValue"), 
+      resultTypes <- data.frame(valueKind=c("barcode", "well name", "well type", "transformed efficacy"), 
+                                valueType=c("codeValue", "stringValue", "stringValue", "numericValue"), 
                                 columnName=c("barcode", "well", "wellType", "transformed"), 
-                                stateType=c("metadata","metadata","metadata","data"), stateKind=c("plate information", "plate information", "plate information", "results"), 
+                                stateType=c("metadata","metadata","metadata", "data"), 
+                                stateKind=c("plate information", "plate information", "plate information", "results"), 
                                 stringsAsFactors=FALSE) 
       
       analysisGroupData <- meltStuff(resultTable, resultTypes)
@@ -2345,8 +2343,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       analysisGroupData$experimentID <- experimentId
       lsTransaction <- uploadData(analysisGroupData=analysisGroupData, recordedBy=user, lsTransaction=lsTransaction)
-      
-      analysisGroupData$experimentID <- experiment$id
+
       analysisGroupData$experimentVersion <- experiment$version
       
     }
@@ -2393,6 +2390,40 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   summaryInfo$experiment <- experiment
   
   return(summaryInfo)
+}
+
+meltConcentrations <- function(entityData, entityKind = "treatmentGroup") {
+  parentEntityKind <- parentAcasEntity(entityKind, "camel")
+  parentEntityID <- paste0(parentEntityKind, "ID")
+  
+  createConcentrationRows <- function(entityData) {
+    if(any(is.na(entityData$concentration))) {
+      return(data.frame())
+    } else {
+      output <- data.frame(batchCode = entityData$batchCode[1], 
+                           valueKind = "tested concentration", 
+                           valueType = "numericValue",
+                           numericValue = entityData$concentration[1],
+                           valueUnit = entityData$concentrationUnit[1],
+                           stateID = entityData$stateID[1],
+                           stateGroupIndex = entityData$stateGroupIndex[1],
+                           stateType = entityData$stateType[1],
+                           stateKind = entityData$stateKind[1],
+                           publicData = entityData$publicData[1],
+                           resultTypeAndUnit = paste("INTERNAL---tested concentration", 
+                                                     entityData$concentration[1], 
+                                                     entityData$concentrationUnit[1], 
+                                                     entityData$time[1], 
+                                                     entityData$timeUnit[1]),
+                           stringsAsFactors = FALSE)
+      if(!is.null(entityData[[parentEntityID]]) && !is.na(entityData[[parentEntityID]])) {
+        output[[parentEntityID]] <- entityData[[parentEntityID]][1]
+      }
+      return(output)
+    }
+  }
+  output <- ddply(.data=entityData, .variables = c("stateID"), .fun = createConcentrationRows)
+  return(output)
 }
 
 getExperimentById <- function(experimentId, include="", errorEnv=NULL, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
@@ -2462,6 +2493,7 @@ saveFullEntityData <- function(entityData, entityKind) {
   }
   
   entities <- dlply(.data=entityData, .variables = paste0(entityKind, "ID"), createEntityFromDF, currentEntity=entityKind)
+
   tempIds <- as.numeric(names(entities))
   
   names(entities) <- NULL
@@ -2767,7 +2799,7 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   
   analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
-  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, 0, optionalColumns = "analysisGroupID"))
+  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices=1, optionalColumns = "analysisGroupID"))
   
   analysisGroupData$lsTransaction <- lsTransaction
   analysisGroupData$recordedBy <- recordedBy
