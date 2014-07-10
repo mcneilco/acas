@@ -30,8 +30,8 @@
 #
 #       file.copy("/Users/smeyer/Google Drive/McNeilco/DemoACAS/5_Dose_Response.xls", to="privateUploads/", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="5_Dose_Response.xls", dryRunMode = "true", user="smeyer"))
-#       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/explicit_ACAS_format.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
-#       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/explicit_ACAS_format.xlsx", dryRunMode = "true", user="smeyer"))
+#       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/explicit_ACAS_format.xlsx", to="privateUploads/", overwrite = TRUE)
+#       parseGenericData(c(fileToParse="explicit_ACAS_format.xlsx", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/DR_SaveToExistingExperiment.xlsx", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/DR_SaveToExistingExperiment.xlsx", dryRunMode = "true", user="smeyer"))
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/Mia-Paca.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
