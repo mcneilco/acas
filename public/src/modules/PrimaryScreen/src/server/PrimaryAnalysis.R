@@ -998,12 +998,12 @@ validateBarcode <- function(barcode, filePath) {
   fileNameBarcode <- gsub(".+_([^/]+)_[^/]+$", "\\1", filePath)
   if (fileNameBarcode == filePath) {
     fileName <- gsub(".+/([^/]+)+$", "\\1", filePath)
-    warningUser(paste0("No barcode could be found between underscores in ", fileName, ", so the barcode inside the file will be used"))
+    warnUser(paste0("No barcode could be found between underscores in ", fileName, ", so the barcode inside the file will be used"))
     return (barcode)
   }
   if (fileNameBarcode != barcode) {
     fileName <- gsub(".+/([^/]+)+$", "\\1", filePath)
-    warningUser(paste0("The barcode '", barcode, "' inside the file ", fileName, 
+    warnUser(paste0("The barcode '", barcode, "' inside the file ", fileName, 
                    " was replaced by the barcode '", fileNameBarcode, "'"))
   }
   return(fileNameBarcode)
@@ -1086,7 +1086,7 @@ validateWellFlagData <- function(flagData, resultTable) {
   setkey(flags, barcode, well)
   extraTests <- flags[!results]
   if (nrow(extraTests) > 0) {
-    warningUser(paste0("Some of the wells listed in the flag file were not found in the experiment ",
+    warnUser(paste0("Some of the wells listed in the flag file were not found in the experiment ",
             "data, and will be ignored. Please remove or modify ", 
             paste(extraTests[[1]], extraTests[[2]], collapse = ", "), "."))
   }
@@ -1179,7 +1179,7 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
       if(any(validatedFlagData$'userHit' != validatedFlagData$'hit', na.rm = TRUE)) {
         disagreeingIndices <- which(validatedFlagData$'userHit' != validatedFlagData$'hit')
         disagreeingWells <- unique(validatedFlagData$"well"[disagreeingIndices])
-        warningUser(paste0("During this step of data analysis, you can only flag individual wells. ",
+        warnUser(paste0("During this step of data analysis, you can only flag individual wells. ",
                        "However, the 'User Defined Hit' column no longer agrees with the 'Hit' column for ",
                        "at least one trial in each of the following wells: ", 
                        paste0(disagreeingWells, collapse = ", "), ". The data in the 'Hit' column will ",
@@ -1200,7 +1200,7 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
       if(any(previousFlagData$"flag" != validatedFlagData$"flag")) {
         disagreeingIndices <- which(previousFlagData$"flag" != validatedFlagData$"flag")
         disagreeingWells <- unique(validatedFlagData$"well"[disagreeingIndices])
-        warningUser(paste0("During this step of data analysis, you cannot flag wells. However, it appears that ",
+        warnUser(paste0("During this step of data analysis, you cannot flag wells. However, it appears that ",
                        "the following wells have at least one changed flag: ", 
                        paste0(disagreeingWells, collapse = ", "), 
                        ". The new flags will be ignored. If you wish to flag more wells, please re-upload ",
@@ -1212,7 +1212,7 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
       if(any(!is.na(validatedFlagData$"flag"))) {
         disagreeingIndices <- which(!is.na(validatedFlagData$"flag"))
         disagreeingWells <- unique(validatedFlagData$"well"[disagreeingIndices])
-        warningUser(paste0("During this step of data analysis, you cannot flag wells. However, it appears that ",
+        warnUser(paste0("During this step of data analysis, you cannot flag wells. However, it appears that ",
                        "the following wells have at least one changed flag: ", 
                        paste0(disagreeingWells, collapse = ", "), 
                        ". The new flags will be ignored. If you wish to flag more wells, please re-upload ",
@@ -1966,13 +1966,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   #   #TODO: remove once real data is in place
   #   if (any(is.na(resultTable$batchName))) {
-  #     warningUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
+  #     warnUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
   #     resultTable <- resultTable[!is.na(resultTable$batchName), ]
   #   }
   
   #TODO: remove once real data is in place
   if (any(is.na(resultTable$batchName))) {
-    warningUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
+    warnUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
     resultTable <- resultTable[!is.na(resultTable$batchName), ]
   }
 
