@@ -2280,9 +2280,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                threshold = efficacyThreshold, experiment)
       if (parameters$aggregateReplicates != "no") {
         source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
-        # They should be factors for saveComparisonTraces
-        resultTable$barcode <- as.factor(resultTable$barcode)
-        resultTable$batchName <- as.factor(resultTable$batchName)
         resultTable <- saveComparisonTraces(resultTable, paste0("experiments/", experiment$codeName, "/images"))
     }
     
