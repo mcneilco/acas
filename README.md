@@ -308,8 +308,7 @@ Finally, add the change and continue the rebase
 You need to know these things before creating a patch file
 1. The commit you are patching (this should be a tag in the repository (e.g. 1.1.0)
 2. The commit you are applying (this should also be a tagged release in the repository (e.g. 1.1.1)
-<br/>
-<br/>
+
 
 ###Steps
 1. From source tree > Right click the commit you are patching (e.g. 1.1.0)
@@ -320,13 +319,33 @@ You need to know these things before creating a patch file
 6. Upload the patch.diff file to ACAS_HOME on the instance you are patching
 7. Apply the patch in dry-run mode
 
-     patch --dry-run -p1 < 1.1.0-1.1.1-patch.diff
+
+```
+#!sh
+
+    patch --dry-run -p1 < 1.1.0-1.1.1-patch.diff
+
+```
+    
 
 8. It will print the changes it plans to make, if this looks ok then proceed
 9. Apply the patch
 
+
+```
+#!sh
+
     patch -p1 < 1.1.0-1.1.1-patch.diff
+
+```
+    
+
 
 ###Reverting a patch file
 
+
+```
+#!sh
+
     patch -p1 -R < 1.1.0-1.1.1-patch.diff
+```
