@@ -374,6 +374,17 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_projectCode option').length).toBeGreaterThan 0
 				it "should default to unassigned", ->
 					expect(@ebc.$('.bv_projectCode').val()).toEqual "unassigned"
+			describe "it should show a picklist for experimetn statuses", ->
+				beforeEach ->
+					waitsFor ->
+						@ebc.$('.bv_status option').length > 0
+					,
+						1000
+					runs ->
+				it "should show status options after loading them from server", ->
+					expect(@ebc.$('.bv_status option').length).toBeGreaterThan 0
+				it "should default to Created", ->
+					expect(@ebc.$('.bv_status').val()).toEqual "Created"
 			describe "populated fields", ->
 				it "should show the protocol code", ->
 					waitsFor ->
@@ -390,9 +401,9 @@ describe "Experiment module testing", ->
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
 					expect(@ebc.model.get 'recordedBy').toEqual ""
-					@ebc.$('.bv_recordedBy').val("jmcneil")
+					@ebc.$('.bv_recordedBy').val("nxm7557")
 					@ebc.$('.bv_recordedBy').change()
-					expect(@ebc.model.get 'recordedBy').toEqual "jmcneil"
+					expect(@ebc.model.get 'recordedBy').toEqual "nxm7557"
 				it "should update model when shortDescription is changed", ->
 					@ebc.$('.bv_shortDescription').val(" New short description   ")
 					@ebc.$('.bv_shortDescription').change()
@@ -450,9 +461,13 @@ describe "Experiment module testing", ->
 					@ebc.tagListController.handleTagsChanged()
 					expect(@ebc.model.get('lsTags').at(0).get('tagText')).toEqual "lucy"
 				it "should update model when experiment status changed", ->
-					@ebc.$('.bv_status').val('Complete')
-					@ebc.$('.bv_status').change()
-					expect(@ebc.model.getStatus().get('stringValue')).toEqual 'Complete'
+					waitsFor ->
+						@ebc.$('.bv_status option').length > 0
+					, 1000
+					runs ->
+						@ebc.$('.bv_status').val('Complete')
+						@ebc.$('.bv_status').change()
+						expect(@ebc.model.getStatus().get('stringValue')).toEqual 'Complete'
 		describe "When created from a saved experiment", ->
 			beforeEach ->
 				@exp2 = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -493,7 +508,7 @@ describe "Experiment module testing", ->
 				it "should fill the date field in the same format is the date picker", ->
 					expect(@ebc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the user field", ->
-					expect(@ebc.$('.bv_recordedBy').val()).toEqual "smeyer"
+					expect(@ebc.$('.bv_recordedBy').val()).toEqual "nxm7557"
 				it "should fill the code field", ->
 					expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
 				it "should fill the notebook field", ->
@@ -501,15 +516,23 @@ describe "Experiment module testing", ->
 				it "should show the tags", ->
 					expect(@ebc.$('.bv_tags').tagsinput('items')[0]).toEqual "stuff"
 				it "show the status", ->
-					expect(@ebc.$('.bv_status').val()).toEqual "Started"
+					waitsFor ->
+						@ebc.$('.bv_status option').length > 0
+					, 1000
+					runs ->
+						expect(@ebc.$('.bv_status').val()).toEqual "Started"
 				it "should show the status select enabled", ->
 					expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
 			describe "Experiment status behavior", ->
 				it "should disable all fields if experiment is Finalized", ->
-					@ebc.$('.bv_status').val('Finalized')
-					@ebc.$('.bv_status').change()
-					expect(@ebc.$('.bv_notebook').attr('disabled')).toEqual 'disabled'
-					expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
+					waitsFor ->
+						@ebc.$('.bv_status option').length > 0
+					, 1000
+					runs ->
+						@ebc.$('.bv_status').val('Finalized')
+						@ebc.$('.bv_status').change()
+						expect(@ebc.$('.bv_notebook').attr('disabled')).toEqual 'disabled'
+						expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
 				it "should enable all fields if experiment is Started", ->
 					@ebc.$('.bv_status').val('Finalized')
 					@ebc.$('.bv_status').change()
@@ -521,9 +544,13 @@ describe "Experiment module testing", ->
 					@ebc.$('.bv_status').change()
 					expect(@ebc.$('.bv_lock')).toBeHidden()
 				it "should show lock icon if experiment is finalized", ->
-					@ebc.$('.bv_status').val('Finalized')
-					@ebc.$('.bv_status').change()
-					expect(@ebc.$('.bv_lock')).toBeVisible()
+					waitsFor ->
+						@ebc.$('.bv_status option').length > 0
+					, 1000
+					runs ->
+						@ebc.$('.bv_status').val('Finalized')
+						@ebc.$('.bv_status').change()
+						expect(@ebc.$('.bv_lock')).toBeVisible()
 
 		describe "When created from a new experiment", ->
 			beforeEach ->
@@ -558,8 +585,12 @@ describe "Experiment module testing", ->
 				it "should show the save button disabled", ->
 					expect(@ebc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 				it "should show status select value as Created", ->
-					console.log @ebc.model.getStatus()
-					expect(@ebc.$('.bv_status').val()).toEqual 'Created'
+					waitsFor ->
+						@ebc.$('.bv_protocolCode option').length > 0
+					, 1000
+					runs ->
+						console.log @ebc.model.getStatus()
+						expect(@ebc.$('.bv_status').val()).toEqual 'Created'
 				it "should show the status select disabled", ->
 					expect(@ebc.$('.bv_status').attr('disabled')).toEqual 'disabled'
 			describe "when user picks protocol ", ->
@@ -591,7 +622,7 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_protocolCode option').length > 0 && @ebc.$('.bv_projectCode option').length > 0
 					, 1000
 					runs ->
-						@ebc.$('.bv_recordedBy').val("jmcneil")
+						@ebc.$('.bv_recordedBy').val("nxm7557")
 						@ebc.$('.bv_recordedBy').change()
 						@ebc.$('.bv_shortDescription').val(" New short description   ")
 						@ebc.$('.bv_shortDescription').change()
@@ -614,6 +645,7 @@ describe "Experiment module testing", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@ebc.isValid()).toBeTruthy()
+							console.log @ebc.model.validationError
 					it "save button should be enabled", ->
 						runs ->
 							expect(@ebc.$('.bv_save').attr('disabled')).toBeUndefined()

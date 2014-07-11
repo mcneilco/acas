@@ -241,6 +241,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupProtocolSelect(@options.protocolFilter)
 		@setupProjectSelect()
+		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 
@@ -299,6 +300,14 @@ class window.ExperimentBaseController extends AbstractFormController
 				code: "unassigned"
 				name: "Select Project"
 			selectedCode: @model.getProjectCode().get('codeValue')
+
+	setupStatusSelect: ->
+		@statusList = new PickListList()
+		@statusList.url = "/api/experimentStatusCodes"
+		@statusListController = new PickListSelectController
+			el: @$('.bv_status')
+			collection: @statusList
+			selectedCode: @model.getStatus().get 'stringValue'
 
 	setupTagList: ->
 		@$('.bv_tags').val ""
@@ -388,7 +397,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@render()
 
 	handleStatusChanged: =>
-		@model.getStatus().set stringValue: @getTrimmedInput('.bv_status')
+		@model.getStatus().set stringValue: @$('.bv_status').val()
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
 

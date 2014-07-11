@@ -430,6 +430,7 @@
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupProtocolSelect(this.options.protocolFilter);
       this.setupProjectSelect();
+      this.setupStatusSelect();
       this.setupTagList();
       return this.model.getStatus().on('change', this.updateEditable);
     };
@@ -500,6 +501,16 @@
           name: "Select Project"
         }),
         selectedCode: this.model.getProjectCode().get('codeValue')
+      });
+    };
+
+    ExperimentBaseController.prototype.setupStatusSelect = function() {
+      this.statusList = new PickListList();
+      this.statusList.url = "/api/experimentStatusCodes";
+      return this.statusListController = new PickListSelectController({
+        el: this.$('.bv_status'),
+        collection: this.statusList,
+        selectedCode: this.model.getStatus().get('stringValue')
       });
     };
 
@@ -644,7 +655,7 @@
 
     ExperimentBaseController.prototype.handleStatusChanged = function() {
       this.model.getStatus().set({
-        stringValue: this.getTrimmedInput('.bv_status')
+        stringValue: this.$('.bv_status').val()
       });
       return this.updateEditable();
     };

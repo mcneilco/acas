@@ -1579,12 +1579,12 @@
         shortDescription: "protocol created by generic data parser",
         version: 1
       },
-      recordedBy: "smeyer",
+      recordedBy: "nxm7557",
       recordedDate: 1375889487000,
       shortDescription: "experiment created by generic data parser",
       version: 1
     };
-    return exports.savedExperimentWithAnalysisGroups = {
+    exports.savedExperimentWithAnalysisGroups = {
       codeName: "EXPT-00000222",
       lsLabels: [
         {
@@ -2268,6 +2268,29 @@
         }
       ]
     };
+    return exports.experimentStatusCodes = [
+      {
+        code: "Created",
+        name: "Created",
+        ignored: false
+      }, {
+        code: "Started",
+        name: "Started",
+        ignored: false
+      }, {
+        code: "Complete",
+        name: "Complete",
+        ignored: false
+      }, {
+        code: "Finalized",
+        name: "Finalized",
+        ignored: false
+      }, {
+        code: "Rejected",
+        name: "Rejected",
+        ignored: false
+      }
+    ];
   })((typeof process === "undefined" || !process.versions ? window.experimentServiceTestJSON = window.experimentServiceTestJSON || {} : exports));
 
 }).call(this);

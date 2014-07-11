@@ -1,10 +1,20 @@
 (function() {
+  exports.setupAPIRoutes = function(app) {
+    app.get('/api/experiments/codename/:code', exports.experimentByCodename);
+    app.get('/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename);
+    app.get('/api/experiments/:id', exports.experimentById);
+    app.post('/api/experiments', exports.postExperiment);
+    app.put('/api/experiments/:id', exports.putExperiment);
+    return app.get('/api/experimentStatusCodes', exports.getExperimentStatusCodes);
+  };
+
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename);
     app.get('/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById);
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
-    return app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
+    app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
+    return app.get('/api/experimentStatusCodes', loginRoutes.ensureAuthenticated, exports.getExperimentStatusCodes);
   };
 
   exports.experimentByCodename = function(request, response) {
@@ -109,6 +119,17 @@
           }
         };
       })(this));
+    }
+  };
+
+  exports.getExperimentStatusCodes = function(req, resp) {
+    var experimentServiceTestJSON;
+    if (global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.json(experimentServiceTestJSON.experimentStatusCodes);
+    } else {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.json(experimentServiceTestJSON.experimentStatusCodes);
     }
   };
 
