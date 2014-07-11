@@ -209,6 +209,10 @@ module.exports = (grunt) ->
 				options:
 					cwd: 'conf'
 				src: 'conf/PrepareConfigFiles.js'
+			prepare_test_JSON:
+				options:
+					cwd: 'conf'
+				src: 'conf/PrepareTestJSON.js'
 		replace:
 			clientHost:
 				src: ["conf/config.properties"]
@@ -323,7 +327,11 @@ module.exports = (grunt) ->
 					"public/src/modules/*/src/server/*.R"
 				]
 				tasks: "execute:prepare_config_files"
-
+			prepare_test_JSON:
+				files: [
+					"public/javascripts/spec/testFixtures/*.js"
+				]
+				tasks: "execute:prepare_test_JSON"
 
 
 
