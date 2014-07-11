@@ -12,6 +12,8 @@
     "grunt-contrib-coffee": "*",
     "grunt-contrib-watch": "*",
     "grunt-contrib-copy": "*",
+	"grunt-text-replace": "*",
+	"grunt-execute": "*",
     "request": "2.12.0",
     "passport": ">= 0.0.0",
     "passport-local": ">= 0.0.0",
@@ -25,6 +27,7 @@
     "glob": "*",
     "ncp": "*",
     "forever-monitor": "*",
-    "assert": "~1.1.1"
+	"shelljs": "*",
+	"assert": "~1.1.1"
   }
 }
