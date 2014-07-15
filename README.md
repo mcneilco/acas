@@ -302,22 +302,39 @@ Finally, add the change and continue the rebase
 [2]: http://hashify.me/
 
 
-## Creating a patch file
+## Creating and Applying a patch file
 
-###Prerequisites
-You need to know these things before creating a patch file
-1. The commit you are patching (this should be a tag in the repository (e.g. 1.1.0)
-2. The commit you are applying (this should also be a tagged release in the repository (e.g. 1.1.1)
+### Prerequesites
 
+You need to know these things before creating a patch file: 
 
-###Steps
+1. The commit you are patching (e.g. 505101c, this should be a tag in the repository (e.g. 1.1.0))
+2. The commit you are applying (e.g. 343974b, this should also be a tagged release in the repository (e.g. 1.1.1))
+
+###Creating a patch file: Single Commit
+
 1. From source tree > Right click the commit you are patching (e.g. 1.1.0)
 2. Choose "Create Patch"
 3. Choose "Patch From Commits" (tab on top)
 4. Scroll up to the commit you are applying and select it (e.g. 1.1.1)
 5. Name the patch file (e.g. 1.1.0-1.1.1-patch.diff)
-6. Upload the patch.diff file to ACAS_HOME on the instance you are patching
-7. Apply the patch in dry-run mode
+
+###Creating a patch file: Multiple Commits
+
+1. In Terminal, go to ACAS_HOME
+
+```
+#!sh
+
+git diff 505101c..343974b > 1.1.0-1.1.1-patch.diff
+
+```
+
+
+###Applying a patch file
+
+1. Upload the patch.diff file to ACAS_HOME on the instance you are patching
+2. Apply the patch in dry-run mode
 
 
 ```
@@ -328,8 +345,8 @@ You need to know these things before creating a patch file
 ```
     
 
-8. It will print the changes it plans to make, if this looks ok then proceed
-9. Apply the patch
+3. It will print the changes it plans to make, if this looks ok then proceed
+4. Apply the patch
 
 
 ```
@@ -338,7 +355,6 @@ You need to know these things before creating a patch file
     patch -p1 < 1.1.0-1.1.1-patch.diff
 
 ```
-    
 
 
 ###Reverting a patch file
