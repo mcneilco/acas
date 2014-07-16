@@ -190,7 +190,7 @@
         });
       });
       return describe("basic behavior", function() {
-        return it("should listen for gotClick row event and trigger selectedRowUpdated event", function() {
+        it("should listen for gotClick row event and trigger selectedRowUpdated event", function() {
           this.clickTriggered = false;
           this.estc.on('selectedRowUpdated', (function(_this) {
             return function() {
@@ -205,6 +205,31 @@
           }, 300);
           return runs(function() {
             return expect(this.clickTriggered).toBeTruthy();
+          });
+        });
+        return it("should display a message alerting the user that no matching experiments were found if the search returns no experiments", function() {
+          this.searchReturned = false;
+          this.searchController = new ExperimentSimpleSearchController({
+            model: new ExperimentSearch(),
+            el: this.fixture
+          });
+          this.searchController.on("searchReturned", (function(_this) {
+            return function() {
+              return _this.searchReturned = true;
+            };
+          })(this));
+          $(".bv_experimentSearchTerm").val("no-match");
+          runs((function(_this) {
+            return function() {
+              return _this.searchController.doSearch("no-match");
+            };
+          })(this));
+          waitsFor(function() {
+            return this.searchReturned;
+          }, 300);
+          return runs(function() {
+            expect($(".bv_matchingExperimentsHeader").hasClass("hide")).toBeFalsy();
+            return expect($(".bv_matchingExperimentsHeader").html()).toContain("No Matching Experiments Found");
           });
         });
       });

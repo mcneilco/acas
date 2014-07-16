@@ -6,6 +6,7 @@ window.ModuleMenusConfiguration =
 		isHeader: false
 		menuName: "Load Experiment"
 		mainControllerClassName: "GenericDataParserController"
+		autoLaunchName:"generic_data_parser"
 	,
 		isHeader: false
 		menuName: "Load Experiment"

@@ -145,6 +145,25 @@ describe "Experiment Browser module testing", ->
 				runs ->
 					expect(@clickTriggered).toBeTruthy()
 
+			it "should display a message alerting the user that no matching experiments were found if the search returns no experiments", ->
+				@searchReturned = false
+				@searchController = new ExperimentSimpleSearchController
+					model: new ExperimentSearch()
+					el: @fixture
+				@searchController.on "searchReturned", =>
+					@searchReturned = true
+				$(".bv_experimentSearchTerm").val "no-match"
+				runs =>
+					@searchController.doSearch("no-match")
+				#$(".bv_doSearch").click()
+				waitsFor ->
+					@searchReturned
+				, 300
+				runs ->
+					expect($(".bv_matchingExperimentsHeader").hasClass("hide")).toBeFalsy()
+					expect($(".bv_matchingExperimentsHeader").html()).toContain("No Matching Experiments Found")
+
+
 	describe "ExperimentBrowserController tests", ->
 		beforeEach ->
 			@ebc = new ExperimentBrowserController

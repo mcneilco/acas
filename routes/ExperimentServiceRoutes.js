@@ -6,22 +6,25 @@
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
     app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
     app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
-    return app.get('/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect);
+    app.get('/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect);
+    return app["delete"]('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment);
   };
 
   exports.experimentByCodename = function(request, response) {
-    var baseurl, config, experimentServiceTestJSON;
+    var baseurl, config, experimentServiceTestJSON, fullObjectFlag, serverUtilityFunctions;
     console.log(request.params.code);
     console.log(request.query.testMode);
-    if (request.query.testMode || global.specRunnerTestmode) {
+    if ((request.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return response.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
       config = require('../conf/compiled/conf.js');
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + request.params.code;
+      fullObjectFlag = "with=fullobject";
       if (request.query.fullObject) {
         baseurl += "?" + fullObjectFlag;
-        return serverUtilityFunctions.getSingleObjectFromACASServer(baseurl, response);
+        return serverUtilityFunctions.getFromACASServer(baseurl, response);
       } else {
         return serverUtilityFunctions.getFromACASServer(baseurl, response);
       }
@@ -119,10 +122,15 @@
   };
 
   exports.genericExperimentSearch = function(req, res) {
-    var experimentServiceTestJSON, json;
+    var emptyResponse, experimentServiceTestJSON, json;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return res.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
+      if (req.params.searchTerm === "no-match") {
+        emptyResponse = [];
+        return res.end(JSON.stringify(emptyResponse));
+      } else {
+        return res.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer]));
+      }
     } else {
       json = {
         message: "genericExperimentSearch not implemented yet"
@@ -144,6 +152,33 @@
       };
       return res.end(JSON.stringify(json));
     }
+  };
+
+  exports.deleteExperiment = function(req, res) {
+    var baseurl, config, experimentId, request;
+    config = require('../conf/compiled/conf.js');
+    experimentId = req.params.id;
+    baseurl = config.all.client.service.persistence.fullpath + "experiments/" + experimentId;
+    console.log("baseurl");
+    console.log(baseurl);
+    request = require('request');
+    return request({
+      method: 'DELETE',
+      url: baseurl,
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        console.log(response.statusCode);
+        if (!error && response.statusCode === 200) {
+          console.log(JSON.stringify(json));
+          return res.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to save new experiment');
+          console.log(error);
+          return console.log(response);
+        }
+      };
+    })(this));
   };
 
 }).call(this);
