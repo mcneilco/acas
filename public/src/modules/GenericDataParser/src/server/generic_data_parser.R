@@ -2456,13 +2456,13 @@ createExperimentFolder <- function(experiment, dryRun) {
   #         we're in dryRun mode, we create this folder in the privateTempFiles instead
   # Returns: The location of the experiment folder, relative to the working directory
   
-  experimentCodeName <- experiment$codeName
-  
   if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
     if (dryRun) {
-      fullFolderLocation <- file.path("privateTempFiles", experimentCodeName)
+      # We don't necessarily have access to the code name
+      fullFolderLocation <- file.path("privateTempFiles", "uploadedExperimentFiles")
       dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
     } else {
+      experimentCodeName <- experiment$codeName
       fullFolderLocation <- racas::getUploadedFilePath(file.path("experiments", experimentCodeName))
       dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
     }
