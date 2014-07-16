@@ -94,7 +94,7 @@ getRFilesWithRoute = ->
 getRFileHandlerString = (rFilesWithRoute, config, acasHome)->
 	rapacheHandlerText = '<Location /'+config.all.client.service.rapache.path+'* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */>\n\tSetHandler r-handler\n\tRFileHandler '+acasHome+'/* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *\n</Location>'
 	routes = []
-	routes.push('<Location /'+config.all.client.service.rapache.path+'>\n\tSetHandler r-handler\n\tREval "hello()"\n</Location>')
+	routes.push('<Location /'+config.all.client.service.rapache.path+'/hello>\n\tSetHandler r-handler\n\tREval "hello()"\n</Location>')
 	routes.push('<Location /'+config.all.client.service.rapache.path+'/RApacheInfo>\n\tSetHandler r-info\n</Location>')
 	for rFile in rFilesWithRoute
 		route = rapacheHandlerText.replace('* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *',rFile.route)
