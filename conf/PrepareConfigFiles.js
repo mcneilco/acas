@@ -207,7 +207,7 @@
     }).output.replace('\n', '');
     if (config.all.server.run != null) {
       if (config.all.server.run.user != null) {
-        runUser = server.run.user;
+        runUser = config.all.server.run.user;
       }
     }
     apacheVersion = _.findWhere(apacheCompileOptions, {

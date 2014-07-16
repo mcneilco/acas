@@ -147,7 +147,7 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	runUser = shell.exec('whoami',{silent:true}).output.replace('\n','')
 	if config.all.server.run?
 		if config.all.server.run.user?
-			runUser = server.run.user
+			runUser = config.all.server.run.user
 	apacheVersion = _.findWhere(apacheCompileOptions, {option: 'ApacheVersion'}).value
 	switch apacheVersion
 		when 'Ubuntu'
