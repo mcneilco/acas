@@ -3269,7 +3269,6 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
         blobValue = if(!is.null(blobValue) && !is.na(blobValue)) {blobValue} else {NULL},
         codeValue = if(is.character(codeValue) && !is.na(codeValue)) {codeValue} else {NULL},
         fileValue = if(is.character(fileValue) && !is.na(fileValue)) {fileValue} else {NULL},
-        inlineFileValue = if(is.character(inlineFileValue) && !is.na(inlineFileValue)) {inlineFileValue} else {NULL},
         urlValue = if(is.character(urlValue) && !is.na(urlValue)) {urlValue} else {NULL},
         valueOperator = if(is.character(valueOperator) && !is.na(valueOperator)) {valueOperator} else {NULL},
         operatorType = if(is.character(operatorType) && !is.na(operatorType)) {operatorType} else {NULL},
