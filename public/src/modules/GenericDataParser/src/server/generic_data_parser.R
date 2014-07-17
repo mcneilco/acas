@@ -1250,7 +1250,8 @@ addFileValue <- function(imageLocation, calculatedResults) {
   fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
                             NA_character_,
                             file.path(imageLocation, calculatedResults$inlineFileValue))
-  calculatedResults$fileValue <- fileValueVector
+  fileValuesToAdd <- fileValueVector[!is.na(fileValueVector)]
+  calculatedResults$fileValue[!is.na(fileValueVector)] <- fileValuesToAdd
   
   return(calculatedResults)
 }
