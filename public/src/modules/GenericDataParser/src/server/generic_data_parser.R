@@ -574,7 +574,7 @@ validateUploadedImages <- function(imageLocation, listedImageFiles, experimentFo
   # Checks that there is a one-to-one correspondence between files the user has uploaded
   # and file names the user has entered in their Excel sheet. Moves the zip file into the
   # experiment folder if there are no errors
-  # Input: imageLocation, an absolute path to where the images were unzipped
+  # Input: imageLocation, a path, from the working directory, to where the images were unzipped
   #        listedImageFiles, the image files that the user listed in the spreadsheet
   #        experimentFolderLocation, a relative path from privateUploads
   # Returns: Errors if invalid, or "TRUE" if valid. Could return something different in the future
