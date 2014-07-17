@@ -10,18 +10,17 @@ readJSON <- function(filePath) {
   return(paste(scan(file = filePath, what = character(), quiet = TRUE, quote = ""), collapse = " "))
 }
 
-parseJavaScript <- function(filePath, objectName) {
-  # Takes a file containing *only* a JSON object and turns it into a list
+parseJavaScript <- function(filePath) {
+  # Takes a file containing a JSON object, which may contain a sequence
+  # of JSON objects (see examples under javascripts/spec/TestJSON/)
   #
   # Input:   the file path to a JSON file
-  #          the name of the JSON variable
-  # Returns: a one-element list whose name is the JSON object's name,
-  #          and whose contents are the JSON object (as a list)
+  # Returns: a list of the JSON objects found in the file. They can be
+  #          accesses by dereferencing the list using the object's name
+  #          (e.g., jsonList$objectName)
   
   library(rjson)
   jsonObject <- readJSON(filePath)
   jsonList <- fromJSON(jsonObject)
-  namedJsonList <- list(jsonList)
-  names(namedJsonList) <- objectName
-  return(namedJsonList)
+  return(jsonList)
 }
