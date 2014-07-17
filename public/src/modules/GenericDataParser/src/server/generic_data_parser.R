@@ -570,18 +570,17 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   return(NULL)
 }
 
-validateUploadedImages <- function(imageLocation, calculatedResults, experimentFolderLocation) {
+validateUploadedImages <- function(imageLocation, listedImageFiles, experimentFolderLocation) {
   # Checks that there is a one-to-one correspondence between files the user has uploaded
   # and file names the user has entered in their Excel sheet. Moves the zip file into the
   # experiment folder if there are no errors
   # Input: imageLocation, an absolute path to where the images were unzipped
-  #        calculatedResults, a data frame of results and their types/values
+  #        listedImageFiles, the image files that the user listed in the spreadsheet
   #        experimentFolderLocation, a relative path from privateUploads
   # Returns: Errors if invalid, or "TRUE" if valid. Could return something different in the future
   #          If invalid, it removes the experiment's folder and returns the zip file to privateUploads
   
   uploadedImageFiles <- list.files(imageLocation)
-  listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
   
   # Make sure all elements are part of both vectors.
   # We allow the same file to be listed multiple times -- setdiff disregards duplicates (and you can't
@@ -1274,7 +1273,8 @@ addImageFiles <- function(imageFiles, calculatedResults, experiment, dryRun) {
   if (!is.null(imageFiles)) {
     if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
       imageLocation <- unzipUploadedImages(imageFiles = racas::getUploadedFilePath(imageFiles), experimentFolderLocation = experimentFolderLocation)
-      isValid <- validateUploadedImages(imageLocation = imageLocation, calculatedResults = calculatedResults, experimentFolderLocation = experimentFolderLocation)
+      listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
+      isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
       calculatedResults <- addFileValue(imageLocation = imageLocation, calculatedResults = calculatedResults)
       if (dryRun) {
         # We created the experiment folder in order to have a place to unzip the files -- in dryRun mode
