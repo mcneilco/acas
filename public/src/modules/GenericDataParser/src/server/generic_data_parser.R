@@ -1286,7 +1286,7 @@ addImageFiles <- function(imageFiles, calculatedResults, experiment, dryRun) {
         file.rename(from = racas::getUploadedFilePath(imageFiles), to = file.path(experimentFolderLocation, basename(imageFiles)))
       }
     } else {
-      stopUser("Internal Error: Saving image files for DNS has not been implemented")
+      stopUser("Internal Error: Saving image files for this server.service.external.file.type has not been implemented")
     } 
   } else {
     # If no image files were uploaded, we want to make sure they didn't add an Image File column to their data
@@ -2468,7 +2468,7 @@ createExperimentFolder <- function(experiment, dryRun) {
       dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
     }
   } else {
-    stopUser("Internal Error: Saving image files for DNS has not been implemented")
+    stopUser("Internal Error: Saving image files for this server.service.external.file.type has not been implemented")
   }
   
   return(fullFolderLocation)
