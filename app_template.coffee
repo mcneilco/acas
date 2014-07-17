@@ -84,19 +84,9 @@ startApp = ->
 	loginRoutes.setupRoutes(app, passport)
 
 	# index routes
-	indexRoutes = require('./routes/index.js')
+	indexRoutes = require './routes/index.js'
 	indexRoutes.setupRoutes(app, loginRoutes)
 	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
-
-	if config.all.server.datafiles.without.login
-		app.get '/dataFiles/*', (req, resp) ->
-			resp.sendfile(__dirname + '/privateUploads/'+ req.params[0])
-	else
-		app.get '/dataFiles/*', loginRoutes.ensureAuthenticated, (req, resp) ->
-			resp.sendfile(__dirname + '/privateUploads/'+ req.params[0])
-
-	app.get '/tempfiles/*', loginRoutes.ensureAuthenticated, (req, resp) ->
-		resp.sendfile(__dirname + '/privateTempFiles/'+ req.params[0])
 
 	if not config.all.client.use.ssl
 		http.createServer(app).listen(app.get('port'), ->

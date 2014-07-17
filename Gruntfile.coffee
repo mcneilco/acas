@@ -35,6 +35,14 @@ module.exports = (grunt) ->
 					dest: "public/javascripts/spec/testFixtures/"
 					ext: '.js'
 				]
+			compileServiceTests:
+				files: [
+					expand: true
+					flatten: true
+					src: ["public/src/modules/**/spec/serviceTests/*.coffee"]
+					dest: "public/javascripts/spec/test/"
+					ext: '.js'
+				]
 			compileApp:
 				files: [
 					expand: true
@@ -98,6 +106,14 @@ module.exports = (grunt) ->
 					flatten: true
 					src: ["acas_custom/modules/**/spec/testFixtures/*.coffee"]
 					dest: "acas_custom/javascripts/spec/testFixtures/"
+					ext: '.js'
+				]
+			custom_compileServiceTests:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/modules/**/spec/serviceTests/*.coffee"]
+					dest: "acas_custom/javascripts/spec/test/"
 					ext: '.js'
 				]
 			custom_compileApp:
@@ -184,6 +200,31 @@ module.exports = (grunt) ->
 					src: ["**"]
 					dest: "./public/src/modules"
 				]
+		execute:
+			prepare_module_includes:
+				options:
+					cwd: 'conf'
+				src: 'conf/PrepareModuleIncludes.js'
+			prepare_config_files:
+				options:
+					cwd: 'conf'
+				src: 'conf/PrepareConfigFiles.js'
+			prepare_test_JSON:
+				options:
+					cwd: 'conf'
+				src: 'conf/PrepareTestJSON.js'
+		replace:
+			clientHost:
+				src: ["conf/config.properties"]
+				overwrite: true
+				replacements: [
+						from: /\nclient.host=.*/i
+						to: ->
+							hostname = require('os').hostname()
+							newString = 'client.host=' + hostname
+							console.log 'setting ' + newString
+							return '\n' + newString
+					]
 		watch:
 			coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
@@ -194,6 +235,9 @@ module.exports = (grunt) ->
 			compileTestFixtures:
 				files: "public/src/modules/**/spec/testFixtures/*.coffee"
 				tasks: "coffee:compileTestFixtures"
+			compileServiceTests:
+				files: "public/src/modules/**/spec/serviceTests/*.coffee"
+				tasks: "coffee:compileServiceTests"
 			compileApp:
 				files: "./*.coffee"
 				tasks: "coffee:compileApp"
@@ -219,6 +263,9 @@ module.exports = (grunt) ->
 			custom_compileTestFixtures:
 				files: "acas_custom/modules/**/spec/testFixtures/*.coffee"
 				tasks: "coffee:custom_compileTestFixtures"
+			custom_compileServiceTests:
+				files: "acas_custom/modules/**/spec/serviceTests/*.coffee"
+				tasks: "coffee:custom_compileServiceTests"
 			custom_compileApp:
 				files: "acas_custom/*.coffee"
 				tasks: "coffee:custom_compileApp"
@@ -252,12 +299,49 @@ module.exports = (grunt) ->
 			copy_custom_modules:
 				files: "acas_custom/modules/**"
 				tasks: "copy:custom_modules"
+			prepare_module_includes:
+				files:[
+						"conf/PrepareModuleIncludes.js"
+						#styleFiles
+						'public/src/modules/*/src/client/*.css'
+						#templateFiles
+						'/public/src/modules/*/src/client/*.html'
+						#appScriptsInModules
+						'public/src/modules/*/src/client/*.js'
+						#appScriptsInJavascripts
+						'public/javascripts/src/*.js'
+						#testJSONInModules
+						'public/src/modules/*/spec/testFixtures/*.js'
+						#testJSONInJavascripts
+						'public/javascripts/spec/testFixtures/*.js'
+						#specScriptsInModules
+						'public/src/modules/*/spec/*.js'
+						#specScriptsInJavascripts
+						'public/javascripts/spec/*.js'
+					]
+				tasks: "execute:prepare_module_includes"
+			prepare_config_files:
+				files: [
+					"conf/PrepareConfigFiles.js"
+					"conf/conf*.properties"
+					"public/src/modules/*/src/server/*.R"
+				]
+				tasks: "execute:prepare_config_files"
+			prepare_test_JSON:
+				files: [
+					"public/javascripts/spec/testFixtures/*.js"
+				]
+				tasks: "execute:prepare_test_JSON"
+
+
 
 
 
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-contrib-watch"
 	grunt.loadNpmTasks "grunt-contrib-copy"
+	grunt.loadNpmTasks "grunt-text-replace"
+	grunt.loadNpmTasks "grunt-execute"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]
