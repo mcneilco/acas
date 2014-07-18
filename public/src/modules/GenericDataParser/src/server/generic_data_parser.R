@@ -1241,11 +1241,16 @@ addFileValue <- function(imageLocation, calculatedResults) {
   # They have to have both pieces of information because the inline file value is just the
   # file name and extension, whereas the fileValue contains the full path from privateUploads
   # 
-  # Input: imageLocation: the file path to the folder where images are stored, relative to privateUploads
+  # Input: imageLocation: the file path to the folder where images are stored, relative to the
+  #                       working directory
   #        calculatedResults: a data frame of calculated results and their types
   #                           NOTE: This doesn't work if the fileValue column has stringsAsFactors
   # Returns: the calculatedResults data frame, but all the entries with "inlineFileValue" also
   #          have an entry for "fileValue"
+  
+  # We have to save the fileValue relative to privateUploads, so we need to remove privateUploads from it
+  uploadedFilePath <- racas::getUploadedFilePath("")
+  imageLocation <- gsub(uploadedFilePath, "", imageLocation)
 
   fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
                             NA_character_,
