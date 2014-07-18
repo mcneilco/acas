@@ -1261,6 +1261,22 @@ addFileValue <- function(imageLocation, calculatedResults) {
   return(calculatedResults)
 }
 
+addComment <- function(calculatedResults) {
+  # Adds the name of each uploaded file to the "comments" section of its entry in calculatedResults
+  #
+  # Input: calculatedResults, a data frame of results and their types
+  # Returns: the same data frame, but every row that had an inlineFileValue has had that value
+  #          moved to the "comments" column
+  # If the row doesn't have an inlineFileValue, its comments are left as-is
+  
+  mustAddComment <- !is.na(calculatedResults$inlineFileValue)
+  
+  fileValuesToAdd <- calculatedResults$inlineFileValue[!is.na(calculatedResults$inlineFileValue)]
+  calculatedResults$comments[mustAddComment] <- fileValuesToAdd
+  
+  return(calculatedResults)
+}
+
 addImageFiles <- function(imageFiles, calculatedResults, experiment, dryRun) {
   # Processes the image files that the user (optionally) uploaded with their spreadsheet
   # Unzips the images into the /analysis/uploadedFiles folder, validates them, and
@@ -1282,6 +1298,7 @@ addImageFiles <- function(imageFiles, calculatedResults, experiment, dryRun) {
       listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
       isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
       calculatedResults <- addFileValue(imageLocation = imageLocation, calculatedResults = calculatedResults)
+      calculatedResults <- addComment(calculatedResults = calculatedResults)
       if (dryRun) {
         # We created the experiment folder in order to have a place to unzip the files -- in dryRun mode
         # we never moved anything else into it, so we delete it
