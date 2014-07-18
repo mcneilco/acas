@@ -572,8 +572,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
 
 validateUploadedImages <- function(imageLocation, listedImageFiles, experimentFolderLocation) {
   # Checks that there is a one-to-one correspondence between files the user has uploaded
-  # and file names the user has entered in their Excel sheet. Moves the zip file into the
-  # experiment folder if there are no errors
+  # and file names the user has entered in their Excel sheet.
   # Input: imageLocation: a path to the directory where the images were unzipped. 
   #        Can be absolute or relative from the working directory
   #        listedImageFiles, the image files that the user listed in the spreadsheet
