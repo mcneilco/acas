@@ -11,7 +11,7 @@
     var dataDictServiceTestJSON;
     if (global.specRunnerTestmode) {
       dataDictServiceTestJSON = require('../public/javascripts/spec/testFixtures/dataDictServiceTestJSON.js');
-      return resp.end(JSON.stringify(dataDictServiceTestJSON.dataDictValues));
+      return resp.end(JSON.stringify(dataDictServiceTestJSON.dataDictValues[req.params.kind]));
     } else {
       return console.log('not implemented yet');
     }

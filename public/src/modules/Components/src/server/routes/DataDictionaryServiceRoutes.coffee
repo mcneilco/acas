@@ -7,6 +7,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 exports.getDataDictValues = (req, resp) ->
 	if global.specRunnerTestmode
 		dataDictServiceTestJSON = require '../public/javascripts/spec/testFixtures/dataDictServiceTestJSON.js'
-		resp.end JSON.stringify dataDictServiceTestJSON.dataDictValues
+		resp.end JSON.stringify dataDictServiceTestJSON.dataDictValues[req.params.kind]
 	else
 		console.log 'not implemented yet'
