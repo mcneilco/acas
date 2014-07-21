@@ -1282,7 +1282,7 @@ addImageFiles <- function(imageFiles, calculatedResults, experiment, dryRun) {
   # Unzips the images into the /analysis/uploadedFiles folder, validates them, and
   # adds the full file path to the calculatedResults
   #
-  # Input: imageFiles, the path (relative to the working directory) where the zip file of images is
+  # Input: imageFiles, the path (relative to privateUploads) where the zip file of images is
   #        calculatedResults, a data frame of the results and their types
   #        experiment, a list that is an experiment (with a new code name, if it overwrote an old experiment)
   #        dryRun, a boolean indicating whether the data should skip upload to the database
@@ -1294,7 +1294,7 @@ addImageFiles <- function(imageFiles, calculatedResults, experiment, dryRun) {
   
   if (!is.null(imageFiles)) {
     if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
-      imageLocation <- unzipUploadedImages(imageFiles = imageFiles, experimentFolderLocation = experimentFolderLocation)
+      imageLocation <- unzipUploadedImages(imageFiles = racas::getUploadedFilePath(imageFiles), experimentFolderLocation = experimentFolderLocation)
       listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
       isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
       calculatedResults <- addFileValue(imageLocation = imageLocation, calculatedResults = calculatedResults)
@@ -1305,7 +1305,7 @@ addImageFiles <- function(imageFiles, calculatedResults, experiment, dryRun) {
         unlink(experimentFolderLocation, recursive = TRUE)
       } else {
         # Otherwise, we should move the zip file from privateUploads into the experiment folder
-        file.rename(from = imageFiles, to = file.path(experimentFolderLocation, basename(imageFiles)))
+        file.rename(from = racas::getUploadedFilePath(imageFiles), to = file.path(experimentFolderLocation, basename(imageFiles)))
       }
     } else {
       stopUser("Internal Error: Saving image files for this server.service.external.file.type has not been implemented")
@@ -2585,7 +2585,7 @@ splitOnSemicolon <- function(x) {
 }
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
-                    configList, testMode = FALSE, recordedBy, errorEnv = NULL) {
+                    configList, testMode = FALSE, recordedBy, imageFiles = NULL, errorEnv = NULL) {
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   #
@@ -2598,6 +2598,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   #       configList:                       Also known as racas::applicationSettings
   #       testMode:                         Used for getPreferredId (from racas)
   #       recordedBy:                       A string containing a username
+  #       imageFiles:                       The name of a zip file (relative to privateUploads) containing images to upload
   #       errorEnv:                         Used to collect errors across multiple function calls
   #
   # Returns: a list of the validated, organized data in the Excel file
@@ -2820,7 +2821,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     assign(x="experiment", value=experiment, envir=parent.frame())
   }
   
-  calculatedResults <- addImageFiles(imageFiles = reportFilePath, calculatedResults = calculatedResults, experiment = experiment, dryRun = dryRun)
+  calculatedResults <- addImageFiles(imageFiles = imageFiles, calculatedResults = calculatedResults, experiment = experiment, dryRun = dryRun)
   
   # Upload the data if this is not a dry run
   if(!dryRun & errorFree) {
@@ -2995,6 +2996,7 @@ parseGenericData <- function(request) {
   testMode <- request$testMode
   reportFilePath <- request$reportFile
   recordedBy <- request$user
+  imageFiles <- request$imageFiles
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
@@ -3023,6 +3025,7 @@ parseGenericData <- function(request) {
                         configList=configList, 
                         testMode=testMode,
                         recordedBy=recordedBy,
+                        imageFiles=imageFiles,
                         errorEnv = errorEnv)))
   } else {
     loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
@@ -3032,6 +3035,7 @@ parseGenericData <- function(request) {
                                        configList=configList, 
                                        testMode=testMode,
                                        recordedBy=recordedBy,
+                                       imageFiles=imageFiles,
                                        errorEnv = errorEnv))
   }
   
