@@ -292,16 +292,6 @@ Finally, add the change and continue the rebase
     git push origin master
 
 
-## Information for editing this markdown file
- 
-  - [Bitbucket  Markdown Tutorial][1]
-  - [Markdown editor (for previewing changes)][2]
- 
- 
-[1]:https://confluence.atlassian.com/display/BITBUCKET/Displaying+README+Text+on+the+Overview#DisplayingREADMETextontheOverview-ExampleMarkdownREADME
-[2]: http://hashify.me/
-
-
 ## Creating and Applying a patch file
 
 ### Prerequesites
@@ -365,3 +355,15 @@ git diff 505101c..343974b > 1.1.0-1.1.1-patch.diff
 
     patch -p1 -R < 1.1.0-1.1.1-patch.diff
 ```
+
+
+## Information for editing this markdown file
+ 
+  - [Bitbucket  Markdown Tutorial][1]
+  - [Markdown editor (for previewing changes)][2]
+ 
+ 
+[1]:https://confluence.atlassian.com/display/BITBUCKET/Displaying+README+Text+on+the+Overview#DisplayingREADMETextontheOverview-ExampleMarkdownREADME
+[2]: http://hashify.me/
+
+
