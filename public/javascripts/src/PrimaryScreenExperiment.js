@@ -12,15 +12,25 @@
     }
 
     PrimaryScreenAnalysisParameters.prototype.defaults = {
+      instrumentReader: "unassigned",
+      signalDirectionRule: "unassigned",
+      aggregateBy1: "unassigned",
+      aggregateBy2: "unassigned",
       transformationRule: "unassigned",
       normalizationRule: "unassigned",
+      assayVolume: null,
+      transferVolume: null,
+      dilutionFactor: null,
       hitEfficacyThreshold: null,
       hitSDThreshold: null,
       positiveControl: new Backbone.Model(),
       negativeControl: new Backbone.Model(),
       vehicleControl: new Backbone.Model(),
       agonistControl: new Backbone.Model(),
-      thresholdType: "sd"
+      thresholdType: "sd",
+      volumeType: "dilution",
+      autoHitSelection: true,
+      readSummary: new Backbone.Model()
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
@@ -122,6 +132,30 @@
           message: "Vehicle control must be set"
         });
       }
+      if (attrs.instrumentReader === "unassigned" || attrs.instrumentReader === "") {
+        errors.push({
+          attribute: 'instrumentReader',
+          message: "Instrument reader must be assigned"
+        });
+      }
+      if (attrs.signalDirectionRule === "unassigned" || attrs.signalDirectionRule === "") {
+        errors.push({
+          attribute: 'signalDirectionRule',
+          message: "Signal Direction Rule must be assigned"
+        });
+      }
+      if (attrs.aggregateBy1 === "unassigned" || attrs.aggregateBy1 === "") {
+        errors.push({
+          attribute: 'aggregateBy1',
+          message: "Aggregate By1 must be assigned"
+        });
+      }
+      if (attrs.aggregateBy2 === "unassigned" || attrs.aggregateBy2 === "") {
+        errors.push({
+          attribute: 'aggregateBy2',
+          message: "Aggregate By2 must be assigned"
+        });
+      }
       if (attrs.transformationRule === "unassigned" || attrs.transformationRule === "") {
         errors.push({
           attribute: 'transformationRule',
@@ -144,6 +178,24 @@
         errors.push({
           attribute: 'hitEfficacyThreshold',
           message: "Efficacy threshold must be assigned"
+        });
+      }
+      if (attrs.assayVolume === "" || _.isNaN(attrs.assayVolume)) {
+        errors.push({
+          attribute: 'assayVolume',
+          message: "Assay volume must be assigned"
+        });
+      }
+      if (attrs.volumeType === "dilution" && _.isNaN(attrs.dilutionFactor)) {
+        errors.push({
+          attribute: 'dilutionFactor',
+          message: "Dilution factor must be assigned"
+        });
+      }
+      if (attrs.volumeType === "transfer" && _.isNaN(attrs.transferVolume)) {
+        errors.push({
+          attribute: 'transferVolume',
+          message: "Transfer volume must be assigned"
         });
       }
       if (errors.length > 0) {
@@ -236,6 +288,8 @@
     __extends(PrimaryScreenAnalysisParametersController, _super);
 
     function PrimaryScreenAnalysisParametersController() {
+      this.handleVolumeTypeChanged = __bind(this.handleVolumeTypeChanged, this);
+      this.handleAutoHitSelectionChanged = __bind(this.handleAutoHitSelectionChanged, this);
       this.handleThresholdTypeChanged = __bind(this.handleThresholdTypeChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
@@ -247,9 +301,15 @@
     PrimaryScreenAnalysisParametersController.prototype.autofillTemplate = _.template($("#PrimaryScreenAnalysisParametersAutofillView").html());
 
     PrimaryScreenAnalysisParametersController.prototype.events = {
+      "change .bv_instrumentReader": "attributeChanged",
+      "change .bv_signalDirectionRule": "attributeChanged",
+      "change .bv_aggregateBy1": "attributeChanged",
+      "change .bv_aggregateBy2": "attributeChanged",
       "change .bv_transformationRule": "attributeChanged",
       "change .bv_normalizationRule": "attributeChanged",
-      "change .bv_transformationRule": "attributeChanged",
+      "change .bv_assayVolume": "attributeChanged",
+      "change .bv_dilutionFactor": "attributeChanged",
+      "change .bv_transferVolume": "attributeChanged",
       "change .bv_hitEfficacyThreshold": "attributeChanged",
       "change .bv_hitSDThreshold": "attributeChanged",
       "change .bv_positiveControlBatch": "attributeChanged",
@@ -260,28 +320,133 @@
       "change .bv_agonistControlBatch": "attributeChanged",
       "change .bv_agonistControlConc": "attributeChanged",
       "change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged",
-      "change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
+      "change .bv_thresholdTypeSD": "handleThresholdTypeChanged",
+      "change .bv_volumeTypeTransfer": "handleVolumeTypeChanged",
+      "change .bv_volumeTypeDilution": "handleVolumeTypeChanged",
+      "change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
     };
 
     PrimaryScreenAnalysisParametersController.prototype.initialize = function() {
       this.errorOwnerName = 'PrimaryScreenAnalysisParametersController';
-      return PrimaryScreenAnalysisParametersController.__super__.initialize.call(this);
+      PrimaryScreenAnalysisParametersController.__super__.initialize.call(this);
+      this.setupInstrumentReaderSelect();
+      this.setupSignalDirectionSelect();
+      this.setupAggregateBy1Select();
+      this.setupAggregateBy2Select();
+      this.setupTransformationSelect();
+      return this.setupNormalizationSelect();
     };
 
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
-      this.$('.bv_transformationRule').val(this.model.get('transformationRule'));
-      this.$('.bv_normalizationRule').val(this.model.get('normalizationRule'));
+      this.setupInstrumentReaderSelect();
+      this.setupSignalDirectionSelect();
+      this.setupAggregateBy1Select();
+      this.setupAggregateBy2Select();
+      this.setupTransformationSelect();
+      this.setupNormalizationSelect();
+      this.handleAutoHitSelectionChanged();
       return this;
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.setupInstrumentReaderSelect = function() {
+      this.instrumentList = new PickListList();
+      this.instrumentList.url = "/api/primaryAnalysis/runPrimaryAnalysis/instrumentReaderCodes";
+      return this.instrumentListController = new PickListSelectController({
+        el: this.$('.bv_instrumentReader'),
+        collection: this.instrumentList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Instrument"
+        }),
+        selectedCode: this.model.get('instrumentReader')
+      });
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.setupSignalDirectionSelect = function() {
+      this.signalDirectionList = new PickListList();
+      this.signalDirectionList.url = "/api/primaryAnalysis/runPrimaryAnalysis/signalDirectionCodes";
+      return this.signalDirectionListController = new PickListSelectController({
+        el: this.$('.bv_signalDirectionRule'),
+        collection: this.signalDirectionList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Signal Direction"
+        }),
+        selectedCode: this.model.get('signalDirectionRule')
+      });
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.setupAggregateBy1Select = function() {
+      this.aggregateBy1List = new PickListList();
+      this.aggregateBy1List.url = "/api/primaryAnalysis/runPrimaryAnalysis/aggregateBy1Codes";
+      return this.aggregateBy1ListController = new PickListSelectController({
+        el: this.$('.bv_aggregateBy1'),
+        collection: this.aggregateBy1List,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Aggregate By1"
+        }),
+        selectedCode: this.model.get('aggregateBy1')
+      });
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.setupAggregateBy2Select = function() {
+      this.aggregateBy2List = new PickListList();
+      this.aggregateBy2List.url = "/api/primaryAnalysis/runPrimaryAnalysis/aggregateBy2Codes";
+      return this.aggregateBy2ListController = new PickListSelectController({
+        el: this.$('.bv_aggregateBy2'),
+        collection: this.aggregateBy2List,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Aggregate By2"
+        }),
+        selectedCode: this.model.get('aggregateBy2')
+      });
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.setupTransformationSelect = function() {
+      this.transformationList = new PickListList();
+      this.transformationList.url = "/api/primaryAnalysis/runPrimaryAnalysis/transformationCodes";
+      return this.transformationListController = new PickListSelectController({
+        el: this.$('.bv_transformationRule'),
+        collection: this.transformationList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Rule"
+        }),
+        selectedCode: this.model.get('transformationRule')
+      });
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.setupNormalizationSelect = function() {
+      this.normalizationList = new PickListList();
+      this.normalizationList.url = "/api/primaryAnalysis/runPrimaryAnalysis/normalizationCodes";
+      return this.normalizationListController = new PickListSelectController({
+        el: this.$('.bv_normalizationRule'),
+        collection: this.normalizationList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Rule"
+        }),
+        selectedCode: this.model.get('normalizationRule')
+      });
     };
 
     PrimaryScreenAnalysisParametersController.prototype.updateModel = function() {
       this.model.set({
+        instrumentReader: this.$('.bv_instrumentReader').val(),
+        signalDirectionRule: this.$('.bv_signalDirectionRule').val(),
+        aggregateBy1: this.$('.bv_aggregateBy1').val(),
+        aggregateBy2: this.$('.bv_aggregateBy2').val(),
         transformationRule: this.$('.bv_transformationRule').val(),
         normalizationRule: this.$('.bv_normalizationRule').val(),
         hitEfficacyThreshold: parseFloat(this.getTrimmedInput('.bv_hitEfficacyThreshold')),
-        hitSDThreshold: parseFloat(this.getTrimmedInput('.bv_hitSDThreshold'))
+        hitSDThreshold: parseFloat(this.getTrimmedInput('.bv_hitSDThreshold')),
+        assayVolume: parseFloat(this.getTrimmedInput('.bv_assayVolume')),
+        transferVolume: parseFloat(this.getTrimmedInput('.bv_transferVolume')),
+        dilutionFactor: parseFloat(this.getTrimmedInput('.bv_dilutionFactor'))
       });
       this.model.get('positiveControl').set({
         batchCode: this.getTrimmedInput('.bv_positiveControlBatch'),
@@ -313,6 +478,36 @@
       } else {
         this.$('.bv_hitEfficacyThreshold').attr('disabled', 'disabled');
         this.$('.bv_hitSDThreshold').removeAttr('disabled');
+      }
+      return this.attributeChanged();
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handleAutoHitSelectionChanged = function() {
+      var autoHitSelection;
+      autoHitSelection = this.$('.bv_autoHitSelection').is(":checked");
+      this.model.set({
+        autoHitSelection: autoHitSelection
+      });
+      if (autoHitSelection) {
+        this.$('.bv_thresholdControls').show();
+      } else {
+        this.$('.bv_thresholdControls').hide();
+      }
+      return this.attributeChanged();
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handleVolumeTypeChanged = function() {
+      var volumeType;
+      volumeType = this.$("input[name='bv_volumeType']:checked").val();
+      this.model.set({
+        volumeType: volumeType
+      });
+      if (volumeType === "transfer") {
+        this.$('.bv_dilutionFactor').attr('disabled', 'disabled');
+        this.$('.bv_transferVolume').removeAttr('disabled');
+      } else {
+        this.$('.bv_transferVolume').attr('disabled', 'disabled');
+        this.$('.bv_dilutionFactor').removeAttr('disabled');
       }
       return this.attributeChanged();
     };
@@ -606,7 +801,8 @@
                   if (json.length === 0) {
                     alert('Could not get experiment for code in this URL, creating new one');
                   } else {
-                    exp = new PrimaryScreenExperiment(json[0]);
+                    console.log("got an expt");
+                    exp = new PrimaryScreenExperiment(json);
                     exp.fixCompositeClasses();
                     _this.model = exp;
                   }
@@ -627,6 +823,7 @@
       if (this.model == null) {
         this.model = new PrimaryScreenExperiment();
       }
+      console.log(this.model.get('codeName'));
       $(this.el).html(this.template());
       this.model.on('sync', this.handleExperimentSaved);
       this.experimentBaseController = new ExperimentBaseController({
@@ -713,5 +910,59 @@
     return PrimaryScreenExperimentController;
 
   })(AbstractPrimaryScreenExperimentController);
+
+  window.ReadPanelController = (function(_super) {
+    __extends(ReadPanelController, _super);
+
+    function ReadPanelController() {
+      this.render = __bind(this.render, this);
+      return ReadPanelController.__super__.constructor.apply(this, arguments);
+    }
+
+    ReadPanelController.prototype.template = _.template($("#ReadPanelView").html());
+
+    ReadPanelController.prototype.tagName = "div";
+
+    ReadPanelController.prototype.className = "form-inline";
+
+    ReadPanelController.prototype.events = {
+      "change .bv_readName": "attributeChanged",
+      "change .bv_matchReadName": "handleMatchReadNameChanged",
+      "click .bv_delete": "clear"
+    };
+
+    ReadPanelController.prototype.initialize = function() {
+      this.model.set({
+        readNumber: this.options.readNumber
+      });
+      this.model.on("destroy", this.remove, this);
+      return this.setupReadNameSelect();
+    };
+
+    ReadPanelController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.$('.bv_readNumber').html(this.model.get('readNumber'));
+      this.setupReadNameSelect();
+      return this;
+    };
+
+    ReadPanelController.prototype.setupReadNameSelect = function() {
+      this.readNameList = new PickListList();
+      this.readNameList.url = "/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes";
+      return this.readNameList = new PickListSelectController({
+        el: this.$('.bv_readName'),
+        collection: this.readNameList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Read Name"
+        }),
+        selectedCode: this.model.get('readName')
+      });
+    };
+
+    return ReadPanelController;
+
+  })(Backbone.View);
 
 }).call(this);

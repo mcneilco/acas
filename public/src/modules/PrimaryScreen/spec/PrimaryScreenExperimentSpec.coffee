@@ -14,6 +14,14 @@ describe "Primary Screen Experiment module testing", ->
 				it "should be defined", ->
 					expect(@psap).toBeDefined()
 				it "should have defaults", ->
+					expect(@psap.get('assayVolume')).toBeNull()
+					expect(@psap.get('transferVolume')).toBeNull()
+					expect(@psap.get('dilutionFactor')).toBeNull()
+					expect(@psap.get('volumeType')).toEqual "dilution"
+					expect(@psap.get('instrumentReader')).toEqual "unassigned"
+					expect(@psap.get('signalDirectionRule')).toEqual "unassigned"
+					expect(@psap.get('aggregateBy1')).toEqual "unassigned"
+					expect(@psap.get('aggregateBy2')).toEqual "unassigned"
 					expect(@psap.get('transformationRule')).toEqual "unassigned"
 					expect(@psap.get('normalizationRule')).toEqual "unassigned"
 					expect(@psap.get('hitEfficacyThreshold')).toBeNull()
@@ -23,6 +31,10 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('vehicleControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('thresholdType')).toEqual "sd"
+					expect(@psap.get('autoHitSelection')).toBeTruthy()
+					expect(@psap.get('readSummary') instanceof Backbone.Model).toBeTruthy()
+
+
 		describe "model validation tests", ->
 			beforeEach ->
 				@psap = new PrimaryScreenAnalysisParameters window.primaryScreenTestJSON.primaryScreenAnalysisParameters
@@ -84,6 +96,41 @@ describe "Primary Screen Experiment module testing", ->
 					err.attribute=='vehicleControlBatch'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when assayVolume is NaN", ->
+				@psap.set assayVolume: NaN
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='assayVolume'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when instrument reader is unassigned", ->
+				@psap.set instrumentReader: "unassigned"
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='instrumentReader'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when aggregate by1 is unassigned", ->
+				@psap.set aggregateBy1: "unassigned"
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='aggregateBy1'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when aggregate by2 is unassigned", ->
+				@psap.set aggregateBy2: "unassigned"
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='aggregateBy2'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when signal direction rule is unassigned", ->
+				@psap.set signalDirectionRule: "unassigned"
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='signalDirectionRule'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when transformation rule is unassigned", ->
 				@psap.set transformationRule: "unassigned"
 				expect(@psap.isValid()).toBeFalsy()
@@ -98,7 +145,24 @@ describe "Primary Screen Experiment module testing", ->
 					err.attribute=='normalizationRule'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when thresholdType is sd and hitSDThreshold is not a number", ->
+			it "should be invalid when volumeType is dilution and dilutionFactor is not a number", ->
+				@psap.set volumeType: "dilution"
+				@psap.set dilutionFactor: NaN
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='dilutionFactor'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when volumeType is transfer and transferVolume is not a number", ->
+				@psap.set volumeType: "transfer"
+				@psap.set transferVolume: NaN
+				expect(@psap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@psap.validationError, (err) ->
+					err.attribute=='transferVolume'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when autoHitSelection is checked and thresholdType is sd and hitSDThreshold is not a number", ->
+				@psap.set autoHitSelection: true
 				@psap.set thresholdType: "sd"
 				@psap.set hitSDThreshold: NaN
 				expect(@psap.isValid()).toBeFalsy()
@@ -106,7 +170,8 @@ describe "Primary Screen Experiment module testing", ->
 					err.attribute=='hitSDThreshold'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when thresholdType is efficacy and hitEfficacyThreshold is not a number", ->
+			it "should be invalid when autoHitSelection is checked and thresholdType is efficacy and hitEfficacyThreshold is not a number", ->
+				@psap.set autoHitSelection: true
 				@psap.set thresholdType: "efficacy"
 				@psap.set hitEfficacyThreshold: NaN
 				expect(@psap.isValid()).toBeFalsy()
@@ -125,30 +190,31 @@ describe "Primary Screen Experiment module testing", ->
 			describe "special getters", ->
 				describe "analysis parameters", ->
 					it 'Should be able to get analysis parameters', ->
-							expect(@pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy()
+						expect(@pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy()
 					it 'Should parse analysis parameters', ->
-							expect(@pse.getAnalysisParameters().get('hitSDThreshold')).toEqual 5
+						expect(@pse.getAnalysisParameters().get('hitSDThreshold')).toEqual 5
+						expect(@pse.getAnalysisParameters().get('dilutionFactor')).toEqual 21
 					it 'Should parse pos control into backbone models', ->
-							expect(@pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual "CMPD-12345678-01"
+						expect(@pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual "CMPD-12345678-01"
 					it 'Should parse neg control into backbone models', ->
-							expect(@pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual "CMPD-87654321-01"
+						expect(@pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual "CMPD-87654321-01"
 					it 'Should parse veh control into backbone models', ->
-							expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
+						expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
 					it 'Should parse agonist control into backbone models', ->
-							expect(@pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual "CMPD-87654399-01"
+						expect(@pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual "CMPD-87654399-01"
 				describe "model fit parameters", ->
 					it 'Should be able to get model parameters', ->
 						# this is not hydrated into a specific model type at this level, it is passed to the specific curve fit class for that
 						expect(@pse.getModelFitParameters().inverseAgonistMode ).toBeTruthy()
 				describe "special states", ->
 					it "should be able to get the analysis status", ->
-							expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
+						expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
 					it "should be able to get the analysis result html", ->
-							expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
+						expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
 					it "should be able to get the model fit status", ->
-							expect(@pse.getModelFitStatus().get('stringValue')).toEqual "not started"
+						expect(@pse.getModelFitStatus().get('stringValue')).toEqual "not started"
 					it "should be able to get the model result html", ->
-							expect(@pse.getModelFitResultHTML().get('clobValue')).toEqual "<p>Model fit not yet completed</p>"
+						expect(@pse.getModelFitResultHTML().get('clobValue')).toEqual "<p>Model fit not yet completed</p>"
 		describe "When loaded from new", ->
 			beforeEach ->
 				@pse2 = new PrimaryScreenExperiment()
@@ -177,16 +243,50 @@ describe "Primary Screen Experiment module testing", ->
 				it 'should load autofill template', ->
 					expect(@psapc.$('.bv_hitSDThreshold').length).toEqual 1
 			describe "render existing parameters", ->
+				it 'should show the instrumentReader', ->
+					waitsFor ->
+						@psapc.$('.bv_instrumentReader option').length > 0
+					, 1000
+					runs ->
+						expect(@psapc.$('.bv_instrumentReader').val()).toEqual "flipr"
+				it 'should show the signal direction rule', ->
+					waitsFor ->
+						@psapc.$('.bv_signalDirectionRule option').length > 0
+					, 1000
+					runs ->
+						expect(@psapc.$('.bv_signalDirectionRule').val()).toEqual "increasing signal (highest = 100%)"
+				it 'should show the aggregateBy1', ->
+					waitsFor ->
+						@psapc.$('.bv_aggregateBy1 option').length > 0
+					, 1000
+					runs ->
+						expect(@psapc.$('.bv_aggregateBy1').val()).toEqual "compound batch concentration"
+				it 'should show the aggregateBy2', ->
+					waitsFor ->
+						@psapc.$('.bv_aggregateBy2 option').length > 0
+					, 1000
+					runs ->
+						expect(@psapc.$('.bv_aggregateBy2').val()).toEqual "median"
 				it 'should show the transformation rule', ->
-					expect(@psapc.$('.bv_transformationRule').val()).toEqual "(maximum-minimum)/minimum"
+					waitsFor ->
+						@psapc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						expect(@psapc.$('.bv_transformationRule').val()).toEqual "(maximum-minimum)/minimum"
 				it 'should show the normalization rule', ->
-					expect(@psapc.$('.bv_normalizationRule').val()).toEqual "plate order"
-				it 'should show the hitSDThreshold', ->
-					expect(@psapc.$('.bv_hitSDThreshold').val()).toEqual '5'
-				it 'should show the hitEfficacyThreshold', ->
-					expect(@psapc.$('.bv_hitEfficacyThreshold').val()).toEqual '42'
-				it 'should start with thresholdType radio set', ->
-					expect(@psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual 'sd'
+					waitsFor ->
+						@psapc.$('.bv_normalizationRule option').length > 0
+					, 1000
+					runs ->
+						expect(@psapc.$('.bv_normalizationRule').val()).toEqual "plate order"
+				it 'should show the assayVolume', ->
+					expect(@psapc.$('.bv_assayVolume').val()).toEqual '24'
+				it 'should show the transferVolume', ->
+					expect(@psapc.$('.bv_transferVolume').val()).toEqual '12'
+				it 'should show the dilutionFactor', ->
+					expect(@psapc.$('.bv_dilutionFactor').val()).toEqual '21'
+				it 'should start with volumeType radio set', ->
+					expect(@psapc.$("input[name='bv_volumeType']:checked").val()).toEqual 'dilution'
 				it 'should show the positiveControlBatch', ->
 					expect(@psapc.$('.bv_positiveControlBatch').val()).toEqual 'CMPD-12345678-01'
 				it 'should show the positiveControlConc', ->
@@ -201,15 +301,78 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psapc.$('.bv_agonistControlBatch').val()).toEqual 'CMPD-87654399-01'
 				it 'should show the agonistControlConc', ->
 					expect(@psapc.$('.bv_agonistControlConc').val()).toEqual '250753.77'
+				it 'should start with autoHitSelection checked', ->
+					expect(@psapc.$('.bv_autoHitSelection').attr("checked")).toBeUndefined()
+				it 'should show the hitSDThreshold', ->
+					expect(@psapc.$('.bv_hitSDThreshold').val()).toEqual '5'
+				it 'should show the hitEfficacyThreshold', ->
+					expect(@psapc.$('.bv_hitEfficacyThreshold').val()).toEqual '42'
+				it 'should start with thresholdType radio set', ->
+					expect(@psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual 'sd'
+				it "should hide threshold controls if the model loads unchecked automaticHitSelection", ->
+					expect(@psapc.$('.bv_thresholdControls')).toBeHidden()
+
 			describe "model updates", ->
+				it "should update the instrument reader", ->
+					waitsFor ->
+						@psapc.$('.bv_instrumentReader option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_instrumentReader').val('unassigned')
+						@psapc.$('.bv_instrumentReader').change()
+						expect(@psapc.model.get('instrumentReader')).toEqual "unassigned"
+				it "should update the signal direction rule", ->
+					waitsFor ->
+						@psapc.$('.bv_signalDirectionRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_signalDirectionRule').val('unassigned')
+						@psapc.$('.bv_signalDirectionRule').change()
+						expect(@psapc.model.get('signalDirectionRule')).toEqual "unassigned"
+				it "should update the aggregateBy1", ->
+					waitsFor ->
+						@psapc.$('.bv_aggregateBy1 option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_aggregateBy1').val('unassigned')
+						@psapc.$('.bv_aggregateBy1').change()
+						expect(@psapc.model.get('aggregateBy1')).toEqual "unassigned"
+				it "should update the bv_aggregateBy2", ->
+					waitsFor ->
+						@psapc.$('.bv_aggregateBy2 option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_aggregateBy2').val('unassigned')
+						@psapc.$('.bv_aggregateBy2').change()
+						expect(@psapc.model.get('aggregateBy2')).toEqual "unassigned"
 				it "should update the transformation rule", ->
-					@psapc.$('.bv_transformationRule').val('unassigned')
-					@psapc.$('.bv_transformationRule').change()
-					expect(@psapc.model.get('transformationRule')).toEqual "unassigned"
+					waitsFor ->
+						@psapc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_transformationRule').val('unassigned')
+						@psapc.$('.bv_transformationRule').change()
+						expect(@psapc.model.get('transformationRule')).toEqual "unassigned"
 				it "should update the normalizationRule rule", ->
-					@psapc.$('.bv_normalizationRule').val('unassigned')
-					@psapc.$('.bv_normalizationRule').change()
-					expect(@psapc.model.get('normalizationRule')).toEqual "unassigned"
+					waitsFor ->
+						@psapc.$('.bv_normalizationRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_normalizationRule').val('unassigned')
+						@psapc.$('.bv_normalizationRule').change()
+						expect(@psapc.model.get('normalizationRule')).toEqual "unassigned"
+				it "should update the assayVolume ", ->
+					@psapc.$('.bv_assayVolume').val(' 24 ')
+					@psapc.$('.bv_assayVolume').change()
+					expect(@psapc.model.get('assayVolume')).toEqual 24
+				it "should update the transferVolume ", ->
+					@psapc.$('.bv_transferVolume').val(' 12 ')
+					@psapc.$('.bv_transferVolume').change()
+					expect(@psapc.model.get('transferVolume')).toEqual 12
+				it "should update the dilution factor ", ->
+					@psapc.$('.bv_dilutionFactor').val(' 21 ')
+					@psapc.$('.bv_dilutionFactor').change()
+					expect(@psapc.model.get('dilutionFactor')).toEqual 21
 				it "should update the hitSDThreshold ", ->
 					@psapc.$('.bv_hitSDThreshold').val(' 24 ')
 					@psapc.$('.bv_hitSDThreshold').change()
@@ -249,6 +412,13 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the thresholdType ", ->
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
 					expect(@psapc.model.get('thresholdType')).toEqual "efficacy"
+				it "should update the volumeType ", ->
+					@psapc.$('.bv_volumeTypeTransfer').click()
+					expect(@psapc.model.get('volumeType')).toEqual "transfer"
+				it "should update the autoHitSelection ", ->
+					@psapc.$('.bv_autoHitSelection').click()
+					expect(@psapc.model.get('autoHitSelection')).toBeTruthy()
+
 			describe "behavior and validation", ->
 				it "should disable sd threshold field if that radio not selected", ->
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
@@ -259,10 +429,19 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_thresholdTypeSD').click()
 					expect(@psapc.$('.bv_hitEfficacyThreshold').attr("disabled")).toEqual "disabled"
 					expect(@psapc.$('.bv_hitSDThreshold').attr("disabled")).toBeUndefined()
+				it "should disable dilutionFactor field if that radio not selected", ->
+					@psapc.$('.bv_volumeTypeTransfer').click()
+					expect(@psapc.$('.bv_dilutionFactor').attr("disabled")).toEqual "disabled"
+					expect(@psapc.$('.bv_transferVolume').attr("disabled")).toBeUndefined()
+				it "should disable transferVolume if that radio not selected", ->
+					@psapc.$('.bv_volumeTypeTransfer').click()
+					@psapc.$('.bv_volumeTypeDilution').click()
+					expect(@psapc.$('.bv_transferVolume').attr("disabled")).toEqual "disabled"
+					expect(@psapc.$('.bv_dilutionFactor').attr("disabled")).toBeUndefined()
 		describe "validation testing", ->
 			beforeEach ->
-				@psapc = new PrimaryScreenExperimentController
-					model: new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
+				@psapc = new PrimaryScreenAnalysisParametersController
+					model: new PrimaryScreenAnalysisParameters window.primaryScreenTestJSON.primaryScreenAnalysisParameters
 					el: $('#fixture')
 				@psapc.render()
 			describe "error notification", ->
@@ -294,24 +473,83 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_vehicleControlBatch').val ""
 					@psapc.$('.bv_vehicleControlBatch').change()
 					expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy()
+				it "should show error if instrumentReader is unassigned", ->
+					waitsFor ->
+						@psapc.$('.bv_instrumentReader option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_instrumentReader').val "unassigned"
+						@psapc.$('.bv_instrumentReader').change()
+						expect(@psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeTruthy()
+				it "should show error if signal direction rule is unassigned", ->
+					waitsFor ->
+						@psapc.$('.bv_signalDirectionRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_signalDirectionRule').val "unassigned"
+						@psapc.$('.bv_signalDirectionRule').change()
+						expect(@psapc.$('.bv_group_signalDirectionRule').hasClass("error")).toBeTruthy()
+				it "should show error if aggregateBy1 is unassigned", ->
+					waitsFor ->
+						@psapc.$('.bv_aggregateBy1 option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_aggregateBy1').val "unassigned"
+						@psapc.$('.bv_aggregateBy1').change()
+						expect(@psapc.$('.bv_group_aggregateBy1').hasClass("error")).toBeTruthy()
+				it "should show error if aggregateBy2 is unassigned", ->
+					waitsFor ->
+						@psapc.$('.bv_aggregateBy2 option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_aggregateBy2').val "unassigned"
+						@psapc.$('.bv_aggregateBy2').change()
+						expect(@psapc.$('.bv_group_aggregateBy2').hasClass("error")).toBeTruthy()
 				it "should show error if transformationRule is unassigned", ->
-					@psapc.$('.bv_transformationRule').val "unassigned"
-					@psapc.$('.bv_transformationRule').change()
-					expect(@psapc.$('.bv_group_transformationRule').hasClass("error")).toBeTruthy()
+					waitsFor ->
+						@psapc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_transformationRule').val "unassigned"
+						@psapc.$('.bv_transformationRule').change()
+						expect(@psapc.$('.bv_group_transformationRule').hasClass("error")).toBeTruthy()
 				it "should show error if normalizationRule is unassigned", ->
-					@psapc.$('.bv_normalizationRule').val "unassigned"
-					@psapc.$('.bv_normalizationRule').change()
-					expect(@psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy()
+					waitsFor ->
+						@psapc.$('.bv_normalizationRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_normalizationRule').val "unassigned"
+						@psapc.$('.bv_normalizationRule').change()
+						expect(@psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy()
 				it "should show error if threshold type is efficacy and efficacy threshold not a number", ->
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
 					@psapc.$('.bv_hitEfficacyThreshold').val ""
 					@psapc.$('.bv_hitEfficacyThreshold').change()
 					expect(@psapc.$('.bv_group_hitEfficacyThreshold').hasClass("error")).toBeTruthy()
 				it "should show error if threshold type is sd and sd threshold not a number", ->
-					@psapc.$('.bv_sdTypeEfficacy').click()
+					@psapc.$('.bv_thresholdTypeSD').click()
 					@psapc.$('.bv_hitSDThreshold').val ""
 					@psapc.$('.bv_hitSDThreshold').change()
 					expect(@psapc.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy()
+				it "should show error if volume type is transferVolume and transferVolume not a number", ->
+					@psapc.$('.bv_volumeTypeTransfer').click()
+					@psapc.$('.bv_transferVolume').val ""
+					@psapc.$('.bv_transferVolume').change()
+					expect(@psapc.$('.bv_group_transferVolume').hasClass("error")).toBeTruthy()
+				it "should show error if volume type is dilutionFactor and dilutionFactor not a number", ->
+					@psapc.$('.bv_volumeTypeDilution').click()
+					@psapc.$('.bv_dilutionFactor').val ""
+					@psapc.$('.bv_dilutionFactor').change()
+					expect(@psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeTruthy()
+				it "should show error if assayVolume is NaN", ->
+					@psapc.$('.bv_assayVolume').val ""
+					@psapc.$('.bv_assayVolume').change()
+					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy()
+				it "should show error if assayVolume is NaN", ->
+					@psapc.$('.bv_assayVolume').val ""
+					@psapc.$('.bv_assayVolume').change()
+					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy()
+
 
 	describe "Abstract Upload and Run Primary Analysis Controller testing", ->
 		describe "Basic loading", ->
@@ -415,10 +653,35 @@ describe "Primary Screen Experiment module testing", ->
 				it "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual 0
 
+	describe "Read Panel", ->
+		describe "read panel controller", ->
+			describe 'when instantiated', ->
+				beforeEach ->
+					@rpc = new ReadPanelController
+						el: $('#fixture')
+						model: new Backbone.Model()
+						readOptions: new Backbone.Collection window.primaryScreenTestJSON.readPanel
+						readNumber: "1"
+					@rpc.render()
+				describe "basic existance tests", ->
+					it 'should exist', ->
+						expect(@rpc).toBeDefined()
+					it 'should load a template', ->
+						expect(@rpc.$('.bv_readNumber').length).toEqual 1
+				describe "rendering", ->
+					it "should show readNumber", ->
+						expect(@rpc.$('.bv_readNumber').html()).toEqual "1"
+					it "should show read name", ->
+						expect(@rpc.$('.bv_readName').val()).toEqual "fluorescence"
+
 
 
 
 
 
 #TODO Validation rules for different threshold modes
+
+
+
+
 

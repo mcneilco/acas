@@ -7,6 +7,7 @@ class window.ModuleLauncher extends Backbone.Model
 		isLoaded: false
 		isActive: false
 		isDirty: false
+		autoLaunchName: null
 
 	requestActivation: ->
 		@trigger 'activationRequested', @
@@ -33,12 +34,12 @@ class window.ModuleLauncherMenuController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html(@template(@model.toJSON()))
-		$(@el).addClass 'bv_launch_'+@model.get('autoLaunchName')
+		if @model.has('autoLaunchName')
+			@$('.bv_menuName').addClass 'bv_launch_'+@model.get('autoLaunchName')
 		if @model.get('isActive') then $(@el).addClass "active"
 		else $(@el).removeClass "active"
 
-		if @model.get('isLoaded') then @$('.bv_isLoaded').show()
-		else @$('.bv_isLoaded').hide()
+		@$('.bv_isLoaded').hide()
 		if @model.get('isDirty') then @$('.bv_isDirty').show()
 		else @$('.bv_isDirty').hide()
 
@@ -51,6 +52,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 		@
 
 	handleSelect: =>
+		console.log "got to handleSelect"
 		@model.requestActivation()
 		@trigger "selected", @
 
@@ -108,7 +110,9 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 	launchModule: (moduleName) ->
 		#Note that if the names don't match, this fails silently
 		selector = '.bv_launch_'+moduleName
+		console.log '.bv_launch_'+moduleName
 		@$(selector).click()
+		console.log @$(selector)
 
 class window.ModuleLauncherController extends Backbone.View
 	tagName: 'div'

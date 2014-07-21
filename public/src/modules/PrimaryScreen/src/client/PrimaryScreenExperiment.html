@@ -83,12 +83,60 @@
 	</div>
 
     <form class="form-horizontal span10 pull-left">
+        <div class="control-group bv_group_assayVolume">
+            <label class="control-label">*Assay Volume</label>
+            <div class="controls">
+                <input class="bv_assayVolume" value="<%=assayVolume%>" type="text">
+            </div>
+        </div>
+        <div class="control-group bv_group_transferVolume">
+            <label class="control-label radio" style="width:144px;padding-left:0;">
+                <input type="radio" name="bv_volumeType" value="transfer" class="bv_volumeTypeTransfer" <% if (volumeType=="transfer") { %> checked="checked"<% }%> />*Transfer Volume
+            </label>
+            <div class="controls" style="padding-left:0;">
+                <input class="span9 bv_transferVolume" value="<%=transferVolume%>" type="text" <% if (volumeType!="transfer") { %> disabled="disabled"<% }%>>
+            </div>
+        </div>
+        <div class="control-group bv_group_dilutionFactor">
+            <label class="control-label radio" style="width:115px;padding-left:26px;">
+                <input type="radio" name="bv_volumeType" value="dilution" class="bv_volumeTypeDilution" <% if (volumeType=="dilution") { %> checked="checked"<% }%> />*Dilution Factor
+            </label>
+            <div class="controls" style="padding-left:0;">
+                <input class="span9 bv_dilutionFactor" value="<%=dilutionFactor%>" type="text" <% if (volumeType!="dilution") { %> disabled="disabled"<% }%> />
+            </div>
+        </div>
+        <div class="control-group bv_group_instrumentReader">
+            <label class="control-label">*Instrument Reader</label>
+            <div class="controls">
+                <select class="bv_instrumentReader span9">
+                </select>
+            </div>
+        </div>
+        <div class="control-group bv_group_signalDirectionRule">
+            <label class="control-label">*Signal Direction</label>
+            <div class="controls">
+                <select class="bv_signalDirectionRule span9">
+                </select>
+            </div>
+        </div>
+        <div class="control-group bv_group_aggregateBy1">
+            <label class="control-label">*Aggregate By1</label>
+            <div class="controls">
+                <select class="bv_aggregateBy1 span9">
+                </select>
+            </div>
+        </div>
+        <div class="control-group bv_group_aggregateBy2">
+            <label class="control-label">*Aggregate By2</label>
+            <div class="controls">
+                <select class="bv_aggregateBy2 span9">
+                </select>
+            </div>
+        </div>
         <div class="control-group bv_group_transformationRule">
             <label class="control-label">*Transformation</label>
             <div class="controls">
                 <select class="bv_transformationRule span9">
-                    <option value="unassigned">Select Rule</option>
-                    <option value="(maximum-minimum)/minimum">(Max-Min)/Min</option>
                 </select>
             </div>
         </div>
@@ -96,28 +144,34 @@
             <label class="control-label">*Normalization</label>
             <div class="controls">
                 <select class="bv_normalizationRule span9" value="<%=normalizationRule%>" placeholder="Plate Order">
-                    <option value="unassigned">Select Rule</option>
-                    <option value="plate order">Plate Order</option>
-                    <option value="none">None</option>
                 </select>
             </div>
         </div>
-	    <div class="control-group bv_group_hitEfficacyThreshold">
-		    <label class="control-label radio" style="width:144px;padding-left:0;">
-			    <input type="radio" name="bv_thresholdType" value="efficacy" class="bv_thresholdTypeEfficacy" <% if (thresholdType=="efficacy") { %> checked="checked"<% }%> />*Hit Efficacy Threshold
-		    </label>
-		    <div class="controls" style="padding-left:0;">
-			    <input class="span9 bv_hitEfficacyThreshold" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% }%>>
-		    </div>
-	    </div>
-	    <div class="control-group bv_group_hitSDThreshold">
-		    <label class="control-label radio" style="width:115px;padding-left:26px;">
-			    <input type="radio" name="bv_thresholdType" value="sd" class="bv_thresholdTypeSD" <% if (thresholdType=="sd") { %> checked="checked"<% }%> />*Hit SD Threshold
-		    </label>
-		    <div class="controls" style="padding-left:0;">
-			    <input class="span9 bv_hitSDThreshold" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
-		    </div>
-	    </div>
+
+        <div class="control-group bv_group_autoHitSelection">
+            <label class="control-label checkbox" style="width:144px;padding-left:0;">
+                <input type="checkbox" name="bv_autoHitSelection" class="bv_autoHitSelection" <% if (autoHitSelection) { %> checked="checked"<% }%> />*Automatic Hit Selection
+            </label>
+
+        </div>
+        <div class="bv_thresholdControls">
+            <div class="control-group bv_group_hitEfficacyThreshold">
+                <label class="control-label radio" style="width:144px;padding-left:0;">
+                    <input type="radio" name="bv_thresholdType" value="efficacy" class="bv_thresholdTypeEfficacy" <% if (thresholdType=="efficacy") { %>checked="checked"<% }%> />*Hit Efficacy Threshold
+                </label>
+                <div class="controls" style="padding-left:0;">
+                    <input class="span9 bv_hitEfficacyThreshold" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% } %>>
+                </div>
+            </div>
+            <div class="control-group bv_group_hitSDThreshold">
+                <label class="control-label radio" style="width:115px;padding-left:26px;">
+                    <input type="radio" name="bv_thresholdType" value="sd" class="bv_thresholdTypeSD" <% if (thresholdType=="sd") { %> checked="checked"<% }%> />*Hit SD Threshold
+                </label>
+                <div class="controls" style="padding-left:0;">
+                    <input class="span9 bv_hitSDThreshold" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
+                </div>
+            </div>
+        </div>
     </form>
 
 </script>
@@ -140,3 +194,18 @@
 
 </script>
 
+<script type="text/template" id="ReadPanelView" xmlns="http://www.w3.org/1999/html">
+    <div class="form-inline">
+        <label class="bv_readNumber"></label>
+        <input type="text" class="span2 bv_readName" placeholder="read name" />
+        <div class="controls">
+            <select class="bv_transformationRule span9">
+            </select>
+        </div>
+        <select class="span1 bv_matchReadName">
+            <option val="true">true</option>
+            <option val="false">false</option>
+        </select>
+        <button class="close bv_delete">&times;</button>
+    </div>
+</script>

@@ -19,6 +19,14 @@
             return expect(this.psap).toBeDefined();
           });
           return it("should have defaults", function() {
+            expect(this.psap.get('assayVolume')).toBeNull();
+            expect(this.psap.get('transferVolume')).toBeNull();
+            expect(this.psap.get('dilutionFactor')).toBeNull();
+            expect(this.psap.get('volumeType')).toEqual("dilution");
+            expect(this.psap.get('instrumentReader')).toEqual("unassigned");
+            expect(this.psap.get('signalDirectionRule')).toEqual("unassigned");
+            expect(this.psap.get('aggregateBy1')).toEqual("unassigned");
+            expect(this.psap.get('aggregateBy2')).toEqual("unassigned");
             expect(this.psap.get('transformationRule')).toEqual("unassigned");
             expect(this.psap.get('normalizationRule')).toEqual("unassigned");
             expect(this.psap.get('hitEfficacyThreshold')).toBeNull();
@@ -27,7 +35,9 @@
             expect(this.psap.get('negativeControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('vehicleControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy();
-            return expect(this.psap.get('thresholdType')).toEqual("sd");
+            expect(this.psap.get('thresholdType')).toEqual("sd");
+            expect(this.psap.get('autoHitSelection')).toBeTruthy();
+            return expect(this.psap.get('readSummary') instanceof Backbone.Model).toBeTruthy();
           });
         });
       });
@@ -115,6 +125,61 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
+        it("should be invalid when assayVolume is NaN", function() {
+          var filtErrors;
+          this.psap.set({
+            assayVolume: NaN
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'assayVolume';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when instrument reader is unassigned", function() {
+          var filtErrors;
+          this.psap.set({
+            instrumentReader: "unassigned"
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'instrumentReader';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when aggregate by1 is unassigned", function() {
+          var filtErrors;
+          this.psap.set({
+            aggregateBy1: "unassigned"
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'aggregateBy1';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when aggregate by2 is unassigned", function() {
+          var filtErrors;
+          this.psap.set({
+            aggregateBy2: "unassigned"
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'aggregateBy2';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when signal direction rule is unassigned", function() {
+          var filtErrors;
+          this.psap.set({
+            signalDirectionRule: "unassigned"
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'signalDirectionRule';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
         it("should be invalid when transformation rule is unassigned", function() {
           var filtErrors;
           this.psap.set({
@@ -137,8 +202,39 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        it("should be invalid when thresholdType is sd and hitSDThreshold is not a number", function() {
+        it("should be invalid when volumeType is dilution and dilutionFactor is not a number", function() {
           var filtErrors;
+          this.psap.set({
+            volumeType: "dilution"
+          });
+          this.psap.set({
+            dilutionFactor: NaN
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'dilutionFactor';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when volumeType is transfer and transferVolume is not a number", function() {
+          var filtErrors;
+          this.psap.set({
+            volumeType: "transfer"
+          });
+          this.psap.set({
+            transferVolume: NaN
+          });
+          expect(this.psap.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.psap.validationError, function(err) {
+            return err.attribute === 'transferVolume';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when autoHitSelection is checked and thresholdType is sd and hitSDThreshold is not a number", function() {
+          var filtErrors;
+          this.psap.set({
+            autoHitSelection: true
+          });
           this.psap.set({
             thresholdType: "sd"
           });
@@ -151,8 +247,11 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        return it("should be invalid when thresholdType is efficacy and hitEfficacyThreshold is not a number", function() {
+        return it("should be invalid when autoHitSelection is checked and thresholdType is efficacy and hitEfficacyThreshold is not a number", function() {
           var filtErrors;
+          this.psap.set({
+            autoHitSelection: true
+          });
           this.psap.set({
             thresholdType: "efficacy"
           });
@@ -183,7 +282,8 @@
               return expect(this.pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy();
             });
             it('Should parse analysis parameters', function() {
-              return expect(this.pse.getAnalysisParameters().get('hitSDThreshold')).toEqual(5);
+              expect(this.pse.getAnalysisParameters().get('hitSDThreshold')).toEqual(5);
+              return expect(this.pse.getAnalysisParameters().get('dilutionFactor')).toEqual(21);
             });
             it('Should parse pos control into backbone models', function() {
               return expect(this.pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual("CMPD-12345678-01");
@@ -260,20 +360,65 @@
           });
         });
         describe("render existing parameters", function() {
+          it('should show the instrumentReader', function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_instrumentReader option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_instrumentReader').val()).toEqual("flipr");
+            });
+          });
+          it('should show the signal direction rule', function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_signalDirectionRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_signalDirectionRule').val()).toEqual("increasing signal (highest = 100%)");
+            });
+          });
+          it('should show the aggregateBy1', function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_aggregateBy1 option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_aggregateBy1').val()).toEqual("compound batch concentration");
+            });
+          });
+          it('should show the aggregateBy2', function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_aggregateBy2 option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_aggregateBy2').val()).toEqual("median");
+            });
+          });
           it('should show the transformation rule', function() {
-            return expect(this.psapc.$('.bv_transformationRule').val()).toEqual("(maximum-minimum)/minimum");
+            waitsFor(function() {
+              return this.psapc.$('.bv_transformationRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_transformationRule').val()).toEqual("(maximum-minimum)/minimum");
+            });
           });
           it('should show the normalization rule', function() {
-            return expect(this.psapc.$('.bv_normalizationRule').val()).toEqual("plate order");
+            waitsFor(function() {
+              return this.psapc.$('.bv_normalizationRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_normalizationRule').val()).toEqual("plate order");
+            });
           });
-          it('should show the hitSDThreshold', function() {
-            return expect(this.psapc.$('.bv_hitSDThreshold').val()).toEqual('5');
+          it('should show the assayVolume', function() {
+            return expect(this.psapc.$('.bv_assayVolume').val()).toEqual('24');
           });
-          it('should show the hitEfficacyThreshold', function() {
-            return expect(this.psapc.$('.bv_hitEfficacyThreshold').val()).toEqual('42');
+          it('should show the transferVolume', function() {
+            return expect(this.psapc.$('.bv_transferVolume').val()).toEqual('12');
           });
-          it('should start with thresholdType radio set', function() {
-            return expect(this.psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual('sd');
+          it('should show the dilutionFactor', function() {
+            return expect(this.psapc.$('.bv_dilutionFactor').val()).toEqual('21');
+          });
+          it('should start with volumeType radio set', function() {
+            return expect(this.psapc.$("input[name='bv_volumeType']:checked").val()).toEqual('dilution');
           });
           it('should show the positiveControlBatch', function() {
             return expect(this.psapc.$('.bv_positiveControlBatch').val()).toEqual('CMPD-12345678-01');
@@ -293,20 +438,100 @@
           it('should show the agonistControlBatch', function() {
             return expect(this.psapc.$('.bv_agonistControlBatch').val()).toEqual('CMPD-87654399-01');
           });
-          return it('should show the agonistControlConc', function() {
+          it('should show the agonistControlConc', function() {
             return expect(this.psapc.$('.bv_agonistControlConc').val()).toEqual('250753.77');
+          });
+          it('should start with autoHitSelection checked', function() {
+            return expect(this.psapc.$('.bv_autoHitSelection').attr("checked")).toBeUndefined();
+          });
+          it('should show the hitSDThreshold', function() {
+            return expect(this.psapc.$('.bv_hitSDThreshold').val()).toEqual('5');
+          });
+          it('should show the hitEfficacyThreshold', function() {
+            return expect(this.psapc.$('.bv_hitEfficacyThreshold').val()).toEqual('42');
+          });
+          it('should start with thresholdType radio set', function() {
+            return expect(this.psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual('sd');
+          });
+          return it("should hide threshold controls if the model loads unchecked automaticHitSelection", function() {
+            return expect(this.psapc.$('.bv_thresholdControls')).toBeHidden();
           });
         });
         describe("model updates", function() {
+          it("should update the instrument reader", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_instrumentReader option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_instrumentReader').val('unassigned');
+              this.psapc.$('.bv_instrumentReader').change();
+              return expect(this.psapc.model.get('instrumentReader')).toEqual("unassigned");
+            });
+          });
+          it("should update the signal direction rule", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_signalDirectionRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_signalDirectionRule').val('unassigned');
+              this.psapc.$('.bv_signalDirectionRule').change();
+              return expect(this.psapc.model.get('signalDirectionRule')).toEqual("unassigned");
+            });
+          });
+          it("should update the aggregateBy1", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_aggregateBy1 option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_aggregateBy1').val('unassigned');
+              this.psapc.$('.bv_aggregateBy1').change();
+              return expect(this.psapc.model.get('aggregateBy1')).toEqual("unassigned");
+            });
+          });
+          it("should update the bv_aggregateBy2", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_aggregateBy2 option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_aggregateBy2').val('unassigned');
+              this.psapc.$('.bv_aggregateBy2').change();
+              return expect(this.psapc.model.get('aggregateBy2')).toEqual("unassigned");
+            });
+          });
           it("should update the transformation rule", function() {
-            this.psapc.$('.bv_transformationRule').val('unassigned');
-            this.psapc.$('.bv_transformationRule').change();
-            return expect(this.psapc.model.get('transformationRule')).toEqual("unassigned");
+            waitsFor(function() {
+              return this.psapc.$('.bv_transformationRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_transformationRule').val('unassigned');
+              this.psapc.$('.bv_transformationRule').change();
+              return expect(this.psapc.model.get('transformationRule')).toEqual("unassigned");
+            });
           });
           it("should update the normalizationRule rule", function() {
-            this.psapc.$('.bv_normalizationRule').val('unassigned');
-            this.psapc.$('.bv_normalizationRule').change();
-            return expect(this.psapc.model.get('normalizationRule')).toEqual("unassigned");
+            waitsFor(function() {
+              return this.psapc.$('.bv_normalizationRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_normalizationRule').val('unassigned');
+              this.psapc.$('.bv_normalizationRule').change();
+              return expect(this.psapc.model.get('normalizationRule')).toEqual("unassigned");
+            });
+          });
+          it("should update the assayVolume ", function() {
+            this.psapc.$('.bv_assayVolume').val(' 24 ');
+            this.psapc.$('.bv_assayVolume').change();
+            return expect(this.psapc.model.get('assayVolume')).toEqual(24);
+          });
+          it("should update the transferVolume ", function() {
+            this.psapc.$('.bv_transferVolume').val(' 12 ');
+            this.psapc.$('.bv_transferVolume').change();
+            return expect(this.psapc.model.get('transferVolume')).toEqual(12);
+          });
+          it("should update the dilution factor ", function() {
+            this.psapc.$('.bv_dilutionFactor').val(' 21 ');
+            this.psapc.$('.bv_dilutionFactor').change();
+            return expect(this.psapc.model.get('dilutionFactor')).toEqual(21);
           });
           it("should update the hitSDThreshold ", function() {
             this.psapc.$('.bv_hitSDThreshold').val(' 24 ');
@@ -353,9 +578,17 @@
             this.psapc.$('.bv_agonistControlConc').change();
             return expect(this.psapc.model.get('agonistControl').get('concentration')).toEqual(250753.77);
           });
-          return it("should update the thresholdType ", function() {
+          it("should update the thresholdType ", function() {
             this.psapc.$('.bv_thresholdTypeEfficacy').click();
             return expect(this.psapc.model.get('thresholdType')).toEqual("efficacy");
+          });
+          it("should update the volumeType ", function() {
+            this.psapc.$('.bv_volumeTypeTransfer').click();
+            return expect(this.psapc.model.get('volumeType')).toEqual("transfer");
+          });
+          return it("should update the autoHitSelection ", function() {
+            this.psapc.$('.bv_autoHitSelection').click();
+            return expect(this.psapc.model.get('autoHitSelection')).toBeTruthy();
           });
         });
         return describe("behavior and validation", function() {
@@ -364,18 +597,29 @@
             expect(this.psapc.$('.bv_hitSDThreshold').attr("disabled")).toEqual("disabled");
             return expect(this.psapc.$('.bv_hitEfficacyThreshold').attr("disabled")).toBeUndefined();
           });
-          return it("should disable efficacy threshold field if that radio not selected", function() {
+          it("should disable efficacy threshold field if that radio not selected", function() {
             this.psapc.$('.bv_thresholdTypeEfficacy').click();
             this.psapc.$('.bv_thresholdTypeSD').click();
             expect(this.psapc.$('.bv_hitEfficacyThreshold').attr("disabled")).toEqual("disabled");
             return expect(this.psapc.$('.bv_hitSDThreshold').attr("disabled")).toBeUndefined();
           });
+          it("should disable dilutionFactor field if that radio not selected", function() {
+            this.psapc.$('.bv_volumeTypeTransfer').click();
+            expect(this.psapc.$('.bv_dilutionFactor').attr("disabled")).toEqual("disabled");
+            return expect(this.psapc.$('.bv_transferVolume').attr("disabled")).toBeUndefined();
+          });
+          return it("should disable transferVolume if that radio not selected", function() {
+            this.psapc.$('.bv_volumeTypeTransfer').click();
+            this.psapc.$('.bv_volumeTypeDilution').click();
+            expect(this.psapc.$('.bv_transferVolume').attr("disabled")).toEqual("disabled");
+            return expect(this.psapc.$('.bv_dilutionFactor').attr("disabled")).toBeUndefined();
+          });
         });
       });
       return describe("validation testing", function() {
         beforeEach(function() {
-          this.psapc = new PrimaryScreenExperimentController({
-            model: new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer),
+          this.psapc = new PrimaryScreenAnalysisParametersController({
+            model: new PrimaryScreenAnalysisParameters(window.primaryScreenTestJSON.primaryScreenAnalysisParameters),
             el: $('#fixture')
           });
           return this.psapc.render();
@@ -416,15 +660,65 @@
             this.psapc.$('.bv_vehicleControlBatch').change();
             return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy();
           });
+          it("should show error if instrumentReader is unassigned", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_instrumentReader option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_instrumentReader').val("unassigned");
+              this.psapc.$('.bv_instrumentReader').change();
+              return expect(this.psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeTruthy();
+            });
+          });
+          it("should show error if signal direction rule is unassigned", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_signalDirectionRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_signalDirectionRule').val("unassigned");
+              this.psapc.$('.bv_signalDirectionRule').change();
+              return expect(this.psapc.$('.bv_group_signalDirectionRule').hasClass("error")).toBeTruthy();
+            });
+          });
+          it("should show error if aggregateBy1 is unassigned", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_aggregateBy1 option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_aggregateBy1').val("unassigned");
+              this.psapc.$('.bv_aggregateBy1').change();
+              return expect(this.psapc.$('.bv_group_aggregateBy1').hasClass("error")).toBeTruthy();
+            });
+          });
+          it("should show error if aggregateBy2 is unassigned", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_aggregateBy2 option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_aggregateBy2').val("unassigned");
+              this.psapc.$('.bv_aggregateBy2').change();
+              return expect(this.psapc.$('.bv_group_aggregateBy2').hasClass("error")).toBeTruthy();
+            });
+          });
           it("should show error if transformationRule is unassigned", function() {
-            this.psapc.$('.bv_transformationRule').val("unassigned");
-            this.psapc.$('.bv_transformationRule').change();
-            return expect(this.psapc.$('.bv_group_transformationRule').hasClass("error")).toBeTruthy();
+            waitsFor(function() {
+              return this.psapc.$('.bv_transformationRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_transformationRule').val("unassigned");
+              this.psapc.$('.bv_transformationRule').change();
+              return expect(this.psapc.$('.bv_group_transformationRule').hasClass("error")).toBeTruthy();
+            });
           });
           it("should show error if normalizationRule is unassigned", function() {
-            this.psapc.$('.bv_normalizationRule').val("unassigned");
-            this.psapc.$('.bv_normalizationRule').change();
-            return expect(this.psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy();
+            waitsFor(function() {
+              return this.psapc.$('.bv_normalizationRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_normalizationRule').val("unassigned");
+              this.psapc.$('.bv_normalizationRule').change();
+              return expect(this.psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy();
+            });
           });
           it("should show error if threshold type is efficacy and efficacy threshold not a number", function() {
             this.psapc.$('.bv_thresholdTypeEfficacy').click();
@@ -432,11 +726,33 @@
             this.psapc.$('.bv_hitEfficacyThreshold').change();
             return expect(this.psapc.$('.bv_group_hitEfficacyThreshold').hasClass("error")).toBeTruthy();
           });
-          return it("should show error if threshold type is sd and sd threshold not a number", function() {
-            this.psapc.$('.bv_sdTypeEfficacy').click();
+          it("should show error if threshold type is sd and sd threshold not a number", function() {
+            this.psapc.$('.bv_thresholdTypeSD').click();
             this.psapc.$('.bv_hitSDThreshold').val("");
             this.psapc.$('.bv_hitSDThreshold').change();
             return expect(this.psapc.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if volume type is transferVolume and transferVolume not a number", function() {
+            this.psapc.$('.bv_volumeTypeTransfer').click();
+            this.psapc.$('.bv_transferVolume').val("");
+            this.psapc.$('.bv_transferVolume').change();
+            return expect(this.psapc.$('.bv_group_transferVolume').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if volume type is dilutionFactor and dilutionFactor not a number", function() {
+            this.psapc.$('.bv_volumeTypeDilution').click();
+            this.psapc.$('.bv_dilutionFactor').val("");
+            this.psapc.$('.bv_dilutionFactor').change();
+            return expect(this.psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if assayVolume is NaN", function() {
+            this.psapc.$('.bv_assayVolume').val("");
+            this.psapc.$('.bv_assayVolume').change();
+            return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy();
+          });
+          return it("should show error if assayVolume is NaN", function() {
+            this.psapc.$('.bv_assayVolume').val("");
+            this.psapc.$('.bv_assayVolume').change();
+            return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy();
           });
         });
       });
@@ -560,7 +876,7 @@
         });
       });
     });
-    return describe("Primary Screen Experiment Controller testing", function() {
+    describe("Primary Screen Experiment Controller testing", function() {
       return describe("basic plumbing checks with new experiment", function() {
         beforeEach(function() {
           this.psec = new PrimaryScreenExperimentController({
@@ -584,6 +900,37 @@
           });
           return it("Should load a dose response controller", function() {
             return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual(0);
+          });
+        });
+      });
+    });
+    return describe("Read Panel", function() {
+      return describe("read panel controller", function() {
+        return describe('when instantiated', function() {
+          beforeEach(function() {
+            this.rpc = new ReadPanelController({
+              el: $('#fixture'),
+              model: new Backbone.Model(),
+              readOptions: new Backbone.Collection(window.primaryScreenTestJSON.readPanel),
+              readNumber: "1"
+            });
+            return this.rpc.render();
+          });
+          describe("basic existance tests", function() {
+            it('should exist', function() {
+              return expect(this.rpc).toBeDefined();
+            });
+            return it('should load a template', function() {
+              return expect(this.rpc.$('.bv_readNumber').length).toEqual(1);
+            });
+          });
+          return describe("rendering", function() {
+            it("should show readNumber", function() {
+              return expect(this.rpc.$('.bv_readNumber').html()).toEqual("1");
+            });
+            return it("should show read name", function() {
+              return expect(this.rpc.$('.bv_readName').val()).toEqual("fluorescence");
+            });
           });
         });
       });

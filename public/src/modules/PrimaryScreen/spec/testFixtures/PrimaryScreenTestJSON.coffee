@@ -16,11 +16,73 @@
 			batchCode: "CMPD-00000001-01"
 			concentration: null
 			concentrationUnits: null
+		instrumentReader: "flipr"
+		signalDirectionRule: "increasing signal (highest = 100%)"
+		aggregateBy1: "compound batch concentration"
+		aggregateBy2: "median"
 		transformationRule: "(maximum-minimum)/minimum"
 		normalizationRule: "plate order"
 		hitEfficacyThreshold: 42
 		hitSDThreshold: 5.0
 		thresholdType: "sd" #or "efficacy"
+		transferVolume: 12
+		dilutionFactor: 21
+		volumeType: "dilution" #or "efficacy"
+		assayVolume: 24
+		autoHitSelection: false
+		readName: "fluorescence"
+
+	exports.instrumentReaderCodes = [
+		code: "flipr"
+		name: "FLIPR"
+		ignored: false
+	]
+
+	exports.signalDirectionCodes = [
+		code: "increasing signal (highest = 100%)"
+		name: "Increasing Signal (highest = 100%)"
+		ignored: false
+	]
+
+	exports.aggregateBy1Codes = [
+		code: "compound batch concentration"
+		name: "Compound Batch Concentration"
+		ignored: false
+	]
+
+	exports.aggregateBy2Codes = [
+		code: "median"
+		name: "Median"
+		ignored: false
+	]
+
+	exports.transformationCodes = [
+		code: "(maximum-minimum)/minimum"
+		name: "(Max-Min)/Min"
+		ignored: false
+	]
+
+	exports.normalizationCodes = [
+		code: "plate order"
+		name: "Plate Order"
+		ignored: false
+	,
+		code: "none"
+		name: "None"
+		ignored: false
+
+	]
+
+	exports.readNameCodes = [
+		code: "fluorescence"
+		name: "Fluorescence"
+		ignored: false
+	,
+		code: "none"
+		name: "None"
+		ignored: false
+
+	]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenTestJSON = window.primaryScreenTestJSON or {} else exports)
 

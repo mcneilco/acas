@@ -1,7 +1,14 @@
 class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 	defaults:
+		instrumentReader: "unassigned"
+		signalDirectionRule: "unassigned"
+		aggregateBy1: "unassigned"
+		aggregateBy2: "unassigned"
 		transformationRule: "unassigned"
 		normalizationRule: "unassigned"
+		assayVolume: null
+		transferVolume: null
+		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
 		positiveControl: new Backbone.Model()
@@ -9,6 +16,9 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		vehicleControl: new Backbone.Model()
 		agonistControl: new Backbone.Model()
 		thresholdType: "sd"
+		volumeType: "dilution"
+		autoHitSelection: true
+		readSummary: new Backbone.Model()
 
 	initialize: ->
 		@fixCompositeClasses()
@@ -31,6 +41,10 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			@set agonistControl: new Backbone.Model(@get('agonistControl'))
 		@get('agonistControl').on "change", =>
 			@trigger 'change'
+#		if @get('readSummary') not instanceof Backbone.Model
+#			@set readSummary: new Backbone.Model(@get('readSummary'))
+#		@get('readSummary').on "change", =>
+#			@trigger 'change'
 
 	validate: (attrs) ->
 		errors = []
@@ -69,6 +83,22 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'vehicleControlBatch'
 				message: "Vehicle control must be set"
+		if attrs.instrumentReader is "unassigned" or attrs.instrumentReader is ""
+			errors.push
+				attribute: 'instrumentReader'
+				message: "Instrument reader must be assigned"
+		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
+			errors.push
+				attribute: 'signalDirectionRule'
+				message: "Signal Direction Rule must be assigned"
+		if attrs.aggregateBy1 is "unassigned" or attrs.aggregateBy1 is ""
+			errors.push
+				attribute: 'aggregateBy1'
+				message: "Aggregate By1 must be assigned"
+		if attrs.aggregateBy2 is "unassigned" or attrs.aggregateBy2 is ""
+			errors.push
+				attribute: 'aggregateBy2'
+				message: "Aggregate By2 must be assigned"
 		if attrs.transformationRule is "unassigned" or attrs.transformationRule is ""
 			errors.push
 				attribute: 'transformationRule'
@@ -85,6 +115,19 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'hitEfficacyThreshold'
 				message: "Efficacy threshold must be assigned"
+		if attrs.assayVolume is "" or _.isNaN(attrs.assayVolume)
+			errors.push
+				attribute: 'assayVolume'
+				message: "Assay volume must be assigned"
+		if attrs.volumeType == "dilution" && _.isNaN(attrs.dilutionFactor)
+			errors.push
+				attribute: 'dilutionFactor'
+				message: "Dilution factor must be assigned"
+		if attrs.volumeType == "transfer" && _.isNaN(attrs.transferVolume)
+			errors.push
+				attribute: 'transferVolume'
+				message: "Transfer volume must be assigned"
+# TODO: add case for when autoHitSelection is unselected?
 
 		if errors.length > 0
 			return errors
@@ -139,9 +182,15 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	autofillTemplate: _.template($("#PrimaryScreenAnalysisParametersAutofillView").html())
 
 	events:
+		"change .bv_instrumentReader": "attributeChanged"
+		"change .bv_signalDirectionRule": "attributeChanged"
+		"change .bv_aggregateBy1": "attributeChanged"
+		"change .bv_aggregateBy2": "attributeChanged"
 		"change .bv_transformationRule": "attributeChanged"
 		"change .bv_normalizationRule": "attributeChanged"
-		"change .bv_transformationRule": "attributeChanged"
+		"change .bv_assayVolume": "attributeChanged"
+		"change .bv_dilutionFactor": "attributeChanged"
+		"change .bv_transferVolume": "attributeChanged"
 		"change .bv_hitEfficacyThreshold": "attributeChanged"
 		"change .bv_hitSDThreshold": "attributeChanged"
 		"change .bv_positiveControlBatch": "attributeChanged"
@@ -153,25 +202,115 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_agonistControlConc": "attributeChanged"
 		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
+		"change .bv_volumeTypeTransfer": "handleVolumeTypeChanged"
+		"change .bv_volumeTypeDilution": "handleVolumeTypeChanged"
+		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
 
 	initialize: ->
 		@errorOwnerName = 'PrimaryScreenAnalysisParametersController'
 		super()
+		@setupInstrumentReaderSelect()
+		@setupSignalDirectionSelect()
+		@setupAggregateBy1Select()
+		@setupAggregateBy2Select()
+		@setupTransformationSelect()
+		@setupNormalizationSelect()
 
 	render: =>
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
-		@$('.bv_transformationRule').val(@model.get('transformationRule'))
-		@$('.bv_normalizationRule').val(@model.get('normalizationRule'))
+		@setupInstrumentReaderSelect()
+		@setupSignalDirectionSelect()
+		@setupAggregateBy1Select()
+		@setupAggregateBy2Select()
+		@setupTransformationSelect()
+		@setupNormalizationSelect()
+		@handleAutoHitSelectionChanged()
 
 		@
 
+
+	setupInstrumentReaderSelect: ->
+		@instrumentList = new PickListList()
+		@instrumentList.url = "/api/primaryAnalysis/runPrimaryAnalysis/instrumentReaderCodes"
+		@instrumentListController = new PickListSelectController
+			el: @$('.bv_instrumentReader')
+			collection: @instrumentList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Instrument"
+			selectedCode: @model.get('instrumentReader')
+
+	setupSignalDirectionSelect: ->
+		@signalDirectionList = new PickListList()
+		@signalDirectionList.url = "/api/primaryAnalysis/runPrimaryAnalysis/signalDirectionCodes"
+		@signalDirectionListController = new PickListSelectController
+			el: @$('.bv_signalDirectionRule')
+			collection: @signalDirectionList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Signal Direction"
+			selectedCode: @model.get('signalDirectionRule')
+
+	setupAggregateBy1Select: ->
+		@aggregateBy1List = new PickListList()
+		@aggregateBy1List.url = "/api/primaryAnalysis/runPrimaryAnalysis/aggregateBy1Codes"
+		@aggregateBy1ListController = new PickListSelectController
+			el: @$('.bv_aggregateBy1')
+			collection: @aggregateBy1List
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Aggregate By1"
+			selectedCode: @model.get('aggregateBy1')
+
+	setupAggregateBy2Select: ->
+		@aggregateBy2List = new PickListList()
+		@aggregateBy2List.url = "/api/primaryAnalysis/runPrimaryAnalysis/aggregateBy2Codes"
+		@aggregateBy2ListController = new PickListSelectController
+			el: @$('.bv_aggregateBy2')
+			collection: @aggregateBy2List
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Aggregate By2"
+			selectedCode: @model.get('aggregateBy2')
+
+	setupTransformationSelect: ->
+		@transformationList = new PickListList()
+		@transformationList.url = "/api/primaryAnalysis/runPrimaryAnalysis/transformationCodes"
+		@transformationListController = new PickListSelectController
+			el: @$('.bv_transformationRule')
+			collection: @transformationList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Rule"
+			selectedCode: @model.get('transformationRule')
+
+	setupNormalizationSelect: ->
+		@normalizationList = new PickListList()
+		@normalizationList.url = "/api/primaryAnalysis/runPrimaryAnalysis/normalizationCodes"
+		@normalizationListController = new PickListSelectController
+			el: @$('.bv_normalizationRule')
+			collection: @normalizationList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Rule"
+			selectedCode: @model.get('normalizationRule')
+
+
+
 	updateModel: =>
 		@model.set
+			instrumentReader: @$('.bv_instrumentReader').val()
+			signalDirectionRule: @$('.bv_signalDirectionRule').val()
+			aggregateBy1: @$('.bv_aggregateBy1').val()
+			aggregateBy2: @$('.bv_aggregateBy2').val()
 			transformationRule: @$('.bv_transformationRule').val()
 			normalizationRule: @$('.bv_normalizationRule').val()
 			hitEfficacyThreshold: parseFloat(@getTrimmedInput('.bv_hitEfficacyThreshold'))
 			hitSDThreshold: parseFloat(@getTrimmedInput('.bv_hitSDThreshold'))
+			assayVolume: parseFloat(@getTrimmedInput('.bv_assayVolume'))
+			transferVolume: parseFloat(@getTrimmedInput('.bv_transferVolume'))
+			dilutionFactor: parseFloat(@getTrimmedInput('.bv_dilutionFactor'))
 		@model.get('positiveControl').set
 			batchCode: @getTrimmedInput('.bv_positiveControlBatch')
 			concentration: parseFloat(@getTrimmedInput('.bv_positiveControlConc'))
@@ -194,6 +333,26 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		else
 			@$('.bv_hitEfficacyThreshold').attr('disabled','disabled')
 			@$('.bv_hitSDThreshold').removeAttr('disabled')
+		@attributeChanged()
+
+	handleAutoHitSelectionChanged: =>
+		autoHitSelection = @$('.bv_autoHitSelection').is(":checked")
+		@model.set autoHitSelection: autoHitSelection
+		if autoHitSelection
+			@$('.bv_thresholdControls').show()
+		else
+			@$('.bv_thresholdControls').hide()
+		@attributeChanged()
+
+	handleVolumeTypeChanged: =>
+		volumeType = @$("input[name='bv_volumeType']:checked").val()
+		@model.set volumeType: volumeType
+		if volumeType=="transfer"
+			@$('.bv_dilutionFactor').attr('disabled','disabled')
+			@$('.bv_transferVolume').removeAttr('disabled')
+		else
+			@$('.bv_transferVolume').attr('disabled','disabled')
+			@$('.bv_dilutionFactor').removeAttr('disabled')
 		@attributeChanged()
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
@@ -382,9 +541,10 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 							if json.length == 0
 								alert 'Could not get experiment for code in this URL, creating new one'
 							else
+								console.log "got an expt"
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								exp = new PrimaryScreenExperiment json
-								exp = new PrimaryScreenExperiment json[0]
+								exp = new PrimaryScreenExperiment json
+#								exp = new PrimaryScreenExperiment json[0]
 								exp.fixCompositeClasses()
 								@model = exp
 							@completeInitialization()
@@ -397,6 +557,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		unless @model?
 			@model = new PrimaryScreenExperiment()
 
+		console.log @model.get('codeName')
 		$(@el).html @template()
 		@model.on 'sync', @handleExperimentSaved
 		@experimentBaseController = new ExperimentBaseController
@@ -444,3 +605,56 @@ class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExpe
 	modelFitControllerName: "DoseResponseAnalysisController"
 	protocolFilter: "?protocolName=FLIPR"
 	moduleLaunchName: "flipr_screening_assay"
+
+
+class window.ReadPanelController extends Backbone.View
+	template: _.template($("#ReadPanelView").html())
+	tagName: "div"
+	className: "form-inline"
+	events:
+		"change .bv_readName": "attributeChanged"
+		"change .bv_matchReadName": "handleMatchReadNameChanged"
+		"click .bv_delete": "clear"
+
+
+	initialize: ->
+		@model.set readNumber: @options.readNumber
+		@model.on "destroy", @remove, @
+		@setupReadNameSelect()
+
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@$('.bv_readNumber').html @model.get('readNumber')
+		@setupReadNameSelect()
+
+
+		@
+
+	setupReadNameSelect: ->
+		@readNameList = new PickListList()
+		@readNameList.url = "/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes"
+		@readNameList = new PickListSelectController
+			el: @$('.bv_readName')
+			collection: @readNameList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Read Name"
+			selectedCode: @model.get('readName')
+
+
+
+#	handleMatchReadNameChanged: =>
+#		matchReadName = @$('.bv_matchReadName').is(":checked")
+#		@model.set matchReadName: matchReadName
+##		@attributeChanged()
+#
+#	updateModel: =>
+#		@model.set
+#			lsMatch: @$('.bv_matchReadName').val()
+#
+#
+#	clear: =>
+#		@model.destroy()
+

@@ -102,3 +102,191 @@ describe 'Run primary analysis service testing', ->
 			runs ->
 				(expect @serviceReturn.errorMessages.length).toBeGreaterThan 0
 
+
+	describe "Instrument reader code", ->
+		describe 'when instrumentReader code service called', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'GET'
+						url: "api/primaryAnalysis/runPrimaryAnalysis/instrumentReaderCodes"
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+
+			it 'should return an array of instrumentReader codes', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn.length).toBeGreaterThan 0
+			it 'should a hash with code defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].code).toBeDefined()
+			it 'should a hash with name defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].name).toBeDefined()
+			it 'should a hash with ignore defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].ignored).toBeDefined()
+
+	describe "Signal direction code", ->
+		describe 'when signal direction code service called', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'GET'
+						url: "api/primaryAnalysis/runPrimaryAnalysis/signalDirectionCodes"
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+
+			it 'should return an array of signal direction codes', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn.length).toBeGreaterThan 0
+			it 'should a hash with code defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].code).toBeDefined()
+			it 'should a hash with name defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].name).toBeDefined()
+			it 'should a hash with ignore defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].ignored).toBeDefined()
+
+	describe "aggregateBy1 code", ->
+		describe 'when aggregateBy1 code service called', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'GET'
+						url: "api/primaryAnalysis/runPrimaryAnalysis/aggregateBy1Codes"
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+
+			it 'should return an array of aggregateBy1  codes', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn.length).toBeGreaterThan 0
+			it 'should a hash with code defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].code).toBeDefined()
+			it 'should a hash with name defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].name).toBeDefined()
+			it 'should a hash with ignore defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].ignored).toBeDefined()
+
+	describe "aggregateBy2 code", ->
+		describe 'when aggregateBy2 code service called', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'GET'
+						url: "api/primaryAnalysis/runPrimaryAnalysis/aggregateBy2Codes"
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+
+			it 'should return an array of aggregateBy2  codes', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn.length).toBeGreaterThan 0
+			it 'should a hash with code defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].code).toBeDefined()
+			it 'should a hash with name defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].name).toBeDefined()
+			it 'should a hash with ignore defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].ignored).toBeDefined()
+
+	describe "Transformation code", ->
+		describe 'when transformation code service called', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'GET'
+						url: "api/primaryAnalysis/runPrimaryAnalysis/transformationCodes"
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+
+			it 'should return an array of transformation codes', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn.length).toBeGreaterThan 0
+			it 'should a hash with code defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].code).toBeDefined()
+			it 'should a hash with name defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].name).toBeDefined()
+			it 'should a hash with ignore defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].ignored).toBeDefined()
+
+	describe "Normalization code", ->
+		describe 'when normalization code service called', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'GET'
+						url: "api/primaryAnalysis/runPrimaryAnalysis/normalizationCodes"
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+
+			it 'should return an array of normalization codes', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn.length).toBeGreaterThan 0
+			it 'should a hash with code defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].code).toBeDefined()
+			it 'should a hash with name defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].name).toBeDefined()
+			it 'should a hash with ignore defined', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn[0].ignored).toBeDefined()
+
+

@@ -19,6 +19,8 @@ describe "Module Menu System Testing", ->
 				expect(@modLauncher.get('isActive')).toBeFalsy()
 				expect(@modLauncher.get('isDirty')).toBeFalsy()
 				expect(@modLauncher.get('mainControllerClassName')).toEqual "controllerClassNameReplaceMe"
+				expect(@modLauncher.get('autoLaunchName')).toBeNull()
+
 		describe "activation", ->
 			it "should trigger activation request", ->
 				runs ->
@@ -51,116 +53,130 @@ describe "Module Menu System Testing", ->
 
 	##########################################
 	describe "ModuleLauncherMenuController tests", ->
-		beforeEach ->
-			@modLauncher = new ModuleLauncher
-				isHeader: false
-				menuName: "test launcher"
-				mainControllerClassName: "testLauncherClassName"
-			@modLauncherMenuController = new ModuleLauncherMenuController
-				model: @modLauncher
-			$('#fixture').append @modLauncherMenuController.render().el
-
-		describe "Upon render", ->
-			it "should load the template", ->
-				expect($('.bv_menuName')).toBeDefined()
-			it "Should set its menu name", ->
-				expect(@modLauncherMenuController.$('.bv_menuName').html()).toEqual "test launcher"
-			it "should show that it is not running", ->
-				expect(@modLauncherMenuController.$('.bv_isLoaded')).not.toBeVisible()
-			it "should show that it is not dirty", ->
-				expect(@modLauncherMenuController.$('.bv_isDirty')).not.toBeVisible()
-			it "should should hide disabled mode", ->
-				expect(@modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible()
-			it "should should show enabled mode", ->
-				expect(@modLauncherMenuController.$('.bv_menuName')).toBeVisible()
-
-		describe "When clicked", ->
+		describe "when created with no autolaunch", ->
 			beforeEach ->
-				@modLauncherMenuController.bind "selected", =>
-					@gotTrigger = true
-				@modLauncherMenuController.$('.bv_menuName').click()
-			it "should set style active", ->
-				expect(@modLauncherMenuController.el).toHaveClass "active"
-			it "should set the model to active", ->
-				expect(@modLauncherMenuController.model.get('isActive')).toBeTruthy()
-			it "should trigger a selected event", ->
-				runs ->
-				waitsFor =>
-					@gotTrigger
-				runs ->
-					expect(@gotTrigger).toBeTruthy()
-
-		describe "When module is running", ->
-			it "should show that it is running", ->
-				@modLauncher.set isLoaded: true
-				expect(@modLauncherMenuController.$('.bv_isLoaded')).toBeVisible()
-
-		describe "When module has been edited and not saved", ->
-			it "should show that it is dirty", ->
-				@modLauncher.set isDirty: true
-				expect(@modLauncherMenuController.$('.bv_isDirty')).toBeVisible()
-
-		describe "when deselected", ->
-			it "should change style", ->
-				@modLauncherMenuController.$('.bv_menuName').click()
-				expect(@modLauncherMenuController.el).toHaveClass "active"
-				@modLauncherMenuController.clearSelected(new ModuleLauncherMenuController({model: new ModuleLauncher()}))
-				expect($(@modLauncherMenuController.el).hasClass("active")).toBeFalsy()
-				expect(@modLauncherMenuController.model.get('isActive')).toBeFalsy()
-
-		describe "when user not authorized to launch module", ->
-			beforeEach ->
-				@modLauncher2 = new ModuleLauncher
+				@modLauncher = new ModuleLauncher
 					isHeader: false
 					menuName: "test launcher"
 					mainControllerClassName: "testLauncherClassName"
-					requireUserRoles: ["admin", "loadData"]
-				@modLauncherMenuController2 = new ModuleLauncherMenuController
-					model: @modLauncher2
-			describe "with current user with no roles attribute", ->
-				it "should enable menu item", ->
-					$('#fixture').append @modLauncherMenuController2.render().el
+				@modLauncherMenuController = new ModuleLauncherMenuController
+					model: @modLauncher
+				$('#fixture').append @modLauncherMenuController.render().el
+
+			describe "Upon render", ->
+				it "should load the template", ->
+					expect($('.bv_menuName')).toBeDefined()
+				it "Should set its menu name", ->
+					expect(@modLauncherMenuController.$('.bv_menuName').html()).toEqual "test launcher"
+				it "should show that it is not running", ->
+					expect(@modLauncherMenuController.$('.bv_isLoaded')).not.toBeVisible()
+				it "should show that it is not dirty", ->
+					expect(@modLauncherMenuController.$('.bv_isDirty')).not.toBeVisible()
+				it "should should hide disabled mode", ->
 					expect(@modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible()
-					expect(@modLauncherMenuController.$('.bv_menuName')).toBeVisible()
-			describe "with current user with roles specified but not required role", ->
-				beforeEach ->
-					window.AppLaunchParams.loginUser.roles =
-						[
-							{
-								id: 3
-								roleEntry:
-									id: 2
-									roleDescription: "what Mal is not"
-									roleName: "king of all indinia"
-									version: 0
-								version: 0
-							}
-						]
-					$('#fixture').append @modLauncherMenuController2.render().el
-				it "should disable menu item", ->
-					expect(@modLauncherMenuController2.$('.bv_menuName_disabled')).toBeVisible()
-					expect(@modLauncherMenuController2.$('.bv_menuName')).not.toBeVisible()
-				it "should have title set to support mouse over", ->
-					expect($(@modLauncherMenuController2.el).attr("title")).toContain "not authorized"
-			describe "with current user having allowed role specified", ->
-				beforeEach ->
-					window.AppLaunchParams.loginUser.roles =
-						[
-							{
-								id: 3
-								roleEntry:
-									id: 2
-									roleDescription: "data loader"
-									roleName: "loadData"
-									version: 0
-								version: 0
-							}
-						]
-					$('#fixture').append @modLauncherMenuController2.render().el
-				it "should enable menu item", ->
-					expect(@modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible()
+				it "should should show enabled mode", ->
 					expect(@modLauncherMenuController.$('.bv_menuName')).toBeVisible()
 
+			describe "When clicked", ->
+				beforeEach ->
+					@modLauncherMenuController.bind "selected", =>
+						@gotTrigger = true
+					@modLauncherMenuController.$('.bv_menuName').click()
+				it "should set style active", ->
+					expect(@modLauncherMenuController.el).toHaveClass "active"
+				it "should set the model to active", ->
+					expect(@modLauncherMenuController.model.get('isActive')).toBeTruthy()
+				it "should trigger a selected event", ->
+					runs ->
+					waitsFor =>
+						@gotTrigger
+					runs ->
+						expect(@gotTrigger).toBeTruthy()
+
+			describe "When module is running", ->
+				it "should not show that it is running", ->
+					@modLauncher.set isLoaded: true
+					expect(@modLauncherMenuController.$('.bv_isLoaded')).not.toBeVisible()
+
+			describe "When module has been edited and not saved", ->
+				it "should show that it is dirty", ->
+					@modLauncher.set isDirty: true
+					expect(@modLauncherMenuController.$('.bv_isDirty')).toBeVisible()
+
+			describe "when deselected", ->
+				it "should change style", ->
+					@modLauncherMenuController.$('.bv_menuName').click()
+					expect(@modLauncherMenuController.el).toHaveClass "active"
+					@modLauncherMenuController.clearSelected(new ModuleLauncherMenuController({model: new ModuleLauncher()}))
+					expect($(@modLauncherMenuController.el).hasClass("active")).toBeFalsy()
+					expect(@modLauncherMenuController.model.get('isActive')).toBeFalsy()
+
+			describe "when user not authorized to launch module", ->
+				beforeEach ->
+					@modLauncher2 = new ModuleLauncher
+						isHeader: false
+						menuName: "test launcher"
+						mainControllerClassName: "testLauncherClassName"
+						requireUserRoles: ["admin", "loadData"]
+					@modLauncherMenuController2 = new ModuleLauncherMenuController
+						model: @modLauncher2
+				describe "with current user with no roles attribute", ->
+					it "should enable menu item", ->
+						$('#fixture').append @modLauncherMenuController2.render().el
+						expect(@modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible()
+						expect(@modLauncherMenuController.$('.bv_menuName')).toBeVisible()
+				describe "with current user with roles specified but not required role", ->
+					beforeEach ->
+						window.AppLaunchParams.loginUser.roles =
+							[
+								{
+									id: 3
+									roleEntry:
+										id: 2
+										roleDescription: "what Mal is not"
+										roleName: "king of all indinia"
+										version: 0
+									version: 0
+								}
+							]
+						$('#fixture').append @modLauncherMenuController2.render().el
+					it "should disable menu item", ->
+						expect(@modLauncherMenuController2.$('.bv_menuName_disabled')).toBeVisible()
+						expect(@modLauncherMenuController2.$('.bv_menuName')).not.toBeVisible()
+					it "should have title set to support mouse over", ->
+						expect($(@modLauncherMenuController2.el).attr("title")).toContain "not authorized"
+				describe "with current user having allowed role specified", ->
+					beforeEach ->
+						window.AppLaunchParams.loginUser.roles =
+							[
+								{
+									id: 3
+									roleEntry:
+										id: 2
+										roleDescription: "data loader"
+										roleName: "loadData"
+										version: 0
+									version: 0
+								}
+							]
+						$('#fixture').append @modLauncherMenuController2.render().el
+					it "should enable menu item", ->
+						expect(@modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible()
+						expect(@modLauncherMenuController.$('.bv_menuName')).toBeVisible()
+
+		describe "when created with autolaunch", ->
+			beforeEach ->
+				@modLauncher = new ModuleLauncher
+					isHeader: false
+					menuName: "test launcher"
+					mainControllerClassName: "testLauncherClassName"
+					autoLaunchName: "testLaunch"
+				@modLauncherMenuController = new ModuleLauncherMenuController
+					model: @modLauncher
+				$('#fixture').append @modLauncherMenuController.render().el
+			it "should set the element class name", ->
+				#expect(@modLauncherMenuController.$el.hasClass('bv_launch_testLaunch')).toBeTruthy()
+				expect(@modLauncherMenuController.$('.bv_menuName').hasClass('bv_launch_testLaunch')).toBeTruthy()
 	##########################################
 	describe "ModuleLauncherMenuHeaderController tests", ->
 		beforeEach ->

@@ -16,7 +16,8 @@
       mainControllerClassName: "controllerClassNameReplaceMe",
       isLoaded: false,
       isActive: false,
-      isDirty: false
+      isDirty: false,
+      autoLaunchName: null
     };
 
     ModuleLauncher.prototype.requestActivation = function() {
@@ -75,17 +76,15 @@
     ModuleLauncherMenuController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template(this.model.toJSON()));
-      $(this.el).addClass('bv_launch_' + this.model.get('autoLaunchName'));
+      if (this.model.has('autoLaunchName')) {
+        this.$('.bv_menuName').addClass('bv_launch_' + this.model.get('autoLaunchName'));
+      }
       if (this.model.get('isActive')) {
         $(this.el).addClass("active");
       } else {
         $(this.el).removeClass("active");
       }
-      if (this.model.get('isLoaded')) {
-        this.$('.bv_isLoaded').show();
-      } else {
-        this.$('.bv_isLoaded').hide();
-      }
+      this.$('.bv_isLoaded').hide();
       if (this.model.get('isDirty')) {
         this.$('.bv_isDirty').show();
       } else {
@@ -102,6 +101,7 @@
     };
 
     ModuleLauncherMenuController.prototype.handleSelect = function() {
+      console.log("got to handleSelect");
       this.model.requestActivation();
       return this.trigger("selected", this);
     };
@@ -192,7 +192,9 @@
     ModuleLauncherMenuListController.prototype.launchModule = function(moduleName) {
       var selector;
       selector = '.bv_launch_' + moduleName;
-      return this.$(selector).click();
+      console.log('.bv_launch_' + moduleName);
+      this.$(selector).click();
+      return console.log(this.$(selector));
     };
 
     return ModuleLauncherMenuListController;
