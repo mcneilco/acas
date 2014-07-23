@@ -83,32 +83,30 @@
 	routeSet_3.setupRoutes(app, loginRoutes);
 	routeSet_4 = require("./routes/CurveCuratorRoutes.js");
 	routeSet_4.setupRoutes(app, loginRoutes);
-	routeSet_5 = require("./routes/DataDictionaryServiceRoutes.js");
+	routeSet_5 = require("./routes/DocForBatchesRoutes.js");
 	routeSet_5.setupRoutes(app, loginRoutes);
-	routeSet_6 = require("./routes/DocForBatchesRoutes.js");
+	routeSet_6 = require("./routes/DoseResponseFitRoutes.js");
 	routeSet_6.setupRoutes(app, loginRoutes);
-	routeSet_7 = require("./routes/DoseResponseFitRoutes.js");
+	routeSet_7 = require("./routes/ExperimentBrowserRoutes.js");
 	routeSet_7.setupRoutes(app, loginRoutes);
-	routeSet_8 = require("./routes/ExperimentBrowserRoutes.js");
+	routeSet_8 = require("./routes/ExperimentServiceRoutes.js");
 	routeSet_8.setupRoutes(app, loginRoutes);
-	routeSet_9 = require("./routes/ExperimentServiceRoutes.js");
+	routeSet_9 = require("./routes/GeneDataQueriesRoutes.js");
 	routeSet_9.setupRoutes(app, loginRoutes);
-	routeSet_10 = require("./routes/GeneDataQueriesRoutes.js");
+	routeSet_10 = require("./routes/GenericDataParserRoutes.js");
 	routeSet_10.setupRoutes(app, loginRoutes);
-	routeSet_11 = require("./routes/GenericDataParserRoutes.js");
+	routeSet_11 = require("./routes/PreferredBatchIdService.js");
 	routeSet_11.setupRoutes(app, loginRoutes);
-	routeSet_12 = require("./routes/PreferredBatchIdService.js");
+	routeSet_12 = require("./routes/PrimaryScreenRoutes.js");
 	routeSet_12.setupRoutes(app, loginRoutes);
-	routeSet_13 = require("./routes/PrimaryScreenRoutes.js");
+	routeSet_13 = require("./routes/ProjectServiceRoutes.js");
 	routeSet_13.setupRoutes(app, loginRoutes);
-	routeSet_14 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_14 = require("./routes/ProtocolServiceRoutes.js");
 	routeSet_14.setupRoutes(app, loginRoutes);
-	routeSet_15 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_15 = require("./routes/RunPrimaryAnalysisRoutes.js");
 	routeSet_15.setupRoutes(app, loginRoutes);
-	routeSet_16 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_16 = require("./routes/ServerUtilityFunctions.js");
 	routeSet_16.setupRoutes(app, loginRoutes);
-	routeSet_17 = require("./routes/ServerUtilityFunctions.js");
-	routeSet_17.setupRoutes(app, loginRoutes);
 
     if (config.all.server.datafiles.without.login) {
       app.get('/dataFiles/*', function(req, resp) {
