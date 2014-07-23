@@ -6,8 +6,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.getDataDictValues = (req, resp) ->
 	if global.specRunnerTestmode
-		dataDictServiceTestJSON = require '../public/javascripts/spec/testFixtures/dataDictServiceTestJSON.js'
-		resp.end JSON.stringify dataDictServiceTestJSON.dataDictValues[req.params.kind]
+		codeTableServiceTestJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
+		for i in codeTableServiceTestJSON.codes
+			if i[req.params.kind]
+				console.log "success"
+				resp.end JSON.stringify i[req.params.kind]
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"api/v1/ddictvalues/bytype/"+req.params.kind+"/codetable"
@@ -25,3 +28,4 @@ exports.getDataDictValues = (req, resp) ->
 				console.log json
 				console.log response
 		)
+

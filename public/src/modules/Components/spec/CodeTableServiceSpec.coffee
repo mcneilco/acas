@@ -1,14 +1,15 @@
-describe 'Data Dictinary Service testing', ->
+
+describe 'Code Table Service testing', ->
 	beforeEach ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
 
-	describe 'when data dictionary service called', ->
+	describe 'when code table service called', ->
 		beforeEach ->
 			runs ->
 				$.ajax
 					type: 'GET'
-					url: "api/dataDict/well flags"
+					url: "api/dataDict/algorithm well flags"
 					success: (json) =>
 						@serviceReturn = json
 					error: (err) =>
@@ -16,7 +17,7 @@ describe 'Data Dictinary Service testing', ->
 						@serviceReturn = null
 					dataType: 'json'
 
-		it 'should return an array of data dictionary values', ->
+		it 'should return an array of code table values', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn.length).toBeGreaterThan 0
@@ -32,5 +33,4 @@ describe 'Data Dictinary Service testing', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn[0].ignored).toBeDefined()
-
 
