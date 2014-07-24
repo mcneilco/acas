@@ -11,6 +11,14 @@ body {
     background-color:white;
 }
 
+.dataTableRow {
+	cursor: pointer;
+}
+
+.rowSelected {
+	background-color: green;
+}
+
 /*.bv_GenericDataParserController {
 
     background-color: yellow;

@@ -925,6 +925,58 @@
 		recordedDate: 1372303173000
 		version: 0
 	]
+
+	exports.protocolKinds = [
+		id: 1
+		kindName: "default"
+		lsType:
+			id: 1
+			typeName: "default"
+			version: 0
+
+		lsTypeAndKind: "default_default"
+		version: 0
+	,
+		id: 2
+		kindName: "FLIPR"
+		lsType:
+			id: 1
+			typeName: "default"
+			version: 0
+
+		lsTypeAndKind: "FLIPR_default"
+		version: 0
+	,
+		id: 3
+		kindName: "KD"
+		lsType:
+			id: 1
+			typeName: "default"
+			version: 0
+
+		lsTypeAndKind: "KD_default"
+		version: 0
+	,
+		id: 4
+		kindName: "Microsome Stability"
+		lsType:
+			id: 1
+			typeName: "default"
+			version: 0
+
+		lsTypeAndKind: "Microsome Stability_default"
+		version: 0
+	,
+		id: 5
+		kindName: "uSol"
+		lsType:
+			id: 1
+			typeName: "default"
+			version: 0
+
+		lsTypeAndKind: "uSol_default"
+		version: 0
+	]
 ) (if (typeof process is "undefined" or not process.versions) then window.protocolServiceTestJSON = window.protocolServiceTestJSON or {} else exports)
 
 

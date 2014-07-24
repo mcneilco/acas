@@ -5,7 +5,8 @@
     app.post('/api/protocols', loginRoutes.ensureAuthenticated, exports.postProtocol);
     app.put('/api/protocols', loginRoutes.ensureAuthenticated, exports.putProtocol);
     app.get('/api/protocollabels', loginRoutes.ensureAuthenticated, exports.lsLabels);
-    return app.get('/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList);
+    app.get('/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList);
+    return app.get('/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList);
   };
 
   exports.protocolByCodename = function(req, resp) {
@@ -116,7 +117,7 @@
       filterString = req.query.protocolName.toUpperCase();
     } else if (req.query.protocolKind != null) {
       shouldFilterByKind = true;
-      filterString = req.query.protocolKind.toUpperCase();
+      filterString = req.query.protocolKind;
     } else {
       shouldFilterByName = false;
       shouldFilterByKind = false;
@@ -149,11 +150,11 @@
       return resp.json(translateToCodes(labels));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "protocollabels/codetable";
+      baseurl = config.all.client.service.persistence.fullpath + "protocols/codetable";
       if (shouldFilterByName) {
         baseurl += "/?protocolName=" + filterString;
       } else if (shouldFilterByKind) {
-        baseurl += "/?protocolKind=" + filterString;
+        baseurl += "?lskind=" + filterString;
       }
       request = require('request');
       return request({
@@ -164,6 +165,47 @@
         return function(error, response, json) {
           if (!error && response.statusCode === 200) {
             return resp.json(json);
+          } else {
+            console.log('got ajax error trying to get protocol labels');
+            console.log(error);
+            console.log(json);
+            return console.log(response);
+          }
+        };
+      })(this));
+    }
+  };
+
+  exports.protocolKindCodeList = function(req, resp) {
+    var baseurl, config, protocolServiceTestJSON, request, translateToCodes;
+    translateToCodes = function(kinds) {
+      var kind, kindCodes, _i, _len;
+      kindCodes = [];
+      for (_i = 0, _len = kinds.length; _i < _len; _i++) {
+        kind = kinds[_i];
+        kindCodes.push({
+          code: kind.kindName,
+          name: kind.kindName,
+          ignored: false
+        });
+      }
+      return kindCodes;
+    };
+    if (global.specRunnerTestmode) {
+      protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
+      return resp.json(translateToCodes(protocolServiceTestJSON.protocolKinds));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocolkinds";
+      request = require('request');
+      return request({
+        method: 'GET',
+        url: baseurl,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return resp.json(translateToCodes(json));
           } else {
             console.log('got ajax error trying to get protocol labels');
             console.log(error);
