@@ -185,9 +185,7 @@ test_that("validateMetaData handles an incorrectly formatted date (will err when
   
   metaData$"Assay Date" <- "2012/11/07"
   
-  #When bug RACAS#6 is fixed, the return type will be date, so uncomment this line and remove the one after it
-  #validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
-  validatedMetaData$"Assay Date" <- "2012-11-07"
+  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
   duplicateExperimentNamesAllowed <- FALSE
   useExisting <- FALSE
   
