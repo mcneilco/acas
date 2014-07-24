@@ -85,7 +85,7 @@ exports.liveServiceSpecRunner = (req, res) ->
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 	]
 
-	scriptsToLoad = requiredScripts.concat(scriptPaths.jasmineScripts, specScripts)
+	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.jasmineScripts, specScripts)
 	scriptsToLoad = scriptsToLoad.concat(scriptPaths.applicationScripts)
 
 	res.render('LiveServiceSpecRunner', {

@@ -90,7 +90,7 @@
     var scriptsToLoad, specScripts;
     global.specRunnerTestmode = false;
     specScripts = ['javascripts/spec/ProjectsServiceSpec.js', 'javascripts/spec/ProtocolServiceSpec.js', 'javascripts/spec/PreferredBatchIdServiceSpec.js'];
-    scriptsToLoad = requiredScripts.concat(scriptPaths.jasmineScripts, specScripts);
+    scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.jasmineScripts, specScripts);
     scriptsToLoad = scriptsToLoad.concat(scriptPaths.applicationScripts);
     return res.render('LiveServiceSpecRunner', {
       title: 'SeuratAddOns LiveServiceSpecRunner',

@@ -71,7 +71,6 @@ exports.specScripts = [
 	"/src/modules/Components/spec/testFixtures/TagListTestJSON.js",
 	"/src/modules/Components/spec/testFixtures/projectServiceTestJSON.js",
 	"/src/modules/DocForBatches/spec/testFixtures/testJSON.js",
-	"/javascripts/spec/testFixtures/CodeTableJSON.js",
 	"/javascripts/spec/testFixtures/CurveAnalysisCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/CurveFitTestFixtures.js",
 	"/javascripts/spec/testFixtures/CurveFitTestJSON.js",

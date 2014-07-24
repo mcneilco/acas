@@ -606,7 +606,7 @@
                   if (json.length === 0) {
                     alert('Could not get experiment for code in this URL, creating new one');
                   } else {
-                    exp = new PrimaryScreenExperiment(json[0]);
+                    exp = new PrimaryScreenExperiment(json);
                     exp.fixCompositeClasses();
                     _this.model = exp;
                   }
