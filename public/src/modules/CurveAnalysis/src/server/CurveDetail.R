@@ -3,8 +3,7 @@
 library(racas)
 
 handler <- function(e) {
-  myMessenger$logger$error('got error')
-  myMessenger$logger$error(e$message)
+  myMessenger$logger$error(e)
   setHeader("Access-Control-Allow-Origin" ,"*")
   setContentType("text/plain")
   setStatus(500L)

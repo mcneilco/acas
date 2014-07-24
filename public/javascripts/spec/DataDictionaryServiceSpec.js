@@ -32,19 +32,19 @@
           return expect(this.serviceReturn.length).toBeGreaterThan(0);
         });
       });
-      it('should a hash with code defined', function() {
+      it('should return a hash with code defined', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           return expect(this.serviceReturn[0].code).toBeDefined();
         });
       });
-      it('should a hash with name defined', function() {
+      it('should return a hash with name defined', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           return expect(this.serviceReturn[0].name).toBeDefined();
         });
       });
-      return it('should a hash with ignore defined', function() {
+      return it('should return a hash with ignore defined', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           return expect(this.serviceReturn[0].ignored).toBeDefined();
