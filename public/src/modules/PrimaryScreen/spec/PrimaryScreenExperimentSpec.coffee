@@ -336,7 +336,7 @@ describe "Primary Screen Experiment module testing", ->
 		describe "basic plumbing checks with experiment copied from template", ->
 			beforeEach ->
 				@exp = new PrimaryScreenExperiment()
-				@exp.copyProtocolAttributes new Protocol(window.protocolServiceTestJSON.fullSavedProtocol)
+				@exp.copyProtocolAttributes new Protocol JSON.parse(JSON.stringify(window.protocolServiceTestJSON.fullSavedProtocol))
 				@psac = new PrimaryScreenAnalysisController
 					model: @exp
 					el: $('#fixture')
@@ -412,7 +412,8 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
 					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual 0
-				it "Should load a dose response controller", ->
+				#TODO this spec is not running because prod IFF does not include a fit module yet
+				xit "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual 0
 
 

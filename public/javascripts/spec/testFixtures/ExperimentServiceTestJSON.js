@@ -1579,7 +1579,7 @@
         shortDescription: "protocol created by generic data parser",
         version: 1
       },
-      recordedBy: "smeyer",
+      recordedBy: "nxm7557",
       recordedDate: 1375889487000,
       shortDescription: "experiment created by generic data parser",
       version: 1
