@@ -370,7 +370,7 @@ This service runs a primary data analysis.
         });
       });
     });
-    return describe("Normalization code", function() {
+    describe("Normalization code", function() {
       return describe('when normalization code service called', function() {
         beforeEach(function() {
           return runs(function() {
@@ -393,6 +393,54 @@ This service runs a primary data analysis.
           });
         });
         it('should return an array of normalization codes', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.length).toBeGreaterThan(0);
+          });
+        });
+        it('should a hash with code defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].code).toBeDefined();
+          });
+        });
+        it('should a hash with name defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].name).toBeDefined();
+          });
+        });
+        return it('should a hash with ignore defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].ignored).toBeDefined();
+          });
+        });
+      });
+    });
+    return describe("Read name code", function() {
+      return describe('when read name code service called', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "api/primaryAnalysis/runPrimaryAnalysis/readNameCodes",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        it('should return an array of readName codes', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
             return expect(this.serviceReturn.length).toBeGreaterThan(0);

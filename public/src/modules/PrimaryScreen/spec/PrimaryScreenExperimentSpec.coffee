@@ -32,8 +32,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('thresholdType')).toEqual "sd"
 					expect(@psap.get('autoHitSelection')).toBeTruthy()
-					expect(@psap.get('readSummary') instanceof Backbone.Model).toBeTruthy()
-
+					expect(@psap.get('primaryAnalysisRead') instanceof Backbone.Model).toBeTruthy()
 
 		describe "model validation tests", ->
 			beforeEach ->
@@ -180,6 +179,38 @@ describe "Primary Screen Experiment module testing", ->
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
+	describe "Primary Analysis Read model testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@par = new PrimaryAnalysisRead()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@par).toBeDefined()
+				it "should have defaults", ->
+					expect(@par.get('readOrder')).toBeNull()
+					expect(@par.get('readName')).toEqual "unassigned"
+					expect(@par.get('matchReadName')).toBeTruthy()
+			describe "model validation tests", ->
+				beforeEach ->
+					@par = new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisRead
+				it "should be valid as initialized", ->
+					expect(@par.isValid()).toBeTruthy()
+				it "should be invalid when read order is NaN", ->
+					@par.set readOrder: NaN
+					expect(@par.isValid()).toBeFalsy()
+					filtErrors = _.filter(@par.validationError, (err) ->
+						err.attribute=='readOrder'
+					)
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be invalid when read name is unassigned", ->
+					@par.set readName: "unassigned"
+					expect(@par.isValid()).toBeFalsy()
+					filtErrors = _.filter(@par.validationError, (err) ->
+						err.attribute=='readName'
+					)
+					expect(filtErrors.length).toBeGreaterThan 0
+
+
 	describe "Primary Screen Experiment model testing", ->
 		describe "When loaded from existing", ->
 			beforeEach ->
@@ -227,6 +258,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@pse2.getModelFitStatus().get('stringValue')).toEqual "not started"
 				it "should be able to get the model result html", ->
 					expect(@pse2.getModelFitResultHTML().get('clobValue')).toEqual ""
+
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->
@@ -309,9 +341,8 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psapc.$('.bv_hitEfficacyThreshold').val()).toEqual '42'
 				it 'should start with thresholdType radio set', ->
 					expect(@psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual 'sd'
-				it "should hide threshold controls if the model loads unchecked automaticHitSelection", ->
+				it 'should hide threshold controls if the model loads unchecked automaticHitSelection', ->
 					expect(@psapc.$('.bv_thresholdControls')).toBeHidden()
-
 			describe "model updates", ->
 				it "should update the instrument reader", ->
 					waitsFor ->
@@ -653,26 +684,82 @@ describe "Primary Screen Experiment module testing", ->
 				it "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual 0
 
-	describe "Read Panel", ->
-		describe "read panel controller", ->
-			describe 'when instantiated', ->
-				beforeEach ->
-					@rpc = new ReadPanelController
-						el: $('#fixture')
-						model: new Backbone.Model()
-						readOptions: new Backbone.Collection window.primaryScreenTestJSON.readPanel
-						readNumber: "1"
-					@rpc.render()
-				describe "basic existance tests", ->
-					it 'should exist', ->
-						expect(@rpc).toBeDefined()
-					it 'should load a template', ->
-						expect(@rpc.$('.bv_readNumber').length).toEqual 1
-				describe "rendering", ->
-					it "should show readNumber", ->
-						expect(@rpc.$('.bv_readNumber').html()).toEqual "1"
-					it "should show read name", ->
-						expect(@rpc.$('.bv_readName').val()).toEqual "fluorescence"
+	describe 'PrimaryAnalysisRead Controller', ->
+		describe 'when instantiated', ->
+			beforeEach ->
+				@parc = new PrimaryAnalysisReadController
+					model: new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisRead
+					el: $('#fixture')
+				@parc.render()
+			describe "basic existance tests", ->
+				it 'should exist', ->
+					expect(@parc).toBeDefined()
+#				it 'should load a template', ->
+#					expect(@parc.$('.bv_autofillSection').length).toEqual 1
+#				it 'should load autofill template', ->
+#					expect(@parc.$('.bv_hitSDThreshold').length).toEqual 1
+#			describe "render existing parameters", ->
+
+
+
+
+
+
+#				describe "Read Summary", ->
+#					describe "read summary controller", ->
+#						describe 'when instantiated', ->
+#							beforeEach ->
+#								@rsc = new ReadSummaryController
+#									el: $('#fixture')
+#									model: new Backbone.Model()
+#									readOrder: "1"
+#								@rsc.render()
+#							describe "basic existence tests", ->
+#								it 'should exist', ->
+#									expect(@rsc).toBeDefined()
+#								it 'should load a template', ->
+#									expect(@rsc.$('.bv_readOrder').length).toEqual 1
+#							describe "rendering", ->
+#								it "should show readOrder", ->
+#									expect(@rsc.$('.bv_readOrder').html()).toEqual "1"
+#								it "should show readName", ->
+#									expect(@rsc.$('.bv_readName').val()).toEqual 'luminescence'
+#
+
+#		describe "read summary list controller", ->
+#			describe 'when instantiated', ->
+#				beforeEach ->
+#					@rslc = new ReadSummaryListController
+#						el: $('#fixture')
+#						collection: new Backbone.Collection()
+#					@rslc.render()
+#				describe "basic existance tests", ->
+#					it 'should exist', ->
+#						expect(@rslc).toBeDefined()
+#					it 'should load a template', ->
+#						expect(@rslc.$('.bv_addRead').length).toEqual 1
+#
+
+
+#	describe "Read Panel", ->
+#		describe "read panel controller", ->
+#			describe 'when instantiated', ->
+#				beforeEach ->
+#					@rpc = new ReadPanelController
+#						el: $('#fixture')
+#						model: new Backbone.Model()
+#						readNumber: "1"
+#					@rpc.render()
+#				describe "basic existance tests", ->
+#					it 'should exist', ->
+#						expect(@rpc).toBeDefined()
+#					it 'should load a template', ->
+#						expect(@rpc.$('.bv_readNumber').length).toEqual 1
+#				describe "rendering", ->
+#					it "should show readNumber", ->
+#						expect(@rpc.$('.bv_readNumber').html()).toEqual "1"
+#					it "should show read name", ->
+#						expect(@rpc.$('.bv_readName').val()).toEqual "fluorescence"
 
 
 

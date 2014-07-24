@@ -30,7 +30,7 @@
 		volumeType: "dilution" #or "efficacy"
 		assayVolume: 24
 		autoHitSelection: false
-		readName: "fluorescence"
+
 
 	exports.instrumentReaderCodes = [
 		code: "flipr"
@@ -73,16 +73,19 @@
 
 	]
 
-	exports.readNameCodes = [
-		code: "fluorescence"
-		name: "Fluorescence"
-		ignored: false
-	,
-		code: "none"
-		name: "None"
-		ignored: false
+	exports.primaryAnalysisRead = [
+		readOrder: 1
+		readName: "luminescence"
+		matchReadName: true
 
 	]
+
+#	exports.readNameCodes = [
+#		code: "luminescence"
+#		name: "Luminescence"
+#		ignored: false
+#
+#	]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenTestJSON = window.primaryScreenTestJSON or {} else exports)
 

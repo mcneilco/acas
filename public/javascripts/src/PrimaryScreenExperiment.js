@@ -30,7 +30,7 @@
       thresholdType: "sd",
       volumeType: "dilution",
       autoHitSelection: true,
-      readSummary: new Backbone.Model()
+      primaryAnalysisRead: new Backbone.Model()
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
@@ -189,7 +189,7 @@
       if (attrs.volumeType === "dilution" && _.isNaN(attrs.dilutionFactor)) {
         errors.push({
           attribute: 'dilutionFactor',
-          message: "Dilution factor must be assigned"
+          message: "Dilution factor must be a number"
         });
       }
       if (attrs.volumeType === "transfer" && _.isNaN(attrs.transferVolume)) {
@@ -911,58 +911,43 @@
 
   })(AbstractPrimaryScreenExperimentController);
 
-  window.ReadPanelController = (function(_super) {
-    __extends(ReadPanelController, _super);
+  window.PrimaryAnalysisRead = (function(_super) {
+    __extends(PrimaryAnalysisRead, _super);
 
-    function ReadPanelController() {
-      this.render = __bind(this.render, this);
-      return ReadPanelController.__super__.constructor.apply(this, arguments);
+    function PrimaryAnalysisRead() {
+      return PrimaryAnalysisRead.__super__.constructor.apply(this, arguments);
     }
 
-    ReadPanelController.prototype.template = _.template($("#ReadPanelView").html());
-
-    ReadPanelController.prototype.tagName = "div";
-
-    ReadPanelController.prototype.className = "form-inline";
-
-    ReadPanelController.prototype.events = {
-      "change .bv_readName": "attributeChanged",
-      "change .bv_matchReadName": "handleMatchReadNameChanged",
-      "click .bv_delete": "clear"
+    PrimaryAnalysisRead.prototype.defaults = {
+      readOrder: null,
+      readName: "unassigned",
+      matchReadName: true
     };
 
-    ReadPanelController.prototype.initialize = function() {
-      this.model.set({
-        readNumber: this.options.readNumber
-      });
-      this.model.on("destroy", this.remove, this);
-      return this.setupReadNameSelect();
+    PrimaryAnalysisRead.prototype.validate = function(attrs) {
+      var errors;
+      errors = [];
+      if (attrs.readOrder === "" || _.isNaN(attrs.readOrder)) {
+        errors.push({
+          attribute: 'readOrder',
+          message: "Read order must be a number"
+        });
+      }
+      if (attrs.readName === "unassigned" || attrs.readName === "") {
+        errors.push({
+          attribute: 'readName',
+          message: "Read name must be assigned"
+        });
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
     };
 
-    ReadPanelController.prototype.render = function() {
-      $(this.el).empty();
-      $(this.el).html(this.template());
-      this.$('.bv_readNumber').html(this.model.get('readNumber'));
-      this.setupReadNameSelect();
-      return this;
-    };
+    return PrimaryAnalysisRead;
 
-    ReadPanelController.prototype.setupReadNameSelect = function() {
-      this.readNameList = new PickListList();
-      this.readNameList.url = "/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes";
-      return this.readNameList = new PickListSelectController({
-        el: this.$('.bv_readName'),
-        collection: this.readNameList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Read Name"
-        }),
-        selectedCode: this.model.get('readName')
-      });
-    };
-
-    return ReadPanelController;
-
-  })(Backbone.View);
+  })(Backbone.Model);
 
 }).call(this);

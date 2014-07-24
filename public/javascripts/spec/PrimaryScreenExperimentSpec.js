@@ -37,7 +37,7 @@
             expect(this.psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('thresholdType')).toEqual("sd");
             expect(this.psap.get('autoHitSelection')).toBeTruthy();
-            return expect(this.psap.get('readSummary') instanceof Backbone.Model).toBeTruthy();
+            return expect(this.psap.get('primaryAnalysisRead') instanceof Backbone.Model).toBeTruthy();
           });
         });
       });
@@ -266,6 +266,53 @@
         });
       });
     });
+    describe("Primary Analysis Read model testing", function() {
+      return describe("When loaded from new", function() {
+        beforeEach(function() {
+          return this.par = new PrimaryAnalysisRead();
+        });
+        describe("Existence and Defaults", function() {
+          it("should be defined", function() {
+            return expect(this.par).toBeDefined();
+          });
+          return it("should have defaults", function() {
+            expect(this.par.get('readOrder')).toBeNull();
+            expect(this.par.get('readName')).toEqual("unassigned");
+            return expect(this.par.get('matchReadName')).toBeTruthy();
+          });
+        });
+        return describe("model validation tests", function() {
+          beforeEach(function() {
+            return this.par = new PrimaryAnalysisRead(window.primaryScreenTestJSON.primaryAnalysisRead);
+          });
+          it("should be valid as initialized", function() {
+            return expect(this.par.isValid()).toBeTruthy();
+          });
+          it("should be invalid when read order is NaN", function() {
+            var filtErrors;
+            this.par.set({
+              readOrder: NaN
+            });
+            expect(this.par.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.par.validationError, function(err) {
+              return err.attribute === 'readOrder';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          return it("should be invalid when read name is unassigned", function() {
+            var filtErrors;
+            this.par.set({
+              readName: "unassigned"
+            });
+            expect(this.par.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.par.validationError, function(err) {
+              return err.attribute === 'readName';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+        });
+      });
+    });
     describe("Primary Screen Experiment model testing", function() {
       describe("When loaded from existing", function() {
         beforeEach(function() {
@@ -453,7 +500,7 @@
           it('should start with thresholdType radio set', function() {
             return expect(this.psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual('sd');
           });
-          return it("should hide threshold controls if the model loads unchecked automaticHitSelection", function() {
+          return it('should hide threshold controls if the model loads unchecked automaticHitSelection', function() {
             return expect(this.psapc.$('.bv_thresholdControls')).toBeHidden();
           });
         });
@@ -904,33 +951,18 @@
         });
       });
     });
-    return describe("Read Panel", function() {
-      return describe("read panel controller", function() {
-        return describe('when instantiated', function() {
-          beforeEach(function() {
-            this.rpc = new ReadPanelController({
-              el: $('#fixture'),
-              model: new Backbone.Model(),
-              readOptions: new Backbone.Collection(window.primaryScreenTestJSON.readPanel),
-              readNumber: "1"
-            });
-            return this.rpc.render();
+    return describe('PrimaryAnalysisRead Controller', function() {
+      return describe('when instantiated', function() {
+        beforeEach(function() {
+          this.parc = new PrimaryAnalysisReadController({
+            model: new PrimaryAnalysisRead(window.primaryScreenTestJSON.primaryAnalysisRead),
+            el: $('#fixture')
           });
-          describe("basic existance tests", function() {
-            it('should exist', function() {
-              return expect(this.rpc).toBeDefined();
-            });
-            return it('should load a template', function() {
-              return expect(this.rpc.$('.bv_readNumber').length).toEqual(1);
-            });
-          });
-          return describe("rendering", function() {
-            it("should show readNumber", function() {
-              return expect(this.rpc.$('.bv_readNumber').html()).toEqual("1");
-            });
-            return it("should show read name", function() {
-              return expect(this.rpc.$('.bv_readName').val()).toEqual("fluorescence");
-            });
+          return this.parc.render();
+        });
+        return describe("basic existance tests", function() {
+          return it('should exist', function() {
+            return expect(this.parc).toBeDefined();
           });
         });
       });

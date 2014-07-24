@@ -194,18 +194,21 @@
 
 </script>
 
-<script type="text/template" id="ReadPanelView" xmlns="http://www.w3.org/1999/html">
+<script type="text/template" id="ReadSummaryView" xmlns="http://www.w3.org/1999/html">
     <div class="form-inline">
-        <label class="bv_readNumber"></label>
-        <input type="text" class="span2 bv_readName" placeholder="read name" />
-        <div class="controls">
-            <select class="bv_transformationRule span9">
-            </select>
+        <label class="bv_readOrder"></label>
+        <div class="control-group bv_group_readName">
+            <label class="control-label">*Read Name</label>
+            <div class="controls">
+                <select class="bv_readName span9">
+                </select>
+            </div>
         </div>
-        <select class="span1 bv_matchReadName">
-            <option val="true">true</option>
-            <option val="false">false</option>
-        </select>
-        <button class="close bv_delete">&times;</button>
+        <div class="control-group bv_group_matchReadName">
+            <label class="control-label checkbox" style="width:144px;padding-left:0;">
+                <input type="checkbox" name="bv_matchReadName" class="bv_matchReadName" <% if (matchReadName) { %> checked="checked"<% }%> />*Match Read Name
+            </label>
+        </div>
+       <button class="close bv_delete">&times;</button>
     </div>
 </script>

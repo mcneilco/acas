@@ -5,7 +5,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/primaryAnalysis/runPrimaryAnalysis/aggregateBy2Codes', exports.getAggregateBy2Codes
 	app.get '/api/primaryAnalysis/runPrimaryAnalysis/transformationCodes', exports.getTransformationCodes
 	app.get '/api/primaryAnalysis/runPrimaryAnalysis/normalizationCodes', exports.getNormalizationCodes
-	app.get '/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes', exports.getreadNameCodes
+	app.get '/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes', exports.getReadNameCodes
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -16,7 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/primaryAnalysis/runPrimaryAnalysis/aggregateBy2Codes', loginRoutes.ensureAuthenticated, exports.getAggregateBy2Codes
 	app.get '/api/primaryAnalysis/runPrimaryAnalysis/transformationCodes', loginRoutes.ensureAuthenticated, exports.getTransformationCodes
 	app.get '/api/primaryAnalysis/runPrimaryAnalysis/normalizationCodes', loginRoutes.ensureAuthenticated, exports.getNormalizationCodes
-	app.get '/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes', loginRoutes.ensureAuthenticated, exports.getreadNameCodes
+	app.get '/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes', loginRoutes.ensureAuthenticated, exports.getReadNameCodes
 
 
 exports.runPrimaryAnalysis = (request, response)  ->
@@ -91,7 +91,7 @@ exports.getNormalizationCodes = (req, resp) ->
 		primaryScreenTestJSON = require '../public/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js'
 		resp.json primaryScreenTestJSON.normalizationCodes
 
-exports.getreadNameCodes = (req, resp) ->
+exports.getReadNameCodes = (req, resp) ->
 	if global.specRunnerTestmode
 		primaryScreenTestJSON = require '../public/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js'
 		resp.json primaryScreenTestJSON.readNameCodes

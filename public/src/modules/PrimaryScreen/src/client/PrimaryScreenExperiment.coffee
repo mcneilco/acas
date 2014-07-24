@@ -18,7 +18,8 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		thresholdType: "sd"
 		volumeType: "dilution"
 		autoHitSelection: true
-		readSummary: new Backbone.Model()
+		primaryAnalysisRead: new Backbone.Model()
+#		primaryAnalysisReadList: new Backbone.Collection()
 
 	initialize: ->
 		@fixCompositeClasses()
@@ -41,10 +42,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			@set agonistControl: new Backbone.Model(@get('agonistControl'))
 		@get('agonistControl').on "change", =>
 			@trigger 'change'
-#		if @get('readSummary') not instanceof Backbone.Model
-#			@set readSummary: new Backbone.Model(@get('readSummary'))
-#		@get('readSummary').on "change", =>
-#			@trigger 'change'
 
 	validate: (attrs) ->
 		errors = []
@@ -122,12 +119,16 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		if attrs.volumeType == "dilution" && _.isNaN(attrs.dilutionFactor)
 			errors.push
 				attribute: 'dilutionFactor'
-				message: "Dilution factor must be assigned"
+				message: "Dilution factor must be a number"
 		if attrs.volumeType == "transfer" && _.isNaN(attrs.transferVolume)
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be assigned"
-# TODO: add case for when autoHitSelection is unselected?
+#		if attrs.readSummaryList is "unassigned" or attrs.readSummaryList is ""
+#			errors.push
+#				attribute: 'readSummaryList'
+#				message: "ReadSummaryList must be assigned"
+#
 
 		if errors.length > 0
 			return errors
@@ -206,6 +207,9 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_volumeTypeDilution": "handleVolumeTypeChanged"
 		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
 
+
+
+
 	initialize: ->
 		@errorOwnerName = 'PrimaryScreenAnalysisParametersController'
 		super()
@@ -215,6 +219,9 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupAggregateBy2Select()
 		@setupTransformationSelect()
 		@setupNormalizationSelect()
+
+
+
 
 	render: =>
 		@$('.bv_autofillSection').empty()
@@ -226,6 +233,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupTransformationSelect()
 		@setupNormalizationSelect()
 		@handleAutoHitSelectionChanged()
+
+
 
 		@
 
@@ -295,8 +304,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				code: "unassigned"
 				name: "Select Rule"
 			selectedCode: @model.get('normalizationRule')
-
-
 
 	updateModel: =>
 		@model.set
@@ -607,54 +614,112 @@ class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExpe
 	moduleLaunchName: "flipr_screening_assay"
 
 
-class window.ReadPanelController extends Backbone.View
-	template: _.template($("#ReadPanelView").html())
-	tagName: "div"
-	className: "form-inline"
-	events:
-		"change .bv_readName": "attributeChanged"
-		"change .bv_matchReadName": "handleMatchReadNameChanged"
-		"click .bv_delete": "clear"
+class window.PrimaryAnalysisRead extends Backbone.Model
+	defaults:
+		readOrder: null
+		readName: "unassigned"
+		matchReadName: true
 
-
-	initialize: ->
-		@model.set readNumber: @options.readNumber
-		@model.on "destroy", @remove, @
-		@setupReadNameSelect()
-
-
-	render: =>
-		$(@el).empty()
-		$(@el).html @template()
-		@$('.bv_readNumber').html @model.get('readNumber')
-		@setupReadNameSelect()
-
-
-		@
-
-	setupReadNameSelect: ->
-		@readNameList = new PickListList()
-		@readNameList.url = "/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes"
-		@readNameList = new PickListSelectController
-			el: @$('.bv_readName')
-			collection: @readNameList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Read Name"
-			selectedCode: @model.get('readName')
+	validate: (attrs) ->
+		errors = []
+		if attrs.readOrder is "" or _.isNaN(attrs.readOrder)
+			errors.push
+				attribute: 'readOrder'
+				message: "Read order must be a number"
+		if attrs.readName is "unassigned" or attrs.readName is ""
+			errors.push
+				attribute: 'readName'
+				message: "Read name must be assigned"
+		if errors.length > 0
+			return errors
+		else
+			return null
 
 
 
-#	handleMatchReadNameChanged: =>
-#		matchReadName = @$('.bv_matchReadName').is(":checked")
-#		@model.set matchReadName: matchReadName
-##		@attributeChanged()
+
+
+
+
+
+#class window.ReadSummaryController extends Backbone.View
+#	template: _.template($("#ReadSummaryView").html())
+#	tagName: "div"
+#	className: "form-inline"
+#	events:
+#		"change .bv_readName": "attributeChanged"
+#		"change .bv_matchReadName": "handleMatchReadNameChanged"
+#		"click .bv_delete": "clear"
+#
+#	initialize: ->
+#		@model.set readOrder: @options.readOrder
+##		@model.set matchReadName: true
+#		@model.on "destroy", @remove, @
+#
+#	render: =>
+#		$(@el).empty()
+#		$(@el).html @template(@model.attributes)
+#		@$('.bv_readOrder').html @model.get('readOrder')
+#		@setupReadNameSelect()
+#
+#
+#
+#		@
+#
+#	setupReadNameSelect: ->
+#		@readNameList = new PickListList()
+#		@readNameList.url = "/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes"
+#		@readNameList = new PickListSelectController
+#			el: @$('.bv_readName')
+#			collection: @readNameList
+#			insertFirstOption: new PickList
+#				code: "unassigned"
+#				name: "Select Read Name"
+#			selectedCode: @model.get('readName')
+#
 #
 #	updateModel: =>
 #		@model.set
-#			lsMatch: @$('.bv_matchReadName').val()
+#			readName: @$('.bv_readName').val()
 #
+#	handleMatchReadNameChanged: =>
+#		matchReadName = @$('.bv_matchReadName').is(":checked")
+#		@model.set matchReadName: matchReadName
+#		if matchReadName
+#			console.log "matchReadName checked"
+#		else
+#			console.log "matchReadName not checked"
+#		@attributeChanged()
 #
 #	clear: =>
 #		@model.destroy()
+
+
+# TODO: implement matchReadName's function
+
+
+
+#class window.ReadSummaryListController extends Backbone.View
+#	template: _.template($("#ReadSummarylListView").html())
+#	events:
+#		"click .bv_addRead": "addOne"
+#
+#	initialize: ->
+#	@nextReadNumber = 1
+#
+#	render: =>
+#		$(@el).empty()
+#		$(@el).html @template()
+#
+#		@
+#
+#	addOne: =>
+#	newModel = new Backbone.Model()
+#	@collection.add newModel
+#	rslc = new ExperimentResultFilterTermController
+#		model: newModel
+#		filterOptions: @filterOptions
+#		termName: @TERM_NUMBER_PREFIX+@nextTermNumber++
+#	@$('.bv_filterTerms').append erftc.render().el
+#	@on "updateFilterModels", erftc.updateModel
 

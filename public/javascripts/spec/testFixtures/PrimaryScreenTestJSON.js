@@ -34,8 +34,7 @@
       dilutionFactor: 21,
       volumeType: "dilution",
       assayVolume: 24,
-      autoHitSelection: false,
-      readName: "fluorescence"
+      autoHitSelection: false
     };
     exports.instrumentReaderCodes = [
       {
@@ -83,15 +82,11 @@
         ignored: false
       }
     ];
-    return exports.readNameCodes = [
+    return exports.primaryAnalysisRead = [
       {
-        code: "fluorescence",
-        name: "Fluorescence",
-        ignored: false
-      }, {
-        code: "none",
-        name: "None",
-        ignored: false
+        readOrder: 1,
+        readName: "luminescence",
+        matchReadName: true
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.primaryScreenTestJSON = window.primaryScreenTestJSON || {} : exports));
