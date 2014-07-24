@@ -4,15 +4,15 @@
     </div>
     <div class="bv_thumbsUp pull-left" style="margin-left:5px;margin-top:5px;margin-bottom:5px;"><span class="badge badge-success" title="User approved." style="background-color:#55B779;"><i class="icon-thumbs-up icon-white"></i></span></div>
     <div class="bv_thumbsDown pull-left" style="margin-left:5px;margin-top:5px;margin-bottom:5px;"><span class="badge badge-important" title="User rejected." style="background-color:#DA5057;"><i class="icon-thumbs-down icon-white"></i></span></div>
-    <div  class="bv_na pull-left" style="margin-left:15px;margin-top:5px;margin-bottom:5px;"><span class="badge" title="User not curated">NA</span></div>
-    <div class="bv_pass pull-right" style="margin-right:5px;margin-top:5px;margin-bottom:5px;"><span class="badge badge-success" title="Algorithm approved." style="background-color:#55B779;"><i class="icon-thumbs-up icon-white"></i></span></div>
-    <div class="bv_fail pull-right" style="margin-right:5px;margin-top:5px;margin-bottom:5px;"><span class="badge badge-important" title="Algorithm not approved." style="background-color:#DA5057;"><i class="icon-thumbs-down icon-white"></i></span></div>
-    <div class="bv_compoundCode"f style="margin-left:45px;margin-top:6px;margin-bottom:5px;margin-right:0!important;width:140px;"></div>
+    <div  class="bv_na pull-left" style="margin-left:5px;margin-top:5px;margin-bottom:5px;"><span class="badge" title="User not curated.">NA</span></div>
+    <div class="bv_pass pull-right" style="margin-right:5px;margin-top:5px;margin-bottom:5px;"><span class="badge badge-success" title="Algorithm approved." style="background-color:#55B779;"><i class="icon-ok icon-white"></i></span></div>
+    <div class="bv_fail pull-right" style="margin-right:5px;margin-top:5px;margin-bottom:5px;"><span class="badge badge-important" title="Algorithm not approved." style="background-color:#DA5057;"><i class="icon-remove icon-white"></i></span></div>
+    <div class="bv_compoundCode" style="margin-left:45px;margin-top:6px;margin-bottom:5px;margin-right:0!important;width:140px;"></div>
 </script>
 
 <script type="text/template" id="CurveSummaryListView" xmlns="http://www.w3.org/1999/html">
     <div class="span4" style="margin-left:5px;width:300px;height:720px;">
-        <div class="bv_curveSummaries well well-small" style="background-color:#ffffff;width:275px;height:750px;"></div>
+        <div class="bv_curveSummaries well well-small" style="background-color:#ffffff;width:275px;height:750px;margin-bottom:0;"></div>
     </div>
 </script>
 
@@ -43,12 +43,12 @@
         <div class="span3" style="width:600px;margin-top:0px;margin-bottom:10px;">
             <span class="pull-left" style="margin-top:10px;margin-right:10px;"><strong>Category:</strong></span>
             <div class="well well-small bv_category pull-left" style="background-color:#ffffff;overflow:auto;margin-bottom:0;width:210px;"></div>
-            <div class="bv_pass pull-right" style="margin-left:10px;margin-top:10px;"><span class="badge badge-success" title="Algorithm approved." style="background-color:#55B779;"><i class="icon-thumbs-up icon-white"></i></span></div>
-            <div class="bv_fail pull-right" style="margin-left:10px;margin-top:10px;"><span class="badge badge-important" title="Algorithm not approved." style="background-color:#DA5057;"><i class="icon-thumbs-down icon-white"></i></span></div>
+            <div class="bv_pass pull-right" style="margin-left:10px;margin-top:10px;"><span class="badge badge-success" title="Algorithm approved." style="background-color:#55B779;"><i class="icon-ok icon-white"></i></span></div>
+            <div class="bv_fail pull-right" style="margin-left:10px;margin-top:10px;"><span class="badge badge-important" title="Algorithm not approved." style="background-color:#DA5057;"><i class="icon-remove icon-white"></i></span></div>
             <span class="pull-right" style="margin-top:10px;"><strong>Algorithm:</strong></span>
             <div class="bv_thumbsUp pull-right" style="margin-left:10px;margin-top:10px;margin-right:10px;"><span class="badge badge-success" title="User approved." style="background-color:#55B779;"><i class="icon-thumbs-up icon-white"></i></span></div>
             <div class="bv_thumbsDown pull-right" style="margin-left:10px;margin-top:10px;margin-right:10px;"><span class="badge badge-important" title="User not approved." style="background-color:#DA5057;"><i class="icon-thumbs-down icon-white"></i></span></div>
-            <div class="bv_na pull-right" style="margin-top:10px;margin-left:10px;margin-right:10px;"><span class="badge" title="User not curated">NA</span></div>
+            <div class="bv_na pull-right" style="margin-top:10px;margin-left:10px;margin-right:10px;"><span class="badge" title="User not curated.">NA</span></div>
             <span class="pull-right" style="margin-top:10px;"><strong>User approved:</strong></span>
         </div>
 
@@ -62,56 +62,52 @@
 
     <div class="bv_curveFitParameters"></div>
 
-    <div class="span5" style="margin-left:0">
+    <div class="span5" style="margin-left:0px">
+        <div class="span5" style="width:602px;">
+            <h5 style="margin-top:10px;">Model Fit Summary:</h5>
+            <div class="well well-small bv_fitSummary" style="background-color:#ffffff;height:430px;overflow:auto;margin-bottom:10px;"></div>
+        </div>
+    </div>
 
-        <div class="span5 pull-left" style="width:525px;">
+    <div class="span2" style="margin-left:140px;">
+
+        <div class="span4 pull-left" style="">
             <h5 style="margin-top:10px;">Reported Values:</h5>
             <div class="well well-small bv_reportedValues" style="background-color:#ffffff;height:90px;overflow:auto;margin-bottom:10px;"></div>
         </div>
 
-        <div class="span5 pull-left" style="width:525px;">
+        <div class="span4 pull-left" style="">
             <h5 style="margin-top:0;">Parameter Std. Errors:</h5>
             <div class="well well-small bv_parameterStdErrors" style="background-color:#ffffff;height:110px;overflow:auto;margin-bottom:10px;"></div>
         </div>
 
-        <div class="span5 pull-left" style="width:525px;">
+        <div class="span4 pull-left" style="">
             <h5 style="margin-top:0;">Fit Metrics:</h5>
             <div class="well well-small bv_curveErrors" style="background-color:#ffffff;height:70px;overflow:auto;margin-bottom:10px;"></div>
         </div>
     </div>
 
-    <div class="span5" style="margin-left:0px">
-        <div class="span5" style="width:425px;margin-left:115px;">
-            <h5 style="margin-top:10px;">Model Fit Summary:</h5>
-            <div class="well well-small bv_fitSummary" style="background-color:#ffffff;height:261px;overflow:auto;margin-bottom:10px;"></div>
-        </div>
-
-        <div class="span5" style="width:425px;margin-left:115px;">
-            <h5 style="margin-top:1px;">Actions:</h5>
-            <div style="background-color:#ffffff;height:69px;margin-bottom:10px;margin-top:20px;">
-                <div class="row" style="width:425px;margin-left:115px">
-                    <button class="btn btn-danger bv_reject" style="width:101px;" type="button">
-                        Reject
-                        <i class="icon-thumbs-down" style="font-size:30px; vertical-align: middle;"></i>
-                    </button>
-                    <button class="btn btn-success bv_approve" style="width:101px;" type="button">
-                        Approve
-                        <i class="icon-thumbs-up" style="font-size:30px; vertical-align: middle;"></i>
-                    </button>
-                </div>
-                <div class="row" style="width:425px;margin-left:115px;margin-top:10px"">
-                    <button class="btn btn-default bv_reset" style="width:101px;" type="button">
-                        Reset
-                        <i class="icon-refresh" style="font-size:30px; vertical-align: middle;"></i>
-                    </button>
-                    <button class="btn btn-primary bv_update" style="width:101px;"  type="button">
-                        Save
-                    </button>
+    <div class="span5" style="margin-left:0px;">
+        <div class="span5" style="width:450px;margin-left:170px;">
+                        <button class="btn btn-danger bv_reject" style="width:90px;padding-left:0;padding-right:0;" type="button">
+                            Reject
+                            <i class="icon-thumbs-down icon-white"></i>
+                        </button>
+                        <button class="btn btn-success bv_approve" style="width:90px;padding-left:0;padding-right:0;" type="button">
+                            Approve
+                            <i class="icon-thumbs-up icon-white"></i>
+                        </button>
+                        <button class="btn btn-default bv_reset" style="width:90px;padding-left:0;padding-right:0;" type="button">
+                            Reset
+                            <i class="icon-refresh"></i>
+                        </button>
+                        <button class="btn btn-primary bv_update" style="width:88px;padding-left:0;padding-right:0;"  type="button">
+                            Save
+                        </button>
                 </div>
             </div>
-            </div>
-        </div>
     </div>
+
 
 
     <div class="modal bv_statusDropDown hide">
@@ -131,7 +127,7 @@
 </script>
 
 <script type="text/template" id="CurveCuratorView" xmlns="http://www.w3.org/1999/html">
-    <div class=" well well-small span12" style="background-color:#FFFFFF;width:1315px;">
+    <div class=" well well-small span12" style="background-color:#FFFFFF;width:1315px;padding-top:10px;padding-bottom:0;">
 
         <div class="span3" style="margin-left:0;width:300px;">
             <div class="form-horizontal" style="margin-bottom:10px;">
@@ -169,6 +165,21 @@
         </div>
 
         <div class="bv_curveEditor span11" ></div>
+
+        <div class="modal bv_curveCuratorDropDown hide">
+            <div class="modal-header">
+                <h3>Loading</h3>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <br />
+                    <div class="progress progress-striped active">
+                        <div class="bar" style="width:100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
     </div>
 </script>

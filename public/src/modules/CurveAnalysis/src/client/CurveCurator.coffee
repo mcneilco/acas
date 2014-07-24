@@ -625,8 +625,12 @@ class window.CurveCuratorController extends Backbone.View
 				@render()
 
 	curveSelectionUpdated: (who) =>
+		console.log "yo"
+		UtilityFunctions::showProgressModal @$('.bv_curveCuratorDropDown')
 		curveDetail = new CurveDetail id: who.model.get('curveid')
 		curveDetail.fetch success: =>
+			console.log "hello"
+			UtilityFunctions::hideProgressModal @$('.bv_curveCuratorDropDown')
 			@curveEditorController.setModel curveDetail
 
 	handleGetCurveDetailReturn: (json) =>
