@@ -33,7 +33,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html(@template(@model.toJSON()))
-		$(@el).addClass 'bv_launch_'+@model.get('autoLaunchName')
+		@$('.bv_menuName').addClass 'bv_launch_'+@model.get('autoLaunchName')
 		if @model.get('isActive') then $(@el).addClass "active"
 		else $(@el).removeClass "active"
 
