@@ -1,5 +1,20 @@
 (function() {
   (function(exports) {
+    exports.primaryAnalysisReads = [
+      {
+        readOrder: 11,
+        readName: "luminescence",
+        matchReadName: true
+      }, {
+        readOrder: 12,
+        readName: "fluorescence",
+        matchReadName: true
+      }, {
+        readOrder: 13,
+        readName: "other read name",
+        matchReadName: false
+      }
+    ];
     exports.primaryScreenAnalysisParameters = {
       positiveControl: {
         batchCode: "CMPD-12345678-01",
@@ -34,7 +49,8 @@
       dilutionFactor: 21,
       volumeType: "dilution",
       assayVolume: 24,
-      autoHitSelection: false
+      autoHitSelection: false,
+      primaryAnalysisReadList: exports.primaryAnalysisReads
     };
     exports.instrumentReaderCodes = [
       {
@@ -82,11 +98,11 @@
         ignored: false
       }
     ];
-    return exports.primaryAnalysisRead = [
+    return exports.readNameCodes = [
       {
-        readOrder: 1,
-        readName: "luminescence",
-        matchReadName: true
+        code: "luminescence",
+        name: "Luminescence",
+        ignored: false
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.primaryScreenTestJSON = window.primaryScreenTestJSON || {} : exports));

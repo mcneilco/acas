@@ -9,6 +9,65 @@
   });
 
   describe("Primary Screen Experiment module testing", function() {
+    describe("Primary Analysis Read model testing", function() {
+      describe("When loaded from new", function() {
+        beforeEach(function() {
+          return this.par = new PrimaryAnalysisRead();
+        });
+        return describe("Existence and Defaults", function() {
+          it("should be defined", function() {
+            return expect(this.par).toBeDefined();
+          });
+          return it("should have defaults", function() {
+            expect(this.par.get('readOrder')).toBeNull();
+            expect(this.par.get('readName')).toEqual("unassigned");
+            return expect(this.par.get('matchReadName')).toBeTruthy();
+          });
+        });
+      });
+      return describe("model validation tests", function() {
+        beforeEach(function() {
+          return this.par = new PrimaryAnalysisRead(window.primaryScreenTestJSON.primaryAnalysisReads[0]);
+        });
+        it("should be valid as initialized", function() {
+          return expect(this.par.isValid()).toBeTruthy();
+        });
+        it("should be invalid when read order is NaN", function() {
+          var filtErrors;
+          this.par.set({
+            readOrder: NaN
+          });
+          expect(this.par.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.par.validationError, function(err) {
+            return err.attribute === 'readOrder';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it("should be invalid when read name is unassigned", function() {
+          var filtErrors;
+          this.par.set({
+            readName: "unassigned"
+          });
+          expect(this.par.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.par.validationError, function(err) {
+            return err.attribute === 'readName';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+      });
+    });
+    describe("Primary Analysis Read List testing", function() {
+      return describe("When loaded from new", function() {
+        beforeEach(function() {
+          return this.parl = new PrimaryAnalysisReadList();
+        });
+        return describe("Existence", function() {
+          return it("should be defined", function() {
+            return expect(this.parl).toBeDefined();
+          });
+        });
+      });
+    });
     describe("Analysis Parameter model testing", function() {
       describe("When loaded from new", function() {
         beforeEach(function() {
@@ -37,276 +96,236 @@
             expect(this.psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('thresholdType')).toEqual("sd");
             expect(this.psap.get('autoHitSelection')).toBeTruthy();
-            return expect(this.psap.get('primaryAnalysisRead') instanceof Backbone.Model).toBeTruthy();
+            return expect(this.psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy();
           });
         });
       });
-      return describe("model validation tests", function() {
+      return describe("When loaded form existing", function() {
         beforeEach(function() {
           return this.psap = new PrimaryScreenAnalysisParameters(window.primaryScreenTestJSON.primaryScreenAnalysisParameters);
         });
-        it("should be valid as initialized", function() {
-          return expect(this.psap.isValid()).toBeTruthy();
-        });
-        it("should be invalid when positive control batch is empty", function() {
-          var filtErrors;
-          this.psap.get('positiveControl').set({
-            batchCode: ""
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'positiveControlBatch';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when positive control conc is NaN", function() {
-          var filtErrors;
-          this.psap.get('positiveControl').set({
-            concentration: NaN
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'positiveControlConc';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when negative control batch is empty", function() {
-          var filtErrors;
-          this.psap.get('negativeControl').set({
-            batchCode: ""
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'negativeControlBatch';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when negative control conc is NaN", function() {
-          var filtErrors;
-          this.psap.get('negativeControl').set({
-            concentration: NaN
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'negativeControlConc';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when agonist control batch is empty", function() {
-          var filtErrors;
-          this.psap.get('agonistControl').set({
-            batchCode: ""
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'agonistControlBatch';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when agonist control conc is NaN", function() {
-          var filtErrors;
-          this.psap.get('agonistControl').set({
-            concentration: NaN
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'agonistControlConc';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when vehicle control is empty", function() {
-          var filtErrors;
-          this.psap.get('vehicleControl').set({
-            batchCode: ""
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'vehicleControlBatch';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when assayVolume is NaN", function() {
-          var filtErrors;
-          this.psap.set({
-            assayVolume: NaN
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'assayVolume';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when instrument reader is unassigned", function() {
-          var filtErrors;
-          this.psap.set({
-            instrumentReader: "unassigned"
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'instrumentReader';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when aggregate by1 is unassigned", function() {
-          var filtErrors;
-          this.psap.set({
-            aggregateBy1: "unassigned"
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'aggregateBy1';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when aggregate by2 is unassigned", function() {
-          var filtErrors;
-          this.psap.set({
-            aggregateBy2: "unassigned"
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'aggregateBy2';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when signal direction rule is unassigned", function() {
-          var filtErrors;
-          this.psap.set({
-            signalDirectionRule: "unassigned"
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'signalDirectionRule';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when transformation rule is unassigned", function() {
-          var filtErrors;
-          this.psap.set({
-            transformationRule: "unassigned"
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'transformationRule';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when normalization rule is unassigned", function() {
-          var filtErrors;
-          this.psap.set({
-            normalizationRule: "unassigned"
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'normalizationRule';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when volumeType is dilution and dilutionFactor is not a number", function() {
-          var filtErrors;
-          this.psap.set({
-            volumeType: "dilution"
-          });
-          this.psap.set({
-            dilutionFactor: NaN
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'dilutionFactor';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when volumeType is transfer and transferVolume is not a number", function() {
-          var filtErrors;
-          this.psap.set({
-            volumeType: "transfer"
-          });
-          this.psap.set({
-            transferVolume: NaN
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'transferVolume';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when autoHitSelection is checked and thresholdType is sd and hitSDThreshold is not a number", function() {
-          var filtErrors;
-          this.psap.set({
-            autoHitSelection: true
-          });
-          this.psap.set({
-            thresholdType: "sd"
-          });
-          this.psap.set({
-            hitSDThreshold: NaN
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'hitSDThreshold';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        return it("should be invalid when autoHitSelection is checked and thresholdType is efficacy and hitEfficacyThreshold is not a number", function() {
-          var filtErrors;
-          this.psap.set({
-            autoHitSelection: true
-          });
-          this.psap.set({
-            thresholdType: "efficacy"
-          });
-          this.psap.set({
-            hitEfficacyThreshold: NaN
-          });
-          expect(this.psap.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.psap.validationError, function(err) {
-            return err.attribute === 'hitEfficacyThreshold';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-      });
-    });
-    describe("Primary Analysis Read model testing", function() {
-      return describe("When loaded from new", function() {
-        beforeEach(function() {
-          return this.par = new PrimaryAnalysisRead();
-        });
-        describe("Existence and Defaults", function() {
-          it("should be defined", function() {
-            return expect(this.par).toBeDefined();
-          });
-          return it("should have defaults", function() {
-            expect(this.par.get('readOrder')).toBeNull();
-            expect(this.par.get('readName')).toEqual("unassigned");
-            return expect(this.par.get('matchReadName')).toBeTruthy();
+        describe("composite object creation", function() {
+          return it("should convert readlist to PrimaryAnalysisReadList", function() {
+            return expect(this.psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy();
           });
         });
         return describe("model validation tests", function() {
-          beforeEach(function() {
-            return this.par = new PrimaryAnalysisRead(window.primaryScreenTestJSON.primaryAnalysisRead);
-          });
           it("should be valid as initialized", function() {
-            return expect(this.par.isValid()).toBeTruthy();
+            return expect(this.psap.isValid()).toBeTruthy();
           });
-          it("should be invalid when read order is NaN", function() {
+          it("should be invalid when positive control batch is empty", function() {
             var filtErrors;
-            this.par.set({
-              readOrder: NaN
+            this.psap.get('positiveControl').set({
+              batchCode: ""
             });
-            expect(this.par.isValid()).toBeFalsy();
-            filtErrors = _.filter(this.par.validationError, function(err) {
-              return err.attribute === 'readOrder';
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'positiveControlBatch';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          return it("should be invalid when read name is unassigned", function() {
+          it("should be invalid when positive control conc is NaN", function() {
             var filtErrors;
-            this.par.set({
-              readName: "unassigned"
+            this.psap.get('positiveControl').set({
+              concentration: NaN
             });
-            expect(this.par.isValid()).toBeFalsy();
-            filtErrors = _.filter(this.par.validationError, function(err) {
-              return err.attribute === 'readName';
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'positiveControlConc';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when negative control batch is empty", function() {
+            var filtErrors;
+            this.psap.get('negativeControl').set({
+              batchCode: ""
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'negativeControlBatch';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when negative control conc is NaN", function() {
+            var filtErrors;
+            this.psap.get('negativeControl').set({
+              concentration: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'negativeControlConc';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when agonist control batch is empty", function() {
+            var filtErrors;
+            this.psap.get('agonistControl').set({
+              batchCode: ""
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'agonistControlBatch';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when agonist control conc is NaN", function() {
+            var filtErrors;
+            this.psap.get('agonistControl').set({
+              concentration: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'agonistControlConc';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when vehicle control is empty", function() {
+            var filtErrors;
+            this.psap.get('vehicleControl').set({
+              batchCode: ""
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'vehicleControlBatch';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when assayVolume is NaN", function() {
+            var filtErrors;
+            this.psap.set({
+              assayVolume: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'assayVolume';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when instrument reader is unassigned", function() {
+            var filtErrors;
+            this.psap.set({
+              instrumentReader: "unassigned"
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'instrumentReader';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when aggregate by1 is unassigned", function() {
+            var filtErrors;
+            this.psap.set({
+              aggregateBy1: "unassigned"
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'aggregateBy1';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when aggregate by2 is unassigned", function() {
+            var filtErrors;
+            this.psap.set({
+              aggregateBy2: "unassigned"
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'aggregateBy2';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when signal direction rule is unassigned", function() {
+            var filtErrors;
+            this.psap.set({
+              signalDirectionRule: "unassigned"
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'signalDirectionRule';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when transformation rule is unassigned", function() {
+            var filtErrors;
+            this.psap.set({
+              transformationRule: "unassigned"
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'transformationRule';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when normalization rule is unassigned", function() {
+            var filtErrors;
+            this.psap.set({
+              normalizationRule: "unassigned"
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'normalizationRule';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when volumeType is dilution and dilutionFactor is not a number", function() {
+            var filtErrors;
+            this.psap.set({
+              volumeType: "dilution"
+            });
+            this.psap.set({
+              dilutionFactor: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'dilutionFactor';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when volumeType is transfer and transferVolume is not a number", function() {
+            var filtErrors;
+            this.psap.set({
+              volumeType: "transfer"
+            });
+            this.psap.set({
+              transferVolume: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'transferVolume';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when autoHitSelection is checked and thresholdType is sd and hitSDThreshold is not a number", function() {
+            var filtErrors;
+            this.psap.set({
+              autoHitSelection: true
+            });
+            this.psap.set({
+              thresholdType: "sd"
+            });
+            this.psap.set({
+              hitSDThreshold: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'hitSDThreshold';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          return it("should be invalid when autoHitSelection is checked and thresholdType is efficacy and hitEfficacyThreshold is not a number", function() {
+            var filtErrors;
+            this.psap.set({
+              autoHitSelection: true
+            });
+            this.psap.set({
+              thresholdType: "efficacy"
+            });
+            this.psap.set({
+              hitEfficacyThreshold: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'hitEfficacyThreshold';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -383,6 +402,166 @@
           return it("should be able to get the model result html", function() {
             return expect(this.pse2.getModelFitResultHTML().get('clobValue')).toEqual("");
           });
+        });
+      });
+    });
+    describe("PrimaryAnalysisReadController", function() {
+      describe("when instantiated", function() {
+        beforeEach(function() {
+          this.parc = new PrimaryAnalysisReadController({
+            model: new PrimaryAnalysisRead(window.primaryScreenTestJSON.primaryAnalysisReads[0]),
+            el: $('#fixture')
+          });
+          return this.parc.render();
+        });
+        describe("basic existance tests", function() {
+          it("should exist", function() {
+            return expect(this.parc).toBeDefined();
+          });
+          return it("should load a template", function() {
+            return expect(this.parc.$('.bv_readName').length).toEqual(1);
+          });
+        });
+        describe("render existing parameters", function() {
+          it("should show read order", function() {
+            return expect(this.parc.$('.bv_readOrder').val()).toEqual("11");
+          });
+          it("should show read name", function() {
+            waitsFor(function() {
+              return this.parc.$('.bv_readName option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.parc.$('.bv_readName').val()).toEqual("luminescence");
+            });
+          });
+          return it("should have Match Read Name checked", function() {
+            return expect(this.parc.$('.bv_matchReadName').attr("checked")).toEqual("checked");
+          });
+        });
+        return describe("model updates", function() {
+          it("should update the readOrder ", function() {
+            this.parc.$('.bv_readOrder').val('42');
+            this.parc.$('.bv_readOrder').change();
+            return expect(this.parc.model.get('readOrder')).toEqual('42');
+          });
+          it("should update the read name", function() {
+            waitsFor(function() {
+              return this.parc.$('.bv_readName option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.parc.$('.bv_readName').val('unassigned');
+              this.parc.$('.bv_readName').change();
+              return expect(this.parc.model.get('readName')).toEqual("unassigned");
+            });
+          });
+          return it("should update the matchReadName ", function() {
+            this.parc.$('.bv_matchReadName').click();
+            return expect(this.parc.model.get('matchReadName')).toBeFalsy();
+          });
+        });
+      });
+      return describe("validation testing", function() {
+        beforeEach(function() {
+          this.parc = new PrimaryAnalysisReadController({
+            model: new PrimaryAnalysisRead(window.primaryScreenTestJSON.primaryAnalysisReads[0]),
+            el: $('#fixture')
+          });
+          return this.parc.render();
+        });
+        return describe("error notification", function() {
+          it("should show error if readOrder is NaN", function() {
+            this.parc.$('.bv_readOrder').val("");
+            this.parc.$('.bv_readOrder').change();
+            return expect(this.parc.$('.bv_group_readOrder').hasClass("error")).toBeTruthy();
+          });
+          return it("should show error if read name is unassigned", function() {
+            waitsFor(function() {
+              return this.parc.$('.bv_readName option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.parc.$('.bv_readName').val("unassigned");
+              this.parc.$('.bv_readName').change();
+              return expect(this.parc.$('.bv_group_readName').hasClass("error")).toBeTruthy();
+            });
+          });
+        });
+      });
+    });
+    describe("Primary Analysis Read List Controller testing", function() {
+      describe("when instantiated with no data", function() {
+        beforeEach(function() {
+          this.parlc = new PrimaryAnalysisReadListController({
+            el: $('#fixture'),
+            collection: new PrimaryAnalysisReadList()
+          });
+          return this.parlc.render();
+        });
+        describe("basic existence tests", function() {
+          it("should exist", function() {
+            return expect(this.parlc).toBeDefined();
+          });
+          return it("should load a template", function() {
+            return expect(this.parlc.$('.bv_addReadButton').length).toEqual(1);
+          });
+        });
+        describe("rendering", function() {
+          return it("should show one read", function() {
+            expect(this.parlc.$('.bv_readInfo .bv_readName').length).toEqual(1);
+            return expect(this.parlc.collection.length).toEqual(1);
+          });
+        });
+        return describe("adding and removing", function() {
+          it("should have two reads when add read is clicked", function() {
+            this.parlc.$('.bv_addReadButton').click();
+            expect(this.parlc.$('.bv_readInfo .bv_readName').length).toEqual(2);
+            return expect(this.parlc.collection.length).toEqual(2);
+          });
+          it("should have no reads when there is one read and remove is clicked", function() {
+            expect(this.parlc.collection.length).toEqual(1);
+            this.parlc.$('.bv_delete').click();
+            expect(this.parlc.$('.bv_readInfo .bv_readName').length).toEqual(0);
+            return expect(this.parlc.collection.length).toEqual(0);
+          });
+          return it("should have one read when there are two reads and remove is clicked", function() {
+            this.parlc.$('.bv_addReadButton').click();
+            expect(this.parlc.$('.bv_readInfo .bv_readName').length).toEqual(2);
+            this.parlc.$('.bv_delete:eq(0)').click();
+            expect(this.parlc.$('.bv_readInfo .bv_readName').length).toEqual(1);
+            return expect(this.parlc.collection.length).toEqual(1);
+          });
+        });
+      });
+      return describe("when instantiated with data", function() {
+        beforeEach(function() {
+          this.parlc = new PrimaryAnalysisReadListController({
+            el: $('#fixture'),
+            collection: new PrimaryAnalysisReadList(window.primaryScreenTestJSON.primaryAnalysisReads)
+          });
+          return this.parlc.render();
+        });
+        it("should have three reads", function() {
+          return expect(this.parlc.collection.length).toEqual(3);
+        });
+        it("should have the correct read info for the first read", function() {
+          var readone;
+          readone = this.parlc.collection.at(0);
+          expect(readone.get('readOrder')).toEqual(11);
+          expect(readone.get('readName')).toEqual("luminescence");
+          return expect(readone.get('matchReadName')).toBeTruthy();
+        });
+        it("should have the correct read info for the second read", function() {
+          var readtwo;
+          readtwo = this.parlc.collection.at(1);
+          expect(readtwo.get('readOrder')).toEqual(12);
+          expect(readtwo.get('readName')).toEqual("fluorescence");
+          return expect(readtwo.get('matchReadName')).toBeTruthy();
+        });
+        return it("should have the correct read info for the third read", function() {
+          var readthree;
+          readthree = this.parlc.collection.at(2);
+          expect(readthree.get('readOrder')).toEqual(13);
+          expect(readthree.get('readName')).toEqual("other read name");
+          return expect(readthree.get('matchReadName')).toBeFalsy();
         });
       });
     });
@@ -488,7 +667,7 @@
           it('should show the agonistControlConc', function() {
             return expect(this.psapc.$('.bv_agonistControlConc').val()).toEqual('250753.77');
           });
-          it('should start with autoHitSelection checked', function() {
+          it('should start with autoHitSelection unchecked', function() {
             return expect(this.psapc.$('.bv_autoHitSelection').attr("checked")).toBeUndefined();
           });
           it('should show the hitSDThreshold', function() {
@@ -500,8 +679,11 @@
           it('should start with thresholdType radio set', function() {
             return expect(this.psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual('sd');
           });
-          return it('should hide threshold controls if the model loads unchecked automaticHitSelection', function() {
+          it('should hide threshold controls if the model loads unchecked automaticHitSelection', function() {
             return expect(this.psapc.$('.bv_thresholdControls')).toBeHidden();
+          });
+          return it('should show a primary analysis read list', function() {
+            return expect(this.psapc.$('.bv_readInfo .bv_readName').length).toEqual(3);
           });
         });
         describe("model updates", function() {
@@ -923,7 +1105,7 @@
         });
       });
     });
-    describe("Primary Screen Experiment Controller testing", function() {
+    return describe("Primary Screen Experiment Controller testing", function() {
       return describe("basic plumbing checks with new experiment", function() {
         beforeEach(function() {
           this.psec = new PrimaryScreenExperimentController({
@@ -947,22 +1129,6 @@
           });
           return it("Should load a dose response controller", function() {
             return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual(0);
-          });
-        });
-      });
-    });
-    return describe('PrimaryAnalysisRead Controller', function() {
-      return describe('when instantiated', function() {
-        beforeEach(function() {
-          this.parc = new PrimaryAnalysisReadController({
-            model: new PrimaryAnalysisRead(window.primaryScreenTestJSON.primaryAnalysisRead),
-            el: $('#fixture')
-          });
-          return this.parc.render();
-        });
-        return describe("basic existance tests", function() {
-          return it('should exist', function() {
-            return expect(this.parc).toBeDefined();
           });
         });
       });

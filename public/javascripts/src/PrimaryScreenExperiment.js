@@ -1,7 +1,59 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+  window.PrimaryAnalysisRead = (function(_super) {
+    __extends(PrimaryAnalysisRead, _super);
+
+    function PrimaryAnalysisRead() {
+      return PrimaryAnalysisRead.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryAnalysisRead.prototype.defaults = {
+      readOrder: null,
+      readName: "unassigned",
+      matchReadName: true
+    };
+
+    PrimaryAnalysisRead.prototype.validate = function(attrs) {
+      var errors;
+      errors = [];
+      if (attrs.readOrder === "" || _.isNaN(attrs.readOrder)) {
+        errors.push({
+          attribute: 'readOrder',
+          message: "Read order must be a number"
+        });
+      }
+      if (attrs.readName === "unassigned" || attrs.readName === "") {
+        errors.push({
+          attribute: 'readName',
+          message: "Read name must be assigned"
+        });
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
+    };
+
+    return PrimaryAnalysisRead;
+
+  })(Backbone.Model);
+
+  window.PrimaryAnalysisReadList = (function(_super) {
+    __extends(PrimaryAnalysisReadList, _super);
+
+    function PrimaryAnalysisReadList() {
+      return PrimaryAnalysisReadList.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryAnalysisReadList.prototype.model = PrimaryAnalysisRead;
+
+    return PrimaryAnalysisReadList;
+
+  })(Backbone.Collection);
 
   window.PrimaryScreenAnalysisParameters = (function(_super) {
     __extends(PrimaryScreenAnalysisParameters, _super);
@@ -30,7 +82,7 @@
       thresholdType: "sd",
       volumeType: "dilution",
       autoHitSelection: true,
-      primaryAnalysisRead: new Backbone.Model()
+      primaryAnalysisReadList: new PrimaryAnalysisReadList()
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
@@ -73,7 +125,17 @@
           agonistControl: new Backbone.Model(this.get('agonistControl'))
         });
       }
-      return this.get('agonistControl').on("change", (function(_this) {
+      this.get('agonistControl').on("change", (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
+      if (!(this.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList)) {
+        this.set({
+          primaryAnalysisReadList: new PrimaryAnalysisReadList(this.get('primaryAnalysisReadList'))
+        });
+      }
+      return this.get('primaryAnalysisReadList').on("change", (function(_this) {
         return function() {
           return _this.trigger('change');
         };
@@ -284,6 +346,184 @@
 
   })(Experiment);
 
+  window.PrimaryAnalysisReadController = (function(_super) {
+    __extends(PrimaryAnalysisReadController, _super);
+
+    function PrimaryAnalysisReadController() {
+      this.handleModelChange = __bind(this.handleModelChange, this);
+      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
+      this.validationError = __bind(this.validationError, this);
+      this.clear = __bind(this.clear, this);
+      this.handleMatchReadNameChanged = __bind(this.handleMatchReadNameChanged, this);
+      this.updateModel = __bind(this.updateModel, this);
+      this.render = __bind(this.render, this);
+      return PrimaryAnalysisReadController.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryAnalysisReadController.prototype.template = _.template($("#PrimaryAnalysisReadView").html());
+
+    PrimaryAnalysisReadController.prototype.tagName = "div";
+
+    PrimaryAnalysisReadController.prototype.className = "form-inline";
+
+    PrimaryAnalysisReadController.prototype.events = {
+      "change .bv_readOrder": "updateModel",
+      "change .bv_readName": "updateModel",
+      "click .bv_matchReadName": "handleMatchReadNameChanged",
+      "click .bv_delete": "clear"
+    };
+
+    PrimaryAnalysisReadController.prototype.initialize = function() {
+      this.errorOwnerName = 'PrimaryAnalysisReadController';
+      this.setBindings();
+      this.setUpReadNameSelect();
+      return this.model.on("destroy", this.remove, this);
+    };
+
+    PrimaryAnalysisReadController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template(this.model.attributes));
+      this.$('.bv_readOrder').val(this.model.get('readOrder'));
+      this.setUpReadNameSelect();
+      return this;
+    };
+
+    PrimaryAnalysisReadController.prototype.setUpReadNameSelect = function() {
+      this.readNameList = new PickListList();
+      this.readNameList.url = "/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes";
+      return this.readNameList = new PickListSelectController({
+        el: this.$('.bv_readName'),
+        collection: this.readNameList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Read Name"
+        }),
+        selectedCode: this.model.get('readName')
+      });
+    };
+
+    PrimaryAnalysisReadController.prototype.updateModel = function() {
+      return this.model.set({
+        readOrder: this.$('.bv_readOrder').val(),
+        readName: this.$('.bv_readName').val()
+      });
+    };
+
+    PrimaryAnalysisReadController.prototype.handleMatchReadNameChanged = function() {
+      var matchReadName;
+      matchReadName = this.$('.bv_matchReadName').is(":checked");
+      this.model.set({
+        matchReadName: !matchReadName
+      });
+      if (matchReadName) {
+        return console.log("set matchReadName to checked");
+      } else {
+        return console.log("set matchReadName unchecked");
+      }
+    };
+
+    PrimaryAnalysisReadController.prototype.clear = function() {
+      return this.model.destroy();
+    };
+
+    PrimaryAnalysisReadController.prototype.setBindings = function() {
+      this.model.on('invalid', this.validationError);
+      return this.model.on('change', this.handleModelChange);
+    };
+
+    PrimaryAnalysisReadController.prototype.validationError = function() {
+      var errors;
+      errors = this.model.validationError;
+      this.clearValidationErrorStyles();
+      _.each(errors, (function(_this) {
+        return function(err) {
+          _this.$('.bv_group_' + err.attribute).addClass('input_error error');
+          return _this.trigger('notifyError', {
+            owner: _this.errorOwnerName,
+            errorLevel: 'error',
+            message: err.message
+          });
+        };
+      })(this));
+      return this.trigger('invalid');
+    };
+
+    PrimaryAnalysisReadController.prototype.clearValidationErrorStyles = function() {
+      var errorElms;
+      errorElms = this.$('.input_error');
+      this.trigger('clearErrors', this.errorOwnerName);
+      return _.each(errorElms, (function(_this) {
+        return function(ee) {
+          return $(ee).removeClass('input_error error');
+        };
+      })(this));
+    };
+
+    PrimaryAnalysisReadController.prototype.isValid = function() {
+      return this.model.isValid();
+    };
+
+    PrimaryAnalysisReadController.prototype.handleModelChange = function() {
+      this.clearValidationErrorStyles();
+      if (this.isValid()) {
+        return this.trigger('valid');
+      } else {
+        return this.trigger('invalid');
+      }
+    };
+
+    return PrimaryAnalysisReadController;
+
+  })(Backbone.View);
+
+  window.PrimaryAnalysisReadListController = (function(_super) {
+    __extends(PrimaryAnalysisReadListController, _super);
+
+    function PrimaryAnalysisReadListController() {
+      this.addNewRead = __bind(this.addNewRead, this);
+      this.render = __bind(this.render, this);
+      return PrimaryAnalysisReadListController.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryAnalysisReadListController.prototype.template = _.template($("#PrimaryAnalysisReadListView").html());
+
+    PrimaryAnalysisReadListController.prototype.events = {
+      "click .bv_addReadButton": "addNewRead"
+    };
+
+    PrimaryAnalysisReadListController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.collection.each((function(_this) {
+        return function(read) {
+          return _this.addOneRead(read);
+        };
+      })(this));
+      if (this.collection.length === 0) {
+        this.addNewRead();
+      }
+      return this;
+    };
+
+    PrimaryAnalysisReadListController.prototype.addNewRead = function() {
+      var newModel;
+      newModel = new PrimaryAnalysisRead();
+      this.collection.add(newModel);
+      return this.addOneRead(newModel);
+    };
+
+    PrimaryAnalysisReadListController.prototype.addOneRead = function(read) {
+      var parc;
+      parc = new PrimaryAnalysisReadController({
+        model: read
+      });
+      return this.$('.bv_readInfo').append(parc.render().el);
+    };
+
+    return PrimaryAnalysisReadListController;
+
+  })(Backbone.View);
+
   window.PrimaryScreenAnalysisParametersController = (function(_super) {
     __extends(PrimaryScreenAnalysisParametersController, _super);
 
@@ -347,6 +587,7 @@
       this.setupTransformationSelect();
       this.setupNormalizationSelect();
       this.handleAutoHitSelectionChanged();
+      this.setupReadListController();
       return this;
     };
 
@@ -432,6 +673,14 @@
         }),
         selectedCode: this.model.get('normalizationRule')
       });
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.setupReadListController = function() {
+      this.readListController = new PrimaryAnalysisReadListController({
+        el: this.$('.bv_readList'),
+        collection: this.model.get('primaryAnalysisReadList')
+      });
+      return this.readListController.render();
     };
 
     PrimaryScreenAnalysisParametersController.prototype.updateModel = function() {
@@ -910,44 +1159,5 @@
     return PrimaryScreenExperimentController;
 
   })(AbstractPrimaryScreenExperimentController);
-
-  window.PrimaryAnalysisRead = (function(_super) {
-    __extends(PrimaryAnalysisRead, _super);
-
-    function PrimaryAnalysisRead() {
-      return PrimaryAnalysisRead.__super__.constructor.apply(this, arguments);
-    }
-
-    PrimaryAnalysisRead.prototype.defaults = {
-      readOrder: null,
-      readName: "unassigned",
-      matchReadName: true
-    };
-
-    PrimaryAnalysisRead.prototype.validate = function(attrs) {
-      var errors;
-      errors = [];
-      if (attrs.readOrder === "" || _.isNaN(attrs.readOrder)) {
-        errors.push({
-          attribute: 'readOrder',
-          message: "Read order must be a number"
-        });
-      }
-      if (attrs.readName === "unassigned" || attrs.readName === "") {
-        errors.push({
-          attribute: 'readName',
-          message: "Read name must be assigned"
-        });
-      }
-      if (errors.length > 0) {
-        return errors;
-      } else {
-        return null;
-      }
-    };
-
-    return PrimaryAnalysisRead;
-
-  })(Backbone.Model);
 
 }).call(this);

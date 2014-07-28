@@ -35,7 +35,7 @@
 
 <script type="text/template" id="PrimaryScreenAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
 
-	<div class="span12">
+    <div class="span12">
     <div class="">
         <div class="pull-left">
             <div>*Positive Control</div>
@@ -82,7 +82,6 @@
 
 	</div>
 
-    <form class="form-horizontal span10 pull-left">
         <div class="control-group bv_group_assayVolume">
             <label class="control-label">*Assay Volume</label>
             <div class="controls">
@@ -112,6 +111,7 @@
                 </select>
             </div>
         </div>
+        <div class="bv_readList"></div>
         <div class="control-group bv_group_signalDirectionRule">
             <label class="control-label">*Signal Direction</label>
             <div class="controls">
@@ -172,7 +172,6 @@
                 </div>
             </div>
         </div>
-    </form>
 
 </script>
 <script type="text/template" id="PrimaryScreenAnalysisView" xmlns="http://www.w3.org/1999/html">
@@ -194,9 +193,16 @@
 
 </script>
 
-<script type="text/template" id="ReadSummaryView" xmlns="http://www.w3.org/1999/html">
+<script type="text/template" id="PrimaryAnalysisReadView" xmlns="http://www.w3.org/1999/html">
     <div class="form-inline">
-        <label class="bv_readOrder"></label>
+
+        <div class="control-group bv_group_readOrder">
+            <label class="control-label">*Read Order</label>
+            <div class="controls">
+                <input class="bv_readOrder" value="<%=readOrder%>" type="text">
+            </div>
+        </div>
+
         <div class="control-group bv_group_readName">
             <label class="control-label">*Read Name</label>
             <div class="controls">
@@ -211,4 +217,9 @@
         </div>
        <button class="close bv_delete">&times;</button>
     </div>
+</script>
+
+<script type="text/template" id="PrimaryAnalysisReadListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_readInfo"></div>
+    <button class="btn pull-right bv_addReadButton">Add Read</button>
 </script>

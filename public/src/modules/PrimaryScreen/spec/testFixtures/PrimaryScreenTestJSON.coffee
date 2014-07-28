@@ -1,4 +1,18 @@
 ((exports) ->
+	exports.primaryAnalysisReads = [
+		readOrder: 11
+		readName: "luminescence"
+		matchReadName: true
+	,
+		readOrder: 12
+		readName: "fluorescence"
+		matchReadName: true
+	,
+		readOrder:13
+		readName: "other read name"
+		matchReadName: false
+	]
+
 	exports.primaryScreenAnalysisParameters =
 		positiveControl:
 			batchCode: "CMPD-12345678-01"
@@ -30,7 +44,7 @@
 		volumeType: "dilution" #or "efficacy"
 		assayVolume: 24
 		autoHitSelection: false
-
+		primaryAnalysisReadList: exports.primaryAnalysisReads
 
 	exports.instrumentReaderCodes = [
 		code: "flipr"
@@ -73,19 +87,12 @@
 
 	]
 
-	exports.primaryAnalysisRead = [
-		readOrder: 1
-		readName: "luminescence"
-		matchReadName: true
+	exports.readNameCodes = [
+		code: "luminescence"
+		name: "Luminescence"
+		ignored: false
 
 	]
-
-#	exports.readNameCodes = [
-#		code: "luminescence"
-#		name: "Luminescence"
-#		ignored: false
-#
-#	]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenTestJSON = window.primaryScreenTestJSON or {} else exports)
 
