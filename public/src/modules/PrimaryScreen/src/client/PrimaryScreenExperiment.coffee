@@ -383,8 +383,8 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								alert 'Could not get experiment for code in this URL, creating new one'
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								exp = new PrimaryScreenExperiment json
 								exp = new PrimaryScreenExperiment json
+#								exp = new PrimaryScreenExperiment json[0]
 								exp.fixCompositeClasses()
 								@model = exp
 							@completeInitialization()

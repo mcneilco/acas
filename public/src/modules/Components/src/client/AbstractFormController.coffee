@@ -66,7 +66,9 @@ class window.AbstractFormController extends Backbone.View
 	disableAllInputs: ->
 		@$('input').attr 'disabled', 'disabled'
 		@$('select').attr 'disabled', 'disabled'
+		@$("textarea").attr 'disabled', 'disabled'
 
 	enableAllInputs: ->
 		@$('input').removeAttr 'disabled'
 		@$('select').removeAttr 'disabled'
+		@$("textarea").removeAttr 'disabled'

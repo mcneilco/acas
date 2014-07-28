@@ -195,6 +195,13 @@ class window.Experiment extends Backbone.Model
 
 		status
 
+	getAnalysisStatus: ->
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+		if status.get('stringValue') is undefined or status.get('stringValue') is ""
+			status.set stringValue: "Created"
+
+		status
+
 	isEditable: ->
 		status = @getStatus().get 'stringValue'
 		switch status
@@ -407,6 +414,9 @@ class window.ExperimentBaseController extends AbstractFormController
 			@$('.bv_protocolCode').attr("disabled", "disabled")
 			@$('.bv_status').removeAttr("disabled")
 
+	displayInReadOnlyMode: =>
+		@$(".bv_save").addClass "hide"
+		@disableAllInputs()
 
 	handleSaveClicked: =>
 		@tagListController.handleTagsChanged()

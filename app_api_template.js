@@ -16,6 +16,7 @@
     if (typeof testModeOverRide !== "undefined") {
       if (testModeOverRide === "stubsMode") {
         global.stubsMode = true;
+        global.specRunnerTestmode = true;
         console.log("############ Starting API in stubs mode");
       }
     }

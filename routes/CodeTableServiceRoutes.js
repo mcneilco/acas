@@ -8,10 +8,21 @@
   };
 
   exports.getDataDictValues = function(req, resp) {
-    var baseurl, config, dataDictServiceTestJSON, request;
+    var baseurl, codeTableServiceTestJSON, config, i, request, _i, _len, _ref, _results;
     if (global.specRunnerTestmode) {
-      dataDictServiceTestJSON = require('../public/javascripts/spec/testFixtures/dataDictServiceTestJSON.js');
-      return resp.end(JSON.stringify(dataDictServiceTestJSON.dataDictValues[req.params.kind]));
+      codeTableServiceTestJSON = require('../public/javascripts/spec/testFixtures/CodeTableJSON.js');
+      _ref = codeTableServiceTestJSON.codes;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        if (i[req.params.kind]) {
+          console.log("success");
+          _results.push(resp.end(JSON.stringify(i[req.params.kind])));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "api/v1/ddictvalues/bytype/" + req.params.kind + "/codetable";

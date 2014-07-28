@@ -1,16 +1,16 @@
 (function() {
-  describe('Data Dictinary Service testing', function() {
+  describe('Code Table Service testing', function() {
     beforeEach(function() {
       return this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
       };
     });
-    return describe('when data dictionary service called', function() {
+    return describe('when code table service called', function() {
       beforeEach(function() {
         return runs(function() {
           return $.ajax({
             type: 'GET',
-            url: "api/dataDict/well flags",
+            url: "api/dataDict/algorithm well flags",
             success: (function(_this) {
               return function(json) {
                 return _this.serviceReturn = json;
@@ -26,7 +26,7 @@
           });
         });
       });
-      it('should return an array of data dictionary values', function() {
+      it('should return an array of code table values', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           return expect(this.serviceReturn.length).toBeGreaterThan(0);

@@ -35,6 +35,14 @@ module.exports = (grunt) ->
 					dest: "public/javascripts/spec/testFixtures/"
 					ext: '.js'
 				]
+			compileServiceTests:
+				files: [
+					expand: true
+					flatten: true
+					src: ["public/src/modules/**/spec/serviceTests/*.coffee"]
+					dest: "public/javascripts/spec/test/"
+					ext: '.js'
+				]
 			compileApp:
 				files: [
 					expand: true
@@ -98,6 +106,14 @@ module.exports = (grunt) ->
 					flatten: true
 					src: ["acas_custom/modules/**/spec/testFixtures/*.coffee"]
 					dest: "acas_custom/javascripts/spec/testFixtures/"
+					ext: '.js'
+				]
+			custom_compileServiceTests:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/modules/**/spec/serviceTests/*.coffee"]
+					dest: "acas_custom/javascripts/spec/test/"
 					ext: '.js'
 				]
 			custom_compileApp:
@@ -193,6 +209,10 @@ module.exports = (grunt) ->
 				options:
 					cwd: 'conf'
 				src: 'conf/PrepareConfigFiles.js'
+			prepare_test_JSON:
+				options:
+					cwd: 'conf'
+				src: 'conf/PrepareTestJSON.js'
 		replace:
 			clientHost:
 				src: ["conf/config.properties"]
@@ -215,6 +235,9 @@ module.exports = (grunt) ->
 			compileTestFixtures:
 				files: "public/src/modules/**/spec/testFixtures/*.coffee"
 				tasks: "coffee:compileTestFixtures"
+			compileServiceTests:
+				files: "public/src/modules/**/spec/serviceTests/*.coffee"
+				tasks: "coffee:compileServiceTests"
 			compileApp:
 				files: "./*.coffee"
 				tasks: "coffee:compileApp"
@@ -240,6 +263,9 @@ module.exports = (grunt) ->
 			custom_compileTestFixtures:
 				files: "acas_custom/modules/**/spec/testFixtures/*.coffee"
 				tasks: "coffee:custom_compileTestFixtures"
+			custom_compileServiceTests:
+				files: "acas_custom/modules/**/spec/serviceTests/*.coffee"
+				tasks: "coffee:custom_compileServiceTests"
 			custom_compileApp:
 				files: "acas_custom/*.coffee"
 				tasks: "coffee:custom_compileApp"
@@ -301,7 +327,11 @@ module.exports = (grunt) ->
 					"public/src/modules/*/src/server/*.R"
 				]
 				tasks: "execute:prepare_config_files"
-
+			prepare_test_JSON:
+				files: [
+					"public/javascripts/spec/testFixtures/*.js"
+				]
+				tasks: "execute:prepare_test_JSON"
 
 
 
