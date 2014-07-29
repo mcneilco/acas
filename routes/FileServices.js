@@ -36,10 +36,23 @@
   };
 
   setupRoutes = function(app, loginRoutes, requireLogin) {
-    var config, dataFilesPath, tempFilesPath;
+    var config, dataFilesPath, tempFilesPath, upload;
     config = require('../conf/compiled/conf.js');
+    upload = require('../node_modules_customized/jquery-file-upload-middleware');
     dataFilesPath = makeAbsolutePath(config.all.server.datafiles.relative_path);
     tempFilesPath = makeAbsolutePath(config.all.server.tempfiles.relative_path);
+    upload.configure({
+      uploadDir: dataFilesPath,
+      ssl: config.all.client.use.ssl,
+      uploadUrl: "/dataFiles"
+    });
+    app.use('/uploads', upload.fileHandler());
+    upload.on("error", function(e) {
+      return console.log("fileUpload: ", e.message);
+    });
+    upload.on("end", function(fileInfo) {
+      return app.emit("file-uploaded", fileInfo);
+    });
     ensureExists(dataFilesPath, 0x1e4, function(err) {
       if (err != null) {
         console.log("Can't find or create data files dir: " + dataFilesPath);
