@@ -49,7 +49,7 @@
 
     DoseResponseKnockoutPanelController.prototype.setupKnockoutReasonPicklist = function() {
       this.knockoutReasonList = new PickListList();
-      this.knockoutReasonList.url = "/api/dataDict/wellflags";
+      this.knockoutReasonList.url = "/api/dataDict/user well flags";
       return this.knockoutReasonListController = new PickListSelectController({
         el: this.$('.bv_dataDictPicklist'),
         collection: this.knockoutReasonList
@@ -978,12 +978,14 @@
 
     CurveCuratorController.prototype.curveSelectionUpdated = function(who) {
       var curveDetail;
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_curveCuratorDropDown'));
       curveDetail = new CurveDetail({
         id: who.model.get('curveid')
       });
       return curveDetail.fetch({
         success: (function(_this) {
           return function() {
+            UtilityFunctions.prototype.hideProgressModal(_this.$('.bv_curveCuratorDropDown'));
             return _this.curveEditorController.setModel(curveDetail);
           };
         })(this)

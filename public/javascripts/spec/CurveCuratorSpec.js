@@ -259,6 +259,73 @@
         });
       });
     });
+    describe("Dose Response Knockout Panel Controller", function() {
+      beforeEach(function() {
+        this.kpc = new DoseResponseKnockoutPanelController({
+          el: $("#fixture")
+        });
+        return this.kpc.render();
+      });
+      describe("basic plumbing", function() {
+        it("should have controller defined", function() {
+          return expect(DoseResponseKnockoutPanelController).toBeDefined();
+        });
+        it("should setup a reason pick list list", function() {
+          return expect(this.kpc.knockoutReasonList).toBeDefined;
+        });
+        return it("should have a set of pick list models", function() {
+          return expect(this.kpc.knockoutReasonList.models.length) > 1;
+        });
+      });
+      return describe("should trigger event when ok button is clicked and return a reason", function() {
+        beforeEach(function() {
+          runs(function() {
+            this.kpc.on('reasonSelected', (function(_this) {
+              return function(reason) {
+                return _this.reasonSelected = reason;
+              };
+            })(this));
+            return this.kpc.show();
+          });
+          return waitsFor((function(_this) {
+            return function() {
+              return _this.kpc.$("option").length > 0;
+            };
+          })(this));
+        });
+        it("should return a reason when the ok button is clicked", function() {
+          runs(function() {
+            return $('.bv_doseResponseKnockoutPanelOKBtn').click();
+          }, 1000);
+          waitsFor((function(_this) {
+            return function() {
+              return _this.reasonSelected != null;
+            };
+          })(this), 1000);
+          return runs((function(_this) {
+            return function() {
+              return expect(_this.reasonSelected).toEqual('outlier');
+            };
+          })(this));
+        });
+        return it("should return a different value if the options is changed", function() {
+          runs(function() {
+            this.kpc.$('.bv_dataDictPicklist').val("crashout");
+            return this.kpc.$('.bv_doseResponseKnockoutPanelOKBtn').click();
+          }, 1000);
+          waitsFor((function(_this) {
+            return function() {
+              return _this.reasonSelected != null;
+            };
+          })(this), 1000);
+          return runs((function(_this) {
+            return function() {
+              return expect(_this.reasonSelected).toEqual('crashout');
+            };
+          })(this));
+        });
+      });
+    });
     describe("Curve Editor Controller tests", function() {
       beforeEach(function() {
         this.cec = new CurveEditorController({

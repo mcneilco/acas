@@ -177,6 +177,46 @@ describe "Curve Curator Module testing", ->
 				it "should have a populated point list", ->
 					expect(@drpc.pointList.length).toBeGreaterThan(0)
 
+	describe "Dose Response Knockout Panel Controller", ->
+		beforeEach ->
+			@kpc = new DoseResponseKnockoutPanelController
+				el: $("#fixture")
+			@kpc.render()
+		describe "basic plumbing", ->
+			it "should have controller defined", ->
+				expect(DoseResponseKnockoutPanelController).toBeDefined()
+			it "should setup a reason pick list list", ->
+				expect(@kpc.knockoutReasonList).toBeDefined
+			it "should have a set of pick list models", ->
+				expect(@kpc.knockoutReasonList.models.length) > 1
+		describe "should trigger event when ok button is clicked and return a reason", ->
+			beforeEach ->
+				runs ->
+					@kpc.on 'reasonSelected', (reason) =>
+						@reasonSelected = reason
+					@kpc.show()
+				waitsFor =>
+					@kpc.$("option").length > 0
+			it "should return a reason when the ok button is clicked", ->
+				runs ->
+					$('.bv_doseResponseKnockoutPanelOKBtn').click()
+				,1000
+				waitsFor =>
+					@reasonSelected?
+				,1000
+				runs =>
+					expect(@reasonSelected).toEqual 'outlier'
+			it "should return a different value if the options is changed", ->
+				runs ->
+					@kpc.$('.bv_dataDictPicklist').val "crashout"
+					@kpc.$('.bv_doseResponseKnockoutPanelOKBtn').click()
+				,1000
+				waitsFor =>
+					@reasonSelected?
+				,1000
+				runs =>
+					expect(@reasonSelected).toEqual 'crashout'
+
 	describe "Curve Editor Controller tests", ->
 			beforeEach ->
 				@cec = new CurveEditorController
@@ -327,8 +367,3 @@ describe "Curve Curator Module testing", ->
 					waits 200
 					runs ->
 						expect(@ccc.$('.bv_reportedValues').html()).toContain "slope"
-
-
-#TODO fix the styling of the plot
-#TODO stub refit service. First stube new service to get curve details refactor to fetch full curve from other service
-#TODO implement curation panel

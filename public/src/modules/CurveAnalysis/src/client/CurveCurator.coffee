@@ -21,7 +21,7 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 
 	setupKnockoutReasonPicklist: =>
 		@knockoutReasonList = new PickListList()
-		@knockoutReasonList.url = "/api/dataDict/wellflags"
+		@knockoutReasonList.url = "/api/dataDict/user well flags"
 		@knockoutReasonListController = new PickListSelectController
 			el: @$('.bv_dataDictPicklist')
 			collection: @knockoutReasonList
@@ -625,11 +625,9 @@ class window.CurveCuratorController extends Backbone.View
 				@render()
 
 	curveSelectionUpdated: (who) =>
-		console.log "yo"
 		UtilityFunctions::showProgressModal @$('.bv_curveCuratorDropDown')
 		curveDetail = new CurveDetail id: who.model.get('curveid')
 		curveDetail.fetch success: =>
-			console.log "hello"
 			UtilityFunctions::hideProgressModal @$('.bv_curveCuratorDropDown')
 			@curveEditorController.setModel curveDetail
 
