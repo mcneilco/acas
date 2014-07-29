@@ -590,7 +590,7 @@
     };
 
     ExperimentBaseController.prototype.handleCompletionDateIconClicked = function() {
-      return $(".bv_completionDate").datepicker("show");
+      return this.$(".bv_completionDate").datepicker("show");
     };
 
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {

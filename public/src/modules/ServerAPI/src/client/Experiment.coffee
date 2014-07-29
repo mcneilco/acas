@@ -355,7 +355,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
 
 	handleCompletionDateIconClicked: =>
-		$( ".bv_completionDate" ).datepicker( "show" );
+		@$( ".bv_completionDate" ).datepicker( "show" );
 
 	handleProtocolCodeChanged: =>
 		code = @$('.bv_protocolCode').val()
