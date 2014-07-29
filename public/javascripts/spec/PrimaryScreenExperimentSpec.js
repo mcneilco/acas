@@ -442,7 +442,7 @@
           it("should update the readOrder ", function() {
             this.parc.$('.bv_readOrder').val('42');
             this.parc.$('.bv_readOrder').change();
-            return expect(this.parc.model.get('readOrder')).toEqual('42');
+            return expect(this.parc.model.get('readOrder')).toEqual(42);
           });
           it("should update the read name", function() {
             waitsFor(function() {
@@ -455,8 +455,17 @@
             });
           });
           return it("should update the matchReadName ", function() {
-            this.parc.$('.bv_matchReadName').click();
-            return expect(this.parc.model.get('matchReadName')).toBeFalsy();
+            waitsFor(function() {
+              return this.parc.$('.bv_readName option').length > 0;
+            }, 1000);
+            return runs(function() {
+              console.log(this.parc.$('.bv_matchReadName').is(":checked"));
+              console.log(this.parc.$('.bv_matchReadName').is(":checked"));
+              this.parc.$('.bv_matchReadName').click();
+              this.parc.$('.bv_matchReadName').click();
+              console.log(this.parc.$('.bv_matchReadName').is(":checked"));
+              return expect(this.parc.model.get('matchReadName')).toBeFalsy();
+            });
           });
         });
       });

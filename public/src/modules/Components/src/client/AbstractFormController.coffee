@@ -30,12 +30,15 @@ class window.AbstractFormController extends Backbone.View
 	validationError: =>
 		errors = @model.validationError
 		@clearValidationErrorStyles()
+
+		console.log errors
 		_.each errors, (err) =>
 			@$('.bv_group_'+err.attribute).addClass 'input_error error'
 			@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 		@trigger 'invalid'
 
 	clearValidationErrorStyles: =>
+		console.log "about to clear errors"
 		errorElms = @$('.input_error')
 		@trigger 'clearErrors', @errorOwnerName
 		_.each errorElms, (ee) =>
@@ -45,6 +48,7 @@ class window.AbstractFormController extends Backbone.View
 		@model.isValid()
 
 	handleModelChange: =>
+		console.log "got handle model change"
 		@clearValidationErrorStyles()
 		if @isValid()
 			@trigger 'valid'

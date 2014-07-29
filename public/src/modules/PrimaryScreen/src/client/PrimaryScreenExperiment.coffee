@@ -211,20 +211,19 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		result
 
-class window.PrimaryAnalysisReadController extends Backbone.View
+class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
 	tagName: "div"
 	className: "form-inline"
 	events:
-		"change .bv_readOrder": "updateModel"
-		"change .bv_readName": "updateModel"
-		"click .bv_matchReadName": "handleMatchReadNameChanged"
+		"change .bv_readOrder": "attributeChanged"
+		"change .bv_readName": "attributeChanged"
+		"click .bv_matchReadName": "attributeChanged"
 		"click .bv_delete": "clear"
 
 	initialize: ->
 		@errorOwnerName = 'PrimaryAnalysisReadController'
 		@setBindings()
-		@setUpReadNameSelect()
 		@model.on "destroy", @remove, @
 
 	render: =>
@@ -247,49 +246,16 @@ class window.PrimaryAnalysisReadController extends Backbone.View
 			selectedCode: @model.get('readName')
 
 	updateModel: =>
-		@model.set
-			readOrder: @$('.bv_readOrder').val()
-			readName: @$('.bv_readName').val()
-
-	handleMatchReadNameChanged: =>
 		matchReadName = @$('.bv_matchReadName').is(":checked")
-		@model.set matchReadName: !matchReadName
-		if matchReadName
-			console.log "set matchReadName to checked"
-		else
-			console.log "set matchReadName unchecked"
-
+		console.log "about to set"
+		@model.set
+			readOrder: parseFloat(@getTrimmedInput('.bv_readOrder'))
+			readName: @$('.bv_readName').val()
+			matchReadName: matchReadName
 
 	clear: =>
 		@model.destroy()
 
-	setBindings: ->
-		@model.on 'invalid', @validationError
-		@model.on 'change', @handleModelChange
-
-	validationError: =>
-		errors = @model.validationError
-		@clearValidationErrorStyles()
-		_.each errors, (err) =>
-			@$('.bv_group_'+err.attribute).addClass 'input_error error'
-			@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
-		@trigger 'invalid'
-
-	clearValidationErrorStyles: =>
-		errorElms = @$('.input_error')
-		@trigger 'clearErrors', @errorOwnerName
-		_.each errorElms, (ee) =>
-			$(ee).removeClass 'input_error error'
-
-	isValid: ->
-		@model.isValid()
-
-	handleModelChange: =>
-		@clearValidationErrorStyles()
-		if @isValid()
-			@trigger 'valid'
-		else
-			@trigger 'invalid'
 
 class window.PrimaryAnalysisReadListController extends Backbone.View
 	template: _.template($("#PrimaryAnalysisReadListView").html())
@@ -314,8 +280,6 @@ class window.PrimaryAnalysisReadListController extends Backbone.View
 		parc = new PrimaryAnalysisReadController
 			model: read
 		@$('.bv_readInfo').append parc.render().el
-
-
 
 
 
@@ -699,7 +663,6 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 							if json.length == 0
 								alert 'Could not get experiment for code in this URL, creating new one'
 							else
-								console.log "got an expt"
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 								exp = new PrimaryScreenExperiment json
 #								exp = new PrimaryScreenExperiment json[0]
@@ -715,7 +678,6 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		unless @model?
 			@model = new PrimaryScreenExperiment()
 
-		console.log @model.get('codeName')
 		$(@el).html @template()
 		@model.on 'sync', @handleExperimentSaved
 		@experimentBaseController = new ExperimentBaseController

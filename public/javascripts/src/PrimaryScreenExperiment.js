@@ -350,11 +350,7 @@
     __extends(PrimaryAnalysisReadController, _super);
 
     function PrimaryAnalysisReadController() {
-      this.handleModelChange = __bind(this.handleModelChange, this);
-      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
-      this.validationError = __bind(this.validationError, this);
       this.clear = __bind(this.clear, this);
-      this.handleMatchReadNameChanged = __bind(this.handleMatchReadNameChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return PrimaryAnalysisReadController.__super__.constructor.apply(this, arguments);
@@ -367,16 +363,15 @@
     PrimaryAnalysisReadController.prototype.className = "form-inline";
 
     PrimaryAnalysisReadController.prototype.events = {
-      "change .bv_readOrder": "updateModel",
-      "change .bv_readName": "updateModel",
-      "click .bv_matchReadName": "handleMatchReadNameChanged",
+      "change .bv_readOrder": "attributeChanged",
+      "change .bv_readName": "attributeChanged",
+      "click .bv_matchReadName": "attributeChanged",
       "click .bv_delete": "clear"
     };
 
     PrimaryAnalysisReadController.prototype.initialize = function() {
       this.errorOwnerName = 'PrimaryAnalysisReadController';
       this.setBindings();
-      this.setUpReadNameSelect();
       return this.model.on("destroy", this.remove, this);
     };
 
@@ -403,78 +398,23 @@
     };
 
     PrimaryAnalysisReadController.prototype.updateModel = function() {
-      return this.model.set({
-        readOrder: this.$('.bv_readOrder').val(),
-        readName: this.$('.bv_readName').val()
-      });
-    };
-
-    PrimaryAnalysisReadController.prototype.handleMatchReadNameChanged = function() {
       var matchReadName;
       matchReadName = this.$('.bv_matchReadName').is(":checked");
-      this.model.set({
-        matchReadName: !matchReadName
+      console.log("about to set");
+      return this.model.set({
+        readOrder: parseFloat(this.getTrimmedInput('.bv_readOrder')),
+        readName: this.$('.bv_readName').val(),
+        matchReadName: matchReadName
       });
-      if (matchReadName) {
-        return console.log("set matchReadName to checked");
-      } else {
-        return console.log("set matchReadName unchecked");
-      }
     };
 
     PrimaryAnalysisReadController.prototype.clear = function() {
       return this.model.destroy();
     };
 
-    PrimaryAnalysisReadController.prototype.setBindings = function() {
-      this.model.on('invalid', this.validationError);
-      return this.model.on('change', this.handleModelChange);
-    };
-
-    PrimaryAnalysisReadController.prototype.validationError = function() {
-      var errors;
-      errors = this.model.validationError;
-      this.clearValidationErrorStyles();
-      _.each(errors, (function(_this) {
-        return function(err) {
-          _this.$('.bv_group_' + err.attribute).addClass('input_error error');
-          return _this.trigger('notifyError', {
-            owner: _this.errorOwnerName,
-            errorLevel: 'error',
-            message: err.message
-          });
-        };
-      })(this));
-      return this.trigger('invalid');
-    };
-
-    PrimaryAnalysisReadController.prototype.clearValidationErrorStyles = function() {
-      var errorElms;
-      errorElms = this.$('.input_error');
-      this.trigger('clearErrors', this.errorOwnerName);
-      return _.each(errorElms, (function(_this) {
-        return function(ee) {
-          return $(ee).removeClass('input_error error');
-        };
-      })(this));
-    };
-
-    PrimaryAnalysisReadController.prototype.isValid = function() {
-      return this.model.isValid();
-    };
-
-    PrimaryAnalysisReadController.prototype.handleModelChange = function() {
-      this.clearValidationErrorStyles();
-      if (this.isValid()) {
-        return this.trigger('valid');
-      } else {
-        return this.trigger('invalid');
-      }
-    };
-
     return PrimaryAnalysisReadController;
 
-  })(Backbone.View);
+  })(AbstractFormController);
 
   window.PrimaryAnalysisReadListController = (function(_super) {
     __extends(PrimaryAnalysisReadListController, _super);
@@ -1050,7 +990,6 @@
                   if (json.length === 0) {
                     alert('Could not get experiment for code in this URL, creating new one');
                   } else {
-                    console.log("got an expt");
                     exp = new PrimaryScreenExperiment(json);
                     exp.fixCompositeClasses();
                     _this.model = exp;
@@ -1072,7 +1011,6 @@
       if (this.model == null) {
         this.model = new PrimaryScreenExperiment();
       }
-      console.log(this.model.get('codeName'));
       $(this.el).html(this.template());
       this.model.on('sync', this.handleExperimentSaved);
       this.experimentBaseController = new ExperimentBaseController({
