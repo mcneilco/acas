@@ -619,9 +619,12 @@ cs.ls_type AS c_state_type
 
 FROM api_protocol p
 JOIN api_experiment e on e.protocol_id = p.protocol_id
-JOIN analysis_group ag on ag.experiment_id = e.id
-JOIN treatment_group tg on tg.analysis_group_id = ag.id
-JOIN subject s on s.treatment_group_id = tg.id
+JOIN experiment_analysisgroup eag ON eag.experiment_id = e.id
+JOIN analysis_group ag ON ag.id = eag.analysis_group_id
+JOIN analysisgroup_treatmentgroup agtg ON agtg.analysis_group_id = ag.id
+JOIN treatment_group tg ON tg.id = agtg.treatment_group_id
+JOIN treatmentgroup_subject tgsmm ON tgsmm.treatment_group_id = tg.id
+JOIN subject s ON s.id = tgsmm.subject_id
 LEFT OUTER JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
 LEFT OUTER JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code'
 LEFT OUTER JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
