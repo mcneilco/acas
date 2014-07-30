@@ -13,6 +13,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	additionalData: {experimentId: 1234, otherparam: "fred"}
 	allowedFileTypes: ['xls', 'xlsx', 'csv']
 	maxFileSize: 200000000
+	attachReportFile: false
 	attachImagesFile: false
 
 
@@ -23,6 +24,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		'click .bv_save' : 'parseAndSave'
 		'click .bv_back' : 'backToUpload'
 		'click .bv_loadAnother' : 'loadAnother'
+		'click .bv_attachReportFile': 'handleAttachReportFileChanged'
 		'click .bv_attachImagesFile': 'handleAttachImagesFileChanged'
 
 
@@ -54,10 +56,11 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)
 			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved)
 			@reportFileController.render()
-			@$('.bv_reportFileWrapper').show()
+			@handleAttachReportFileChanged()
+#			@$('.bv_reportFileWrapper').show()
+
 
 		if @loadImagesFile
-			console.log "got to loadImagesFile"
 			@imagesFileController = new LSFileInputController
 				el: @$('.bv_imagesFile')
 				inputTitle: ''
@@ -67,7 +70,10 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@imagesFileController.on('fileInput:uploadComplete', @handleImagesFileUploaded)
 			@imagesFileController.on('fileInput:removedFile', @handleImagesFileRemoved)
 			@imagesFileController.render()
-			@$('.bv_imagesFileWrapper').show()
+			@handleAttachImagesFileChanged()
+#			@$('.bv_imagesFileWrapper').show()
+
+
 
 		@showFileSelectPhase()
 
@@ -96,6 +102,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 	handleReportFileRemoved: =>
 		@reportFileNameOnServer = null
 
+
 	handleImagesFileUploaded: (fileName) =>
 		@imagesFileNameOnServer = @filePath+fileName
 		@trigger 'amDirty'
@@ -118,6 +125,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 				error: (err) =>
 					@$('.bv_validateStatusDropDown').modal("hide")
 				dataType: 'json',
+
+
 
 	parseAndSave: =>
 		if @parseFileUploaded and @filePassedValidation
@@ -192,6 +201,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		fn = -> @$('.bv_deleteFile').click()
 		setTimeout fn , 200
 
+
 	showFileSelectPhase: ->
 		@$('.bv_resultStatus').html("")
 		@$('.bv_htmlSummary').hide()
@@ -203,12 +213,23 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_notifications').hide()
 		@$('.bv_csvPreviewContainer').hide()
 
+	handleAttachReportFileChanged: ->
+		attachReportFile = @$('.bv_attachReportFile').is(":checked")
+		if attachReportFile
+			@$('.bv_reportFileWrapper').show()
+		else
+			@handleReportFileRemoved()
+			@$('.bv_reportFileWrapper').hide()
+			@reportFileController.render()
+
 	handleAttachImagesFileChanged: ->
 		attachImagesFile = @$('.bv_attachImagesFile').is(":checked")
 		if attachImagesFile
 			@$('.bv_imagesFileWrapper').show()
 		else
+			@handleImagesFileRemoved()
 			@$('.bv_imagesFileWrapper').hide()
+			@imagesFileController.render()
 
 
 	showFileUploadPhase: ->

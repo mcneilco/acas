@@ -54,6 +54,8 @@
 
     BasicFileValidateAndSaveController.prototype.maxFileSize = 200000000;
 
+    BasicFileValidateAndSaveController.prototype.attachReportFile = false;
+
     BasicFileValidateAndSaveController.prototype.attachImagesFile = false;
 
     BasicFileValidateAndSaveController.prototype.template = _.template($("#BasicFileValidateAndSaveView").html());
@@ -63,6 +65,7 @@
       'click .bv_save': 'parseAndSave',
       'click .bv_back': 'backToUpload',
       'click .bv_loadAnother': 'loadAnother',
+      'click .bv_attachReportFile': 'handleAttachReportFileChanged',
       'click .bv_attachImagesFile': 'handleAttachImagesFileChanged'
     };
 
@@ -94,10 +97,9 @@
         this.reportFileController.on('fileInput:uploadComplete', this.handleReportFileUploaded);
         this.reportFileController.on('fileInput:removedFile', this.handleReportFileRemoved);
         this.reportFileController.render();
-        this.$('.bv_reportFileWrapper').show();
+        this.handleAttachReportFileChanged();
       }
       if (this.loadImagesFile) {
-        console.log("got to loadImagesFile");
         this.imagesFileController = new LSFileInputController({
           el: this.$('.bv_imagesFile'),
           inputTitle: '',
@@ -108,7 +110,7 @@
         this.imagesFileController.on('fileInput:uploadComplete', this.handleImagesFileUploaded);
         this.imagesFileController.on('fileInput:removedFile', this.handleImagesFileRemoved);
         this.imagesFileController.render();
-        this.$('.bv_imagesFileWrapper').show();
+        this.handleAttachImagesFileChanged();
       }
       return this.showFileSelectPhase();
     };
@@ -282,12 +284,26 @@
       return this.$('.bv_csvPreviewContainer').hide();
     };
 
+    BasicFileValidateAndSaveController.prototype.handleAttachReportFileChanged = function() {
+      var attachReportFile;
+      attachReportFile = this.$('.bv_attachReportFile').is(":checked");
+      if (attachReportFile) {
+        return this.$('.bv_reportFileWrapper').show();
+      } else {
+        this.handleReportFileRemoved();
+        this.$('.bv_reportFileWrapper').hide();
+        return this.reportFileController.render();
+      }
+    };
+
     BasicFileValidateAndSaveController.prototype.handleAttachImagesFileChanged = function() {
       var attachImagesFile;
       attachImagesFile = this.$('.bv_attachImagesFile').is(":checked");
       if (attachImagesFile) {
         return this.$('.bv_imagesFileWrapper').show();
       } else {
+        this.handleImagesFileRemoved();
+        this.imagesFileController.render();
         return this.$('.bv_imagesFileWrapper').hide();
       }
     };
