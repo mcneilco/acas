@@ -303,8 +303,8 @@
         return this.$('.bv_imagesFileWrapper').show();
       } else {
         this.handleImagesFileRemoved();
-        this.imagesFileController.render();
-        return this.$('.bv_imagesFileWrapper').hide();
+        this.$('.bv_imagesFileWrapper').hide();
+        return this.imagesFileController.render();
       }
     };
 
