@@ -157,20 +157,36 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when agonist control batch is empty", function() {
+          it("should be valid when agonist control batch and conc are both empty", function() {
             var filtErrors;
             this.psap.get('agonistControl').set({
-              batchCode: ""
+              batchCode: "",
+              concentration: ""
             });
-            expect(this.psap.isValid()).toBeFalsy();
+            expect(this.psap.isValid()).toBeTruthy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
+              err.attribute === 'agonistControlBatch';
+              return err.attribute === 'agonistControlConc';
+            });
+            return expect(filtErrors.length).toEqual(0);
+          });
+          it("should be valid when agonist control batch is entered and agonist control conc is a number ", function() {
+            var filtErrors;
+            this.psap.get('agonistControl').set({
+              batchCode: "CMPD-87654399-01",
+              concentration: 12
+            });
+            expect(this.psap.isValid()).toBeTruthy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              err.attribute === 'agonistControlConc';
               return err.attribute === 'agonistControlBatch';
             });
-            return expect(filtErrors.length).toBeGreaterThan(0);
+            return expect(filtErrors.length).toEqual(0);
           });
-          it("should be invalid when agonist control conc is NaN", function() {
+          it("should be invalid when agonist control batch is entered and agonist control conc is NaN", function() {
             var filtErrors;
             this.psap.get('agonistControl').set({
+              batchCode: "CMPD-87654399-01",
               concentration: NaN
             });
             expect(this.psap.isValid()).toBeFalsy();
@@ -179,38 +195,60 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when vehicle control is empty", function() {
+          it("should be invalid when agonist control batch is empty and agonist control conc is a number ", function() {
+            var filtErrors;
+            this.psap.get('agonistControl').set({
+              batchCode: "",
+              concentration: 13
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'agonistControlBatch';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be valid when vehicle control is empty", function() {
             var filtErrors;
             this.psap.get('vehicleControl').set({
               batchCode: ""
             });
-            expect(this.psap.isValid()).toBeFalsy();
+            expect(this.psap.isValid()).toBeTruthy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
               return err.attribute === 'vehicleControlBatch';
             });
-            return expect(filtErrors.length).toBeGreaterThan(0);
+            return expect(filtErrors.length).toEqual(0);
           });
-          it("should be invalid when assayVolume is NaN", function() {
+          it("should be invalid when assayVolume is NaN (but can be empty)", function() {
             var filtErrors;
             this.psap.set({
               assayVolume: NaN
             });
             expect(this.psap.isValid()).toBeFalsy();
+            return filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'assayVolume';
+            });
+          });
+          it("should be valid when assayVolume is empty", function() {
+            var filtErrors;
+            this.psap.set({
+              assayVolume: ""
+            });
+            expect(this.psap.isValid()).toBeTruthy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
               return err.attribute === 'assayVolume';
             });
-            return expect(filtErrors.length).toBeGreaterThan(0);
+            return expect(filtErrors.length).toEqual(0);
           });
-          it("should be invalid when instrument reader is unassigned", function() {
+          it("should be valid when instrument reader is unassigned", function() {
             var filtErrors;
             this.psap.set({
               instrumentReader: "unassigned"
             });
-            expect(this.psap.isValid()).toBeFalsy();
+            expect(this.psap.isValid()).toBeTruthy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
               return err.attribute === 'instrumentReader';
             });
-            return expect(filtErrors.length).toBeGreaterThan(0);
+            return expect(filtErrors.length).toEqual(0);
           });
           it("should be invalid when aggregate by1 is unassigned", function() {
             var filtErrors;
@@ -267,7 +305,7 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when volumeType is dilution and dilutionFactor is not a number", function() {
+          it("should be invalid when volumeType is dilution and dilutionFactor is not a number (but can be empty)", function() {
             var filtErrors;
             this.psap.set({
               volumeType: "dilution"
@@ -281,7 +319,21 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when volumeType is transfer and transferVolume is not a number", function() {
+          it("should be valid when volumeType is dilution and dilutionFactor is empty", function() {
+            var filtErrors;
+            this.psap.set({
+              volumeType: "dilution"
+            });
+            this.psap.set({
+              dilutionFactor: ""
+            });
+            expect(this.psap.isValid()).toBeTruthy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'dilutionFactor';
+            });
+            return expect(filtErrors.length).toEqual(0);
+          });
+          it("should be invalid when volumeType is transfer and transferVolume is not a number (but can be empty)", function() {
             var filtErrors;
             this.psap.set({
               volumeType: "transfer"
@@ -294,6 +346,20 @@
               return err.attribute === 'transferVolume';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be valid when volumeType is transfer and transferVolume is empty", function() {
+            var filtErrors;
+            this.psap.set({
+              volumeType: "transfer"
+            });
+            this.psap.set({
+              transferVolume: ""
+            });
+            expect(this.psap.isValid()).toBeTruthy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'transferVolume';
+            });
+            return expect(filtErrors.length).toEqual(0);
           });
           it("should be invalid when autoHitSelection is checked and thresholdType is sd and hitSDThreshold is not a number", function() {
             var filtErrors;
@@ -874,29 +940,51 @@
             this.psapc.$('.bv_negativeControlConc').change();
             return expect(this.psapc.$('.bv_group_negativeControlConc').hasClass("error")).toBeTruthy();
           });
-          it("should show error if agonistControl batch is not set", function() {
+          it("should not show error if agonistControl batch and conc are not set", function() {
             this.psapc.$('.bv_agonistControlBatch').val("");
             this.psapc.$('.bv_agonistControlBatch').change();
-            return expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy();
-          });
-          it("should show error if agonistControl conc is not set", function() {
             this.psapc.$('.bv_agonistControlConc').val("");
             this.psapc.$('.bv_agonistControlConc').change();
+            expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
+            return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
+          });
+          it("should not show error if agonistControl batch and conc are set correctly", function() {
+            this.psapc.$('.bv_agonistControlBatch').val("CMPD-12345678-01");
+            this.psapc.$('.bv_agonistControlBatch').change();
+            this.psapc.$('.bv_agonistControlConc').val(12);
+            this.psapc.$('.bv_agonistControlConc').change();
+            expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
+            return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
+          });
+          it("should show error if agonistControl batch is correct but conc is NaN or empty", function() {
+            this.psapc.$('.bv_agonistControlBatch').val("CMPD-12345678-01");
+            this.psapc.$('.bv_agonistControlBatch').change();
+            this.psapc.$('.bv_agonistControlConc').val("");
+            this.psapc.$('.bv_agonistControlConc').change();
+            expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
             return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy();
           });
-          it("should show error if vehicleControl is not set", function() {
+          it("should show error if agonistControl batch is empty but conc is a number", function() {
+            this.psapc.$('.bv_agonistControlBatch').val("");
+            this.psapc.$('.bv_agonistControlBatch').change();
+            this.psapc.$('.bv_agonistControlConc').val(23);
+            this.psapc.$('.bv_agonistControlConc').change();
+            expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy();
+            return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
+          });
+          it("should not show error if vehicleControl is not set", function() {
             this.psapc.$('.bv_vehicleControlBatch').val("");
             this.psapc.$('.bv_vehicleControlBatch').change();
-            return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy();
+            return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy();
           });
-          it("should show error if instrumentReader is unassigned", function() {
+          it("should not show error if instrumentReader is unassigned", function() {
             waitsFor(function() {
               return this.psapc.$('.bv_instrumentReader option').length > 0;
             }, 1000);
             return runs(function() {
               this.psapc.$('.bv_instrumentReader').val("unassigned");
               this.psapc.$('.bv_instrumentReader').change();
-              return expect(this.psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeTruthy();
+              return expect(this.psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeFalsy();
             });
           });
           it("should show error if signal direction rule is unassigned", function() {
@@ -961,27 +1049,39 @@
             this.psapc.$('.bv_hitSDThreshold').change();
             return expect(this.psapc.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy();
           });
-          it("should show error if volume type is transferVolume and transferVolume not a number", function() {
+          it("should show error if volume type is transferVolume and transferVolume not a number (but can be empty)", function() {
             this.psapc.$('.bv_volumeTypeTransfer').click();
-            this.psapc.$('.bv_transferVolume').val("");
+            this.psapc.$('.bv_transferVolume').val("hello");
             this.psapc.$('.bv_transferVolume').change();
             return expect(this.psapc.$('.bv_group_transferVolume').hasClass("error")).toBeTruthy();
           });
-          it("should show error if volume type is dilutionFactor and dilutionFactor not a number", function() {
+          it("should not show error if volume type is transferVolume and transferVolume is empty", function() {
+            this.psapc.$('.bv_volumeTypeTransfer').click();
+            this.psapc.$('.bv_transferVolume').val("");
+            this.psapc.$('.bv_transferVolume').change();
+            return expect(this.psapc.$('.bv_group_transferVolume').hasClass("error")).toBeFalsy();
+          });
+          it("should show error if volume type is dilutionFactor and dilutionFactor not a number (but can be empty)", function() {
             this.psapc.$('.bv_volumeTypeDilution').click();
-            this.psapc.$('.bv_dilutionFactor').val("");
+            this.psapc.$('.bv_dilutionFactor').val("hello again");
             this.psapc.$('.bv_dilutionFactor').change();
             return expect(this.psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeTruthy();
           });
+          it("should not show error if volume type is dilutionFactor and dilutionFactor is empty", function() {
+            this.psapc.$('.bv_volumeTypeDilution').click();
+            this.psapc.$('.bv_dilutionFactor').val("");
+            this.psapc.$('.bv_dilutionFactor').change();
+            return expect(this.psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeFalsy();
+          });
           it("should show error if assayVolume is NaN", function() {
-            this.psapc.$('.bv_assayVolume').val("");
+            this.psapc.$('.bv_assayVolume').val("b");
             this.psapc.$('.bv_assayVolume').change();
             return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy();
           });
-          return it("should show error if assayVolume is NaN", function() {
+          return it("should not show error if assayVolume is empty", function() {
             this.psapc.$('.bv_assayVolume').val("");
             this.psapc.$('.bv_assayVolume').change();
-            return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy();
+            return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeFalsy();
           });
         });
       });

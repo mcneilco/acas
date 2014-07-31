@@ -36,144 +36,171 @@
 <script type="text/template" id="PrimaryScreenAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
 
     <div class="span12">
-    <div class="">
+        <h5>Standards</h5>
+        <div class="">
+            <div class="pull-left">
+                <div>*Positive Control</div>
+                <form class="bv_group_positiveControlBatch control-group pull-left">
+                    <input class="input-medium bv_positiveControlBatch" value="<%=positiveControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
+                </form>
+                <form class="bv_group_positiveControlConc control-group pull-right" style="padding-left:10px;">
+                    <input class="input-mini bv_positiveControlConc" value="<%=positiveControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
+                    &micro;M
+                </form>
+            </div>
+
+            <div class="pull-left" style="">
+                <div style="padding-left:40px;">*Negative Control</div>
+                <form class="bv_group_negativeControlBatch control-group pull-left" style="padding-left:40px;">
+                    <input class="input-medium bv_negativeControlBatch" value="<%=negativeControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
+                </form>
+                <form class="bv_group_negativeControlConc control-group pull-right" style="padding-left:10px;">
+                    <input class="input-mini bv_negativeControlConc" value="<%=negativeControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
+                    &micro;M
+                </form>
+            </div>
+
+        </div>
+
+        <div class="">
+            <div class="pull-left">
+                <div>Agonist</div>
+                <form class="bv_group_agonistControlBatch control-group pull-left">
+                    <input class="input-medium bv_agonistControlBatch" value="<%=agonistControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
+                </form>
+                <form class="bv_group_agonistControlConc control-group pull-right" style="padding-left:10px;">
+                    <input class="input-mini bv_agonistControlConc" value="<%=agonistControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
+                    &micro;M
+                </form>
+            </div>
+
         <div class="pull-left">
-            <div>*Positive Control</div>
-            <form class="bv_group_positiveControlBatch control-group pull-left">
-                <input class="input-medium bv_positiveControlBatch" value="<%=positiveControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
-            </form>
-	        <form class="bv_group_positiveControlConc control-group pull-right" style="padding-left:10px;">
-			    <input class="input-mini bv_positiveControlConc" value="<%=positiveControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
-                &micro;M
-            </form>
-        </div>
-
-        <div class="pull-left" style="">
-            <div style="padding-left:40px;">*Negative Control</div>
-            <form class="bv_group_negativeControlBatch control-group pull-left" style="padding-left:40px;">
-                <input class="input-medium bv_negativeControlBatch" value="<%=negativeControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
-            </form>
-	        <form class="bv_group_negativeControlConc control-group pull-right" style="padding-left:10px;">
-		        <input class="input-mini bv_negativeControlConc" value="<%=negativeControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
-                &micro;M
-            </form>
-        </div>
-    </div>
-
-    <div class="">
-	    <div class="pull-left">
-		    <div>*Agonist</div>
-		    <form class="bv_group_agonistControlBatch control-group pull-left">
-			    <input class="input-medium bv_agonistControlBatch" value="<%=agonistControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
-		    </form>
-		    <form class="bv_group_agonistControlConc control-group pull-right" style="padding-left:10px;">
-			    <input class="input-mini bv_agonistControlConc" value="<%=agonistControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
-                &micro;M
-            </form>
-	    </div>
-
-	<div class="pull-left">
-		<div style="padding-left:40px;">*Vehicle Control</div>
-		    <form class="bv_group_vehicleControlBatch control-group" style="padding-left:40px;">
-			    <input class="pull-left bv_vehicleControlBatch" style="width:265px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="enter batch number">
-		    </form>
-	    </div>
-    </div>
-
-	</div>
-
-        <div class="control-group bv_group_assayVolume">
-            <label class="control-label">*Assay Volume</label>
-            <div class="controls">
-                <input class="bv_assayVolume" value="<%=assayVolume%>" type="text">
+            <div style="padding-left:40px;">Vehicle Control</div>
+                <form class="bv_group_vehicleControlBatch control-group" style="padding-left:40px;">
+                    <input class="pull-left bv_vehicleControlBatch" style="width:265px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="enter batch number">
+                </form>
             </div>
         </div>
+	</div>
+
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:10px;margin-top:5px;" />
+
+
+    <h5>Assay Parameters</h5>
+    <div class="form-horizontal">
+        <div class="control-group bv_group_assayVolume">
+            <label class="control-label">Assay Volume</label>
+            <div class="controls">
+                <input class="bv_assayVolume" value="<%=assayVolume%>" type="text" style="width:335px;"> </input>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="form-horizontal">
         <div class="control-group bv_group_transferVolume">
-            <label class="control-label radio" style="width:144px;padding-left:0;">
-                <input type="radio" name="bv_volumeType" value="transfer" class="bv_volumeTypeTransfer" <% if (volumeType=="transfer") { %> checked="checked"<% }%> />*Transfer Volume
+            <label class="control-label radio" style="width:110px;padding-left:30px;">
+                <input type="radio" name="bv_volumeType" value="transfer" class="bv_volumeTypeTransfer" <% if (volumeType=="transfer") { %> checked="checked"<% }%> />Transfer Volume
             </label>
             <div class="controls" style="padding-left:0;">
-                <input class="span9 bv_transferVolume" value="<%=transferVolume%>" type="text" <% if (volumeType!="transfer") { %> disabled="disabled"<% }%>>
+                <input class="bv_transferVolume" style="width:335px;" value="<%=transferVolume%>" type="text" <% if (volumeType!="transfer") { %> disabled="disabled"<% }%>>
             </div>
         </div>
         <div class="control-group bv_group_dilutionFactor">
-            <label class="control-label radio" style="width:115px;padding-left:26px;">
-                <input type="radio" name="bv_volumeType" value="dilution" class="bv_volumeTypeDilution" <% if (volumeType=="dilution") { %> checked="checked"<% }%> />*Dilution Factor
+            <label class="control-label radio" style="width:100px;padding-left:39px;">
+                <input type="radio" name="bv_volumeType" value="dilution" class="bv_volumeTypeDilution" <% if (volumeType=="dilution") { %> checked="checked"<% }%> />Dilution Factor
             </label>
             <div class="controls" style="padding-left:0;">
-                <input class="span9 bv_dilutionFactor" value="<%=dilutionFactor%>" type="text" <% if (volumeType!="dilution") { %> disabled="disabled"<% }%> />
+                <input class="bv_dilutionFactor" style="width:335px;" value="<%=dilutionFactor%>" type="text" <% if (volumeType!="dilution") { %> disabled="disabled"<% }%> />
             </div>
         </div>
+    </div>
+
+
+    <div class="form-horizontal">
         <div class="control-group bv_group_instrumentReader">
-            <label class="control-label">*Instrument Reader</label>
+            <label class="control-label">Instrument Reader</label>
             <div class="controls">
-                <select class="bv_instrumentReader span9">
-                </select>
+                <select class="bv_instrumentReader" style="width:349px;">
+               </select>
             </div>
         </div>
+    </div>
+
+
+    <span style="margin-left:6px;margin-bottom:5px;">Read Order</span>
+    <span style="margin-left:90px;margin-bottom:5px;">Read Name</span>
         <div class="bv_readList"></div>
+
+
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:10px;" />
+
+    <h5>Analysis Parameters</h5>
+    <div class="form-horizontal">
         <div class="control-group bv_group_signalDirectionRule">
             <label class="control-label">*Signal Direction</label>
             <div class="controls">
-                <select class="bv_signalDirectionRule span9">
-                </select>
+                <select class="bv_signalDirectionRule" style="width:349px;"></select>
             </div>
         </div>
         <div class="control-group bv_group_aggregateBy1">
-            <label class="control-label">*Aggregate By1</label>
+            <label class="control-label">*Aggregate By</label>
             <div class="controls">
-                <select class="bv_aggregateBy1 span9">
-                </select>
-            </div>
-        </div>
-        <div class="control-group bv_group_aggregateBy2">
-            <label class="control-label">*Aggregate By2</label>
-            <div class="controls">
-                <select class="bv_aggregateBy2 span9">
-                </select>
+                <span class="bv_group_aggregateBy1">
+                    <select class="bv_aggregateBy1" style="width:245px;"> </select>
+                </span>
+                <span class="bv_group_aggregateBy2">
+                    <select class="bv_aggregateBy2" style="width:100px;"></select>
+                </span>
             </div>
         </div>
         <div class="control-group bv_group_transformationRule">
             <label class="control-label">*Transformation</label>
             <div class="controls">
-                <select class="bv_transformationRule span9">
-                </select>
+                <select class="bv_transformationRule" style="width:349px;"></select>
             </div>
         </div>
         <div class="control-group bv_group_normalizationRule">
             <label class="control-label">*Normalization</label>
             <div class="controls">
-                <select class="bv_normalizationRule span9" value="<%=normalizationRule%>" placeholder="Plate Order">
+                <select class="bv_normalizationRule" style="width:349px;">
                 </select>
             </div>
         </div>
+    </div>
 
-        <div class="control-group bv_group_autoHitSelection">
-            <label class="control-label checkbox" style="width:144px;padding-left:0;">
-                <input type="checkbox" name="bv_autoHitSelection" class="bv_autoHitSelection" <% if (autoHitSelection) { %> checked="checked"<% }%> />*Automatic Hit Selection
-            </label>
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:10px;margin-top:5px;" />
 
-        </div>
+
+    <h5>Hit Selection Parameters</h5>
+    <div class="control-group bv_group_autoHitSelection" style="margin-left:20px;margin-bottom:20px;">
+        <label class="control-label checkbox" style="width:200px;padding-left:0;">
+            <input type="checkbox" name="bv_autoHitSelection" class="bv_autoHitSelection" <% if (autoHitSelection) { %> checked="checked"<% }%> />Automatic Hit Selection
+        </label>
+    </div>
+    <div class="form-horizontal">
         <div class="bv_thresholdControls">
             <div class="control-group bv_group_hitEfficacyThreshold">
-                <label class="control-label radio" style="width:144px;padding-left:0;">
+                <label class="control-label radio" style="width:145px;padding-left:30px;">
                     <input type="radio" name="bv_thresholdType" value="efficacy" class="bv_thresholdTypeEfficacy" <% if (thresholdType=="efficacy") { %>checked="checked"<% }%> />*Hit Efficacy Threshold
                 </label>
-                <div class="controls" style="padding-left:0;">
-                    <input class="span9 bv_hitEfficacyThreshold" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% } %>>
+                <div class="controls" style="padding-left:35px;">
+                    <input class="bv_hitEfficacyThreshold" style="width:335px;" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% } %>>
                 </div>
             </div>
             <div class="control-group bv_group_hitSDThreshold">
-                <label class="control-label radio" style="width:115px;padding-left:26px;">
+                <label class="control-label radio" style="width:115px;padding-left:59px;">
                     <input type="radio" name="bv_thresholdType" value="sd" class="bv_thresholdTypeSD" <% if (thresholdType=="sd") { %> checked="checked"<% }%> />*Hit SD Threshold
                 </label>
-                <div class="controls" style="padding-left:0;">
-                    <input class="span9 bv_hitSDThreshold" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
+                <div class="controls" style="padding-left:35px;">
+                    <input class="bv_hitSDThreshold" style="width:335px;" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
                 </div>
             </div>
         </div>
-
+    </div>
 </script>
+
+
 <script type="text/template" id="PrimaryScreenAnalysisView" xmlns="http://www.w3.org/1999/html">
 
     <h5>
@@ -194,32 +221,26 @@
 </script>
 
 <script type="text/template" id="PrimaryAnalysisReadView" xmlns="http://www.w3.org/1999/html">
-    <div class="form-inline">
 
-        <div class="control-group bv_group_readOrder">
-            <label class="control-label">*Read Order</label>
-            <div class="controls">
-                <input class="bv_readOrder" value="<%=readOrder%>" type="text">
-            </div>
-        </div>
+    <div class="form-inline span10" style="margin-bottom:10px;">
 
-        <div class="control-group bv_group_readName">
-            <label class="control-label">*Read Name</label>
-            <div class="controls">
-                <select class="bv_readName span9">
-                </select>
-            </div>
-        </div>
-        <div class="control-group bv_group_matchReadName">
-            <label class="control-label checkbox" style="width:144px;padding-left:0;">
-                <input type="checkbox" name="bv_matchReadName" class="bv_matchReadName" <% if (matchReadName) { %> checked="checked"<% }%> />*Match Read Name
-            </label>
-        </div>
-       <button class="close bv_delete">&times;</button>
+        <span class="bv_group_readOrder">
+            <input class="span1 bv_readOrder" style="margin-right:10px;margin-left:20px;width:50px;" value="<%=readOrder%>" type="text">
+        </span>
+        <span class="bv_group_readName">
+            <select class="span6 bv_readName" style="margin-right:10px;width:280px;"></select>
+        </span>
+        <span class="bv_group_matchReadName">
+            <label class="control-label checkbox" style="width:160px;padding-left:0;">
+            <input type="checkbox" name="bv_matchReadName" class="bv_matchReadName" style="margin-right:15px;" <% if (matchReadName) { %> checked="checked"<% }%> />Match Read Name
+        </label>
+        </span>
+        <button class="close bv_delete">&times;</button>
+
     </div>
 </script>
 
 <script type="text/template" id="PrimaryAnalysisReadListView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_readInfo"></div>
-    <button class="btn pull-right bv_addReadButton">Add Read</button>
+    <button class="btn bv_addReadButton" style="margin-left:465px;">Add Read</button>
 </script>
