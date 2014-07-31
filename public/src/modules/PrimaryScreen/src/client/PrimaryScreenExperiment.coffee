@@ -100,25 +100,27 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'negativeControlConc'
 				message: "Negative control conc much be set"
+
 		agonistControl = @get('agonistControl').get('batchCode')
-		if agonistControl is "" or agonistControl is undefined
-			errors.push
-				attribute: 'agonistControlBatch'
-				message: "Agonist control batch much be set"
 		agonistControlConc = @get('agonistControl').get('concentration')
-		if _.isNaN(agonistControlConc) || agonistControlConc is undefined
-			errors.push
-				attribute: 'agonistControlConc'
-				message: "Agonist control conc much be set"
-		vehicleControl = @get('vehicleControl').get('batchCode')
-		if vehicleControl is "" or vehicleControl is undefined
-			errors.push
-				attribute: 'vehicleControlBatch'
-				message: "Vehicle control must be set"
-		if attrs.instrumentReader is "unassigned" or attrs.instrumentReader is ""
-			errors.push
-				attribute: 'instrumentReader'
-				message: "Instrument reader must be assigned"
+		if agonistControl !="" or agonistControlConc != "" # at least one of the agonist control fields is filled
+			if agonistControl is "" or agonistControl is undefined
+				errors.push
+					attribute: 'agonistControlBatch'
+					message: "Agonist control batch much be set"
+			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is ""
+				errors.push
+					attribute: 'agonistControlConc'
+					message: "Agonist control conc much be set"
+#		vehicleControl = @get('vehicleControl').get('batchCode')
+#		if vehicleControl is "" or vehicleControl is undefined
+#			errors.push
+#				attribute: 'vehicleControlBatch'
+#				message: "Vehicle control must be set"
+#		if attrs.instrumentReader is "unassigned" or attrs.instrumentReader is ""
+#			errors.push
+#				attribute: 'instrumentReader'
+#				message: "Instrument reader must be assigned"
 		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
 			errors.push
 				attribute: 'signalDirectionRule'
@@ -147,7 +149,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'hitEfficacyThreshold'
 				message: "Efficacy threshold must be assigned"
-		if attrs.assayVolume is "" or _.isNaN(attrs.assayVolume)
+		if _.isNaN(attrs.assayVolume)
 			errors.push
 				attribute: 'assayVolume'
 				message: "Assay volume must be assigned"
@@ -159,7 +161,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be assigned"
-
 
 		if errors.length > 0
 			return errors
@@ -429,9 +430,15 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			normalizationRule: @$('.bv_normalizationRule').val()
 			hitEfficacyThreshold: parseFloat(@getTrimmedInput('.bv_hitEfficacyThreshold'))
 			hitSDThreshold: parseFloat(@getTrimmedInput('.bv_hitSDThreshold'))
-			assayVolume: parseFloat(@getTrimmedInput('.bv_assayVolume'))
-			transferVolume: parseFloat(@getTrimmedInput('.bv_transferVolume'))
-			dilutionFactor: parseFloat(@getTrimmedInput('.bv_dilutionFactor'))
+			assayVolume: @getTrimmedInput('.bv_assayVolume')
+			transferVolume: @getTrimmedInput('.bv_transferVolume')
+			dilutionFactor: @getTrimmedInput('.bv_dilutionFactor')
+		if @model.get('assayVolume') != ""
+			@model.set assayVolume: parseFloat(@getTrimmedInput('.bv_assayVolume'))
+		if @model.get('transferVolume') != ""
+			@model.set transferVolume: parseFloat(@getTrimmedInput('.bv_transferVolume'))
+		if @model.get('dilutionFactor') != ""
+			@model.set dilutionFactor: parseFloat(@getTrimmedInput('.bv_dilutionFactor'))
 		@model.get('positiveControl').set
 			batchCode: @getTrimmedInput('.bv_positiveControlBatch')
 			concentration: parseFloat(@getTrimmedInput('.bv_positiveControlConc'))
@@ -443,7 +450,12 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			concentration: null
 		@model.get('agonistControl').set
 			batchCode: @getTrimmedInput('.bv_agonistControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_agonistControlConc'))
+			concentration: @getTrimmedInput('.bv_agonistControlConc')
+		if @model.get('agonistControl').get('concentration') != ""
+			@model.get('agonistControl').set
+				concentration: parseFloat(@getTrimmedInput('.bv_agonistControlConc'))
+
+
 
 	handleThresholdTypeChanged: =>
 		thresholdType = @$("input[name='bv_thresholdType']:checked").val()

@@ -115,44 +115,72 @@ describe "Primary Screen Experiment module testing", ->
 						err.attribute=='negativeControlConc'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when agonist control batch is empty", ->
+				it "should be valid when agonist control batch and conc are both empty", ->
 					@psap.get('agonistControl').set
 						batchCode: ""
-					expect(@psap.isValid()).toBeFalsy()
+						concentration: ""
+					expect(@psap.isValid()).toBeTruthy()
 					filtErrors = _.filter(@psap.validationError, (err) ->
 						err.attribute=='agonistControlBatch'
+						err.attribute=='agonistControlConc'
 					)
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when agonist control conc is NaN", ->
+					expect(filtErrors.length).toEqual 0
+				it "should be valid when agonist control batch is entered and agonist control conc is a number ", ->
 					@psap.get('agonistControl').set
+						batchCode:"CMPD-87654399-01"
+						concentration: 12
+					expect(@psap.isValid()).toBeTruthy()
+					filtErrors = _.filter(@psap.validationError, (err) ->
+						err.attribute=='agonistControlConc'
+						err.attribute=='agonistControlBatch'
+					)
+					expect(filtErrors.length).toEqual 0
+				it "should be invalid when agonist control batch is entered and agonist control conc is NaN", ->
+					@psap.get('agonistControl').set
+						batchCode:"CMPD-87654399-01"
 						concentration: NaN
 					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter(@psap.validationError, (err) ->
 						err.attribute=='agonistControlConc'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when vehicle control is empty", ->
+				it "should be invalid when agonist control batch is empty and agonist control conc is a number ", ->
+					@psap.get('agonistControl').set
+						batchCode:""
+						concentration: 13
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter(@psap.validationError, (err) ->
+						err.attribute=='agonistControlBatch'
+					)
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be valid when vehicle control is empty", ->
 					@psap.get('vehicleControl').set
 						batchCode: ""
-					expect(@psap.isValid()).toBeFalsy()
+					expect(@psap.isValid()).toBeTruthy()
 					filtErrors = _.filter(@psap.validationError, (err) ->
 						err.attribute=='vehicleControlBatch'
 					)
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when assayVolume is NaN", ->
+					expect(filtErrors.length).toEqual 0
+				it "should be invalid when assayVolume is NaN (but can be empty)", ->
 					@psap.set assayVolume: NaN
 					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter(@psap.validationError, (err) ->
 						err.attribute=='assayVolume'
 					)
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when instrument reader is unassigned", ->
+				it "should be valid when assayVolume is empty", ->
+					@psap.set assayVolume: ""
+					expect(@psap.isValid()).toBeTruthy()
+					filtErrors = _.filter(@psap.validationError, (err) ->
+						err.attribute=='assayVolume'
+					)
+					expect(filtErrors.length).toEqual 0
+				it "should be valid when instrument reader is unassigned", ->
 					@psap.set instrumentReader: "unassigned"
-					expect(@psap.isValid()).toBeFalsy()
+					expect(@psap.isValid()).toBeTruthy()
 					filtErrors = _.filter(@psap.validationError, (err) ->
 						err.attribute=='instrumentReader'
 					)
-					expect(filtErrors.length).toBeGreaterThan 0
+					expect(filtErrors.length).toEqual 0
 				it "should be invalid when aggregate by1 is unassigned", ->
 					@psap.set aggregateBy1: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
@@ -188,7 +216,7 @@ describe "Primary Screen Experiment module testing", ->
 						err.attribute=='normalizationRule'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when volumeType is dilution and dilutionFactor is not a number", ->
+				it "should be invalid when volumeType is dilution and dilutionFactor is not a number (but can be empty)", ->
 					@psap.set volumeType: "dilution"
 					@psap.set dilutionFactor: NaN
 					expect(@psap.isValid()).toBeFalsy()
@@ -196,7 +224,15 @@ describe "Primary Screen Experiment module testing", ->
 						err.attribute=='dilutionFactor'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when volumeType is transfer and transferVolume is not a number", ->
+				it "should be valid when volumeType is dilution and dilutionFactor is empty", ->
+					@psap.set volumeType: "dilution"
+					@psap.set dilutionFactor: ""
+					expect(@psap.isValid()).toBeTruthy()
+					filtErrors = _.filter(@psap.validationError, (err) ->
+						err.attribute=='dilutionFactor'
+					)
+					expect(filtErrors.length).toEqual 0
+				it "should be invalid when volumeType is transfer and transferVolume is not a number (but can be empty)", ->
 					@psap.set volumeType: "transfer"
 					@psap.set transferVolume: NaN
 					expect(@psap.isValid()).toBeFalsy()
@@ -204,6 +240,14 @@ describe "Primary Screen Experiment module testing", ->
 						err.attribute=='transferVolume'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be valid when volumeType is transfer and transferVolume is empty", ->
+					@psap.set volumeType: "transfer"
+					@psap.set transferVolume: ""
+					expect(@psap.isValid()).toBeTruthy()
+					filtErrors = _.filter(@psap.validationError, (err) ->
+						err.attribute=='transferVolume'
+					)
+					expect(filtErrors.length).toEqual 0
 				it "should be invalid when autoHitSelection is checked and thresholdType is sd and hitSDThreshold is not a number", ->
 					@psap.set autoHitSelection: true
 					@psap.set thresholdType: "sd"
@@ -633,26 +677,46 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_negativeControlConc').val ""
 					@psapc.$('.bv_negativeControlConc').change()
 					expect(@psapc.$('.bv_group_negativeControlConc').hasClass("error")).toBeTruthy()
-				it "should show error if agonistControl batch is not set", ->
+				it "should not show error if agonistControl batch and conc are not set", ->
 					@psapc.$('.bv_agonistControlBatch').val ""
 					@psapc.$('.bv_agonistControlBatch').change()
-					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
-				it "should show error if agonistControl conc is not set", ->
 					@psapc.$('.bv_agonistControlConc').val ""
 					@psapc.$('.bv_agonistControlConc').change()
+					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
+					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+				it "should not show error if agonistControl batch and conc are set correctly", ->
+					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
+					@psapc.$('.bv_agonistControlBatch').change()
+					@psapc.$('.bv_agonistControlConc').val 12
+					@psapc.$('.bv_agonistControlConc').change()
+					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
+					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+				it "should show error if agonistControl batch is correct but conc is NaN or empty", ->
+					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
+					@psapc.$('.bv_agonistControlBatch').change()
+					@psapc.$('.bv_agonistControlConc').val ""
+					@psapc.$('.bv_agonistControlConc').change()
+					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
 					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy()
-				it "should show error if vehicleControl is not set", ->
+				it "should show error if agonistControl batch is empty but conc is a number", ->
+					@psapc.$('.bv_agonistControlBatch').val ""
+					@psapc.$('.bv_agonistControlBatch').change()
+					@psapc.$('.bv_agonistControlConc').val 23
+					@psapc.$('.bv_agonistControlConc').change()
+					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
+					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+				it "should not show error if vehicleControl is not set", ->
 					@psapc.$('.bv_vehicleControlBatch').val ""
 					@psapc.$('.bv_vehicleControlBatch').change()
-					expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy()
-				it "should show error if instrumentReader is unassigned", ->
+					expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy()
+				it "should not show error if instrumentReader is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_instrumentReader option').length > 0
 					, 1000
 					runs ->
 						@psapc.$('.bv_instrumentReader').val "unassigned"
 						@psapc.$('.bv_instrumentReader').change()
-						expect(@psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeFalsy()
 				it "should show error if signal direction rule is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_signalDirectionRule option').length > 0
@@ -703,24 +767,34 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_hitSDThreshold').val ""
 					@psapc.$('.bv_hitSDThreshold').change()
 					expect(@psapc.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy()
-				it "should show error if volume type is transferVolume and transferVolume not a number", ->
+				it "should show error if volume type is transferVolume and transferVolume not a number (but can be empty)", ->
+					@psapc.$('.bv_volumeTypeTransfer').click()
+					@psapc.$('.bv_transferVolume').val "hello"
+					@psapc.$('.bv_transferVolume').change()
+					expect(@psapc.$('.bv_group_transferVolume').hasClass("error")).toBeTruthy()
+				it "should not show error if volume type is transferVolume and transferVolume is empty", ->
 					@psapc.$('.bv_volumeTypeTransfer').click()
 					@psapc.$('.bv_transferVolume').val ""
 					@psapc.$('.bv_transferVolume').change()
-					expect(@psapc.$('.bv_group_transferVolume').hasClass("error")).toBeTruthy()
-				it "should show error if volume type is dilutionFactor and dilutionFactor not a number", ->
+					expect(@psapc.$('.bv_group_transferVolume').hasClass("error")).toBeFalsy()
+				it "should show error if volume type is dilutionFactor and dilutionFactor not a number (but can be empty)", ->
+					@psapc.$('.bv_volumeTypeDilution').click()
+					@psapc.$('.bv_dilutionFactor').val "hello again"
+					@psapc.$('.bv_dilutionFactor').change()
+					expect(@psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeTruthy()
+				it "should not show error if volume type is dilutionFactor and dilutionFactor is empty", ->
 					@psapc.$('.bv_volumeTypeDilution').click()
 					@psapc.$('.bv_dilutionFactor').val ""
 					@psapc.$('.bv_dilutionFactor').change()
-					expect(@psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeTruthy()
+					expect(@psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeFalsy()
 				it "should show error if assayVolume is NaN", ->
-					@psapc.$('.bv_assayVolume').val ""
+					@psapc.$('.bv_assayVolume').val "b"
 					@psapc.$('.bv_assayVolume').change()
 					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy()
-				it "should show error if assayVolume is NaN", ->
+				it "should not show error if assayVolume is empty", ->
 					@psapc.$('.bv_assayVolume').val ""
 					@psapc.$('.bv_assayVolume').change()
-					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy()
+					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeFalsy()
 
 
 

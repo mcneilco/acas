@@ -143,7 +143,7 @@
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
-      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, vehicleControl;
+      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc;
       errors = [];
       positiveControl = this.get('positiveControl').get('batchCode');
       if (positiveControl === "" || positiveControl === void 0) {
@@ -174,31 +174,20 @@
         });
       }
       agonistControl = this.get('agonistControl').get('batchCode');
-      if (agonistControl === "" || agonistControl === void 0) {
-        errors.push({
-          attribute: 'agonistControlBatch',
-          message: "Agonist control batch much be set"
-        });
-      }
       agonistControlConc = this.get('agonistControl').get('concentration');
-      if (_.isNaN(agonistControlConc) || agonistControlConc === void 0) {
-        errors.push({
-          attribute: 'agonistControlConc',
-          message: "Agonist control conc much be set"
-        });
-      }
-      vehicleControl = this.get('vehicleControl').get('batchCode');
-      if (vehicleControl === "" || vehicleControl === void 0) {
-        errors.push({
-          attribute: 'vehicleControlBatch',
-          message: "Vehicle control must be set"
-        });
-      }
-      if (attrs.instrumentReader === "unassigned" || attrs.instrumentReader === "") {
-        errors.push({
-          attribute: 'instrumentReader',
-          message: "Instrument reader must be assigned"
-        });
+      if (agonistControl !== "" || agonistControlConc !== "") {
+        if (agonistControl === "" || agonistControl === void 0) {
+          errors.push({
+            attribute: 'agonistControlBatch',
+            message: "Agonist control batch much be set"
+          });
+        }
+        if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === "") {
+          errors.push({
+            attribute: 'agonistControlConc',
+            message: "Agonist control conc much be set"
+          });
+        }
       }
       if (attrs.signalDirectionRule === "unassigned" || attrs.signalDirectionRule === "") {
         errors.push({
@@ -242,7 +231,7 @@
           message: "Efficacy threshold must be assigned"
         });
       }
-      if (attrs.assayVolume === "" || _.isNaN(attrs.assayVolume)) {
+      if (_.isNaN(attrs.assayVolume)) {
         errors.push({
           attribute: 'assayVolume',
           message: "Assay volume must be assigned"
@@ -633,10 +622,25 @@
         normalizationRule: this.$('.bv_normalizationRule').val(),
         hitEfficacyThreshold: parseFloat(this.getTrimmedInput('.bv_hitEfficacyThreshold')),
         hitSDThreshold: parseFloat(this.getTrimmedInput('.bv_hitSDThreshold')),
-        assayVolume: parseFloat(this.getTrimmedInput('.bv_assayVolume')),
-        transferVolume: parseFloat(this.getTrimmedInput('.bv_transferVolume')),
-        dilutionFactor: parseFloat(this.getTrimmedInput('.bv_dilutionFactor'))
+        assayVolume: this.getTrimmedInput('.bv_assayVolume'),
+        transferVolume: this.getTrimmedInput('.bv_transferVolume'),
+        dilutionFactor: this.getTrimmedInput('.bv_dilutionFactor')
       });
+      if (this.model.get('assayVolume') !== "") {
+        this.model.set({
+          assayVolume: parseFloat(this.getTrimmedInput('.bv_assayVolume'))
+        });
+      }
+      if (this.model.get('transferVolume') !== "") {
+        this.model.set({
+          transferVolume: parseFloat(this.getTrimmedInput('.bv_transferVolume'))
+        });
+      }
+      if (this.model.get('dilutionFactor') !== "") {
+        this.model.set({
+          dilutionFactor: parseFloat(this.getTrimmedInput('.bv_dilutionFactor'))
+        });
+      }
       this.model.get('positiveControl').set({
         batchCode: this.getTrimmedInput('.bv_positiveControlBatch'),
         concentration: parseFloat(this.getTrimmedInput('.bv_positiveControlConc'))
@@ -649,10 +653,15 @@
         batchCode: this.getTrimmedInput('.bv_vehicleControlBatch'),
         concentration: null
       });
-      return this.model.get('agonistControl').set({
+      this.model.get('agonistControl').set({
         batchCode: this.getTrimmedInput('.bv_agonistControlBatch'),
-        concentration: parseFloat(this.getTrimmedInput('.bv_agonistControlConc'))
+        concentration: this.getTrimmedInput('.bv_agonistControlConc')
       });
+      if (this.model.get('agonistControl').get('concentration') !== "") {
+        return this.model.get('agonistControl').set({
+          concentration: parseFloat(this.getTrimmedInput('.bv_agonistControlConc'))
+        });
+      }
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleThresholdTypeChanged = function() {
