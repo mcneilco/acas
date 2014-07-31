@@ -62,7 +62,7 @@ renderCurve <- function(getParams) {
 		showAxes <- as.logical(getParams$showAxes)
 	}
 	if(is.null(getParams$labelAxes)) {
-		labelAxes <- TRUE
+		labelAxes <- !inTable
 	} else {
 		labelAxes <- as.logical(getParams$labelAxes)
 	}
