@@ -86,6 +86,16 @@ renderCurve <- function(getParams) {
 	
 	data <- getCurveData(curveIds, globalConnect=TRUE)
 	
+	#To be backwards compatable with hill slope example files
+	hillSlopes <- which(!is.na(data$parameters$hillslope))
+	if(length(hillSlopes) > 0  ) {
+		data$parameters$slope <- -data$parameters$hillslope[hillSlopes]
+	}
+	fittedHillSLopes <- which(!is.na(data$parameters$fitted_hillslope))
+	if(length(fittedHillSLopes) > 0 ) {
+		data$parameters$fitted_slope <- -data$parameters$fitted_hillslope[fittedHillSLopes]
+	}
+	
 	setContentType("image/png")
 	t <- tempfile()
 	plotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "slope"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = TRUE, showAxes = showAxes, labelAxes = labelAxes, showLegend=legend)
