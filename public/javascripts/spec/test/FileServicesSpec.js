@@ -14,7 +14,7 @@
       describe("Data file services", function() {
         before(function(done) {
           fs.writeFileSync("../../../" + config.all.server.datafiles.relative_path + "/test.txt", "test file");
-          return request("http://localhost:3001/dataFiles/test.txt", (function(_this) {
+          return request("http://localhost:" + config.all.server.nodeapi.port + "/dataFiles/test.txt", (function(_this) {
             return function(error, response, body) {
               console.log("error: " + error);
               _this.responseJSON = body;
@@ -32,7 +32,7 @@
       return describe("temp file services", function() {
         before(function(done) {
           fs.writeFileSync("../../../" + config.all.server.tempfiles.relative_path + "/test.txt", "test file");
-          return request("http://localhost:3001/tempfiles/test.txt", (function(_this) {
+          return request("http://localhost:" + config.all.server.nodeapi.port + "/tempfiles/test.txt", (function(_this) {
             return function(error, response, body) {
               console.log("error: " + error);
               _this.responseJSON = body;

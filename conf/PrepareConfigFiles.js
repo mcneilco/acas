@@ -135,7 +135,7 @@
     var rFile, rapacheHandlerText, route, routes, _i, _len;
     rapacheHandlerText = '<Location /' + config.all.client.service.rapache.path + '* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */>\n\tSetHandler r-handler\n\tRFileHandler ' + acasHome + '/* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *\n</Location>';
     routes = [];
-    routes.push('<Location /' + config.all.client.service.rapache.path + '>\n\tSetHandler r-handler\n\tREval "hello()"\n</Location>');
+    routes.push('<Location /' + config.all.client.service.rapache.path + '/hello>\n\tSetHandler r-handler\n\tREval "hello()"\n</Location>');
     routes.push('<Location /' + config.all.client.service.rapache.path + '/RApacheInfo>\n\tSetHandler r-info\n</Location>');
     for (_i = 0, _len = rFilesWithRoute.length; _i < _len; _i++) {
       rFile = rFilesWithRoute[_i];
@@ -207,7 +207,7 @@
     }).output.replace('\n', '');
     if (config.all.server.run != null) {
       if (config.all.server.run.user != null) {
-        runUser = server.run.user;
+        runUser = config.all.server.run.user;
       }
     }
     apacheVersion = _.findWhere(apacheCompileOptions, {

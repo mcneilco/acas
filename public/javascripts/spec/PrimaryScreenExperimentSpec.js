@@ -1124,7 +1124,7 @@
       describe("basic plumbing checks with experiment copied from template", function() {
         beforeEach(function() {
           this.exp = new PrimaryScreenExperiment();
-          this.exp.copyProtocolAttributes(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
+          this.exp.copyProtocolAttributes(new Protocol(JSON.parse(JSON.stringify(window.protocolServiceTestJSON.fullSavedProtocol))));
           this.psac = new PrimaryScreenAnalysisController({
             model: this.exp,
             el: $('#fixture'),
@@ -1236,7 +1236,7 @@
           it("Should load an analysis controller", function() {
             return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual(0);
           });
-          return it("Should load a dose response controller", function() {
+          return xit("Should load a dose response controller", function() {
             return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual(0);
           });
         });

@@ -333,6 +333,17 @@
       return status;
     };
 
+    Experiment.prototype.getAnalysisStatus = function() {
+      var status;
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
+      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
+        status.set({
+          stringValue: "Created"
+        });
+      }
+      return status;
+    };
+
     Experiment.prototype.isEditable = function() {
       var status;
       status = this.getStatus().get('stringValue');
@@ -375,6 +386,7 @@
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
+      this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.updateEditable = __bind(this.updateEditable, this);
       this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
@@ -601,7 +613,7 @@
     };
 
     ExperimentBaseController.prototype.handleCompletionDateIconClicked = function() {
-      return $(".bv_completionDate").datepicker("show");
+      return this.$(".bv_completionDate").datepicker("show");
     };
 
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
@@ -676,6 +688,11 @@
         this.$('.bv_protocolCode').attr("disabled", "disabled");
         return this.$('.bv_status').removeAttr("disabled");
       }
+    };
+
+    ExperimentBaseController.prototype.displayInReadOnlyMode = function() {
+      this.$(".bv_save").addClass("hide");
+      return this.disableAllInputs();
     };
 
     ExperimentBaseController.prototype.handleSaveClicked = function() {

@@ -76,9 +76,7 @@
     ModuleLauncherMenuController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template(this.model.toJSON()));
-      if (this.model.has('autoLaunchName')) {
-        this.$('.bv_menuName').addClass('bv_launch_' + this.model.get('autoLaunchName'));
-      }
+      this.$('.bv_menuName').addClass('bv_launch_' + this.model.get('autoLaunchName'));
       if (this.model.get('isActive')) {
         $(this.el).addClass("active");
       } else {

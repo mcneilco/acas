@@ -209,4 +209,13 @@
     return resp.end(JSON.stringify(projects));
   };
 
+  exports.makeServiceRequestHeaders = function(user) {
+    var config, headers, username;
+    config = require('../../../conf/compiled/conf.js');
+    username = user != null ? user.username : "testmode";
+    return headers = {
+      "From": username
+    };
+  };
+
 }).call(this);
