@@ -132,7 +132,6 @@
     }
   };
 
-<<<<<<< HEAD
   exports.getExperimentStatusCodes = function(req, resp) {
     var experimentServiceTestJSON;
     if (global.specRunnerTestmode) {
@@ -144,7 +143,6 @@
     }
   };
 
-=======
   exports.genericExperimentSearch = function(req, res) {
     var emptyResponse, experimentServiceTestJSON, json;
     if (global.specRunnerTestmode) {
@@ -205,5 +203,4 @@
     })(this));
   };
 
->>>>>>> development
 }).call(this);
