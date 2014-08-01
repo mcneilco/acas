@@ -310,7 +310,7 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/experimentStatusCodes"
+		@statusList.url = "/api/dataDict/experimentStatusCodes"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList

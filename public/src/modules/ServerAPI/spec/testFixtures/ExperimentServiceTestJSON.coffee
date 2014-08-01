@@ -3489,27 +3489,6 @@
 				recordedDate: 1367455531000
 				version: 0
 		]
-	exports.experimentStatusCodes = [
-		code: "Created"
-		name: "Created"
-		ignored: false
-	,
-		code: "Started"
-		name: "Started"
-		ignored: false
-	,
-		code: "Complete"
-		name: "Complete"
-		ignored: false
-	,
-		code: "Finalized"
-		name: "Finalized"
-		ignored: false
-	,
-		code: "Rejected"
-		name: "Rejected"
-		ignored: false
-	]
 
 
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentServiceTestJSON = window.experimentServiceTestJSON or {} else exports)

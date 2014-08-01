@@ -525,11 +525,8 @@
               return this.parc.$('.bv_readName option').length > 0;
             }, 1000);
             return runs(function() {
-              console.log(this.parc.$('.bv_matchReadName').is(":checked"));
-              console.log(this.parc.$('.bv_matchReadName').is(":checked"));
               this.parc.$('.bv_matchReadName').click();
               this.parc.$('.bv_matchReadName').click();
-              console.log(this.parc.$('.bv_matchReadName').is(":checked"));
               return expect(this.parc.model.get('matchReadName')).toBeFalsy();
             });
           });

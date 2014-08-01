@@ -112,7 +112,7 @@ describe 'Experiment Service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/experimentStatusCodes"
+						url: "api/dataDict/experimentStatus"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>

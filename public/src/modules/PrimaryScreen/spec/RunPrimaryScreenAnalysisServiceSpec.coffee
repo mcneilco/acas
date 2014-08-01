@@ -109,7 +109,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/primaryAnalysis/runPrimaryAnalysis/instrumentReaderCodes"
+						url: "api/dataDict/instrumentReaderCodes"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -140,7 +140,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/primaryAnalysis/runPrimaryAnalysis/signalDirectionCodes"
+						url: "api/dataDict/signalDirectionCodes"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -171,7 +171,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/primaryAnalysis/runPrimaryAnalysis/aggregateBy1Codes"
+						url: "api/dataDict/aggregateBy1Codes"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -202,7 +202,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/primaryAnalysis/runPrimaryAnalysis/aggregateBy2Codes"
+						url: "api/dataDict/aggregateBy2Codes"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -233,7 +233,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/primaryAnalysis/runPrimaryAnalysis/transformationCodes"
+						url: "api/dataDict/transformationCodes"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -264,7 +264,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/primaryAnalysis/runPrimaryAnalysis/normalizationCodes"
+						url: "api/dataDict/normalizationCodes"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -295,7 +295,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/primaryAnalysis/runPrimaryAnalysis/readNameCodes"
+						url: "api/dataDict/readNameCodes"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>

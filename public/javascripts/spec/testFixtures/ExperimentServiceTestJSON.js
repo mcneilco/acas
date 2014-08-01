@@ -3582,29 +3582,6 @@
         }
       ]
     };
-    return exports.experimentStatusCodes = [
-      {
-        code: "Created",
-        name: "Created",
-        ignored: false
-      }, {
-        code: "Started",
-        name: "Started",
-        ignored: false
-      }, {
-        code: "Complete",
-        name: "Complete",
-        ignored: false
-      }, {
-        code: "Finalized",
-        name: "Finalized",
-        ignored: false
-      }, {
-        code: "Rejected",
-        name: "Rejected",
-        ignored: false
-      }
-    ];
   })((typeof process === "undefined" || !process.versions ? window.experimentServiceTestJSON = window.experimentServiceTestJSON || {} : exports));
 
 }).call(this);

@@ -4,8 +4,7 @@
     app.get('/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', exports.experimentById);
     app.post('/api/experiments', exports.postExperiment);
-    app.put('/api/experiments/:id', exports.putExperiment);
-    return app.get('/api/experimentStatusCodes', exports.getExperimentStatusCodes);
+    return app.put('/api/experiments/:id', exports.putExperiment);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -14,8 +13,6 @@
     app.get('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById);
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
     app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
-//    Commented out when pulling development into DNETRPLC-39
-//    return app.get('/api/experimentStatusCodes', loginRoutes.ensureAuthenticated, exports.getExperimentStatusCodes);
     app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
     app.get('/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect);
     return app["delete"]('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment);
@@ -129,17 +126,6 @@
           }
         };
       })(this));
-    }
-  };
-
-  exports.getExperimentStatusCodes = function(req, resp) {
-    var experimentServiceTestJSON;
-    if (global.specRunnerTestmode) {
-      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return resp.json(experimentServiceTestJSON.experimentStatusCodes);
-    } else {
-      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return resp.json(experimentServiceTestJSON.experimentStatusCodes);
     }
   };
 

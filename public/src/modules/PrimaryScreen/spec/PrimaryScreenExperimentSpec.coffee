@@ -357,12 +357,8 @@ describe "Primary Screen Experiment module testing", ->
 						@parc.$('.bv_readName option').length > 0
 					, 1000
 					runs ->
-						console.log @parc.$('.bv_matchReadName').is(":checked")
-	#					console.log (@parc.model.get('matchReadName'))
-						console.log @parc.$('.bv_matchReadName').is(":checked")
 						@parc.$('.bv_matchReadName').click()
 						@parc.$('.bv_matchReadName').click()
-						console.log @parc.$('.bv_matchReadName').is(":checked")
 						expect(@parc.model.get('matchReadName')).toBeFalsy()
 						# don't know why one click does not pass the spec
 		describe "validation testing", ->
@@ -442,6 +438,7 @@ describe "Primary Screen Experiment module testing", ->
 				expect(readthree.get('readOrder')).toEqual 13
 				expect(readthree.get('readName')).toEqual "other read name"
 				expect(readthree.get('matchReadName')).toBeFalsy()
+
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->

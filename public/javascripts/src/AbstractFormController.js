@@ -47,7 +47,6 @@
       var errors;
       errors = this.model.validationError;
       this.clearValidationErrorStyles();
-      console.log(errors);
       _.each(errors, (function(_this) {
         return function(err) {
           _this.$('.bv_group_' + err.attribute).addClass('input_error error');
@@ -63,7 +62,6 @@
 
     AbstractFormController.prototype.clearValidationErrorStyles = function() {
       var errorElms;
-      console.log("about to clear errors");
       errorElms = this.$('.input_error');
       this.trigger('clearErrors', this.errorOwnerName);
       return _.each(errorElms, (function(_this) {
@@ -78,7 +76,6 @@
     };
 
     AbstractFormController.prototype.handleModelChange = function() {
-      console.log("got handle model change");
       this.clearValidationErrorStyles();
       if (this.isValid()) {
         return this.trigger('valid');

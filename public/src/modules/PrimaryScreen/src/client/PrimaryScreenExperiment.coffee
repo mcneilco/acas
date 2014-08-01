@@ -237,7 +237,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	setUpReadNameSelect: ->
 		@readNameList = new PickListList()
-		@readNameList.url = "/api/primaryAnalysis/runPrimaryAnalysis/readNameCodes"
+		@readNameList.url = "/api/dataDict/readNameCodes"
 		@readNameList = new PickListSelectController
 			el: @$('.bv_readName')
 			collection: @readNameList
@@ -248,7 +248,6 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	updateModel: =>
 		matchReadName = @$('.bv_matchReadName').is(":checked")
-		console.log "about to set"
 		@model.set
 			readOrder: parseFloat(@getTrimmedInput('.bv_readOrder'))
 			readName: @$('.bv_readName').val()
@@ -349,7 +348,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupInstrumentReaderSelect: ->
 		@instrumentList = new PickListList()
-		@instrumentList.url = "/api/primaryAnalysis/runPrimaryAnalysis/instrumentReaderCodes"
+		@instrumentList.url = "/api/dataDict/instrumentReaderCodes"
 		@instrumentListController = new PickListSelectController
 			el: @$('.bv_instrumentReader')
 			collection: @instrumentList
@@ -360,7 +359,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupSignalDirectionSelect: ->
 		@signalDirectionList = new PickListList()
-		@signalDirectionList.url = "/api/primaryAnalysis/runPrimaryAnalysis/signalDirectionCodes"
+		@signalDirectionList.url = "/api/dataDict/signalDirectionCodes"
 		@signalDirectionListController = new PickListSelectController
 			el: @$('.bv_signalDirectionRule')
 			collection: @signalDirectionList
@@ -371,29 +370,29 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupAggregateBy1Select: ->
 		@aggregateBy1List = new PickListList()
-		@aggregateBy1List.url = "/api/primaryAnalysis/runPrimaryAnalysis/aggregateBy1Codes"
+		@aggregateBy1List.url = "/api/dataDict/aggregateBy1Codes"
 		@aggregateBy1ListController = new PickListSelectController
 			el: @$('.bv_aggregateBy1')
 			collection: @aggregateBy1List
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Aggregate By1"
+				name: "Select"
 			selectedCode: @model.get('aggregateBy1')
 
 	setupAggregateBy2Select: ->
 		@aggregateBy2List = new PickListList()
-		@aggregateBy2List.url = "/api/primaryAnalysis/runPrimaryAnalysis/aggregateBy2Codes"
+		@aggregateBy2List.url = "/api/dataDict/aggregateBy2Codes"
 		@aggregateBy2ListController = new PickListSelectController
 			el: @$('.bv_aggregateBy2')
 			collection: @aggregateBy2List
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Aggregate By2"
+				name: "Select"
 			selectedCode: @model.get('aggregateBy2')
 
 	setupTransformationSelect: ->
 		@transformationList = new PickListList()
-		@transformationList.url = "/api/primaryAnalysis/runPrimaryAnalysis/transformationCodes"
+		@transformationList.url = "/api/dataDict/transformationCodes"
 		@transformationListController = new PickListSelectController
 			el: @$('.bv_transformationRule')
 			collection: @transformationList
@@ -404,7 +403,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
-		@normalizationList.url = "/api/primaryAnalysis/runPrimaryAnalysis/normalizationCodes"
+		@normalizationList.url = "/api/dataDict/normalizationCodes"
 		@normalizationListController = new PickListSelectController
 			el: @$('.bv_normalizationRule')
 			collection: @normalizationList

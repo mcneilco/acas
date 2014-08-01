@@ -146,7 +146,7 @@ This suite of services provides CRUD operations on Experiment Objects
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/experimentStatusCodes",
+              url: "api/dataDict/experimentStatus",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;

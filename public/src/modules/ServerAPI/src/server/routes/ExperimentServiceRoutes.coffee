@@ -4,7 +4,6 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/experiments/:id', exports.experimentById
 	app.post '/api/experiments', exports.postExperiment
 	app.put '/api/experiments/:id', exports.putExperiment
-	app.get '/api/experimentStatusCodes', exports.getExperimentStatusCodes
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -13,13 +12,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById
 	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
 	app.put '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment
-<<<<<<< HEAD
-	app.get '/api/experimentStatusCodes', loginRoutes.ensureAuthenticated, exports.getExperimentStatusCodes
-=======
 	app.get '/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch
 	app.get '/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
->>>>>>> development
 
 exports.experimentByCodename = (request, response) ->
 	console.log request.params.code
@@ -113,15 +108,6 @@ exports.putExperiment = (req, resp) ->
 				console.log response
 		)
 
-exports.getExperimentStatusCodes = (req, resp) ->
-	if global.specRunnerTestmode
-		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
-		resp.json experimentServiceTestJSON.experimentStatusCodes
-	else
-		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
-		resp.json experimentServiceTestJSON.experimentStatusCodes
-
-#TODO: make a real implementation
 
 exports.genericExperimentSearch = (req, res) ->
 	if global.specRunnerTestmode
