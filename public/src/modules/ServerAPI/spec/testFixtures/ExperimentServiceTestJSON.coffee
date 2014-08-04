@@ -1401,7 +1401,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "Started"
+				stringValue: "started"
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -2685,7 +2685,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "Started"
+				stringValue: "started"
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -3072,7 +3072,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "Started"
+				stringValue: "started"
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null

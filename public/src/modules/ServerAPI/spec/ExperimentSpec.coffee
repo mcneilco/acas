@@ -44,7 +44,7 @@ describe "Experiment module testing", ->
 				it 'Project code should default to unassigned ', ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
 				it 'Experiment status should default to created ', ->
-					expect(@exp.getStatus().get('stringValue')).toEqual "Created"
+					expect(@exp.getStatus().get('stringValue')).toEqual "created"
 				it 'completionDate should be null ', ->
 					expect(@exp.getCompletionDate().get('dateValue')).toEqual null
 			describe "other features", ->
@@ -52,17 +52,17 @@ describe "Experiment module testing", ->
 					it "should be locked if status is New", ->
 						@exp.getStatus().set stringValue: "New"
 						expect(@exp.isEditable()).toBeTruthy()
-					it "should be locked if status is Started", ->
-						@exp.getStatus().set stringValue: "Started"
+					it "should be locked if status is started", ->
+						@exp.getStatus().set stringValue: "started"
 						expect(@exp.isEditable()).toBeTruthy()
-					it "should be locked if status is Complete", ->
-						@exp.getStatus().set stringValue: "Complete"
+					it "should be locked if status is complete", ->
+						@exp.getStatus().set stringValue: "complete"
 						expect(@exp.isEditable()).toBeTruthy()
-					it "should be locked if status is Finalized", ->
-						@exp.getStatus().set stringValue: "Finalized"
+					it "should be locked if status is finalized", ->
+						@exp.getStatus().set stringValue: "finalized"
 						expect(@exp.isEditable()).toBeFalsy()
-					it "should be locked if status is Rejected", ->
-						@exp.getStatus().set stringValue: "Rejected"
+					it "should be locked if status is rejected", ->
+						@exp.getStatus().set stringValue: "rejected"
 						expect(@exp.isEditable()).toBeFalsy()
 
 		describe "when loaded from existing", ->
@@ -120,7 +120,7 @@ describe "Experiment module testing", ->
 				it 'Should have a completionDate value', ->
 					expect(@exp.getCompletionDate().get('dateValue')).toEqual 1342080000000
 				it 'Should have a status value', ->
-					expect(@exp.getStatus().get('stringValue')).toEqual "Started"
+					expect(@exp.getStatus().get('stringValue')).toEqual "started"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -154,7 +154,7 @@ describe "Experiment module testing", ->
 				it 'Should not have a tags', ->
 					expect(@exp.get('lsTags').length).toEqual 0
 				it 'Should have a status value of created', ->
-					expect(@exp.getStatus().get('stringValue')).toEqual "Created"
+					expect(@exp.getStatus().get('stringValue')).toEqual "created"
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -383,8 +383,8 @@ describe "Experiment module testing", ->
 					runs ->
 				it "should show status options after loading them from server", ->
 					expect(@ebc.$('.bv_status option').length).toBeGreaterThan 0
-				it "should default to Created", ->
-					expect(@ebc.$('.bv_status').val()).toEqual "Created"
+				it "should default to created", ->
+					expect(@ebc.$('.bv_status').val()).toEqual "created"
 			describe "populated fields", ->
 				it "should show the protocol code", ->
 					waitsFor ->
@@ -465,9 +465,9 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						@ebc.$('.bv_status').val('Complete')
+						@ebc.$('.bv_status').val('complete')
 						@ebc.$('.bv_status').change()
-						expect(@ebc.model.getStatus().get('stringValue')).toEqual 'Complete'
+						expect(@ebc.model.getStatus().get('stringValue')).toEqual 'complete'
 		describe "When created from a saved experiment", ->
 			beforeEach ->
 				@exp2 = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -520,27 +520,27 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						expect(@ebc.$('.bv_status').val()).toEqual "Started"
+						expect(@ebc.$('.bv_status').val()).toEqual "started"
 				it "should show the status select enabled", ->
 					expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
 			describe "Experiment status behavior", ->
-				it "should disable all fields if experiment is Finalized", ->
+				it "should disable all fields if experiment is finalized", ->
 					waitsFor ->
 						@ebc.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						@ebc.$('.bv_status').val('Finalized')
+						@ebc.$('.bv_status').val('finalized')
 						@ebc.$('.bv_status').change()
 						expect(@ebc.$('.bv_notebook').attr('disabled')).toEqual 'disabled'
 						expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
-				it "should enable all fields if experiment is Started", ->
-					@ebc.$('.bv_status').val('Finalized')
+				it "should enable all fields if experiment is started", ->
+					@ebc.$('.bv_status').val('finalized')
 					@ebc.$('.bv_status').change()
-					@ebc.$('.bv_status').val('Started')
+					@ebc.$('.bv_status').val('started')
 					@ebc.$('.bv_status').change()
 					expect(@ebc.$('.bv_notebook').attr('disabled')).toBeUndefined()
 				it "should hide lock icon if experiment is new", ->
-					@ebc.$('.bv_status').val('New')
+					@ebc.$('.bv_status').val('new')
 					@ebc.$('.bv_status').change()
 					expect(@ebc.$('.bv_lock')).toBeHidden()
 				it "should show lock icon if experiment is finalized", ->
@@ -548,14 +548,14 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						@ebc.$('.bv_status').val('Finalized')
+						@ebc.$('.bv_status').val('finalized')
 						@ebc.$('.bv_status').change()
 						expect(@ebc.$('.bv_lock')).toBeVisible()
 
 		describe "When created from a new experiment", ->
 			beforeEach ->
 				@exp0 = new Experiment()
-				@exp0.getStatus().set stringValue: "Created" #work around for left over pointers
+				@exp0.getStatus().set stringValue: "created" #work around for left over pointers
 				@ebc = new ExperimentBaseController
 					model: @exp0
 					el: $('#fixture')
@@ -584,13 +584,13 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_save').html()).toEqual "Save"
 				it "should show the save button disabled", ->
 					expect(@ebc.$('.bv_save').attr('disabled')).toEqual 'disabled'
-				it "should show status select value as Created", ->
+				it "should show status select value as created", ->
 					waitsFor ->
 						@ebc.$('.bv_protocolCode option').length > 0
 					, 1000
 					runs ->
 						console.log @ebc.model.getStatus()
-						expect(@ebc.$('.bv_status').val()).toEqual 'Created'
+						expect(@ebc.$('.bv_status').val()).toEqual 'created'
 				it "should show the status select disabled", ->
 					expect(@ebc.$('.bv_status').attr('disabled')).toEqual 'disabled'
 			describe "when user picks protocol ", ->

@@ -57,7 +57,6 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved)
 			@reportFileController.render()
 			@handleAttachReportFileChanged()
-#			@$('.bv_reportFileWrapper').show()
 
 
 		if @loadImagesFile
@@ -71,7 +70,6 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@imagesFileController.on('fileInput:removedFile', @handleImagesFileRemoved)
 			@imagesFileController.render()
 			@handleAttachImagesFileChanged()
-#			@$('.bv_imagesFileWrapper').show()
 
 
 
@@ -198,7 +196,6 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		#TODO This is bad style, but the LSFileInputController has no API for deleting and resetting
 		@showFileSelectPhase()
 		#TODO Why does this need a delay to work?
-		fn = -> @$('.bv_deleteFile').click()
 		setTimeout fn , 200
 
 

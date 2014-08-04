@@ -99,7 +99,6 @@
     };
 
     ModuleLauncherMenuController.prototype.handleSelect = function() {
-      console.log("got to handleSelect");
       this.model.requestActivation();
       return this.trigger("selected", this);
     };
@@ -190,9 +189,7 @@
     ModuleLauncherMenuListController.prototype.launchModule = function(moduleName) {
       var selector;
       selector = '.bv_launch_' + moduleName;
-      console.log('.bv_launch_' + moduleName);
-      this.$(selector).click();
-      return console.log(this.$(selector));
+      return this.$(selector).click();
     };
 
     return ModuleLauncherMenuListController;

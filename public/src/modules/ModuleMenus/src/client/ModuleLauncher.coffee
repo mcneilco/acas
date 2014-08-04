@@ -51,7 +51,6 @@ class window.ModuleLauncherMenuController extends Backbone.View
 		@
 
 	handleSelect: =>
-		console.log "got to handleSelect"
 		@model.requestActivation()
 		@trigger "selected", @
 
@@ -109,9 +108,7 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 	launchModule: (moduleName) ->
 		#Note that if the names don't match, this fails silently
 		selector = '.bv_launch_'+moduleName
-		console.log '.bv_launch_'+moduleName
 		@$(selector).click()
-		console.log @$(selector)
 
 class window.ModuleLauncherController extends Backbone.View
 	tagName: 'div'

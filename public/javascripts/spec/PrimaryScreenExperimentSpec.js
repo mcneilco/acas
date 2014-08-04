@@ -1167,18 +1167,18 @@
           });
           return this.psac.render();
         });
-        it("Should disable analsyis parameter editing if status is Finalized", function() {
+        it("Should disable analsyis parameter editing if status is finalized", function() {
           this.psac.model.getStatus().set({
-            stringValue: "Finalized"
+            stringValue: "finalized"
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toEqual('disabled');
         });
-        it("Should enable analsyis parameter editing if status is Finalized", function() {
+        it("Should enable analsyis parameter editing if status is finalized", function() {
           this.psac.model.getStatus().set({
-            stringValue: "Finalized"
+            stringValue: "finalized"
           });
           this.psac.model.getStatus().set({
-            stringValue: "Started"
+            stringValue: "started"
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined();
         });

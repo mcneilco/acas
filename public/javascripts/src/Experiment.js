@@ -327,7 +327,7 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
-          stringValue: "Created"
+          stringValue: "created"
         });
       }
       return status;
@@ -338,7 +338,7 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
-          stringValue: "Created"
+          stringValue: "created"
         });
       }
       return status;
@@ -348,15 +348,15 @@
       var status;
       status = this.getStatus().get('stringValue');
       switch (status) {
-        case "Created":
+        case "created":
           return true;
-        case "Started":
+        case "started":
           return true;
-        case "Complete":
+        case "complete":
           return true;
-        case "Finalized":
+        case "finalized":
           return false;
-        case "Rejected":
+        case "rejected":
           return false;
       }
       return true;
@@ -518,7 +518,7 @@
 
     ExperimentBaseController.prototype.setupStatusSelect = function() {
       this.statusList = new PickListList();
-      this.statusList.url = "/api/dataDict/experimentStatusCodes";
+      this.statusList.url = "/api/dataDict/experimentStatus";
       return this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,

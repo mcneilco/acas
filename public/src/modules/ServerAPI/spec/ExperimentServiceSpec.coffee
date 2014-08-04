@@ -8,7 +8,7 @@ describe 'Experiment Service testing', ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
 
-	describe 'Experiment Crude Tests', ->
+	describe 'Experiment CRUD Tests', ->
 		describe 'when fetching Experiment stub by code', ->
 			beforeEach ->
 				self = @

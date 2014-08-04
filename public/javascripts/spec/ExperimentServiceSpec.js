@@ -10,7 +10,7 @@ This suite of services provides CRUD operations on Experiment Objects
         return typeof this.serviceReturn !== 'undefined';
       };
     });
-    describe('Experiment Crude Tests', function() {
+    describe('Experiment CRUD Tests', function() {
       describe('when fetching Experiment stub by code', function() {
         beforeEach(function() {
           var self;

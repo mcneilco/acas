@@ -852,12 +852,12 @@ describe "Primary Screen Experiment module testing", ->
 					el: $('#fixture')
 					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 				@psac.render()
-			it "Should disable analsyis parameter editing if status is Finalized", ->
-				@psac.model.getStatus().set stringValue: "Finalized"
+			it "Should disable analsyis parameter editing if status is finalized", ->
+				@psac.model.getStatus().set stringValue: "finalized"
 				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toEqual 'disabled'
-			it "Should enable analsyis parameter editing if status is Finalized", ->
-				@psac.model.getStatus().set stringValue: "Finalized"
-				@psac.model.getStatus().set stringValue: "Started"
+			it "Should enable analsyis parameter editing if status is finalized", ->
+				@psac.model.getStatus().set stringValue: "finalized"
+				@psac.model.getStatus().set stringValue: "started"
 				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined()
 			it "should show upload button as upload data since status is 'not started'", ->
 				expect(@psac.$('.bv_save').html()).toEqual "Upload Data"

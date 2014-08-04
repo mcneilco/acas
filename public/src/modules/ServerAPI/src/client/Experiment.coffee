@@ -191,25 +191,25 @@ class window.Experiment extends Backbone.Model
 	getStatus: ->
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "Created"
+			status.set stringValue: "created"
 
 		status
 
 	getAnalysisStatus: ->
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "Created"
+			status.set stringValue: "created"
 
 		status
 
 	isEditable: ->
 		status = @getStatus().get 'stringValue'
 		switch status
-			when "Created" then return true
-			when "Started" then return true
-			when "Complete" then return true
-			when "Finalized" then return false
-			when "Rejected" then return false
+			when "created" then return true
+			when "started" then return true
+			when "complete" then return true
+			when "finalized" then return false
+			when "rejected" then return false
 		return true
 
 class window.ExperimentList extends Backbone.Collection
@@ -310,7 +310,7 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/experimentStatusCodes"
+		@statusList.url = "/api/dataDict/experimentStatus"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList
