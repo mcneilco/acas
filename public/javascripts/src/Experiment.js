@@ -327,7 +327,7 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
-          stringValue: "Created"
+          stringValue: "created"
         });
       }
       return status;
@@ -338,7 +338,7 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
-          stringValue: "Created"
+          stringValue: "created"
         });
       }
       return status;
@@ -348,15 +348,15 @@
       var status;
       status = this.getStatus().get('stringValue');
       switch (status) {
-        case "Created":
+        case "created":
           return true;
-        case "Started":
+        case "started":
           return true;
-        case "Complete":
+        case "complete":
           return true;
-        case "Finalized":
+        case "finalized":
           return false;
-        case "Rejected":
+        case "rejected":
           return false;
       }
       return true;
@@ -442,6 +442,7 @@
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupProtocolSelect(this.options.protocolFilter);
       this.setupProjectSelect();
+      this.setupStatusSelect();
       this.setupTagList();
       return this.model.getStatus().on('change', this.updateEditable);
     };
@@ -512,6 +513,16 @@
           name: "Select Project"
         }),
         selectedCode: this.model.getProjectCode().get('codeValue')
+      });
+    };
+
+    ExperimentBaseController.prototype.setupStatusSelect = function() {
+      this.statusList = new PickListList();
+      this.statusList.url = "/api/dataDict/experimentStatus";
+      return this.statusListController = new PickListSelectController({
+        el: this.$('.bv_status'),
+        collection: this.statusList,
+        selectedCode: this.model.getStatus().get('stringValue')
       });
     };
 
@@ -656,7 +667,7 @@
 
     ExperimentBaseController.prototype.handleStatusChanged = function() {
       this.model.getStatus().set({
-        stringValue: this.getTrimmedInput('.bv_status')
+        stringValue: this.$('.bv_status').val()
       });
       return this.updateEditable();
     };

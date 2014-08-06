@@ -1,4 +1,12 @@
 (function() {
+  exports.setupAPIRoutes = function(app) {
+    app.get('/api/experiments/codename/:code', exports.experimentByCodename);
+    app.get('/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename);
+    app.get('/api/experiments/:id', exports.experimentById);
+    app.post('/api/experiments', exports.postExperiment);
+    return app.put('/api/experiments/:id', exports.putExperiment);
+  };
+
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename);
     app.get('/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename);

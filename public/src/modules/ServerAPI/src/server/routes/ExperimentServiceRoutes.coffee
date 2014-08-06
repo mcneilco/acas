@@ -1,3 +1,9 @@
+exports.setupAPIRoutes = (app) ->
+	app.get '/api/experiments/codename/:code', exports.experimentByCodename
+	app.get '/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename
+	app.get '/api/experiments/:id', exports.experimentById
+	app.post '/api/experiments', exports.postExperiment
+	app.put '/api/experiments/:id', exports.putExperiment
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -101,6 +107,7 @@ exports.putExperiment = (req, resp) ->
 				console.log error
 				console.log response
 		)
+
 
 exports.genericExperimentSearch = (req, res) ->
 	if global.specRunnerTestmode

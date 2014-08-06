@@ -18,7 +18,8 @@
           expect(this.modLauncher.get('isLoaded')).toBeFalsy();
           expect(this.modLauncher.get('isActive')).toBeFalsy();
           expect(this.modLauncher.get('isDirty')).toBeFalsy();
-          return expect(this.modLauncher.get('mainControllerClassName')).toEqual("controllerClassNameReplaceMe");
+          expect(this.modLauncher.get('mainControllerClassName')).toEqual("controllerClassNameReplaceMe");
+          return expect(this.modLauncher.get('autoLaunchName')).toBeNull();
         });
       });
       describe("activation", function() {
@@ -72,154 +73,173 @@
       });
     });
     describe("ModuleLauncherMenuController tests", function() {
-      beforeEach(function() {
-        this.modLauncher = new ModuleLauncher({
-          isHeader: false,
-          menuName: "test launcher",
-          mainControllerClassName: "testLauncherClassName"
-        });
-        this.modLauncherMenuController = new ModuleLauncherMenuController({
-          model: this.modLauncher
-        });
-        return $('#fixture').append(this.modLauncherMenuController.render().el);
-      });
-      describe("Upon render", function() {
-        it("should load the template", function() {
-          return expect($('.bv_menuName')).toBeDefined();
-        });
-        it("Should set its menu name", function() {
-          return expect(this.modLauncherMenuController.$('.bv_menuName').html()).toEqual("test launcher");
-        });
-        it("should show that it is not running", function() {
-          return expect(this.modLauncherMenuController.$('.bv_isLoaded')).not.toBeVisible();
-        });
-        it("should show that it is not dirty", function() {
-          return expect(this.modLauncherMenuController.$('.bv_isDirty')).not.toBeVisible();
-        });
-        it("should should hide disabled mode", function() {
-          return expect(this.modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible();
-        });
-        return it("should should show enabled mode", function() {
-          return expect(this.modLauncherMenuController.$('.bv_menuName')).toBeVisible();
-        });
-      });
-      describe("When clicked", function() {
+      describe("when created with no autolaunch", function() {
         beforeEach(function() {
-          this.modLauncherMenuController.bind("selected", (function(_this) {
-            return function() {
-              return _this.gotTrigger = true;
-            };
-          })(this));
-          return this.modLauncherMenuController.$('.bv_menuName').click();
+          this.modLauncher = new ModuleLauncher({
+            isHeader: false,
+            menuName: "test launcher",
+            mainControllerClassName: "testLauncherClassName"
+          });
+          this.modLauncherMenuController = new ModuleLauncherMenuController({
+            model: this.modLauncher
+          });
+          return $('#fixture').append(this.modLauncherMenuController.render().el);
         });
-        it("should set style active", function() {
-          return expect(this.modLauncherMenuController.el).toHaveClass("active");
+        describe("Upon render", function() {
+          it("should load the template", function() {
+            return expect($('.bv_menuName')).toBeDefined();
+          });
+          it("Should set its menu name", function() {
+            return expect(this.modLauncherMenuController.$('.bv_menuName').html()).toEqual("test launcher");
+          });
+          it("should show that it is not running", function() {
+            return expect(this.modLauncherMenuController.$('.bv_isLoaded')).not.toBeVisible();
+          });
+          it("should show that it is not dirty", function() {
+            return expect(this.modLauncherMenuController.$('.bv_isDirty')).not.toBeVisible();
+          });
+          it("should should hide disabled mode", function() {
+            return expect(this.modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible();
+          });
+          return it("should should show enabled mode", function() {
+            return expect(this.modLauncherMenuController.$('.bv_menuName')).toBeVisible();
+          });
         });
-        it("should set the model to active", function() {
-          return expect(this.modLauncherMenuController.model.get('isActive')).toBeTruthy();
+        describe("When clicked", function() {
+          beforeEach(function() {
+            this.modLauncherMenuController.bind("selected", (function(_this) {
+              return function() {
+                return _this.gotTrigger = true;
+              };
+            })(this));
+            return this.modLauncherMenuController.$('.bv_menuName').click();
+          });
+          it("should set style active", function() {
+            return expect(this.modLauncherMenuController.el).toHaveClass("active");
+          });
+          it("should set the model to active", function() {
+            return expect(this.modLauncherMenuController.model.get('isActive')).toBeTruthy();
+          });
+          return it("should trigger a selected event", function() {
+            runs(function() {});
+            waitsFor((function(_this) {
+              return function() {
+                return _this.gotTrigger;
+              };
+            })(this));
+            return runs(function() {
+              return expect(this.gotTrigger).toBeTruthy();
+            });
+          });
         });
-        return it("should trigger a selected event", function() {
-          runs(function() {});
-          waitsFor((function(_this) {
-            return function() {
-              return _this.gotTrigger;
-            };
-          })(this));
-          return runs(function() {
-            return expect(this.gotTrigger).toBeTruthy();
+        describe("When module is running", function() {
+          return it("should not show that it is running", function() {
+            this.modLauncher.set({
+              isLoaded: true
+            });
+            return expect(this.modLauncherMenuController.$('.bv_isLoaded')).not.toBeVisible();
+          });
+        });
+        describe("When module has been edited and not saved", function() {
+          return it("should show that it is dirty", function() {
+            this.modLauncher.set({
+              isDirty: true
+            });
+            return expect(this.modLauncherMenuController.$('.bv_isDirty')).toBeVisible();
+          });
+        });
+        describe("when deselected", function() {
+          return it("should change style", function() {
+            this.modLauncherMenuController.$('.bv_menuName').click();
+            expect(this.modLauncherMenuController.el).toHaveClass("active");
+            this.modLauncherMenuController.clearSelected(new ModuleLauncherMenuController({
+              model: new ModuleLauncher()
+            }));
+            expect($(this.modLauncherMenuController.el).hasClass("active")).toBeFalsy();
+            return expect(this.modLauncherMenuController.model.get('isActive')).toBeFalsy();
+          });
+        });
+        return describe("when user not authorized to launch module", function() {
+          beforeEach(function() {
+            this.modLauncher2 = new ModuleLauncher({
+              isHeader: false,
+              menuName: "test launcher",
+              mainControllerClassName: "testLauncherClassName",
+              requireUserRoles: ["admin", "loadData"]
+            });
+            return this.modLauncherMenuController2 = new ModuleLauncherMenuController({
+              model: this.modLauncher2
+            });
+          });
+          describe("with current user with no roles attribute", function() {
+            return it("should enable menu item", function() {
+              $('#fixture').append(this.modLauncherMenuController2.render().el);
+              expect(this.modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible();
+              return expect(this.modLauncherMenuController.$('.bv_menuName')).toBeVisible();
+            });
+          });
+          describe("with current user with roles specified but not required role", function() {
+            beforeEach(function() {
+              window.AppLaunchParams.loginUser.roles = [
+                {
+                  id: 3,
+                  roleEntry: {
+                    id: 2,
+                    roleDescription: "what Mal is not",
+                    roleName: "king of all indinia",
+                    version: 0
+                  },
+                  version: 0
+                }
+              ];
+              return $('#fixture').append(this.modLauncherMenuController2.render().el);
+            });
+            it("should disable menu item", function() {
+              expect(this.modLauncherMenuController2.$('.bv_menuName_disabled')).toBeVisible();
+              return expect(this.modLauncherMenuController2.$('.bv_menuName')).not.toBeVisible();
+            });
+            return it("should have title set to support mouse over", function() {
+              return expect($(this.modLauncherMenuController2.el).attr("title")).toContain("not authorized");
+            });
+          });
+          return describe("with current user having allowed role specified", function() {
+            beforeEach(function() {
+              window.AppLaunchParams.loginUser.roles = [
+                {
+                  id: 3,
+                  roleEntry: {
+                    id: 2,
+                    roleDescription: "data loader",
+                    roleName: "loadData",
+                    version: 0
+                  },
+                  version: 0
+                }
+              ];
+              return $('#fixture').append(this.modLauncherMenuController2.render().el);
+            });
+            return it("should enable menu item", function() {
+              expect(this.modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible();
+              return expect(this.modLauncherMenuController.$('.bv_menuName')).toBeVisible();
+            });
           });
         });
       });
-      describe("When module is running", function() {
-        return it("should show that it is running", function() {
-          this.modLauncher.set({
-            isLoaded: true
-          });
-          return expect(this.modLauncherMenuController.$('.bv_isLoaded')).toBeVisible();
-        });
-      });
-      describe("When module has been edited and not saved", function() {
-        return it("should show that it is dirty", function() {
-          this.modLauncher.set({
-            isDirty: true
-          });
-          return expect(this.modLauncherMenuController.$('.bv_isDirty')).toBeVisible();
-        });
-      });
-      describe("when deselected", function() {
-        return it("should change style", function() {
-          this.modLauncherMenuController.$('.bv_menuName').click();
-          expect(this.modLauncherMenuController.el).toHaveClass("active");
-          this.modLauncherMenuController.clearSelected(new ModuleLauncherMenuController({
-            model: new ModuleLauncher()
-          }));
-          expect($(this.modLauncherMenuController.el).hasClass("active")).toBeFalsy();
-          return expect(this.modLauncherMenuController.model.get('isActive')).toBeFalsy();
-        });
-      });
-      return describe("when user not authorized to launch module", function() {
+      return describe("when created with autolaunch", function() {
         beforeEach(function() {
-          this.modLauncher2 = new ModuleLauncher({
+          this.modLauncher = new ModuleLauncher({
             isHeader: false,
             menuName: "test launcher",
             mainControllerClassName: "testLauncherClassName",
-            requireUserRoles: ["admin", "loadData"]
+            autoLaunchName: "testLaunch"
           });
-          return this.modLauncherMenuController2 = new ModuleLauncherMenuController({
-            model: this.modLauncher2
+          this.modLauncherMenuController = new ModuleLauncherMenuController({
+            model: this.modLauncher
           });
+          return $('#fixture').append(this.modLauncherMenuController.render().el);
         });
-        describe("with current user with no roles attribute", function() {
-          return it("should enable menu item", function() {
-            $('#fixture').append(this.modLauncherMenuController2.render().el);
-            expect(this.modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible();
-            return expect(this.modLauncherMenuController.$('.bv_menuName')).toBeVisible();
-          });
-        });
-        describe("with current user with roles specified but not required role", function() {
-          beforeEach(function() {
-            window.AppLaunchParams.loginUser.roles = [
-              {
-                id: 3,
-                roleEntry: {
-                  id: 2,
-                  roleDescription: "what Mal is not",
-                  roleName: "king of all indinia",
-                  version: 0
-                },
-                version: 0
-              }
-            ];
-            return $('#fixture').append(this.modLauncherMenuController2.render().el);
-          });
-          it("should disable menu item", function() {
-            expect(this.modLauncherMenuController2.$('.bv_menuName_disabled')).toBeVisible();
-            return expect(this.modLauncherMenuController2.$('.bv_menuName')).not.toBeVisible();
-          });
-          return it("should have title set to support mouse over", function() {
-            return expect($(this.modLauncherMenuController2.el).attr("title")).toContain("not authorized");
-          });
-        });
-        return describe("with current user having allowed role specified", function() {
-          beforeEach(function() {
-            window.AppLaunchParams.loginUser.roles = [
-              {
-                id: 3,
-                roleEntry: {
-                  id: 2,
-                  roleDescription: "data loader",
-                  roleName: "loadData",
-                  version: 0
-                },
-                version: 0
-              }
-            ];
-            return $('#fixture').append(this.modLauncherMenuController2.render().el);
-          });
-          return it("should enable menu item", function() {
-            expect(this.modLauncherMenuController.$('.bv_menuName_disabled')).not.toBeVisible();
-            return expect(this.modLauncherMenuController.$('.bv_menuName')).toBeVisible();
-          });
+        return it("should set the element class name", function() {
+          return expect(this.modLauncherMenuController.$('.bv_menuName').hasClass('bv_launch_testLaunch')).toBeTruthy();
         });
       });
     });
