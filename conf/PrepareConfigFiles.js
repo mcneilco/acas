@@ -133,7 +133,7 @@
 
   getRFileHandlerString = function(rFilesWithRoute, config, acasHome) {
     var rFile, rapacheHandlerText, route, routes, _i, _len;
-    rapacheHandlerText = '<Location /' + config.all.client.service.rapache.path + '* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES */>\n\tSetHandler r-handler\n\tRFileHandler ' + acasHome + '/* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *\n</Location>';
+    rapacheHandlerText = '<Location /' + config.all.client.service.rapache.path + '* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *>\n\tSetHandler r-handler\n\tRFileHandler ' + acasHome + '/* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *\n</Location>';
     routes = [];
     routes.push('<Location /' + config.all.client.service.rapache.path + '/hello>\n\tSetHandler r-handler\n\tREval "hello()"\n</Location>');
     routes.push('<Location /' + config.all.client.service.rapache.path + '/RApacheInfo>\n\tSetHandler r-info\n</Location>');
@@ -264,7 +264,7 @@
     confs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so");
     if (Boolean(config.all.client.use.ssl)) {
       confs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so");
-      confs.push('SSLEngine on');
+      confs.push('SSLEngine On');
       confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path);
       confs.push('SSLCertificateKeyFile ' + config.all.server.ssl.key.file.path);
       confs.push('SSLCACertificateFile ' + config.all.server.ssl.cert.authority.file.path);

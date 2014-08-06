@@ -54,29 +54,22 @@ renderCurve <- function(getParams) {
 	if(is.null(getParams$inTable)) {
 		inTable <- FALSE
 	} else {
-		if(getParams$inTable=="true") {
-			inTable <- TRUE
-		} else {
-			inTable <- FALSE
-		}
+		inTable <- as.logical(getParams$inTable)
 	}
-	if(is.null(getParams$axes)) {
-		axes <- TRUE
+	if(is.null(getParams$showAxes)) {
+		showAxes <- TRUE
 	} else {
-		if(getParams$axes=="true") {
-			axes <- TRUE
-		} else {
-			axes <- FALSE
-		}
+		showAxes <- as.logical(getParams$showAxes)
+	}
+	if(is.null(getParams$labelAxes)) {
+		labelAxes <- !inTable
+	} else {
+		labelAxes <- as.logical(getParams$labelAxes)
 	}
 	if(is.null(getParams$legend)) {
 		legend <- !inTable
 	} else {
-		if(getParams$legend=="true") {
-			legend <- TRUE
-		} else {
-			legend <- FALSE
-		}
+		legend <- as.logical(getParams$legend)
 	}
 
 	if(is.null(getParams$curveIds)) {
@@ -93,11 +86,19 @@ renderCurve <- function(getParams) {
 	
 	data <- getCurveData(curveIds, globalConnect=TRUE)
 	
+	#To be backwards compatable with hill slope example files
+	hillSlopes <- which(!is.na(data$parameters$hillslope))
+	if(length(hillSlopes) > 0  ) {
+		data$parameters$slope <- -data$parameters$hillslope[hillSlopes]
+	}
+	fittedHillSLopes <- which(!is.na(data$parameters$fitted_hillslope))
+	if(length(fittedHillSLopes) > 0 ) {
+		data$parameters$fitted_slope <- -data$parameters$fitted_hillslope[fittedHillSLopes]
+	}
+	
 	setContentType("image/png")
-	setHeader(header="Cache-Control",value="max-age=1000000000000"); 
-	setHeader(header="Expires",value="Thu, 31 Dec 2099 24:24:24 GMT");
 	t <- tempfile()
-	PlotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "hill"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = TRUE, labelAxes = TRUE, showLegend=legend, axes = axes)
+	plotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "slope"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = TRUE, showAxes = showAxes, labelAxes = labelAxes, showLegend=legend)
 	sendBin(readBin(t,'raw',n=file.info(t)$size))
 	unlink(t) 
 	DONE
