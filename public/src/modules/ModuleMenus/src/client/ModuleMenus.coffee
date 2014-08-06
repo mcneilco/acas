@@ -23,8 +23,12 @@ class window.ModuleMenusController extends Backbone.View
 		@moduleLauncherMenuListController.render()
 		@moduleLauncherListController.render()
 
+		@$('.bv_summaryStats').load('/dataFiles/summaryStatistics/summaryStatistics.html')
+
 		if window.AppLaunchParams.moduleLaunchParams?
 			@moduleLauncherMenuListController.launchModule window.AppLaunchParams.moduleLaunchParams.moduleName
+		else
+			@$('.bv_summaryStats').show()
 
 	render: =>
 		if window.AppLaunchParams.deployMode?
@@ -33,3 +37,9 @@ class window.ModuleMenusController extends Backbone.View
 
 		@
 
+	events:
+			'click .bv_acasHome': "handleHome"
+
+	handleHome: =>
+		$('.bv_mainModuleWrapper').hide()
+		$('.bv_summaryStats').show()

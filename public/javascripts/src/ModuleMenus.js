@@ -7,6 +7,7 @@
     __extends(ModuleMenusController, _super);
 
     function ModuleMenusController() {
+      this.handleHome = __bind(this.handleHome, this);
       this.render = __bind(this.render, this);
       return ModuleMenusController.__super__.constructor.apply(this, arguments);
     }
@@ -32,8 +33,11 @@
       }
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
+      this.$('.bv_summaryStats').load('/dataFiles/summaryStatistics/summaryStatistics.html');
       if (window.AppLaunchParams.moduleLaunchParams != null) {
         return this.moduleLauncherMenuListController.launchModule(window.AppLaunchParams.moduleLaunchParams.moduleName);
+      } else {
+        return this.$('.bv_summaryStats').show();
       }
     };
 
@@ -44,6 +48,15 @@
         }
       }
       return this;
+    };
+
+    ModuleMenusController.prototype.events = {
+      'click .bv_acasHome': "handleHome"
+    };
+
+    ModuleMenusController.prototype.handleHome = function() {
+      $('.bv_mainModuleWrapper').hide();
+      return $('.bv_summaryStats').show();
     };
 
     return ModuleMenusController;
