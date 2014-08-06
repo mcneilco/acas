@@ -1,42 +1,51 @@
 # ROUTE: /experiment/primaryanalysis
+require(data.table)
 
-csv_data <- rawToChar(receiveBin(-1))
-setHeader("Access-Control-Allow-Origin","*")
-setHeader("Content-Length",nchar(csv_data))
-setContentType("text/csv;")
-cat(csv_data)
-DONE
+write_csv <- function(x, file, rows = 1000L, ...) {
+  passes <- NROW(x) %/% rows
+  remaining <- NROW(x) %% rows
+  k <- 1L
+  if(passes > 0) {
+    write.table(x[k:rows, ], file, quote = FALSE,row.names = FALSE, ...)
+  } else {
+    write.table(x, file, quote = FALSE,row.names = FALSE, ...)
+    return(invisible())
+  }
+  k <- k + rows
+  for(i in seq_len(passes)[-1]) {
+    write.table(x[k:(rows*i), ], file, quote = FALSE,, append = TRUE, row.names =
+                  FALSE, col.names = FALSE, ...)
+    k <- k + rows
+  }
+  if(remaining > 0) {
+    write.table(x[k:NROW(x), ], file, quote = FALSE, append = TRUE, row.names =
+                  FALSE, col.names = FALSE, ...)
+  }
+}
+dataframe_to_csvstring <- function(x) {
+  t <- tempfile()
+  on.exit(unlink(t))
+  write_csv(x,t, sep = ",")
+  csv_string <- readChar(t, file.info(t)$size)
+}
 
-#csvstring_to_dataframe <- function(string, ...) {
-#  on.exit(close(tc))
-#  dfr <- read.csv(tc <- textConnection(string), ...)
-#  return(dfr)
-#}
-#dataframe_to_csvstring <- function(x) {
-#  on.exit(close(tc))
-#  tc <- textConnection("foo", "w")
-#  write.csv(x, tc, row.names = FALSE)
-#  csvstring <- paste0(textConnectionValue(tc),collapse="\n")
-#  return(csvstring )
-#}
-#
-#post_data <- rawToChar(receiveBin(-1))
-#post_data_list <- fromJSON(post_data)
-#
-#csv_data <- csvstring_to_dataframe(post_data_list$csv)
-#
-#numeric_columns <- sapply(csv_data,class) %in% c("numeric","integer")
-#if(!any(numeric_columns)) {
-#  cat(post_data)
-#  DONE
-#}
-#first_numeric_column <- csv_data[,which(numeric_columns)[1], drop = FALSE]
-#normalized_data <- first_numeric_column*3
-#names(normalized_data) <- paste0(names(normalized_data), " NORAMALIZED (MULTIPLIED BY 3)")
-#output_data_frame <- data.frame(csv_data, normalized_data, check.names = FALSE)
-#output_csv_string <- dataframe_to_csvstring(output_data_frame)
-#output_list <- list(
-#  csv = output_csv_string
-#)
-#cat(toJSON(output_list))
-#DONE
+normalizeData <- function() {
+    csv_data <- rawToChar(receiveBin(-1))
+    data <- fread(csv_data)
+    setkey(data, assayBarcode, wellReference)
+    readColumnIndexes <- which(grepl("{R[0-9].*}",names(data), perl = TRUE))
+    readColumnNames <- names(data)[readColumnIndexes]
+    normalizedNames <- paste0(readColumnNames," [NORMALIZED]")
+    normalizedData <- data[ , get("normalizedNames"):={
+             lapply(readColumnNames, function(x) get(x)*3)
+             }, by = c("assayBarcode","wellReference")]
+
+    csv_data <- dataframe_to_csvstring(normalizedData)
+    setHeader("Access-Control-Allow-Origin","*")
+    setHeader("Content-Length",nchar(csv_data))
+    setContentType("text/csv;")
+    cat(csv_data)
+    DONE
+}
+
+normalizeData()
