@@ -253,11 +253,13 @@
           });
         }
       }
-      return $(this.el).show();
+      $(this.el).show();
+      return $('.bv_mainModuleWrapper').show();
     };
 
     ModuleLauncherController.prototype.handleDeactivation = function() {
-      return $(this.el).hide();
+      $(this.el).hide();
+      return $('.bv_homePageWrapper').hide();
     };
 
     return ModuleLauncherController;

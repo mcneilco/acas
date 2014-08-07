@@ -141,9 +141,11 @@ class window.ModuleLauncherController extends Backbone.View
 				@model.set isLoaded: true
 
 		$(@el).show()
+		$('.bv_mainModuleWrapper').show()
 
 	handleDeactivation:  =>
 		$(@el).hide()
+		$('.bv_homePageWrapper').hide()
 
 class window.ModuleLauncherListController extends Backbone.View
 
