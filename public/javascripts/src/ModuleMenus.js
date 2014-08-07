@@ -37,7 +37,7 @@
       if (window.AppLaunchParams.moduleLaunchParams != null) {
         return this.moduleLauncherMenuListController.launchModule(window.AppLaunchParams.moduleLaunchParams.moduleName);
       } else {
-        return this.$('.bv_summaryStats').show();
+        return this.$('.bv_homePageWrapper').show();
       }
     };
 
@@ -56,7 +56,7 @@
 
     ModuleMenusController.prototype.handleHome = function() {
       $('.bv_mainModuleWrapper').hide();
-      return $('.bv_summaryStats').show();
+      return $('.bv_homePageWrapper').show();
     };
 
     return ModuleMenusController;

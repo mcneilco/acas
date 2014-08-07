@@ -28,7 +28,7 @@ class window.ModuleMenusController extends Backbone.View
 		if window.AppLaunchParams.moduleLaunchParams?
 			@moduleLauncherMenuListController.launchModule window.AppLaunchParams.moduleLaunchParams.moduleName
 		else
-			@$('.bv_summaryStats').show()
+			@$('.bv_homePageWrapper').show()
 
 	render: =>
 		if window.AppLaunchParams.deployMode?
@@ -42,4 +42,4 @@ class window.ModuleMenusController extends Backbone.View
 
 	handleHome: =>
 		$('.bv_mainModuleWrapper').hide()
-		$('.bv_summaryStats').show()
+		$('.bv_homePageWrapper').show()

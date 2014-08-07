@@ -259,7 +259,7 @@
 
     ModuleLauncherController.prototype.handleDeactivation = function() {
       $(this.el).hide();
-      return $('.bv_summaryStats').hide();
+      return $('.bv_homePageWrapper').hide();
     };
 
     return ModuleLauncherController;
