@@ -9,7 +9,7 @@ describe "Data File and Temp File Services", ->
     describe "Data file services", ->
       before (done) ->
         fs.writeFileSync "../../../"+ config.all.server.datafiles.relative_path + "/test.txt", "test file"
-        request "http://localhost:3001/dataFiles/test.txt", (error, response, body) =>
+        request "http://localhost:"+config.all.server.nodeapi.port+"/dataFiles/test.txt", (error, response, body) =>
           console.log "error: "+error
           #					console.log response
           @responseJSON = body
@@ -22,7 +22,7 @@ describe "Data File and Temp File Services", ->
     describe "temp file services", ->
       before (done) ->
         fs.writeFileSync "../../../"+ config.all.server.tempfiles.relative_path + "/test.txt", "test file"
-        request "http://localhost:3001/tempfiles/test.txt", (error, response, body) =>
+        request "http://localhost:"+config.all.server.nodeapi.port+"/tempfiles/test.txt", (error, response, body) =>
           console.log "error: "+error
           #					console.log response
           @responseJSON = body

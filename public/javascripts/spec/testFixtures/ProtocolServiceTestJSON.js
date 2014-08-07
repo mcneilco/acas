@@ -34,7 +34,7 @@
           lsTypeAndKind: "metadata_experiment controls",
           lsValues: [
             {
-              clobValue: '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "conentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 2,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd"}',
+              clobValue: '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "concentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 250753.77,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "assayVolume": 24, "transferVolume": 12, "dilutionFactor": 21, "volumeType": "dilution", "instrumentReader": "flipr", "signalDirectionRule": "increasing signal (highest = 100%)", "aggregateBy1": "compound batch concentration", "aggregateBy2": "median", "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd", "autoHitSelection": true, "readName": "fluorescence"}',
               codeValue: null,
               comments: null,
               dateValue: null,
@@ -616,7 +616,7 @@
         version: 0
       }
     ];
-    return exports.lsLabels = [
+    exports.lsLabels = [
       {
         id: 67,
         ignored: false,
@@ -946,6 +946,59 @@
         },
         recordedBy: "smeyer",
         recordedDate: 1372303173000,
+        version: 0
+      }
+    ];
+    return exports.protocolKinds = [
+      {
+        id: 1,
+        kindName: "default",
+        lsType: {
+          id: 1,
+          typeName: "default",
+          version: 0
+        },
+        lsTypeAndKind: "default_default",
+        version: 0
+      }, {
+        id: 2,
+        kindName: "FLIPR",
+        lsType: {
+          id: 1,
+          typeName: "default",
+          version: 0
+        },
+        lsTypeAndKind: "FLIPR_default",
+        version: 0
+      }, {
+        id: 3,
+        kindName: "KD",
+        lsType: {
+          id: 1,
+          typeName: "default",
+          version: 0
+        },
+        lsTypeAndKind: "KD_default",
+        version: 0
+      }, {
+        id: 4,
+        kindName: "Microsome Stability",
+        lsType: {
+          id: 1,
+          typeName: "default",
+          version: 0
+        },
+        lsTypeAndKind: "Microsome Stability_default",
+        version: 0
+      }, {
+        id: 5,
+        kindName: "uSol",
+        lsType: {
+          id: 1,
+          typeName: "default",
+          version: 0
+        },
+        lsTypeAndKind: "uSol_default",
         version: 0
       }
     ];

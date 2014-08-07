@@ -16,7 +16,8 @@
       mainControllerClassName: "controllerClassNameReplaceMe",
       isLoaded: false,
       isActive: false,
-      isDirty: false
+      isDirty: false,
+      autoLaunchName: null
     };
 
     ModuleLauncher.prototype.requestActivation = function() {
@@ -75,17 +76,13 @@
     ModuleLauncherMenuController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template(this.model.toJSON()));
-      $(this.el).addClass('bv_launch_' + this.model.get('autoLaunchName'));
+      this.$('.bv_menuName').addClass('bv_launch_' + this.model.get('autoLaunchName'));
       if (this.model.get('isActive')) {
         $(this.el).addClass("active");
       } else {
         $(this.el).removeClass("active");
       }
-      if (this.model.get('isLoaded')) {
-        this.$('.bv_isLoaded').show();
-      } else {
-        this.$('.bv_isLoaded').hide();
-      }
+      this.$('.bv_isLoaded').hide();
       if (this.model.get('isDirty')) {
         this.$('.bv_isDirty').show();
       } else {
@@ -256,11 +253,13 @@
           });
         }
       }
-      return $(this.el).show();
+      $(this.el).show();
+      return $('.bv_mainModuleWrapper').show();
     };
 
     ModuleLauncherController.prototype.handleDeactivation = function() {
-      return $(this.el).hide();
+      $(this.el).hide();
+      return $('.bv_homePageWrapper').hide();
     };
 
     return ModuleLauncherController;

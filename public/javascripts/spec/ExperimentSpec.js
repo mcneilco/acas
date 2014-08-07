@@ -62,7 +62,7 @@
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
           });
           it('Experiment status should default to created ', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("Created");
+            return expect(this.exp.getStatus().get('stringValue')).toEqual("created");
           });
           return it('completionDate should be null ', function() {
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(null);
@@ -76,27 +76,27 @@
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
-            it("should be locked if status is Started", function() {
+            it("should be locked if status is started", function() {
               this.exp.getStatus().set({
-                stringValue: "Started"
+                stringValue: "started"
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
-            it("should be locked if status is Complete", function() {
+            it("should be locked if status is complete", function() {
               this.exp.getStatus().set({
-                stringValue: "Complete"
+                stringValue: "complete"
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
-            it("should be locked if status is Finalized", function() {
+            it("should be locked if status is finalized", function() {
               this.exp.getStatus().set({
-                stringValue: "Finalized"
+                stringValue: "finalized"
               });
               return expect(this.exp.isEditable()).toBeFalsy();
             });
-            return it("should be locked if status is Rejected", function() {
+            return it("should be locked if status is rejected", function() {
               this.exp.getStatus().set({
-                stringValue: "Rejected"
+                stringValue: "rejected"
               });
               return expect(this.exp.isEditable()).toBeFalsy();
             });
@@ -184,7 +184,7 @@
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(1342080000000);
           });
           return it('Should have a status value', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("Started");
+            return expect(this.exp.getStatus().get('stringValue')).toEqual("started");
           });
         });
       });
@@ -240,7 +240,7 @@
             return expect(this.exp.get('lsTags').length).toEqual(0);
           });
           return it('Should have a status value of created', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("Created");
+            return expect(this.exp.getStatus().get('stringValue')).toEqual("created");
           });
         });
       });
@@ -561,6 +561,20 @@
             return expect(this.ebc.$('.bv_projectCode').val()).toEqual("unassigned");
           });
         });
+        describe("it should show a picklist for experimetn statuses", function() {
+          beforeEach(function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_status option').length > 0;
+            }, 1000);
+            return runs(function() {});
+          });
+          it("should show status options after loading them from server", function() {
+            return expect(this.ebc.$('.bv_status option').length).toBeGreaterThan(0);
+          });
+          return it("should default to created", function() {
+            return expect(this.ebc.$('.bv_status').val()).toEqual("created");
+          });
+        });
         describe("populated fields", function() {
           it("should show the protocol code", function() {
             waitsFor(function() {
@@ -583,9 +597,9 @@
         return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
             expect(this.ebc.model.get('recordedBy')).toEqual("");
-            this.ebc.$('.bv_recordedBy').val("jmcneil");
+            this.ebc.$('.bv_recordedBy').val("nxm7557");
             this.ebc.$('.bv_recordedBy').change();
-            return expect(this.ebc.model.get('recordedBy')).toEqual("jmcneil");
+            return expect(this.ebc.model.get('recordedBy')).toEqual("nxm7557");
           });
           it("should update model when shortDescription is changed", function() {
             this.ebc.$('.bv_shortDescription').val(" New short description   ");
@@ -655,9 +669,14 @@
             return expect(this.ebc.model.get('lsTags').at(0).get('tagText')).toEqual("lucy");
           });
           return it("should update model when experiment status changed", function() {
-            this.ebc.$('.bv_status').val('Complete');
-            this.ebc.$('.bv_status').change();
-            return expect(this.ebc.model.getStatus().get('stringValue')).toEqual('Complete');
+            waitsFor(function() {
+              return this.ebc.$('.bv_status option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.ebc.$('.bv_status').val('complete');
+              this.ebc.$('.bv_status').change();
+              return expect(this.ebc.model.getStatus().get('stringValue')).toEqual('complete');
+            });
           });
         });
       });
@@ -713,7 +732,7 @@
             return expect(this.ebc.$('.bv_completionDate').val()).toEqual("2012-07-12");
           });
           it("should fill the user field", function() {
-            return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("smeyer");
+            return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("nxm7557");
           });
           it("should fill the code field", function() {
             return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
@@ -725,35 +744,50 @@
             return expect(this.ebc.$('.bv_tags').tagsinput('items')[0]).toEqual("stuff");
           });
           it("show the status", function() {
-            return expect(this.ebc.$('.bv_status').val()).toEqual("Started");
+            waitsFor(function() {
+              return this.ebc.$('.bv_status option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.ebc.$('.bv_status').val()).toEqual("started");
+            });
           });
           return it("should show the status select enabled", function() {
             return expect(this.ebc.$('.bv_status').attr('disabled')).toBeUndefined();
           });
         });
         return describe("Experiment status behavior", function() {
-          it("should disable all fields if experiment is Finalized", function() {
-            this.ebc.$('.bv_status').val('Finalized');
-            this.ebc.$('.bv_status').change();
-            expect(this.ebc.$('.bv_notebook').attr('disabled')).toEqual('disabled');
-            return expect(this.ebc.$('.bv_status').attr('disabled')).toBeUndefined();
+          it("should disable all fields if experiment is finalized", function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_status option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.ebc.$('.bv_status').val('finalized');
+              this.ebc.$('.bv_status').change();
+              expect(this.ebc.$('.bv_notebook').attr('disabled')).toEqual('disabled');
+              return expect(this.ebc.$('.bv_status').attr('disabled')).toBeUndefined();
+            });
           });
-          it("should enable all fields if experiment is Started", function() {
-            this.ebc.$('.bv_status').val('Finalized');
+          it("should enable all fields if experiment is started", function() {
+            this.ebc.$('.bv_status').val('finalized');
             this.ebc.$('.bv_status').change();
-            this.ebc.$('.bv_status').val('Started');
+            this.ebc.$('.bv_status').val('started');
             this.ebc.$('.bv_status').change();
             return expect(this.ebc.$('.bv_notebook').attr('disabled')).toBeUndefined();
           });
           it("should hide lock icon if experiment is new", function() {
-            this.ebc.$('.bv_status').val('New');
+            this.ebc.$('.bv_status').val('new');
             this.ebc.$('.bv_status').change();
             return expect(this.ebc.$('.bv_lock')).toBeHidden();
           });
           return it("should show lock icon if experiment is finalized", function() {
-            this.ebc.$('.bv_status').val('Finalized');
-            this.ebc.$('.bv_status').change();
-            return expect(this.ebc.$('.bv_lock')).toBeVisible();
+            waitsFor(function() {
+              return this.ebc.$('.bv_status option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.ebc.$('.bv_status').val('finalized');
+              this.ebc.$('.bv_status').change();
+              return expect(this.ebc.$('.bv_lock')).toBeVisible();
+            });
           });
         });
       });
@@ -761,7 +795,7 @@
         beforeEach(function() {
           this.exp0 = new Experiment();
           this.exp0.getStatus().set({
-            stringValue: "Created"
+            stringValue: "created"
           });
           this.ebc = new ExperimentBaseController({
             model: this.exp0,
@@ -802,9 +836,14 @@
           it("should show the save button disabled", function() {
             return expect(this.ebc.$('.bv_save').attr('disabled')).toEqual('disabled');
           });
-          it("should show status select value as Created", function() {
-            console.log(this.ebc.model.getStatus());
-            return expect(this.ebc.$('.bv_status').val()).toEqual('Created');
+          it("should show status select value as created", function() {
+            waitsFor(function() {
+              return this.ebc.$('.bv_protocolCode option').length > 0;
+            }, 1000);
+            return runs(function() {
+              console.log(this.ebc.model.getStatus());
+              return expect(this.ebc.$('.bv_status').val()).toEqual('created');
+            });
           });
           return it("should show the status select disabled", function() {
             return expect(this.ebc.$('.bv_status').attr('disabled')).toEqual('disabled');
@@ -854,7 +893,7 @@
               return this.ebc.$('.bv_protocolCode option').length > 0 && this.ebc.$('.bv_projectCode option').length > 0;
             }, 1000);
             runs(function() {
-              this.ebc.$('.bv_recordedBy').val("jmcneil");
+              this.ebc.$('.bv_recordedBy').val("nxm7557");
               this.ebc.$('.bv_recordedBy').change();
               this.ebc.$('.bv_shortDescription').val(" New short description   ");
               this.ebc.$('.bv_shortDescription').change();
@@ -877,7 +916,8 @@
           describe("form validation setup", function() {
             it("should be valid if form fully filled out", function() {
               return runs(function() {
-                return expect(this.ebc.isValid()).toBeTruthy();
+                expect(this.ebc.isValid()).toBeTruthy();
+                return console.log(this.ebc.model.validationError);
               });
             });
             return it("save button should be enabled", function() {

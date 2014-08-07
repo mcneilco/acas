@@ -30,6 +30,7 @@ class window.AbstractFormController extends Backbone.View
 	validationError: =>
 		errors = @model.validationError
 		@clearValidationErrorStyles()
+
 		_.each errors, (err) =>
 			@$('.bv_group_'+err.attribute).addClass 'input_error error'
 			@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
@@ -66,7 +67,9 @@ class window.AbstractFormController extends Backbone.View
 	disableAllInputs: ->
 		@$('input').attr 'disabled', 'disabled'
 		@$('select').attr 'disabled', 'disabled'
+		@$("textarea").attr 'disabled', 'disabled'
 
 	enableAllInputs: ->
 		@$('input').removeAttr 'disabled'
 		@$('select').removeAttr 'disabled'
+		@$("textarea").removeAttr 'disabled'

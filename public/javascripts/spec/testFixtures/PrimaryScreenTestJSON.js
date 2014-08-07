@@ -1,5 +1,20 @@
 (function() {
   (function(exports) {
+    exports.primaryAnalysisReads = [
+      {
+        readOrder: 11,
+        readName: "luminescence",
+        matchReadName: true
+      }, {
+        readOrder: 12,
+        readName: "fluorescence",
+        matchReadName: true
+      }, {
+        readOrder: 13,
+        readName: "other read name",
+        matchReadName: false
+      }
+    ];
     return exports.primaryScreenAnalysisParameters = {
       positiveControl: {
         batchCode: "CMPD-12345678-01",
@@ -21,11 +36,21 @@
         concentration: null,
         concentrationUnits: null
       },
+      instrumentReader: "flipr",
+      signalDirectionRule: "increasing signal (highest = 100%)",
+      aggregateBy1: "compound batch concentration",
+      aggregateBy2: "median",
       transformationRule: "(maximum-minimum)/minimum",
       normalizationRule: "plate order",
       hitEfficacyThreshold: 42,
       hitSDThreshold: 5.0,
-      thresholdType: "sd"
+      thresholdType: "sd",
+      transferVolume: 12,
+      dilutionFactor: 21,
+      volumeType: "dilution",
+      assayVolume: 24,
+      autoHitSelection: false,
+      primaryAnalysisReadList: exports.primaryAnalysisReads
     };
   })((typeof process === "undefined" || !process.versions ? window.primaryScreenTestJSON = window.primaryScreenTestJSON || {} : exports));
 
