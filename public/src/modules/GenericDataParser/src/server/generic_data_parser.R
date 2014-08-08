@@ -414,7 +414,7 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
   classRow[clobColumns] <- "Clob"
   
   # Check if the datatypes are entered correctly
-  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob", "Code","", "Standard Deviation", "Comments", NA))
+  badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob", "Code", "", "Standard Deviation", "Comments", "Image File", NA))
   
   # Let the user know about empty datatypes
   emptyClasses <- which(is.na(classRow) | trim(classRow) == "")
@@ -423,7 +423,7 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
       warnUser(paste0("Column ", getExcelColumnFromNumber(emptyClasses), " (" , LabelRow[emptyClasses], ") does not have a Datatype entered. ",
                      "The loader will attempt to interpret entries in column ", 
                      getExcelColumnFromNumber(emptyClasses), 
-                     " as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+                     " as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."))
     } else {
       warnUser(paste("Columns", 
                     paste(sapply(emptyClasses[1:length(emptyClasses)-1],getExcelColumnFromNumber),collapse=", "), 
@@ -432,7 +432,7 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
                     "The loader will attempt to interpret entries in columns",
                     paste(sapply(emptyClasses[1:length(emptyClasses)-1],getExcelColumnFromNumber),collapse=", "), 
                     "and", getExcelColumnFromNumber(tail(emptyClasses,n=1)),
-                    "as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+                    "as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."))
     }
     classRow[is.na(classRow) | classRow==""] <- "Number"
   }
@@ -453,21 +453,22 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
       classRow[i][grep(pattern = "comment", classRow[i], ignore.case = TRUE)] <- "Comments"
       classRow[i][grep(pattern = "sd", classRow[i], ignore.case = TRUE)] <- "Standard Deviation"
       classRow[i][grep(pattern = "dev", classRow[i], ignore.case = TRUE)] <- "Standard Deviation"
+      classRow[i][grep(pattern = "image", classRow[i], ignore.case = TRUE)] <- "Image File"
       # Accept differences in capitalization
       if (tolower(classRow[i]) != tolower(oldClassRow[i]) & !is.na(LabelRow[i])) {
         warnUser(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
                        "' as a datatype and interpreted it as '", classRow[i], 
-                       "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+                       "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."))
       }
     }
     
     # Those that can't be interpreted throw errors
     unhandledClasses <- setdiff(classRow[1:length(classRow) > 1], 
-                                c("Text","Number","Date","Clob","Code","Standard Deviation","Comments",""))
+                                c("Text","Number","Date","Clob","Code","Standard Deviation","Comments", "", "Image File"))
     if (length(unhandledClasses)>0) {
       addError(paste0("The loader found classes in the Datatype row that it does not understand: '",
                       paste(unhandledClasses,collapse = "', '"),
-                      "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."), errorEnv)
+                      "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."), errorEnv)
     }
   }
   
@@ -568,6 +569,39 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   }
   return(NULL)
 }
+
+validateUploadedImages <- function(imageLocation, listedImageFiles, experimentFolderLocation) {
+  # Checks that there is a one-to-one correspondence between files the user has uploaded
+  # and file names the user has entered in their Excel sheet.
+  # Input: imageLocation: a path to the directory where the images were unzipped. 
+  #        Can be absolute or relative from the working directory
+  #        listedImageFiles, the image files that the user listed in the spreadsheet
+  #        experimentFolderLocation, a relative path from privateUploads
+  # Returns: Errors if invalid, or "TRUE" if valid. Could return something different in the future
+  #          If invalid, it removes the experiment's folder and returns the zip file to privateUploads
+  
+  uploadedImageFiles <- list.files(imageLocation)
+  
+  # Make sure all elements are part of both vectors.
+  # We allow the same file to be listed multiple times -- setdiff disregards duplicates (and you can't
+  # put the same file into a directory twice, so we don't have a problem there)
+  notUploaded <- setdiff(listedImageFiles, uploadedImageFiles)
+  notListed <- setdiff(uploadedImageFiles, listedImageFiles)
+  
+  if (length(notListed) > 0) {
+    unlink(experimentFolderLocation, recursive = TRUE)
+    stopUser(paste0("The following files were uploaded in a zip file, but were not listed in the spreadsheet: ",
+                    paste(notListed, collapse = ", "), ". If in doubt, please check your capitalization."))
+  }
+  if (length(notUploaded) > 0) {
+    unlink(experimentFolderLocation, recursive = TRUE)
+    stopUser(paste0("The following files were listed in the spreadsheet, but were not uploaded in a zip file: ",
+                    paste(notUploaded, collapse = ", "), ". If in doubt, please check your capitalization."))
+  }
+  
+  return(TRUE)
+}
+
 getExcelColumnFromNumber <- function(number) {
   # Function to get an Excel-style column name from a column number
   # translated from php at http://stackoverflow.com/questions/3302857/algorithm-to-get-the-excel-like-column-name-of-a-number
@@ -999,12 +1033,15 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   ### For the results marked as "File":
   longResults <- moveResults(longResults, "fileValue")
   
+  ### For the results marked as "Image File":
+  longResults <- moveResults(longResults, "inlineFileValue")
+  
   # Clean up the data frame to look nice (remove extra columns)
   row.names(longResults) <- 1:nrow(longResults)
   
   organizedData <- longResults[c("batchCode","valueKind","valueUnit","concentration","concentrationUnit", "time", 
                                  "timeUnit", "numericValue", "stringValue","valueOperator", "dateValue","clobValue",
-                                 "urlValue", "fileValue", "codeValue",
+                                 "urlValue", "fileValue", "inlineFileValue", "codeValue",
                                  "Class", "valueType", "valueKindAndUnit","publicData", "originalMainID", 
                                  "groupingID", "groupingID_2", "rowID", "stateType", "stateKind", "linkColumn", "linkID",
                                  "uncertainty", "uncertaintyType", "comments")]
@@ -1020,6 +1057,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
                                    & is.na(organizedData$clobValue)
                                    & is.na(organizedData$urlValue)
                                    & is.na(organizedData$fileValue)
+                                   & is.na(organizedData$inlineFileValue)
                                    & is.na(organizedData$codeValue)
                                    ), ]
   
@@ -1197,6 +1235,91 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
 #   return(list(subjectData = longResults, xLabel = xLabel, yLabel = yLabel, tempIdLabel = tempIdLabel,
 #               treatmentGroupData = longTreatmentGroupResults))
 # }
+
+addFileValue <- function(imageLocation, calculatedResults) {
+  # Adds a "fileValue" attribute to entries of calculated results that have an inlineFileValue
+  # They have to have both pieces of information because the inline file value is just the
+  # file name and extension, whereas the fileValue contains the full path from privateUploads
+  # 
+  # Input: imageLocation: the file path to the folder where images are stored, relative to the
+  #                       working directory
+  #        calculatedResults: a data frame of calculated results and their types
+  #                           NOTE: This doesn't work if the fileValue column has stringsAsFactors
+  # Returns: the calculatedResults data frame, but all the entries with "inlineFileValue" also
+  #          have an entry for "fileValue"
+  
+  # We have to save the fileValue relative to privateUploads, so we need to remove privateUploads from it
+  uploadedFilePath <- racas::getUploadedFilePath("")
+  imageLocation <- gsub(uploadedFilePath, "", imageLocation)
+
+  fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
+                            NA_character_,
+                            file.path(imageLocation, calculatedResults$inlineFileValue))
+  fileValuesToAdd <- fileValueVector[!is.na(fileValueVector)]
+  calculatedResults$fileValue[!is.na(fileValueVector)] <- fileValuesToAdd
+  
+  return(calculatedResults)
+}
+
+addComment <- function(calculatedResults) {
+  # Adds the name of each uploaded file to the "comments" section of its entry in calculatedResults
+  #
+  # Input: calculatedResults, a data frame of results and their types
+  # Returns: the same data frame, but every row that had an inlineFileValue has had that value
+  #          moved to the "comments" column
+  # If the row doesn't have an inlineFileValue, its comments are left as-is
+  
+  mustAddComment <- !is.na(calculatedResults$inlineFileValue)
+  
+  fileValuesToAdd <- calculatedResults$inlineFileValue[!is.na(calculatedResults$inlineFileValue)]
+  calculatedResults$comments[mustAddComment] <- fileValuesToAdd
+  
+  return(calculatedResults)
+}
+
+addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun) {
+  # Processes the image files that the user (optionally) uploaded with their spreadsheet
+  # Unzips the images into the /analysis/uploadedFiles folder, validates them, and
+  # adds the full file path to the calculatedResults
+  #
+  # Input: imagesFile, the path (relative to privateUploads) where the zip file of images is
+  #        calculatedResults, a data frame of the results and their types
+  #        experiment, a list that is an experiment (with a new code name, if it overwrote an old experiment)
+  #        dryRun, a boolean indicating whether the data should skip upload to the database
+  # Returns: calculatedResults, the same data frame, but every result that had an "inlineFileValue" now also
+  #          has a fileValue
+  
+  # This is relative to your current working directory
+  experimentFolderLocation <- createExperimentFolder(experiment = experiment, dryRun = dryRun)
+  
+  if (!is.null(imagesFile)) {
+    if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
+      imageLocation <- unzipUploadedImages(imagesFile = racas::getUploadedFilePath(imagesFile), experimentFolderLocation = experimentFolderLocation)
+      listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
+      isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+      calculatedResults <- addFileValue(imageLocation = imageLocation, calculatedResults = calculatedResults)
+      calculatedResults <- addComment(calculatedResults = calculatedResults)
+      if (dryRun) {
+        # We created the experiment folder in order to have a place to unzip the files -- in dryRun mode
+        # we never moved anything else into it, so we delete it
+        unlink(experimentFolderLocation, recursive = TRUE)
+      } else {
+        # Otherwise, we should move the zip file from privateUploads into the experiment folder
+        file.rename(from = racas::getUploadedFilePath(imagesFile), to = file.path(experimentFolderLocation, basename(imagesFile)))
+      }
+    } else {
+      stopUser("Internal Error: Saving image files for this server.service.external.file.type has not been implemented")
+    } 
+  } else {
+    # If no image files were uploaded, we want to make sure they didn't add an Image File column to their data
+    if (any(calculatedResults$Class == "Image File")) {
+      stopUser("The spreadsheet contains a column labeled 'Image File', but no image files were uploaded.")
+    }
+  }
+  
+  return(calculatedResults)
+}
+
 getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
   # Gets the protocol entered as an input
   # 
@@ -1535,6 +1658,41 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
   
   return(username)
 }
+
+unzipUploadedImages <- function(imagesFile, experimentFolderLocation = experimentFolderLocation) {
+  # Unzips a (flat) folder of image files that the user wishes to upload with their data
+  # The images go into the experiment's folder, in the path "analysis/uploadedFiles"
+  #
+  # Input: imagesFile, the path to the zip folder, relative to the working directory
+  #        experimentFolderLocation, the path to the experiment location, relative to the working directory,
+  #                                  and without a trailing slash
+  # Returns: the file path to the location of the images, relative to the working directory, and without a
+  #          trailing slash
+  
+  if (!file.exists(imagesFile)) {
+    stopUser("Input file not found")
+  }
+  
+  if(!grepl("\\.zip$", imagesFile)) {
+    stopUser("The uploaded file must be a zip file")
+  }
+  
+  # Create the directory that will house the files
+  filesLocation <- file.path(experimentFolderLocation, "analysis", "uploadedFiles")
+  dir.create(filesLocation, showWarnings = FALSE, recursive = TRUE)
+  
+  # Delete the files and folders that may have been in that directory
+  oldFiles <- as.list(paste0(filesLocation,"/",list.files(filesLocation)))
+  do.call(unlink, list(oldFiles, recursive=T))
+  
+  # Unzip the folder, and get rid of the internal subdirectory structure
+  unzip(zipfile=imagesFile, exdir=filesLocation, junkpaths = TRUE)
+  imageLocation = file.path(experimentFolderLocation, "analysis", "uploadedFiles")
+  
+  return(imageLocation)
+  
+}
+
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, fileStartLocation, 
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
                               recordedBy, replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning="subject", 
@@ -2313,6 +2471,31 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   ######################
 }
 
+createExperimentFolder <- function(experiment, dryRun) {
+  # Create a place for this experiment's data to live
+  # 
+  # Experiment: a list that is an experiment. We particularly care about its code name
+  # dryRun: a boolean indicating whether we should skip saving the data to the database. If
+  #         we're in dryRun mode, we create this folder in the privateTempFiles instead
+  # Returns: The location of the experiment folder, relative to the working directory
+  
+  if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
+    if (dryRun) {
+      # We don't necessarily have access to the code name
+      fullFolderLocation <- file.path("privateTempFiles", "uploadedExperimentFiles")
+      dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
+    } else {
+      experimentCodeName <- experiment$codeName
+      fullFolderLocation <- racas::getUploadedFilePath(file.path("experiments", experimentCodeName))
+      dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
+    }
+  } else {
+    stopUser("Internal Error: Saving image files for this server.service.external.file.type has not been implemented")
+  }
+  
+  return(fullFolderLocation)
+}
+
 saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
   # appendCodeName is a vector of lsKinds that should have 
   # Does not work for containers
@@ -2402,7 +2585,7 @@ splitOnSemicolon <- function(x) {
 }
 runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
                     lsTranscationComments=NULL, dryRun, developmentMode = FALSE, testOutputLocation="./JSONoutput.json",
-                    configList, testMode = FALSE, recordedBy, errorEnv = NULL) {
+                    configList, testMode = FALSE, recordedBy, imagesFile = NULL, errorEnv = NULL) {
   # This function runs all of the functions within the error handling
   # lsTransactionComments input is currently unused
   #
@@ -2415,6 +2598,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   #       configList:                       Also known as racas::applicationSettings
   #       testMode:                         Used for getPreferredId (from racas)
   #       recordedBy:                       A string containing a username
+  #       imagesFile:                       The name of a zip file (relative to privateUploads) containing images to upload
   #       errorEnv:                         Used to collect errors across multiple function calls
   #
   # Returns: a list of the validated, organized data in the Excel file
@@ -2637,6 +2821,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     assign(x="experiment", value=experiment, envir=parent.frame())
   }
   
+  calculatedResults <- addImageFiles(imagesFile = imagesFile, calculatedResults = calculatedResults, experiment = experiment, dryRun = dryRun)
+  
   # Upload the data if this is not a dry run
   if(!dryRun & errorFree) {
     
@@ -2778,8 +2964,8 @@ getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolN
 }
 translateClassToValueType <- function(x, reverse = F) {
   # translates Excel style Number formats to ACAS valueTypes (or reverse)
-  valueTypeVector <- c("numericValue", "stringValue", "fileValue", "urlValue", "dateValue", "clobValue", "blobValue", "codeValue")
-  classVector <- c("Number", "Text", "File", "URL", "Date", "Clob", "Blob", "Code")
+  valueTypeVector <- c("numericValue", "stringValue", "fileValue", "inlineFileValue", "urlValue", "dateValue", "clobValue", "blobValue", "codeValue")
+  classVector <- c("Number", "Text", "File", "Image File","URL", "Date", "Clob", "Blob", "Code")
   if (reverse) {
     return(classVector[match(x, valueTypeVector)])
   } else {
@@ -2810,6 +2996,7 @@ parseGenericData <- function(request) {
   testMode <- request$testMode
   reportFilePath <- request$reportFile
   recordedBy <- request$user
+  imagesFile <- request$imagesFile
   
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
@@ -2838,6 +3025,7 @@ parseGenericData <- function(request) {
                         configList=configList, 
                         testMode=testMode,
                         recordedBy=recordedBy,
+                        imagesFile=imagesFile,
                         errorEnv = errorEnv)))
   } else {
     loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
@@ -2847,6 +3035,7 @@ parseGenericData <- function(request) {
                                        configList=configList, 
                                        testMode=testMode,
                                        recordedBy=recordedBy,
+                                       imagesFile=imagesFile,
                                        errorEnv = errorEnv))
   }
   
@@ -3024,7 +3213,8 @@ saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
 #'     \item{stateVersion}{An integer that is the version of the state for each value}
 #'     \item{stringValue}{String: a string value (optional)}
 #'     \item{codeValue}{String: a code, such as a batch code (optional)}
-#'     \item{fileValue}{String: a code that refers to a file, or a path extension of the blueimp public folder (optional)}
+#'     \item{fileValue}{String: a code that refers to a file}
+#'     \item{inlineFileValue}{String: similar to a file value, but intended to be shown to users in result viewers (optional)}
 #'     \item{urlValue}{String: a url (optional)}
 #'     \item{numericValue}{Number: a number (optional)}
 #'     \item{dateValue}{A Date value (optional)}
@@ -3056,7 +3246,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   #create a uniqueID to split on
   entityData$uniqueID <- 1:(nrow(entityData))
   
-  optionalColumns <- c("fileValue", "urlValue", "codeValue", "numericValue", "dateValue",
+  optionalColumns <- c("fileValue", "inlineFileValue", "urlValue", "codeValue", "numericValue", "dateValue",
                        "valueOperator", "valueUnit", "clobValue", "blobValue", "numberOfReplicates",
                        "uncertainty", "uncertaintyType", "comments")
   missingOptionalColumns <- Filter(function(x) !(x %in% names(entityData)),
@@ -3091,7 +3281,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
     stateValue <- with(valueData, {
       createStateValue(
         lsState = list(id = stateID, version = stateVersion),
-        lsType = if (valueType %in% c("stringValue", "fileValue", "urlValue", "dateValue", "clobValue", "blobValue", "numericValue", "codeValue")) {
+        lsType = if (valueType %in% c("stringValue", "fileValue", "inlineFileValue", "urlValue", "dateValue", "clobValue", "blobValue", "numericValue", "codeValue")) {
           valueType
         } else {"numericValue"},
         lsKind = valueKind,
@@ -3177,6 +3367,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
       clobValue = as.character(uniqueOrNA(x$clobValue)),
       urlValue = as.character(uniqueOrNA(x$urlValue)),
       fileValue = as.character(uniqueOrNA(x$fileValue)),
+      inlineFileValue = as.character(uniqueOrNA(x$inlineFileValue)),
       codeValue = as.character(uniqueOrNA(x$codeValue)),
       uncertaintyType = if (is.na(uncertainty)) as.character(NA) else "standard deviation",
       uncertainty = uncertainty
