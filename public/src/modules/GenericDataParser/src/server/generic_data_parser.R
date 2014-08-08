@@ -3027,7 +3027,7 @@ saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
 #'     \item{fileValue}{String: a code that refers to a file, or a path extension of the blueimp public folder (optional)}
 #'     \item{urlValue}{String: a url (optional)}
 #'     \item{numericValue}{Number: a number (optional)}
-#'     \item{dateValue}{A Date value (optional)}
+#'     \item{dateValue}{Number: date in milliseconds or String in "YYYY-MM-DD" (optional)}
 #'     \item{valueOperator}{String: The operator for each value (optional)}
 #'     \item{valueUnit}{String: The units for each value (optional)}
 #'     \item{clobValue}{String: for very long strings (optional)}
@@ -3096,7 +3096,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
         } else {"numericValue"},
         lsKind = valueKind,
         stringValue = if (is.character(stringValue) && !is.na(stringValue)) {stringValue} else {NULL},
-        dateValue = if(is.numeric(stringValue)) {dateValue} else {NULL},
+        dateValue = if(is.numeric(dateValue) && !is.na(dateValue)) {dateValue} else {NULL},
         clobValue = if(is.character(clobValue) && !is.na(clobValue)) {clobValue} else {NULL},
         blobValue = if(!is.null(blobValue) && !is.na(blobValue)) {blobValue} else {NULL},
         codeValue = if(is.character(codeValue) && !is.na(codeValue)) {codeValue} else {NULL},
