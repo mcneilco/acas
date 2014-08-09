@@ -24,10 +24,18 @@ startApp = ->
 
 	# login setup
 	passport.serializeUser (user, done) ->
-		done null, user.username
-	passport.deserializeUser (username, done) ->
-		csUtilities.findByUsername username, (err, user) ->
-			done err, user
+		#make sure to save only required attributes and not the password
+		userToSerialize =
+			id: user.id
+			username: user.username
+			email: user.email
+			firstName: user.firstName
+			lastName: user.lastName
+			roles: user.roles
+		done null, userToSerialize
+
+	passport.deserializeUser (user, done) ->
+		done null, user
 
 	passport.use new LocalStrategy csUtilities.loginStrategy
 #	passport.isAdmin = (req, resp, next) ->

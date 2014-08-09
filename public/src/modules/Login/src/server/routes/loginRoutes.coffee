@@ -69,7 +69,7 @@ exports.ensureAuthenticated = (req, res, next) ->
 
 
 exports.getUsers = (req, resp) ->
-	console.log "ghet users in route file"
+	console.log "get users in route file"
 	callback = (err, user) ->
 		if user == null
 			resp.send(204)

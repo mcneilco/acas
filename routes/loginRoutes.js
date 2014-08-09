@@ -80,7 +80,7 @@
 
   exports.getUsers = function(req, resp) {
     var callback;
-    console.log("ghet users in route file");
+    console.log("get users in route file");
     callback = function(err, user) {
       if (user === null) {
         return resp.send(204);
