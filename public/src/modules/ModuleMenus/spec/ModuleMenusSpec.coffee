@@ -49,3 +49,28 @@ describe "Module Menus Controller testing", ->
 			@mmc.render()
 			expect(@mmc.$('.bv_deployMode h1').html()).toEqual ""
 
+	describe "change password display", ->
+		describe "show password change link mode", ->
+			beforeEach ->
+				@showPassMode = window.conf.roologin.showpasswordchange
+				window.conf.roologin.showpasswordchange=true
+				@mmc = new ModuleMenusController
+					el: $('#fixture')
+					menuListJSON: window.moduleMenusTestJSON.testMenuItems # should be in a global config file
+			afterEach ->
+				window.conf.roologin.showpasswordchange = @showPassMode
+			it "should show the change password link", ->
+				expect(@mmc.$('.bv_changePassword')).toBeVisible()
+		describe "hide password change link mode", ->
+			beforeEach ->
+				@showPassMode = window.conf.roologin.showpasswordchange
+				window.conf.roologin.showpasswordchange=false
+				@mmc = new ModuleMenusController
+					el: $('#fixture')
+					menuListJSON: window.moduleMenusTestJSON.testMenuItems # should be in a global config file
+			afterEach ->
+				window.conf.roologin.showpasswordchange = @showPassMode
+			it "should hide the change password link", ->
+				expect(@mmc.$('.bv_changePassword')).not.toBeVisible()
+
+

@@ -20,7 +20,7 @@ exports.authCheck = (user, pass, retFun) ->
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
 		method: 'POST'
-		url: config.all.server.require.loginLink
+		url: config.all.server.roologin.loginLink
 		form:
 			j_username: user
 			j_password: pass
@@ -45,7 +45,7 @@ exports.resetAuth = (email, retFun) ->
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
 		method: 'POST'
-		url: config.all.server.require.resetLink
+		url: config.all.server.roologin.resetLink
 		form:
 			emailAddress: email
 		json: false
@@ -57,16 +57,17 @@ exports.resetAuth = (email, retFun) ->
 			console.log error
 			console.log json
 			console.log response
+			retFun "connection_error "+error
 	)
 
-exports.changeAuth = (user, passOld,passNew,passNewAgain, retFun) ->
+exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		headers:
 			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
 		method: 'POST'
-		url: config.all.server.require.changeLink
+		url: config.all.server.roologin.changeLink
 		form:
 			username: user
 			oldPassword: passOld
@@ -82,11 +83,12 @@ exports.changeAuth = (user, passOld,passNew,passNewAgain, retFun) ->
 			console.log error
 			console.log json
 			console.log response
+			retFun "connection_error "+error
 	)
 exports.getUser = (username, callback) ->
 	console.log "getting user"
 	config = require '../../../conf/compiled/conf.js'
-	if config.all.server.require.login and !global.specRunnerTestmode
+	if config.all.server.roologin.login and !global.specRunnerTestmode
 		console.log "getting user from server"
 
 		request = require 'request'
@@ -94,7 +96,7 @@ exports.getUser = (username, callback) ->
 			headers:
 				accept: 'application/json'
 			method: 'POST'
-			url: config.all.server.require.getUserLink
+			url: config.all.server.roologin.getUserLink
 			json:
 				name:username
 		, (error, response, json) =>

@@ -31,6 +31,9 @@
       } else {
         this.$('.bv_userInfo').hide();
       }
+      if (!window.conf.roologin.showpasswordchange) {
+        this.$('.bv_changePassword').hide();
+      }
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
       this.$('.bv_summaryStats').load('/dataFiles/summaryStatistics/summaryStatistics.html');
