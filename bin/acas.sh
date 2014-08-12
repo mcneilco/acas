@@ -46,7 +46,7 @@ export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH:=}
  
  
 running() {
-	runningCommand="forever list 2>/dev/null | grep ${APP} 2>&1 >/dev/null"
+	runningCommand="forever list 2>/dev/null | grep $ACAS_HOME/app.js 2>&1 >/dev/null"
 	if [ $(whoami) != $ACAS_USER ]; then
 		runningCommand="su - $ACAS_USER $suAdd -c \"($runningCommand)\""
 	fi
@@ -55,9 +55,9 @@ running() {
 }
 
 start_server() {
-	startCommand="forever start --append -l $logname -o $logout -e $logerr ${APP} 2>&1 >/dev/null"
+	startCommand="forever start --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
 	if [ $(whoami) != $ACAS_USER ]; then
-		startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname ${APP}` && $startCommand)\""
+		startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
 	fi
 	eval $startCommand
 	return $?
@@ -65,7 +65,7 @@ start_server() {
  
 stop_server() {
 
-	stopCommand="forever stop ${APP} 2>&1 >/dev/null"
+	stopCommand="forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
 	if [ $(whoami) != $ACAS_USER ]; then
 		stopCommand="su - $ACAS_USER $suAdd -c \"($stopCommand)\""
 	fi
@@ -148,26 +148,16 @@ log() {
  
 # Starts the server.
 do_start() {
-  for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
-	do
-		if [ -e $dir/app.js ]; then
-			app=app.js
-		fi
-		if [ -e $dir/server.js ]; then
-			app=server.js
-		fi
-		dirname=`basename $dir`
-		NAME=$app
-		APP=$(readlink -f $dir)/$app
-		LOCKFILE=$ACAS_HOME/bin/$app.LOCKFILE
-		logname=$server_log_path/${dirname}${server_log_suffix}.log
-		logout=$server_log_path/${dirname}${server_log_suffix}_stdout.log
-		logerr=$server_log_path/${dirname}${server_log_suffix}_stderr.log
+    dirname=`basename $ACAS_HOME`
+    LOCKFILE=$ACAS_HOME/bin/app.js.LOCKFILE
+    logname=$server_log_path/${dirname}${server_log_suffix}.log
+    logout=$server_log_path/${dirname}${server_log_suffix}_stdout.log
+    logerr=$server_log_path/${dirname}${server_log_suffix}_stderr.log
 	  # Check if it's running first
 	  if running ;  then
-		log "$NAME already running"
-	  else 
-		  action "Starting $NAME" start_server
+		log "app.js already running"
+	  else
+		  action "Starting app.js" start_server
 		  RETVAL=$?
 		  if [ $RETVAL -eq 0 ]; then
 			# NOTE: Some servers might die some time after they start,
@@ -176,18 +166,17 @@ do_start() {
 			[ -n "$STARTTIME" ] && sleep $STARTTIME # Wait some time
 			if  running ;  then
 			  # It's ok, the server started and is running
-			  log "$NAME started"
+			  log "app.js started"
 			  touch $LOCKFILE
 			  RETVAL=0
 			else
 			  # It is not running after we did start
-			  log "$NAME died on startup" "failure"
+			  log "app.js died on startup" "failure"
 			  RETVAL=1
 			fi
 	  fi
 
 	  fi
-	done
 	if apache_running ;  then
 		log "apache already running"
 	else
@@ -205,58 +194,36 @@ do_start() {
  
 # Stops the server.
 do_stop() {
-	for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
-	do
-		if [ -e $dir/app.js ]; then
-			app=app.js
-		fi
-		if [ -e $dir/server.js ]; then
-			app=server.js
-		fi
-		dirname=`basename $dir`
-		NAME=$app
-		LOCKFILE=$ACAS_HOME/bin/$app.LOCKFILE
-		APP=$(readlink -f $dir)/$app
-	  if running ; then
-		# Only stop the server if we see it running
-		action "Stopping $NAME" stop_server
-		RETVAL=$?
-		[ $RETVAL -eq 0 ] && rm -f $LOCKFILE
-	  else
-		# If it's not running don't do anything
-		log "$NAME not running"
-		RETVAL=0
-	  fi
-	done
-	if apache_running ;  then
-		action "Stopping apache" stop_apache
-		RETVAL=$?
-	else
-		# If it's not running don't do anything
-		log "apache not running"
-		RETVAL=0
-	fi
-  return $RETVAL
+    dirname=`basename $ACAS_HOME`
+    LOCKFILE=$ACAS_HOME/bin/app.js.LOCKFILE
+    if running ; then
+    # Only stop the server if we see it running
+    action "Stopping app.js" stop_server
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && rm -f $LOCKFILE
+    else
+    # If it's not running don't do anything
+    log "app.js not running"
+    RETVAL=0
+    fi
+    if apache_running ;  then
+        action "Stopping apache" stop_apache
+        RETVAL=$?
+    else
+        # If it's not running don't do anything
+        log "apache not running"
+        RETVAL=0
+    fi
+    return $RETVAL
 }
 
 get_status() {
-	for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
-	do
-		if [ -e $dir/app.js ]; then
-			app=app.js
-		fi
-		if [ -e $dir/server.js ]; then
-			app=server.js
-		fi
-		dirname=`basename $dir`
-		NAME=$app
-		APP=$(readlink -f $dir)/$app
-		if running ;  then
-		  log "$NAME running"
-		else
-		  log "$NAME not running"
-		fi
-	done
+    dirname=`basename $ACAS_HOME`
+    if running ;  then
+      log "app.js running"
+    else
+      log "app.js not running"
+    fi
 	if apache_running ;  then
 	  log "apache running"
 	else
