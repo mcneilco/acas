@@ -31,6 +31,10 @@
             code: "median",
             name: "Median",
             ignored: false
+          }, {
+            code: "mean",
+            name: "Mean",
+            ignored: false
           }
         ]
       }, {
@@ -56,8 +60,8 @@
       }, {
         "readNameCodes": [
           {
-            code: "fluorescence",
-            name: "Fluorescence",
+            code: "luminescence",
+            name: "Luminescence",
             ignored: false
           }, {
             code: "none",

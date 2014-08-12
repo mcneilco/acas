@@ -28,6 +28,7 @@ describe "Module Menus Controller testing", ->
 			if window.conf.require.login
 				expect(@mmc.$('.bv_logout').attr('href')).toContain 'logout'
 
+
 	describe "Sub Controllers load after rendering", ->
 		it "Should have 6 menu items", ->
 			expect(@mmc.$('.bv_modLaunchMenuWrapper li').length).toEqual 6

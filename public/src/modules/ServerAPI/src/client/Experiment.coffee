@@ -191,25 +191,25 @@ class window.Experiment extends Backbone.Model
 	getStatus: ->
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "Created"
+			status.set stringValue: "created"
 
 		status
 
 	getAnalysisStatus: ->
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "Created"
+			status.set stringValue: "created"
 
 		status
 
 	isEditable: ->
 		status = @getStatus().get 'stringValue'
 		switch status
-			when "Created" then return true
-			when "Started" then return true
-			when "Complete" then return true
-			when "Finalized" then return false
-			when "Rejected" then return false
+			when "created" then return true
+			when "started" then return true
+			when "complete" then return true
+			when "finalized" then return false
+			when "rejected" then return false
 		return true
 
 class window.ExperimentList extends Backbone.Collection
@@ -248,6 +248,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupProtocolSelect(@options.protocolFilter)
 		@setupProjectSelect()
+		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 
@@ -307,6 +308,14 @@ class window.ExperimentBaseController extends AbstractFormController
 				name: "Select Project"
 			selectedCode: @model.getProjectCode().get('codeValue')
 
+	setupStatusSelect: ->
+		@statusList = new PickListList()
+		@statusList.url = "/api/dataDict/experimentStatus"
+		@statusListController = new PickListSelectController
+			el: @$('.bv_status')
+			collection: @statusList
+			selectedCode: @model.getStatus().get 'stringValue'
+
 	setupTagList: ->
 		@$('.bv_tags').val ""
 		@tagListController = new TagListController
@@ -362,7 +371,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
 
 	handleCompletionDateIconClicked: =>
-		$( ".bv_completionDate" ).datepicker( "show" );
+		@$( ".bv_completionDate" ).datepicker( "show" );
 
 	handleProtocolCodeChanged: =>
 		code = @$('.bv_protocolCode').val()
@@ -395,7 +404,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@render()
 
 	handleStatusChanged: =>
-		@model.getStatus().set stringValue: @getTrimmedInput('.bv_status')
+		@model.getStatus().set stringValue: @$('.bv_status').val()
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
 

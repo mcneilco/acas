@@ -4,13 +4,12 @@
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, child, config, express, flash, forever, fs, http, https, indexRoutes, loginRoutes, options, passport, path, sslOptions, testModeOverRide, upload, user, util;
+    var LocalStrategy, child, config, express, flash, forever, fs, http, https, indexRoutes, loginRoutes, options, passport, path, sslOptions, testModeOverRide, user, util;
     config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
     http = require('http');
     path = require('path');
-    upload = require('./node_modules_customized/jquery-file-upload-middleware');
     flash = require('connect-flash');
     passport = require('passport');
     util = require('util');
@@ -24,11 +23,6 @@
         console.log("############ Starting in stubs mode");
       }
     }
-    upload.configure({
-      uploadDir: __dirname + '/privateUploads',
-      ssl: config.all.client.use.ssl,
-      uploadUrl: "/dataFiles"
-    });
     passport.serializeUser(function(user, done) {
       return done(null, user.username);
     });
@@ -58,18 +52,11 @@
       app.use(passport.session({
         pauseStream: true
       }));
-      app.use('/uploads', upload.fileHandler());
       app.use(express.json());
       app.use(express.urlencoded());
       app.use(express.methodOverride());
       app.use(express["static"](path.join(__dirname, 'public')));
       return app.use(app.router);
-    });
-    upload.on("error", function(e) {
-      return console.log("fileUpload: ", e.message);
-    });
-    upload.on("end", function(fileInfo) {
-      return app.emit("file-uploaded", fileInfo);
     });
     loginRoutes.setupRoutes(app, passport);
     indexRoutes = require('./routes/index.js');

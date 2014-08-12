@@ -62,7 +62,7 @@ renderCurve <- function(getParams) {
 		showAxes <- as.logical(getParams$showAxes)
 	}
 	if(is.null(getParams$labelAxes)) {
-		labelAxes <- TRUE
+		labelAxes <- !inTable
 	} else {
 		labelAxes <- as.logical(getParams$labelAxes)
 	}
@@ -85,6 +85,16 @@ renderCurve <- function(getParams) {
 	}
 	
 	data <- getCurveData(curveIds, globalConnect=TRUE)
+	
+	#To be backwards compatable with hill slope example files
+	hillSlopes <- which(!is.na(data$parameters$hillslope))
+	if(length(hillSlopes) > 0  ) {
+		data$parameters$slope <- -data$parameters$hillslope[hillSlopes]
+	}
+	fittedHillSLopes <- which(!is.na(data$parameters$fitted_hillslope))
+	if(length(fittedHillSLopes) > 0 ) {
+		data$parameters$fitted_slope <- -data$parameters$fitted_hillslope[fittedHillSLopes]
+	}
 	
 	setContentType("image/png")
 	t <- tempfile()

@@ -45,8 +45,10 @@ exports.resetPost = (req, res) ->
 	
 exports.loginPost = (req, res) ->
 	console.log "got to login post"
-#	res.redirect '/'
-	res.redirect req.session.returnTo
+	if req.session.returnTo?
+		res.redirect req.session.returnTo
+	else
+		res.redirect '/'
 
 exports.changePost = (req, res) ->
 	console.log req.session

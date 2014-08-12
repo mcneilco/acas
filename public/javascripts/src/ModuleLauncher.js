@@ -16,7 +16,8 @@
       mainControllerClassName: "controllerClassNameReplaceMe",
       isLoaded: false,
       isActive: false,
-      isDirty: false
+      isDirty: false,
+      autoLaunchName: null
     };
 
     ModuleLauncher.prototype.requestActivation = function() {
@@ -81,11 +82,7 @@
       } else {
         $(this.el).removeClass("active");
       }
-      if (this.model.get('isLoaded')) {
-        this.$('.bv_isLoaded').show();
-      } else {
-        this.$('.bv_isLoaded').hide();
-      }
+      this.$('.bv_isLoaded').hide();
       if (this.model.get('isDirty')) {
         this.$('.bv_isDirty').show();
       } else {
@@ -256,11 +253,13 @@
           });
         }
       }
-      return $(this.el).show();
+      $(this.el).show();
+      return $('.bv_mainModuleWrapper').show();
     };
 
     ModuleLauncherController.prototype.handleDeactivation = function() {
-      return $(this.el).hide();
+      $(this.el).hide();
+      return $('.bv_homePageWrapper').hide();
     };
 
     return ModuleLauncherController;

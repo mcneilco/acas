@@ -76,7 +76,7 @@ test_that("Error cases give the correct error", {
   expect_identical(c("Datatype", "frog", "Number", "Date"),
                  validateCalculatedResultDatatypes(c("Datatype","frog","Number","Date"),
                                                    c("Corporate Batch ID","Rendering Hint","curve id","Max")))
-  expect_identical(list("The loader found classes in the Datatype row that it does not understand: 'frog'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."),
+  expect_identical(list("The loader found classes in the Datatype row that it does not understand: 'frog'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."),
                  errorList)
   
   errorList <<- list()
@@ -90,7 +90,7 @@ test_that("Error cases give the correct error", {
   expect_identical(c("Datatype", "Text", "Datatype", "Number"),
                    validateCalculatedResultDatatypes(c("Datatype","Text","Datatype","Number"),
                                                      c("Corporate Batch ID","Rendering Hint","curve id","Max")))
-  expect_identical(list("The loader found classes in the Datatype row that it does not understand: 'Datatype'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."),
+  expect_identical(list("The loader found classes in the Datatype row that it does not understand: 'Datatype'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."),
                    errorList)
 })
 
@@ -131,7 +131,7 @@ test_that("the function can interpret datatypes", {
 test_that("The function gives the right warnings when interpreting datatypes", {
   expect_that(validateCalculatedResultDatatypes(c("Datatype","Std. Dev","Number","Number"),
                                                 c("Corporate Batch ID","Rendering Hint","curve id","Max")),
-              gives_warning("In column \"Rendering Hint\", the loader found 'Std. Dev' as a datatype and interpreted it as 'Standard Deviation'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."))
+              gives_warning("In column \"Rendering Hint\", the loader found 'Std. Dev' as a datatype and interpreted it as 'Standard Deviation'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."))
 })
 
 
@@ -236,7 +236,7 @@ test_that("Error messages for unrecognized columns respect capitalization", {
   expect_identical(c("Datatype", "Frog", "Number", "Date"),
                    validateCalculatedResultDatatypes(c("Datatype","Frog","Number","Date"),
                                                      c("Corporate Batch ID","Rendering Hint","curve id","Max")))
-  expect_identical(list("The loader found classes in the Datatype row that it does not understand: 'Frog'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', or 'Comments'."),
+  expect_identical(list("The loader found classes in the Datatype row that it does not understand: 'Frog'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."),
                    errorList)
 })
 

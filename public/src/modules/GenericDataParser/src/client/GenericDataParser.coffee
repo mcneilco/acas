@@ -3,6 +3,7 @@ class window.GenericDataParserController extends BasicFileValidateAndSaveControl
 
 	initialize: ->
 		@loadReportFile = true
+		@loadImagesFile = true
 		@fileProcessorURL = "/api/genericDataParser"
 		@errorOwnerName = 'GenericDataParser'
 		super()

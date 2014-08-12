@@ -50,7 +50,11 @@
 
   exports.loginPost = function(req, res) {
     console.log("got to login post");
-    return res.redirect(req.session.returnTo);
+    if (req.session.returnTo != null) {
+      return res.redirect(req.session.returnTo);
+    } else {
+      return res.redirect('/');
+    }
   };
 
   exports.changePost = function(req, res) {

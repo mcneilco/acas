@@ -164,3 +164,9 @@ exports.getProjects = (resp) ->
 
 	resp.end JSON.stringify projects
 
+exports.makeServiceRequestHeaders = (user) ->
+	config = require '../../../conf/compiled/conf.js'
+	username = if user? then user.username else "testmode"
+
+	headers =
+		"From": username
