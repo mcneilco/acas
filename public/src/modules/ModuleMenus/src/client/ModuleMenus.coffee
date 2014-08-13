@@ -20,6 +20,9 @@ class window.ModuleMenusController extends Backbone.View
 		else
 			@$('.bv_userInfo').hide()
 
+		unless window.conf.roologin.showpasswordchange
+			@$('.bv_changePassword').hide()
+
 		@moduleLauncherMenuListController.render()
 		@moduleLauncherListController.render()
 

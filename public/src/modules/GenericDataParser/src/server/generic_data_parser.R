@@ -21,7 +21,7 @@
 
 # How to run: 
 #   Before running: 
-#     Set your working directory to the checkout of SeuratAddOns
+#     Set your working directory to the ACAS_HOME (RStudio defaults to this)
 #     setwd("~/Documents/ACAS/")
 #   To run:
 #     parseGenericData(list(pathToGenericDataFormatExcelFile, dryRun = TRUE, ...))
@@ -828,14 +828,16 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   
   valueKinds$dataClass <- classRow[notMainCode]
   valueKinds$valueType <- translateClassToValueType(valueKinds$dataClass)
-  valueKinds$stateType <- stateTypeRow[notMainCode]
-  valueKinds$stateKind <- stateKindRow[notMainCode]
+  if(is.null(stateAssignments)) {
+    valueKinds$stateKind <- stateKindRow[notMainCode]
+    valueKinds$stateType <- stateTypeRow[notMainCode]
+  } else {
+    valueKinds$stateKind <- stateAssignments$stateKind[match(valueKinds$valueKind, stateAssignments$valueKind)]
+    valueKinds$stateType <- stateAssignments$stateType[match(valueKinds$valueKind, stateAssignments$valueKind)]
+  }
+ 
   valueKinds$publicData <- !hiddenColumns[notMainCode]
   valueKinds$linkColumn <- linkColumns[notMainCode]
-  
-  if (!is.null(stateAssignments)) {
-    valueKinds$stateType <- stateAssignments$stateType[match(valueKinds$valueKind), stateAssignments$stateType]
-  }
   
   # Grab the rows of the calculated data 
   results <- subset(calculatedResults, 1:nrow(calculatedResults) > 1)
@@ -2053,11 +2055,16 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   
   analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
-  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, 0, optionalColumns = "analysisGroupID"))
+  analysisGroupData <- rbind.fill(
+    analysisGroupData, meltBatchCodes(analysisGroupData, 0, 
+                                      optionalColumns = c("analysisGroupID", "experimentID", "stateType", "stateKind"))
+    )
   
   analysisGroupData$lsTransaction <- lsTransaction
   analysisGroupData$recordedBy <- recordedBy
   
+  saveAllFromCsv(analysisGroupData, treatmentGroupData, subjectData, appendCodeNameList$analysisGroup)
+  return(lsTransaction)
   analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup", appendCodeNameList$analysisGroup)
   
   ### TreatmentGroup Data
@@ -2756,7 +2763,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       }
       subjectData[2, 1] <- "link"
       
-      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), 
+                                     stateType = c("data", "data", "data"), 
+                                     stateKind = c("test compound treatment", "results", "results"))
       
       intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL, link, precise, stateAssignments, keepColumn, errorEnv=errorEnv)
       subjectData <- intermedList$subjectData
@@ -3340,11 +3349,12 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   
   subjectData2 <- organizeCalculatedResults(subjectData, lockCorpBatchId= F, inputFormat= inputFormat, 
                                             mainCode= mainCode, errorEnv= errorEnv, precise = precise, link = link, 
-                                            calculateGroupingID = preciseTreatmentGroupID, stateAssignments)
+                                            calculateGroupingID = preciseTreatmentGroupID, stateAssignments = stateAssignments)
   subjectData2 <- as.data.table(subjectData2)
   
   subjectData2[, treatmentGroupID := groupingID]
   subjectData2[, subjectID := rowID]
+  subjectData2[, tempStateId:=as.numeric(as.factor(paste(stateKind, subjectID, sep = "-")))]
   
   concatUniqNonNA <- function(y) {
     if (all(is.na(y))) return (NA)
@@ -3369,8 +3379,9 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
       fileValue = as.character(uniqueOrNA(x$fileValue)),
       inlineFileValue = as.character(uniqueOrNA(x$inlineFileValue)),
       codeValue = as.character(uniqueOrNA(x$codeValue)),
-      uncertaintyType = if (is.na(uncertainty)) as.character(NA) else "standard deviation",
-      uncertainty = uncertainty
+      uncertaintyType = if (is.na(uncertainty)) NA_character_ else "standard deviation",
+      uncertainty = uncertainty,
+      tempStateId = x$tempStateId[1]
     )
   }
   
@@ -3382,7 +3393,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
                                                concentrationUnit, time, timeUnit, valueUnit, 
                                                valueKindAndUnit, publicData, linkID, stateType,
                                                stateKind)]
-  treatmentGroupData[valueKind %in% groupByColumnsNoUnit, c("uncertainty", "uncertainType") := list(NA, NA)]
+  treatmentGroupData[valueKind %in% groupByColumnsNoUnit, c("uncertainty", "uncertaintyType") := list(NA_real_, NA_character_)]
   treatmentGroupData[, treatmentGroupID := groupingID]
   treatmentGroupData[, analysisGroupID := linkID]
   treatmentGroupData <- as.data.frame(treatmentGroupData)
@@ -3390,4 +3401,144 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   subjectData <- as.data.frame(subjectData2)
   
   return(list(subjectData=subjectData, treatmentGroupData=treatmentGroupData))
+}
+
+saveAllFromCsv <- function(analysisGroupData, treatmentGroupData, subjectData, appendCodeName) {
+  #Note: use unitKind, not valueUnit
+  # use operatorKind, not valueOperator
+  analysisGroupData$unitKind <- analysisGroupData$valueUnit
+  analysisGroupData$operatorKind <- analysisGroupData$valueOperator
+  analysisGroupData$tempStateId <- as.numeric(as.factor(analysisGroupData$stateID))
+  analysisGroupData$stateID <- NULL
+  analysisGroupData$tempId <- analysisGroupData$analysisGroupID
+  analysisGroupData$parentId <- analysisGroupData$experimentID
+  analysisGroupData$lsType <- "default"
+  analysisGroupData$lsKind <- "default"
+  
+  if (!is.null(treatmentGroupData)) {
+    treatmentGroupData$unitKind <- treatmentGroupData$valueUnit
+    if (!is.null(treatmentGroupData$valueOperator)) {
+      treatmentGroupData$operatorKind <- treatmentGroupData$valueOperator
+    } 
+    treatmentGroupData$stateID <- NULL
+    treatmentGroupData$tempId <- treatmentGroupData$treatmentGroupID
+    treatmentGroupData$tempParentId <- treatmentGroupData$analysisGroupID
+    treatmentGroupData$lsType <- "default"
+    treatmentGroupData$lsKind <- "default"
+    treatmentGroupData$recordedBy <- "smeyer"
+  }
+  
+  if (!is.null(subjectData)) {
+    subjectData$unitKind <- subjectData$valueUnit
+    subjectData$operatorKind <- subjectData$valueOperator
+    subjectData$stateID <- NULL
+    subjectData$tempId <- subjectData$subjectID
+    subjectData$tempParentId <- subjectData$treatmentGroupID
+    subjectData$lsType <- "default"
+    subjectData$lsKind <- "default"
+    subjectData$recordedBy <- "smeyer"
+  }
+  
+  ### main code
+  thingTypeAndKind <- paste0("document_analysis group")
+  entityCodeNameList <- unlist(getAutoLabels(thingTypeAndKind= thingTypeAndKind, 
+                                             labelTypeAndKind= "id_codeName", 
+                                             numberOfLabels= max(analysisGroupData$tempId)),
+                               use.names= FALSE)
+  
+  analysisGroupData$codeName <- entityCodeNameList[analysisGroupData$tempId]
+  
+  # Adding codeNames to analysisGroupStrings listed in appendCodeNames (e.g. curve id)
+  newStrings <- paste0(analysisGroupData$stringValue[analysisGroupData$valueKind %in% appendCodeName], 
+                       "_", analysisGroupData[analysisGroupData$valueKind == appendCodeName, "codeName"])
+  analysisGroupData$stringValue[analysisGroupData$valueKind %in% appendCodeName] <- newStrings
+  
+  # format and save as csv
+  sendFiles <- list()
+  if (!is.null(analysisGroupData)) {
+    analysisGroupDataCsv <- formatEntityAsTsv(analysisGroupData)
+    sendFiles$analysisGroupCsvFilePath <- analysisGroupDataCsv
+  }
+  if (!is.null(treatmentGroupData)) {
+    treatmentGroupDataCsv <- formatEntityAsTsv(treatmentGroupData)
+    sendFiles$treatmentGroupCsvFilePath <- treatmentGroupDataCsv
+  }
+  if (!is.null(subjectData)) {
+    subjectDataCsv <- formatEntityAsTsv(subjectData)
+    sendFiles$subjectCsvFilePath <- subjectDataCsv
+  }
+  
+  response <- getURL(
+    paste0(racas::applicationSettings$client.service.persistence.fullpath, "api/v1/experiments/analysisgroup/savefromcsv"),
+    customrequest='POST',
+    httpheader=c('Content-Type'='application/json'),
+    postfields=toJSON(sendFiles)
+    )
+  
+  if (response != "") {
+    print(response)
+    stopUser("Could not save the data")
+  }
+  
+}
+
+formatEntityAsTsv <- function(entityData) {
+  entityDataFormatted <- data.frame(
+    tempValueId = NA,
+    valueType = entityData$valueType,
+    valueKind = entityData$valueKind,
+    numericValue = entityData$numericValue,
+    sigFigs = NaIfNull(entityData$sigFigs),
+    uncertainty = NaIfNull(entityData$uncertainty),
+    numberOfReplicates = NaIfNull(entityData$numberOfReplicates),
+    uncertaintyType = NaIfNull(entityData$uncertaintyType),
+    stringValue = NaIfNull(entityData$stringValue),
+    dateValue = NaIfNull(entityData$dateValue),
+    clobValue = NaIfNull(entityData$clobValue),
+    urlValue = NaIfNull(entityData$urlValue),
+    fileValue = NaIfNull(entityData$fileValue),
+    codeType = NA,
+    codeKind = NA,
+    codeValue = NaIfNull(entityData$codeValue),
+    unitType = NA,
+    unitKind = NaIfNull(entityData$unitKind),
+    operatorType = NA,
+    operatorKind = NaIfNull(entityData$operatorKind),
+    publicData = entityData$publicData,
+    comments = NaIfNull(entityData$comments),
+    stateType = entityData$stateType,
+    stateKind = entityData$stateKind,
+    tempStateId = entityData$tempStateId,
+    stateId = NA,
+    id = NA,
+    tempId = entityData$tempId,
+    parentId = NaIfNull(entityData$parentId),
+    tempParentId = NaIfNull(entityData$tempParentId),
+    lsTransaction = NaIfNull(entityData$lsTransaction),
+    recordedBy = NaIfNull(entityData$recordedBy),
+    codeName = NaIfNull(entityData$codeName),
+    lsType = entityData$lsType,
+    lsKind = entityData$lsKind
+  )
+  
+  # Create temporary file to send to persistence server
+  csvFile <- tempfile(pattern = "csvUpload", tmpdir = "", fileext = ".csv")
+  csvLocalLocation <- paste0(tempdir(), csvFile)
+  
+  write.table(entityDataFormatted, file = csvLocalLocation, sep="\t", na = "", row.names = FALSE)
+  
+  response <- fromJSON(postForm(paste0(racas::applicationSettings$server.service.persistence.fileUrl), 
+                                file = (fileUpload(csvLocalLocation, contentType = "text/csv")), 
+                                .checkParams = F))
+  
+  tsvServerLocation <- file.path(racas::applicationSettings$server.service.persistence.filePath, response[[1]]$name)
+  return(tsvServerLocation)
+}
+
+NaIfNull <- function(x) {
+  if (!is.null(x)) {
+    return(x)
+  } else {
+    return(NA)
+  }
 }
