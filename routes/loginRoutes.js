@@ -14,11 +14,11 @@
     app.get('/logout', exports.logout);
     app.post('/api/userAuthentication', exports.authenticationService);
     app.get('/api/users/:username', exports.ensureAuthenticated, exports.getUsers);
-    app.get('/reset', exports.resetpage);
-    app.post('/reset', exports.resetAuthenticationService, exports.resetPost);
+    app.get('/passwordReset', exports.resetpage);
+    app.post('/passwordReset', exports.resetAuthenticationService, exports.resetPost);
     app.post('/api/userResetAuthentication', exports.resetAuthenticationService);
-    app.get('/change', exports.ensureAuthenticated, exports.changePage);
-    app.post('/change', exports.changeAuthenticationService, exports.changePost);
+    app.get('/passwordChange', exports.ensureAuthenticated, exports.changePage);
+    app.post('/passwordChange', exports.changeAuthenticationService, exports.changePost);
     return app.post('/api/userChangeAuthentication', exports.changeAuthenticationService);
   };
 
@@ -45,7 +45,7 @@
 
   exports.resetPost = function(req, res) {
     console.log(req.session);
-    return res.redirect('/reset');
+    return res.redirect('/passwordReset');
   };
 
   exports.loginPost = function(req, res) {
@@ -59,7 +59,7 @@
 
   exports.changePost = function(req, res) {
     console.log(req.session);
-    return res.redirect('/change');
+    return res.redirect('/passwordChange');
   };
 
   exports.logout = function(req, res) {
@@ -80,7 +80,7 @@
 
   exports.getUsers = function(req, resp) {
     var callback;
-    console.log("ghet users in route file");
+    console.log("get users in route file");
     callback = function(err, user) {
       if (user === null) {
         return resp.send(204);
@@ -121,10 +121,13 @@
       console.log(results);
       if (results.indexOf("Your new password is sent to your email address") >= 0) {
         req.flash('error', 'Your new password is sent to your email address');
-        return resp.redirect('/reset');
+        return resp.redirect('/passwordReset');
+      } else if (results.indexOf("connection_error") >= 0) {
+        req.flash('error', 'Cannot connect to authentication service. Please contact an administrator');
+        return resp.redirect('/passwordReset');
       } else {
         req.flash('error', 'Invalid Email or Username');
-        return resp.redirect('/reset');
+        return resp.redirect('/passwordReset');
       }
     };
     if (global.specRunnerTestmode) {
@@ -141,9 +144,12 @@
       if (results.indexOf("You password has been successfully been changed") >= 0) {
         req.flash('error', 'Your new password is set');
         return resp.redirect('/login');
+      } else if (results.indexOf("connection_error") >= 0) {
+        req.flash('error', 'Cannot connect to authentication service. Please contact an administrator');
+        return resp.redirect('/passwordChange');
       } else {
         req.flash('error', 'Invalid password or new password does not match');
-        return resp.redirect('/change');
+        return resp.redirect('/passwordChange');
       }
     };
     if (global.specRunnerTestmode) {
@@ -165,7 +171,7 @@
     if (error.length > 0) {
       errorMsg = error[0];
     }
-    return res.render('reset', {
+    return res.render('passwordReset', {
       title: "ACAS reset",
       scripts: [],
       user: user,
@@ -185,7 +191,7 @@
       if (error.length > 0) {
         errorMsg = error[0];
       }
-      return res.render('change', {
+      return res.render('passwordChange', {
         title: "ACAS reset",
         scripts: [],
         user: user,

@@ -48,7 +48,7 @@
         return expect(this.mmc.$('.bv_mainModuleWrapper div.bv_moduleContent').length).toEqual(5);
       });
     });
-    return describe("Deploy mode display", function() {
+    describe("Deploy mode display", function() {
       beforeEach(function() {
         return this.mmc = new ModuleMenusController({
           el: $('#fixture'),
@@ -64,6 +64,40 @@
         window.AppLaunchParams.deployMode = "Prod";
         this.mmc.render();
         return expect(this.mmc.$('.bv_deployMode h1').html()).toEqual("");
+      });
+    });
+    return describe("change password display", function() {
+      describe("show password change link mode", function() {
+        beforeEach(function() {
+          this.showPassMode = window.conf.roologin.showpasswordchange;
+          window.conf.roologin.showpasswordchange = true;
+          return this.mmc = new ModuleMenusController({
+            el: $('#fixture'),
+            menuListJSON: window.moduleMenusTestJSON.testMenuItems
+          });
+        });
+        afterEach(function() {
+          return window.conf.roologin.showpasswordchange = this.showPassMode;
+        });
+        return it("should show the change password link", function() {
+          return expect(this.mmc.$('.bv_changePassword')).toBeVisible();
+        });
+      });
+      return describe("hide password change link mode", function() {
+        beforeEach(function() {
+          this.showPassMode = window.conf.roologin.showpasswordchange;
+          window.conf.roologin.showpasswordchange = false;
+          return this.mmc = new ModuleMenusController({
+            el: $('#fixture'),
+            menuListJSON: window.moduleMenusTestJSON.testMenuItems
+          });
+        });
+        afterEach(function() {
+          return window.conf.roologin.showpasswordchange = this.showPassMode;
+        });
+        return it("should hide the change password link", function() {
+          return expect(this.mmc.$('.bv_changePassword')).not.toBeVisible();
+        });
       });
     });
   });

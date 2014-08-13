@@ -24,12 +24,19 @@
       }
     }
     passport.serializeUser(function(user, done) {
-      return done(null, user.username);
+      var userToSerialize;
+      userToSerialize = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        roles: user.roles
+      };
+      return done(null, userToSerialize);
     });
-    passport.deserializeUser(function(username, done) {
-      return csUtilities.findByUsername(username, function(err, user) {
-        return done(err, user);
-      });
+    passport.deserializeUser(function(user, done) {
+      return done(null, user);
     });
     passport.use(new LocalStrategy(csUtilities.loginStrategy));
     loginRoutes = require('./routes/loginRoutes');
