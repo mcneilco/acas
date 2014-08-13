@@ -103,7 +103,7 @@ getRFileHandlerString = (rFilesWithRoute, config, acasHome)->
 	routes.join('\n\n')
 
 getApacheCompileOptions = ->
-	posssibleCommands = ['apachectl', 'httpd', '/usr/sbin/apachectl']
+	posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl']
 	for possibleCommand in posssibleCommands
 		if shell.which(possibleCommand)
 			apacheCommand = possibleCommand
