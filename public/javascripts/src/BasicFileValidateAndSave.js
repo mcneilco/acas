@@ -98,6 +98,8 @@
         this.reportFileController.on('fileInput:removedFile', this.handleReportFileRemoved);
         this.reportFileController.render();
         this.handleAttachReportFileChanged();
+      } else {
+        this.$('.bv_reportFileFeature').hide();
       }
       if (this.loadImagesFile) {
         this.imagesFileController = new LSFileInputController({
@@ -111,6 +113,8 @@
         this.imagesFileController.on('fileInput:removedFile', this.handleImagesFileRemoved);
         this.imagesFileController.render();
         this.handleAttachImagesFileChanged();
+      } else {
+        this.$('.bv_imagesFileFeature').hide();
       }
       return this.showFileSelectPhase();
     };

@@ -142,10 +142,10 @@ class window.ModuleLauncherController extends Backbone.View
 
 		$(@el).show()
 		$('.bv_mainModuleWrapper').show()
+		$('.bv_homePageWrapper').hide()
 
 	handleDeactivation:  =>
 		$(@el).hide()
-		$('.bv_homePageWrapper').hide()
 
 class window.ModuleLauncherListController extends Backbone.View
 
