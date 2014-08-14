@@ -57,6 +57,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved)
 			@reportFileController.render()
 			@handleAttachReportFileChanged()
+		else
+			@$('.bv_reportFileFeature').hide()
 
 
 		if @loadImagesFile
@@ -70,7 +72,8 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 			@imagesFileController.on('fileInput:removedFile', @handleImagesFileRemoved)
 			@imagesFileController.render()
 			@handleAttachImagesFileChanged()
-
+		else
+			@$('.bv_imagesFileFeature').hide()
 
 
 		@showFileSelectPhase()

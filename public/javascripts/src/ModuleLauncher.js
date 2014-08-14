@@ -254,12 +254,12 @@
         }
       }
       $(this.el).show();
-      return $('.bv_mainModuleWrapper').show();
+      $('.bv_mainModuleWrapper').show();
+      return $('.bv_homePageWrapper').hide();
     };
 
     ModuleLauncherController.prototype.handleDeactivation = function() {
-      $(this.el).hide();
-      return $('.bv_homePageWrapper').hide();
+      return $(this.el).hide();
     };
 
     return ModuleLauncherController;

@@ -10,8 +10,6 @@
     }
 
     GenericDataParserController.prototype.initialize = function() {
-      this.loadReportFile = true;
-      this.loadImagesFile = true;
       this.fileProcessorURL = "/api/genericDataParser";
       this.errorOwnerName = 'GenericDataParser';
       GenericDataParserController.__super__.initialize.call(this);
