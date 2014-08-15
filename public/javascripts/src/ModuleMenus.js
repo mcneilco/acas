@@ -36,11 +36,24 @@
       }
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
-      this.$('.bv_summaryStats').load('/dataFiles/summaryStatistics/summaryStatistics.html');
-      if (window.AppLaunchParams.moduleLaunchParams != null) {
-        return this.moduleLauncherMenuListController.launchModule(window.AppLaunchParams.moduleLaunchParams.moduleName);
+      if (window.conf.moduleMenus.summaryStats) {
+        this.$('.bv_summaryStats').load('/dataFiles/summaryStatistics/summaryStatistics.html');
       } else {
-        return this.$('.bv_homePageWrapper').show();
+        this.$('.bv_summaryStats').hide();
+      }
+      if (window.AppLaunchParams.moduleLaunchParams != null) {
+        this.moduleLauncherMenuListController.launchModule(window.AppLaunchParams.moduleLaunchParams.moduleName);
+      } else {
+        this.$('.bv_homePageWrapper').show();
+      }
+      if (window.conf.moduleMenus.headerName != null) {
+        this.$('.bv_headerName').html(window.conf.moduleMenus.headerName);
+      }
+      if (window.conf.moduleMenus.homePageMessage != null) {
+        this.$('.bv_homePageMessage').html(window.conf.moduleMenus.homePageMessage);
+      }
+      if (window.conf.moduleMenus.copyrightMessage != null) {
+        return this.$('.bv_copyrightMessage').html(window.conf.moduleMenus.copyrightMessage);
       }
     };
 
@@ -54,7 +67,7 @@
     };
 
     ModuleMenusController.prototype.events = {
-      'click .bv_acasHome': "handleHome"
+      'click .bv_headerName': "handleHome"
     };
 
     ModuleMenusController.prototype.handleHome = function() {
