@@ -91,18 +91,22 @@
 	routeSet_10.setupRoutes(app, loginRoutes);
 	routeSet_11 = require("./routes/GenericDataParserRoutes.js");
 	routeSet_11.setupRoutes(app, loginRoutes);
-	routeSet_12 = require("./routes/PreferredBatchIdService.js");
+	routeSet_12 = require("./routes/Logger.js");
 	routeSet_12.setupRoutes(app, loginRoutes);
-	routeSet_13 = require("./routes/PrimaryScreenRoutes.js");
+	routeSet_13 = require("./routes/LoggingRoutes.js");
 	routeSet_13.setupRoutes(app, loginRoutes);
-	routeSet_14 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_14 = require("./routes/PreferredBatchIdService.js");
 	routeSet_14.setupRoutes(app, loginRoutes);
-	routeSet_15 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_15 = require("./routes/PrimaryScreenRoutes.js");
 	routeSet_15.setupRoutes(app, loginRoutes);
-	routeSet_16 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_16 = require("./routes/ProjectServiceRoutes.js");
 	routeSet_16.setupRoutes(app, loginRoutes);
-	routeSet_17 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_17 = require("./routes/ProtocolServiceRoutes.js");
 	routeSet_17.setupRoutes(app, loginRoutes);
+	routeSet_18 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_18.setupRoutes(app, loginRoutes);
+	routeSet_19 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_19.setupRoutes(app, loginRoutes);
 
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {

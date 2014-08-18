@@ -7,7 +7,10 @@
 
 (function() {
   exports.logUsage = function(action, data, username) {
-    return console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
+    var logger;
+    console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
+    logger = require("../../../routes/Logger");
+    return logger.writeToLog("info", "logUsage", action, data, username, null);
   };
 
   exports.getConfServiceVars = function(sysEnv, callback) {
