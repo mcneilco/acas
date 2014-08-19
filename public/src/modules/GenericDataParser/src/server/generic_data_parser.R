@@ -2293,9 +2293,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     # If an error occurs, this allows the experiment to still be accessed
     assign(x="experiment", value=experiment, envir=parent.frame())
   }
-  
-  calculatedResults <- addImageFiles(imagesFile = imagesFile, calculatedResults = calculatedResults, experiment = experiment, dryRun = dryRun)
-  
+
+  if(!is.null(imagesFile) && imagesFile != "") {
+    calculatedResults <- addImageFiles(imagesFile = imagesFile, calculatedResults = calculatedResults, experiment = experiment, dryRun = dryRun)
+  }
+
   # Upload the data if this is not a dry run
   if(!dryRun & errorFree) {
     

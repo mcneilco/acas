@@ -148,7 +148,7 @@
 
   getApacheCompileOptions = function() {
     var apacheCommand, apacheVersion, compileOptionStrings, compileOptions, compileString, option, possibleCommand, posssibleCommands, _i, _j, _len, _len1;
-    posssibleCommands = ['apachectl', 'httpd', '/usr/sbin/apachectl'];
+    posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl'];
     for (_i = 0, _len = posssibleCommands.length; _i < _len; _i++) {
       possibleCommand = posssibleCommands[_i];
       if (shell.which(possibleCommand)) {
