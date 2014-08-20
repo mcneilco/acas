@@ -13,7 +13,9 @@
       BulkLoadSampleTransfersController.__super__.initialize.call(this);
       this.fileProcessorURL = "/api/bulkLoadSampleTransfers";
       this.errorOwnerName = 'BulkLoadSampleTransfersController';
-      return this.$('.bv_moduleTitle').html('Load Sample Transfer Log');
+      this.$('.bv_moduleTitle').html('Load Sample Transfer Log');
+      this.$('.bv_additionalValuesForm').hide();
+      return this.$('.bv_resultStatus').hide();
     };
 
     return BulkLoadSampleTransfersController;

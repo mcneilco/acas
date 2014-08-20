@@ -268,7 +268,11 @@
     };
 
     BasicFileValidateAndSaveController.prototype.loadAnother = function() {
+      var fn;
       this.showFileSelectPhase();
+      fn = function() {
+        return this.$('.bv_deleteFile').click();
+      };
       return setTimeout(fn, 200);
     };
 

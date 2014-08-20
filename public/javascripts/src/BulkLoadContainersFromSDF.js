@@ -15,7 +15,9 @@
       this.allowedFileTypes = ['sdf', 'csv'];
       this.loadReportFile = false;
       BulkLoadContainersFromSDFController.__super__.initialize.call(this);
-      return this.$('.bv_moduleTitle').html('Load Containers From SDF');
+      this.$('.bv_moduleTitle').html('Load Containers From SDF');
+      this.$('.bv_additionalValuesForm').hide();
+      return this.$('.bv_resultStatus').hide();
     };
 
     return BulkLoadContainersFromSDFController;
