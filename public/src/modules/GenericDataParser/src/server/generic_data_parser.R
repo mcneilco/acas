@@ -1890,6 +1890,14 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes2(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes2(analysisGroupData))
   
+  #Note: use unitKind, not valueUnit
+  # use operatorKind, not valueOperator
+  analysisGroupData$unitKind <- analysisGroupData$valueUnit
+  analysisGroupData$operatorKind <- analysisGroupData$valueOperator
+  analysisGroupData$tempStateId <- as.numeric(as.factor(analysisGroupData$tempStateId))
+  analysisGroupData$lsType <- "default"
+  analysisGroupData$lsKind <- "default"
+  
   ### TreatmentGroup Data
   if (!is.null(treatmentGroupData)) {
     treatmentGroupData$lsTransaction <- lsTransaction
@@ -1899,6 +1907,15 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes2(treatmentGroupData))
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes2(treatmentGroupData))
     
+    treatmentGroupData$unitKind <- treatmentGroupData$valueUnit
+    if (!is.null(treatmentGroupData$valueOperator)) {
+      treatmentGroupData$operatorKind <- treatmentGroupData$valueOperator
+    } 
+    treatmentGroupData$stateID <- NULL
+    treatmentGroupData$tempId <- treatmentGroupData$treatmentGroupID
+    treatmentGroupData$tempParentId <- treatmentGroupData$analysisGroupID
+    treatmentGroupData$lsType <- "default"
+    treatmentGroupData$lsKind <- "default"
   }
 
   ### subject Data
@@ -1909,8 +1926,14 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     subjectData <- rbind.fill(subjectData, meltConcentrations2(subjectData))
     subjectData <- rbind.fill(subjectData, meltTimes2(subjectData))
     subjectData <- rbind.fill(subjectData, meltBatchCodes2(subjectData))
-
-    #subjectIDandVersion <- saveFullEntityData(subjectData, "subject")
+    
+    subjectData$unitKind <- subjectData$valueUnit
+    subjectData$operatorKind <- subjectData$valueOperator
+    subjectData$stateID <- NULL
+    subjectData$tempId <- subjectData$subjectID
+    subjectData$tempParentId <- subjectData$treatmentGroupID
+    subjectData$lsType <- "default"
+    subjectData$lsKind <- "default"
   }
   
   if(developmentMode) {
@@ -1919,7 +1942,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     write(analysisGroupData, file = testOutputLocation)
     return(lsTransaction)
   } else {
-    saveAllFromTsv(analysisGroupData, treatmentGroupData, subjectData, appendCodeNameList$analysisGroup)
+    saveAllViaTsv(analysisGroupData, treatmentGroupData, subjectData, appendCodeNameList)
   }
   
   
@@ -2865,139 +2888,4 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   subjectData <- as.data.frame(subjectData2)
   
   return(list(subjectData=subjectData, treatmentGroupData=treatmentGroupData))
-}
-
-saveAllFromTsv <- function(analysisGroupData, treatmentGroupData, subjectData, appendCodeName) {
-  #Note: use unitKind, not valueUnit
-  # use operatorKind, not valueOperator
-  analysisGroupData$unitKind <- analysisGroupData$valueUnit
-  analysisGroupData$operatorKind <- analysisGroupData$valueOperator
-  analysisGroupData$tempStateId <- as.numeric(as.factor(analysisGroupData$tempStateId))
-  analysisGroupData$lsType <- "default"
-  analysisGroupData$lsKind <- "default"
-  
-  if (!is.null(treatmentGroupData)) {
-    treatmentGroupData$unitKind <- treatmentGroupData$valueUnit
-    if (!is.null(treatmentGroupData$valueOperator)) {
-      treatmentGroupData$operatorKind <- treatmentGroupData$valueOperator
-    } 
-    treatmentGroupData$stateID <- NULL
-    treatmentGroupData$tempId <- treatmentGroupData$treatmentGroupID
-    treatmentGroupData$tempParentId <- treatmentGroupData$analysisGroupID
-    treatmentGroupData$lsType <- "default"
-    treatmentGroupData$lsKind <- "default"
-  }
-  
-  if (!is.null(subjectData)) {
-    subjectData$unitKind <- subjectData$valueUnit
-    subjectData$operatorKind <- subjectData$valueOperator
-    subjectData$stateID <- NULL
-    subjectData$tempId <- subjectData$subjectID
-    subjectData$tempParentId <- subjectData$treatmentGroupID
-    subjectData$lsType <- "default"
-    subjectData$lsKind <- "default"
-  }
-  
-  ### main code
-  thingTypeAndKind <- paste0("document_analysis group")
-  entityCodeNameList <- unlist(getAutoLabels(thingTypeAndKind= thingTypeAndKind, 
-                                             labelTypeAndKind= "id_codeName", 
-                                             numberOfLabels= max(analysisGroupData$tempId)),
-                               use.names= FALSE)
-  
-  analysisGroupData$codeName <- entityCodeNameList[analysisGroupData$tempId]
-  
-  # Adding codeNames to analysisGroupStrings listed in appendCodeNames (e.g. curve id)
-  newStrings <- paste0(analysisGroupData$stringValue[analysisGroupData$valueKind %in% appendCodeName], 
-                       "_", analysisGroupData[analysisGroupData$valueKind == appendCodeName, "codeName"])
-  analysisGroupData$stringValue[analysisGroupData$valueKind %in% appendCodeName] <- newStrings
-  
-  # format and save as csv
-  sendFiles <- list()
-  if (!is.null(analysisGroupData)) {
-    analysisGroupDataCsv <- formatEntityAsTsv(analysisGroupData)
-    sendFiles$analysisGroupCsvFilePath <- analysisGroupDataCsv
-  }
-  if (!is.null(treatmentGroupData)) {
-    treatmentGroupDataCsv <- formatEntityAsTsv(treatmentGroupData)
-    sendFiles$treatmentGroupCsvFilePath <- treatmentGroupDataCsv
-  }
-  if (!is.null(subjectData)) {
-    subjectDataCsv <- formatEntityAsTsv(subjectData)
-    sendFiles$subjectCsvFilePath <- subjectDataCsv
-  }
-  
-  response <- getURL(
-    paste0(racas::applicationSettings$client.service.persistence.fullpath, "api/v1/experiments/analysisgroup/savefromtsv"),
-    customrequest='POST',
-    httpheader=c('Content-Type'='application/json'),
-    postfields=toJSON(sendFiles)
-    )
-  
-  if (response != "") {
-    print(response)
-    stopUser("Could not save the data")
-  }
-  
-}
-
-formatEntityAsTsv <- function(entityData) {
-  entityDataFormatted <- data.frame(
-    tempValueId = NA,
-    valueType = entityData$valueType,
-    valueKind = entityData$valueKind,
-    numericValue = entityData$numericValue,
-    sigFigs = NaIfNull(entityData$sigFigs),
-    uncertainty = NaIfNull(entityData$uncertainty),
-    numberOfReplicates = NaIfNull(entityData$numberOfReplicates),
-    uncertaintyType = NaIfNull(entityData$uncertaintyType),
-    stringValue = NaIfNull(entityData$stringValue),
-    dateValue = NaIfNull(entityData$dateValue),
-    clobValue = NaIfNull(entityData$clobValue),
-    urlValue = NaIfNull(entityData$urlValue),
-    fileValue = NaIfNull(entityData$fileValue),
-    codeType = NA,
-    codeKind = NA,
-    codeValue = NaIfNull(entityData$codeValue),
-    unitType = NA,
-    unitKind = NaIfNull(entityData$unitKind),
-    operatorType = NA,
-    operatorKind = NaIfNull(entityData$operatorKind),
-    publicData = entityData$publicData,
-    comments = NaIfNull(entityData$comments),
-    stateType = entityData$stateType,
-    stateKind = entityData$stateKind,
-    tempStateId = entityData$tempStateId,
-    stateId = NA,
-    id = NA,
-    tempId = entityData$tempId,
-    parentId = NaIfNull(entityData$parentId),
-    tempParentId = NaIfNull(entityData$tempParentId),
-    lsTransaction = NaIfNull(entityData$lsTransaction),
-    recordedBy = NaIfNull(entityData$recordedBy),
-    codeName = NaIfNull(entityData$codeName),
-    lsType = entityData$lsType,
-    lsKind = entityData$lsKind
-  )
-  
-  # Create temporary file to send to persistence server
-  csvFile <- tempfile(pattern = "csvUpload", tmpdir = "", fileext = ".csv")
-  csvLocalLocation <- paste0(tempdir(), csvFile)
-  
-  write.table(entityDataFormatted, file = csvLocalLocation, sep="\t", na = "", row.names = FALSE)
-  
-  response <- fromJSON(postForm(paste0(racas::applicationSettings$server.service.persistence.fileUrl), 
-                                file = (fileUpload(csvLocalLocation, contentType = "text/csv")), 
-                                .checkParams = F))
-  
-  tsvServerLocation <- file.path(racas::applicationSettings$server.service.persistence.filePath, response[[1]]$name)
-  return(tsvServerLocation)
-}
-
-NaIfNull <- function(x) {
-  if (!is.null(x)) {
-    return(x)
-  } else {
-    return(NA)
-  }
 }
