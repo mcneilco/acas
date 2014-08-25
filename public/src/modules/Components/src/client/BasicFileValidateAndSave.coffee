@@ -204,6 +204,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 
 
 	showFileSelectPhase: ->
+		@$('.bv_resultStatus').hide()
 		@$('.bv_resultStatus').html("")
 		@$('.bv_htmlSummary').hide()
 		@$('.bv_htmlSummary').html('')
@@ -234,6 +235,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 
 
 	showFileUploadPhase: ->
+		@$('.bv_resultStatus').show()
 		@$('.bv_htmlSummary').show()
 		@$('.bv_fileUploadWrapper').hide()
 		@$('.bv_nextControlContainer').hide()
@@ -242,6 +244,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		@$('.bv_notifications').show()
 
 	showFileUploadCompletePhase: ->
+		@$('.bv_resultStatus').show()
 		@$('.bv_htmlSummary').show()
 		@$('.bv_csvPreviewContainer').hide()
 		@$('.bv_fileUploadWrapper').hide()

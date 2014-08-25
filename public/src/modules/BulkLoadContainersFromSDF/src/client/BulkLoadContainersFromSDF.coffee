@@ -8,6 +8,4 @@ class window.BulkLoadContainersFromSDFController extends BasicFileValidateAndSav
     @loadReportFile = false
     super()
     @$('.bv_moduleTitle').html('Load Containers From SDF')
-    @$('.bv_additionalValuesForm').hide()
-    @$('.bv_resultStatus').hide()
 

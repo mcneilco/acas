@@ -277,6 +277,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.showFileSelectPhase = function() {
+      this.$('.bv_resultStatus').hide();
       this.$('.bv_resultStatus').html("");
       this.$('.bv_htmlSummary').hide();
       this.$('.bv_htmlSummary').html('');
@@ -313,6 +314,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.showFileUploadPhase = function() {
+      this.$('.bv_resultStatus').show();
       this.$('.bv_htmlSummary').show();
       this.$('.bv_fileUploadWrapper').hide();
       this.$('.bv_nextControlContainer').hide();
@@ -322,6 +324,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.showFileUploadCompletePhase = function() {
+      this.$('.bv_resultStatus').show();
       this.$('.bv_htmlSummary').show();
       this.$('.bv_csvPreviewContainer').hide();
       this.$('.bv_fileUploadWrapper').hide();

@@ -13,9 +13,7 @@
       this.fileProcessorURL = "/api/genericDataParser";
       this.errorOwnerName = 'GenericDataParser';
       GenericDataParserController.__super__.initialize.call(this);
-      this.$('.bv_moduleTitle').html('Simple Experiment Loader');
-      this.$('.bv_additionalValuesForm').hide();
-      return this.$('.bv_resultStatus').hide();
+      return this.$('.bv_moduleTitle').html('Simple Experiment Loader');
     };
 
     return GenericDataParserController;
