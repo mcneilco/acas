@@ -35,6 +35,12 @@
 
 <script type="text/template" id="PrimaryScreenAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
 
+    <div class="control-group bv_group_htsFormat" style="margin-left:35px;margin-bottom:20px;">
+        <label class="control-label checkbox" style="width:200px;padding-left:0;">
+            <input type="checkbox" name="bv_htsFormat" class="bv_htsFormat" <% if (htsFormat) { %> checked="checked"<% }%> />Save data in HTS format
+        </label>
+    </div>
+
     <div class="span12">
         <h5>Standards</h5>
         <div class="">
@@ -77,16 +83,37 @@
         <div class="pull-left">
             <div style="padding-left:40px;">Vehicle Control</div>
                 <form class="bv_group_vehicleControlBatch control-group" style="padding-left:40px;">
-                    <input class="pull-left bv_vehicleControlBatch" style="width:265px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="enter batch number">
+                    <input class="pull-left bv_vehicleControlBatch" style="width:258px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="enter batch number">
                 </form>
             </div>
         </div>
 	</div>
 
-    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:10px;margin-top:5px;" />
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-top:12px;margin-bottom:0px;" />
 
 
     <h5>Assay Parameters</h5>
+
+
+    <div class="form-horizontal">
+        <div class="control-group bv_group_dilutionFactor">
+            <label class="control-label radio" style="width:100px;padding-left:39px;">
+                <input type="radio" name="bv_volumeType" value="dilution" class="bv_volumeTypeDilution" <% if (volumeType=="dilution") { %> checked="checked"<% }%> />Dilution Factor
+            </label>
+            <div class="controls" style="padding-left:0;">
+                <input class="bv_dilutionFactor" style="width:335px;" value="<%=dilutionFactor%>" type="text" <% if (volumeType!="dilution") { %> disabled="disabled"<% }%> />
+            </div>
+        </div>
+        <div class="control-group bv_group_transferVolume">
+            <label class="control-label radio" style="width:110px;padding-left:30px;">
+                <input type="radio" name="bv_volumeType" value="transfer" class="bv_volumeTypeTransfer" <% if (volumeType=="transfer") { %> checked="checked"<% }%> />Transfer Volume
+            </label>
+            <div class="controls" style="padding-left:0;">
+                <input class="bv_transferVolume" style="width:335px;" value="<%=transferVolume%>" type="text" <% if (volumeType!="transfer") { %> disabled="disabled"<% }%>>
+            </div>
+        </div>
+    </div>
+
     <div class="form-horizontal">
         <div class="control-group bv_group_assayVolume">
             <label class="control-label">Assay Volume</label>
@@ -96,29 +123,8 @@
         </div>
     </div>
 
-
     <div class="form-horizontal">
-        <div class="control-group bv_group_transferVolume">
-            <label class="control-label radio" style="width:110px;padding-left:30px;">
-                <input type="radio" name="bv_volumeType" value="transfer" class="bv_volumeTypeTransfer" <% if (volumeType=="transfer") { %> checked="checked"<% }%> />Transfer Volume
-            </label>
-            <div class="controls" style="padding-left:0;">
-                <input class="bv_transferVolume" style="width:335px;" value="<%=transferVolume%>" type="text" <% if (volumeType!="transfer") { %> disabled="disabled"<% }%>>
-            </div>
-        </div>
-        <div class="control-group bv_group_dilutionFactor">
-            <label class="control-label radio" style="width:100px;padding-left:39px;">
-                <input type="radio" name="bv_volumeType" value="dilution" class="bv_volumeTypeDilution" <% if (volumeType=="dilution") { %> checked="checked"<% }%> />Dilution Factor
-            </label>
-            <div class="controls" style="padding-left:0;">
-                <input class="bv_dilutionFactor" style="width:335px;" value="<%=dilutionFactor%>" type="text" <% if (volumeType!="dilution") { %> disabled="disabled"<% }%> />
-            </div>
-        </div>
-    </div>
-
-
-    <div class="form-horizontal">
-        <div class="control-group bv_group_instrumentReader">
+        <div class="control-group bv_group_instrumentReader" style="margin-bottom:25px;">
             <label class="control-label">Instrument Reader</label>
             <div class="controls">
                 <select class="bv_instrumentReader" style="width:349px;">
@@ -128,12 +134,17 @@
     </div>
 
 
-    <span style="margin-left:6px;margin-bottom:5px;">Read Order</span>
+    <span style="margin-left:6px;margin-bottom:5px;">Read Position</span>
     <span style="margin-left:90px;margin-bottom:5px;">Read Name</span>
-        <div class="bv_readList"></div>
+    <span class="bv_group_matchReadName">
+            <span class="checkbox pull-right" style="width:160px;padding-left:100;margin-right:80px;">
+                <input type="checkbox" name="bv_matchReadName" class="bv_matchReadName" style="margin-right:10px;" <% if (matchReadName) { %> checked="checked"<% }%> />Match Read Name
+            </span>
+    </span>
+    <div class="bv_readList"></div>
 
 
-    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:10px;" />
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:0px;margin-top:25px;" />
 
     <h5>Analysis Parameters</h5>
     <div class="form-horizontal">
@@ -154,22 +165,19 @@
                 </span>
             </div>
         </div>
-        <div class="control-group bv_group_transformationRule">
-            <label class="control-label">*Transformation</label>
-            <div class="controls">
-                <select class="bv_transformationRule" style="width:349px;"></select>
-            </div>
-        </div>
         <div class="control-group bv_group_normalizationRule">
-            <label class="control-label">*Normalization</label>
+            <label class="control-label" style="width:100px;margin-left:40px;">*Normalization</label>
             <div class="controls">
                 <select class="bv_normalizationRule" style="width:349px;">
                 </select>
             </div>
         </div>
     </div>
+    <span style="margin-left:39px;">*Transformation
+    <span class="bv_transformationList"></span>
+    </span>
 
-    <hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:10px;margin-top:5px;" />
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:25px;" />
 
 
     <h5>Hit Selection Parameters</h5>
@@ -198,6 +206,13 @@
             </div>
         </div>
     </div>
+
+
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:6px;" />
+
+    <h5 style="margin-bottom:27px;">Upload Data and Analyze</h5>
+
+
 </script>
 
 
@@ -222,20 +237,20 @@
 
 <script type="text/template" id="PrimaryAnalysisReadView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="form-inline span10" style="margin-bottom:10px;">
+    <div class="form-inline span10" style="margin-bottom:5px;margin-top:5px;">
 
-        <span class="bv_group_readOrder">
-            <input class="span1 bv_readOrder" style="margin-right:10px;margin-left:20px;width:50px;" value="<%=readOrder%>" type="text">
+        <span class="bv_group_readPosition">
+            <input class="span1 bv_readPosition" style="margin-right:10px;margin-left:20px;width:50px;" value="<%=readPosition%>" type="text">
         </span>
         <span class="bv_group_readName">
-            <select class="span6 bv_readName" style="margin-right:10px;width:280px;"></select>
+            <select class="span6 bv_readName" style="margin-right:10px;width:355px;"></select>
         </span>
-        <span class="bv_group_matchReadName">
-            <label class="control-label checkbox" style="width:160px;padding-left:0;">
-            <input type="checkbox" name="bv_matchReadName" class="bv_matchReadName" style="margin-right:15px;" <% if (matchReadName) { %> checked="checked"<% }%> />Match Read Name
+        <span class="bv_group_activity">
+            <label class="control-label radio" style="width:80px;padding-left:0;">
+            <input type="radio" name="bv_activity" class="bv_activity" style="margin-right:10px;margin-top:2px;" <% if (activity) { %> checked="checked"<% }%> />Activity
         </label>
         </span>
-        <button class="close bv_delete">&times;</button>
+        <button class="close bv_delete" style="margin-top:1px;">&times;</button>
 
     </div>
 </script>
@@ -243,4 +258,19 @@
 <script type="text/template" id="PrimaryAnalysisReadListView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_readInfo"></div>
     <button class="btn bv_addReadButton" style="margin-left:465px;">Add Read</button>
+</script>
+
+
+<script type="text/template" id="TransformationRuleView" xmlns="http://www.w3.org/1999/html">
+    <div class="span5" style="width:510px;">
+        <span class="bv_group_transformationRule">
+            <select class="bv_transformationRule" style="margin-right:10px;width:347px;display: inline-block;"></select>
+        </span>
+        <button class="close bv_deleteRule" style="margin-right:130px;margin-top:3px;">&times;</button>
+    </div>
+</script>
+
+<script type="text/template" id="TransformationRuleListView" xmlns="http://www.w3.org/1999/html">
+<span class="bv_transformationInfo pull-right"></span>
+<button class="btn bv_addTransformationButton" style="margin-left:388px;">Add Transformation</button>
 </script>
