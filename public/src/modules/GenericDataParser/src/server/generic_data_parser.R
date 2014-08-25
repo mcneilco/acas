@@ -1703,10 +1703,12 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   
   #Change in naming convention
   if (rowMeaning=="subject") {
-    subjectData$subjectID <- NULL
+    if (any(names(subjectData) == "analysisGroupID")) {
+      subjectData$subjectID <- NULL
+    }
     names(subjectData)[names(subjectData) == "analysisGroupID"] <- "subjectID"
   } else if (rowMeaning=="subjectState") {
-    names(subjectData)[names(subjectData) == "analysisGroupID"] <- "subjectStateID"
+    names(subjectData)[names(subjectData) == "rowID"] <- "subjectStateID"
   }
   if(hideAllData) subjectData$publicData <- FALSE
   
@@ -1751,7 +1753,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   
   # Reorganization to match formats
   nameChange <- c(mainCode='batchCode', 'originalMainID'='originalBatchCode')
-  names(subjectData)[names(subjectData) %in% names(nameChange)] <- nameChange[names(subjectData)]
+  names(subjectData)[names(subjectData) %in% names(nameChange)] <- nameChange[names(subjectData)][names(subjectData) %in% names(nameChange)]
   #subjectData$publicData <- !subjectData$publicData
   #subjectData$valueType <- c("numericValue","stringValue","dateValue", "clobValue")[match(subjectData$valueType,c("Number","Text","Date", "Clob"))]
   
@@ -2871,13 +2873,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     summaryInfo$info$"In Life Notebook" <- as.character(validatedMetaData$"In Life Notebook")
   }
   summaryInfo$info$"Assay Date" = validatedMetaData$"Assay Date"
-  summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
+  if (rawOnlyFormat) {
+    summaryInfo$info$"Rows of Data" = max(calculatedResults$rowID)
+  } else {
+    summaryInfo$info$"Rows of Data" = max(calculatedResults$analysisGroupID)
+  }
   summaryInfo$info$"Columns of Data" = length(unique(calculatedResults$valueKindAndUnit))
   summaryInfo$info[[paste0("Unique ", mainCode, "'s")]] = length(unique(calculatedResults$batchCode))
   if (!is.null(subjectData)) {
-    # TODO Kelley: figure out what to replace this with rather than pointID
     summaryInfo$info$"Raw Results Data Points" <- max(subjectData$rowID)
-    # TODO Kelley: figure out what to replace this with rather than subjectData$value
     summaryInfo$info$"Flagged Data Points" <- sum(subjectData$valueKind == "flag")
   }
   if(!dryRun) {
@@ -2939,7 +2943,7 @@ getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolN
   if (length(protocolPostfixStates) > 0) {
     protocolPostfixState <- protocolPostfixStates[[1]]
     protocolPostfixValues <- Filter(function(x) {x$lsTypeAndKind == "stringValue_postfix"},
-                                    protocolPostfixState)
+                                    protocolPostfixState$lsValues)
     protocolPostfix <- protocolPostfixValues[[1]]$stringValue
   }
   
