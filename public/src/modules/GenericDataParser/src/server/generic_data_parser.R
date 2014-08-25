@@ -695,9 +695,9 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   return(returnDataFrame)
 }
 
-organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE, replaceFakeCorpBatchId = NULL, 
-                                      rawOnlyFormat = FALSE, stateGroups = NULL, splitSubjects = NULL, inputFormat, 
-                                      mainCode, errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL,
+organizeCalculatedResults <- function(calculatedResults, inputFormat, formatParameters, mainCode, 
+                                      lockCorpBatchId = TRUE, rawOnlyFormat = FALSE, 
+                                      errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL,
                                       stateAssignments = NULL) {
   # Organizes the calculated results section
   #
@@ -719,6 +719,10 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   library('reshape')
   library('gdata')
   library('plyr')
+  
+  replaceFakeCorpBatchId <- formatParameters$replaceFakeCorpBatchId
+  stateGroups <- formatParameters$stateGroups
+  splitSubjects <- formatParameters$splitSubjects
   
   uncertaintyCodeWord <- "uncertainty@coDeWoRD@"
   commentCodeWord <- "comment@coDeWoRD@"
@@ -834,7 +838,7 @@ organizeCalculatedResults <- function(calculatedResults, lockCorpBatchId = TRUE,
   valueKinds$linkColumn <- linkColumns[notMainCode]
   
   if (!is.null(stateAssignments)) {
-    valueKinds$stateType <- stateAssignments$stateType[match(valueKinds$valueKind), stateAssignments$stateType]
+    valueKinds$stateType <- stateAssignments$stateType[match(valueKinds$valueKind, stateAssignments$valueKind)]
   }
   
   # Grab the rows of the calculated data 
@@ -2628,9 +2632,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
   
-  formatSettings <- getFormatSettings()
+  customFormatSettings <- getFormatSettings()
   
-  validatedMetaDataList <- validateMetaData(metaData, configList, formatSettings, errorEnv)
+  validatedMetaDataList <- validateMetaData(metaData, configList, customFormatSettings, errorEnv)
   validatedMetaData <- validatedMetaDataList$validatedMetaData
   duplicateExperimentNamesAllowed <- validatedMetaDataList$duplicateExperimentNamesAllowed
   useExisting <- validatedMetaDataList$useExisting
@@ -2643,52 +2647,23 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     mainCode <- "Corporate Batch ID"
   }
   
-  rawOnlyFormat <- inputFormat %in% names(formatSettings)
-  if (rawOnlyFormat) {
-    lookFor <- "Raw Data"
-    lockCorpBatchId <- FALSE
-    replaceFakeCorpBatchId <- "Vehicle"
-    stateGroups <- getStateGroups(formatSettings[[inputFormat]])
-    hideAllData <- formatSettings[[inputFormat]]$hideAllData
-    curveNames <- formatSettings[[inputFormat]]$curveNames
-    annotationType <- formatSettings[[inputFormat]]$annotationType
-    sigFigs <- formatSettings[[inputFormat]]$sigFigs
-    splitSubjects <- formatSettings[[inputFormat]]$splitSubjects
-    rowMeaning <- formatSettings[[inputFormat]]$rowMeaning
-    if(is.null(rowMeaning)) {
-      rowMeaning <- "subject"
-    }
-    includeTreatmentGroupData <- formatSettings[[inputFormat]]$includeTreatmentGroupData
-    if (is.null(includeTreatmentGroupData)) {
-      includeTreatmentGroupData <- TRUE
-    }
-  } else {
-    # TODO: generate the list dynamically
-    if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data", "Use Existing Experiment", "Precise For Existing Experiment"))) {
-      stopUser("The Format must be 'Generic', 'Dose Response', or some custom format that you have been given.")
-    }
-    lookFor <- "Calculated Results"
-    lockCorpBatchId <- TRUE
-    replaceFakeCorpBatchId <- ""
-    stateGroups <- NULL
-    curveNames <- NULL
-    sigFigs <- NULL
-    annotationType <- "s_general"
-    splitSubjects <- NULL
-  }
+  rawOnlyFormat <- inputFormat %in% names(customFormatSettings)
+  
+  formatParameters <- getFormatParameters(rawOnlyFormat, customFormatSettings, inputFormat)
+  
   precise <- inputFormat %in% c("Precise For Existing Experiment", "Precise")
   
   # Grab the Calculated Results Section
-  calculatedResults <- getSection(genericDataFileDataFrame, lookFor = lookFor, transpose = FALSE)
+  calculatedResults <- getSection(genericDataFileDataFrame, lookFor = formatParameters$lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
   calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
-  calculatedResults <- organizeCalculatedResults(calculatedResults, lockCorpBatchId, replaceFakeCorpBatchId, 
-                                                 rawOnlyFormat, stateGroups, splitSubjects, inputFormat, mainCode,
-                                                 errorEnv=errorEnv, precise = precise, 
-                                                 calculateGroupingID = calculateGroupingID)
-
-  if (!is.null(splitSubjects)) {
+  calculatedResults <- organizeCalculatedResults(
+    calculatedResults, inputFormat, formatParameters, mainCode, 
+    lockCorpBatchId = formatParameters$lockCorpBatchId, rawOnlyFormat = rawOnlyFormat, 
+    errorEnv = errorEnv, precise = precise, calculateGroupingID = calculateGroupingID)
+  
+  if (!is.null(formatParameters$splitSubjects)) {
     calculatedResults$subjectID <- calculatedResults$groupingID_2
     calculatedResults$treatmentGroupID <- calculatedResults$groupingID
     calculatedResults$subjectStateID <- calculatedResults$rowID
@@ -2701,71 +2676,14 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   # Validate the Calculated Results
-  calculatedResults <- validateCalculatedResults(calculatedResults,
-                                                 dryRun, curveNames, testMode=testMode, 
-                                                 replaceFakeCorpBatchId=replaceFakeCorpBatchId, mainCode)
+  calculatedResults <- validateCalculatedResults(
+    calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode, 
+    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode)
   
   # Subject and TreatmentGroupData
-  subjectData <- NULL
-  treatmentGroupData <- NULL
-  if (precise) {
-    subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
-    link <- calculatedResults[calculatedResults$linkColumn, c("rowID", "stringValue")]
-    treatmentGroupData <- getSection(genericDataFileDataFrame, lookFor = "Treatment Group Results")
-    if (treatmentGroupData[1, 1] == "Group By") {
-      treatmentGroupData <- getSection(genericDataFileDataFrame, lookFor = "Treatment Group Results", transpose = TRUE)
-      
-      groupByColumns <- c(splitOnSemicolon(treatmentGroupData$"Group By"), "link")
-      groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
-      keepColumn <- splitOnSemicolon(treatmentGroupData$Include)
-      excludedRowKinds <- splitOnSemicolon(treatmentGroupData$"Remove Results With") # Removes results with a value for a certain valueKind
-      
-      # Other possibilities: average type (geometric or arithmetic), significant figures, SD vs SE, text rules... name of file to run...
-      # Could create a new config setting for new function (use default here if not)
-      
-      
-      #removeRowID <- subjectData$rowID[subjectData$valueKind %in% excludedRowKind] # If they were blank, they were not recorded
-      #subjectDataKept$treatmentGroupID <- paste(subjectDataKept[groupByColumnsNoUnit], collapse = "-")
-      #subjectDataKept <- as.data.table(subjectData)
-      #subjectDataKept2 <- subjectDataKept[!(rowID %in% removeRowID), createTreatmentGroupData(.SD), by = groupByColumns]
-      
-      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
-      
-      intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, keepColumn=keepColumn, errorEnv=errorEnv)
-      subjectData <- intermedList$subjectData
-      treatmentGroupData <- intermedList$treatmentGroupData
-    }
-  } else {
-    # Grab the Raw Results Section
-    subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
-    
-    groupByColumns <- c(subjectData[2, 2], 'link')
-    groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
-    
-    keepColumn <- "Response"
-    excludedRowKinds <- "flag"
-    
-    link <- calculatedResults[calculatedResults$valueKind == "curve id", c("rowID", "stringValue", "originalMainID")]
-    if (!is.null(subjectData)) {
-      
-      if (!all(unlist(subjectData[1, 1:4]) == c("temp id", "x", "y", "flag"))) {
-        stopUser("The first row in Raw Results must be 'temp id', 'x', 'y', 'flag'")
-      }
-      subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
-      
-      if (subjectData[2, 1] != "curve id") {
-        stopUser("The second row in Raw Results must start with curve id")
-      }
-      subjectData[2, 1] <- "link"
-      
-      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
-      
-      intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL, link, precise, stateAssignments, keepColumn, errorEnv=errorEnv)
-      subjectData <- intermedList$subjectData
-      treatmentGroupData <- intermedList$treatmentGroupData
-    }
-  }
-  
+  subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)
+  subjectData <- subjectAndTreatmentData$subjectData
+  treatmentGroupData <- subjectAndTreatmentData$treatmentData
   
   # If there are errors, do not allow an upload
   errorFree <- length(errorList)==0
@@ -3329,7 +3247,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   }
 }
 
-organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments, keepColumn, errorEnv) {
+organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments, keepColumn, errorEnv, formatParameters) {
   # Returns two data.frames: subjectData and treatmentGroupData
   
   createPtgFunction <- function (groupByColumns) {
@@ -3344,9 +3262,10 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   
   preciseTreatmentGroupID <- createPtgFunction(groupByColumns)
   
-  subjectData2 <- organizeCalculatedResults(subjectData, lockCorpBatchId= F, inputFormat= inputFormat, 
-                                            mainCode= mainCode, errorEnv= errorEnv, precise = precise, link = link, 
-                                            calculateGroupingID = preciseTreatmentGroupID, stateAssignments)
+  subjectData2 <- organizeCalculatedResults(subjectData, inputFormat, formatParameters, mainCode, 
+                                            lockCorpBatchId= F, errorEnv= errorEnv, precise = precise, link = link, 
+                                            calculateGroupingID = preciseTreatmentGroupID, 
+                                            stateAssignments = stateAssignments)
   subjectData2 <- as.data.table(subjectData2)
   
   subjectData2[, treatmentGroupID := groupingID]
@@ -3396,4 +3315,108 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   subjectData <- as.data.frame(subjectData2)
   
   return(list(subjectData=subjectData, treatmentGroupData=treatmentGroupData))
+}
+
+getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat) {
+  # Creates a list of format parameters, based on custom format settings if it is a "rawOnlyFormat"
+  
+  o <- list()
+  if (rawOnlyFormat) {
+    o$lookFor <- "Raw Data"
+    o$lockCorpBatchId <- FALSE
+    o$replaceFakeCorpBatchId <- "Vehicle"
+    o$stateGroups <- getStateGroups(formatSettings[[inputFormat]])
+    o$hideAllData <- formatSettings[[inputFormat]]$hideAllData
+    o$curveNames <- formatSettings[[inputFormat]]$curveNames
+    o$annotationType <- formatSettings[[inputFormat]]$annotationType
+    o$sigFigs <- formatSettings[[inputFormat]]$sigFigs
+    o$splitSubjects <- formatSettings[[inputFormat]]$splitSubjects
+    o$rowMeaning <- formatSettings[[inputFormat]]$rowMeaning
+    if(is.null(rowMeaning)) {
+      o$rowMeaning <- "subject"
+    }
+    o$includeTreatmentGroupData <- formatSettings[[inputFormat]]$includeTreatmentGroupData
+    if (is.null(includeTreatmentGroupData)) {
+      o$includeTreatmentGroupData <- TRUE
+    }
+  } else {
+    # TODO: generate the list dynamically
+    if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data", "Use Existing Experiment", "Precise For Existing Experiment"))) {
+      stopUser("The Format must be 'Generic', 'Dose Response', or some custom format that you have been given.")
+    }
+    o$lookFor <- "Calculated Results"
+    o$lockCorpBatchId <- TRUE
+    o$replaceFakeCorpBatchId <- ""
+    o$stateGroups <- NULL
+    o$curveNames <- NULL
+    o$sigFigs <- NULL
+    o$annotationType <- "s_general"
+    o$splitSubjects <- NULL
+  }
+  return(o)
+}
+
+getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv) {
+  # turns Raw Results section into subjectData and treatmentGroupData data.frames
+  # Returns a list of two data.frames
+  
+  subjectData <- NULL
+  treatmentGroupData <- NULL
+  if (precise) {
+    subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
+    link <- calculatedResults[calculatedResults$linkColumn, c("rowID", "stringValue")]
+    treatmentGroupData <- getSection(genericDataFileDataFrame, lookFor = "Treatment Group Results")
+    if (treatmentGroupData[1, 1] == "Group By") {
+      treatmentGroupData <- getSection(genericDataFileDataFrame, lookFor = "Treatment Group Results", transpose = TRUE)
+      
+      groupByColumns <- c(splitOnSemicolon(treatmentGroupData$"Group By"), "link")
+      groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
+      keepColumn <- splitOnSemicolon(treatmentGroupData$Include)
+      excludedRowKinds <- splitOnSemicolon(treatmentGroupData$"Remove Results With") # Removes results with a value for a certain valueKind
+      
+      # Other possibilities: average type (geometric or arithmetic), significant figures, SD vs SE, text rules... name of file to run...
+      # Could create a new config setting for new function (use default here if not)
+      
+      
+      #removeRowID <- subjectData$rowID[subjectData$valueKind %in% excludedRowKind] # If they were blank, they were not recorded
+      #subjectDataKept$treatmentGroupID <- paste(subjectDataKept[groupByColumnsNoUnit], collapse = "-")
+      #subjectDataKept <- as.data.table(subjectData)
+      #subjectDataKept2 <- subjectDataKept[!(rowID %in% removeRowID), createTreatmentGroupData(.SD), by = groupByColumns]
+      
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      
+      intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, keepColumn=keepColumn, errorEnv=errorEnv, formatParameters =  formatParameters)
+      subjectData <- intermedList$subjectData
+      treatmentGroupData <- intermedList$treatmentGroupData
+    }
+  } else {
+    # Grab the Raw Results Section
+    subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
+    
+    groupByColumns <- c(subjectData[2, 2], 'link')
+    groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
+    
+    keepColumn <- "Response"
+    excludedRowKinds <- "flag"
+    
+    link <- calculatedResults[calculatedResults$valueKind == "curve id", c("rowID", "stringValue", "originalMainID")]
+    if (!is.null(subjectData)) {
+      
+      if (!all(unlist(subjectData[1, 1:4]) == c("temp id", "x", "y", "flag"))) {
+        stopUser("The first row in Raw Results must be 'temp id', 'x', 'y', 'flag'")
+      }
+      subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
+      
+      if (subjectData[2, 1] != "curve id") {
+        stopUser("The second row in Raw Results must start with curve id")
+      }
+      subjectData[2, 1] <- "link"
+      
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      
+      # list(subjectData, treatmentGroupData)
+      intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL, link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, formatParameters = formatParameters)
+      return(intermedList)
+    }
+  }
 }
