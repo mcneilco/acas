@@ -1,11 +1,11 @@
 ((exports) ->
 	exports.primaryAnalysisReads = [
 		readPosition: 11
-		readName: "luminescence"
+		readName: "none"
 		activity: true
 	,
 		readPosition: 12
-		readName: "none"
+		readName: "fluorescence"
 		activity: false
 	,
 		readPosition:13
@@ -52,7 +52,7 @@
 		assayVolume: 24
 		autoHitSelection: false
 		htsFormat: false
-		matchReadName: true
+		matchReadName: false
 		primaryAnalysisReadList: exports.primaryAnalysisReads
 		transformationRuleList: exports.transformationRules
 

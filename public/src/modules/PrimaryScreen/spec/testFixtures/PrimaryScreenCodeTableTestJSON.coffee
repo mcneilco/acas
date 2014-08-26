@@ -73,6 +73,10 @@
 					name: "Luminescence"
 					ignored: false
 				,
+					code: "fluorescence"
+					name: "Fluorescence"
+					ignored: false
+				,
 					code: "none"
 					name: "None"
 					ignored: false

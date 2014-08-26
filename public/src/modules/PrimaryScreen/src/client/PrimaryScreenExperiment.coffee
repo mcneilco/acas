@@ -1,4 +1,3 @@
-allErrors = []
 
 class window.PrimaryAnalysisRead extends Backbone.Model
 	defaults:
@@ -6,51 +5,90 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 		readName: "unassigned"
 		activity: false
 
-	validate: (attrs) ->
+	validate: (attrs, index, matchReadName) ->
 		errors = []
-		if _.isNaN(attrs.readPosition)
+		if _.isNaN(attrs.readPosition) and matchReadName==false
 			errors.push
-				attribute: 'readPosition'
+				attribute: 'readPosition:eq('+index+')'
 				message: "Read position must be a number"
 		if attrs.readName is "unassigned" or attrs.readName is ""
 			errors.push
-				attribute: 'readName'
+				attribute: 'readName:eq('+index+')'
 				message: "Read name must be assigned"
-		console.log "read errors"
-		console.log errors
-		console.log "allErrors"
-		allErrors.push errors
-		console.log allErrors
 		if errors.length > 0
 			return errors
 		else
 			return null
+
+	triggerAmDirty: =>
+		@trigger 'amDirty', @
 
 class window.TransformationRuleModel extends Backbone.Model
 	defaults:
 		transformationRule: "unassigned"
 
-	validate: (attrs) ->
+	validate: (attrs,index) ->
 		errors = []
 		if attrs.transformationRule is "unassigned"
 			errors.push
-				attribute: 'transformationRule'
+				attribute: 'transformationRule:eq('+index+')'
 				message: "Transformation Rule must be assigned"
-		console.log "transformation errors"
-		console.log errors
 
 		if errors.length > 0
 			return errors
 		else
 			return null
 
+	triggerAmDirty: =>
+		@trigger 'amDirty', @
 
 class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
 
+	validateCollection: (matchReadName) ->
+		modelErrors = []
+		usedReadNames = {}
+		index = 0
+		@.each (read) =>
+			eachModelErrors = read.validate(read.attributes,index,matchReadName)
+			modelErrors.push eachModelErrors...
+			currentReadName = read.get('readName')
+			if currentReadName of usedReadNames
+				modelErrors.push
+					attribute: 'readName:eq('+index+')'
+					message: "Read name can not be chosen more than once"
+				modelErrors.push
+					attribute: 'readName:eq('+usedReadNames[currentReadName]+')'
+					message: "Read name can not be chosen more than once"
+			else
+				usedReadNames[currentReadName] = index
+			index++
+		return modelErrors
+
+
 class window.TransformationRuleList extends Backbone.Collection
 	model: TransformationRuleModel
 
+
+	validateCollection: ->
+		modelErrors = []
+		usedRules ={}
+		index = 0
+		@.each (rule) =>
+			eachModelErrors = rule.validate(rule.attributes,index)
+			modelErrors.push eachModelErrors...
+			currentRule = rule.get('transformationRule')
+			if currentRule of usedRules
+				modelErrors.push
+					attribute: 'transformationRule:eq('+index+')'
+					message: "Transformation Rules can not be chosen more than once"
+				modelErrors.push
+					attribute: 'transformationRule:eq('+usedRules[currentRule]+')'
+					message: "Transformation Rules can not be chosen more than once"
+			else
+				usedRules[currentRule] = index
+			index++
+		return modelErrors
 
 
 class window.PrimaryScreenAnalysisParameters extends Backbone.Model
@@ -103,14 +141,22 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			@set primaryAnalysisReadList: new PrimaryAnalysisReadList(@get('primaryAnalysisReadList'))
 		@get('primaryAnalysisReadList').on "change", =>
 			@trigger 'change'
+		@get('primaryAnalysisReadList').on "amDirty", =>
+			@trigger 'amDirty'
 		if @get('transformationRuleList') not instanceof TransformationRuleList
 			@set transformationRuleList: new TransformationRuleList(@get('transformationRuleList'))
 		@get('transformationRuleList').on "change", =>
 			@trigger 'change'
+		@get('transformationRuleList').on "amDirty", =>
+			@trigger 'amDirty'
 
 
 	validate: (attrs) ->
 		errors = []
+		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
+		errors.push readErrors...
+		transformationErrors = @get('transformationRuleList').validateCollection()
+		errors.push transformationErrors...
 		positiveControl = @get('positiveControl').get('batchCode')
 		if positiveControl is "" or positiveControl is undefined
 			errors.push
@@ -143,15 +189,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				errors.push
 					attribute: 'agonistControlConc'
 					message: "Agonist control conc much be set"
-#		vehicleControl = @get('vehicleControl').get('batchCode')
-#		if vehicleControl is "" or vehicleControl is undefined
-#			errors.push
-#				attribute: 'vehicleControlBatch'
-#				message: "Vehicle control must be set"
-#		if attrs.instrumentReader is "unassigned" or attrs.instrumentReader is ""
-#			errors.push
-#				attribute: 'instrumentReader'
-#				message: "Instrument reader must be assigned"
 		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
 			errors.push
 				attribute: 'signalDirectionRule'
@@ -192,8 +229,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be assigned"
-		console.log "primary analysis parameters errors"
-		console.log errors
 
 		if errors.length > 0
 			return errors
@@ -260,10 +295,11 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		@setBindings()
 		@model.on "destroy", @remove, @
 
+
+
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		@$('.bv_readPosition').val @model.get('readPosition')
 		@setUpReadNameSelect()
 
 		@
@@ -289,25 +325,26 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	updateModel: =>
 		activity = @$('.bv_activity').is(":checked")
 		@model.set
-			readPosition: parseFloat(@getTrimmedInput('.bv_readPosition'))
+			readPosition: parseInt(@getTrimmedInput('.bv_readPosition'))
 			readName: @$('.bv_readName').val()
 			activity: activity
+		@model.triggerAmDirty()
 
 	clear: =>
 		@model.destroy()
+		@model.triggerAmDirty()
 
-class window.TransformationRuleController extends Backbone.View
+
+class window.TransformationRuleController extends AbstractFormController
 	template: _.template($("#TransformationRuleView").html())
-#	tagName: "div"
-#	className: "form-inline"
 	events:
-		"change .bv_transformationRule": "handleTransformationRuleChanged"
+		"change .bv_transformationRule": "attributeChanged"
 		"click .bv_deleteRule": "clear"
 
 	initialize: ->
+		@errorOwnerName = 'TransformationRuleController'
+		@setBindings()
 		@model.on "destroy", @remove, @
-#		@errorOwnerName = 'TransformationRuleController'
-#		@setBindings()
 
 
 	render: =>
@@ -319,6 +356,7 @@ class window.TransformationRuleController extends Backbone.View
 
 	updateModel: =>
 		@model.set transformationRule: @$('.bv_transformationRule').val()
+		@model.triggerAmDirty()
 
 
 	setUpTransformationRuleSelect: ->
@@ -332,14 +370,12 @@ class window.TransformationRuleController extends Backbone.View
 				name: "Select Transformation Rule"
 			selectedCode: @model.get('transformationRule')
 
-	handleTransformationRuleChanged: ->
-		@updateModel()
 
 	clear: =>
 		@model.destroy()
 
 
-class window.PrimaryAnalysisReadListController extends Backbone.View
+class window.PrimaryAnalysisReadListController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadListView").html())
 	matchReadNameChecked: true
 	events:
@@ -347,6 +383,8 @@ class window.PrimaryAnalysisReadListController extends Backbone.View
 
 	initialize: =>
 		@collection.on 'remove', @checkActivity
+		@collection.on 'remove', => @collection.trigger 'change'
+
 
 	render: =>
 		$(@el).empty()
@@ -365,6 +403,7 @@ class window.PrimaryAnalysisReadListController extends Backbone.View
 		@addOneRead(newModel)
 		if @collection.length ==1
 			@checkActivity()
+		newModel.triggerAmDirty()
 
 	addOneRead: (read) ->
 		parc = new PrimaryAnalysisReadController
@@ -375,10 +414,10 @@ class window.PrimaryAnalysisReadListController extends Backbone.View
 	matchReadNameChanged: (matchReadName) ->
 		@matchReadNameChecked = matchReadName
 		if matchReadName
-			@collection.each =>
-				@$('.bv_readPosition').val('')
-				@$('.bv_readPosition').change()
-				@$('.bv_readPosition').attr('disabled','disabled')
+			@$('.bv_readPosition').val('')
+			@$('.bv_readPosition').attr('disabled','disabled')
+			@collection.each (read) =>
+				read.set readPosition: ''
 		else
 			@collection.each =>
 				@$('.bv_readPosition').removeAttr('disabled')
@@ -401,6 +440,8 @@ class window.TransformationRuleListController extends AbstractFormController
 
 	initialize: =>
 		@collection.on 'remove', @checkNumberOfRules
+		@collection.on 'remove', => @collection.trigger 'amDirty'
+		@collection.on 'remove', => @collection.trigger 'change'
 
 
 	render: =>
@@ -417,6 +458,7 @@ class window.TransformationRuleListController extends AbstractFormController
 		newModel = new TransformationRuleModel()
 		@collection.add newModel
 		@addOneRule(newModel)
+		newModel.triggerAmDirty()
 
 
 	addOneRule: (rule) ->
@@ -466,6 +508,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	initialize: ->
 		@errorOwnerName = 'PrimaryScreenAnalysisParametersController'
 		super()
+		@model.bind 'amDirty', => @trigger 'amDirty', @
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
 		@setupAggregateBy1Select()
@@ -678,6 +721,14 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 #	See UploadAndRunPrimaryAnalsysisController for example required initialization function
 
+	initialize: ->
+		@allowedFileTypes = ['zip']
+		@loadReportFile = true
+		super()
+		@$('.bv_reportFileDirections').html('To upload an <b>optional well flagging file</b>, click the "Browse Files…" button and select a file.')
+#		@$("label[for='.bv_attachReportFile']").innerHTML('Attach optional well flagging file')
+		@$('.bv_attachReportCheckboxText').html('Attach optional well flagging file')
+
 	completeInitialization: ->
 		@analysisParameterController.on 'valid', @handleMSFormValid
 		@analysisParameterController.on 'invalid', @handleMSFormInvalid
@@ -778,6 +829,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		else
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 			@setExperimentSaved()
+
 
 	render: =>
 		@showExistingResults()
