@@ -1,0 +1,276 @@
+class window.BaseEntityModel extends Backbone.Model
+	urlRoot: "/api/experiments"
+	defaults:
+		lsType: "default"
+		lsKind: "default"
+		recordedBy: ""
+		recordedDate: new Date().getTime()
+		shortDescription: " "
+		lsLabels: new LabelList()
+		lsStates: new StateList()
+
+	initialize: ->
+		@fixCompositeClasses()
+		@setupCompositeChangeTriggers()
+
+	fixCompositeClasses: =>
+		if @has('lsLabels')
+			if @get('lsLabels') not instanceof LabelList
+				@set lsLabels: new LabelList(@get('lsLabels'))
+		if @has('lsStates')
+			if @get('lsStates') not instanceof StateList
+				@set lsStates: new StateList(@get('lsStates'))
+		if @get('lsTags') != null
+			if @get('lsTags') not instanceof TagList
+				@set lsTags: new TagList(@get('lsTags'))
+
+	setupCompositeChangeTriggers: ->
+		@get('lsLabels').on 'change', =>
+			@trigger 'change'
+		@get('lsStates').on 'change', =>
+			@trigger 'change'
+		@get('lsTags').on 'change', =>
+			@trigger 'change'
+
+	getDescription: ->
+		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
+		if description.get('clobValue') is undefined or description.get('clobValue') is ""
+			description.set clobValue: ""
+
+		description
+
+	getNotebook: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
+
+	getCompletionDate: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
+
+	getStatus: ->
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
+		if status.get('stringValue') is undefined or status.get('stringValue') is ""
+			status.set stringValue: "new"
+
+		status
+
+	isEditable: ->
+		status = @getStatus().get 'stringValue'
+		switch status
+			when "created" then return true
+			when "started" then return true
+			when "complete" then return true
+			when "finalized" then return false
+			when "rejected" then return false
+		return true
+
+	validate: (attrs) ->
+		errors = []
+		bestName = attrs.lsLabels.pickBestName()
+		nameError = true
+		if bestName?
+			nameError = true
+			if bestName.get('labelText') != ""
+				nameError = false
+		if nameError
+			errors.push
+				attribute: 'entityName'
+				message: "Entity name must be set"
+		if _.isNaN(attrs.recordedDate)
+			errors.push
+				attribute: 'recordedDate'
+				message: "Experiment date must be set"
+		if attrs.recordedBy is ""
+			errors.push
+				attribute: 'recordedBy'
+				message: "Scientist must be set"
+		notebook = @getNotebook().get('stringValue')
+		if notebook is "" or notebook is "unassigned" or notebook is undefined
+			errors.push
+				attribute: 'notebook'
+				message: "Notebook must be set"
+		cDate = @getCompletionDate().get('dateValue')
+		if cDate is undefined or cDate is "" then cDate = "fred"
+		if isNaN(cDate)
+			errors.push
+				attribute: 'completionDate'
+				message: "Assay completion date must be set"
+
+		if errors.length > 0
+			return errors
+
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+	prepareToSave: ->
+		rBy = @get('recordedBy')
+		rDate = new Date().getTime()
+		@set recordedDate: rDate
+		@get('lsLabels').each (lab) ->
+			unless lab.get('recordedBy') != ""
+				lab.set recordedBy: rBy
+			unless lab.get('recordedDate') != null
+				lab.set recordedDate: rDate
+		@get('lsStates').each (state) ->
+			unless state.get('recordedBy') != ""
+				state.set recordedBy: rBy
+			unless state.get('recordedDate') != null
+				state.set recordedDate: rDate
+			state.get('lsValues').each (val) ->
+				unless val.get('recordedBy') != ""
+					val.set recordedBy: rBy
+				unless val.get('recordedDate') != null
+					val.set recordedDate: rDate
+
+class window.BaseEntityList extends Backbone.Collection
+	model: BaseEntityModel
+
+class window.BaseEntityController extends AbstractFormController
+	template: _.template($("#BaseEntityView").html())
+
+	events:
+		"change .bv_recordedBy": "handleRecordedByChanged"
+		"change .bv_shortDescription": "handleShortDescriptionChanged"
+		"change .bv_description": "handleDescriptionChanged"
+		"change .bv_entityName": "handleNameChanged"
+		"change .bv_completionDate": "handleDateChanged"
+		"change .bv_notebook": "handleNotebookChanged"
+		"change .bv_status": "handleStatusChanged"
+		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+		"click .bv_save": "handleSaveClicked"
+
+
+	initialize: ->
+		@model.on 'sync', =>
+			@trigger 'amClean'
+			@$('.bv_saving').hide()
+			@$('.bv_updateComplete').show()
+			@render()
+		@model.on 'change', =>
+			@trigger 'amDirty'
+			@$('.bv_updateComplete').hide()
+		@errorOwnerName = 'BaseEntityController'
+		@setBindings()
+		$(@el).empty()
+		$(@el).html @template()
+		@$('.bv_save').attr('disabled', 'disabled')
+		@$('.bv_entityCode').attr('disabled', 'disabled')
+		@setupStatusSelect()
+		@setupTagList()
+		@model.getStatus().on 'change', @updateEditable
+
+	render: =>
+		@$('.bv_shortDescription').html @model.get('shortDescription')
+		@$('.bv_description').html @model.get('description')
+		bestName = @model.get('lsLabels').pickBestName()
+		if bestName?
+			@$('.bv_entityName').val bestName.get('labelText')
+		@$('.bv_recordedBy').val(@model.get('recordedBy'))
+		@$('.bv_entityCode').html(@model.get('codeName'))
+		@$('.bv_completionDate').datepicker();
+		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+		if @model.getCompletionDate().get('dateValue')?
+			@$('.bv_completionDate').val @convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
+		@$('.bv_description').html(@model.getDescription().get('clobValue'))
+		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
+		@$('.bv_status').val(@model.getStatus().get('stringValue'))
+		if @model.isNew()
+			@$('.bv_save').html("Save")
+		else
+			@$('.bv_save').html("Update")
+		@updateEditable()
+
+		@
+
+	setupStatusSelect: ->
+		@statusList = new PickListList()
+		@statusList.url = "/api/dataDict/experimentStatus"
+		@statusListController = new PickListSelectController
+			el: @$('.bv_status')
+			collection: @statusList
+			selectedCode: @model.getStatus().get 'stringValue'
+
+	setupTagList: ->
+		@$('.bv_tags').val ""
+		@tagListController = new TagListController
+			el: @$('.bv_tags')
+			collection: @model.get 'lsTags'
+		@tagListController.render()
+
+
+	handleRecordedByChanged: =>
+		@model.set recordedBy: @$('.bv_recordedBy').val()
+		@handleNameChanged()
+
+	handleShortDescriptionChanged: =>
+		trimmedDesc = @getTrimmedInput('.bv_shortDescription')
+		if trimmedDesc != ""
+			@model.set shortDescription: trimmedDesc
+		else
+			@model.set shortDescription: " " #fix for oracle persistance bug
+
+	handleDescriptionChanged: =>
+		@model.getDescription().set
+			clobValue: @getTrimmedInput('.bv_description')
+			recordedBy: @model.get('recordedBy')
+
+	handleNameChanged: =>
+		newName = @getTrimmedInput('.bv_entityName')
+		@model.get('lsLabels').setBestName new Label
+			lsKind: "experiment name"
+			labelText: newName
+			recordedBy: @model.get 'recordedBy'
+		#TODO label change propagation isn't really working, so this is the work-around
+		@model.trigger 'change'
+
+	handleDateChanged: =>
+		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
+
+	handleCompletionDateIconClicked: =>
+		@$( ".bv_completionDate" ).datepicker( "show" );
+
+	handleNotebookChanged: =>
+		@model.getNotebook().set stringValue: @getTrimmedInput('.bv_notebook')
+
+	handleStatusChanged: =>
+		@model.getStatus().set stringValue: @$('.bv_status').val()
+		# this is required in addition to model change event watcher only for spec. real app works without it
+		@updateEditable()
+
+	handleStatusChanged: =>
+		@model.getStatus().set stringValue: @$('.bv_status').val()
+		# this is required in addition to model change event watcher only for spec. real app works without it
+		@updateEditable()
+
+
+	updateEditable: =>
+		if @model.isEditable()
+			@enableAllInputs()
+			@$('.bv_lock').hide()
+		else
+			@disableAllInputs()
+			@$('.bv_status').removeAttr('disabled')
+			@$('.bv_lock').show()
+		if @model.isNew()
+			@$('.bv_status').attr("disabled", "disabled")
+		else
+			@$('.bv_status').removeAttr("disabled")
+
+	handleSaveClicked: =>
+		@tagListController.handleTagsChanged()
+		@model.prepareToSave()
+		if @model.isNew()
+			@$('.bv_updateComplete').html "Save Complete"
+		else
+			@$('.bv_updateComplete').html "Update Complete"
+		@$('.bv_saving').show()
+		@model.save()
+
+	validationError: =>
+		super()
+		@$('.bv_save').attr('disabled', 'disabled')
+
+	clearValidationErrorStyles: =>
+		super()
+		@$('.bv_save').removeAttr('disabled')
+

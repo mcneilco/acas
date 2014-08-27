@@ -23,6 +23,11 @@ window.ModuleMenusConfiguration =
 		autoLaunchName:"flipr_screening_assay"
 	,
 		isHeader: false
+		menuName: "Base entity"
+		mainControllerClassName: "BaseEntityController"
+		autoLaunchName:"base_entity"
+	,
+		isHeader: false
 		menuName: "Analyze KD Data"
 		mainControllerClassName: "DNSKDPrimaryScreenExperimentController"
 		autoLaunchName:"dnskd_screening_assay"
