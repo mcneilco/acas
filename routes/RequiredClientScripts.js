@@ -93,6 +93,7 @@ exports.specScripts = [
 	"/javascripts/spec/AbstractFormControllerSpec.js",
 	"/javascripts/spec/AnalysisGroupSpec.js",
 	"/javascripts/spec/AuthenticationServiceSpec.js",
+	"/javascripts/spec/BaseEntityServiceSpec.js",
 	"/javascripts/spec/BaseEntitySpec.js",
 	"/javascripts/spec/BulkLoadContainersFromSDFServerSpec.js",
 	"/javascripts/spec/BulkLoadContainersFromSDFSpec.js",

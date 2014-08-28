@@ -1,6 +1,7 @@
 class window.BaseEntityModel extends Backbone.Model
 	urlRoot: "/api/experiments"
 	defaults:
+		subclass: "entity"
 		lsType: "default"
 		lsKind: "default"
 		recordedBy: ""
@@ -13,7 +14,34 @@ class window.BaseEntityModel extends Backbone.Model
 		@fixCompositeClasses()
 		@setupCompositeChangeTriggers()
 
+	parse: (resp) =>
+		if resp.lsLabels?
+			if resp.lsLabels not instanceof LabelList
+				resp.lsLabels = new LabelList(resp.lsLabels)
+				resp.lsLabels.on 'change', =>
+					@trigger 'change'
+		if resp.lsStates?
+			if resp.lsStates not instanceof StateList
+				resp.lsStates = new StateList(resp.lsStates)
+				resp.lsStates.on 'change', =>
+					@trigger 'change'
+		if resp.analysisGroups?
+			if resp.analysisGroups not instanceof AnalysisGroupList
+				resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups)
+		if resp.protocol?
+			if resp.protocol not instanceof Protocol
+				resp.protocol = new Protocol(resp.protocol)
+		if resp.lsTags not instanceof TagList
+			resp.lsTags = new TagList(resp.lsTags)
+			resp.lsTags.on 'change', =>
+				@trigger 'change'
+		resp
+
+
 	fixCompositeClasses: =>
+		console.log "fixCompositeClasses called"
+		console.log @has('lsLabels')
+		console.log @get('lsLabels') not instanceof LabelList
 		if @has('lsLabels')
 			if @get('lsLabels') not instanceof LabelList
 				@set lsLabels: new LabelList(@get('lsLabels'))
@@ -33,20 +61,24 @@ class window.BaseEntityModel extends Backbone.Model
 			@trigger 'change'
 
 	getDescription: ->
-		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
+		metadataKind = @.get('subclass') + " metadata"
+		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "description"
 		if description.get('clobValue') is undefined or description.get('clobValue') is ""
 			description.set clobValue: ""
 
 		description
 
 	getNotebook: ->
-		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
+		metadataKind = @.get('subclass') + " metadata"
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook"
 
 	getCompletionDate: ->
-		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
+		metadataKind = @.get('subclass') + " metadata"
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "dateValue", "completion date"
 
 	getStatus: ->
-		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
+		metadataKind = @.get('subclass') + " metadata"
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
 			status.set stringValue: "new"
 
@@ -63,6 +95,7 @@ class window.BaseEntityModel extends Backbone.Model
 		return true
 
 	validate: (attrs) ->
+		window.temp_attrs = attrs
 		errors = []
 		bestName = attrs.lsLabels.pickBestName()
 		nameError = true
@@ -72,12 +105,12 @@ class window.BaseEntityModel extends Backbone.Model
 				nameError = false
 		if nameError
 			errors.push
-				attribute: 'entityName'
-				message: "Entity name must be set"
+				attribute:'entityName'
+				message: attrs.subclass+" name must be set"
 		if _.isNaN(attrs.recordedDate)
 			errors.push
 				attribute: 'recordedDate'
-				message: "Experiment date must be set"
+				message: attrs.subclass+" date must be set"
 		if attrs.recordedBy is ""
 			errors.push
 				attribute: 'recordedBy'
@@ -141,6 +174,8 @@ class window.BaseEntityController extends AbstractFormController
 
 
 	initialize: ->
+		unless @model?
+			@model=new BaseEntityModel()
 		@model.on 'sync', =>
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
@@ -184,7 +219,7 @@ class window.BaseEntityController extends AbstractFormController
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/experimentStatus"
+		@statusList.url = "/api/dataDict/"+@model.get('subclass')+"Status"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList
@@ -217,7 +252,7 @@ class window.BaseEntityController extends AbstractFormController
 	handleNameChanged: =>
 		newName = @getTrimmedInput('.bv_entityName')
 		@model.get('lsLabels').setBestName new Label
-			lsKind: "experiment name"
+			lsKind: @model.get('subclass')+" name"
 			labelText: newName
 			recordedBy: @model.get 'recordedBy'
 		#TODO label change propagation isn't really working, so this is the work-around
@@ -237,10 +272,6 @@ class window.BaseEntityController extends AbstractFormController
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
 
-	handleStatusChanged: =>
-		@model.getStatus().set stringValue: @$('.bv_status').val()
-		# this is required in addition to model change event watcher only for spec. real app works without it
-		@updateEditable()
 
 
 	updateEditable: =>
