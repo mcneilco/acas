@@ -225,7 +225,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'dilutionFactor'
 				message: "Dilution factor must be a number"
-		if attrs.volumeType == "transfer" && _.isNaN(attrs.transferVolume)
+		if attrs.volumeType == "transfer" and (_.isNaN(attrs.transferVolume) or attrs.transferVolume =="")
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be assigned"
@@ -419,8 +419,7 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			@collection.each (read) =>
 				read.set readPosition: ''
 		else
-			@collection.each =>
-				@$('.bv_readPosition').removeAttr('disabled')
+			@$('.bv_readPosition').removeAttr('disabled')
 
 	checkActivity: => #check that at least one activity is set
 		index = @collection.length-1
@@ -642,36 +641,35 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
-		if @$('.bv_dilutionFactor').attr('disabled') is undefined
+		volumeType = @$("input[name='bv_volumeType']:checked").val()
+		if volumeType == "dilution"
 			@handleDilutionFactorChanged()
 		else
 			@handleTransferVolumeChanged()
 
 
 	handleTransferVolumeChanged: =>
-		if @$('.bv_transferVolume').attr('disabled') is undefined
+		volumeType = @$("input[name='bv_volumeType']:checked").val()
+		if volumeType == "transfer"
 			transferVolume = parseFloat(@getTrimmedInput('.bv_transferVolume'))
 			assayVolume = parseFloat(@getTrimmedInput('.bv_assayVolume'))
 			if isNaN(transferVolume) or isNaN(assayVolume)
 				dilutionFactor = null
 			else
 				dilutionFactor = assayVolume/transferVolume
-			@model.set dilutionFactor: dilutionFactor
 			@$('.bv_dilutionFactor').val(dilutionFactor)
-			@$('.bv_dilutionFactor').change()
 		@attributeChanged()
 
 	handleDilutionFactorChanged: =>
-		if @$('.bv_dilutionFactor').attr('disabled') is undefined
+		volumeType = @$("input[name='bv_volumeType']:checked").val()
+		if volumeType == "dilution"
 			dilutionFactor = parseFloat(@getTrimmedInput('.bv_dilutionFactor'))
 			assayVolume = parseFloat(@getTrimmedInput('.bv_assayVolume'))
 			if isNaN(dilutionFactor) or isNaN(assayVolume)
 				transferVolume = null
 			else
 				transferVolume = assayVolume/dilutionFactor
-			@model.set transferVolume: transferVolume
 			@$('.bv_transferVolume').val(transferVolume)
-			@$('.bv_transferVolume').change()
 		@attributeChanged()
 
 
@@ -701,16 +699,11 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		if volumeType=="transfer"
 			@$('.bv_dilutionFactor').attr('disabled','disabled')
 			@$('.bv_transferVolume').removeAttr('disabled')
-			if @model.get('transferVolume') == "" or @model.get('transferVolume') == null
-				@$('.bv_dilutionFactor').val('')
-				@$('.bv_dilutionFactor').change()
 		else
 			@$('.bv_transferVolume').attr('disabled','disabled')
 			@$('.bv_dilutionFactor').removeAttr('disabled')
-			if @model.get('transferVolume') == "" or @model.get('transferVolume') == null
-				@$('.bv_dilutionFactor').val('')
-				@$('.bv_dilutionFactor').change()
-
+		if @model.get('transferVolume') == "" or @model.get('transferVolume') == null
+			@handleDilutionFactorChanged()
 		@attributeChanged()
 
 	handleMatchReadNameChanged: =>

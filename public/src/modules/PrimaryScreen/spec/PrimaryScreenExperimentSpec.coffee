@@ -46,7 +46,13 @@ describe "Primary Screen Experiment module testing", ->
 				expect(@trm.isValid()).toBeTruthy()
 			it "should be invalid when transformation rule is unassigned", ->
 				@trm.set transformationRule: "unassigned"
-				expect(@trm.validate(@trm.attributes,0,false).length).toBeGreaterThan 0
+				expect(@trm.isValid()).toBeFalsy()
+				filtErrors = _.filter(@trm.validationError, (err) ->
+					console.log (err.attribute).search("transformationRule")
+					(err.attribute).search("transformationRule") != -1
+				)
+				console.log @trm.validationError
+				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Primary Analysis Read List testing", ->
 		describe "When loaded from new", ->
@@ -63,10 +69,6 @@ describe "Primary Screen Experiment module testing", ->
 			describe "Existence", ->
 				it "should be defined", ->
 					expect(@trl).toBeDefined()
-#			describe "validation", ->
-#				it "should be invalid if a transformation rule is selected more than once ", ->
-#					@trl.set transformationRule: "unassigned"
-#
 
 
 	describe "Analysis Parameter model testing", ->
@@ -109,7 +111,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect( @psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
 			describe "model validation tests", ->
 				it "should be valid as initialized", ->
-					expect(@psap.validate(@psap.attributes)).toEqual null
+					expect(@psap.isValid()).toBeTruthy()
 				it "should be invalid when positive control batch is empty", ->
 					@psap.get('positiveControl').set
 						batchCode: ""
@@ -535,16 +537,22 @@ describe "Primary Screen Experiment module testing", ->
 					collection: new TransformationRuleList window.primaryScreenTestJSON.transformationRules
 				@trlc.render()
 			it "should have three rules", ->
+				expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 3
 				expect(@trlc.collection.length).toEqual 3
 			it "should have the correct rule info for the first rule", ->
+				console.log @trlc.$('.bv_transformationRule:eq(0)')
+				console.log @trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)') #this and one above have same andn correct value: % efficacy
+				console.log @trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val()
+				expect (@trlc.$('.bv_transformationRule:eq(0)').val()).toEqual "% efficacy"
 				ruleone = @trlc.collection.at(0)
-				expect(ruleone.get('transformationRule')).toEqual "% efficacy"
+				console.log ruleone
+				expect(ruleone.$('.bv_transformationRule').val()).toEqual "% efficacy"
 			it "should have the correct rule info for the second rule", ->
 				ruletwo = @trlc.collection.at(1)
-				expect(ruletwo.get('transformationRule')).toEqual "sd"
+				expect(ruletwo.$('.bv_transformationRule').val()).toEqual "sd"
 			it "should have the correct rule info for the third rule", ->
 				rulethree = @trlc.collection.at(2)
-				expect(rulethree.get('transformationRule')).toEqual "null"
+				expect(rulethree.$('.bv_transformationRule:eq(2)').val()).toEqual "null"
 
 		describe "error notification", ->
 			beforeEach ->
@@ -565,6 +573,7 @@ describe "Primary Screen Experiment module testing", ->
 					@trlc.$('.bv_transformationRule:eq(1)').change()
 					waits(1000)
 					expect((@trlc.collection.validateCollection()).length).toBeGreaterThan 0
+					expect(@trlc.$('.bv_group_transformationRule:eq(0)').hasClass('error')).toBeTruthy()
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->

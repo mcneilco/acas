@@ -68,10 +68,17 @@
           return expect(this.trm.isValid()).toBeTruthy();
         });
         return it("should be invalid when transformation rule is unassigned", function() {
+          var filtErrors;
           this.trm.set({
             transformationRule: "unassigned"
           });
-          return expect(this.trm.validate(this.trm.attributes, 0, false).length).toBeGreaterThan(0);
+          expect(this.trm.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.trm.validationError, function(err) {
+            console.log(err.attribute.search("transformationRule"));
+            return err.attribute.search("transformationRule") !== -1;
+          });
+          console.log(this.trm.validationError);
+          return expect(filtErrors.length).toBeGreaterThan(0);
         });
       });
     });
@@ -147,7 +154,7 @@
         });
         return describe("model validation tests", function() {
           it("should be valid as initialized", function() {
-            return expect(this.psap.validate(this.psap.attributes)).toEqual(null);
+            return expect(this.psap.isValid()).toBeTruthy();
           });
           it("should be invalid when positive control batch is empty", function() {
             var filtErrors;
@@ -740,22 +747,28 @@
           return this.trlc.render();
         });
         it("should have three rules", function() {
+          expect(this.trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual(3);
           return expect(this.trlc.collection.length).toEqual(3);
         });
         it("should have the correct rule info for the first rule", function() {
           var ruleone;
+          console.log(this.trlc.$('.bv_transformationRule:eq(0)'));
+          console.log(this.trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)'));
+          console.log(this.trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val());
+          expect((this.trlc.$('.bv_transformationRule:eq(0)').val()).toEqual("% efficacy"));
           ruleone = this.trlc.collection.at(0);
-          return expect(ruleone.get('transformationRule')).toEqual("% efficacy");
+          console.log(ruleone);
+          return expect(ruleone.$('.bv_transformationRule').val()).toEqual("% efficacy");
         });
         it("should have the correct rule info for the second rule", function() {
           var ruletwo;
           ruletwo = this.trlc.collection.at(1);
-          return expect(ruletwo.get('transformationRule')).toEqual("sd");
+          return expect(ruletwo.$('.bv_transformationRule').val()).toEqual("sd");
         });
         return it("should have the correct rule info for the third rule", function() {
           var rulethree;
           rulethree = this.trlc.collection.at(2);
-          return expect(rulethree.get('transformationRule')).toEqual("null");
+          return expect(rulethree.$('.bv_transformationRule:eq(2)').val()).toEqual("null");
         });
       });
       return describe("error notification", function() {
@@ -778,7 +791,8 @@
             this.trlc.$('.bv_transformationRule:eq(1)').val("sd");
             this.trlc.$('.bv_transformationRule:eq(1)').change();
             waits(1000);
-            return expect((this.trlc.collection.validateCollection()).length).toBeGreaterThan(0);
+            expect((this.trlc.collection.validateCollection()).length).toBeGreaterThan(0);
+            return expect(this.trlc.$('.bv_group_transformationRule:eq(0)').hasClass('error')).toBeTruthy();
           });
         });
       });

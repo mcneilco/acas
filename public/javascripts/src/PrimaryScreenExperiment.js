@@ -381,7 +381,7 @@
           message: "Dilution factor must be a number"
         });
       }
-      if (attrs.volumeType === "transfer" && _.isNaN(attrs.transferVolume)) {
+      if (attrs.volumeType === "transfer" && (_.isNaN(attrs.transferVolume) || attrs.transferVolume === "")) {
         errors.push({
           attribute: 'transferVolume',
           message: "Transfer volume must be assigned"
@@ -686,11 +686,7 @@
           };
         })(this));
       } else {
-        return this.collection.each((function(_this) {
-          return function() {
-            return _this.$('.bv_readPosition').removeAttr('disabled');
-          };
-        })(this));
+        return this.$('.bv_readPosition').removeAttr('disabled');
       }
     };
 
@@ -1006,8 +1002,10 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleAssayVolumeChanged = function() {
+      var volumeType;
       this.attributeChanged();
-      if (this.$('.bv_dilutionFactor').attr('disabled') === void 0) {
+      volumeType = this.$("input[name='bv_volumeType']:checked").val();
+      if (volumeType === "dilution") {
         return this.handleDilutionFactorChanged();
       } else {
         return this.handleTransferVolumeChanged();
@@ -1015,8 +1013,9 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleTransferVolumeChanged = function() {
-      var assayVolume, dilutionFactor, transferVolume;
-      if (this.$('.bv_transferVolume').attr('disabled') === void 0) {
+      var assayVolume, dilutionFactor, transferVolume, volumeType;
+      volumeType = this.$("input[name='bv_volumeType']:checked").val();
+      if (volumeType === "transfer") {
         transferVolume = parseFloat(this.getTrimmedInput('.bv_transferVolume'));
         assayVolume = parseFloat(this.getTrimmedInput('.bv_assayVolume'));
         if (isNaN(transferVolume) || isNaN(assayVolume)) {
@@ -1024,18 +1023,15 @@
         } else {
           dilutionFactor = assayVolume / transferVolume;
         }
-        this.model.set({
-          dilutionFactor: dilutionFactor
-        });
         this.$('.bv_dilutionFactor').val(dilutionFactor);
-        this.$('.bv_dilutionFactor').change();
       }
       return this.attributeChanged();
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleDilutionFactorChanged = function() {
-      var assayVolume, dilutionFactor, transferVolume;
-      if (this.$('.bv_dilutionFactor').attr('disabled') === void 0) {
+      var assayVolume, dilutionFactor, transferVolume, volumeType;
+      volumeType = this.$("input[name='bv_volumeType']:checked").val();
+      if (volumeType === "dilution") {
         dilutionFactor = parseFloat(this.getTrimmedInput('.bv_dilutionFactor'));
         assayVolume = parseFloat(this.getTrimmedInput('.bv_assayVolume'));
         if (isNaN(dilutionFactor) || isNaN(assayVolume)) {
@@ -1043,11 +1039,7 @@
         } else {
           transferVolume = assayVolume / dilutionFactor;
         }
-        this.model.set({
-          transferVolume: transferVolume
-        });
         this.$('.bv_transferVolume').val(transferVolume);
-        this.$('.bv_transferVolume').change();
       }
       return this.attributeChanged();
     };
@@ -1091,17 +1083,12 @@
       if (volumeType === "transfer") {
         this.$('.bv_dilutionFactor').attr('disabled', 'disabled');
         this.$('.bv_transferVolume').removeAttr('disabled');
-        if (this.model.get('transferVolume') === "" || this.model.get('transferVolume') === null) {
-          this.$('.bv_dilutionFactor').val('');
-          this.$('.bv_dilutionFactor').change();
-        }
       } else {
         this.$('.bv_transferVolume').attr('disabled', 'disabled');
         this.$('.bv_dilutionFactor').removeAttr('disabled');
-        if (this.model.get('transferVolume') === "" || this.model.get('transferVolume') === null) {
-          this.$('.bv_dilutionFactor').val('');
-          this.$('.bv_dilutionFactor').change();
-        }
+      }
+      if (this.model.get('transferVolume') === "" || this.model.get('transferVolume') === null) {
+        this.handleDilutionFactorChanged();
       }
       return this.attributeChanged();
     };
