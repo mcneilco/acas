@@ -12,16 +12,16 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 	fixCompositeClasses: =>
 		if @get('max') not instanceof Backbone.Model
 			@set max: new Backbone.Model(@get('max'))
-		@get('max').on "change", =>
-			@trigger 'change'
+#		@get('max').on "change", =>
+#			@trigger 'change'
 		if @get('min') not instanceof Backbone.Model
 			@set min: new Backbone.Model(@get('min'))
-		@get('min').on "change", =>
-			@trigger 'change'
+#		@get('min').on "change", =>
+#			@trigger 'change'
 		if @get('slope') not instanceof Backbone.Model
 			@set slope: new Backbone.Model(@get('slope'))
-		@get('slope').on "change", =>
-			@trigger 'change'
+#		@get('slope').on "change", =>
+#			@trigger 'change'
 
 
 	validate: (attrs) ->
@@ -46,7 +46,6 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'inactiveThreshold'
 				message: "Inactive threshold value must be set to a number"
-
 		if errors.length > 0
 			return errors
 		else
@@ -58,15 +57,15 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 
 	events:
 		"change .bv_inverseAgonistMode": "handleInverseAgonistModeChanged"
-		"change .bv_max_limitType_none": "handleMaxLimitTypeChanged"
-		"change .bv_max_limitType_pin": "handleMaxLimitTypeChanged"
-		"change .bv_max_limitType_limit": "handleMaxLimitTypeChanged"
-		"change .bv_min_limitType_none": "handleMinLimitTypeChanged"
-		"change .bv_min_limitType_pin": "handleMinLimitTypeChanged"
-		"change .bv_min_limitType_limit": "handleMinLimitTypeChanged"
-		"change .bv_slope_limitType_none": "handleSlopeLimitTypeChanged"
-		"change .bv_slope_limitType_pin": "handleSlopeLimitTypeChanged"
-		"change .bv_slope_limitType_limit": "handleSlopeLimitTypeChanged"
+		"click .bv_max_limitType_none": "handleMaxLimitTypeChanged"
+		"click .bv_max_limitType_pin": "handleMaxLimitTypeChanged"
+		"click .bv_max_limitType_limit": "handleMaxLimitTypeChanged"
+		"click .bv_min_limitType_none": "handleMinLimitTypeChanged"
+		"click .bv_min_limitType_pin": "handleMinLimitTypeChanged"
+		"click .bv_min_limitType_limit": "handleMinLimitTypeChanged"
+		"click .bv_slope_limitType_none": "handleSlopeLimitTypeChanged"
+		"click .bv_slope_limitType_pin": "handleSlopeLimitTypeChanged"
+		"click .bv_slope_limitType_limit": "handleSlopeLimitTypeChanged"
 		"change .bv_max_value": "attributeChanged"
 		"change .bv_min_value": "attributeChanged"
 		"change .bv_slope_value": "attributeChanged"
@@ -88,7 +87,6 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@$('.bv_inactiveThreshold').on 'slidestop', @handleInactiveThresholdChanged
 		@updateThresholdDisplay(@model.get 'inactiveThreshold')
 #		@setThresholdEnabledState()
-
 		@
 
 	updateThresholdDisplay: (val)->
@@ -108,6 +106,10 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			value: parseFloat(@getTrimmedInput('.bv_min_value'))
 		@model.get('slope').set
 			value: parseFloat(@getTrimmedInput('.bv_slope_value'))
+		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
+			silent: true
+		@model.trigger 'change'
+
 
 	handleInactiveThresholdChanged: (event, ui) =>
 		@model.set 'inactiveThreshold': ui.value
@@ -118,13 +120,12 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@updateThresholdDisplay(ui.value)
 
 	handleInverseAgonistModeChanged: =>
-		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked")
-#		@setThresholdEnabledState()
 		@attributeChanged()
 
 	handleMaxLimitTypeChanged: =>
 		radioValue = @$("input[name='bv_max_limitType']:checked").val()
-		@model.get('max').set limitType: radioValue
+		@model.get('max').set limitType: radioValue,
+			silent: true
 		if radioValue == 'none'
 			@$('.bv_max_value').attr('disabled','disabled')
 		else

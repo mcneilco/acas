@@ -27,7 +27,7 @@ tryCatch({
         'save' = racas::api_doseResponse_save_session(POST$sessionID, POST$user),
         'pointsChanged' = racas::api_doseResponse_refit(POST),
         'parametersChanged' = racas::api_doseResponse_refit(POST),
-        'flagUser' = racas::api_doseResponse_update_user_flag(POST$sessionID,POST$flagUser, POST$user))
+        'flagUser' = racas::api_doseResponse_refit(POST))
     )
 
   }

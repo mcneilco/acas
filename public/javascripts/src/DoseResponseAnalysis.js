@@ -29,31 +29,16 @@
           max: new Backbone.Model(this.get('max'))
         });
       }
-      this.get('max').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
       if (!(this.get('min') instanceof Backbone.Model)) {
         this.set({
           min: new Backbone.Model(this.get('min'))
         });
       }
-      this.get('min').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
       if (!(this.get('slope') instanceof Backbone.Model)) {
-        this.set({
+        return this.set({
           slope: new Backbone.Model(this.get('slope'))
         });
       }
-      return this.get('slope').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
     };
 
     DoseResponseAnalysisParameters.prototype.validate = function(attrs) {
@@ -118,15 +103,15 @@
 
     DoseResponseAnalysisParametersController.prototype.events = {
       "change .bv_inverseAgonistMode": "handleInverseAgonistModeChanged",
-      "change .bv_max_limitType_none": "handleMaxLimitTypeChanged",
-      "change .bv_max_limitType_pin": "handleMaxLimitTypeChanged",
-      "change .bv_max_limitType_limit": "handleMaxLimitTypeChanged",
-      "change .bv_min_limitType_none": "handleMinLimitTypeChanged",
-      "change .bv_min_limitType_pin": "handleMinLimitTypeChanged",
-      "change .bv_min_limitType_limit": "handleMinLimitTypeChanged",
-      "change .bv_slope_limitType_none": "handleSlopeLimitTypeChanged",
-      "change .bv_slope_limitType_pin": "handleSlopeLimitTypeChanged",
-      "change .bv_slope_limitType_limit": "handleSlopeLimitTypeChanged",
+      "click .bv_max_limitType_none": "handleMaxLimitTypeChanged",
+      "click .bv_max_limitType_pin": "handleMaxLimitTypeChanged",
+      "click .bv_max_limitType_limit": "handleMaxLimitTypeChanged",
+      "click .bv_min_limitType_none": "handleMinLimitTypeChanged",
+      "click .bv_min_limitType_pin": "handleMinLimitTypeChanged",
+      "click .bv_min_limitType_limit": "handleMinLimitTypeChanged",
+      "click .bv_slope_limitType_none": "handleSlopeLimitTypeChanged",
+      "click .bv_slope_limitType_pin": "handleSlopeLimitTypeChanged",
+      "click .bv_slope_limitType_limit": "handleSlopeLimitTypeChanged",
       "change .bv_max_value": "attributeChanged",
       "change .bv_min_value": "attributeChanged",
       "change .bv_slope_value": "attributeChanged"
@@ -172,9 +157,15 @@
       this.model.get('min').set({
         value: parseFloat(this.getTrimmedInput('.bv_min_value'))
       });
-      return this.model.get('slope').set({
+      this.model.get('slope').set({
         value: parseFloat(this.getTrimmedInput('.bv_slope_value'))
       });
+      this.model.set({
+        inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
+      }, {
+        silent: true
+      });
+      return this.model.trigger('change');
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdChanged = function(event, ui) {
@@ -190,9 +181,6 @@
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInverseAgonistModeChanged = function() {
-      this.model.set({
-        inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
-      });
       return this.attributeChanged();
     };
 
@@ -201,6 +189,8 @@
       radioValue = this.$("input[name='bv_max_limitType']:checked").val();
       this.model.get('max').set({
         limitType: radioValue
+      }, {
+        silent: true
       });
       if (radioValue === 'none') {
         this.$('.bv_max_value').attr('disabled', 'disabled');
