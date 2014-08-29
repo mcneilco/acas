@@ -25,33 +25,39 @@ describe "Primary Screen Experiment module testing", ->
 				expect(@par.isValid()).toBeTruthy()
 			it "should be invalid when read position is NaN", ->
 				@par.set readPosition: NaN
-				expect(@par.validate(@par.attributes,0,false).length).toBeGreaterThan 0
+				expect(@par.isValid()).toBeFalsy()
+				filtErrors = _.filter(@par.validationError, (err) ->
+					err.attribute=='readPosition'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when read name is unassigned", ->
 				@par.set readName: "unassigned"
-				expect(@par.validate(@par.attributes,0,false).length).toBeGreaterThan 0
+				expect(@par.isValid()).toBeFalsy()
+				filtErrors = _.filter(@par.validationError, (err) ->
+					err.attribute=='readName'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Transformation Rule Model testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
-				@trm = new TransformationRuleModel()
+				@tr = new TransformationRule()
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
-					expect(@trm).toBeDefined()
+					expect(@tr).toBeDefined()
 				it "should have defaults", ->
-					expect(@trm.get('transformationRule')).toEqual "unassigned"
+					expect(@tr.get('transformationRule')).toEqual "unassigned"
 		describe "model validation tests", ->
 			beforeEach ->
-				@trm = new TransformationRuleModel window.primaryScreenTestJSON.transformationRules[0]
+				@tr = new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
 			it "should be valid as initialized", ->
-				expect(@trm.isValid()).toBeTruthy()
+				expect(@tr.isValid()).toBeTruthy()
 			it "should be invalid when transformation rule is unassigned", ->
-				@trm.set transformationRule: "unassigned"
-				expect(@trm.isValid()).toBeFalsy()
-				filtErrors = _.filter(@trm.validationError, (err) ->
-					console.log (err.attribute).search("transformationRule")
-					(err.attribute).search("transformationRule") != -1
+				@tr.set transformationRule: "unassigned"
+				expect(@tr.isValid()).toBeFalsy()
+				filtErrors = _.filter(@tr.validationError, (err) ->
+					err.attribute=='transformationRule'
 				)
-				console.log @trm.validationError
 				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Primary Analysis Read List testing", ->
@@ -61,6 +67,28 @@ describe "Primary Screen Experiment module testing", ->
 			describe "Existence", ->
 				it "should be defined", ->
 					expect(@parl).toBeDefined()
+		describe "When loaded form existing", ->
+			beforeEach ->
+				@parl = new PrimaryAnalysisReadList window.primaryScreenTestJSON.primaryAnalysisReads
+			it "should have three reads", ->
+				expect(@parl.length).toEqual 3
+			it "should have the correct read info for the first read", ->
+				readtwo = @parl.at(0)
+				expect(readtwo.get('readPosition')).toEqual 11
+				expect(readtwo.get('readName')).toEqual "none"
+				expect(readtwo.get('activity')).toBeTruthy()
+			it "should have the correct read info for the second read", ->
+				readtwo = @parl.at(1)
+				expect(readtwo.get('readPosition')).toEqual 12
+				expect(readtwo.get('readName')).toEqual "fluorescence"
+				expect(readtwo.get('activity')).toBeFalsy()
+			it "should have the correct read info for the third read", ->
+				readthree = @parl.at(2)
+				expect(readthree.get('readPosition')).toEqual 13
+				expect(readthree.get('readName')).toEqual "luminescence"
+				expect(readthree.get('activity')).toBeFalsy()
+
+
 
 	describe "Transformation Rule List testing", ->
 		describe "When loaded from new", ->
@@ -69,6 +97,20 @@ describe "Primary Screen Experiment module testing", ->
 			describe "Existence", ->
 				it "should be defined", ->
 					expect(@trl).toBeDefined()
+		describe "When loaded form existing", ->
+			beforeEach ->
+				@trl = new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+			it "should have three reads", ->
+				expect(@trl.length).toEqual 3
+			it "should have the correct rule info for the first rule", ->
+				ruleone = @trl.at(0)
+				expect(ruleone.get('transformationRule')).toEqual "% efficacy"
+			it "should have the correct read info for the second rule", ->
+				ruletwo = @trl.at(1)
+				expect(ruletwo.get('transformationRule')).toEqual "sd"
+			it "should have the correct read info for the third read", ->
+				rulethree = @trl.at(2)
+				expect(rulethree.get('transformationRule')).toEqual "null"
 
 
 	describe "Analysis Parameter model testing", ->
@@ -387,25 +429,12 @@ describe "Primary Screen Experiment module testing", ->
 					model: new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisReads
 					el: $('#fixture')
 				@parc.render()
-#			describe "error notification", ->
-#				it "should show error if readPosition is NaN", ->
-#					@parc.$('.bv_readPosition').val ""
-#					@parc.$('.bv_readPosition').change()
-#					expect(@parc.$('.bv_group_readPosition:eq(0)').hasClass("error")).toBeTruthy()
-#				it "should show error if read name is unassigned", ->
-#					waitsFor ->
-#						@parc.$('.bv_readName option').length > 0
-#					, 1000
-#					runs ->
-#						@parc.$('.bv_readName').val "unassigned"
-#						@parc.$('.bv_readName').change()
-#						expect(@parc.$('.bv_group_readName').hasClass("error")).toBeTruthy()
 
 	describe "TransformationRuleController", ->
 		describe "when instantiated", ->
 			beforeEach ->
 				@trc = new TransformationRuleController
-					model: new TransformationRuleModel window.primaryScreenTestJSON.transformationRules[0]
+					model: new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
 					el: $('#fixture')
 				@trc.render()
 			describe "basic existance tests", ->
@@ -429,21 +458,6 @@ describe "Primary Screen Experiment module testing", ->
 						@trc.$('.bv_transformationRule').val('sd')
 						@trc.$('.bv_transformationRule').change()
 						expect(@trc.model.get('transformationRule')).toEqual "sd"
-#		describe "validation testing", ->
-#			beforeEach ->
-#				@trc = new TransformationRuleController
-#					model: new TransformationRuleModel window.primaryScreenTestJSON.transformationRules[0]
-#					el: $('#fixture')
-#				@trc.render()
-#			describe "error notification", ->
-#				it "should show error if transformation rule is unassigned", ->
-#					waitsFor ->
-#						@trc.$('.bv_transformationRule option').length > 0
-#					, 1000
-#					runs ->
-#						@trc.$('.bv_transformationRule').val "unassigned"
-#						@trc.$('.bv_transformationRule').change()
-#						expect(@trc.$('.bv_group_transformationRule:eq(0)').hasClass("error")).toBeTruthy()
 
 	describe "Primary Analysis Read List Controller testing", ->
 		describe "when instantiated with no data", ->
@@ -486,16 +500,30 @@ describe "Primary Screen Experiment module testing", ->
 				@parlc.render()
 			it "should have three reads", ->
 				expect(@parlc.collection.length).toEqual 3
+			it "should have the correct read info for the first read", ->
+				waitsFor ->
+					@parlc.$('.bv_readName option').length > 0
+				, 1000
+				runs ->
+					expect(@parlc.$('.bv_readPosition:eq(0)').val()).toEqual "11"
+					expect(@parlc.$('.bv_readName:eq(0)').val()).toEqual "none"
+					expect(@parlc.$('.bv_activity:eq(0)').attr("checked")).toEqual "checked"
 			it "should have the correct read info for the second read", ->
-				readtwo = @parlc.collection.at(1)
-				expect(readtwo.get('readPosition')).toEqual 12
-				expect(readtwo.get('readName')).toEqual "fluorescence"
-				expect(readtwo.get('activity')).toBeFalsy()
+				waitsFor ->
+					@parlc.$('.bv_readName option').length > 0
+				, 1000
+				runs ->
+					expect(@parlc.$('.bv_readPosition:eq(1)').val()).toEqual "12"
+					expect(@parlc.$('.bv_readName:eq(1)').val()).toEqual "fluorescence"
+					expect(@parlc.$('.bv_activity:eq(1)').attr("checked")).toBeUndefined()
 			it "should have the correct read info for the third read", ->
-				readthree = @parlc.collection.at(2)
-				expect(readthree.get('readPosition')).toEqual 13
-				expect(readthree.get('readName')).toEqual "luminescence"
-				expect(readthree.get('activity')).toBeFalsy()
+				waitsFor ->
+					@parlc.$('.bv_readName option').length > 0
+				, 1000
+				runs ->
+					expect(@parlc.$('.bv_readPosition:eq(2)').val()).toEqual "13"
+					expect(@parlc.$('.bv_readName:eq(2)').val()).toEqual "luminescence"
+					expect(@parlc.$('.bv_activity:eq(2)').attr("checked")).toBeUndefined()
 
 	describe "Transformation Rule List Controller testing", ->
 		describe "when instantiated with no data", ->
@@ -540,19 +568,24 @@ describe "Primary Screen Experiment module testing", ->
 				expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 3
 				expect(@trlc.collection.length).toEqual 3
 			it "should have the correct rule info for the first rule", ->
-				console.log @trlc.$('.bv_transformationRule:eq(0)')
-				console.log @trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)') #this and one above have same andn correct value: % efficacy
-				console.log @trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val()
-				expect (@trlc.$('.bv_transformationRule:eq(0)').val()).toEqual "% efficacy"
-				ruleone = @trlc.collection.at(0)
-				console.log ruleone
-				expect(ruleone.$('.bv_transformationRule').val()).toEqual "% efficacy"
+				waitsFor ->
+					@trlc.$('.bv_transformationRule option').length > 0
+				, 1000
+				runs ->
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val()).toEqual "% efficacy"
 			it "should have the correct rule info for the second rule", ->
-				ruletwo = @trlc.collection.at(1)
-				expect(ruletwo.$('.bv_transformationRule').val()).toEqual "sd"
+				waitsFor ->
+					@trlc.$('.bv_transformationRule option').length > 0
+				, 1000
+				runs ->
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(1)').val()).toEqual "sd"
 			it "should have the correct rule info for the third rule", ->
-				rulethree = @trlc.collection.at(2)
-				expect(rulethree.$('.bv_transformationRule:eq(2)').val()).toEqual "null"
+				# note: this test sometimes breaks for no reason. If run the specific test, it will pass.
+				waitsFor ->
+					@trlc.$('.bv_transformationRule option').length > 0
+				, 1000
+				runs ->
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(2)').val()).toEqual "null"
 
 		describe "error notification", ->
 			beforeEach ->
@@ -571,9 +604,7 @@ describe "Primary Screen Experiment module testing", ->
 					@trlc.$('.bv_transformationRule:eq(0)').change()
 					@trlc.$('.bv_transformationRule:eq(1)').val "sd"
 					@trlc.$('.bv_transformationRule:eq(1)').change()
-					waits(1000)
 					expect((@trlc.collection.validateCollection()).length).toBeGreaterThan 0
-					expect(@trlc.$('.bv_group_transformationRule:eq(0)').hasClass('error')).toBeTruthy()
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->
@@ -942,6 +973,38 @@ describe "Primary Screen Experiment module testing", ->
 				it "should not show error on read position if match read name is checked", ->
 					@psapc.$('.bv_matchReadName').click()
 					expect(@psapc.$('bv_group_readPosition').hasClass("error")).toBeFalsy()
+				it "should show error if readPosition is NaN", ->
+					@psapc.$('.bv_readPosition:eq(0)').val ""
+					@psapc.$('.bv_readPosition:eq(0)').change()
+					expect(@psapc.$('.bv_group_readPosition:eq(0)').hasClass("error")).toBeTruthy()
+				it "should show error if read name is unassigned", ->
+					waitsFor ->
+						@psapc.$('.bv_readName option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_readName:eq(0)').val "unassigned"
+						@psapc.$('.bv_readName:eq(0)').change()
+						expect(@psapc.$('.bv_group_readName').hasClass("error")).toBeTruthy()
+				it "should show error if transformation rule is unassigned", ->
+					waitsFor ->
+						@psapc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_transformationRule:eq(0)').val "unassigned"
+						@psapc.$('.bv_transformationRule:eq(0)').change()
+						expect(@psapc.$('.bv_group_transformationRule:eq(0)').hasClass("error")).toBeTruthy()
+				it "should show error if a transformation rule is selected more than once", ->
+					@psapc.$('.bv_addTransformationButton').click()
+					waitsFor ->
+						@psapc.$('.bv_transformationInfo .bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_transformationRule:eq(0)').val "sd"
+						@psapc.$('.bv_transformationRule:eq(0)').change()
+						@psapc.$('.bv_transformationRule:eq(1)').val "sd"
+						@psapc.$('.bv_transformationRule:eq(1)').change()
+						expect(@psapc.$('.bv_group_transformationRule:eq(0)').hasClass('error')).toBeTruthy()
+						expect(@psapc.$('.bv_group_transformationRule:eq(1)').hasClass('error')).toBeTruthy()
 
 
 	describe "Abstract Upload and Run Primary Analysis Controller testing", ->

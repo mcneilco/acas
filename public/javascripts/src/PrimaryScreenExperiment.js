@@ -17,18 +17,18 @@
       activity: false
     };
 
-    PrimaryAnalysisRead.prototype.validate = function(attrs, index, matchReadName) {
+    PrimaryAnalysisRead.prototype.validate = function(attrs) {
       var errors;
       errors = [];
-      if (_.isNaN(attrs.readPosition) && matchReadName === false) {
+      if (_.isNaN(attrs.readPosition) || attrs.readPosition === "") {
         errors.push({
-          attribute: 'readPosition:eq(' + index + ')',
+          attribute: 'readPosition',
           message: "Read position must be a number"
         });
       }
       if (attrs.readName === "unassigned" || attrs.readName === "") {
         errors.push({
-          attribute: 'readName:eq(' + index + ')',
+          attribute: 'readName',
           message: "Read name must be assigned"
         });
       }
@@ -47,24 +47,24 @@
 
   })(Backbone.Model);
 
-  window.TransformationRuleModel = (function(_super) {
-    __extends(TransformationRuleModel, _super);
+  window.TransformationRule = (function(_super) {
+    __extends(TransformationRule, _super);
 
-    function TransformationRuleModel() {
+    function TransformationRule() {
       this.triggerAmDirty = __bind(this.triggerAmDirty, this);
-      return TransformationRuleModel.__super__.constructor.apply(this, arguments);
+      return TransformationRule.__super__.constructor.apply(this, arguments);
     }
 
-    TransformationRuleModel.prototype.defaults = {
+    TransformationRule.prototype.defaults = {
       transformationRule: "unassigned"
     };
 
-    TransformationRuleModel.prototype.validate = function(attrs, index) {
+    TransformationRule.prototype.validate = function(attrs) {
       var errors;
       errors = [];
       if (attrs.transformationRule === "unassigned") {
         errors.push({
-          attribute: 'transformationRule:eq(' + index + ')',
+          attribute: 'transformationRule',
           message: "Transformation Rule must be assigned"
         });
       }
@@ -75,11 +75,11 @@
       }
     };
 
-    TransformationRuleModel.prototype.triggerAmDirty = function() {
+    TransformationRule.prototype.triggerAmDirty = function() {
       return this.trigger('amDirty', this);
     };
 
-    return TransformationRuleModel;
+    return TransformationRule;
 
   })(Backbone.Model);
 
@@ -93,16 +93,25 @@
     PrimaryAnalysisReadList.prototype.model = PrimaryAnalysisRead;
 
     PrimaryAnalysisReadList.prototype.validateCollection = function(matchReadName) {
-      var index, modelErrors, usedReadNames;
+      var currentReadName, error, index, indivModelErrors, model, modelErrors, usedReadNames, _i, _j, _len, _ref;
       modelErrors = [];
       usedReadNames = {};
-      index = 0;
-      this.each((function(_this) {
-        return function(read) {
-          var currentReadName, eachModelErrors;
-          eachModelErrors = read.validate(read.attributes, index, matchReadName);
-          modelErrors.push.apply(modelErrors, eachModelErrors);
-          currentReadName = read.get('readName');
+      if (this.length !== 0) {
+        for (index = _i = 0, _ref = this.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; index = 0 <= _ref ? ++_i : --_i) {
+          model = this.at(index);
+          indivModelErrors = model.validate(model.attributes);
+          if (indivModelErrors !== null) {
+            for (_j = 0, _len = indivModelErrors.length; _j < _len; _j++) {
+              error = indivModelErrors[_j];
+              if (!(matchReadName && error.attribute === 'readPosition')) {
+                modelErrors.push({
+                  attribute: error.attribute + ':eq(' + index + ')',
+                  message: error.message
+                });
+              }
+            }
+          }
+          currentReadName = model.get('readName');
           if (currentReadName in usedReadNames) {
             modelErrors.push({
               attribute: 'readName:eq(' + index + ')',
@@ -115,9 +124,8 @@
           } else {
             usedReadNames[currentReadName] = index;
           }
-          return index++;
-        };
-      })(this));
+        }
+      }
       return modelErrors;
     };
 
@@ -132,19 +140,26 @@
       return TransformationRuleList.__super__.constructor.apply(this, arguments);
     }
 
-    TransformationRuleList.prototype.model = TransformationRuleModel;
+    TransformationRuleList.prototype.model = TransformationRule;
 
     TransformationRuleList.prototype.validateCollection = function() {
-      var index, modelErrors, usedRules;
+      var currentRule, error, index, indivModelErrors, model, modelErrors, usedRules, _i, _j, _len, _ref;
       modelErrors = [];
       usedRules = {};
-      index = 0;
-      this.each((function(_this) {
-        return function(rule) {
-          var currentRule, eachModelErrors;
-          eachModelErrors = rule.validate(rule.attributes, index);
-          modelErrors.push.apply(modelErrors, eachModelErrors);
-          currentRule = rule.get('transformationRule');
+      if (this.length !== 0) {
+        for (index = _i = 0, _ref = this.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; index = 0 <= _ref ? ++_i : --_i) {
+          model = this.at(index);
+          indivModelErrors = model.validate(model.attributes);
+          if (indivModelErrors !== null) {
+            for (_j = 0, _len = indivModelErrors.length; _j < _len; _j++) {
+              error = indivModelErrors[_j];
+              modelErrors.push({
+                attribute: error.attribute + ':eq(' + index + ')',
+                message: error.message
+              });
+            }
+          }
+          currentRule = model.get('transformationRule');
           if (currentRule in usedRules) {
             modelErrors.push({
               attribute: 'transformationRule:eq(' + index + ')',
@@ -157,9 +172,8 @@
           } else {
             usedRules[currentRule] = index;
           }
-          return index++;
-        };
-      })(this));
+        }
+      }
       return modelErrors;
     };
 
@@ -381,7 +395,7 @@
           message: "Dilution factor must be a number"
         });
       }
-      if (attrs.volumeType === "transfer" && (_.isNaN(attrs.transferVolume) || attrs.transferVolume === "")) {
+      if (attrs.volumeType === "transfer" && _.isNaN(attrs.transferVolume)) {
         errors.push({
           attribute: 'transferVolume',
           message: "Transfer volume must be assigned"
@@ -391,6 +405,34 @@
         return errors;
       } else {
         return null;
+      }
+    };
+
+    PrimaryScreenAnalysisParameters.prototype.autocalculateVolumes = function() {
+      var assayVolume, dilutionFactor, transferVolume;
+      dilutionFactor = this.get('dilutionFactor');
+      transferVolume = this.get('transferVolume');
+      assayVolume = this.get('assayVolume');
+      if (this.get('volumeType') === 'dilution') {
+        if (isNaN(dilutionFactor) || dilutionFactor === "" || dilutionFactor === 0 || isNaN(assayVolume) || assayVolume === "") {
+          transferVolume = "";
+        } else {
+          transferVolume = assayVolume / dilutionFactor;
+        }
+        this.set({
+          transferVolume: transferVolume
+        });
+        return transferVolume;
+      } else {
+        if (isNaN(transferVolume) || transferVolume === "" || transferVolume === 0 || isNaN(assayVolume) || assayVolume === "") {
+          dilutionFactor = "";
+        } else {
+          dilutionFactor = assayVolume / transferVolume;
+        }
+        this.set({
+          dilutionFactor: dilutionFactor
+        });
+        return dilutionFactor;
       }
     };
 
@@ -615,6 +657,7 @@
 
     function PrimaryAnalysisReadListController() {
       this.checkActivity = __bind(this.checkActivity, this);
+      this.matchReadNameChanged = __bind(this.matchReadNameChanged, this);
       this.addNewRead = __bind(this.addNewRead, this);
       this.render = __bind(this.render, this);
       this.initialize = __bind(this.initialize, this);
@@ -675,7 +718,7 @@
 
     PrimaryAnalysisReadListController.prototype.matchReadNameChanged = function(matchReadName) {
       this.matchReadNameChecked = matchReadName;
-      if (matchReadName) {
+      if (this.matchReadNameChecked) {
         this.$('.bv_readPosition').val('');
         this.$('.bv_readPosition').attr('disabled', 'disabled');
         return this.collection.each((function(_this) {
@@ -758,7 +801,7 @@
 
     TransformationRuleListController.prototype.addNewRule = function() {
       var newModel;
-      newModel = new TransformationRuleModel();
+      newModel = new TransformationRule();
       this.collection.add(newModel);
       this.addOneRule(newModel);
       return newModel.triggerAmDirty();
@@ -946,9 +989,8 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.updateModel = function() {
-      var htsFormat, matchReadName;
+      var htsFormat;
       htsFormat = this.$('.bv_htsFormat').is(":checked");
-      matchReadName = this.$('.bv_matchReadName').is(":checked");
       this.model.set({
         instrumentReader: this.$('.bv_instrumentReader').val(),
         signalDirectionRule: this.$('.bv_signalDirectionRule').val(),
@@ -960,8 +1002,7 @@
         assayVolume: this.getTrimmedInput('.bv_assayVolume'),
         transferVolume: this.getTrimmedInput('.bv_transferVolume'),
         dilutionFactor: this.getTrimmedInput('.bv_dilutionFactor'),
-        htsFormat: htsFormat,
-        matchReadName: matchReadName
+        htsFormat: htsFormat
       });
       if (this.model.get('assayVolume') !== "") {
         this.model.set({
@@ -1013,35 +1054,20 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleTransferVolumeChanged = function() {
-      var assayVolume, dilutionFactor, transferVolume, volumeType;
-      volumeType = this.$("input[name='bv_volumeType']:checked").val();
-      if (volumeType === "transfer") {
-        transferVolume = parseFloat(this.getTrimmedInput('.bv_transferVolume'));
-        assayVolume = parseFloat(this.getTrimmedInput('.bv_assayVolume'));
-        if (isNaN(transferVolume) || isNaN(assayVolume)) {
-          dilutionFactor = null;
-        } else {
-          dilutionFactor = assayVolume / transferVolume;
-        }
-        this.$('.bv_dilutionFactor').val(dilutionFactor);
-      }
-      return this.attributeChanged();
+      var dilutionFactor;
+      this.attributeChanged();
+      dilutionFactor = this.model.autocalculateVolumes();
+      return this.$('.bv_dilutionFactor').val(dilutionFactor);
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleDilutionFactorChanged = function() {
-      var assayVolume, dilutionFactor, transferVolume, volumeType;
-      volumeType = this.$("input[name='bv_volumeType']:checked").val();
-      if (volumeType === "dilution") {
-        dilutionFactor = parseFloat(this.getTrimmedInput('.bv_dilutionFactor'));
-        assayVolume = parseFloat(this.getTrimmedInput('.bv_assayVolume'));
-        if (isNaN(dilutionFactor) || isNaN(assayVolume)) {
-          transferVolume = null;
-        } else {
-          transferVolume = assayVolume / dilutionFactor;
-        }
-        this.$('.bv_transferVolume').val(transferVolume);
+      var transferVolume;
+      this.attributeChanged();
+      transferVolume = this.model.autocalculateVolumes();
+      this.$('.bv_transferVolume').val(transferVolume);
+      if (transferVolume === "" || transferVolume === null) {
+        return this.$('.bv_dilutionFactor').val(this.model.get('dilutionFactor'));
       }
-      return this.attributeChanged();
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleThresholdTypeChanged = function() {
@@ -1087,7 +1113,7 @@
         this.$('.bv_transferVolume').attr('disabled', 'disabled');
         this.$('.bv_dilutionFactor').removeAttr('disabled');
       }
-      if (this.model.get('transferVolume') === "" || this.model.get('transferVolume') === null) {
+      if (this.model.get('transferVolume') === "" || this.model.get('assayVolume') === "") {
         this.handleDilutionFactorChanged();
       }
       return this.attributeChanged();
@@ -1096,6 +1122,9 @@
     PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function() {
       var matchReadName;
       matchReadName = this.$('.bv_matchReadName').is(":checked");
+      this.model.set({
+        matchReadName: matchReadName
+      });
       this.readListController.matchReadNameChanged(matchReadName);
       return this.attributeChanged();
     };

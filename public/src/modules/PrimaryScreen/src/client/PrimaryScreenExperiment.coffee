@@ -5,15 +5,15 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 		readName: "unassigned"
 		activity: false
 
-	validate: (attrs, index, matchReadName) ->
+	validate: (attrs) ->
 		errors = []
-		if _.isNaN(attrs.readPosition) and matchReadName==false
+		if _.isNaN(attrs.readPosition) or attrs.readPosition == ""
 			errors.push
-				attribute: 'readPosition:eq('+index+')'
+				attribute: 'readPosition'
 				message: "Read position must be a number"
 		if attrs.readName is "unassigned" or attrs.readName is ""
 			errors.push
-				attribute: 'readName:eq('+index+')'
+				attribute: 'readName'
 				message: "Read name must be assigned"
 		if errors.length > 0
 			return errors
@@ -23,15 +23,15 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 	triggerAmDirty: =>
 		@trigger 'amDirty', @
 
-class window.TransformationRuleModel extends Backbone.Model
+class window.TransformationRule extends Backbone.Model
 	defaults:
 		transformationRule: "unassigned"
 
-	validate: (attrs,index) ->
+	validate: (attrs) ->
 		errors = []
 		if attrs.transformationRule is "unassigned"
 			errors.push
-				attribute: 'transformationRule:eq('+index+')'
+				attribute: 'transformationRule'
 				message: "Transformation Rule must be assigned"
 
 		if errors.length > 0
@@ -45,49 +45,58 @@ class window.TransformationRuleModel extends Backbone.Model
 class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
 
-	validateCollection: (matchReadName) ->
+	validateCollection: (matchReadName)->
 		modelErrors = []
 		usedReadNames = {}
-		index = 0
-		@.each (read) =>
-			eachModelErrors = read.validate(read.attributes,index,matchReadName)
-			modelErrors.push eachModelErrors...
-			currentReadName = read.get('readName')
-			if currentReadName of usedReadNames
-				modelErrors.push
-					attribute: 'readName:eq('+index+')'
-					message: "Read name can not be chosen more than once"
-				modelErrors.push
-					attribute: 'readName:eq('+usedReadNames[currentReadName]+')'
-					message: "Read name can not be chosen more than once"
-			else
-				usedReadNames[currentReadName] = index
-			index++
+		if @.length != 0
+			for index in [0..@.length-1]
+				model = @.at(index)
+				indivModelErrors = model.validate(model.attributes) # note: can't call model.isValid() or else the attributes returned from model.validate will have class "error"
+				if indivModelErrors != null
+					for error in indivModelErrors
+						unless matchReadName and error.attribute == 'readPosition'
+								modelErrors.push
+									attribute: error.attribute+':eq('+index+')'
+									message: error.message
+				currentReadName = model.get('readName')
+				if currentReadName of usedReadNames
+					modelErrors.push
+						attribute: 'readName:eq('+index+')'
+						message: "Read name can not be chosen more than once"
+					modelErrors.push
+						attribute: 'readName:eq('+usedReadNames[currentReadName]+')'
+						message: "Read name can not be chosen more than once"
+				else
+					usedReadNames[currentReadName] = index
 		return modelErrors
 
 
 class window.TransformationRuleList extends Backbone.Collection
-	model: TransformationRuleModel
+	model: TransformationRule
 
 
 	validateCollection: ->
 		modelErrors = []
 		usedRules ={}
-		index = 0
-		@.each (rule) =>
-			eachModelErrors = rule.validate(rule.attributes,index)
-			modelErrors.push eachModelErrors...
-			currentRule = rule.get('transformationRule')
-			if currentRule of usedRules
-				modelErrors.push
-					attribute: 'transformationRule:eq('+index+')'
-					message: "Transformation Rules can not be chosen more than once"
-				modelErrors.push
-					attribute: 'transformationRule:eq('+usedRules[currentRule]+')'
-					message: "Transformation Rules can not be chosen more than once"
-			else
-				usedRules[currentRule] = index
-			index++
+		if @.length != 0
+			for index in [0..@.length-1]
+				model = @.at(index)
+				indivModelErrors = model.validate(model.attributes)
+				if indivModelErrors != null
+					for error in indivModelErrors
+						modelErrors.push
+							attribute: error.attribute+':eq('+index+')'
+							message: error.message
+				currentRule = model.get('transformationRule')
+				if currentRule of usedRules
+					modelErrors.push
+						attribute: 'transformationRule:eq('+index+')'
+						message: "Transformation Rules can not be chosen more than once"
+					modelErrors.push
+						attribute: 'transformationRule:eq('+usedRules[currentRule]+')'
+						message: "Transformation Rules can not be chosen more than once"
+				else
+					usedRules[currentRule] = index
 		return modelErrors
 
 
@@ -225,7 +234,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'dilutionFactor'
 				message: "Dilution factor must be a number"
-		if attrs.volumeType == "transfer" and (_.isNaN(attrs.transferVolume) or attrs.transferVolume =="")
+		if attrs.volumeType == "transfer" and _.isNaN(attrs.transferVolume)
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be assigned"
@@ -235,6 +244,24 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		else
 			return null
 
+	autocalculateVolumes: ->
+		dilutionFactor = @.get('dilutionFactor')
+		transferVolume = @.get('transferVolume')
+		assayVolume = @.get('assayVolume')
+		if @.get('volumeType')=='dilution'
+			if isNaN(dilutionFactor) or dilutionFactor=="" or dilutionFactor == 0 or isNaN(assayVolume) or assayVolume==""
+				transferVolume = ""
+			else
+				transferVolume = assayVolume/dilutionFactor
+			@.set transferVolume: transferVolume
+			return transferVolume
+		else
+			if isNaN(transferVolume) or transferVolume=="" or transferVolume == 0 or isNaN(assayVolume) or assayVolume==""
+				dilutionFactor = ""
+			else
+				dilutionFactor = assayVolume/transferVolume
+			@.set dilutionFactor: dilutionFactor
+			return dilutionFactor
 
 
 class window.PrimaryScreenExperiment extends Experiment
@@ -411,9 +438,9 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		@$('.bv_readInfo').append parc.render().el
 		parc.setUpReadPosition(@matchReadNameChecked)
 
-	matchReadNameChanged: (matchReadName) ->
+	matchReadNameChanged: (matchReadName) =>
 		@matchReadNameChecked = matchReadName
-		if matchReadName
+		if @matchReadNameChecked
 			@$('.bv_readPosition').val('')
 			@$('.bv_readPosition').attr('disabled','disabled')
 			@collection.each (read) =>
@@ -454,7 +481,7 @@ class window.TransformationRuleListController extends AbstractFormController
 		@
 
 	addNewRule: =>
-		newModel = new TransformationRuleModel()
+		newModel = new TransformationRule()
 		@collection.add newModel
 		@addOneRule(newModel)
 		newModel.triggerAmDirty()
@@ -603,7 +630,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	updateModel: =>
 		htsFormat = @$('.bv_htsFormat').is(":checked")
-		matchReadName = @$('.bv_matchReadName').is(":checked")
 		@model.set
 			instrumentReader: @$('.bv_instrumentReader').val()
 			signalDirectionRule: @$('.bv_signalDirectionRule').val()
@@ -616,7 +642,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			transferVolume: @getTrimmedInput('.bv_transferVolume')
 			dilutionFactor: @getTrimmedInput('.bv_dilutionFactor')
 			htsFormat: htsFormat
-			matchReadName: matchReadName
 		if @model.get('assayVolume') != ""
 			@model.set assayVolume: parseFloat(@getTrimmedInput('.bv_assayVolume'))
 		if @model.get('transferVolume') != ""
@@ -649,28 +674,16 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 
 	handleTransferVolumeChanged: =>
-		volumeType = @$("input[name='bv_volumeType']:checked").val()
-		if volumeType == "transfer"
-			transferVolume = parseFloat(@getTrimmedInput('.bv_transferVolume'))
-			assayVolume = parseFloat(@getTrimmedInput('.bv_assayVolume'))
-			if isNaN(transferVolume) or isNaN(assayVolume)
-				dilutionFactor = null
-			else
-				dilutionFactor = assayVolume/transferVolume
-			@$('.bv_dilutionFactor').val(dilutionFactor)
 		@attributeChanged()
+		dilutionFactor = @model.autocalculateVolumes()
+		@$('.bv_dilutionFactor').val(dilutionFactor)
 
 	handleDilutionFactorChanged: =>
-		volumeType = @$("input[name='bv_volumeType']:checked").val()
-		if volumeType == "dilution"
-			dilutionFactor = parseFloat(@getTrimmedInput('.bv_dilutionFactor'))
-			assayVolume = parseFloat(@getTrimmedInput('.bv_assayVolume'))
-			if isNaN(dilutionFactor) or isNaN(assayVolume)
-				transferVolume = null
-			else
-				transferVolume = assayVolume/dilutionFactor
-			@$('.bv_transferVolume').val(transferVolume)
 		@attributeChanged()
+		transferVolume = @model.autocalculateVolumes()
+		@$('.bv_transferVolume').val(transferVolume)
+		if transferVolume=="" or transferVolume == null
+			@$('.bv_dilutionFactor').val(@model.get('dilutionFactor'))
 
 
 	handleThresholdTypeChanged: =>
@@ -702,12 +715,13 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		else
 			@$('.bv_transferVolume').attr('disabled','disabled')
 			@$('.bv_dilutionFactor').removeAttr('disabled')
-		if @model.get('transferVolume') == "" or @model.get('transferVolume') == null
+		if @model.get('transferVolume') == "" or @model.get('assayVolume')== ""
 			@handleDilutionFactorChanged()
 		@attributeChanged()
 
 	handleMatchReadNameChanged: =>
 		matchReadName = @$('.bv_matchReadName').is(":checked")
+		@model.set matchReadName: matchReadName
 		@readListController.matchReadNameChanged(matchReadName)
 		@attributeChanged()
 

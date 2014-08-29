@@ -33,57 +33,65 @@
           return expect(this.par.isValid()).toBeTruthy();
         });
         it("should be invalid when read position is NaN", function() {
+          var filtErrors;
           this.par.set({
             readPosition: NaN
           });
-          return expect(this.par.validate(this.par.attributes, 0, false).length).toBeGreaterThan(0);
+          expect(this.par.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.par.validationError, function(err) {
+            return err.attribute === 'readPosition';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
         });
         return it("should be invalid when read name is unassigned", function() {
+          var filtErrors;
           this.par.set({
             readName: "unassigned"
           });
-          return expect(this.par.validate(this.par.attributes, 0, false).length).toBeGreaterThan(0);
+          expect(this.par.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.par.validationError, function(err) {
+            return err.attribute === 'readName';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
         });
       });
     });
     describe("Transformation Rule Model testing", function() {
       describe("When loaded from new", function() {
         beforeEach(function() {
-          return this.trm = new TransformationRuleModel();
+          return this.tr = new TransformationRule();
         });
         return describe("Existence and Defaults", function() {
           it("should be defined", function() {
-            return expect(this.trm).toBeDefined();
+            return expect(this.tr).toBeDefined();
           });
           return it("should have defaults", function() {
-            return expect(this.trm.get('transformationRule')).toEqual("unassigned");
+            return expect(this.tr.get('transformationRule')).toEqual("unassigned");
           });
         });
       });
       return describe("model validation tests", function() {
         beforeEach(function() {
-          return this.trm = new TransformationRuleModel(window.primaryScreenTestJSON.transformationRules[0]);
+          return this.tr = new TransformationRule(window.primaryScreenTestJSON.transformationRules[0]);
         });
         it("should be valid as initialized", function() {
-          return expect(this.trm.isValid()).toBeTruthy();
+          return expect(this.tr.isValid()).toBeTruthy();
         });
         return it("should be invalid when transformation rule is unassigned", function() {
           var filtErrors;
-          this.trm.set({
+          this.tr.set({
             transformationRule: "unassigned"
           });
-          expect(this.trm.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.trm.validationError, function(err) {
-            console.log(err.attribute.search("transformationRule"));
-            return err.attribute.search("transformationRule") !== -1;
+          expect(this.tr.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.tr.validationError, function(err) {
+            return err.attribute === 'transformationRule';
           });
-          console.log(this.trm.validationError);
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
       });
     });
     describe("Primary Analysis Read List testing", function() {
-      return describe("When loaded from new", function() {
+      describe("When loaded from new", function() {
         beforeEach(function() {
           return this.parl = new PrimaryAnalysisReadList();
         });
@@ -93,9 +101,38 @@
           });
         });
       });
+      return describe("When loaded form existing", function() {
+        beforeEach(function() {
+          return this.parl = new PrimaryAnalysisReadList(window.primaryScreenTestJSON.primaryAnalysisReads);
+        });
+        it("should have three reads", function() {
+          return expect(this.parl.length).toEqual(3);
+        });
+        it("should have the correct read info for the first read", function() {
+          var readtwo;
+          readtwo = this.parl.at(0);
+          expect(readtwo.get('readPosition')).toEqual(11);
+          expect(readtwo.get('readName')).toEqual("none");
+          return expect(readtwo.get('activity')).toBeTruthy();
+        });
+        it("should have the correct read info for the second read", function() {
+          var readtwo;
+          readtwo = this.parl.at(1);
+          expect(readtwo.get('readPosition')).toEqual(12);
+          expect(readtwo.get('readName')).toEqual("fluorescence");
+          return expect(readtwo.get('activity')).toBeFalsy();
+        });
+        return it("should have the correct read info for the third read", function() {
+          var readthree;
+          readthree = this.parl.at(2);
+          expect(readthree.get('readPosition')).toEqual(13);
+          expect(readthree.get('readName')).toEqual("luminescence");
+          return expect(readthree.get('activity')).toBeFalsy();
+        });
+      });
     });
     describe("Transformation Rule List testing", function() {
-      return describe("When loaded from new", function() {
+      describe("When loaded from new", function() {
         beforeEach(function() {
           return this.trl = new TransformationRuleList();
         });
@@ -103,6 +140,29 @@
           return it("should be defined", function() {
             return expect(this.trl).toBeDefined();
           });
+        });
+      });
+      return describe("When loaded form existing", function() {
+        beforeEach(function() {
+          return this.trl = new TransformationRuleList(window.primaryScreenTestJSON.transformationRules);
+        });
+        it("should have three reads", function() {
+          return expect(this.trl.length).toEqual(3);
+        });
+        it("should have the correct rule info for the first rule", function() {
+          var ruleone;
+          ruleone = this.trl.at(0);
+          return expect(ruleone.get('transformationRule')).toEqual("% efficacy");
+        });
+        it("should have the correct read info for the second rule", function() {
+          var ruletwo;
+          ruletwo = this.trl.at(1);
+          return expect(ruletwo.get('transformationRule')).toEqual("sd");
+        });
+        return it("should have the correct read info for the third read", function() {
+          var rulethree;
+          rulethree = this.trl.at(2);
+          return expect(rulethree.get('transformationRule')).toEqual("null");
         });
       });
     });
@@ -586,7 +646,7 @@
       return describe("when instantiated", function() {
         beforeEach(function() {
           this.trc = new TransformationRuleController({
-            model: new TransformationRuleModel(window.primaryScreenTestJSON.transformationRules[0]),
+            model: new TransformationRule(window.primaryScreenTestJSON.transformationRules[0]),
             el: $('#fixture')
           });
           return this.trc.render();
@@ -678,19 +738,35 @@
         it("should have three reads", function() {
           return expect(this.parlc.collection.length).toEqual(3);
         });
+        it("should have the correct read info for the first read", function() {
+          waitsFor(function() {
+            return this.parlc.$('.bv_readName option').length > 0;
+          }, 1000);
+          return runs(function() {
+            expect(this.parlc.$('.bv_readPosition:eq(0)').val()).toEqual("11");
+            expect(this.parlc.$('.bv_readName:eq(0)').val()).toEqual("none");
+            return expect(this.parlc.$('.bv_activity:eq(0)').attr("checked")).toEqual("checked");
+          });
+        });
         it("should have the correct read info for the second read", function() {
-          var readtwo;
-          readtwo = this.parlc.collection.at(1);
-          expect(readtwo.get('readPosition')).toEqual(12);
-          expect(readtwo.get('readName')).toEqual("fluorescence");
-          return expect(readtwo.get('activity')).toBeFalsy();
+          waitsFor(function() {
+            return this.parlc.$('.bv_readName option').length > 0;
+          }, 1000);
+          return runs(function() {
+            expect(this.parlc.$('.bv_readPosition:eq(1)').val()).toEqual("12");
+            expect(this.parlc.$('.bv_readName:eq(1)').val()).toEqual("fluorescence");
+            return expect(this.parlc.$('.bv_activity:eq(1)').attr("checked")).toBeUndefined();
+          });
         });
         return it("should have the correct read info for the third read", function() {
-          var readthree;
-          readthree = this.parlc.collection.at(2);
-          expect(readthree.get('readPosition')).toEqual(13);
-          expect(readthree.get('readName')).toEqual("luminescence");
-          return expect(readthree.get('activity')).toBeFalsy();
+          waitsFor(function() {
+            return this.parlc.$('.bv_readName option').length > 0;
+          }, 1000);
+          return runs(function() {
+            expect(this.parlc.$('.bv_readPosition:eq(2)').val()).toEqual("13");
+            expect(this.parlc.$('.bv_readName:eq(2)').val()).toEqual("luminescence");
+            return expect(this.parlc.$('.bv_activity:eq(2)').attr("checked")).toBeUndefined();
+          });
         });
       });
     });
@@ -751,24 +827,28 @@
           return expect(this.trlc.collection.length).toEqual(3);
         });
         it("should have the correct rule info for the first rule", function() {
-          var ruleone;
-          console.log(this.trlc.$('.bv_transformationRule:eq(0)'));
-          console.log(this.trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)'));
-          console.log(this.trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val());
-          expect((this.trlc.$('.bv_transformationRule:eq(0)').val()).toEqual("% efficacy"));
-          ruleone = this.trlc.collection.at(0);
-          console.log(ruleone);
-          return expect(ruleone.$('.bv_transformationRule').val()).toEqual("% efficacy");
+          waitsFor(function() {
+            return this.trlc.$('.bv_transformationRule option').length > 0;
+          }, 1000);
+          return runs(function() {
+            return expect(this.trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val()).toEqual("% efficacy");
+          });
         });
         it("should have the correct rule info for the second rule", function() {
-          var ruletwo;
-          ruletwo = this.trlc.collection.at(1);
-          return expect(ruletwo.$('.bv_transformationRule').val()).toEqual("sd");
+          waitsFor(function() {
+            return this.trlc.$('.bv_transformationRule option').length > 0;
+          }, 1000);
+          return runs(function() {
+            return expect(this.trlc.$('.bv_transformationInfo .bv_transformationRule:eq(1)').val()).toEqual("sd");
+          });
         });
         return it("should have the correct rule info for the third rule", function() {
-          var rulethree;
-          rulethree = this.trlc.collection.at(2);
-          return expect(rulethree.$('.bv_transformationRule:eq(2)').val()).toEqual("null");
+          waitsFor(function() {
+            return this.trlc.$('.bv_transformationRule option').length > 0;
+          }, 1000);
+          return runs(function() {
+            return expect(this.trlc.$('.bv_transformationInfo .bv_transformationRule:eq(2)').val()).toEqual("null");
+          });
         });
       });
       return describe("error notification", function() {
@@ -790,9 +870,7 @@
             this.trlc.$('.bv_transformationRule:eq(0)').change();
             this.trlc.$('.bv_transformationRule:eq(1)').val("sd");
             this.trlc.$('.bv_transformationRule:eq(1)').change();
-            waits(1000);
-            expect((this.trlc.collection.validateCollection()).length).toBeGreaterThan(0);
-            return expect(this.trlc.$('.bv_group_transformationRule:eq(0)').hasClass('error')).toBeTruthy();
+            return expect((this.trlc.collection.validateCollection()).length).toBeGreaterThan(0);
           });
         });
       });
@@ -1260,9 +1338,48 @@
             this.psapc.$('.bv_transferVolume').change();
             return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeFalsy();
           });
-          return it("should not show error on read position if match read name is checked", function() {
+          it("should not show error on read position if match read name is checked", function() {
             this.psapc.$('.bv_matchReadName').click();
             return expect(this.psapc.$('bv_group_readPosition').hasClass("error")).toBeFalsy();
+          });
+          it("should show error if readPosition is NaN", function() {
+            this.psapc.$('.bv_readPosition:eq(0)').val("");
+            this.psapc.$('.bv_readPosition:eq(0)').change();
+            return expect(this.psapc.$('.bv_group_readPosition:eq(0)').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if read name is unassigned", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_readName option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_readName:eq(0)').val("unassigned");
+              this.psapc.$('.bv_readName:eq(0)').change();
+              return expect(this.psapc.$('.bv_group_readName').hasClass("error")).toBeTruthy();
+            });
+          });
+          it("should show error if transformation rule is unassigned", function() {
+            waitsFor(function() {
+              return this.psapc.$('.bv_transformationRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_transformationRule:eq(0)').val("unassigned");
+              this.psapc.$('.bv_transformationRule:eq(0)').change();
+              return expect(this.psapc.$('.bv_group_transformationRule:eq(0)').hasClass("error")).toBeTruthy();
+            });
+          });
+          return it("should show error if a transformation rule is selected more than once", function() {
+            this.psapc.$('.bv_addTransformationButton').click();
+            waitsFor(function() {
+              return this.psapc.$('.bv_transformationInfo .bv_transformationRule option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psapc.$('.bv_transformationRule:eq(0)').val("sd");
+              this.psapc.$('.bv_transformationRule:eq(0)').change();
+              this.psapc.$('.bv_transformationRule:eq(1)').val("sd");
+              this.psapc.$('.bv_transformationRule:eq(1)').change();
+              expect(this.psapc.$('.bv_group_transformationRule:eq(0)').hasClass('error')).toBeTruthy();
+              return expect(this.psapc.$('.bv_group_transformationRule:eq(1)').hasClass('error')).toBeTruthy();
+            });
           });
         });
       });
