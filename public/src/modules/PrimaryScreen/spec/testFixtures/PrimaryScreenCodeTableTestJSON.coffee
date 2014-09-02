@@ -35,15 +35,31 @@
 		,
 			"transformationCodes":
 				[
-					code: "(maximum-minimum)/minimum"
-					name: "(Max-Min)/Min"
+					code: "% efficacy"
+					name: "% Efficacy"
+					ignored: false
+				,
+					code: "sd"
+					name: "SD"
+					ignored: false
+				,
+					code: "null"
+					name: "Not Set"
 					ignored: false
 				]
 		,
 			"normalizationCodes":
 				[
-					code: "plate order",
-					name: "Plate Order",
+					code: "plate order only",
+					name: "Plate Order Only",
+					ignored: false
+				,
+					code: "plate order and row",
+					name: "Plate Order And Row",
+					ignored: false
+				,
+					code: "plate order and tip",
+					name: "Plate Order And Tip",
 					ignored: false
 				,
 					code: "none"
@@ -55,6 +71,10 @@
 				[
 					code: "luminescence"
 					name: "Luminescence"
+					ignored: false
+				,
+					code: "fluorescence"
+					name: "Fluorescence"
 					ignored: false
 				,
 					code: "none"
