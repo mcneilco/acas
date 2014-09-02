@@ -14,7 +14,7 @@
     Protocol.prototype.urlRoot = "/api/protocols";
 
     Protocol.prototype.defaults = {
-      kind: "",
+      lsKind: "",
       recordedBy: "",
       shortDescription: "",
       lsLabels: new LabelList(),

@@ -332,7 +332,7 @@
 		]
 		id: 64781
 		ignored: false
-		kind: "ACAS doc for batches"
+		lsKind: "ACAS doc for batches" #changed from kind to lsKind
 		lsTransaction:
 			comments: "docForBatches upload"
 			id: 423
@@ -345,7 +345,7 @@
 			codeName: "ACASdocForBatches"
 			id: 2403
 			ignored: false
-			kind: null
+			lsKind: null #changed from kind to lsKind
 			lsTransaction:
 				comments: "docForBatches upload"
 				id: 38
@@ -653,7 +653,7 @@
 			ignored: false
 			recordedBy: "jmcneil"
 			recordedDate: 1367455531000
-			kind: "ACAS doc for batches"
+			lsKind: "ACAS doc for batches" #changed from kind to lsKind
 			lsTransaction:
 				comments: "docForBatches upload"
 				id: 423

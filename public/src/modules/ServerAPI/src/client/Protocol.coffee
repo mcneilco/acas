@@ -2,7 +2,7 @@ class window.Protocol extends Backbone.Model
 	urlRoot: "/api/protocols"
 
 	defaults:
-		kind: ""
+		lsKind: "" # changed from kind to lsKind
 		recordedBy: ""
 		shortDescription: ""
 		lsLabels: new LabelList()

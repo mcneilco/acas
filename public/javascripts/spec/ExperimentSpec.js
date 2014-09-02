@@ -109,7 +109,7 @@
         });
         return describe("after initial load", function() {
           it("should have a kind", function() {
-            return expect(this.exp.get('kind')).toEqual("ACAS doc for batches");
+            return expect(this.exp.get('lsKind')).toEqual("ACAS doc for batches");
           });
           it("should have the protocol set ", function() {
             return expect(this.exp.get('protocol').id).toEqual(2403);
@@ -207,7 +207,7 @@
             return expect(this.exp).toBeDefined();
           });
           it("should have same kind as protocol", function() {
-            return expect(this.exp.get('kind')).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsKind);
+            return expect(this.exp.get('lsKind')).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsKind);
           });
           it("should have the protocol set ", function() {
             return expect(this.exp.get('protocol').get('codeName')).toEqual("PROT-00000001");

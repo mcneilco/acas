@@ -571,7 +571,7 @@
         codeName: "PROT-00000001",
         id: 14325,
         ignored: false,
-        kind: null,
+        lsKind: null,
         lsTransaction: {
           comments: "protocol 201 transactions",
           id: 179,
@@ -590,7 +590,7 @@
       {
         codeName: "PROT-00000066",
         ignored: false,
-        kind: null,
+        lsKind: null,
         lsLabels: [
           {
             ignored: false,
@@ -952,7 +952,7 @@
     return exports.protocolKinds = [
       {
         id: 1,
-        kindName: "default",
+        lsKind: "default",
         lsType: {
           id: 1,
           typeName: "default",
@@ -962,7 +962,7 @@
         version: 0
       }, {
         id: 2,
-        kindName: "FLIPR",
+        lsKind: "FLIPR",
         lsType: {
           id: 1,
           typeName: "default",
@@ -972,7 +972,7 @@
         version: 0
       }, {
         id: 3,
-        kindName: "KD",
+        lsKind: "KD",
         lsType: {
           id: 1,
           typeName: "default",
@@ -982,7 +982,7 @@
         version: 0
       }, {
         id: 4,
-        kindName: "Microsome Stability",
+        lsKind: "Microsome Stability",
         lsType: {
           id: 1,
           typeName: "default",
@@ -992,7 +992,7 @@
         version: 0
       }, {
         id: 5,
-        kindName: "uSol",
+        lsKind: "uSol",
         lsType: {
           id: 1,
           typeName: "default",

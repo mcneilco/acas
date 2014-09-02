@@ -7,10 +7,10 @@ afterEach ->
 
 
 describe "Base Entity testing", ->
-	describe "Base entity modle testing", ->
+	describe "Base entity model testing", ->
 		describe "when loaded from new", ->
 			beforeEach ->
-				@bem = new BaseEntityModel()
+				@bem = new BaseEntity()
 			describe "Defaults", ->
 				it 'Should have a subclass default to entity', ->
 					expect(@bem.get("subclass")).toEqual "entity"
@@ -38,14 +38,12 @@ describe "Base Entity testing", ->
 					expect(@bem.getDescription().get('clobValue')).toEqual ""
 				it 'Should have a notebook value', ->
 					expect(@bem.getNotebook() instanceof Value).toBeTruthy()
-				it 'Entity status should default to new ', ->
-					expect(@bem.getStatus().get('stringValue')).toEqual "new"
-				it 'completionDate should be null ', ->
-					expect(@bem.getCompletionDate().get('dateValue')).toEqual null
+				it 'Entity status should default to created ', ->
+					expect(@bem.getStatus().get('stringValue')).toEqual "created"
 			describe "other features", ->
 				describe "should tell you if it is editable based on status", ->
-					it "should be locked if status is New", ->
-						@bem.getStatus().set stringValue: "New"
+					it "should be locked if status is created", ->
+						@bem.getStatus().set stringValue: "created"
 						expect(@bem.isEditable()).toBeTruthy()
 					it "should be locked if status is started", ->
 						@bem.getStatus().set stringValue: "started"
@@ -62,11 +60,12 @@ describe "Base Entity testing", ->
 						
 		describe "when loaded from existing", ->
 			beforeEach ->
-				@bem = new BaseEntityModel window.baseEntityServiceTestJSON.savedExperimentWithAnalysisGroups
+				@bem = new BaseEntity window.baseEntityServiceTestJSON.savedExperimentWithAnalysisGroups
+#				@bem.set urlRoot: "/api/experiments"
 				@bem.set subclass: "experiment"
 			describe "after initial load", ->
 				it "should have a kind", ->
-					expect(@bem.get('kind')).toEqual "ACAS doc for batches"
+					expect(@bem.get('lsKind')).toEqual "ACAS doc for batches" # changed from get kind to get lsKind
 				it "should have a code ", ->
 					expect(@bem.get('codeName')).toEqual "EXPT-00000222"
 				it "should have the shortDescription set", ->
@@ -79,15 +78,13 @@ describe "Base Entity testing", ->
 					expect(@bem.getDescription().get('clobValue')).toEqual "long description goes here"
 				it 'Should have a notebook value', ->
 					expect(@bem.getNotebook().get('stringValue')).toEqual "911"
-				it 'Should have a completionDate value', ->
-					expect(@bem.getCompletionDate().get('dateValue')).toEqual 1342080000000
 				it 'Should have a status value', ->
 					expect(@bem.getStatus().get('stringValue')).toEqual "started"
 					
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
-					@bem = new BaseEntityModel()
+					@bem = new BaseEntity()
 					@baseEntityChanged = false
 					@bem.get('lsLabels').setBestName new Label
 						labelKind: "experiment name"
@@ -109,7 +106,7 @@ describe "Base Entity testing", ->
 					expect(@baseEntityChanged).toBeTruthy()
 			it "should trigger change when value changed in state", ->
 				runs ->
-					@bem = new BaseEntityModel window.baseEntityServiceTestJSON.fullExperimentFromServer
+					@bem = new BaseEntity window.baseEntityServiceTestJSON.fullExperimentFromServer
 					@bemerimentChanged = false
 					@bem.on 'change', =>
 						@baseEntityChanged = true
@@ -122,7 +119,8 @@ describe "Base Entity testing", ->
 
 		describe "model validation", ->
 			beforeEach ->
-				@bem = new BaseEntityModel window.baseEntityServiceTestJSON.fullExperimentFromServer
+				@bem = new BaseEntity window.baseEntityServiceTestJSON.fullExperimentFromServer
+#				@bem.set urlRoot: "/api/experiments"
 				@bem.set subclass: "experiment"
 			it "should be valid when loaded from saved", ->
 				expect(@bem.isValid()).toBeTruthy()
@@ -159,18 +157,11 @@ describe "Base Entity testing", ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it 'should require that completionDate not be ""', ->
-				@bem.getCompletionDate().set
-					dateValue: new Date("").getTime()
-				expect(@bem.isValid()).toBeFalsy()
-				filtErrors = _.filter(@bem.validationError, (err) ->
-					err.attribute=='completionDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
 
 		describe "prepare to save", ->
 			beforeEach ->
-				@bem = new BaseEntityModel()
+				@bem = new BaseEntity()
+#				@bem.set urlRoot: "/api/experiments"
 				@bem.set subclass: "experiment"
 				@bem.set recordedBy: "jmcneil"
 				@bem.set recordedDate: -1
@@ -203,7 +194,7 @@ describe "Base Entity testing", ->
 				runs ->
 					@saveSucessful = false
 					@saveComplete = false
-					@bem = new BaseEntityModel id: 1
+					@bem = new BaseEntity id: 1
 					@bem.on 'sync', =>
 						@saveSucessful = true
 						@saveComplete = true
@@ -218,7 +209,6 @@ describe "Base Entity testing", ->
 					expect(@saveSucessful).toBeTruthy()
 			it "should convert labels array to label list", ->
 				runs ->
-					console.log @bem.get('lsLabels')
 					expect(@bem.get('lsLabels')  instanceof LabelList).toBeTruthy()
 #					expect(@bem.get('lsLabels').length).toBeGreaterThan 0
 			it "should convert state array to state list", ->
@@ -239,7 +229,8 @@ describe "Base Entity testing", ->
 	describe "BaseEntityController testing", ->
 		describe "When created from a saved entity", ->
 			beforeEach ->
-				@bem = new BaseEntityModel window.experimentServiceTestJSON.fullExperimentFromServer
+				@bem = new BaseEntity window.experimentServiceTestJSON.fullExperimentFromServer
+#				@bem.set urlRoot: "/api/experiments"
 				@bem.set subclass: "experiment"
 				@bec = new BaseEntityController
 					model: @bem
@@ -257,16 +248,16 @@ describe "Base Entity testing", ->
 				# then setting model attribites changes the hash
 				xit "should fill the entity name field", ->
 					expect(@bec.$('.bv_entityName').val()).toEqual "FLIPR target A biochemical"
-				it "should fill the date field in the same format is the date picker", ->
-					expect(@bec.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the user field", ->
 					expect(@bec.$('.bv_recordedBy').val()).toEqual "nxm7557"
 				it "should fill the entity code field", ->
+					@bem.set subclass: "entity" # work around for the spec to pass. In a subclass, the dom element would be .bv_[subclass]Code not .bv_entityCode
+					@bec.render()
 					expect(@bec.$('.bv_entityCode').html()).toEqual "EXPT-00000001"
-#				it "should disable the entity code field", ->
-#					expect(@bec.$('.bv_entityCode').attr('diabled')).toEqual 'disabled'
-#				it "should fill the entity kind field", ->
-#					expect(@bec.$('.bv_entityKind').html()).toEqual "default"
+				it "should fill the entity kind field", ->
+					@bem.set subclass: "entity" # work around for the spec to pass. In a subclass, the dom element would be .bv_[subclass]Kind not .bv_entityKind
+					@bec.render()
+					expect(@bec.$('.bv_entityKind').html()).toEqual "default"
 #				it "should disable the entity kind field", ->
 #					expect(@bec.$('.bv_entityCode').attr('diabled')).toEqual 'disabled'
 				it "should fill the notebook field", ->
@@ -297,8 +288,8 @@ describe "Base Entity testing", ->
 					@bec.$('.bv_status').val('started')
 					@bec.$('.bv_status').change()
 					expect(@bec.$('.bv_notebook').attr('disabled')).toBeUndefined()
-				it "should hide lock icon if entity is new", ->
-					@bec.$('.bv_status').val('new')
+				it "should hide lock icon if entity is created", ->
+					@bec.$('.bv_status').val('created')
 					@bec.$('.bv_status').change()
 					expect(@bec.$('.bv_lock')).toBeHidden()
 				it "should show lock icon if entity is finalized", ->
@@ -333,13 +324,11 @@ describe "Base Entity testing", ->
 					expect(desc).toEqual "New long description"
 					expect(@bec.model.getDescription().get('clobValue')).toEqual "New long description"
 				it "should update model when entity name is changed", ->
+					@bem.set subclass: "entity" # work around for the spec to pass. In a subclass, the dom element would be .bv_[subclass]Name not .bv_entityName
+					@bec.render()
 					@bec.$('.bv_entityName').val(" Updated entity name   ")
 					@bec.$('.bv_entityName').change()
 					expect(@bec.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated entity name"
-				it "should update model when completion date is changed", ->
-					@bec.$('.bv_completionDate').val(" 2013-3-16   ")
-					@bec.$('.bv_completionDate').change()
-					expect(@bec.model.getCompletionDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@bec.$('.bv_notebook').val(" Updated notebook  ")
 					@bec.$('.bv_notebook').change()
@@ -362,9 +351,7 @@ describe "Base Entity testing", ->
 
 		describe "When created from a new entity", ->
 			beforeEach ->
-				@bem = new BaseEntityModel()
-				window.temp_model = @bem
-				@bem.set subclass: "experiment"
+				@bem = new BaseEntity()
 				@bem.getStatus().set stringValue: "created" #work around for left over pointers
 				@bec = new BaseEntityController
 					model: @bem
@@ -373,24 +360,27 @@ describe "Base Entity testing", ->
 			describe "basic startup conditions", ->
 				it "should have entity code not set", ->
 					expect(@bec.$('.bv_entityCode').val()).toEqual ""
-				it "should have entity code disabled", ->
-					expect(@bec.$('.bv_entityCode').attr("disabled")).toEqual "disabled"
 				it "should have entity name not set", ->
 					expect(@bec.$('.bv_entityName').val()).toEqual ""
-				it "should not fill the date field", ->
-					expect(@bec.$('.bv_completionDate').val()).toEqual ""
 				it "should show the save button text as Save", ->
 					expect(@bec.$('.bv_save').html()).toEqual "Save"
 				it "should show the save button disabled", ->
 					expect(@bec.$('.bv_save').attr('disabled')).toEqual 'disabled'
-				it "should show status select value as created", ->
-					waitsFor ->
-						@bec.$('.bv_status option').length > 0
-					, 1000
-					runs ->
-						expect(@bec.$('.bv_status').val()).toEqual 'created'
 				it "should show the status select disabled", ->
 					expect(@bec.$('.bv_status').attr('disabled')).toEqual 'disabled'
+				it "should show status select value as created", ->
+					@bem2 = new BaseEntity()
+					@bem2.set subclass: 'experiment' #this is required to load experimentStatus options from the dataDict (no dataDict for entityStatus)
+					@bem2.getStatus().set stringValue: "created" #work around for left over pointers
+					@bec2 = new BaseEntityController
+						model: @bem2
+						el: $('#fixture')
+					@bec.render()
+					waitsFor ->
+						@bec2.$('.bv_status option').length > 0
+					, 1000
+					runs ->
+						expect(@bec2.$('.bv_status').val()).toEqual 'created'
 			describe "controller validation rules", ->
 				beforeEach ->
 					@bec.$('.bv_recordedBy').val("nxm7557")
@@ -401,13 +391,10 @@ describe "Base Entity testing", ->
 					@bec.$('.bv_entityName').change()
 					@bec.$('.bv_notebook').val("my notebook")
 					@bec.$('.bv_notebook').change()
-					@bec.$('.bv_completionDate').val(" 2013-3-16   ")
-					@bec.$('.bv_completionDate').change()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@bec.isValid()).toBeTruthy()
-							console.log @bec.model.validationError
 					it "save button should be enabled", ->
 						runs ->
 							expect(@bec.$('.bv_save').attr('disabled')).toBeUndefined()
@@ -425,14 +412,6 @@ describe "Base Entity testing", ->
 					it "should show the save button disabled", ->
 						runs ->
 							expect(@bec.$('.bv_save').attr('disabled')).toEqual 'disabled'
-				describe "when date field not filled in", ->
-					beforeEach ->
-						runs ->
-							@bec.$('.bv_completionDate').val("")
-							@bec.$('.bv_completionDate').change()
-					it "should show error in date field", ->
-						runs ->
-							expect(@bec.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->

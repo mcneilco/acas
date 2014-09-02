@@ -558,7 +558,7 @@
 		codeName: "PROT-00000001"
 		id: 14325
 		ignored: false
-		kind: null
+		lsKind: null #changed from kind to lsKind
 		lsTransaction:
 			comments: "protocol 201 transactions"
 			id: 179
@@ -575,7 +575,7 @@
 	exports.protocolToSave = [
 		codeName: "PROT-00000066"
 		ignored: false
-		kind: null
+		lsKind: null #changed from kind to lsKind
 		lsLabels: [
 			ignored: false
 			imageFile: null
@@ -928,7 +928,7 @@
 
 	exports.protocolKinds = [
 		id: 1
-		kindName: "default"
+		lsKind: "default" #changed from kindName to lsKind
 		lsType:
 			id: 1
 			typeName: "default"
@@ -938,7 +938,7 @@
 		version: 0
 	,
 		id: 2
-		kindName: "FLIPR"
+		lsKind: "FLIPR" #changed from kindName to lsKind
 		lsType:
 			id: 1
 			typeName: "default"
@@ -948,7 +948,7 @@
 		version: 0
 	,
 		id: 3
-		kindName: "KD"
+		lsKind: "KD" #changed from kindName to lsKind
 		lsType:
 			id: 1
 			typeName: "default"
@@ -958,7 +958,7 @@
 		version: 0
 	,
 		id: 4
-		kindName: "Microsome Stability"
+		lsKind: "Microsome Stability" #changed from kindName to lsKind
 		lsType:
 			id: 1
 			typeName: "default"
@@ -968,7 +968,7 @@
 		version: 0
 	,
 		id: 5
-		kindName: "uSol"
+		lsKind: "uSol" #changed from kindName to lsKind
 		lsType:
 			id: 1
 			typeName: "default"

@@ -1,6 +1,6 @@
-class window.BaseEntityModel extends Backbone.Model
-	urlRoot: "/api/experiments"
-	defaults:
+class window.BaseEntity extends Backbone.Model
+	urlRoot: "/api/experiments" # should be set the proper value in subclasses
+	defaults: ->
 		subclass: "entity"
 		lsType: "default"
 		lsKind: "default"
@@ -25,12 +25,12 @@ class window.BaseEntityModel extends Backbone.Model
 				resp.lsStates = new StateList(resp.lsStates)
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
-		if resp.analysisGroups?
-			if resp.analysisGroups not instanceof AnalysisGroupList
-				resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups)
-		if resp.protocol?
-			if resp.protocol not instanceof Protocol
-				resp.protocol = new Protocol(resp.protocol)
+#		if resp.analysisGroups?
+#			if resp.analysisGroups not instanceof AnalysisGroupList
+#				resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups)
+#		if resp.protocol?
+#			if resp.protocol not instanceof Protocol
+#				resp.protocol = new Protocol(resp.protocol)
 		if resp.lsTags not instanceof TagList
 			resp.lsTags = new TagList(resp.lsTags)
 			resp.lsTags.on 'change', =>
@@ -39,9 +39,6 @@ class window.BaseEntityModel extends Backbone.Model
 
 
 	fixCompositeClasses: =>
-		console.log "fixCompositeClasses called"
-		console.log @has('lsLabels')
-		console.log @get('lsLabels') not instanceof LabelList
 		if @has('lsLabels')
 			if @get('lsLabels') not instanceof LabelList
 				@set lsLabels: new LabelList(@get('lsLabels'))
@@ -72,15 +69,11 @@ class window.BaseEntityModel extends Backbone.Model
 		metadataKind = @.get('subclass') + " metadata"
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook"
 
-	getCompletionDate: ->
-		metadataKind = @.get('subclass') + " metadata"
-		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "dateValue", "completion date"
-
 	getStatus: ->
 		metadataKind = @.get('subclass') + " metadata"
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "new"
+			status.set stringValue: "created"
 
 		status
 
@@ -95,7 +88,6 @@ class window.BaseEntityModel extends Backbone.Model
 		return true
 
 	validate: (attrs) ->
-		window.temp_attrs = attrs
 		errors = []
 		bestName = attrs.lsLabels.pickBestName()
 		nameError = true
@@ -120,15 +112,6 @@ class window.BaseEntityModel extends Backbone.Model
 			errors.push
 				attribute: 'notebook'
 				message: "Notebook must be set"
-		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" then cDate = "fred"
-		if isNaN(cDate)
-			errors.push
-				attribute: 'completionDate'
-				message: "Assay completion date must be set"
-
-		if errors.length > 0
-			return errors
 
 		if errors.length > 0
 			return errors
@@ -156,26 +139,24 @@ class window.BaseEntityModel extends Backbone.Model
 					val.set recordedDate: rDate
 
 class window.BaseEntityList extends Backbone.Collection
-	model: BaseEntityModel
+	model: BaseEntity
 
 class window.BaseEntityController extends AbstractFormController
 	template: _.template($("#BaseEntityView").html())
 
-	events:
+	events: ->
 		"change .bv_recordedBy": "handleRecordedByChanged"
 		"change .bv_shortDescription": "handleShortDescriptionChanged"
 		"change .bv_description": "handleDescriptionChanged"
 		"change .bv_entityName": "handleNameChanged"
-		"change .bv_completionDate": "handleDateChanged"
 		"change .bv_notebook": "handleNotebookChanged"
 		"change .bv_status": "handleStatusChanged"
-		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
 		"click .bv_save": "handleSaveClicked"
 
 
 	initialize: ->
 		unless @model?
-			@model=new BaseEntityModel()
+			@model=new BaseEntity()
 		@model.on 'sync', =>
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
@@ -189,23 +170,20 @@ class window.BaseEntityController extends AbstractFormController
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_save').attr('disabled', 'disabled')
-		@$('.bv_entityCode').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 
 	render: =>
+		subclass = @model.get('subclass')
 		@$('.bv_shortDescription').html @model.get('shortDescription')
 		@$('.bv_description').html @model.get('description')
 		bestName = @model.get('lsLabels').pickBestName()
 		if bestName?
-			@$('.bv_entityName').val bestName.get('labelText')
+			@$('.bv_'+subclass+'Name').val bestName.get('labelText')
 		@$('.bv_recordedBy').val(@model.get('recordedBy'))
-		@$('.bv_entityCode').html(@model.get('codeName'))
-		@$('.bv_completionDate').datepicker();
-		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
-		if @model.getCompletionDate().get('dateValue')?
-			@$('.bv_completionDate').val @convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
+		@$('.bv_'+subclass+'Code').html(@model.get('codeName'))
+#		@$('.bv_entityKind').html(@model.get('lsKind')) #should get value from protocol create form
 		@$('.bv_description').html(@model.getDescription().get('clobValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('stringValue'))
@@ -250,19 +228,14 @@ class window.BaseEntityController extends AbstractFormController
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
-		newName = @getTrimmedInput('.bv_entityName')
+		subclass = @model.get('subclass')
+		newName = @getTrimmedInput('.bv_'+subclass+'Name')
 		@model.get('lsLabels').setBestName new Label
-			lsKind: @model.get('subclass')+" name"
+			lsKind: subclass+" name"
 			labelText: newName
 			recordedBy: @model.get 'recordedBy'
 		#TODO label change propagation isn't really working, so this is the work-around
 		@model.trigger 'change'
-
-	handleDateChanged: =>
-		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
-
-	handleCompletionDateIconClicked: =>
-		@$( ".bv_completionDate" ).datepicker( "show" );
 
 	handleNotebookChanged: =>
 		@model.getNotebook().set stringValue: @getTrimmedInput('.bv_notebook')

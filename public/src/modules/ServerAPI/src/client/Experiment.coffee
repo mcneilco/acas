@@ -1,19 +1,14 @@
-class window.Experiment extends Backbone.Model
+class window.Experiment extends BaseEntity
 	urlRoot: "/api/experiments"
-	defaults:
-		lsType: "default"
-		lsKind: "default"
-		recordedBy: ""
-		recordedDate: new Date().getTime()
-		shortDescription: " "
-		lsLabels: new LabelList()
-		lsStates: new StateList()
-		protocol: null
-		analysisGroups: new AnalysisGroupList()
+	defaults: ->
+		_(super()).extend(
+			protocol: null
+			analysisGroups: new AnalysisGroupList()
+		)
 
 	initialize: ->
-		@fixCompositeClasses()
-		@setupCompositeChangeTriggers()
+		@.set subclass: "experiment"
+		super()
 
 	parse: (resp) =>
 		if resp.lsLabels?
@@ -39,29 +34,13 @@ class window.Experiment extends Backbone.Model
 		resp
 
 	fixCompositeClasses: =>
-		if @has('lsLabels')
-			if @get('lsLabels') not instanceof LabelList
-				@set lsLabels: new LabelList(@get('lsLabels'))
-		if @has('lsStates')
-			if @get('lsStates') not instanceof StateList
-				@set lsStates: new StateList(@get('lsStates'))
+		super()
 		if @has('analysisGroups')
 			if @get('analysisGroups') not instanceof AnalysisGroupList
 				@set analysisGroups: new AnalysisGroupList(@get('analysisGroups'))
 		if @get('protocol') != null
 			if @get('protocol') not instanceof Backbone.Model
 				@set protocol: new Protocol(@get('protocol'))
-		if @get('lsTags') != null
-			if @get('lsTags') not instanceof TagList
-				@set lsTags: new TagList(@get('lsTags'))
-
-	setupCompositeChangeTriggers: ->
-		@get('lsLabels').on 'change', =>
-			@trigger 'change'
-		@get('lsStates').on 'change', =>
-			@trigger 'change'
-		@get('lsTags').on 'change', =>
-			@trigger 'change'
 
 	copyProtocolAttributes: (protocol) ->
 		#cache values I don't want to overwrite
@@ -142,41 +121,8 @@ class window.Experiment extends Backbone.Model
 
 		if errors.length > 0
 			return errors
-
-		if errors.length > 0
-			return errors
 		else
 			return null
-
-	prepareToSave: ->
-		rBy = @get('recordedBy')
-		rDate = new Date().getTime()
-		@set recordedDate: rDate
-		@get('lsLabels').each (lab) ->
-			unless lab.get('recordedBy') != ""
-				lab.set recordedBy: rBy
-			unless lab.get('recordedDate') != null
-				lab.set recordedDate: rDate
-		@get('lsStates').each (state) ->
-			unless state.get('recordedBy') != ""
-				state.set recordedBy: rBy
-			unless state.get('recordedDate') != null
-				state.set recordedDate: rDate
-			state.get('lsValues').each (val) ->
-				unless val.get('recordedBy') != ""
-					val.set recordedBy: rBy
-				unless val.get('recordedDate') != null
-					val.set recordedDate: rDate
-
-	getDescription: ->
-		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
-		if description.get('clobValue') is undefined or description.get('clobValue') is ""
-			description.set clobValue: ""
-
-		description
-
-	getNotebook: ->
-		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
 
 	getProjectCode: ->
 		projectCodeValue = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "project"
@@ -188,96 +134,40 @@ class window.Experiment extends Backbone.Model
 	getCompletionDate: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
 
-	getStatus: ->
-		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
-		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "created"
-
-		status
-
-	getAnalysisStatus: ->
-		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
-		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "created"
-
-		status
-
-	isEditable: ->
-		status = @getStatus().get 'stringValue'
-		switch status
-			when "created" then return true
-			when "started" then return true
-			when "complete" then return true
-			when "finalized" then return false
-			when "rejected" then return false
-		return true
 
 class window.ExperimentList extends Backbone.Collection
 	model: Experiment
 
-class window.ExperimentBaseController extends AbstractFormController
+class window.ExperimentBaseController extends BaseEntityController
 	template: _.template($("#ExperimentBaseView").html())
 
-	events:
-		"change .bv_recordedBy": "handleRecordedByChanged"
-		"change .bv_shortDescription": "handleShortDescriptionChanged"
-		"change .bv_description": "handleDescriptionChanged"
-		"change .bv_experimentName": "handleNameChanged"
-		"change .bv_completionDate": "handleDateChanged"
-		"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
-		"change .bv_protocolCode": "handleProtocolCodeChanged"
-		"change .bv_projectCode": "handleProjectCodeChanged"
-		"change .bv_notebook": "handleNotebookChanged"
-		"change .bv_status": "handleStatusChanged"
-		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
-		"click .bv_save": "handleSaveClicked"
+	events: ->
+		_(super()).extend(
+			"change .bv_experimentName": "handleNameChanged"
+			"change .bv_completionDate": "handleDateChanged"
+			"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
+			"change .bv_protocolCode": "handleProtocolCodeChanged"
+			"change .bv_projectCode": "handleProjectCodeChanged"
+			"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+		)
 
 	initialize: ->
-		@model.on 'sync', =>
-			@trigger 'amClean'
-			@$('.bv_saving').hide()
-			@$('.bv_updateComplete').show()
-			@render()
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateComplete').hide()
+		super()
 		@errorOwnerName = 'ExperimentBaseController'
 		@setBindings()
-		$(@el).empty()
-		$(@el).html @template()
-		@$('.bv_save').attr('disabled', 'disabled')
 		@setupProtocolSelect(@options.protocolFilter)
 		@setupProjectSelect()
-		@setupStatusSelect()
-		@setupTagList()
-		@model.getStatus().on 'change', @updateEditable
 
 	render: =>
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
 		@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
-		@$('.bv_shortDescription').html @model.get('shortDescription')
-		@$('.bv_description').html @model.get('description')
-		bestName = @model.get('lsLabels').pickBestName()
-		if bestName?
-			@$('.bv_experimentName').val bestName.get('labelText')
-		@$('.bv_recordedBy').val(@model.get('recordedBy'))
-		@$('.bv_experimentCode').html(@model.get('codeName'))
-		#@getFullProtocol()
 		@setUseProtocolParametersDisabledState()
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCompletionDate().get('dateValue')?
 			@$('.bv_completionDate').val @convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
-		@$('.bv_description').html(@model.getDescription().get('clobValue'))
-		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
-		@$('.bv_status').val(@model.getStatus().get('stringValue'))
-		if @model.isNew()
-			@$('.bv_save').html("Save")
-		else
-			@$('.bv_save').html("Update")
-		@updateEditable()
-
+		super()
 		@
 
 	setupProtocolSelect: (protocolFilter) ->
@@ -308,21 +198,6 @@ class window.ExperimentBaseController extends AbstractFormController
 				name: "Select Project"
 			selectedCode: @model.getProjectCode().get('codeValue')
 
-	setupStatusSelect: ->
-		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/experimentStatus"
-		@statusListController = new PickListSelectController
-			el: @$('.bv_status')
-			collection: @statusList
-			selectedCode: @model.getStatus().get 'stringValue'
-
-	setupTagList: ->
-		@$('.bv_tags').val ""
-		@tagListController = new TagListController
-			el: @$('.bv_tags')
-			collection: @model.get 'lsTags'
-		@tagListController.render()
-
 	setUseProtocolParametersDisabledState: ->
 		if (not @model.isNew()) or (@model.get('protocol') == null) or (@$('.bv_protocolCode').val() == "")
 			@$('.bv_useProtocolParameters').attr("disabled", "disabled")
@@ -341,31 +216,6 @@ class window.ExperimentBaseController extends AbstractFormController
 				@setUseProtocolParametersDisabledState()
 				unless !@model.isNew()
 					@handleUseProtocolParametersClicked()
-
-	handleRecordedByChanged: =>
-		@model.set recordedBy: @$('.bv_recordedBy').val()
-		@handleNameChanged()
-
-	handleShortDescriptionChanged: =>
-		trimmedDesc = @getTrimmedInput('.bv_shortDescription')
-		if trimmedDesc != ""
-			@model.set shortDescription: trimmedDesc
-		else
-			@model.set shortDescription: " " #fix for oracle persistance bug
-
-	handleDescriptionChanged: =>
-		@model.getDescription().set
-			clobValue: @getTrimmedInput('.bv_description')
-			recordedBy: @model.get('recordedBy')
-
-	handleNameChanged: =>
-		newName = @getTrimmedInput('.bv_experimentName')
-		@model.get('lsLabels').setBestName new Label
-			lsKind: "experiment name"
-			labelText: newName
-			recordedBy: @model.get 'recordedBy'
-		#TODO label change propagation isn't really working, so this is the work-around
-		@model.trigger 'change'
 
 	handleDateChanged: =>
 		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
@@ -396,52 +246,17 @@ class window.ExperimentBaseController extends AbstractFormController
 	handleProjectCodeChanged: =>
 		@model.getProjectCode().set codeValue: @$('.bv_projectCode').val()
 
-	handleNotebookChanged: =>
-		@model.getNotebook().set stringValue: @getTrimmedInput('.bv_notebook')
-
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
 		@render()
 
-	handleStatusChanged: =>
-		@model.getStatus().set stringValue: @$('.bv_status').val()
-		# this is required in addition to model change event watcher only for spec. real app works without it
-		@updateEditable()
-
 	updateEditable: =>
-		if @model.isEditable()
-			@enableAllInputs()
-			@$('.bv_lock').hide()
-		else
-			@disableAllInputs()
-			@$('.bv_status').removeAttr('disabled')
-			@$('.bv_lock').show()
+		super()
 		if @model.isNew()
 			@$('.bv_protocolCode').removeAttr("disabled")
-			@$('.bv_status').attr("disabled", "disabled")
 		else
 			@$('.bv_protocolCode').attr("disabled", "disabled")
-			@$('.bv_status').removeAttr("disabled")
 
 	displayInReadOnlyMode: =>
 		@$(".bv_save").addClass "hide"
 		@disableAllInputs()
-
-	handleSaveClicked: =>
-		@tagListController.handleTagsChanged()
-		@model.prepareToSave()
-		if @model.isNew()
-			@$('.bv_updateComplete').html "Save Complete"
-		else
-			@$('.bv_updateComplete').html "Update Complete"
-		@$('.bv_saving').show()
-		@model.save()
-
-	validationError: =>
-		super()
-		@$('.bv_save').attr('disabled', 'disabled')
-
-	clearValidationErrorStyles: =>
-		super()
-		@$('.bv_save').removeAttr('disabled')
-

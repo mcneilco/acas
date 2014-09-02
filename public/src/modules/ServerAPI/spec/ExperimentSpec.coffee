@@ -70,7 +70,7 @@ describe "Experiment module testing", ->
 				@exp = new Experiment window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups
 			describe "after initial load", ->
 				it "should have a kind", ->
-					expect(@exp.get('kind')).toEqual "ACAS doc for batches"
+					expect(@exp.get('lsKind')).toEqual "ACAS doc for batches" # changed from get kind to get lsKind
 				it "should have the protocol set ", ->
 					expect(@exp.get('protocol').id).toEqual 2403
 				it "should have the analysisGroups set ", ->
@@ -132,7 +132,7 @@ describe "Experiment module testing", ->
 				it "Class should exist", ->
 					expect(@exp).toBeDefined()
 				it "should have same kind as protocol", ->
-					expect(@exp.get('kind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsKind
+					expect(@exp.get('lsKind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsKind
 				it "should have the protocol set ", ->
 					expect(@exp.get('protocol').get('codeName')).toEqual "PROT-00000001"
 				it "should have the shortDescription set to the protocols short description", ->
