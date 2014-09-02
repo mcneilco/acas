@@ -26,16 +26,14 @@ describe "Primary Screen Experiment module testing", ->
 			it "should be invalid when read position is NaN", ->
 				@par.set readPosition: NaN
 				expect(@par.isValid()).toBeFalsy()
-				filtErrors = _.filter(@par.validationError, (err) ->
+				filtErrors = _.filter @par.validationError, (err) ->
 					err.attribute=='readPosition'
-				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when read name is unassigned", ->
 				@par.set readName: "unassigned"
 				expect(@par.isValid()).toBeFalsy()
-				filtErrors = _.filter(@par.validationError, (err) ->
+				filtErrors = _.filter @par.validationError, (err) ->
 					err.attribute=='readName'
-				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Transformation Rule Model testing", ->
@@ -55,9 +53,8 @@ describe "Primary Screen Experiment module testing", ->
 			it "should be invalid when transformation rule is unassigned", ->
 				@tr.set transformationRule: "unassigned"
 				expect(@tr.isValid()).toBeFalsy()
-				filtErrors = _.filter(@tr.validationError, (err) ->
+				filtErrors = _.filter @tr.validationError, (err) ->
 					err.attribute=='transformationRule'
-				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Primary Analysis Read List testing", ->
@@ -89,7 +86,6 @@ describe "Primary Screen Experiment module testing", ->
 				expect(readthree.get('activity')).toBeFalsy()
 
 
-
 	describe "Transformation Rule List testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
@@ -111,7 +107,13 @@ describe "Primary Screen Experiment module testing", ->
 			it "should have the correct read info for the third read", ->
 				rulethree = @trl.at(2)
 				expect(rulethree.get('transformationRule')).toEqual "null"
-
+		describe "collection validation", ->
+			beforeEach ->
+				@trl= new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+			it "should be invalid if a transformation rule is selected more than once", ->
+				@trl.at(0).set transformationRule: "sd"
+				@trl.at(1).set transformationRule: "sd"
+				expect((@trl.validateCollection()).length).toBeGreaterThan 0
 
 	describe "Analysis Parameter model testing", ->
 		describe "When loaded from new", ->
@@ -158,33 +160,29 @@ describe "Primary Screen Experiment module testing", ->
 					@psap.get('positiveControl').set
 						batchCode: ""
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='positiveControlBatch'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when positive control conc is NaN", ->
 					@psap.get('positiveControl').set
 						concentration: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='positiveControlConc'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when negative control batch is empty", ->
 					@psap.get('negativeControl').set
 						batchCode: ""
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='negativeControlBatch'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when negative control conc is NaN", ->
 					@psap.get('negativeControl').set
 						concentration: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='negativeControlConc'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be valid when agonist control batch and conc are both empty", ->
 					@psap.get('agonistControl').set
@@ -196,148 +194,166 @@ describe "Primary Screen Experiment module testing", ->
 						batchCode:"CMPD-87654399-01"
 						concentration: 12
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='agonistControlConc'
 						err.attribute=='agonistControlBatch'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when agonist control batch is entered and agonist control conc is NaN", ->
 					@psap.get('agonistControl').set
 						batchCode:"CMPD-87654399-01"
 						concentration: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='agonistControlConc'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when agonist control batch is empty and agonist control conc is a number ", ->
 					@psap.get('agonistControl').set
 						batchCode:""
 						concentration: 13
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='agonistControlBatch'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be valid when vehicle control is empty", ->
 					@psap.get('vehicleControl').set
 						batchCode: ""
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='vehicleControlBatch'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when assayVolume is NaN (but can be empty)", ->
 					@psap.set assayVolume: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='assayVolume'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when assayVolume is not set but transfer volume is set", ->
 					@psap.set assayVolume: ""
 					@psap.set dilutionFactor: ""
 					@psap.set transferVolume: 40
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='assayVolume'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be valid when assayVolume, transfer volume, and dilution factors are empty", ->
 					@psap.set assayVolume: ""
 					@psap.set transferVolume: ""
 					@psap.set dilutionFactor: ""
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='assayVolume'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be valid when instrument reader is unassigned", ->
 					@psap.set instrumentReader: "unassigned"
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='instrumentReader'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when aggregate by1 is unassigned", ->
 					@psap.set aggregateBy1: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='aggregateBy1'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when aggregate by2 is unassigned", ->
 					@psap.set aggregateBy2: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='aggregateBy2'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when signal direction rule is unassigned", ->
 					@psap.set signalDirectionRule: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='signalDirectionRule'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when normalization rule is unassigned", ->
 					@psap.set normalizationRule: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='normalizationRule'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when volumeType is dilution and dilutionFactor is not a number (but can be empty)", ->
 					@psap.set volumeType: "dilution"
 					@psap.set dilutionFactor: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='dilutionFactor'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be valid when volumeType is dilution and dilutionFactor is empty", ->
 					@psap.set volumeType: "dilution"
 					@psap.set dilutionFactor: ""
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='dilutionFactor'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when volumeType is transfer and transferVolume is not a number (but can be empty)", ->
 					@psap.set volumeType: "transfer"
 					@psap.set transferVolume: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='transferVolume'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be valid when volumeType is transfer and transferVolume is empty", ->
 					@psap.set volumeType: "transfer"
 					@psap.set transferVolume: ""
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='transferVolume'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when autoHitSelection is checked and thresholdType is sd and hitSDThreshold is not a number", ->
 					@psap.set autoHitSelection: true
 					@psap.set thresholdType: "sd"
 					@psap.set hitSDThreshold: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='hitSDThreshold'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when autoHitSelection is checked and thresholdType is efficacy and hitEfficacyThreshold is not a number", ->
 					@psap.set autoHitSelection: true
 					@psap.set thresholdType: "efficacy"
 					@psap.set hitEfficacyThreshold: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='hitEfficacyThreshold'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 
+			describe "autocalculating volumes", ->
+				it "should autocalculate the dilution factor from the transfer volume and assay volume", ->
+					@psap.set volumeType: "transfer"
+					@psap.set transferVolume: 12
+					@psap.set assayVolume: 36
+					expect(@psap.autocalculateVolumes()).toEqual 36/12
+				it "should autocalculate the transfer volume from the dilution factor and assay volume", ->
+					@psap.set volumeType: "dilution"
+					@psap.set dilutionFactor: 4
+					@psap.set assayVolume: 36
+					expect(@psap.autocalculateVolumes()).toEqual 36/4
+				it "should not autocalculate the dilution factor if transfer volume is NaN", ->
+					@psap.set volumeType: "transfer"
+					@psap.set transferVolume: NaN
+					@psap.set assayVolume: 36
+					expect(@psap.autocalculateVolumes()).toEqual ""
+				it "should not autocalculate the dilution factor if assay volume is NaN", ->
+					@psap.set volumeType: "transfer"
+					@psap.set transferVolume: 14
+					@psap.set assayVolume: NaN
+					expect(@psap.autocalculateVolumes()).toEqual ""
+				it "should not autocalculate the transfer volume if the dilution factor is NaN", ->
+					@psap.set volumeType: "dilution"
+					@psap.set dilutionFactor: NaN
+					@psap.set assayVolume: 36
+					expect(@psap.autocalculateVolumes()).toEqual ""
+				it "should not autocalculate the dilution factor if the transfer volume is 0", ->
+					@psap.set volumeType: "transfer"
+					@psap.set transferVolume: 0
+					@psap.set assayVolume: 123
+					expect(@psap.autocalculateVolumes()).toEqual ""
+				it "should not autocalculate the transfer volume if the dilution factor is 0", ->
+					@psap.set volumeType: "dilution"
+					@psap.set dilutionFactor: 0
+					@psap.set assayVolume: 123
+					expect(@psap.autocalculateVolumes()).toEqual ""
 
 	describe "Primary Screen Experiment model testing", ->
 		describe "When loaded from existing", ->
@@ -587,24 +603,6 @@ describe "Primary Screen Experiment module testing", ->
 				runs ->
 					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(2)').val()).toEqual "null"
 
-		describe "error notification", ->
-			beforeEach ->
-				@trlc= new TransformationRuleListController
-					el: $('#fixture')
-					collection: new TransformationRuleList()
-				@trlc.render()
-			it "should show error if a transformation rule is selected more than once", ->
-				@trlc.$('.bv_addTransformationButton').click()
-				expect(@trlc.collection.length).toEqual 2
-				waitsFor ->
-					@trlc.$('.bv_transformationRule option').length > 0
-				, 1000
-				runs ->
-					@trlc.$('.bv_transformationRule:eq(0)').val "sd"
-					@trlc.$('.bv_transformationRule:eq(0)').change()
-					@trlc.$('.bv_transformationRule:eq(1)').val "sd"
-					@trlc.$('.bv_transformationRule:eq(1)').change()
-					expect((@trlc.collection.validateCollection()).length).toBeGreaterThan 0
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
 		describe 'when instantiated', ->

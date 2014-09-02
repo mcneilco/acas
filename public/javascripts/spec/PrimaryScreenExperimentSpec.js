@@ -142,7 +142,7 @@
           });
         });
       });
-      return describe("When loaded form existing", function() {
+      describe("When loaded form existing", function() {
         beforeEach(function() {
           return this.trl = new TransformationRuleList(window.primaryScreenTestJSON.transformationRules);
         });
@@ -163,6 +163,20 @@
           var rulethree;
           rulethree = this.trl.at(2);
           return expect(rulethree.get('transformationRule')).toEqual("null");
+        });
+      });
+      return describe("collection validation", function() {
+        beforeEach(function() {
+          return this.trl = new TransformationRuleList(window.primaryScreenTestJSON.transformationRules);
+        });
+        return it("should be invalid if a transformation rule is selected more than once", function() {
+          this.trl.at(0).set({
+            transformationRule: "sd"
+          });
+          this.trl.at(1).set({
+            transformationRule: "sd"
+          });
+          return expect((this.trl.validateCollection()).length).toBeGreaterThan(0);
         });
       });
     });
@@ -212,7 +226,7 @@
             return expect(this.psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy();
           });
         });
-        return describe("model validation tests", function() {
+        describe("model validation tests", function() {
           it("should be valid as initialized", function() {
             return expect(this.psap.isValid()).toBeTruthy();
           });
@@ -504,6 +518,92 @@
               return err.attribute === 'hitEfficacyThreshold';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+        });
+        return describe("autocalculating volumes", function() {
+          it("should autocalculate the dilution factor from the transfer volume and assay volume", function() {
+            this.psap.set({
+              volumeType: "transfer"
+            });
+            this.psap.set({
+              transferVolume: 12
+            });
+            this.psap.set({
+              assayVolume: 36
+            });
+            return expect(this.psap.autocalculateVolumes()).toEqual(36 / 12);
+          });
+          it("should autocalculate the transfer volume from the dilution factor and assay volume", function() {
+            this.psap.set({
+              volumeType: "dilution"
+            });
+            this.psap.set({
+              dilutionFactor: 4
+            });
+            this.psap.set({
+              assayVolume: 36
+            });
+            return expect(this.psap.autocalculateVolumes()).toEqual(36 / 4);
+          });
+          it("should not autocalculate the dilution factor if transfer volume is NaN", function() {
+            this.psap.set({
+              volumeType: "transfer"
+            });
+            this.psap.set({
+              transferVolume: NaN
+            });
+            this.psap.set({
+              assayVolume: 36
+            });
+            return expect(this.psap.autocalculateVolumes()).toEqual("");
+          });
+          it("should not autocalculate the dilution factor if assay volume is NaN", function() {
+            this.psap.set({
+              volumeType: "transfer"
+            });
+            this.psap.set({
+              transferVolume: 14
+            });
+            this.psap.set({
+              assayVolume: NaN
+            });
+            return expect(this.psap.autocalculateVolumes()).toEqual("");
+          });
+          it("should not autocalculate the transfer volume if the dilution factor is NaN", function() {
+            this.psap.set({
+              volumeType: "dilution"
+            });
+            this.psap.set({
+              dilutionFactor: NaN
+            });
+            this.psap.set({
+              assayVolume: 36
+            });
+            return expect(this.psap.autocalculateVolumes()).toEqual("");
+          });
+          it("should not autocalculate the dilution factor if the transfer volume is 0", function() {
+            this.psap.set({
+              volumeType: "transfer"
+            });
+            this.psap.set({
+              transferVolume: 0
+            });
+            this.psap.set({
+              assayVolume: 123
+            });
+            return expect(this.psap.autocalculateVolumes()).toEqual("");
+          });
+          return it("should not autocalculate the transfer volume if the dilution factor is 0", function() {
+            this.psap.set({
+              volumeType: "dilution"
+            });
+            this.psap.set({
+              dilutionFactor: 0
+            });
+            this.psap.set({
+              assayVolume: 123
+            });
+            return expect(this.psap.autocalculateVolumes()).toEqual("");
           });
         });
       });
@@ -814,7 +914,7 @@
           });
         });
       });
-      describe("when instantiated with data", function() {
+      return describe("when instantiated with data", function() {
         beforeEach(function() {
           this.trlc = new TransformationRuleListController({
             el: $('#fixture'),
@@ -848,29 +948,6 @@
           }, 1000);
           return runs(function() {
             return expect(this.trlc.$('.bv_transformationInfo .bv_transformationRule:eq(2)').val()).toEqual("null");
-          });
-        });
-      });
-      return describe("error notification", function() {
-        beforeEach(function() {
-          this.trlc = new TransformationRuleListController({
-            el: $('#fixture'),
-            collection: new TransformationRuleList()
-          });
-          return this.trlc.render();
-        });
-        return it("should show error if a transformation rule is selected more than once", function() {
-          this.trlc.$('.bv_addTransformationButton').click();
-          expect(this.trlc.collection.length).toEqual(2);
-          waitsFor(function() {
-            return this.trlc.$('.bv_transformationRule option').length > 0;
-          }, 1000);
-          return runs(function() {
-            this.trlc.$('.bv_transformationRule:eq(0)').val("sd");
-            this.trlc.$('.bv_transformationRule:eq(0)').change();
-            this.trlc.$('.bv_transformationRule:eq(1)').val("sd");
-            this.trlc.$('.bv_transformationRule:eq(1)').change();
-            return expect((this.trlc.collection.validateCollection()).length).toBeGreaterThan(0);
           });
         });
       });

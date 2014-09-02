@@ -51,7 +51,7 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 		if @.length != 0
 			for index in [0..@.length-1]
 				model = @.at(index)
-				indivModelErrors = model.validate(model.attributes) # note: can't call model.isValid() or else the attributes returned from model.validate will have class "error"
+				indivModelErrors = model.validate(model.attributes) # note: can't call model.isValid() because if invalid, the function will trigger validationError, which adds the class "error" to the invalid attributes
 				if indivModelErrors != null
 					for error in indivModelErrors
 						unless matchReadName and error.attribute == 'readPosition'
