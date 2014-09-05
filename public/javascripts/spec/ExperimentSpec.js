@@ -561,7 +561,7 @@
             return expect(this.ebc.$('.bv_projectCode').val()).toEqual("unassigned");
           });
         });
-        describe("it should show a picklist for experimetn statuses", function() {
+        describe("it should show a picklist for experiment statuses", function() {
           beforeEach(function() {
             waitsFor(function() {
               return this.ebc.$('.bv_status option').length > 0;

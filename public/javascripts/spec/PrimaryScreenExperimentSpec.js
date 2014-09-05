@@ -889,6 +889,7 @@
           });
           return it("should update the autoHitSelection ", function() {
             this.psapc.$('.bv_autoHitSelection').click();
+            this.psapc.$('.bv_autoHitSelection').click();
             return expect(this.psapc.model.get('autoHitSelection')).toBeTruthy();
           });
         });

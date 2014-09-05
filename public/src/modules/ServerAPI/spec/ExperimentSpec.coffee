@@ -374,7 +374,7 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_projectCode option').length).toBeGreaterThan 0
 				it "should default to unassigned", ->
 					expect(@ebc.$('.bv_projectCode').val()).toEqual "unassigned"
-			describe "it should show a picklist for experimetn statuses", ->
+			describe "it should show a picklist for experiment statuses", ->
 				beforeEach ->
 					waitsFor ->
 						@ebc.$('.bv_status option').length > 0

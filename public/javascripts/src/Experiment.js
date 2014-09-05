@@ -118,7 +118,7 @@
         return estates.add(estate);
       });
       this.set({
-        kind: protocol.get('lsKind'),
+        lsKind: protocol.get('lsKind'),
         protocol: protocol,
         shortDescription: protocol.get('shortDescription'),
         lsStates: estates

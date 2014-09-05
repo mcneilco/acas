@@ -87,6 +87,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/PampaTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js",
+	"/javascripts/spec/testFixtures/ProtocolCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/curveCuratorTestFixtures.js",
 	"/src/modules/DocForBatches/spec/DocForBatchesSpec.js",

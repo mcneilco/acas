@@ -1,5 +1,6 @@
 class window.BaseEntity extends Backbone.Model
 	urlRoot: "/api/experiments" # should be set the proper value in subclasses
+
 	defaults: ->
 		subclass: "entity"
 		lsType: "default"
@@ -25,12 +26,6 @@ class window.BaseEntity extends Backbone.Model
 				resp.lsStates = new StateList(resp.lsStates)
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
-#		if resp.analysisGroups?
-#			if resp.analysisGroups not instanceof AnalysisGroupList
-#				resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups)
-#		if resp.protocol?
-#			if resp.protocol not instanceof Protocol
-#				resp.protocol = new Protocol(resp.protocol)
 		if resp.lsTags not instanceof TagList
 			resp.lsTags = new TagList(resp.lsTags)
 			resp.lsTags.on 'change', =>
@@ -60,6 +55,7 @@ class window.BaseEntity extends Backbone.Model
 	getDescription: ->
 		metadataKind = @.get('subclass') + " metadata"
 		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "description"
+#		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
 		if description.get('clobValue') is undefined or description.get('clobValue') is ""
 			description.set clobValue: ""
 
@@ -68,14 +64,26 @@ class window.BaseEntity extends Backbone.Model
 	getNotebook: ->
 		metadataKind = @.get('subclass') + " metadata"
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook"
+#		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
 
 	getStatus: ->
 		metadataKind = @.get('subclass') + " metadata"
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "status"
+#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
 			status.set stringValue: "created"
 
 		status
+
+	getAnalysisStatus: ->
+		metadataKind = @.get('subclass') + " metadata"
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "analysis status"
+#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+		if status.get('stringValue') is undefined or status.get('stringValue') is ""
+			status.set stringValue: "created"
+
+		status
+
 
 	isEditable: ->
 		status = @getStatus().get 'stringValue'
@@ -97,7 +105,7 @@ class window.BaseEntity extends Backbone.Model
 				nameError = false
 		if nameError
 			errors.push
-				attribute:'entityName'
+				attribute: attrs.subclass+'Name'
 				message: attrs.subclass+" name must be set"
 		if _.isNaN(attrs.recordedDate)
 			errors.push
@@ -173,6 +181,7 @@ class window.BaseEntityController extends AbstractFormController
 		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
+#	using the code above, triggers amDirty whenever the module is clicked. is this ok? not a problem for primary screen experiment
 
 	render: =>
 		subclass = @model.get('subclass')
@@ -183,7 +192,7 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_'+subclass+'Name').val bestName.get('labelText')
 		@$('.bv_recordedBy').val(@model.get('recordedBy'))
 		@$('.bv_'+subclass+'Code').html(@model.get('codeName'))
-#		@$('.bv_entityKind').html(@model.get('lsKind')) #should get value from protocol create form
+		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
 		@$('.bv_description').html(@model.getDescription().get('clobValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('stringValue'))
@@ -233,7 +242,7 @@ class window.BaseEntityController extends AbstractFormController
 		@model.get('lsLabels').setBestName new Label
 			lsKind: subclass+" name"
 			labelText: newName
-			recordedBy: @model.get 'recordedBy'
+			recordedBy: @model.get('recordedBy')
 		#TODO label change propagation isn't really working, so this is the work-around
 		@model.trigger 'change'
 

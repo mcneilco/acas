@@ -66,7 +66,7 @@ class window.Experiment extends BaseEntity
 			estate.set lsValues: evals
 			estates.add(estate)
 		@set
-			kind: protocol.get('lsKind')
+			lsKind: protocol.get('lsKind')
 			protocol: protocol
 			shortDescription: protocol.get('shortDescription')
 			lsStates: estates

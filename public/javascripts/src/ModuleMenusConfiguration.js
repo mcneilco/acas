@@ -29,6 +29,11 @@
       autoLaunchName: "base_entity"
     }, {
       isHeader: false,
+      menuName: "Protocol Base",
+      mainControllerClassName: "ProtocolBaseController",
+      autoLaunchName: "protocol_base"
+    }, {
+      isHeader: false,
       menuName: "Analyze KD Data",
       mainControllerClassName: "DNSKDPrimaryScreenExperimentController",
       autoLaunchName: "dnskd_screening_assay"

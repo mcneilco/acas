@@ -132,7 +132,7 @@ describe "Base Entity testing", ->
 					recordedDate: @bem.get 'recordedDate'
 				expect(@bem.isValid()).toBeFalsy()
 				filtErrors = _.filter(@bem.validationError, (err) ->
-					err.attribute=='entityName'
+					err.attribute=='experimentName'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when date is empty", ->
@@ -235,7 +235,6 @@ describe "Base Entity testing", ->
 				@bec = new BaseEntityController
 					model: @bem
 					el: $('#fixture')
-					protocolFilter: ""
 				@bec.render()
 			describe "property display", ->
 				it "should show the save button text as Update", ->
@@ -258,8 +257,6 @@ describe "Base Entity testing", ->
 					@bem.set subclass: "entity" # work around for the spec to pass. In a subclass, the dom element would be .bv_[subclass]Kind not .bv_entityKind
 					@bec.render()
 					expect(@bec.$('.bv_entityKind').html()).toEqual "default"
-#				it "should disable the entity kind field", ->
-#					expect(@bec.$('.bv_entityCode').attr('diabled')).toEqual 'disabled'
 				it "should fill the notebook field", ->
 					expect(@bec.$('.bv_notebook').val()).toEqual "911"
 				it "should show the tags", ->

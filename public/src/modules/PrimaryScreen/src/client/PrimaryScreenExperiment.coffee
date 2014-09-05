@@ -311,7 +311,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
 		"change .bv_volumeTypeTransfer": "handleVolumeTypeChanged"
 		"change .bv_volumeTypeDilution": "handleVolumeTypeChanged"
-		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
+		"click .bv_autoHitSelection": "handleAutoHitSelectionChanged"
 
 
 
