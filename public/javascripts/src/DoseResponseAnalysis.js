@@ -14,9 +14,15 @@
     DoseResponseAnalysisParameters.prototype.defaults = {
       inactiveThreshold: 20,
       inverseAgonistMode: false,
-      max: new Backbone.Model(),
-      min: new Backbone.Model(),
-      slope: new Backbone.Model()
+      max: new Backbone.Model({
+        limitType: 'none'
+      }),
+      min: new Backbone.Model({
+        limitType: 'none'
+      }),
+      slope: new Backbone.Model({
+        limitType: 'none'
+      })
     };
 
     DoseResponseAnalysisParameters.prototype.initialize = function() {
@@ -188,8 +194,7 @@
       var radioValue;
       radioValue = this.$("input[name='bv_max_limitType']:checked").val();
       this.model.get('max').set({
-        limitType: radioValue
-      }, {
+        limitType: radioValue,
         silent: true
       });
       if (radioValue === 'none') {

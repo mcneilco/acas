@@ -2,9 +2,9 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 	defaults:
 		inactiveThreshold: 20
 		inverseAgonistMode: false
-		max: new Backbone.Model()
-		min: new Backbone.Model()
-		slope: new Backbone.Model()
+		max: new Backbone.Model limitType: 'none'
+		min: new Backbone.Model limitType: 'none'
+		slope: new Backbone.Model limitType: 'none'
 
 	initialize: ->
 		@fixCompositeClasses()
@@ -12,16 +12,10 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 	fixCompositeClasses: =>
 		if @get('max') not instanceof Backbone.Model
 			@set max: new Backbone.Model(@get('max'))
-#		@get('max').on "change", =>
-#			@trigger 'change'
 		if @get('min') not instanceof Backbone.Model
 			@set min: new Backbone.Model(@get('min'))
-#		@get('min').on "change", =>
-#			@trigger 'change'
 		if @get('slope') not instanceof Backbone.Model
 			@set slope: new Backbone.Model(@get('slope'))
-#		@get('slope').on "change", =>
-#			@trigger 'change'
 
 
 	validate: (attrs) ->
@@ -124,8 +118,8 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 
 	handleMaxLimitTypeChanged: =>
 		radioValue = @$("input[name='bv_max_limitType']:checked").val()
-		@model.get('max').set limitType: radioValue,
-			silent: true
+
+		@model.get('max').set limitType: radioValue, silent: true
 		if radioValue == 'none'
 			@$('.bv_max_value').attr('disabled','disabled')
 		else

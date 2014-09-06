@@ -20,10 +20,13 @@
           });
           return it("should have defaults", function() {
             expect(this.drap.get('inactiveThreshold')).toEqual(20);
-            expect(this.drap.get('inverseAgonistMode')).toBeFalsy;
+            expect(this.drap.get('inverseAgonistMode')).toBeFalsy();
             expect(this.drap.get('max') instanceof Backbone.Model).toBeTruthy();
             expect(this.drap.get('min') instanceof Backbone.Model).toBeTruthy();
-            return expect(this.drap.get('slope') instanceof Backbone.Model).toBeTruthy();
+            expect(this.drap.get('slope') instanceof Backbone.Model).toBeTruthy();
+            expect(this.drap.get('max').get('limitType')).toEqual("none");
+            expect(this.drap.get('min').get('limitType')).toEqual("none");
+            return expect(this.drap.get('slope').get('limitType')).toEqual("none");
           });
         });
       });
@@ -142,10 +145,10 @@
       });
     });
     describe('DoseResponseAnalysisParameters Controller', function() {
-      return describe('when instantiated', function() {
+      describe('when instantiated from new parameters', function() {
         beforeEach(function() {
           this.drapc = new DoseResponseAnalysisParametersController({
-            model: new DoseResponseAnalysisParameters(window.CurveFitTestJSON.doseResponseSimpleBulkFitOptions),
+            model: new DoseResponseAnalysisParameters(),
             el: $('#fixture')
           });
           return this.drapc.render();
@@ -160,6 +163,32 @@
           return it('should load a template', function() {
             return expect(this.drapc.$('.bv_inverseAgonistMode').length).toEqual(1);
           });
+        });
+        return describe("render default parameters", function() {
+          it('should show the inverse agonist mode', function() {
+            return expect(this.drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeUndefined();
+          });
+          it('should start with max_limitType radio set', function() {
+            return expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('none');
+          });
+          it('should start with min_limitType radio set', function() {
+            return expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('none');
+          });
+          it('should start with slope_limitType radio set', function() {
+            return expect(this.drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual('none');
+          });
+          return it('should show the default inactive threshold', function() {
+            return expect(this.drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual("20");
+          });
+        });
+      });
+      return describe('when instantiated from existing parameters', function() {
+        beforeEach(function() {
+          this.drapc = new DoseResponseAnalysisParametersController({
+            model: new DoseResponseAnalysisParameters(window.CurveFitTestJSON.doseResponseSimpleBulkFitOptions),
+            el: $('#fixture')
+          });
+          return this.drapc.render();
         });
         describe("render existing parameters", function() {
           it('should show the inverse agonist mode', function() {
@@ -210,31 +239,39 @@
           it('should update the max_limitType radio to none', function() {
             this.drapc.$(".bv_max_limitType_pin").click();
             this.drapc.$(".bv_max_limitType_none").click();
+            this.drapc.$(".bv_max_limitType_none").click();
             return expect(this.drapc.model.get('max').get('limitType')).toEqual('none');
           });
           it('should update the max_value input to disabled when none', function() {
+            this.drapc.$(".bv_max_limitType_none").click();
             this.drapc.$(".bv_max_limitType_none").click();
             expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('none');
             return expect(this.drapc.$(".bv_max_value").attr("disabled")).toEqual("disabled");
           });
           it('should update the max_limitType radio to pin', function() {
             this.drapc.$(".bv_max_limitType_pin").click();
+            this.drapc.$(".bv_max_limitType_pin").click();
             return expect(this.drapc.model.get('max').get('limitType')).toEqual('pin');
           });
           it('should update the max_value input to enabled when pin', function() {
             this.drapc.$(".bv_max_limitType_none").click();
+            this.drapc.$(".bv_max_limitType_none").click();
             expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_max_limitType_pin").click();
             this.drapc.$(".bv_max_limitType_pin").click();
             expect(this.drapc.model.get('max').get('limitType')).toEqual('pin');
             return expect(this.drapc.$(".bv_max_value").attr("disabled")).toBeUndefined();
           });
           it('should update the max_limitType radio to limit', function() {
             this.drapc.$(".bv_max_limitType_limit").click();
+            this.drapc.$(".bv_max_limitType_limit").click();
             return expect(this.drapc.model.get('max').get('limitType')).toEqual('limit');
           });
           it('should update the max_value input to enabled when limit', function() {
             this.drapc.$(".bv_max_limitType_none").click();
+            this.drapc.$(".bv_max_limitType_none").click();
             expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_max_limitType_limit").click();
             this.drapc.$(".bv_max_limitType_limit").click();
             expect(this.drapc.model.get('max').get('limitType')).toEqual('limit');
             return expect(this.drapc.$(".bv_max_value").attr("disabled")).toBeUndefined();
@@ -242,53 +279,67 @@
           it('should update the min_limitType radio to none', function() {
             this.drapc.$(".bv_min_limitType_pin").click();
             this.drapc.$(".bv_min_limitType_none").click();
+            this.drapc.$(".bv_min_limitType_none").click();
             return expect(this.drapc.model.get('min').get('limitType')).toEqual('none');
           });
           it('should update the min_value input to disabled when none', function() {
             this.drapc.$(".bv_min_limitType_pin").click();
+            this.drapc.$(".bv_min_limitType_pin").click();
             expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('pin');
+            this.drapc.$(".bv_min_limitType_none").click();
             this.drapc.$(".bv_min_limitType_none").click();
             expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('none');
             return expect(this.drapc.$(".bv_min_value").attr("disabled")).toEqual("disabled");
           });
           it('should update the min_limitType radio to pin', function() {
             this.drapc.$(".bv_min_limitType_pin").click();
+            this.drapc.$(".bv_min_limitType_pin").click();
             return expect(this.drapc.model.get('min').get('limitType')).toEqual('pin');
           });
           it('should update the min_value input to enabled when pin', function() {
             this.drapc.$(".bv_min_limitType_none").click();
+            this.drapc.$(".bv_min_limitType_none").click();
             expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_min_limitType_pin").click();
             this.drapc.$(".bv_min_limitType_pin").click();
             expect(this.drapc.model.get('min').get('limitType')).toEqual('pin');
             return expect(this.drapc.$(".bv_min_value").attr("disabled")).toBeUndefined();
           });
           it('should update the min_limitType radio to limit', function() {
             this.drapc.$(".bv_min_limitType_limit").click();
+            this.drapc.$(".bv_min_limitType_limit").click();
             return expect(this.drapc.model.get('min').get('limitType')).toEqual('limit');
           });
           it('should update the min_value input to enabled when limit', function() {
             this.drapc.$(".bv_min_limitType_none").click();
+            this.drapc.$(".bv_min_limitType_none").click();
             expect(this.drapc.$("input[name='bv_min_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_min_limitType_limit").click();
             this.drapc.$(".bv_min_limitType_limit").click();
             expect(this.drapc.model.get('min').get('limitType')).toEqual('limit');
             return expect(this.drapc.$(".bv_min_value").attr("disabled")).toBeUndefined();
           });
           it('should update the slope_limitType radio to none', function() {
             this.drapc.$(".bv_slope_limitType_none").click();
+            this.drapc.$(".bv_slope_limitType_none").click();
             return expect(this.drapc.model.get('slope').get('limitType')).toEqual('none');
           });
           it('should update the slope_value input to disabled when none', function() {
+            this.drapc.$(".bv_slope_limitType_none").click();
             this.drapc.$(".bv_slope_limitType_none").click();
             expect(this.drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual('none');
             return expect(this.drapc.$(".bv_slope_value").attr("disabled")).toEqual("disabled");
           });
           it('should update the slope_limitType radio to pin', function() {
             this.drapc.$(".bv_slope_limitType_pin").click();
+            this.drapc.$(".bv_slope_limitType_pin").click();
             return expect(this.drapc.model.get('slope').get('limitType')).toEqual('pin');
           });
           it('should update the slope_value input to enabled when pin', function() {
             this.drapc.$(".bv_slope_limitType_none").click();
+            this.drapc.$(".bv_slope_limitType_none").click();
             expect(this.drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_slope_limitType_pin").click();
             this.drapc.$(".bv_slope_limitType_pin").click();
             expect(this.drapc.model.get('slope').get('limitType')).toEqual('pin');
             return expect(this.drapc.$(".bv_slope_value").attr("disabled")).toBeUndefined();
@@ -296,11 +347,14 @@
           it('should update the slope_limitType radio to limit', function() {
             this.drapc.$(".bv_slope_limitType_none").click();
             this.drapc.$(".bv_slope_limitType_limit").click();
+            this.drapc.$(".bv_slope_limitType_limit").click();
             return expect(this.drapc.model.get('slope').get('limitType')).toEqual('limit');
           });
           it('should update the slope_value input to enabled when limit', function() {
             this.drapc.$(".bv_slope_limitType_none").click();
+            this.drapc.$(".bv_slope_limitType_none").click();
             expect(this.drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual('none');
+            this.drapc.$(".bv_slope_limitType_limit").click();
             this.drapc.$(".bv_slope_limitType_limit").click();
             expect(this.drapc.model.get('slope').get('limitType')).toEqual('limit');
             return expect(this.drapc.$(".bv_slope_value").attr("disabled")).toBeUndefined();
@@ -438,16 +492,16 @@
         describe("experiment status change handling", function() {
           it("Should disable model fit parameter editing if status is Finalized", function() {
             this.drac.model.getStatus().set({
-              stringValue: "Finalized"
+              stringValue: "finalized"
             });
             return expect(this.drac.$('.bv_max_limitType_none').attr('disabled')).toEqual('disabled');
           });
-          it("Should enable analsyis parameter editing if status is Finalized", function() {
+          it("Should enable analsyis parameter editing if status is Started", function() {
             this.drac.model.getStatus().set({
-              stringValue: "Finalized"
+              stringValue: "finalized"
             });
             this.drac.model.getStatus().set({
-              stringValue: "Started"
+              stringValue: "started"
             });
             return expect(this.drac.$('.bv_max_limitType').attr('disabled')).toBeUndefined();
           });
