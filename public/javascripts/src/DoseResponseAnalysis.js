@@ -141,6 +141,7 @@
       this.$('.bv_inactiveThreshold').on('slide', this.handleInactiveThresholdMoved);
       this.$('.bv_inactiveThreshold').on('slidestop', this.handleInactiveThresholdChanged);
       this.updateThresholdDisplay(this.model.get('inactiveThreshold'));
+      this.setFormTitle();
       return this;
     };
 
@@ -231,6 +232,17 @@
         this.$('.bv_slope_value').removeAttr('disabled');
       }
       return this.attributeChanged();
+    };
+
+    DoseResponseAnalysisParametersController.prototype.setFormTitle = function(title) {
+      if (title != null) {
+        this.formTitle = title;
+        return this.$(".bv_formTitle").html(this.formTitle);
+      } else if (this.formTitle != null) {
+        return this.$(".bv_formTitle").html(this.formTitle);
+      } else {
+        return this.formTitle = this.$(".bv_formTitle").html();
+      }
     };
 
     return DoseResponseAnalysisParametersController;

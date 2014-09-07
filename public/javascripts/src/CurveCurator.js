@@ -459,6 +459,7 @@
           model: this.model.get('fitSettings'),
           el: this.$('.bv_analysisParameterForm')
         });
+        this.drapc.setFormTitle("Fit Criteria");
         this.drapc.render();
         this.drapc.model.on("change", this.handleParametersChanged);
         this.drpc = new DoseResponsePlotController({

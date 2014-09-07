@@ -303,6 +303,7 @@ class window.CurveEditorController extends Backbone.View
 			@drapc = new DoseResponseAnalysisParametersController
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
+			@drapc.setFormTitle "Fit Criteria"
 			@drapc.render()
 
 			@drapc.model.on "change", @handleParametersChanged

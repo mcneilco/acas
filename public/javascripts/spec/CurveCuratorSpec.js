@@ -376,8 +376,11 @@
           it('should set the max_value to the number', function() {
             return expect(this.cec.$(".bv_max_value").val()).toEqual("101");
           });
-          return it('should show the inverse agonist mode', function() {
+          it('should show the inverse agonist mode', function() {
             return expect(this.cec.$('.bv_inverseAgonistMode').attr('checked')).toEqual('checked');
+          });
+          return it('should show parameter title as Fit Criteria', function() {
+            return expect(this.cec.$('.bv_formTitle').html()).toEqual('Fit Criteria');
           });
         });
         describe("editing curve parameters should update the model", function() {

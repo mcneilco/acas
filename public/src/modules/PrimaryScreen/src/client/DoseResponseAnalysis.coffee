@@ -80,6 +80,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@$('.bv_inactiveThreshold').on 'slide', @handleInactiveThresholdMoved
 		@$('.bv_inactiveThreshold').on 'slidestop', @handleInactiveThresholdChanged
 		@updateThresholdDisplay(@model.get 'inactiveThreshold')
+		@setFormTitle()
 #		@setThresholdEnabledState()
 		@
 
@@ -92,7 +93,6 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		else
 			@$('.bv_inactiveThreshold').slider('enable')
 
-
 	updateModel: =>
 		@model.get('max').set
 			value: parseFloat(@getTrimmedInput('.bv_max_value'))
@@ -103,7 +103,6 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
 			silent: true
 		@model.trigger 'change'
-
 
 	handleInactiveThresholdChanged: (event, ui) =>
 		@model.set 'inactiveThreshold': ui.value
@@ -143,6 +142,15 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		else
 			@$('.bv_slope_value').removeAttr('disabled')
 		@attributeChanged()
+
+	setFormTitle: (title) ->
+		if title?
+			@formTitle = title
+			@$(".bv_formTitle").html @formTitle
+		else if @formTitle?
+			@$(".bv_formTitle").html @formTitle
+		else
+			@formTitle = @$(".bv_formTitle").html()
 
 class window.DoseResponseAnalysisController extends Backbone.View
 	template: _.template($("#DoseResponseAnalysisView").html())

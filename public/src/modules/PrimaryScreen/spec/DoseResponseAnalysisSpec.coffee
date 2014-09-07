@@ -115,6 +115,14 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual 'none'
 				it 'should show the default inactive threshold', ->
 					expect(@drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual "20"
+			describe "form title change", ->
+				it "should allow the form title to be changed", ->
+					@drapc.setFormTitle "kilroy fits curves"
+					expect(@drapc.$(".bv_formTitle").html()).toEqual "kilroy fits curves"
+				it "title should stay changed after render", ->
+					@drapc.setFormTitle "kilroy fits curves"
+					@drapc.render()
+					expect(@drapc.$(".bv_formTitle").html()).toEqual "kilroy fits curves"
 		describe 'when instantiated from existing parameters', ->
 			beforeEach ->
 				@drapc = new DoseResponseAnalysisParametersController

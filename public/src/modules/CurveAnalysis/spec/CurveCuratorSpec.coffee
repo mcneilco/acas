@@ -253,6 +253,8 @@ describe "Curve Curator Module testing", ->
 						expect(@cec.$(".bv_max_value").val()).toEqual "101"
 					it 'should show the inverse agonist mode', ->
 						expect(@cec.$('.bv_inverseAgonistMode').attr('checked')).toEqual 'checked'
+					it 'should show parameter title as Fit Criteria', ->
+						expect(@cec.$('.bv_formTitle').html()).toEqual 'Fit Criteria'
 				describe "editing curve parameters should update the model", ->
 					it "should update curve parameters if the max value is changed", ->
 						@cec.$('.bv_max_value').val 200
