@@ -104,7 +104,7 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.$('.bv_autofillSection').length).toEqual 1
 				it 'should load a template', ->
 					expect(@drapc.$('.bv_inverseAgonistMode').length).toEqual 1
-			describe "render default parameters", ->
+#			describe "render default parameters", ->
 				it 'should show the inverse agonist mode', ->
 					expect(@drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeUndefined()
 				it 'should start with max_limitType radio set', ->

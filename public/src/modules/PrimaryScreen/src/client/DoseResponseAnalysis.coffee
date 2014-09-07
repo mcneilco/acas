@@ -70,7 +70,6 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@setBindings()
 
 	render: =>
-		super()
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate($.parseJSON(JSON.stringify(@model)))
 		@$('.bv_inactiveThreshold').slider

@@ -153,18 +153,16 @@
           });
           return this.drapc.render();
         });
-        describe("basic existance tests", function() {
+        return describe("basic existance tests", function() {
           it('should exist', function() {
             return expect(this.drapc).toBeDefined();
           });
           it('should load autofill template', function() {
             return expect(this.drapc.$('.bv_autofillSection').length).toEqual(1);
           });
-          return it('should load a template', function() {
+          it('should load a template', function() {
             return expect(this.drapc.$('.bv_inverseAgonistMode').length).toEqual(1);
           });
-        });
-        return describe("render default parameters", function() {
           it('should show the inverse agonist mode', function() {
             return expect(this.drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeUndefined();
           });
