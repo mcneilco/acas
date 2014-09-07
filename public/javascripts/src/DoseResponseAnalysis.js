@@ -130,7 +130,6 @@
     };
 
     DoseResponseAnalysisParametersController.prototype.render = function() {
-      DoseResponseAnalysisParametersController.__super__.render.call(this);
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate($.parseJSON(JSON.stringify(this.model))));
       this.$('.bv_inactiveThreshold').slider({

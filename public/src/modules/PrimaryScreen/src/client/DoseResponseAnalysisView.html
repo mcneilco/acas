@@ -8,25 +8,21 @@
 	<div class="span5" style="margin-left:0;">
     <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:350px;height:370px;background-color:#ffffff;">
         <div class="" style="margin-bottom:10px;">
-            <strong class="bv_formTitle" style="font-size:18px;">Global Fit Criteria</strong>
-            <label class="checkbox bv_group_inverseAgonistMode" style="margin-left:40px;">
-                <input type="checkbox" class="bv_inverseAgonistMode" style="margin-right:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%>  /> Inverse Agonist Mode
-            </label>
+            <strong style="font-size:18px;">Global Fit Criteria</strong>
+            <label class="control-label bv_group_inverseAgonistMode" style="margin-left:40px;">Inverse Agonist Mode</label>
+            <input type="checkbox" class="bv_inverseAgonistMode" style="margin-right:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%> />
         </div>
 
         <div class="well well-small" style="background-color:#ffffff;margin-bottom:10px;">
 
             <div class="bv_group_max" style="margin-bottom:10px;">
                 <strong>Max:</strong>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_none" value="none" style="margin-right:5px;" <%if (max.limitType=="none"){%>checked="checked"<%}%>  />None
-                </label>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_pin" value="pin" style="margin-right:5px;" <%if (max.limitType=="pin"){%>checked="checked"<%}%>  />Pin
-                </label>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_limit" value="limit" style="margin-right:5px;" <%if (max.limitType=="limit"){%>checked="checked"<%}%>  />Limit
-                </label>
+                <label class="control-label" style="padding-left:25px;">None</label>
+                <input type="radio" name="bv_max_limitType" class="bv_max_limitType_none" value="none" style="margin-right:5px;" <%if (max.limitType=="none"){%>checked="checked"<%}%>  />
+                <label class="control-label" style="padding-left:25px;">Pin</label>
+                <input type="radio" name="bv_max_limitType" class="bv_max_limitType_pin" value="pin" style="margin-right:5px;" <%if (max.limitType=="pin"){%>checked="checked"<%}%>  />
+                <label class="control-label" style="padding-left:25px;">Limit</label>
+                <input type="radio" name="bv_max_limitType" class="bv_max_limitType_limit" value="limit" style="margin-right:5px;" <%if (max.limitType=="limit"){%>checked="checked"<%}%>  />
             </div>
             <div class="control-group bv_group_max_value">
                 <input type="text" class=" bv_max_value" style="width:315px;" value="<%= max.value%>" <% if (max.limitType=="none"){ %> disabled="disabled"<% }%> />
@@ -35,15 +31,12 @@
 
             <div class="bv_group_min" style="margin-bottom:10px;">
                 <strong>Min:</strong>
-                <label class="radio" style="padding-left:30px;">
-                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_none" value="none" style="margin-right:5px;" <%if (min.limitType=="none"){%>checked="checked"<%}%>  />None
-                </label>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_pin" value="pin" style="margin-right:5px;" <%if (min.limitType=="pin"){%>checked="checked"<%}%>  />Pin
-                </label>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_limit" value="limit" style="margin-right:5px;" <%if (min.limitType=="limit"){%>checked="checked"<%}%>  />Limit
-                </label>
+                <label class="control-label" style="padding-left:30px;">None</label>
+                <input type="radio" name="bv_min_limitType" class="bv_min_limitType_none" value="none" style="margin-right:5px;" <%if (min.limitType=="none"){%>checked="checked"<%}%>  />
+                <label class="control-label" style="padding-left:25px;">Pin</label>
+                <input type="radio" name="bv_min_limitType" class="bv_min_limitType_pin" value="pin" style="margin-right:5px;" <%if (min.limitType=="pin"){%>checked="checked"<%}%>  />
+                <label class="control-label" style="padding-left:25px;">Limit</label>
+                <input type="radio" name="bv_min_limitType" class="bv_min_limitType_limit" value="limit" style="margin-right:5px;" <%if (min.limitType=="limit"){%>checked="checked"<%}%>  />
             </div>
 	        <div class="control-group bv_group_min_value">
 	            <input type="text" class="bv_group_min_value bv_min_value" style="width:315px;" value="<%= min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
@@ -51,15 +44,12 @@
 
             <div class="bv_group_slope" style="margin-bottom:10px;">
                 <strong>Slope:</strong>
-                <label class="radio"  style="padding-left:15px;">
-                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_none" value="none" style="margin-right:5px;" <%if (slope.limitType=="none"){%>checked="checked"<%}%>  />None
-                </label>
-                <label class="radio"  style="padding-left:25px;">
-                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_pin" value="pin" style="margin-right:5px;" <%if (slope.limitType=="pin"){%>checked="checked"<%}%>  />Pin
-                </label>
-                <label class="radio"  style="padding-left:25px;">
-                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_limit" value="limit" style="margin-right:5px;" <%if (slope.limitType=="limit"){%>checked="checked"<%}%>  />Limit
-                </label>
+                <label class="control-label"  style="padding-left:15px;">None</label>
+                <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_none" value="none" style="margin-right:5px;" <%if (slope.limitType=="none"){%>checked="checked"<%}%>  />
+                <label class="control-label"  style="padding-left:25px;">Pin</label>
+                <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_pin" value="pin" style="margin-right:5px;" <%if (slope.limitType=="pin"){%>checked="checked"<%}%>  />
+                <label class="control-label"  style="padding-left:25px;">Limit</label>
+                <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_limit" value="limit" style="margin-right:5px;" <%if (slope.limitType=="limit"){%>checked="checked"<%}%>  />
             </div>
 	        <div class="control-group bv_group_slope_value">
 		        <input type="text" class="bv_group_slope_value bv_slope_value" style="width:315px;" value="<%= slope.value%>" <% if (slope.limitType=="none"){ %> disabled="disabled"<% }%> />
@@ -69,10 +59,8 @@
 
         <h5>Inactive Threshold</h5>
         <div class="bv_group_inactiveThreshold">
-
 	        <div class="bv_inactiveThreshold pull-left" style="width:280px;margin-top:8px;margin-left:10px;"></div>
 	        <div class="bv_inactiveThresholdDisplay well well-small pull-right" style="margin-bottom:5px;padding-top:5px;padding-right:7px;padding-bottom:5px;padding-left:7px;width:25px;"></div>
-
         </div>
 
     </div>

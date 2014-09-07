@@ -19,7 +19,7 @@
         requireDoseResponse: true
       };
       DoseResponseDataParserController.__super__.initialize.call(this);
-      return this.$('.bv_moduleTitle').html('Load Efficacy Data for Dose-Respnse Fit');
+      return this.$('.bv_moduleTitle').html('Load Efficacy Data for Dose-Response Fit');
     };
 
     DoseResponseDataParserController.prototype.handleSaveReturnSuccess = function(json) {
@@ -199,8 +199,8 @@
     };
 
     DoseResponseFitWorkflowController.prototype.handleDataUploadComplete = function() {
-      this.initializeCurveFitController();
       this.$('.bv_modelFitTabLink').click();
+      this.initializeCurveFitController();
       return this.trigger('amDirty');
     };
 
@@ -209,7 +209,7 @@
     };
 
     DoseResponseFitWorkflowController.prototype.handleFitAnother = function() {
-      this.intializeParserController();
+      this.drdpc.loadAnother();
       this.$('.bv_completeControlContainer').hide();
       return this.$('.bv_uploadDataTabLink').click();
     };
