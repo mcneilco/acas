@@ -9,58 +9,6 @@
   });
 
   describe("Protocol module testing", function() {
-    describe("AbstractProtocolParameter", function() {
-      return it("should have defaults", function() {
-        this.app = new AbstractProtocolParameter();
-        return expect(this.app.get('parameter')).toEqual("abstractParameter");
-      });
-    });
-    describe("Assay Activity Model testing", function() {
-      describe("When loaded from new", function() {
-        beforeEach(function() {
-          return this.aa = new AssayActivity();
-        });
-        return describe("Existence and Defaults", function() {
-          it("should be defined", function() {
-            return expect(this.aa).toBeDefined();
-          });
-          return it("should have defaults", function() {
-            return expect(this.aa.get('assayActivity')).toEqual("unassigned");
-          });
-        });
-      });
-      return describe("model validation tests", function() {
-        beforeEach(function() {
-          return this.aa = new AssayActivity(window.protocolServiceTestJSON.assayActivities[0]);
-        });
-        return it("should be valid as initialized", function() {
-          return expect(this.aa.isValid()).toBeTruthy();
-        });
-      });
-    });
-    describe("Target Origin Model testing", function() {
-      describe("When loaded from new", function() {
-        beforeEach(function() {
-          return this.tori = new TargetOrigin();
-        });
-        return describe("Existence and Defaults", function() {
-          it("should be defined", function() {
-            return expect(this.tori).toBeDefined();
-          });
-          return it("should have defaults", function() {
-            return expect(this.tori.get('targetOrigin')).toEqual("unassigned");
-          });
-        });
-      });
-      return describe("model validation tests", function() {
-        beforeEach(function() {
-          return this.tori = new AssayActivity(window.protocolServiceTestJSON.targetOrigins[0]);
-        });
-        return it("should be valid as initialized", function() {
-          return expect(this.tori.isValid()).toBeTruthy();
-        });
-      });
-    });
     describe("Protocol model testing", function() {
       describe("When loaded from new", function() {
         beforeEach(function() {
@@ -99,7 +47,25 @@
             return expect(this.prot.get('assayTreeRule')).toEqual(null);
           });
           it('Should have the select DNS target list be checked', function() {
-            return expect(this.prot.get('dnsTargetList')).toEqual(true);
+            return expect(this.prot.get('dnsTargetList')).toEqual(false);
+          });
+          it('Should have the assayActivity default to unassigned', function() {
+            return expect(this.prot.get('assayActivity')).toEqual("unassigned");
+          });
+          it('Should have the molecularTarget default to unassigned', function() {
+            return expect(this.prot.get('molecularTarget')).toEqual("unassigned");
+          });
+          it('Should have the targetOrigin default to unassigned', function() {
+            return expect(this.prot.get('targetOrigin')).toEqual("unassigned");
+          });
+          it('Should have the assayType default to unassigned', function() {
+            return expect(this.prot.get('assayType')).toEqual("unassigned");
+          });
+          it('Should have the assayTechnology default to unassigned', function() {
+            return expect(this.prot.get('assayTechnology')).toEqual("unassigned");
+          });
+          it('Should have the cellLine default to unassigned', function() {
+            return expect(this.prot.get('cellLine')).toEqual("unassigned");
           });
           it('Should have the assayStage default to unassigned', function() {
             return expect(this.prot.get('assayStage')).toEqual("unassigned");
@@ -107,14 +73,8 @@
           it('Should have an default maxY curve display of 100', function() {
             return expect(this.prot.get('maxY')).toEqual(100);
           });
-          it('Should have an default minY curve display of 0', function() {
+          return it('Should have an default minY curve display of 0', function() {
             return expect(this.prot.get('minY')).toEqual(0);
-          });
-          it('Should have an assay activity list', function() {
-            return expect(this.prot.get('assayActivityList') instanceof AssayActivityList).toBeTruthy();
-          });
-          return it('Should have a targetOrigin list', function() {
-            return expect(this.prot.get('targetOriginList') instanceof TargetOriginList).toBeTruthy();
           });
         });
         describe("required states and values", function() {
@@ -125,8 +85,11 @@
           it('Should have a notebook value', function() {
             return expect(this.prot.getNotebook() instanceof Value).toBeTruthy();
           });
-          return it('Protocol status should default to created ', function() {
+          it('Protocol status should default to created ', function() {
             return expect(this.prot.getStatus().get('stringValue')).toEqual("created");
+          });
+          return it('completionDate should be null ', function() {
+            return expect(this.prot.getCompletionDate().get('dateValue')).toEqual(null);
           });
         });
         return describe("other features", function() {
@@ -198,6 +161,9 @@
           });
           it('Should have a notebook value', function() {
             return expect(this.prot.getNotebook().get('stringValue')).toEqual("912");
+          });
+          it('Should have a completionDate value', function() {
+            return expect(this.prot.getCompletionDate().get('dateValue')).toEqual(1342080000000);
           });
           return it('Should have a status value', function() {
             return expect(this.prot.getStatus().get('stringValue')).toEqual("created");
@@ -284,20 +250,9 @@
             return expect(this.prot.get('lsStates').length).toBeGreaterThan(0);
           });
         });
-        it("should convert tags has to collection of Tags", function() {
+        return it("should convert tags has to collection of Tags", function() {
           return runs(function() {
             return expect(this.prot.get('lsTags') instanceof TagList).toBeTruthy();
-          });
-        });
-        it('should convert assayActivityList to AssayActivityList', function() {
-          return runs(function() {
-            return expect(this.prot.get('assayActivityList') instanceof AssayActivityList).toBeTruthy();
-          });
-        });
-        return it('should convert targetOriginList to TargetOriginList', function() {
-          return runs(function() {
-            console.log(this.prot.get('targetOriginList'));
-            return expect(this.prot.get('targetOriginList') instanceof TargetOriginList).toBeTruthy();
           });
         });
       });
@@ -418,7 +373,7 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        return it("should be invalid when minY is NaN", function() {
+        it("should be invalid when minY is NaN", function() {
           var filtErrors;
           this.prot.set({
             minY: NaN
@@ -426,6 +381,17 @@
           expect(this.prot.isValid()).toBeFalsy();
           filtErrors = _.filter(this.prot.validationError, function(err) {
             return err.attribute === 'minY';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it('should require that completionDate not be ""', function() {
+          var filtErrors;
+          this.prot.getCompletionDate().set({
+            dateValue: new Date("").getTime()
+          });
+          expect(this.prot.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.prot.validationError, function(err) {
+            return err.attribute === 'completionDate';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -473,94 +439,6 @@
         });
       });
     });
-    describe("Assay Activity List testing", function() {
-      describe("When loaded from new", function() {
-        beforeEach(function() {
-          return this.aal = new AssayActivityList();
-        });
-        return describe("Existence", function() {
-          return it("should be defined", function() {
-            return expect(this.aal).toBeDefined();
-          });
-        });
-      });
-      describe("When loaded form existing", function() {
-        beforeEach(function() {
-          return this.aal = new AssayActivityList(window.protocolServiceTestJSON.assayActivities);
-        });
-        it("should have two assay activities", function() {
-          return expect(this.aal.length).toEqual(2);
-        });
-        it("should have the correct info for the first assay activity", function() {
-          var assayOne;
-          assayOne = this.aal.at(0);
-          return expect(assayOne.get('assayActivity')).toEqual("luminescence");
-        });
-        return it("should have the correct info for the second assay activity", function() {
-          var assayTwo;
-          assayTwo = this.aal.at(1);
-          return expect(assayTwo.get('assayActivity')).toEqual("fluorescence");
-        });
-      });
-      return describe("collection validation", function() {
-        beforeEach(function() {
-          return this.aal = new AssayActivityList(window.protocolServiceTestJSON.assayActivities);
-        });
-        return it("should be invalid if a assay activity is selected more than once", function() {
-          this.aal.at(0).set({
-            assayActivity: "luminescence"
-          });
-          this.aal.at(1).set({
-            assayActivity: "luminescence"
-          });
-          return expect((this.aal.validateCollection()).length).toBeGreaterThan(0);
-        });
-      });
-    });
-    describe("Target Origin List testing", function() {
-      describe("When loaded from new", function() {
-        beforeEach(function() {
-          return this.tol = new TargetOriginList();
-        });
-        return describe("Existence", function() {
-          return it("should be defined", function() {
-            return expect(this.tol).toBeDefined();
-          });
-        });
-      });
-      describe("When loaded form existing", function() {
-        beforeEach(function() {
-          return this.tol = new TargetOriginList(window.protocolServiceTestJSON.targetOrigins);
-        });
-        it("should have two target origins", function() {
-          return expect(this.tol.length).toEqual(2);
-        });
-        it("should have the correct info for the first target origin", function() {
-          var targetOne;
-          targetOne = this.tol.at(0);
-          return expect(targetOne.get('targetOrigin')).toEqual("human");
-        });
-        return it("should have the correct info for the second target origin", function() {
-          var targetTwo;
-          targetTwo = this.tol.at(1);
-          return expect(targetTwo.get('targetOrigin')).toEqual("chimpanzee");
-        });
-      });
-      return describe("collection validation", function() {
-        beforeEach(function() {
-          return this.tol = new TargetOriginList(window.protocolServiceTestJSON.targetOrigins);
-        });
-        return it("should be invalid if a assay activity is selected more than once", function() {
-          this.tol.at(0).set({
-            targetOrigin: "human"
-          });
-          this.tol.at(1).set({
-            targetOrigin: "human"
-          });
-          return expect((this.tol.validateCollection()).length).toBeGreaterThan(0);
-        });
-      });
-    });
     describe("Protocol List testing", function() {
       beforeEach(function() {
         return this.el = new ProtocolList();
@@ -568,236 +446,6 @@
       return describe("existance tests", function() {
         return it("should be defined", function() {
           return expect(ProtocolList).toBeDefined();
-        });
-      });
-    });
-    describe("AssayActivityController", function() {
-      return describe("when instantiated", function() {
-        beforeEach(function() {
-          this.aac = new AssayActivityController({
-            model: new AssayActivity(window.protocolServiceTestJSON.assayActivities[0]),
-            el: $('#fixture')
-          });
-          return this.aac.render();
-        });
-        describe("basic existance tests", function() {
-          it("should exist", function() {
-            return expect(this.aac).toBeDefined();
-          });
-          return it("should load a template", function() {
-            return expect(this.aac.$('.bv_assayActivity').length).toEqual(1);
-          });
-        });
-        describe("render existing parameters", function() {
-          return it("should show assay activity", function() {
-            waitsFor(function() {
-              return this.aac.$('.bv_assayActivity option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.aac.$('.bv_assayActivity').val()).toEqual("luminescence");
-            });
-          });
-        });
-        return describe("model updates", function() {
-          return it("should update the assay activity", function() {
-            waitsFor(function() {
-              return this.aac.$('.bv_assayActivity option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.aac.$('.bv_assayActivity').val("fluorescence");
-              this.aac.$('.bv_assayActivity').change();
-              return expect(this.aac.model.get('assayActivity')).toEqual("fluorescence");
-            });
-          });
-        });
-      });
-    });
-    describe("TargetOriginController", function() {
-      return describe("when instantiated", function() {
-        beforeEach(function() {
-          this.toc = new TargetOriginController({
-            model: new TargetOrigin(window.protocolServiceTestJSON.targetOrigins[0]),
-            el: $('#fixture')
-          });
-          return this.toc.render();
-        });
-        describe("basic existance tests", function() {
-          it("should exist", function() {
-            return expect(this.toc).toBeDefined();
-          });
-          return it("should load a template", function() {
-            return expect(this.toc.$('.bv_targetOrigin').length).toEqual(1);
-          });
-        });
-        describe("render existing parameters", function() {
-          return it("should show target origin", function() {
-            waitsFor(function() {
-              return this.toc.$('.bv_targetOrigin option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.toc.$('.bv_targetOrigin').val()).toEqual("human");
-            });
-          });
-        });
-        return describe("model updates", function() {
-          return it("should update the target origin ", function() {
-            waitsFor(function() {
-              return this.toc.$('.bv_targetOrigin option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.toc.$('.bv_targetOrigin').val("chimpanzee");
-              this.toc.$('.bv_targetOrigin').change();
-              return expect(this.toc.model.get('targetOrigin')).toEqual("chimpanzee");
-            });
-          });
-        });
-      });
-    });
-    describe("Assay Activity List Controller testing", function() {
-      describe("when instantiated with no data", function() {
-        beforeEach(function() {
-          this.aalc = new AssayActivityListController({
-            el: $('#fixture'),
-            collection: new AssayActivityList()
-          });
-          return this.aalc.render();
-        });
-        describe("basic existence tests", function() {
-          it("should exist", function() {
-            return expect(this.aalc).toBeDefined();
-          });
-          return it("should load a template", function() {
-            return expect(this.aalc.$('.bv_addActivityButton').length).toEqual(1);
-          });
-        });
-        describe("rendering", function() {
-          return it("should show one activity", function() {
-            expect(this.aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual(1);
-            return expect(this.aalc.collection.length).toEqual(1);
-          });
-        });
-        return describe("adding and removing", function() {
-          it("should have two activities when add button is clicked", function() {
-            this.aalc.$('.bv_addActivityButton').click();
-            expect(this.aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual(2);
-            return expect(this.aalc.collection.length).toEqual(2);
-          });
-          it("should have one activity when there are two activities and remove is clicked", function() {
-            this.aalc.$('.bv_addActivityButton').click();
-            expect(this.aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual(2);
-            this.aalc.$('.bv_deleteActivity:eq(0)').click();
-            expect(this.aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual(1);
-            return expect(this.aalc.collection.length).toEqual(1);
-          });
-          return it("should always have one activity", function() {
-            expect(this.aalc.collection.length).toEqual(1);
-            this.aalc.$('.bv_deleteActivity').click();
-            expect(this.aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual(1);
-            return expect(this.aalc.collection.length).toEqual(1);
-          });
-        });
-      });
-      return describe("when instantiated with data", function() {
-        beforeEach(function() {
-          this.aalc = new AssayActivityListController({
-            el: $('#fixture'),
-            collection: new AssayActivityList(window.protocolServiceTestJSON.assayActivities)
-          });
-          return this.aalc.render();
-        });
-        it("should have two activities", function() {
-          expect(this.aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual(2);
-          return expect(this.aalc.collection.length).toEqual(2);
-        });
-        it("should have the correct info for the first activity", function() {
-          waitsFor(function() {
-            return this.aalc.$('.bv_assayActivity option').length > 0;
-          }, 1000);
-          return runs(function() {
-            return expect(this.aalc.$('.bv_assayActivityInfo .bv_assayActivity:eq(0)').val()).toEqual("luminescence");
-          });
-        });
-        return it("should have the correct info for the second activity", function() {
-          waitsFor(function() {
-            return this.aalc.$('.bv_assayActivity option').length > 0;
-          }, 1000);
-          return runs(function() {
-            return expect(this.aalc.$('.bv_assayActivityInfo .bv_assayActivity:eq(1)').val()).toEqual("fluorescence");
-          });
-        });
-      });
-    });
-    describe("Target Origin List Controller testing", function() {
-      describe("when instantiated with no data", function() {
-        beforeEach(function() {
-          this.tolc = new TargetOriginListController({
-            el: $('#fixture'),
-            collection: new TargetOriginList()
-          });
-          return this.tolc.render();
-        });
-        describe("basic existence tests", function() {
-          it("should exist", function() {
-            return expect(this.tolc).toBeDefined();
-          });
-          return it("should load a template", function() {
-            return expect(this.tolc.$('.bv_addTargetOriginButton').length).toEqual(1);
-          });
-        });
-        describe("rendering", function() {
-          return it("should show one target origin", function() {
-            expect(this.tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual(1);
-            return expect(this.tolc.collection.length).toEqual(1);
-          });
-        });
-        return describe("adding and removing", function() {
-          it("should have two target origins when add button is clicked", function() {
-            this.tolc.$('.bv_addTargetOriginButton').click();
-            expect(this.tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual(2);
-            return expect(this.tolc.collection.length).toEqual(2);
-          });
-          it("should have one target origin when there are two target origins and remove is clicked", function() {
-            this.tolc.$('.bv_addTargetOriginButton').click();
-            expect(this.tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual(2);
-            this.tolc.$('.bv_deleteTargetOrigin:eq(0)').click();
-            expect(this.tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual(1);
-            return expect(this.tolc.collection.length).toEqual(1);
-          });
-          return it("should always have one target origin", function() {
-            expect(this.tolc.collection.length).toEqual(1);
-            this.tolc.$('.bv_deleteTargetOrigin').click();
-            expect(this.tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual(1);
-            return expect(this.tolc.collection.length).toEqual(1);
-          });
-        });
-      });
-      return describe("when instantiated with data", function() {
-        beforeEach(function() {
-          this.tolc = new TargetOriginListController({
-            el: $('#fixture'),
-            collection: new TargetOriginList(window.protocolServiceTestJSON.targetOrigins)
-          });
-          return this.tolc.render();
-        });
-        it("should have two target origin", function() {
-          expect(this.tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual(2);
-          return expect(this.tolc.collection.length).toEqual(2);
-        });
-        it("should have the correct info for the first target origin", function() {
-          waitsFor(function() {
-            return this.tolc.$('.bv_targetOrigin option').length > 0;
-          }, 1000);
-          return runs(function() {
-            return expect(this.tolc.$('.bv_targetOriginInfo .bv_targetOrigin:eq(0)').val()).toEqual("human");
-          });
-        });
-        return it("should have the correct info for the second target origin", function() {
-          waitsFor(function() {
-            return this.tolc.$('.bv_targetOrigin option').length > 0;
-          }, 1000);
-          return runs(function() {
-            return expect(this.tolc.$('.bv_targetOriginInfo .bv_targetOrigin:eq(1)').val()).toEqual("chimpanzee");
-          });
         });
       });
     });
@@ -853,8 +501,57 @@
           it("should fill the assay tree rule", function() {
             return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("example assay tree rule");
           });
-          it("should have the select dns target list checkbox checked", function() {
-            return expect(this.pbc.$('.bv_dnsTargetList').attr("checked")).toEqual("checked");
+          it("should have the select dns target list checkbox checked and the molecular target add button hidden", function() {
+            expect(this.pbc.$('.bv_dnsTargetList').attr("checked")).toEqual("checked");
+            return expect(this.pbc.$('.bv_molecularTargetModal')).toBeHidden();
+          });
+          it("should show the assay activity", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayActivity option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayActivity').val()).toEqual("luminescence");
+            });
+          });
+          it("should show the molecular target", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_molecularTarget option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_molecularTarget').val()).toEqual("target x");
+            });
+          });
+          it("should show the target origin", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_targetOrigin option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_targetOrigin').val()).toEqual("human");
+            });
+          });
+          it("should show the assay type", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayType option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayType').val()).toEqual("cellular assay");
+            });
+          });
+          it("should show the assay technology", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayTechnology option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayTechnology').val()).toEqual("wizard triple luminescence");
+            });
+          });
+          it("should show the cell line", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_cellLine option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_cellLine').val()).toEqual("cell line y");
+            });
           });
           it("should show the assay stage", function() {
             waitsFor(function() {
@@ -906,7 +603,7 @@
             });
           });
         });
-        return describe("User edits fields", function() {
+        describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
             expect(this.pbc.model.get('recordedBy')).toEqual("nxm7557");
             this.pbc.$('.bv_recordedBy').val("xxl7932");
@@ -939,6 +636,11 @@
             this.pbc.$('.bv_protocolName').change();
             return expect(this.pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
           });
+          it("should update model when completion date is changed", function() {
+            this.pbc.$('.bv_completionDate').val(" 2013-3-16   ");
+            this.pbc.$('.bv_completionDate').change();
+            return expect(this.pbc.model.getCompletionDate().get('dateValue')).toEqual(new Date(2013, 2, 16).getTime());
+          });
           it("should update model when notebook is changed", function() {
             this.pbc.$('.bv_notebook').val(" Updated notebook  ");
             this.pbc.$('.bv_notebook').change();
@@ -969,6 +671,66 @@
             this.pbc.$('.bv_dnsTargetList').click();
             return expect(this.pbc.model.get('dnsTargetList')).toBeFalsy();
           });
+          it("should update model when assay activity changed", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayActivity option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_assayActivity').val('unassigned');
+              this.pbc.$('.bv_assayActivity').change();
+              return expect(this.pbc.model.get('assayActivity')).toEqual('unassigned');
+            });
+          });
+          it("should update model when molecular target changed", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_molecularTarget option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_molecularTarget').val('unassigned');
+              this.pbc.$('.bv_molecularTarget').change();
+              return expect(this.pbc.model.get('molecularTarget')).toEqual('unassigned');
+            });
+          });
+          it("should update model when target origin changed", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_targetOrigin option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_targetOrigin').val('unassigned');
+              this.pbc.$('.bv_targetOrigin').change();
+              return expect(this.pbc.model.get('targetOrigin')).toEqual('unassigned');
+            });
+          });
+          it("should update model when assay type changed", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayType option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_assayType').val('unassigned');
+              this.pbc.$('.bv_assayType').change();
+              return expect(this.pbc.model.get('assayType')).toEqual('unassigned');
+            });
+          });
+          it("should update model when assay technology changed", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayTechnology option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_assayTechnology').val('unassigned');
+              this.pbc.$('.bv_assayTechnology').change();
+              return expect(this.pbc.model.get('assayTechnology')).toEqual('unassigned');
+            });
+          });
+          it("should update model when cell line changed", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_cellLine option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_cellLine').val('unassigned');
+              this.pbc.$('.bv_cellLine').change();
+              return expect(this.pbc.model.get('cellLine')).toEqual('unassigned');
+            });
+          });
           it("should update model when assay stage changed", function() {
             waitsFor(function() {
               return this.pbc.$('.bv_assayStage option').length > 0;
@@ -988,6 +750,12 @@
             this.pbc.$('.bv_minY').val(" 5  ");
             this.pbc.$('.bv_minY').change();
             return expect(this.pbc.model.get('minY')).toEqual(5);
+          });
+        });
+        return describe("pop modal testing", function() {
+          return it("should display a modal when add button is clicked", function() {
+            this.pbc.$('.bv_addNewAssayActivity').click();
+            return expect(this.pbc.$('.bv_newAssayActivity').length).toEqual(1);
           });
         });
       });
@@ -1010,6 +778,9 @@
           it("should have protocol name not set", function() {
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("");
           });
+          it("should not fill the date field", function() {
+            return expect(this.pbc.$('.bv_completionDate').val()).toEqual("");
+          });
           it("should show the save button text as Save", function() {
             return expect(this.pbc.$('.bv_save').html()).toEqual("Save");
           });
@@ -1030,8 +801,56 @@
           it("should have the assay tree rule be empty", function() {
             return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("");
           });
-          it("should have the select dns target list be checked", function() {
-            return expect(this.pbc.$('.bv_dnsTargetList').attr("checked")).toEqual("checked");
+          it("should have the select dns target list be unchecked", function() {
+            return expect(this.pbc.$('.bv_dnsTargetList').attr("checked")).toBeUndefined();
+          });
+          it("should show assay activity select value as unassigned", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayActivity option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayActivity').val()).toEqual('unassigned');
+            });
+          });
+          it("should show molecular target select value as unassigned", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_molecularTarget option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_molecularTarget').val()).toEqual('unassigned');
+            });
+          });
+          it("should show target origin select value as unassigned", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_targetOrigin option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_targetOrigin').val()).toEqual('unassigned');
+            });
+          });
+          it("should show assay type select value as unassigned", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayType option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayType').val()).toEqual('unassigned');
+            });
+          });
+          it("should show assay technology select value as unassigned", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayTechnology option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayTechnology').val()).toEqual('unassigned');
+            });
+          });
+          it("should show cell line select value as unassigned", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_cellLine option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_cellLine').val()).toEqual('unassigned');
+            });
           });
           it("should show assay stage select value as unassigned", function() {
             waitsFor(function() {
@@ -1056,6 +875,8 @@
             this.pbc.$('.bv_shortDescription').change();
             this.pbc.$('.bv_protocolName').val(" Updated entity name   ");
             this.pbc.$('.bv_protocolName').change();
+            this.pbc.$('.bv_completionDate').val(" 2013-3-16   ");
+            this.pbc.$('.bv_completionDate').change();
             this.pbc.$('.bv_notebook').val("my notebook");
             return this.pbc.$('.bv_notebook').change();
           });
@@ -1107,6 +928,19 @@
               });
             });
           });
+          describe("when date field not filled in", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.pbc.$('.bv_completionDate').val("");
+                return this.pbc.$('.bv_completionDate').change();
+              });
+            });
+            return it("should show error in date field", function() {
+              return runs(function() {
+                return expect(this.pbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
           describe("when notebook not filled", function() {
             beforeEach(function() {
               return runs(function() {
@@ -1143,38 +977,6 @@
             return it("should show error on minY field", function() {
               return runs(function() {
                 return expect(this.pbc.$('.bv_group_minY').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-          describe("when assay activity is selected more than once", function() {
-            return it("should show error for each of the duplicated activities", function() {
-              this.pbc.$('.bv_addActivityButton').click();
-              waitsFor(function() {
-                return this.pbc.$('.bv_assayActivityInfo .bv_assayActivity option').length > 0;
-              }, 1000);
-              return runs(function() {
-                this.pbc.$('.bv_assayActivity:eq(0)').val("fluorescence");
-                this.pbc.$('.bv_assayActivity:eq(0)').change();
-                this.pbc.$('.bv_assayActivity:eq(1)').val("fluorescence");
-                this.pbc.$('.bv_assayActivity:eq(1)').change();
-                expect(this.pbc.$('.bv_group_assayActivity:eq(0)').hasClass('error')).toBeTruthy();
-                return expect(this.pbc.$('.bv_group_assayActivity:eq(1)').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-          describe("when target origin is selected more than once", function() {
-            return it("should show error for each of the duplicated target origins", function() {
-              this.pbc.$('.bv_addTargetOriginButton').click();
-              waitsFor(function() {
-                return this.pbc.$('.bv_targetOriginInfo .bv_targetOrigin option').length > 0;
-              }, 1000);
-              return runs(function() {
-                this.pbc.$('.bv_targetOrigin:eq(0)').val("human");
-                this.pbc.$('.bv_targetOrigin:eq(0)').change();
-                this.pbc.$('.bv_targetOrigin:eq(1)').val("human");
-                this.pbc.$('.bv_targetOrigin:eq(1)').change();
-                expect(this.pbc.$('.bv_group_targetOrigin:eq(0)').hasClass('error')).toBeTruthy();
-                return expect(this.pbc.$('.bv_group_targetOrigin:eq(1)').hasClass('error')).toBeTruthy();
               });
             });
           });

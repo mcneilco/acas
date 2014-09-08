@@ -1,19 +1,5 @@
 (function() {
   (function(exports) {
-    exports.assayActivities = [
-      {
-        assayActivity: "luminescence"
-      }, {
-        assayActivity: "fluorescence"
-      }
-    ];
-    exports.targetOrigins = [
-      {
-        targetOrigin: "human"
-      }, {
-        targetOrigin: "chimpanzee"
-      }
-    ];
     exports.fullSavedProtocol = {
       codeName: "PROT-00000001",
       id: 1,
@@ -230,6 +216,37 @@
               recordedDate: 1375889487000,
               sigFigs: null,
               stringValue: "912",
+              uncertainty: null,
+              uncertaintyType: null,
+              unitKind: null,
+              unitType: null,
+              unitTypeAndKind: "null_null",
+              urlValue: null,
+              version: 0
+            }, {
+              clobValue: null,
+              codeValue: null,
+              comments: null,
+              dateValue: 1342080000000,
+              fileValue: null,
+              id: 1,
+              ignored: false,
+              lsKind: "completion date",
+              lsTransaction: 2,
+              lsType: "dateValue",
+              lsTypeAndKind: "dateValue_completion date",
+              modifiedBy: null,
+              modifiedDate: null,
+              numberOfReplicates: null,
+              numericValue: null,
+              operatorKind: null,
+              operatorType: "comparison",
+              operatorTypeAndKind: "comparison_null",
+              publicData: true,
+              recordedBy: "smeyer",
+              recordedDate: 1375889487000,
+              sigFigs: null,
+              stringValue: null,
               uncertainty: null,
               uncertaintyType: null,
               unitKind: null,
@@ -1182,11 +1199,15 @@
       ],
       assayTreeRule: "example assay tree rule",
       dnsTargetList: true,
+      assayActivity: "luminescence",
+      molecularTarget: "target x",
+      targetOrigin: "human",
+      assayType: "cellular assay",
+      assayTechnology: "wizard triple luminescence",
+      cellLine: "cell line y",
       assayStage: "assay development",
       maxY: 200,
-      minY: 2,
-      assayActivityList: exports.assayActivities,
-      targetOriginList: exports.targetOrigins
+      minY: 2
     };
     exports.stubSavedProtocol = [
       {

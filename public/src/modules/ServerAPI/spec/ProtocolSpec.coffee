@@ -6,41 +6,6 @@ afterEach ->
 	$("body").append $(@fixture)
 
 describe "Protocol module testing", ->
-	describe "AbstractProtocolParameter", ->
-		it "should have defaults", ->
-			@app = new AbstractProtocolParameter()
-			expect(@app.get('parameter')).toEqual "abstractParameter"
-
-	describe "Assay Activity Model testing", ->
-		describe "When loaded from new", ->
-			beforeEach ->
-				@aa = new AssayActivity()
-			describe "Existence and Defaults", ->
-				it "should be defined", ->
-					expect(@aa).toBeDefined()
-				it "should have defaults", ->
-					expect(@aa.get('assayActivity')).toEqual "unassigned"
-		describe "model validation tests", ->
-			beforeEach ->
-				@aa = new AssayActivity window.protocolServiceTestJSON.assayActivities[0]
-			it "should be valid as initialized", ->
-				expect(@aa.isValid()).toBeTruthy()
-
-	describe "Target Origin Model testing", ->
-		describe "When loaded from new", ->
-			beforeEach ->
-				@tori = new TargetOrigin()
-			describe "Existence and Defaults", ->
-				it "should be defined", ->
-					expect(@tori).toBeDefined()
-				it "should have defaults", ->
-					expect(@tori.get('targetOrigin')).toEqual "unassigned"
-		describe "model validation tests", ->
-			beforeEach ->
-				@tori = new AssayActivity window.protocolServiceTestJSON.targetOrigins[0]
-			it "should be valid as initialized", ->
-				expect(@tori.isValid()).toBeTruthy()
-
 	describe "Protocol model testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
@@ -69,17 +34,25 @@ describe "Protocol module testing", ->
 				it 'Should have an empty assay tree rule', ->
 					expect(@prot.get('assayTreeRule')).toEqual null
 				it 'Should have the select DNS target list be checked', ->
-					expect(@prot.get('dnsTargetList')).toEqual true
+					expect(@prot.get('dnsTargetList')).toEqual false
+				it 'Should have the assayActivity default to unassigned', ->
+					expect(@prot.get('assayActivity')).toEqual "unassigned"
+				it 'Should have the molecularTarget default to unassigned', ->
+					expect(@prot.get('molecularTarget')).toEqual "unassigned"
+				it 'Should have the targetOrigin default to unassigned', ->
+					expect(@prot.get('targetOrigin')).toEqual "unassigned"
+				it 'Should have the assayType default to unassigned', ->
+					expect(@prot.get('assayType')).toEqual "unassigned"
+				it 'Should have the assayTechnology default to unassigned', ->
+					expect(@prot.get('assayTechnology')).toEqual "unassigned"
+				it 'Should have the cellLine default to unassigned', ->
+					expect(@prot.get('cellLine')).toEqual "unassigned"
 				it 'Should have the assayStage default to unassigned', ->
 					expect(@prot.get('assayStage')).toEqual "unassigned"
 				it 'Should have an default maxY curve display of 100', ->
 					expect(@prot.get('maxY')).toEqual 100
 				it 'Should have an default minY curve display of 0', ->
 					expect(@prot.get('minY')).toEqual 0
-				it 'Should have an assay activity list', ->
-					expect(@prot.get('assayActivityList') instanceof AssayActivityList).toBeTruthy()
-				it 'Should have a targetOrigin list', ->
-					expect(@prot.get('targetOriginList') instanceof TargetOriginList).toBeTruthy()
 			describe "required states and values", ->
 				it 'Should have a description value', -> # description will be Protocol Details or experimentDetails
 					expect(@prot.getDescription() instanceof Value).toBeTruthy()
@@ -88,6 +61,8 @@ describe "Protocol module testing", ->
 					expect(@prot.getNotebook() instanceof Value).toBeTruthy()
 				it 'Protocol status should default to created ', ->
 					expect(@prot.getStatus().get('stringValue')).toEqual "created"
+				it 'completionDate should be null ', ->
+					expect(@prot.getCompletionDate().get('dateValue')).toEqual null
 			describe "other features", ->
 				describe "should tell you if it is editable based on status", ->
 					it "should be locked if status is created", ->
@@ -130,6 +105,8 @@ describe "Protocol module testing", ->
 					expect(@prot.getDescription().get('clobValue')).toEqual "long description goes here"
 				it 'Should have a notebook value', ->
 					expect(@prot.getNotebook().get('stringValue')).toEqual "912"
+				it 'Should have a completionDate value', ->
+					expect(@prot.getCompletionDate().get('dateValue')).toEqual 1342080000000
 				it 'Should have a status value', ->
 					expect(@prot.getStatus().get('stringValue')).toEqual "created"
 
@@ -183,13 +160,6 @@ describe "Protocol module testing", ->
 			it "should convert tags has to collection of Tags", ->
 				runs ->
 					expect(@prot.get('lsTags')  instanceof TagList).toBeTruthy()
-			it 'should convert assayActivityList to AssayActivityList', ->
-				runs ->
-					expect(@prot.get('assayActivityList')instanceof AssayActivityList).toBeTruthy()
-			it 'should convert targetOriginList to TargetOriginList', ->
-				runs ->
-					console.log @prot.get('targetOriginList')
-					expect(@prot.get('targetOriginList')instanceof TargetOriginList).toBeTruthy()
 
 
 		describe "model change propogation", ->
@@ -280,7 +250,14 @@ describe "Protocol module testing", ->
 					err.attribute=='minY'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-
+			it 'should require that completionDate not be ""', ->
+				@prot.getCompletionDate().set
+					dateValue: new Date("").getTime()
+				expect(@prot.isValid()).toBeFalsy()
+				filtErrors = _.filter(@prot.validationError, (err) ->
+					err.attribute=='completionDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
 		describe "prepare to save", ->
 			beforeEach ->
 				@prot = new Protocol()
@@ -310,57 +287,6 @@ describe "Protocol module testing", ->
 				expect(state.get('recordedBy')).toEqual "jmcneil"
 				expect(state.get('recordedDate')).toBeGreaterThan 1
 
-	describe "Assay Activity List testing", ->
-		describe "When loaded from new", ->
-			beforeEach ->
-				@aal = new AssayActivityList()
-			describe "Existence", ->
-				it "should be defined", ->
-					expect(@aal).toBeDefined()
-		describe "When loaded form existing", ->
-			beforeEach ->
-				@aal = new AssayActivityList window.protocolServiceTestJSON.assayActivities
-			it "should have two assay activities", ->
-				expect(@aal.length).toEqual 2
-			it "should have the correct info for the first assay activity", ->
-				assayOne = @aal.at(0)
-				expect(assayOne.get('assayActivity')).toEqual "luminescence"
-			it "should have the correct info for the second assay activity", ->
-				assayTwo = @aal.at(1)
-				expect(assayTwo.get('assayActivity')).toEqual "fluorescence"
-		describe "collection validation", ->
-			beforeEach ->
-				@aal= new AssayActivityList window.protocolServiceTestJSON.assayActivities
-			it "should be invalid if a assay activity is selected more than once", ->
-				@aal.at(0).set assayActivity: "luminescence"
-				@aal.at(1).set assayActivity: "luminescence"
-				expect((@aal.validateCollection()).length).toBeGreaterThan 0
-
-	describe "Target Origin List testing", ->
-		describe "When loaded from new", ->
-			beforeEach ->
-				@tol = new TargetOriginList()
-			describe "Existence", ->
-				it "should be defined", ->
-					expect(@tol).toBeDefined()
-		describe "When loaded form existing", ->
-			beforeEach ->
-				@tol = new TargetOriginList window.protocolServiceTestJSON.targetOrigins
-			it "should have two target origins", ->
-				expect(@tol.length).toEqual 2
-			it "should have the correct info for the first target origin", ->
-				targetOne = @tol.at(0)
-				expect(targetOne.get('targetOrigin')).toEqual "human"
-			it "should have the correct info for the second target origin", ->
-				targetTwo = @tol.at(1)
-				expect(targetTwo.get('targetOrigin')).toEqual "chimpanzee"
-		describe "collection validation", ->
-			beforeEach ->
-				@tol= new TargetOriginList window.protocolServiceTestJSON.targetOrigins
-			it "should be invalid if a assay activity is selected more than once", ->
-				@tol.at(0).set targetOrigin: "human"
-				@tol.at(1).set targetOrigin: "human"
-				expect((@tol.validateCollection()).length).toBeGreaterThan 0
 
 	describe "Protocol List testing", ->
 		beforeEach ->
@@ -368,176 +294,6 @@ describe "Protocol module testing", ->
 		describe "existance tests", ->
 			it "should be defined", ->
 				expect(ProtocolList).toBeDefined()
-
-
-	describe "AssayActivityController", ->
-		describe "when instantiated", ->
-			beforeEach ->
-				@aac = new AssayActivityController
-					model: new AssayActivity window.protocolServiceTestJSON.assayActivities[0]
-					el: $('#fixture')
-				@aac.render()
-			describe "basic existance tests", ->
-				it "should exist", ->
-					expect(@aac).toBeDefined()
-				it "should load a template", ->
-					expect(@aac.$('.bv_assayActivity').length).toEqual 1
-			describe "render existing parameters", ->
-				it "should show assay activity", ->
-					waitsFor ->
-						@aac.$('.bv_assayActivity option').length > 0
-					, 1000
-					runs ->
-						expect(@aac.$('.bv_assayActivity').val()).toEqual "luminescence"
-			describe "model updates", ->
-				it "should update the assay activity", ->
-					waitsFor ->
-						@aac.$('.bv_assayActivity option').length > 0
-					, 1000
-					runs ->
-						@aac.$('.bv_assayActivity').val("fluorescence")
-						@aac.$('.bv_assayActivity').change()
-						expect(@aac.model.get('assayActivity')).toEqual "fluorescence"
-
-	describe "TargetOriginController", ->
-		describe "when instantiated", ->
-			beforeEach ->
-				@toc = new TargetOriginController
-					model: new TargetOrigin window.protocolServiceTestJSON.targetOrigins[0]
-					el: $('#fixture')
-				@toc.render()
-			describe "basic existance tests", ->
-				it "should exist", ->
-					expect(@toc).toBeDefined()
-				it "should load a template", ->
-					expect(@toc.$('.bv_targetOrigin').length).toEqual 1
-			describe "render existing parameters", ->
-				it "should show target origin", ->
-					waitsFor ->
-						@toc.$('.bv_targetOrigin option').length > 0
-					, 1000
-					runs ->
-						expect(@toc.$('.bv_targetOrigin').val()).toEqual "human"
-			describe "model updates", ->
-				it "should update the target origin ", ->
-					waitsFor ->
-						@toc.$('.bv_targetOrigin option').length > 0
-					, 1000
-					runs ->
-						@toc.$('.bv_targetOrigin').val("chimpanzee")
-						@toc.$('.bv_targetOrigin').change()
-						expect(@toc.model.get('targetOrigin')).toEqual "chimpanzee"
-
-	describe "Assay Activity List Controller testing", ->
-		describe "when instantiated with no data", ->
-			beforeEach ->
-				@aalc= new AssayActivityListController
-					el: $('#fixture')
-					collection: new AssayActivityList()
-				@aalc.render()
-			describe "basic existence tests", ->
-				it "should exist", ->
-					expect(@aalc).toBeDefined()
-				it "should load a template", ->
-					expect(@aalc.$('.bv_addActivityButton').length).toEqual 1
-			describe "rendering", ->
-				it "should show one activity", ->
-					expect(@aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual 1
-					expect(@aalc.collection.length).toEqual 1
-			describe "adding and removing", ->
-				it "should have two activities when add button is clicked", ->
-					@aalc.$('.bv_addActivityButton').click()
-					expect(@aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual 2
-					expect(@aalc.collection.length).toEqual 2
-				it "should have one activity when there are two activities and remove is clicked", ->
-					@aalc.$('.bv_addActivityButton').click()
-					expect(@aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual 2
-					@aalc.$('.bv_deleteActivity:eq(0)').click()
-					expect(@aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual 1
-					expect(@aalc.collection.length).toEqual 1
-				it "should always have one activity", ->
-					expect(@aalc.collection.length).toEqual 1
-					@aalc.$('.bv_deleteActivity').click()
-					expect(@aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual 1
-					expect(@aalc.collection.length).toEqual 1
-
-		describe "when instantiated with data", ->
-			beforeEach ->
-				@aalc= new AssayActivityListController
-					el: $('#fixture')
-					collection: new AssayActivityList window.protocolServiceTestJSON.assayActivities
-				@aalc.render()
-			it "should have two activities", ->
-				expect(@aalc.$('.bv_assayActivityInfo .bv_assayActivity').length).toEqual 2
-				expect(@aalc.collection.length).toEqual 2
-			it "should have the correct info for the first activity", ->
-				waitsFor ->
-					@aalc.$('.bv_assayActivity option').length > 0
-				, 1000
-				runs ->
-					expect(@aalc.$('.bv_assayActivityInfo .bv_assayActivity:eq(0)').val()).toEqual "luminescence"
-			it "should have the correct info for the second activity", ->
-				waitsFor ->
-					@aalc.$('.bv_assayActivity option').length > 0
-				, 1000
-				runs ->
-					expect(@aalc.$('.bv_assayActivityInfo .bv_assayActivity:eq(1)').val()).toEqual "fluorescence"
-
-	describe "Target Origin List Controller testing", ->
-		describe "when instantiated with no data", ->
-			beforeEach ->
-				@tolc= new TargetOriginListController
-					el: $('#fixture')
-					collection: new TargetOriginList()
-				@tolc.render()
-			describe "basic existence tests", ->
-				it "should exist", ->
-					expect(@tolc).toBeDefined()
-				it "should load a template", ->
-					expect(@tolc.$('.bv_addTargetOriginButton').length).toEqual 1
-			describe "rendering", ->
-				it "should show one target origin", ->
-					expect(@tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual 1
-					expect(@tolc.collection.length).toEqual 1
-			describe "adding and removing", ->
-				it "should have two target origins when add button is clicked", ->
-					@tolc.$('.bv_addTargetOriginButton').click()
-					expect(@tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual 2
-					expect(@tolc.collection.length).toEqual 2
-				it "should have one target origin when there are two target origins and remove is clicked", ->
-					@tolc.$('.bv_addTargetOriginButton').click()
-					expect(@tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual 2
-					@tolc.$('.bv_deleteTargetOrigin:eq(0)').click()
-					expect(@tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual 1
-					expect(@tolc.collection.length).toEqual 1
-				it "should always have one target origin", ->
-					expect(@tolc.collection.length).toEqual 1
-					@tolc.$('.bv_deleteTargetOrigin').click()
-					expect(@tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual 1
-					expect(@tolc.collection.length).toEqual 1
-
-		describe "when instantiated with data", ->
-			beforeEach ->
-				@tolc= new TargetOriginListController
-					el: $('#fixture')
-					collection: new TargetOriginList window.protocolServiceTestJSON.targetOrigins
-				@tolc.render()
-			it "should have two target origin", ->
-				expect(@tolc.$('.bv_targetOriginInfo .bv_targetOrigin').length).toEqual 2
-				expect(@tolc.collection.length).toEqual 2
-			it "should have the correct info for the first target origin", ->
-				waitsFor ->
-					@tolc.$('.bv_targetOrigin option').length > 0
-				, 1000
-				runs ->
-					expect(@tolc.$('.bv_targetOriginInfo .bv_targetOrigin:eq(0)').val()).toEqual "human"
-			it "should have the correct info for the second target origin", ->
-				waitsFor ->
-					@tolc.$('.bv_targetOrigin option').length > 0
-				, 1000
-				runs ->
-					expect(@tolc.$('.bv_targetOriginInfo .bv_targetOrigin:eq(1)').val()).toEqual "chimpanzee"
-
 
 	describe "ProtocolBaseController testing", ->
 		describe "When created from a saved protocol", ->
@@ -578,8 +334,45 @@ describe "Protocol module testing", ->
 					expect(@pbc.$('.bv_status').attr('disabled')).toBeUndefined()
 				it "should fill the assay tree rule",  ->
 					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "example assay tree rule"
-				it "should have the select dns target list checkbox checked",  ->
+				it "should have the select dns target list checkbox checked and the molecular target add button hidden",  ->
 					expect(@pbc.$('.bv_dnsTargetList').attr("checked")).toEqual "checked"
+					expect(@pbc.$('.bv_molecularTargetModal')).toBeHidden()
+				it "should show the assay activity",  ->
+					waitsFor ->
+						@pbc.$('.bv_assayActivity option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_assayActivity').val()).toEqual "luminescence"
+				it "should show the molecular target",  ->
+					waitsFor ->
+						@pbc.$('.bv_molecularTarget option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_molecularTarget').val()).toEqual "target x"
+				it "should show the target origin",  ->
+					waitsFor ->
+						@pbc.$('.bv_targetOrigin option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_targetOrigin').val()).toEqual "human"
+				it "should show the assay type",  ->
+					waitsFor ->
+						@pbc.$('.bv_assayType option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_assayType').val()).toEqual "cellular assay"
+				it "should show the assay technology",  ->
+					waitsFor ->
+						@pbc.$('.bv_assayTechnology option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_assayTechnology').val()).toEqual "wizard triple luminescence"
+				it "should show the cell line",  ->
+					waitsFor ->
+						@pbc.$('.bv_cellLine option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_cellLine').val()).toEqual "cell line y"
 				it "should show the assay stage",  ->
 					waitsFor ->
 						@pbc.$('.bv_assayStage option').length > 0
@@ -645,6 +438,10 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_protocolName').val(" Updated protocol name   ")
 					@pbc.$('.bv_protocolName').change()
 					expect(@pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
+				it "should update model when completion date is changed", ->
+					@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
+					@pbc.$('.bv_completionDate').change()
+					expect(@pbc.model.getCompletionDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@pbc.$('.bv_notebook').val(" Updated notebook  ")
 					@pbc.$('.bv_notebook').change()
@@ -672,6 +469,54 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_dnsTargetList').click()
 					expect(@pbc.model.get('dnsTargetList')).toBeFalsy()
 					# don't know why there needs to be two clicks for spec to pass
+				it "should update model when assay activity changed", ->
+					waitsFor ->
+						@pbc.$('.bv_assayActivity option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_assayActivity').val('unassigned')
+						@pbc.$('.bv_assayActivity').change()
+						expect(@pbc.model.get('assayActivity')).toEqual 'unassigned'
+				it "should update model when molecular target changed", ->
+					waitsFor ->
+						@pbc.$('.bv_molecularTarget option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_molecularTarget').val('unassigned')
+						@pbc.$('.bv_molecularTarget').change()
+						expect(@pbc.model.get('molecularTarget')).toEqual 'unassigned'
+				it "should update model when target origin changed", ->
+					waitsFor ->
+						@pbc.$('.bv_targetOrigin option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_targetOrigin').val('unassigned')
+						@pbc.$('.bv_targetOrigin').change()
+						expect(@pbc.model.get('targetOrigin')).toEqual 'unassigned'
+				it "should update model when assay type changed", ->
+					waitsFor ->
+						@pbc.$('.bv_assayType option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_assayType').val('unassigned')
+						@pbc.$('.bv_assayType').change()
+						expect(@pbc.model.get('assayType')).toEqual 'unassigned'
+				it "should update model when assay technology changed", ->
+					waitsFor ->
+						@pbc.$('.bv_assayTechnology option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_assayTechnology').val('unassigned')
+						@pbc.$('.bv_assayTechnology').change()
+						expect(@pbc.model.get('assayTechnology')).toEqual 'unassigned'
+				it "should update model when cell line changed", ->
+					waitsFor ->
+						@pbc.$('.bv_cellLine option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_cellLine').val('unassigned')
+						@pbc.$('.bv_cellLine').change()
+						expect(@pbc.model.get('cellLine')).toEqual 'unassigned'
 				it "should update model when assay stage changed", ->
 					waitsFor ->
 						@pbc.$('.bv_assayStage option').length > 0
@@ -688,6 +533,10 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_minY').val(" 5  ")
 					@pbc.$('.bv_minY').change()
 					expect(@pbc.model.get('minY')).toEqual 5
+			describe "pop modal testing", ->
+				it "should display a modal when add button is clicked", ->
+					@pbc.$('.bv_addNewAssayActivity').click()
+					expect(@pbc.$('.bv_newAssayActivity').length).toEqual 1
 
 		describe "When created from a new protocol", ->
 			beforeEach ->
@@ -702,6 +551,8 @@ describe "Protocol module testing", ->
 					expect(@pbc.$('.bv_protocolCode').val()).toEqual ""
 				it "should have protocol name not set", ->
 					expect(@pbc.$('.bv_protocolName').val()).toEqual ""
+				it "should not fill the date field", ->
+					expect(@pbc.$('.bv_completionDate').val()).toEqual ""
 				it "should show the save button text as Save", ->
 					expect(@pbc.$('.bv_save').html()).toEqual "Save"
 				it "should show the save button disabled", ->
@@ -716,8 +567,44 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_status').val()).toEqual 'created'
 				it "should have the assay tree rule be empty", ->
 					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual ""
-				it "should have the select dns target list be checked", ->
-					expect(@pbc.$('.bv_dnsTargetList').attr("checked")).toEqual "checked"
+				it "should have the select dns target list be unchecked", ->
+					expect(@pbc.$('.bv_dnsTargetList').attr("checked")).toBeUndefined()
+				it "should show assay activity select value as unassigned", ->
+					waitsFor ->
+						@pbc.$('.bv_assayActivity option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_assayActivity').val()).toEqual 'unassigned'
+				it "should show molecular target select value as unassigned", ->
+					waitsFor ->
+						@pbc.$('.bv_molecularTarget option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_molecularTarget').val()).toEqual 'unassigned'
+				it "should show target origin select value as unassigned", ->
+					waitsFor ->
+						@pbc.$('.bv_targetOrigin option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_targetOrigin').val()).toEqual 'unassigned'
+				it "should show assay type select value as unassigned", ->
+					waitsFor ->
+						@pbc.$('.bv_assayType option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_assayType').val()).toEqual 'unassigned'
+				it "should show assay technology select value as unassigned", ->
+					waitsFor ->
+						@pbc.$('.bv_assayTechnology option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_assayTechnology').val()).toEqual 'unassigned'
+				it "should show cell line select value as unassigned", ->
+					waitsFor ->
+						@pbc.$('.bv_cellLine option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_cellLine').val()).toEqual 'unassigned'
 				it "should show assay stage select value as unassigned", ->
 					waitsFor ->
 						@pbc.$('.bv_assayStage option').length > 0
@@ -736,6 +623,8 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_shortDescription').change()
 					@pbc.$('.bv_protocolName').val(" Updated entity name   ")
 					@pbc.$('.bv_protocolName').change()
+					@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
+					@pbc.$('.bv_completionDate').change()
 					@pbc.$('.bv_notebook').val("my notebook")
 					@pbc.$('.bv_notebook').change()
 				describe "form validation setup", ->
@@ -767,6 +656,14 @@ describe "Protocol module testing", ->
 					it "should show error on scientist dropdown", ->
 						runs ->
 							expect(@pbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+				describe "when date field not filled in", ->
+					beforeEach ->
+						runs ->
+							@pbc.$('.bv_completionDate').val("")
+							@pbc.$('.bv_completionDate').change()
+					it "should show error in date field", ->
+						runs ->
+							expect(@pbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
 				describe "when notebook not filled", ->
 					beforeEach ->
 						runs ->
@@ -791,33 +688,6 @@ describe "Protocol module testing", ->
 					it "should show error on minY field", ->
 						runs ->
 							expect(@pbc.$('.bv_group_minY').hasClass('error')).toBeTruthy()
-				describe "when assay activity is selected more than once", ->
-					it "should show error for each of the duplicated activities", ->
-						@pbc.$('.bv_addActivityButton').click()
-						waitsFor ->
-							@pbc.$('.bv_assayActivityInfo .bv_assayActivity option').length > 0
-						, 1000
-						runs ->
-							@pbc.$('.bv_assayActivity:eq(0)').val "fluorescence"
-							@pbc.$('.bv_assayActivity:eq(0)').change()
-							@pbc.$('.bv_assayActivity:eq(1)').val "fluorescence"
-							@pbc.$('.bv_assayActivity:eq(1)').change()
-							expect(@pbc.$('.bv_group_assayActivity:eq(0)').hasClass('error')).toBeTruthy()
-							expect(@pbc.$('.bv_group_assayActivity:eq(1)').hasClass('error')).toBeTruthy()
-				describe "when target origin is selected more than once", ->
-					it "should show error for each of the duplicated target origins", ->
-						@pbc.$('.bv_addTargetOriginButton').click()
-						waitsFor ->
-							@pbc.$('.bv_targetOriginInfo .bv_targetOrigin option').length > 0
-						, 1000
-						runs ->
-							@pbc.$('.bv_targetOrigin:eq(0)').val "human"
-							@pbc.$('.bv_targetOrigin:eq(0)').change()
-							@pbc.$('.bv_targetOrigin:eq(1)').val "human"
-							@pbc.$('.bv_targetOrigin:eq(1)').change()
-							expect(@pbc.$('.bv_group_targetOrigin:eq(0)').hasClass('error')).toBeTruthy()
-							expect(@pbc.$('.bv_group_targetOrigin:eq(1)').hasClass('error')).toBeTruthy()
-
 				describe "expect save to work", ->
 					it "model should be valid and ready to save", ->
 						runs ->

@@ -19,6 +19,17 @@
 					ignored: false
 				]
 		,
+			"molecularTargetCodes":
+				[
+					code: "target x"
+					name: "Target X"
+					ignored: false
+				,
+					code: "target y"
+					name: "Target Y"
+					ignored: false
+				]
+		,
 			"targetOriginCodes":
 				[
 					code: "human"

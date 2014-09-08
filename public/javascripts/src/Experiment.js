@@ -214,10 +214,6 @@
       return projectCodeValue;
     };
 
-    Experiment.prototype.getCompletionDate = function() {
-      return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "dateValue", "completion date");
-    };
-
     return Experiment;
 
   })(BaseEntity);
@@ -244,8 +240,6 @@
       this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
       this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
       this.handleProtocolCodeChanged = __bind(this.handleProtocolCodeChanged, this);
-      this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
-      this.handleDateChanged = __bind(this.handleDateChanged, this);
       this.render = __bind(this.render, this);
       return ExperimentBaseController.__super__.constructor.apply(this, arguments);
     }
@@ -255,11 +249,9 @@
     ExperimentBaseController.prototype.events = function() {
       return _(ExperimentBaseController.__super__.events.call(this)).extend({
         "change .bv_experimentName": "handleNameChanged",
-        "change .bv_completionDate": "handleDateChanged",
         "click .bv_useProtocolParameters": "handleUseProtocolParametersClicked",
         "change .bv_protocolCode": "handleProtocolCodeChanged",
-        "change .bv_projectCode": "handleProjectCodeChanged",
-        "click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+        "change .bv_projectCode": "handleProjectCodeChanged"
       });
     };
 
@@ -277,11 +269,6 @@
       }
       this.$('.bv_projectCode').val(this.model.getProjectCode().get('codeValue'));
       this.setUseProtocolParametersDisabledState();
-      this.$('.bv_completionDate').datepicker();
-      this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
-      if (this.model.getCompletionDate().get('dateValue') != null) {
-        this.$('.bv_completionDate').val(this.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
-      }
       ExperimentBaseController.__super__.render.call(this);
       return this;
     };
@@ -353,16 +340,6 @@
           }
         }
       }
-    };
-
-    ExperimentBaseController.prototype.handleDateChanged = function() {
-      return this.model.getCompletionDate().set({
-        dateValue: this.convertYMDDateToMs(this.getTrimmedInput('.bv_completionDate'))
-      });
-    };
-
-    ExperimentBaseController.prototype.handleCompletionDateIconClicked = function() {
-      return this.$(".bv_completionDate").datepicker("show");
     };
 
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
