@@ -369,3 +369,11 @@ describe "Curve Curator Module testing", ->
 					waits 200
 					runs ->
 						expect(@ccc.$('.bv_reportedValues').html()).toContain "slope"
+		describe "should show error when experiment code does not exist", ->
+			beforeEach ->
+				runs ->
+					@ccc.getCurvesFromExperimentCode("EXPT-ERROR")
+				waits 500
+			it "should show error message", ->
+				expect(@ccc.$el.html()).toContain "Can not find experiment code"
+

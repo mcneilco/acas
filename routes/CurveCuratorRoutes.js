@@ -9,8 +9,12 @@
   exports.getCurveStubs = function(req, resp) {
     var baseurl, config, curveCuratorTestData, request;
     if (global.specRunnerTestmode) {
-      curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
-      return resp.end(JSON.stringify(curveCuratorTestData.curveCuratorThumbs));
+      if (req.params.exptCode === "EXPT-ERROR") {
+        return resp.send("Experiment code not found", 404);
+      } else {
+        curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
+        return resp.end(JSON.stringify(curveCuratorTestData.curveCuratorThumbs));
+      }
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/experimentcode/curveids/?experimentcode=";
@@ -22,9 +26,16 @@
         json: true
       }, (function(_this) {
         return function(error, response, json) {
+          console.log(response.statusCode);
           if (!error && response.statusCode === 200) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
+            if (json.indexOf != null) {
+              return resp.send("Experiment code not found", 404);
+            } else {
+              console.log(JSON.stringify(json));
+              return resp.end(JSON.stringify(json));
+            }
+          } else if (!error && response.statusCode === 404) {
+            return resp.send("Experiment code not found", 404);
           } else {
             console.log('got ajax error trying to retrieve curve stubs');
             console.log(error);

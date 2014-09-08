@@ -1058,6 +1058,14 @@
           return function() {
             return _this.render();
           };
+        })(this),
+        error: (function(_this) {
+          return function() {
+            _this.$('.bv_badExperimentCode').modal({
+              backdrop: "static"
+            });
+            return _this.$('.bv_badExperimentCode').modal("show");
+          };
         })(this)
       });
     };

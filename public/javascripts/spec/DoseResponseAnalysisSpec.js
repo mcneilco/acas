@@ -153,7 +153,7 @@
           });
           return this.drapc.render();
         });
-        return describe("basic existance tests", function() {
+        describe("basic existance tests", function() {
           it('should exist', function() {
             return expect(this.drapc).toBeDefined();
           });
@@ -177,6 +177,17 @@
           });
           return it('should show the default inactive threshold', function() {
             return expect(this.drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual("20");
+          });
+        });
+        return describe("form title change", function() {
+          it("should allow the form title to be changed", function() {
+            this.drapc.setFormTitle("kilroy fits curves");
+            return expect(this.drapc.$(".bv_formTitle").html()).toEqual("kilroy fits curves");
+          });
+          return it("title should stay changed after render", function() {
+            this.drapc.setFormTitle("kilroy fits curves");
+            this.drapc.render();
+            return expect(this.drapc.$(".bv_formTitle").html()).toEqual("kilroy fits curves");
           });
         });
       });

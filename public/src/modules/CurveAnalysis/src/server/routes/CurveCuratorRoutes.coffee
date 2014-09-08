@@ -7,8 +7,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.getCurveStubs = (req, resp) ->
 	if global.specRunnerTestmode
-		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
-		resp.end JSON.stringify curveCuratorTestData.curveCuratorThumbs
+		if req.params.exptCode == "EXPT-ERROR"
+			resp.send "Experiment code not found", 404
+		else
+			curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
+			resp.end JSON.stringify curveCuratorTestData.curveCuratorThumbs
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.rapache.fullpath+"/experimentcode/curveids/?experimentcode="
@@ -19,9 +22,15 @@ exports.getCurveStubs = (req, resp) ->
 			url: baseurl+req.params.exptCode
 			json: true
 		, (error, response, json) =>
+			console.log response.statusCode
 			if !error && response.statusCode == 200
-				console.log JSON.stringify json
-				resp.end JSON.stringify json
+				if json.indexOf?
+					resp.send "Experiment code not found", 404
+				else
+					console.log JSON.stringify json
+					resp.end JSON.stringify json
+			else if !error && response.statusCode == 404
+				resp.send "Experiment code not found", 404
 			else
 				console.log 'got ajax error trying to retrieve curve stubs'
 				console.log error

@@ -667,6 +667,10 @@ class window.CurveCuratorController extends Backbone.View
 		@model.fetch
 			success: =>
 				@render()
+			error: =>
+				@$('.bv_badExperimentCode').modal
+					backdrop: "static"
+				@$('.bv_badExperimentCode').modal "show"
 
 	curveSelectionUpdated: (who) =>
 		UtilityFunctions::showProgressModal @$('.bv_curveCuratorDropDown')

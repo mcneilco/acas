@@ -418,7 +418,7 @@
           return expect(this.ccc.$('.bv_curveEditor').length).toEqual(1);
         });
       });
-      return describe("should initialize and render sub controllers", function() {
+      describe("should initialize and render sub controllers", function() {
         beforeEach(function() {
           runs(function() {
             return this.ccc.getCurvesFromExperimentCode("EXPT-00000018");
@@ -552,6 +552,17 @@
               return expect(this.ccc.$('.bv_reportedValues').html()).toContain("slope");
             });
           });
+        });
+      });
+      return describe("should show error when experiment code does not exist", function() {
+        beforeEach(function() {
+          runs(function() {
+            return this.ccc.getCurvesFromExperimentCode("EXPT-ERROR");
+          });
+          return waits(500);
+        });
+        return it("should show error message", function() {
+          return expect(this.ccc.$el.html()).toContain("Can not find experiment code");
         });
       });
     });
