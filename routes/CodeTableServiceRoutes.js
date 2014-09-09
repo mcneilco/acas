@@ -1,10 +1,10 @@
 (function() {
   exports.setupAPIRoutes = function(app) {
-    return app.get('/api/dataDict/:kind', exports.getDataDictValues);
+    return app.get('/api/dataDict/:type/:kind', exports.getDataDictValues);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
-    return app.get('/api/dataDict/:kind', loginRoutes.ensureAuthenticated, exports.getDataDictValues);
+    return app.get('/api/dataDict/:type/:kind', loginRoutes.ensureAuthenticated, exports.getDataDictValues);
   };
 
   exports.getDataDictValues = function(req, resp) {
@@ -25,7 +25,7 @@
       return _results;
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "api/v1/ddictvalues/bytype/" + req.params.kind + "/codetable";
+      baseurl = config.all.client.service.persistence.fullpath + "api/v1/ddictvalues/all/" + req.params.type + "/" + req.params.kind + "/codetable";
       request = require('request');
       return request({
         method: 'GET',

@@ -1,8 +1,8 @@
 exports.setupAPIRoutes = (app) ->
-	app.get '/api/dataDict/:kind', exports.getDataDictValues
+	app.get '/api/dataDict/:type/:kind', exports.getDataDictValues
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/dataDict/:kind', loginRoutes.ensureAuthenticated, exports.getDataDictValues
+	app.get '/api/dataDict/:type/:kind', loginRoutes.ensureAuthenticated, exports.getDataDictValues
 
 exports.getDataDictValues = (req, resp) ->
 	if global.specRunnerTestmode
@@ -13,7 +13,7 @@ exports.getDataDictValues = (req, resp) ->
 				resp.end JSON.stringify i[req.params.kind]
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"api/v1/ddictvalues/bytype/"+req.params.kind+"/codetable"
+		baseurl = config.all.client.service.persistence.fullpath+"api/v1/ddictvalues/all/"+req.params.type+"/"+req.params.kind+"/codetable"
 		request = require 'request'
 		request(
 			method: 'GET'
