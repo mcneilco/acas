@@ -2,6 +2,9 @@ class window.ModuleMenusController extends Backbone.View
 
 	template: _.template($("#ModuleMenusView").html())
 
+	window.onbeforeunload = () ->
+		return window.conf.leaveACASMessage
+
 	initialize: ->
 
 		$(@el).html @template()
@@ -42,7 +45,6 @@ class window.ModuleMenusController extends Backbone.View
 			@$('.bv_homePageMessage').html(window.conf.moduleMenus.homePageMessage)
 		if window.conf.moduleMenus.copyrightMessage?
 			@$('.bv_copyrightMessage').html(window.conf.moduleMenus.copyrightMessage)
-
 
 	render: =>
 		if window.AppLaunchParams.deployMode?

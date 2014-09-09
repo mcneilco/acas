@@ -85,6 +85,7 @@
       this.$('.bv_isLoaded').hide();
       if (this.model.get('isDirty')) {
         this.$('.bv_isDirty').show();
+        window.conf.leaveACASMessage = "WARNING: There are unsaved changes.";
       } else {
         this.$('.bv_isDirty').hide();
       }
