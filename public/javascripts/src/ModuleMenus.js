@@ -14,6 +14,10 @@
 
     ModuleMenusController.prototype.template = _.template($("#ModuleMenusView").html());
 
+    window.onbeforeunload = function() {
+      return window.conf.leaveACASMessage;
+    };
+
     ModuleMenusController.prototype.initialize = function() {
       $(this.el).html(this.template());
       this.moduleLauncherList = new ModuleLauncherList(this.options.menuListJSON);
