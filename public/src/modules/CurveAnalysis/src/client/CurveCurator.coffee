@@ -196,7 +196,12 @@ class window.DoseResponsePlotController extends AbstractFormController
 			if curve.type == "LL.4"
 				fct = (x) ->
 					curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
-				brd.create('functiongraph', [fct, -3, 20], {strokeWidth:2});
+				brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
+				if curve.reported_ec50?
+					intersect = fct(log10(curve.reported_ec50))
+					console.log intersect
+					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor:'#ff0000'});
+					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),plotWindow[2]]], {straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor:'#ff0000'});
 
 		getMouseCoords = (e) ->
 			cPos = brd.getCoordsTopLeftCorner(e)
