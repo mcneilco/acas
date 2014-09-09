@@ -24,11 +24,8 @@ exports.getCurveStubs = (req, resp) ->
 		, (error, response, json) =>
 			console.log response.statusCode
 			if !error && response.statusCode == 200
-				if json.indexOf?
-					resp.send "Experiment code not found", 404
-				else
-					console.log JSON.stringify json
-					resp.end JSON.stringify json
+				console.log JSON.stringify json
+				resp.end JSON.stringify json
 			else if !error && response.statusCode == 404
 				resp.send "Experiment code not found", 404
 			else

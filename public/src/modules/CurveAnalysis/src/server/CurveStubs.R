@@ -16,6 +16,9 @@ tryCatch({
   myMessenger$logger$info(paste0("curve stubs initiated with: ", GET))
   myMessenger$capture_output("commandOutput <- capture.output(stubs <- racas::api_doseResponse_get_curve_stubs(GET))", userError = paste0("There was an error retrieving curves for '", GET, "'"))
   if(myMessenger$hasErrors()) {
+    if(myMessenger$errors == "no experiment results found") {
+        setStatus(404L)
+    }
     myMessenger$logger$error(paste0("got errors in response: ", myMessenger$toJSON()))
     stubs <- myMessenger$userErrors
   } else {

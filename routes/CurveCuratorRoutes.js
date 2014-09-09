@@ -28,12 +28,8 @@
         return function(error, response, json) {
           console.log(response.statusCode);
           if (!error && response.statusCode === 200) {
-            if (json.indexOf != null) {
-              return resp.send("Experiment code not found", 404);
-            } else {
-              console.log(JSON.stringify(json));
-              return resp.end(JSON.stringify(json));
-            }
+            console.log(JSON.stringify(json));
+            return resp.end(JSON.stringify(json));
           } else if (!error && response.statusCode === 404) {
             return resp.send("Experiment code not found", 404);
           } else {
