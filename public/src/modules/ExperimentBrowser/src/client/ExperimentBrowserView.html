@@ -72,11 +72,11 @@
 
 
 <script type="text/template" id="ExperimentRowSummaryView" xmlns="http://www.w3.org/1999/html">
-    <td class='bv_experimentName'><%=experimentName%></td>
-    <td class='bv_experimentCode'><%=experimentCode%></td>
+		<td class='bv_experimentCode'><%=experimentCode%></td>
+		<td class='bv_experimentName'><%=experimentName%></td>
     <td class='bv_protocolName'><%=protocolName%></td>
     <td class='bv_recordedBy'><%=recordedBy%></td>
-    <td class='bv_recordedDate'><%=recordedDate%></td>
+    <td class='bv_recordedDate'><%=new Date(recordedDate).toLocaleDateString()%></td>
     <td class='bv_status'><%=status%></td>
     <td class='bv_analysisStatus'><%=analysisStatus%></td>
 </script>
