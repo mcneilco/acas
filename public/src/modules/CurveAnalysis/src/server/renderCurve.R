@@ -61,6 +61,11 @@ renderCurve <- function(getParams) {
 	} else {
 		showAxes <- as.logical(getParams$showAxes)
 	}
+	if(is.null(getParams$showGrid)) {
+		showGrid <- TRUE
+	} else {
+		showGrid <- as.logical(getParams$showGrid)
+	}
 	if(is.null(getParams$labelAxes)) {
 		labelAxes <- !inTable
 	} else {
@@ -98,7 +103,7 @@ renderCurve <- function(getParams) {
 	
 	setContentType("image/png")
 	t <- tempfile()
-	plotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "slope"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = TRUE, showAxes = showAxes, labelAxes = labelAxes, showLegend=legend)
+	plotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "slope"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = showGrid, showAxes = showAxes, labelAxes = labelAxes, showLegend=legend)
 	sendBin(readBin(t,'raw',n=file.info(t)$size))
 	unlink(t) 
 	DONE
