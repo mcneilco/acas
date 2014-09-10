@@ -6,7 +6,7 @@ class window.DoseResponseDataParserController extends BasicFileValidateAndSaveCo
 		@errorOwnerName = 'DoseResponseDataParserController'
 		@additionalData = requireDoseResponse: true
 		super()
-		@$('.bv_moduleTitle').html('Load Efficacy Data for Dose-Response Fit')
+		@$('.bv_moduleTitle').html('Load Efficacy Data for Dose Response Fit')
 
 	handleSaveReturnSuccess: (json) =>
 		super(json)
