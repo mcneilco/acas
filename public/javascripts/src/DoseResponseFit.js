@@ -19,7 +19,7 @@
         requireDoseResponse: true
       };
       DoseResponseDataParserController.__super__.initialize.call(this);
-      return this.$('.bv_moduleTitle').html('Load Efficacy Data for Dose-Response Fit');
+      return this.$('.bv_moduleTitle').html('Load Efficacy Data for Dose Response Fit');
     };
 
     DoseResponseDataParserController.prototype.handleSaveReturnSuccess = function(json) {

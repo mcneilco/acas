@@ -270,20 +270,26 @@
           });
           if (curve.reported_ec50 != null) {
             intersect = fct(log10(curve.reported_ec50));
-            console.log(intersect);
+            if (curve.reported_operator != null) {
+              color = '#ff0000';
+            } else {
+              color = '#808080';
+            }
             brd.create('line', [[plotWindow[0], intersect], [log10(curve.reported_ec50), intersect]], {
+              fixed: true,
               straightFirst: false,
               straightLast: false,
               strokeWidth: 2,
               dash: 3,
-              strokeColor: '#ff0000'
+              strokeColor: color
             });
             brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), plotWindow[2]]], {
+              fixed: true,
               straightFirst: false,
               straightLast: false,
               strokeWidth: 2,
               dash: 3,
-              strokeColor: '#ff0000'
+              strokeColor: color
             });
           }
         }
@@ -779,7 +785,7 @@
         curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
         curveUrl += this.model.get('curveid') + ".png";
       } else {
-        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&curveIds=";
+        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&showGrid=false&curveIds=";
         curveUrl += this.model.get('curveid') + "&height=120&width=250&showAxes=false&labelAxes=false";
       }
       this.$el.html(this.template({
