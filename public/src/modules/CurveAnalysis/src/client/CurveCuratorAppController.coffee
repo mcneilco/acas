@@ -1,12 +1,13 @@
 class window.CurveCuratorAppRouter extends Backbone.Router
 	routes:
 		":exptCode": "loadCurvesForExptCode"
+		":exptCode/:curveID": "loadCurvesForExptCode"
 
 	initialize: (options) ->
 		@appController = options.appController
 
-	loadCurvesForExptCode: (exptCode) =>
-		@appController.loadCurvesForExptCode(exptCode)
+	loadCurvesForExptCode: (exptCode, curveID) =>
+		@appController.loadCurvesForExptCode(exptCode, curveID)
 
 
 class window.CurveCuratorAppController extends Backbone.View
@@ -32,6 +33,5 @@ class window.CurveCuratorAppController extends Backbone.View
 		@ccc.render()
 		@
 
-	loadCurvesForExptCode: (exptCode) =>
-		@ccc.getCurvesFromExperimentCode(exptCode)
-
+	loadCurvesForExptCode: (exptCode, curveID) =>
+		@ccc.getCurvesFromExperimentCode(exptCode, curveID)

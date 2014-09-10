@@ -431,13 +431,22 @@ class window.CurveList extends Backbone.Collection
 				name: cat
 		catList
 
+	getCurveByID: (curveID) =>
+		curve = @.findWhere({curveid: curveID})
+		return curve
+
+	getIndexByCurveID: (curveID) =>
+		curve = @getCurveByID(curveID)
+		index = @.indexOf(curve)
+		return index
+
 	updateCurveSummary: (oldID, newCurveID, dirty) =>
-		curve = @.findWhere({curveid: oldID})
+		curve = @getCurveByID(oldID)
 		curve.set curveid: newCurveID
 		curve.set dirty: dirty
 
 	updateCurveFlagUser: (curveid, flagUser, flagAlgorithm, dirty) =>
-		curve = @.findWhere({curveid: curveid})
+		curve = @getCurveByID(curveid)
 		curve.set flagUser: flagUser
 		curve.set flagAlgorithm: flagAlgorithm
 		curve.set dirty: dirty
@@ -573,7 +582,6 @@ class window.CurveSummaryListController extends Backbone.View
 			unless @sortAscending
 				@toRender = @toRender.reverse()
 			@toRender = new Backbone.Collection @toRender
-
 		@toRender.each (cs) =>
 			csController = new CurveSummaryController(model: cs)
 			@$('.bv_curveSummaries').append(csController.render().el)
@@ -612,7 +620,7 @@ class window.CurveCuratorController extends Backbone.View
 		'click .bv_sortDirection_ascending': 'handleSortChanged'
 		'click .bv_sortDirection_descending': 'handleSortChanged'
 
-	render: =>
+	render: (curveID)=>
 		@$el.empty()
 		@$el.html @template()
 		if @model?
@@ -621,7 +629,6 @@ class window.CurveCuratorController extends Backbone.View
 				collection: @model.get 'curves'
 			@curveListController.render()
 			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
-
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
@@ -660,7 +667,10 @@ class window.CurveCuratorController extends Backbone.View
 				@$('.bv_sortDirection_descending').attr( "checked", true );
 
 			@handleSortChanged()
-			@$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
+			indexOfRequestedCurve = @curveListController.collection.getIndexByCurveID(curveID)
+			if indexOfRequestedCurve == -1
+				indexOfRequestedCurve = 0
+			@$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click()
 
 		@
 
@@ -670,12 +680,12 @@ class window.CurveCuratorController extends Backbone.View
 	handleCurveDetailUpdated: (curveid, flagUser, flagAlgorithm, dirty) =>
 		@curveListController.collection.updateCurveFlagUser(curveid, flagUser,flagAlgorithm, dirty)
 
-	getCurvesFromExperimentCode: (exptCode) ->
+	getCurvesFromExperimentCode: (exptCode, curveID) ->
 		@model = new CurveCurationSet
 		@model.setExperimentCode exptCode
 		@model.fetch
 			success: =>
-				@render()
+				@render(curveID)
 			error: =>
 				@$('.bv_badExperimentCode').modal
 					backdrop: "static"

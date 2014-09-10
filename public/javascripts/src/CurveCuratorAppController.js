@@ -12,15 +12,16 @@
     }
 
     CurveCuratorAppRouter.prototype.routes = {
-      ":exptCode": "loadCurvesForExptCode"
+      ":exptCode": "loadCurvesForExptCode",
+      ":exptCode/:curveID": "loadCurvesForExptCode"
     };
 
     CurveCuratorAppRouter.prototype.initialize = function(options) {
       return this.appController = options.appController;
     };
 
-    CurveCuratorAppRouter.prototype.loadCurvesForExptCode = function(exptCode) {
-      return this.appController.loadCurvesForExptCode(exptCode);
+    CurveCuratorAppRouter.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
+      return this.appController.loadCurvesForExptCode(exptCode, curveID);
     };
 
     return CurveCuratorAppRouter;
@@ -58,8 +59,8 @@
       return this;
     };
 
-    CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode) {
-      return this.ccc.getCurvesFromExperimentCode(exptCode);
+    CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
+      return this.ccc.getCurvesFromExperimentCode(exptCode, curveID);
     };
 
     return CurveCuratorAppController;

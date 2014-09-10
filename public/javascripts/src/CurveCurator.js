@@ -270,20 +270,26 @@
           });
           if (curve.reported_ec50 != null) {
             intersect = fct(log10(curve.reported_ec50));
-            console.log(intersect);
+            if (curve.reported_operator != null) {
+              color = '#ff0000';
+            } else {
+              color = '#808080';
+            }
             brd.create('line', [[plotWindow[0], intersect], [log10(curve.reported_ec50), intersect]], {
+              fixed: true,
               straightFirst: false,
               straightLast: false,
               strokeWidth: 2,
               dash: 3,
-              strokeColor: '#ff0000'
+              strokeColor: color
             });
             brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), plotWindow[2]]], {
+              fixed: true,
               straightFirst: false,
               straightLast: false,
               strokeWidth: 2,
               dash: 3,
-              strokeColor: '#ff0000'
+              strokeColor: color
             });
           }
         }
@@ -652,6 +658,8 @@
     function CurveList() {
       this.updateCurveFlagUser = __bind(this.updateCurveFlagUser, this);
       this.updateCurveSummary = __bind(this.updateCurveSummary, this);
+      this.getIndexByCurveID = __bind(this.getIndexByCurveID, this);
+      this.getCurveByID = __bind(this.getCurveByID, this);
       return CurveList.__super__.constructor.apply(this, arguments);
     }
 
@@ -670,11 +678,24 @@
       return catList;
     };
 
-    CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty) {
+    CurveList.prototype.getCurveByID = function(curveID) {
       var curve;
       curve = this.findWhere({
-        curveid: oldID
+        curveid: curveID
       });
+      return curve;
+    };
+
+    CurveList.prototype.getIndexByCurveID = function(curveID) {
+      var curve, index;
+      curve = this.getCurveByID(curveID);
+      index = this.indexOf(curve);
+      return index;
+    };
+
+    CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty) {
+      var curve;
+      curve = this.getCurveByID(oldID);
       curve.set({
         curveid: newCurveID
       });
@@ -685,9 +706,7 @@
 
     CurveList.prototype.updateCurveFlagUser = function(curveid, flagUser, flagAlgorithm, dirty) {
       var curve;
-      curve = this.findWhere({
-        curveid: curveid
-      });
+      curve = this.getCurveByID(curveid);
       curve.set({
         flagUser: flagUser
       });
@@ -779,7 +798,7 @@
         curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
         curveUrl += this.model.get('curveid') + ".png";
       } else {
-        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&curveIds=";
+        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&showGrid=false&curveIds=";
         curveUrl += this.model.get('curveid') + "&height=120&width=250&showAxes=false&labelAxes=false";
       }
       this.$el.html(this.template({
@@ -1003,7 +1022,8 @@
       'click .bv_sortDirection_descending': 'handleSortChanged'
     };
 
-    CurveCuratorController.prototype.render = function() {
+    CurveCuratorController.prototype.render = function(curveID) {
+      var indexOfRequestedCurve;
       this.$el.empty();
       this.$el.html(this.template());
       if (this.model != null) {
@@ -1055,7 +1075,11 @@
           this.$('.bv_sortDirection_descending').attr("checked", true);
         }
         this.handleSortChanged();
-        this.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
+        indexOfRequestedCurve = this.curveListController.collection.getIndexByCurveID(curveID);
+        if (indexOfRequestedCurve === -1) {
+          indexOfRequestedCurve = 0;
+        }
+        this.$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click();
       }
       return this;
     };
@@ -1068,13 +1092,13 @@
       return this.curveListController.collection.updateCurveFlagUser(curveid, flagUser, flagAlgorithm, dirty);
     };
 
-    CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode) {
+    CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode, curveID) {
       this.model = new CurveCurationSet;
       this.model.setExperimentCode(exptCode);
       return this.model.fetch({
         success: (function(_this) {
           return function() {
-            return _this.render();
+            return _this.render(curveID);
           };
         })(this),
         error: (function(_this) {
