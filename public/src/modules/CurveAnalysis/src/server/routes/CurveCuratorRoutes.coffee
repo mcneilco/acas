@@ -113,7 +113,7 @@ exports.updateCurve = (req, resp) ->
 				console.log error
 				console.log json
 				console.log response
-				resp.end json
+				resp.end json, 500
 		)
 
 exports.curveCuratorIndex = (req, resp) ->

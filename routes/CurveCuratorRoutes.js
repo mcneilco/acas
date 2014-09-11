@@ -135,7 +135,7 @@
             console.log(error);
             console.log(json);
             console.log(response);
-            return resp.end(json);
+            return resp.end(json, 500);
           }
         };
       })(this));
