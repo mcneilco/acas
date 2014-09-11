@@ -606,17 +606,17 @@
 
     CurveEditorController.prototype.handleResetError = function() {
       UtilityFunctions.prototype.hideProgressModal(this.$('.bv_statusDropDown'));
-      return alert("Error resetting");
+      return this.trigger('curveUpdateError');
     };
 
     CurveEditorController.prototype.handleSaveError = function() {
       UtilityFunctions.prototype.hideProgressModal(this.$('.bv_statusDropDown'));
-      return alert("Error saving curve");
+      return this.trigger('curveUpdateError');
     };
 
     CurveEditorController.prototype.handleUpdateError = function() {
       UtilityFunctions.prototype.hideProgressModal(this.$('.bv_statusDropDown'));
-      return alert("Error updating curve");
+      return this.trigger('curveUpdateError');
     };
 
     CurveEditorController.prototype.handleSaveSuccess = function() {
@@ -1007,6 +1007,7 @@
       this.handleFilterChanged = __bind(this.handleFilterChanged, this);
       this.handleGetCurveDetailReturn = __bind(this.handleGetCurveDetailReturn, this);
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
+      this.handleCurveUpdateError = __bind(this.handleCurveUpdateError, this);
       this.handleCurveDetailUpdated = __bind(this.handleCurveDetailUpdated, this);
       this.handleCurveDetailSaved = __bind(this.handleCurveDetailSaved, this);
       this.render = __bind(this.render, this);
@@ -1038,6 +1039,7 @@
         });
         this.curveEditorController.on('curveDetailSaved', this.handleCurveDetailSaved);
         this.curveEditorController.on('curveDetailUpdated', this.handleCurveDetailUpdated);
+        this.curveEditorController.on('curveUpdateError', this.handleCurveUpdateError);
         if (this.model.get('sortOptions').length > 0) {
           this.sortBySelect = new PickListSelectController({
             collection: this.model.get('sortOptions'),
@@ -1092,6 +1094,13 @@
       return this.curveListController.collection.updateCurveFlagUser(curveid, flagUser, flagAlgorithm, dirty);
     };
 
+    CurveCuratorController.prototype.handleCurveUpdateError = function() {
+      this.$('.bv_badCurveUpdate').modal({
+        backdrop: "static"
+      });
+      return this.$('.bv_badCurveUpdate').modal("show");
+    };
+
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode, curveID) {
       this.model = new CurveCurationSet;
       this.model.setExperimentCode(exptCode);
@@ -1123,6 +1132,15 @@
           return function() {
             UtilityFunctions.prototype.hideProgressModal(_this.$('.bv_curveCuratorDropDown'));
             return _this.curveEditorController.setModel(curveDetail);
+          };
+        })(this),
+        error: (function(_this) {
+          return function() {
+            UtilityFunctions.prototype.hideProgressModal(_this.$('.bv_curveCuratorDropDown'));
+            _this.$('.bv_badCurveID').modal({
+              backdrop: "static"
+            });
+            return _this.$('.bv_badCurveID').modal("show");
           };
         })(this)
       });

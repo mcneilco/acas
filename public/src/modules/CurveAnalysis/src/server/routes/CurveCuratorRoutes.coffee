@@ -52,6 +52,8 @@ exports.getCurveDetail = (req, resp) ->
 			if !error && response.statusCode == 200
 				console.log JSON.stringify json
 				resp.end JSON.stringify json
+			else if !error && response.statusCode == 404
+				resp.send "Curve Detail not found", 404
 			else
 				console.log 'got ajax error trying to retrieve curve detail'
 				console.log error
@@ -77,6 +79,8 @@ exports.updateCurveUserFlag = (req, resp) ->
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
+			else if !error && response.statusCode == 500
+				resp.send "Could not update curve user flag", 500
 			else
 				console.log 'got ajax error trying to update user flag'
 				console.log error
@@ -102,6 +106,8 @@ exports.updateCurve = (req, resp) ->
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
+			else if !error && response.statusCode == 500
+				resp.send "Could not update curve", 500
 			else
 				console.log 'got ajax error trying to refit curve'
 				console.log error

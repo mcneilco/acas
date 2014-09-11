@@ -384,23 +384,27 @@ class window.CurveEditorController extends Backbone.View
 
 	handleApproveClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
-		@model.save({action: 'flagUser', flagUser: 'approved', user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
+		@model.save({action: 'flagUser', flagUser: 'approved', user: window.AppLaunchParams.loginUserName}
+			success :@handleUpdateSuccess
+			error: @handleUpdateError)
 
 	handleRejectClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
-		@model.save({action: 'flagUser', flagUser: 'rejected', user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
+		@model.save({action: 'flagUser', flagUser: 'rejected', user: window.AppLaunchParams.loginUserName}
+			success :@handleUpdateSuccess
+			error: @handleUpdateError)
 
 	handleResetError: =>
 		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
-		alert "Error resetting"
+		@trigger 'curveUpdateError'
 
 	handleSaveError: =>
 		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
-		alert "Error saving curve"
+		@trigger 'curveUpdateError'
 
 	handleUpdateError: =>
 		UtilityFunctions::hideProgressModal @$('.bv_statusDropDown')
-		alert "Error updating curve"
+		@trigger 'curveUpdateError'
 
 	handleSaveSuccess: =>
 		@handleModelSync()
@@ -633,6 +637,7 @@ class window.CurveCuratorController extends Backbone.View
 				el: @$('.bv_curveEditor')
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
+			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError
 
 			if @model.get('sortOptions').length > 0
 				@sortBySelect = new PickListSelectController
@@ -680,6 +685,11 @@ class window.CurveCuratorController extends Backbone.View
 	handleCurveDetailUpdated: (curveid, flagUser, flagAlgorithm, dirty) =>
 		@curveListController.collection.updateCurveFlagUser(curveid, flagUser,flagAlgorithm, dirty)
 
+	handleCurveUpdateError: =>
+		@$('.bv_badCurveUpdate').modal
+			backdrop: "static"
+		@$('.bv_badCurveUpdate').modal "show"
+
 	getCurvesFromExperimentCode: (exptCode, curveID) ->
 		@model = new CurveCurationSet
 		@model.setExperimentCode exptCode
@@ -694,9 +704,16 @@ class window.CurveCuratorController extends Backbone.View
 	curveSelectionUpdated: (who) =>
 		UtilityFunctions::showProgressModal @$('.bv_curveCuratorDropDown')
 		curveDetail = new CurveDetail id: who.model.get('curveid')
-		curveDetail.fetch success: =>
-			UtilityFunctions::hideProgressModal @$('.bv_curveCuratorDropDown')
-			@curveEditorController.setModel curveDetail
+		curveDetail.fetch
+			success: =>
+				UtilityFunctions::hideProgressModal @$('.bv_curveCuratorDropDown')
+				@curveEditorController.setModel curveDetail
+			error: =>
+				UtilityFunctions::hideProgressModal @$('.bv_curveCuratorDropDown')
+				@$('.bv_badCurveID').modal
+					backdrop: "static"
+				@$('.bv_badCurveID').modal "show"
+
 
 	handleGetCurveDetailReturn: (json) =>
 		@curveEditorController.setModel new CurveDetail(json)
