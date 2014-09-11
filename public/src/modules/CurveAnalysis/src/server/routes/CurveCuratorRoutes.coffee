@@ -22,7 +22,6 @@ exports.getCurveStubs = (req, resp) ->
 			url: baseurl+req.params.exptCode
 			json: true
 		, (error, response, json) =>
-			console.log response.statusCode
 			if !error && response.statusCode == 200
 				console.log JSON.stringify json
 				resp.end JSON.stringify json

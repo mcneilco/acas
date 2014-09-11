@@ -26,7 +26,6 @@
         json: true
       }, (function(_this) {
         return function(error, response, json) {
-          console.log(response.statusCode);
           if (!error && response.statusCode === 200) {
             console.log(JSON.stringify(json));
             return resp.end(JSON.stringify(json));
