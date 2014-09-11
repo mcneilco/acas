@@ -59,7 +59,7 @@ exports.getCurveDetail = (req, resp) ->
 				console.log error
 				console.log json
 				console.log response
-				resp.end 'error'
+				resp.send 'got ajax error trying to retrieve curve detail', 500
 		)
 
 exports.updateCurveUserFlag = (req, resp) ->
@@ -86,7 +86,7 @@ exports.updateCurveUserFlag = (req, resp) ->
 				console.log error
 				console.log json
 				console.log response
-				resp.end json
+				resp.send 'got ajax error trying to update user flag', 500
 		)
 
 exports.updateCurve = (req, resp) ->
@@ -113,7 +113,7 @@ exports.updateCurve = (req, resp) ->
 				console.log error
 				console.log json
 				console.log response
-				resp.end json, 500
+				resp.send 'got ajax error trying to refit curve', 500
 		)
 
 exports.curveCuratorIndex = (req, resp) ->

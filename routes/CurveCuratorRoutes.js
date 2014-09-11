@@ -69,7 +69,7 @@
             console.log(error);
             console.log(json);
             console.log(response);
-            return resp.end('error');
+            return resp.send('got ajax error trying to retrieve curve detail', 500);
           }
         };
       })(this));
@@ -102,7 +102,7 @@
             console.log(error);
             console.log(json);
             console.log(response);
-            return resp.end(json);
+            return resp.send('got ajax error trying to update user flag', 500);
           }
         };
       })(this));
@@ -135,7 +135,7 @@
             console.log(error);
             console.log(json);
             console.log(response);
-            return resp.end(json, 500);
+            return resp.send('got ajax error trying to refit curve', 500);
           }
         };
       })(this));
