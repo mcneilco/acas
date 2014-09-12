@@ -497,30 +497,30 @@
         this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));
         this.$('.bv_curveErrors').html(this.model.get('curveErrors'));
         this.$('.bv_category').html(this.model.get('category'));
-      } else {
-        this.$el.html("No curve selected");
-      }
-      if (this.model.get('flagAlgorithm') === 'NA') {
-        this.$('.bv_pass').show();
-        this.$('.bv_fail').hide();
-      } else {
-        this.$('.bv_pass').hide();
-        this.$('.bv_fail').show();
-      }
-      if (this.model.get('flagUser') === 'NA') {
-        this.$('.bv_na').show();
-        this.$('.bv_thumbsUp').hide();
-        return this.$('.bv_thumbsDown').hide();
-      } else {
-        if (this.model.get('flagUser') === 'approved') {
-          this.$('.bv_na').hide();
-          this.$('.bv_thumbsUp').show();
+        if (this.model.get('flagAlgorithm') === 'NA') {
+          this.$('.bv_pass').show();
+          this.$('.bv_fail').hide();
+        } else {
+          this.$('.bv_pass').hide();
+          this.$('.bv_fail').show();
+        }
+        if (this.model.get('flagUser') === 'NA') {
+          this.$('.bv_na').show();
+          this.$('.bv_thumbsUp').hide();
           return this.$('.bv_thumbsDown').hide();
         } else {
-          this.$('.bv_na').hide();
-          this.$('.bv_thumbsUp').hide();
-          return this.$('.bv_thumbsDown').show();
+          if (this.model.get('flagUser') === 'approved') {
+            this.$('.bv_na').hide();
+            this.$('.bv_thumbsUp').show();
+            return this.$('.bv_thumbsDown').hide();
+          } else {
+            this.$('.bv_na').hide();
+            this.$('.bv_thumbsUp').hide();
+            return this.$('.bv_thumbsDown').show();
+          }
         }
+      } else {
+        return this.$el.html("No curve selected");
       }
     };
 

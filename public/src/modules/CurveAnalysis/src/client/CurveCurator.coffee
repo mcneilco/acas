@@ -329,28 +329,28 @@ class window.CurveEditorController extends Backbone.View
 			@$('.bv_parameterStdErrors').html @model.get('parameterStdErrors')
 			@$('.bv_curveErrors').html @model.get('curveErrors')
 			@$('.bv_category').html @model.get('category')
-		else
-			@$el.html "No curve selected"
-		if @model.get('flagAlgorithm') == 'NA'
-			@$('.bv_pass').show()
-			@$('.bv_fail').hide()
-		else
-			@$('.bv_pass').hide()
-			@$('.bv_fail').show()
+			if @model.get('flagAlgorithm') == 'NA'
+				@$('.bv_pass').show()
+				@$('.bv_fail').hide()
+			else
+				@$('.bv_pass').hide()
+				@$('.bv_fail').show()
 
-		if @model.get('flagUser') == 'NA'
-			@$('.bv_na').show()
-			@$('.bv_thumbsUp').hide()
-			@$('.bv_thumbsDown').hide()
-		else
-			if @model.get('flagUser') == 'approved'
-				@$('.bv_na').hide()
-				@$('.bv_thumbsUp').show()
+			if @model.get('flagUser') == 'NA'
+				@$('.bv_na').show()
+				@$('.bv_thumbsUp').hide()
 				@$('.bv_thumbsDown').hide()
 			else
-				@$('.bv_na').hide()
-				@$('.bv_thumbsUp').hide()
-				@$('.bv_thumbsDown').show()
+				if @model.get('flagUser') == 'approved'
+					@$('.bv_na').hide()
+					@$('.bv_thumbsUp').show()
+					@$('.bv_thumbsDown').hide()
+				else
+					@$('.bv_na').hide()
+					@$('.bv_thumbsUp').hide()
+					@$('.bv_thumbsDown').show()
+		else
+			@$el.html "No curve selected"
 
 	setModel: (model)->
 		@model = model

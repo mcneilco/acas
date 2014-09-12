@@ -31,7 +31,7 @@
         return it("should return a list of categories", function() {
           var categories;
           categories = this.curveList.getCategories();
-          expect(categories.length).toEqual(3);
+          expect(categories.length).toEqual(5);
           return expect(categories instanceof Backbone.Collection).toBeTruthy();
         });
       });
@@ -106,10 +106,10 @@
       });
       describe("rendering thumbnail", function() {
         it("should have img src attribute set", function() {
-          return expect(this.csc.$('.bv_thumbnail').attr('src')).toContain("90807_AG-00000026");
+          return expect(this.csc.$('.bv_thumbnail').attr('src')).toContain("AG-00344438_1717");
         });
         return it("should show the compound code", function() {
-          return expect(this.csc.$('.bv_compoundCode').html()).toEqual("CMPD-0000008");
+          return expect(this.csc.$('.bv_compoundCode').html()).toEqual("CMPD-0000001-01A");
         });
       });
       describe("selection", function() {
@@ -119,27 +119,28 @@
         });
       });
       describe("algorithm approved display", function() {
-        it("should show approved when algorithm approved", function() {
-          expect(this.csc.$('.bv_pass')).toBeVisible();
-          return expect(this.csc.$('.bv_fail')).toBeHidden();
+        it("should show not approved when algorithm flagged", function() {
+          expect(this.csc.$('.bv_fail')).toBeVisible();
+          return expect(this.csc.$('.bv_pass')).toBeHidden();
         });
-        return it("should show not approved when algorithm not approved", function() {
+        return it("should show approved when algorithm not flagged ", function() {
           this.csc.model.set({
-            algorithmApproved: false
+            algorithmFlag: "NA"
           });
           this.csc.render();
           expect(this.csc.$('.bv_pass')).toBeHidden();
           return expect(this.csc.$('.bv_fail')).toBeVisible();
         });
       });
-      return xdescribe("user approved display", function() {
+      return describe("user flagged display", function() {
         it("should show thumbs up when user approved", function() {
           expect(this.csc.$('.bv_thumbsUp')).toBeVisible();
           return expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
         });
         it("should show thumbs down when not user approved", function() {
+          console.log(this.csc);
           this.csc.model.set({
-            userApproved: false
+            flagUser: "rejected"
           });
           this.csc.render();
           expect(this.csc.$('.bv_thumbsDown')).toBeVisible();
@@ -147,7 +148,7 @@
         });
         return it("should hide thumbs up and thumbs down when no user input", function() {
           this.csc.model.set({
-            userApproved: null
+            flagUser: "NA"
           });
           this.csc.render();
           expect(this.csc.$('.bv_thumbsUp')).toBeHidden();
@@ -174,7 +175,7 @@
       });
       describe("summary rendering", function() {
         return it("should create summary divs", function() {
-          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(9);
+          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(16);
         });
       });
       describe("user thumbnail selection", function() {
@@ -195,27 +196,27 @@
       });
       describe("filtering", function() {
         it("should only show Sigmoid when requested", function() {
-          this.cslc.filter('Sigmoid');
-          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(3);
+          this.cslc.filter('sigmoid');
+          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(10);
         });
         return it("should show all when requested", function() {
-          this.cslc.filter('Sigmoid');
+          this.cslc.filter('sigmoid');
           this.cslc.filter('all');
-          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(9);
+          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(16);
         });
       });
       return describe("sorting", function() {
         it("should show the lowest EC50 when requested", function() {
           this.cslc.sort('EC50', true);
-          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000009");
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000001-01A");
         });
         it("should show the highest EC50 when requested", function() {
           this.cslc.sort('EC50', false);
-          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000004");
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000008-01A");
         });
         return it("should show the first one when no sorting is requested", function() {
           this.cslc.sort('none');
-          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000008");
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000001-01A");
         });
       });
     });
@@ -335,7 +336,7 @@
       });
       describe("basic plumbing", function() {
         it("should have controller defined", function() {
-          return expect(CurveEditorController).toBeDefined();
+          return expect(this.cec).toBeDefined();
         });
         return it("should should show no curve selected when model is missing", function() {
           return expect($(this.cec.el).html()).toContain("No curve selected");
@@ -357,7 +358,7 @@
             return expect(this.cec.$('.bv_reportedValues').html()).toContain("slope");
           });
           it("should show the fitSummary", function() {
-            return expect(this.cec.$('.bv_fitSummary').html()).toContain("Model fitted");
+            return expect(this.cec.$('.bv_fitSummary').html()).toContain("Model&nbsp;fitted");
           });
           it("should show the parameterStdErrors", function() {
             return expect(this.cec.$('.bv_parameterStdErrors').html()).toContain("stdErr");
@@ -453,13 +454,13 @@
         describe("sort option select display", function() {
           it("sortOption select should populate with options", function() {
             return runs(function() {
-              return expect(this.ccc.$('.bv_sortBy option').length).toEqual(5);
+              return expect(this.ccc.$('.bv_sortBy option').length).toEqual(7);
             });
           });
           it("default sort option should be the first in the list from the server", function() {
             return runs(function() {
-              expect(this.ccc.$('.bv_sortBy option:eq(0)').html()).toEqual("Compound Name");
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000001");
+              expect(this.ccc.$('.bv_sortBy option:eq(0)').html()).toEqual("Compound Code");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000001-01A");
             });
           });
           it("should sort by ascending", function() {
@@ -467,7 +468,7 @@
               this.ccc.$('.bv_sortDirection_descending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_ascending').prop("checked", true);
               this.ccc.$('.bv_sortDirection_ascending').click();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000001");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000001-01A");
             });
           });
           it("should sort by descending", function() {
@@ -476,7 +477,7 @@
               this.ccc.$('.bv_sortDirection_descending').prop("checked", true);
               this.ccc.$('.bv_sortDirection_ascending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_descending').click();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000004");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000008-01A");
             });
           });
           it("should update sort when ascending/descending is changed", function() {
@@ -486,11 +487,11 @@
               this.ccc.$('.bv_sortDirection_descending').prop("checked", true);
               this.ccc.$('.bv_sortDirection_ascending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_descending').click();
-              expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000004");
+              expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000008-01A");
               this.ccc.$('.bv_sortDirection_ascending').prop("checked", true);
               this.ccc.$('.bv_sortDirection_descending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_ascending').click();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000009");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000001-01A");
             });
           });
           it("should add the 'none' option if no sortBy options are received from the server", function() {
@@ -519,7 +520,7 @@
         describe("filter option select display", function() {
           it("filterOption select should populate with options", function() {
             return runs(function() {
-              return expect(this.ccc.$('.bv_filterBy option').length).toEqual(4);
+              return expect(this.ccc.$('.bv_filterBy option').length).toEqual(6);
             });
           });
           it("sortOption select should make first option all", function() {
@@ -527,11 +528,11 @@
               return expect(this.ccc.$('.bv_filterBy option:eq(0)').html()).toEqual("Show All");
             });
           });
-          return it("should only show Sigmoid thumbnails when Sigmoid selected", function() {
+          return it("should only show sigmoid thumbnails when sigmoid selected", function() {
             return runs(function() {
-              this.ccc.$('.bv_filterBy').val('Sigmoid');
+              this.ccc.$('.bv_filterBy').val('sigmoid');
               this.ccc.$('.bv_filterBy').change();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual(3);
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual(10);
             });
           });
         });
