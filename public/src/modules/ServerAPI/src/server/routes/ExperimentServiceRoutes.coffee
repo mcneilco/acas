@@ -15,6 +15,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch
 	app.get '/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
+	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
 
 exports.experimentByCodename = (request, response) ->
 	console.log request.params.code
@@ -153,3 +154,66 @@ exports.deleteExperiment = (req, res) ->
 			console.log error
 			console.log response
 	)
+
+exports.resultViewerURLByExperimentCodename = (request, resp) ->
+	console.log __dirname
+	_ = require '../public/src/lib/underscore.js'
+	if (request.query.testMode is true) or (global.specRunnerTestmode is true)
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		resp.end JSON.stringify experimentServiceTestJSON.resultViewerURLByExperimentCodeName
+	else
+		config = require '../conf/compiled/conf.js'
+		if config.all.client.service.result && config.all.client.service.result.viewer && config.all.client.service.result.viewer.experimentPrefix? && config.all.client.service.result.viewer.protocolPrefix? && config.all.client.service.result.viewer.experimentNameColumn?
+			resultViewerURL = [resultViewerURL: ""]
+			serverUtilityFunctions = require './ServerUtilityFunctions.js'
+			baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+request.params.code
+			request = require 'request'
+			request(
+				method: 'GET'
+				url: baseurl
+				json: true
+			, (error, response, experiment) =>
+				if !error && response.statusCode == 200
+					if experiment.length == 0
+						resp.statusCode = 404
+						resp.json resultViewerURL
+					else
+						baseurl = config.all.client.service.persistence.fullpath+"protocols/"+experiment[0].protocol.id
+						request = require 'request'
+						request(
+							method: 'GET'
+							url: baseurl
+							json: true
+						, (error, response, protocol) =>
+							if response.statusCode == 404
+								resp.statusCode = 404
+								resp.json resultViewerURL
+							else
+								if !error && response.statusCode == 200
+									preferredExperimentLabel = _.filter experiment[0].lsLabels, (lab) ->
+										lab.preferred && lab.ignored==false
+									preferredExperimentLabelText = preferredExperimentLabel[0].labelText
+									if config.all.client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME"
+										experimentName = experiment[0].codeName + "::" + preferredExperimentLabelText
+									else
+										experimentName = preferredExperimentLabelText
+									preferredProtocolLabel = _.filter protocol.lsLabels, (lab) ->
+										lab.preferred && lab.ignored==false
+									preferredProtocolLabelText = preferredProtocolLabel[0].labelText
+									resp.json
+										resultViewerURL: config.all.client.service.result.viewer.protocolPrefix + encodeURIComponent(preferredProtocolLabelText) + config.all.client.service.result.viewer.experimentPrefix + encodeURIComponent(experimentName)
+								else
+									console.log 'got ajax error trying to save new experiment'
+									console.log error
+									console.log json
+									console.log response
+							)
+				else
+					console.log 'got ajax error trying to save new experiment'
+					console.log error
+					console.log json
+					console.log response
+			)
+		else
+			resp.statusCode = 500
+			resp.end "configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist"

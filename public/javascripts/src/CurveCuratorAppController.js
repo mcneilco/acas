@@ -60,7 +60,27 @@
     };
 
     CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
-      return this.ccc.getCurvesFromExperimentCode(exptCode, curveID);
+      this.ccc.getCurvesFromExperimentCode(exptCode, curveID);
+      return $.ajax({
+        type: 'GET',
+        url: "/api/experiments/resultViewerURL/" + exptCode,
+        success: (function(_this) {
+          return function(json) {
+            var resultViewerURL;
+            _this.resultViewerURL = json;
+            resultViewerURL = _this.resultViewerURL.resultViewerURL;
+            _this.$('.bv_resultViewerBtn').attr('href', resultViewerURL);
+            return _this.$('.bv_resultViewerBtn').show();
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            console.log('got ajax error');
+            return _this.serviceReturn = null;
+          };
+        })(this),
+        dataType: 'json'
+      });
     };
 
     return CurveCuratorAppController;

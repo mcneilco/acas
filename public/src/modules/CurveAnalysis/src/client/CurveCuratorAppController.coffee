@@ -35,3 +35,15 @@ class window.CurveCuratorAppController extends Backbone.View
 
 	loadCurvesForExptCode: (exptCode, curveID) =>
 		@ccc.getCurvesFromExperimentCode(exptCode, curveID)
+		$.ajax
+				type: 'GET'
+				url: "/api/experiments/resultViewerURL/"+exptCode
+				success: (json) =>
+					@resultViewerURL = json
+					resultViewerURL = @resultViewerURL.resultViewerURL
+					@$('.bv_resultViewerBtn').attr('href',resultViewerURL)
+					@$('.bv_resultViewerBtn').show()
+				error: (err) =>
+					console.log 'got ajax error'
+					@serviceReturn = null
+				dataType: 'json'

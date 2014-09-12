@@ -2898,7 +2898,7 @@
       version: 1
     };
     exports.listOfExperiments = [exports.fullExperimentFromServer, exports.fullExperimentFromServerTwo];
-    return exports.savedExperimentWithAnalysisGroups = {
+    exports.savedExperimentWithAnalysisGroups = {
       codeName: "EXPT-00000222",
       lsLabels: [
         {
@@ -3581,6 +3581,9 @@
           }
         }
       ]
+    };
+    return exports.resultViewerURLByExperimentCodeName = {
+      resultViewerURL: "host4.labsynch.com:9080/seurat/runseurat?cmd=newjob&AssayName=FLIPR%20target%20A%20biochemical&AssayProtocol=test%3a%3a"
     };
   })((typeof process === "undefined" || !process.versions ? window.experimentServiceTestJSON = window.experimentServiceTestJSON || {} : exports));
 
