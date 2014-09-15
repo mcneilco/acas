@@ -19,7 +19,6 @@
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/experimentcode/curveids/?experimentcode=";
       request = require('request');
-      console.log(baseurl + req.params.exptCode);
       return request({
         method: 'GET',
         url: baseurl + req.params.exptCode,
@@ -46,8 +45,12 @@
   exports.getCurveDetail = function(req, resp) {
     var baseurl, config, curveCuratorTestData, request;
     if (global.specRunnerTestmode) {
-      curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
-      return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
+      if (req.params.id === "CURVE-ERROR") {
+        return resp.send("Curve Detail not found", 404);
+      } else {
+        curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
+        return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
+      }
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/curve/detail/?id=";

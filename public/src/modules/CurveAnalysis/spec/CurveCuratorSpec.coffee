@@ -265,7 +265,13 @@ describe "Curve Curator Module testing", ->
 						expect(@cec.$('.bv_plotWindow')).toBeDefined()
 					it "should have a dose response plot controller", ->
 						expect(@cec.$('.bv_plotWindow')).toBeDefined()
-
+				describe "when a curve fails to update from service", ->
+					it "should show an error", ->
+					describe "editing curve parameters should update the model", ->
+					it "should update curve parameters if the max value is changed", ->
+						@cec.$('.bv_max_value').val 200
+						@cec.$('.bv_max_value').change()
+						expect(@cec.model.get('fitSettings').get('max').get('value')).toEqual 200
 
 	describe "Curve Curator Controller tests", ->
 		beforeEach ->
@@ -375,5 +381,11 @@ describe "Curve Curator Module testing", ->
 					@ccc.getCurvesFromExperimentCode("EXPT-ERROR")
 				waits 500
 			it "should show error message", ->
-				expect(@ccc.$el.html()).toContain "Can not find experiment code"
-
+				expect(@ccc.$('.bv_badExperimentCode')).toBeVisible()
+		describe "should show error when curve id service returns no results", ->
+			beforeEach ->
+				runs ->
+					@ccc.getCurvesFromExperimentCode("EXPT-0000018","CURVE-ERROR")
+				waits 500
+			it "should show error message", ->
+				expect(@ccc.$('.bv_badCurveID')).toBeVisible()

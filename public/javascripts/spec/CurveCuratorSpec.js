@@ -391,12 +391,21 @@
             return expect(this.cec.model.get('fitSettings').get('max').get('value')).toEqual(200);
           });
         });
-        return describe("dose response plot", function() {
+        describe("dose response plot", function() {
           it("should have a dose response plot controller", function() {
             return expect(this.cec.$('.bv_plotWindow')).toBeDefined();
           });
           return it("should have a dose response plot controller", function() {
             return expect(this.cec.$('.bv_plotWindow')).toBeDefined();
+          });
+        });
+        return describe("when a curve fails to update from service", function() {
+          it("should show an error", function() {});
+          describe("editing curve parameters should update the model", function() {});
+          return it("should update curve parameters if the max value is changed", function() {
+            this.cec.$('.bv_max_value').val(200);
+            this.cec.$('.bv_max_value').change();
+            return expect(this.cec.model.get('fitSettings').get('max').get('value')).toEqual(200);
           });
         });
       });
@@ -555,7 +564,7 @@
           });
         });
       });
-      return describe("should show error when experiment code does not exist", function() {
+      describe("should show error when experiment code does not exist", function() {
         beforeEach(function() {
           runs(function() {
             return this.ccc.getCurvesFromExperimentCode("EXPT-ERROR");
@@ -563,7 +572,18 @@
           return waits(500);
         });
         return it("should show error message", function() {
-          return expect(this.ccc.$el.html()).toContain("Can not find experiment code");
+          return expect(this.ccc.$('.bv_badExperimentCode')).toBeVisible();
+        });
+      });
+      return describe("should show error when curve id service returns no results", function() {
+        beforeEach(function() {
+          runs(function() {
+            return this.ccc.getCurvesFromExperimentCode("EXPT-0000018", "CURVE-ERROR");
+          });
+          return waits(500);
+        });
+        return it("should show error message", function() {
+          return expect(this.ccc.$('.bv_badCurveID')).toBeVisible();
         });
       });
     });

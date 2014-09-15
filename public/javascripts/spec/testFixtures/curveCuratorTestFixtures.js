@@ -237,7 +237,7 @@
             flagUser: "NA"
           }
         }, {
-          curveid: "AG-00344453_1680",
+          curveid: "CURVE-ERROR",
           flagAlgorithm: "NA",
           flagUser: "NA",
           category: "sigmoid",
