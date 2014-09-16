@@ -140,7 +140,7 @@ This suite of services provides CRUD operations on Experiment Objects
         });
       });
     });
-    return describe("Experiment status code", function() {
+    describe("Experiment status code", function() {
       return describe('when experiment status code service called', function() {
         beforeEach(function() {
           return runs(function() {
@@ -184,6 +184,36 @@ This suite of services provides CRUD operations on Experiment Objects
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
             return expect(this.serviceReturn[0].ignored).toBeDefined();
+          });
+        });
+      });
+    });
+    return describe("Experiment result viewer url", function() {
+      return describe('when experiment result viewer url service called', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "/api/experiments/resultViewerURL/test",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        return it('should return a result viewer url', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.resultViewerURL).toContain("runseurat");
           });
         });
       });

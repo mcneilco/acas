@@ -3489,6 +3489,9 @@
 				recordedDate: 1367455531000
 				version: 0
 		]
+	exports.resultViewerURLByExperimentCodeName =
+		resultViewerURL: "host4.labsynch.com:9080/seurat/runseurat?cmd=newjob&AssayName=FLIPR%20target%20A%20biochemical&AssayProtocol=test%3a%3a"
+
 
 
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentServiceTestJSON = window.experimentServiceTestJSON or {} else exports)

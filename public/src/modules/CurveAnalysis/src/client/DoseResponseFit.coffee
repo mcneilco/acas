@@ -6,7 +6,7 @@ class window.DoseResponseDataParserController extends BasicFileValidateAndSaveCo
 		@errorOwnerName = 'DoseResponseDataParserController'
 		@additionalData = requireDoseResponse: true
 		super()
-		@$('.bv_moduleTitle').html('Load Efficacy Data for Dose-Respnse Fit')
+		@$('.bv_moduleTitle').html('Load Efficacy Data for Dose Response Fit')
 
 	handleSaveReturnSuccess: (json) =>
 		super(json)
@@ -117,16 +117,15 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 		@modelFitController.on 'fitComplete', @handleFitComplete
 
 	handleDataUploadComplete: =>
-		@initializeCurveFitController()
 		@$('.bv_modelFitTabLink').click()
+		@initializeCurveFitController()
 		@trigger 'amDirty'
-
 
 	handleFitComplete: =>
 		@$('.bv_completeControlContainer').show()
 
 	handleFitAnother: =>
-		@intializeParserController()
+		@drdpc.loadAnother()
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_uploadDataTabLink').click()
 

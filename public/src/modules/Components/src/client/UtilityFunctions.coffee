@@ -14,3 +14,10 @@ class window.UtilityFunctions
 		match
 
 
+	showProgressModal: (node) ->
+		node.modal
+			backdrop: "static"
+		node.modal "show"
+
+	hideProgressModal: (node) ->
+		node.modal "hide"
