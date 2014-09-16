@@ -620,11 +620,12 @@
     };
 
     CurveEditorController.prototype.handleSaveSuccess = function() {
-      var dirty, newID;
+      var category, dirty, newID;
       this.handleModelSync();
       newID = this.model.get('curveid');
       dirty = this.model.get('dirty');
-      return this.trigger('curveDetailSaved', this.oldID, newID, dirty);
+      category = this.model.get('category');
+      return this.trigger('curveDetailSaved', this.oldID, newID, dirty, category);
     };
 
     CurveEditorController.prototype.handleUpdateSuccess = function() {
@@ -693,27 +694,22 @@
       return index;
     };
 
-    CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty) {
+    CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty, category) {
       var curve;
       curve = this.getCurveByID(oldID);
-      curve.set({
-        curveid: newCurveID
-      });
       return curve.set({
-        dirty: dirty
+        curveid: newCurveID,
+        dirty: dirty,
+        category: category
       });
     };
 
     CurveList.prototype.updateCurveFlagUser = function(curveid, flagUser, flagAlgorithm, dirty) {
       var curve;
       curve = this.getCurveByID(curveid);
-      curve.set({
-        flagUser: flagUser
-      });
-      curve.set({
-        flagAlgorithm: flagAlgorithm
-      });
       return curve.set({
+        flagUser: flagUser,
+        flagAlgorithm: flagAlgorithm,
         dirty: dirty
       });
     };
@@ -767,93 +763,6 @@
 
   })(Backbone.Model);
 
-  window.CurveSummaryController = (function(_super) {
-    __extends(CurveSummaryController, _super);
-
-    function CurveSummaryController() {
-      this.clearSelected = __bind(this.clearSelected, this);
-      this.setSelected = __bind(this.setSelected, this);
-      this.render = __bind(this.render, this);
-      return CurveSummaryController.__super__.constructor.apply(this, arguments);
-    }
-
-    CurveSummaryController.prototype.template = _.template($("#CurveSummaryView").html());
-
-    CurveSummaryController.prototype.tagName = 'div';
-
-    CurveSummaryController.prototype.className = 'bv_curveSummary';
-
-    CurveSummaryController.prototype.events = {
-      'click': 'setSelected'
-    };
-
-    CurveSummaryController.prototype.initialize = function() {
-      return this.model.on('change', this.render);
-    };
-
-    CurveSummaryController.prototype.render = function() {
-      var curveUrl;
-      this.$el.empty();
-      if (window.AppLaunchParams.testMode) {
-        curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
-        curveUrl += this.model.get('curveid') + ".png";
-      } else {
-        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&showGrid=false&curveIds=";
-        curveUrl += this.model.get('curveid') + "&height=120&width=250&showAxes=false&labelAxes=false";
-      }
-      this.$el.html(this.template({
-        curveUrl: curveUrl
-      }));
-      if (this.model.get('flagAlgorithm') === 'no fit') {
-        this.$('.bv_pass').hide();
-        this.$('.bv_fail').show();
-      } else {
-        this.$('.bv_pass').show();
-        this.$('.bv_fail').hide();
-      }
-      if (this.model.get('flagUser') === 'NA') {
-        this.$('.bv_na').show();
-        this.$('.bv_thumbsUp').hide();
-        this.$('.bv_thumbsDown').hide();
-      } else {
-        if (this.model.get('flagUser') === 'approved') {
-          this.$('.bv_na').hide();
-          this.$('.bv_thumbsUp').show();
-          this.$('.bv_thumbsDown').hide();
-        } else {
-          this.$('.bv_na').hide();
-          this.$('.bv_thumbsUp').hide();
-          this.$('.bv_thumbsDown').show();
-        }
-      }
-      if (this.model.get('dirty')) {
-        this.$('.bv_dirty').show();
-      } else {
-        this.$('.bv_dirty').hide();
-      }
-      this.$('.bv_compoundCode').html(this.model.get('curveAttributes').compoundCode);
-      this.model.on('change', this.render);
-      return this;
-    };
-
-    CurveSummaryController.prototype.setSelected = function() {
-      this.$el.addClass('selected');
-      return this.trigger('selected', this);
-    };
-
-    CurveSummaryController.prototype.clearSelected = function(who) {
-      if (who != null) {
-        if (who.model.cid === this.model.cid) {
-          return;
-        }
-      }
-      return this.$el.removeClass('selected');
-    };
-
-    return CurveSummaryController;
-
-  })(Backbone.View);
-
   window.CurveEditorDirtyPanelController = (function(_super) {
     __extends(CurveEditorDirtyPanelController, _super);
 
@@ -904,6 +813,101 @@
 
   })(Backbone.View);
 
+  window.CurveSummaryController = (function(_super) {
+    __extends(CurveSummaryController, _super);
+
+    function CurveSummaryController() {
+      this.clearSelected = __bind(this.clearSelected, this);
+      this.setSelected = __bind(this.setSelected, this);
+      this.render = __bind(this.render, this);
+      return CurveSummaryController.__super__.constructor.apply(this, arguments);
+    }
+
+    CurveSummaryController.prototype.template = _.template($("#CurveSummaryView").html());
+
+    CurveSummaryController.prototype.tagName = 'div';
+
+    CurveSummaryController.prototype.className = 'bv_curveSummary';
+
+    CurveSummaryController.prototype.events = {
+      'click': 'setSelected'
+    };
+
+    CurveSummaryController.prototype.initialize = function() {
+      return this.model.on('change', this.render);
+    };
+
+    CurveSummaryController.prototype.render = function() {
+      var curveUrl;
+      this.$el.empty();
+      if (window.AppLaunchParams.testMode) {
+        curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
+        curveUrl += this.model.get('curveid') + ".png";
+      } else {
+        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&showGrid=false&height=120&width=250&showAxes=false&labelAxes=false&curveIds=";
+        curveUrl += this.model.get('curveid');
+      }
+      this.$el.html(this.template({
+        curveUrl: curveUrl
+      }));
+      if (this.model.get('flagAlgorithm') === 'no fit') {
+        this.$('.bv_pass').hide();
+        this.$('.bv_fail').show();
+      } else {
+        this.$('.bv_pass').show();
+        this.$('.bv_fail').hide();
+      }
+      if (this.model.get('flagUser') === 'NA') {
+        this.$('.bv_na').show();
+        this.$('.bv_thumbsUp').hide();
+        this.$('.bv_thumbsDown').hide();
+      } else {
+        if (this.model.get('flagUser') === 'approved') {
+          this.$('.bv_na').hide();
+          this.$('.bv_thumbsUp').show();
+          this.$('.bv_thumbsDown').hide();
+        } else {
+          this.$('.bv_na').hide();
+          this.$('.bv_thumbsUp').hide();
+          this.$('.bv_thumbsDown').show();
+        }
+      }
+      if (this.model.get('dirty')) {
+        this.$('.bv_dirty').show();
+      } else {
+        this.$('.bv_dirty').hide();
+      }
+      this.$('.bv_compoundCode').html(this.model.get('curveAttributes').compoundCode);
+      this.model.on('change', this.render);
+      return this;
+    };
+
+    CurveSummaryController.prototype.setSelected = function() {
+      if (!this.$el.hasClass('selected')) {
+        this.$el.addClass('selected');
+        return this.trigger('selected', this);
+      }
+    };
+
+    CurveSummaryController.prototype.styleSelected = function() {
+      if (!this.$el.hasClass('selected')) {
+        return this.$el.addClass('selected');
+      }
+    };
+
+    CurveSummaryController.prototype.clearSelected = function(who) {
+      if (who != null) {
+        if (who.model.cid === this.model.cid) {
+          return;
+        }
+      }
+      return this.$el.removeClass('selected');
+    };
+
+    return CurveSummaryController;
+
+  })(Backbone.View);
+
   window.CurveSummaryListController = (function(_super) {
     __extends(CurveSummaryListController, _super);
 
@@ -919,7 +923,12 @@
     CurveSummaryListController.prototype.initialize = function() {
       this.filterKey = 'all';
       this.sortKey = 'none';
-      return this.sortAscending = true;
+      this.sortAscending = true;
+      if (this.options.selectedCurve != null) {
+        return this.initiallySelectedCurveID = this.options.selectedCurve;
+      } else {
+        return this.initiallySelectedCurveID = "NA";
+      }
     };
 
     CurveSummaryListController.prototype.render = function() {
@@ -957,9 +966,22 @@
           csController = new CurveSummaryController({
             model: cs
           });
+          if (_this.initiallySelectedCurveID === cs.get('curveid')) {
+            _this.selectedcid = cs.cid;
+          }
           _this.$('.bv_curveSummaries').append(csController.render().el);
           csController.on('selected', _this.selectionUpdated);
-          return _this.on('clearSelected', csController.clearSelected);
+          _this.on('clearSelected', csController.clearSelected);
+          if (_this.selectedcid != null) {
+            if (csController.model.cid === _this.selectedcid) {
+              if (_this.initiallySelectedCurveID === "NA") {
+                return csController.styleSelected();
+              } else {
+                csController.setSelected();
+                return _this.initiallySelectedCurveID = "NA";
+              }
+            }
+          }
         };
       })(this));
       return this;
@@ -976,6 +998,7 @@
 
     CurveSummaryListController.prototype.selectionUpdated = function(who) {
       if (!this.anyDirty()) {
+        this.selectedcid = who.model.cid;
         this.trigger('clearSelected', who);
         return this.trigger('selectionUpdated', who);
       } else {
@@ -1023,16 +1046,15 @@
       'click .bv_sortDirection_descending': 'handleSortChanged'
     };
 
-    CurveCuratorController.prototype.render = function(curveID) {
-      var indexOfRequestedCurve;
+    CurveCuratorController.prototype.render = function() {
       this.$el.empty();
       this.$el.html(this.template());
       if (this.model != null) {
         this.curveListController = new CurveSummaryListController({
           el: this.$('.bv_curveList'),
-          collection: this.model.get('curves')
+          collection: this.model.get('curves'),
+          selectedCurve: this.initiallySelectedCurveID
         });
-        this.curveListController.render();
         this.curveListController.on('selectionUpdated', this.curveSelectionUpdated);
         this.curveEditorController = new CurveEditorController({
           el: this.$('.bv_curveEditor')
@@ -1040,6 +1062,7 @@
         this.curveEditorController.on('curveDetailSaved', this.handleCurveDetailSaved);
         this.curveEditorController.on('curveDetailUpdated', this.handleCurveDetailUpdated);
         this.curveEditorController.on('curveUpdateError', this.handleCurveUpdateError);
+        this.curveListController.render();
         if (this.model.get('sortOptions').length > 0) {
           this.sortBySelect = new PickListSelectController({
             collection: this.model.get('sortOptions'),
@@ -1077,17 +1100,12 @@
           this.$('.bv_sortDirection_descending').attr("checked", true);
         }
         this.handleSortChanged();
-        indexOfRequestedCurve = this.curveListController.collection.getIndexByCurveID(curveID);
-        if (indexOfRequestedCurve === -1) {
-          indexOfRequestedCurve = 0;
-        }
-        this.$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click();
       }
       return this;
     };
 
-    CurveCuratorController.prototype.handleCurveDetailSaved = function(oldID, newID, dirty) {
-      return this.curveListController.collection.updateCurveSummary(oldID, newID, dirty);
+    CurveCuratorController.prototype.handleCurveDetailSaved = function(oldID, newID, dirty, category) {
+      return this.curveListController.collection.updateCurveSummary(oldID, newID, dirty, category);
     };
 
     CurveCuratorController.prototype.handleCurveDetailUpdated = function(curveid, flagUser, flagAlgorithm, dirty) {
@@ -1102,12 +1120,13 @@
     };
 
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode, curveID) {
+      this.initiallySelectedCurveID = curveID;
       this.model = new CurveCurationSet;
       this.model.setExperimentCode(exptCode);
       return this.model.fetch({
         success: (function(_this) {
           return function() {
-            return _this.render(curveID);
+            return _this.render();
           };
         })(this),
         error: (function(_this) {
