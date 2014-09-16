@@ -1925,7 +1925,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     write(analysisGroupData, file = testOutputLocation)
     return(lsTransaction)
   } else {
-    saveAllFromTsv(analysisGroupData, treatmentGroupData, subjectData, appendCodeNameList$analysisGroup)
+    saveAllViaTsv(analysisGroupData, treatmentGroupData, subjectData, appendCodeNameList)
   }
   
   
@@ -2874,13 +2874,13 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       if (!all(unlist(subjectData[1, 1:4]) == c("temp id", "x", "y", "flag"))) {
         stopUser("The first row in Raw Results must be 'temp id', 'x', 'y', 'flag'")
       }
-      subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
+      subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Comments")
       
       if (subjectData[2, 1] != "curve id") {
         stopUser("The second row in Raw Results must start with curve id")
       }
       subjectData[2, 1] <- "link"
-
+      
       subjectData$Col5 <- ifelse(is.na(subjectData[[4]]), NA_character_, "on load")
       subjectData$Col5[1] <- "Text"
       subjectData$Col5[2] <- "flag"
