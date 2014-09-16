@@ -447,15 +447,17 @@ class window.CurveList extends Backbone.Collection
 
 	updateCurveSummary: (oldID, newCurveID, dirty, category) =>
 		curve = @getCurveByID(oldID)
-		curve.set curveid: newCurveID
-		curve.set dirty: dirty
-		curve.set category: category
+		curve.set
+			curveid: newCurveID
+			dirty: dirty
+			category: category
 
 	updateCurveFlagUser: (curveid, flagUser, flagAlgorithm, dirty) =>
 		curve = @getCurveByID(curveid)
-		curve.set flagUser: flagUser
-		curve.set flagAlgorithm: flagAlgorithm
-		curve.set dirty: dirty
+		curve.set
+			flagUser: flagUser
+			flagAlgorithm: flagAlgorithm
+			dirty: dirty
 
 class window.CurveCurationSet extends Backbone.Model
 	defaults:
@@ -571,6 +573,10 @@ class window.CurveSummaryListController extends Backbone.View
 		@filterKey = 'all'
 		@sortKey = 'none'
 		@sortAscending = true
+		if @options.selectedCurve?
+			@initiallySelectedCurveID = @options.selectedCurve
+		else
+			@initiallySelectedCurveID = "NA"
 
 	render: =>
 		@$el.empty()
@@ -594,12 +600,19 @@ class window.CurveSummaryListController extends Backbone.View
 			@toRender = new Backbone.Collection @toRender
 		@toRender.each (cs) =>
 			csController = new CurveSummaryController(model: cs)
+			if @initiallySelectedCurveID == cs.get 'curveid'
+				@selectedcid = cs.cid
 			@$('.bv_curveSummaries').append(csController.render().el)
 			csController.on 'selected', @selectionUpdated
 			@on 'clearSelected', csController.clearSelected
 			if @selectedcid?
 				if csController.model.cid == @selectedcid
-					csController.styleSelected()
+						if @initiallySelectedCurveID == "NA"
+						csController.styleSelected()
+					else
+						csController.setSelected()
+						@initiallySelectedCurveID = "NA"
+
 		@
 
 	anyDirty: =>
@@ -633,20 +646,21 @@ class window.CurveCuratorController extends Backbone.View
 		'click .bv_sortDirection_ascending': 'handleSortChanged'
 		'click .bv_sortDirection_descending': 'handleSortChanged'
 
-	render: (requestedCurveIDToSelect)=>
+	render: =>
 		@$el.empty()
 		@$el.html @template()
 		if @model?
 			@curveListController = new CurveSummaryListController
 				el: @$('.bv_curveList')
 				collection: @model.get 'curves'
-			@curveListController.render()
+				selectedCurve: @initiallySelectedCurveID
 			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
 			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError
+			@curveListController.render()
 
 			if @model.get('sortOptions').length > 0
 				@sortBySelect = new PickListSelectController
@@ -681,10 +695,10 @@ class window.CurveCuratorController extends Backbone.View
 				@$('.bv_sortDirection_descending').attr( "checked", true );
 
 			@handleSortChanged()
-			indexOfRequestedCurve = @curveListController.collection.getIndexByCurveID(requestedCurveIDToSelect)
-			if indexOfRequestedCurve == -1
-				indexOfRequestedCurve = 0
-			@$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click()
+#			indexOfRequestedCurve = @curveListController.collection.getIndexByCurveID(requestedCurveIDToSelect)
+#			if indexOfRequestedCurve == -1
+#				indexOfRequestedCurve = 0
+#			@$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click()
 
 		@
 
@@ -700,11 +714,12 @@ class window.CurveCuratorController extends Backbone.View
 		@$('.bv_badCurveUpdate').modal "show"
 
 	getCurvesFromExperimentCode: (exptCode, curveID) ->
+		@initiallySelectedCurveID = curveID
 		@model = new CurveCurationSet
 		@model.setExperimentCode exptCode
 		@model.fetch
 			success: =>
-				@render(curveID)
+				@render()
 			error: =>
 				@$('.bv_badExperimentCode').modal
 					backdrop: "static"

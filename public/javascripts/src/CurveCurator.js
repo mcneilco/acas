@@ -697,13 +697,9 @@
     CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty, category) {
       var curve;
       curve = this.getCurveByID(oldID);
-      curve.set({
-        curveid: newCurveID
-      });
-      curve.set({
-        dirty: dirty
-      });
       return curve.set({
+        curveid: newCurveID,
+        dirty: dirty,
         category: category
       });
     };
@@ -711,13 +707,9 @@
     CurveList.prototype.updateCurveFlagUser = function(curveid, flagUser, flagAlgorithm, dirty) {
       var curve;
       curve = this.getCurveByID(curveid);
-      curve.set({
-        flagUser: flagUser
-      });
-      curve.set({
-        flagAlgorithm: flagAlgorithm
-      });
       return curve.set({
+        flagUser: flagUser,
+        flagAlgorithm: flagAlgorithm,
         dirty: dirty
       });
     };
@@ -931,7 +923,12 @@
     CurveSummaryListController.prototype.initialize = function() {
       this.filterKey = 'all';
       this.sortKey = 'none';
-      return this.sortAscending = true;
+      this.sortAscending = true;
+      if (this.options.selectedCurve != null) {
+        return this.initiallySelectedCurveID = this.options.selectedCurve;
+      } else {
+        return this.initiallySelectedCurveID = "NA";
+      }
     };
 
     CurveSummaryListController.prototype.render = function() {
@@ -969,12 +966,20 @@
           csController = new CurveSummaryController({
             model: cs
           });
+          if (_this.initiallySelectedCurveID === cs.get('curveid')) {
+            _this.selectedcid = cs.cid;
+          }
           _this.$('.bv_curveSummaries').append(csController.render().el);
           csController.on('selected', _this.selectionUpdated);
           _this.on('clearSelected', csController.clearSelected);
           if (_this.selectedcid != null) {
             if (csController.model.cid === _this.selectedcid) {
-              return csController.styleSelected();
+              if (_this.initiallySelectedCurveID === "NA") {
+                return csController.styleSelected();
+              } else {
+                csController.setSelected();
+                return _this.initiallySelectedCurveID = "NA";
+              }
             }
           }
         };
@@ -1041,16 +1046,15 @@
       'click .bv_sortDirection_descending': 'handleSortChanged'
     };
 
-    CurveCuratorController.prototype.render = function(requestedCurveIDToSelect) {
-      var indexOfRequestedCurve;
+    CurveCuratorController.prototype.render = function() {
       this.$el.empty();
       this.$el.html(this.template());
       if (this.model != null) {
         this.curveListController = new CurveSummaryListController({
           el: this.$('.bv_curveList'),
-          collection: this.model.get('curves')
+          collection: this.model.get('curves'),
+          selectedCurve: this.initiallySelectedCurveID
         });
-        this.curveListController.render();
         this.curveListController.on('selectionUpdated', this.curveSelectionUpdated);
         this.curveEditorController = new CurveEditorController({
           el: this.$('.bv_curveEditor')
@@ -1058,6 +1062,7 @@
         this.curveEditorController.on('curveDetailSaved', this.handleCurveDetailSaved);
         this.curveEditorController.on('curveDetailUpdated', this.handleCurveDetailUpdated);
         this.curveEditorController.on('curveUpdateError', this.handleCurveUpdateError);
+        this.curveListController.render();
         if (this.model.get('sortOptions').length > 0) {
           this.sortBySelect = new PickListSelectController({
             collection: this.model.get('sortOptions'),
@@ -1095,11 +1100,6 @@
           this.$('.bv_sortDirection_descending').attr("checked", true);
         }
         this.handleSortChanged();
-        indexOfRequestedCurve = this.curveListController.collection.getIndexByCurveID(requestedCurveIDToSelect);
-        if (indexOfRequestedCurve === -1) {
-          indexOfRequestedCurve = 0;
-        }
-        this.$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click();
       }
       return this;
     };
@@ -1120,12 +1120,13 @@
     };
 
     CurveCuratorController.prototype.getCurvesFromExperimentCode = function(exptCode, curveID) {
+      this.initiallySelectedCurveID = curveID;
       this.model = new CurveCurationSet;
       this.model.setExperimentCode(exptCode);
       return this.model.fetch({
         success: (function(_this) {
           return function() {
-            return _this.render(curveID);
+            return _this.render();
           };
         })(this),
         error: (function(_this) {
