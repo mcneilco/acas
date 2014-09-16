@@ -1896,6 +1896,14 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes2(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes2(analysisGroupData))
   
+  #Note: use unitKind, not valueUnit
+  # use operatorKind, not valueOperator
+  analysisGroupData$unitKind <- analysisGroupData$valueUnit
+  analysisGroupData$operatorKind <- analysisGroupData$valueOperator
+  analysisGroupData$tempStateId <- as.numeric(as.factor(analysisGroupData$tempStateId))
+  analysisGroupData$lsType <- "default"
+  analysisGroupData$lsKind <- "default"
+  
   ### TreatmentGroup Data
   if (!is.null(treatmentGroupData)) {
     treatmentGroupData$lsTransaction <- lsTransaction
@@ -1905,6 +1913,15 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes2(treatmentGroupData))
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes2(treatmentGroupData))
     
+    treatmentGroupData$unitKind <- treatmentGroupData$valueUnit
+    if (!is.null(treatmentGroupData$valueOperator)) {
+      treatmentGroupData$operatorKind <- treatmentGroupData$valueOperator
+    } 
+    treatmentGroupData$stateID <- NULL
+    treatmentGroupData$tempId <- treatmentGroupData$treatmentGroupID
+    treatmentGroupData$tempParentId <- treatmentGroupData$analysisGroupID
+    treatmentGroupData$lsType <- "default"
+    treatmentGroupData$lsKind <- "default"
   }
 
   ### subject Data
@@ -1915,8 +1932,14 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     subjectData <- rbind.fill(subjectData, meltConcentrations2(subjectData))
     subjectData <- rbind.fill(subjectData, meltTimes2(subjectData))
     subjectData <- rbind.fill(subjectData, meltBatchCodes2(subjectData))
-
-    #subjectIDandVersion <- saveFullEntityData(subjectData, "subject")
+    
+    subjectData$unitKind <- subjectData$valueUnit
+    subjectData$operatorKind <- subjectData$valueOperator
+    subjectData$stateID <- NULL
+    subjectData$tempId <- subjectData$subjectID
+    subjectData$tempParentId <- subjectData$treatmentGroupID
+    subjectData$lsType <- "default"
+    subjectData$lsKind <- "default"
   }
   
   if(developmentMode) {
@@ -2150,7 +2173,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Subject and TreatmentGroupData
   subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)
   subjectData <- subjectAndTreatmentData$subjectData
-  treatmentGroupData <- subjectAndTreatmentData$treatmentData
+  treatmentGroupData <- subjectAndTreatmentData$treatmentGroupData
   
   # If there are errors, do not allow an upload
   errorFree <- length(errorList)==0
