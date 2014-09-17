@@ -519,8 +519,8 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
 		else
-			curveUrl = window.conf.service.rapache.fullpath+"curve/render/dr/?legend=false&showGrid=false&height=120&width=250&showAxes=false&labelAxes=false&curveIds="
-			curveUrl += @model.get('curveid')
+			curveUrl = window.conf.service.rapache.fullpath+"curve/render/dr/?legend=false&showGrid=false&height=120&width=250&curveIds="
+			curveUrl += @model.get('curveid') + "&showAxes=false&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
 		if @model.get('flagAlgorithm') == 'no fit'
@@ -573,6 +573,7 @@ class window.CurveSummaryListController extends Backbone.View
 		@filterKey = 'all'
 		@sortKey = 'none'
 		@sortAscending = true
+		@firstRun = true
 		if @options.selectedCurve?
 			@initiallySelectedCurveID = @options.selectedCurve
 		else
@@ -598,21 +599,29 @@ class window.CurveSummaryListController extends Backbone.View
 			unless @sortAscending
 				@toRender = @toRender.reverse()
 			@toRender = new Backbone.Collection @toRender
+
+		i = 1
 		@toRender.each (cs) =>
 			csController = new CurveSummaryController(model: cs)
-			if @initiallySelectedCurveID == cs.get 'curveid'
-				@selectedcid = cs.cid
 			@$('.bv_curveSummaries').append(csController.render().el)
 			csController.on 'selected', @selectionUpdated
 			@on 'clearSelected', csController.clearSelected
+			if @firstRun && @initiallySelectedCurveID?
+				if @initiallySelectedCurveID == cs.get 'curveid'
+					@selectedcid = cs.cid
 			if @selectedcid?
 				if csController.model.cid == @selectedcid
-						if @initiallySelectedCurveID == "NA"
+					if !@firstRun
 						csController.styleSelected()
 					else
 						csController.setSelected()
-						@initiallySelectedCurveID = "NA"
+			else
+				if @firstRun && i==1
+					@selectedcid = cs.id
+					csController.setSelected()
 
+		if @toRender.length > 0
+			@firstRun = false
 		@
 
 	anyDirty: =>

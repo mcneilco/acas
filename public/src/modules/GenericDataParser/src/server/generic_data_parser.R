@@ -2875,7 +2875,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       #subjectDataKept <- as.data.table(subjectData)
       #subjectDataKept2 <- subjectDataKept[!(rowID %in% removeRowID), createTreatmentGroupData(.SD), by = groupByColumns]
       
-      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = c("test compound treatment", "results", "results"))
       
       intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, keepColumn=keepColumn, errorEnv=errorEnv, formatParameters =  formatParameters)
       subjectData <- intermedList$subjectData
@@ -2908,7 +2908,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       subjectData$Col5[1] <- "Text"
       subjectData$Col5[2] <- "flag"
       
-      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = c("test compound treatment", "results", "results"))
       
       # list(subjectData, treatmentGroupData)
       intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL, link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, formatParameters = formatParameters)

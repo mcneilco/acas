@@ -844,8 +844,8 @@
         curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
         curveUrl += this.model.get('curveid') + ".png";
       } else {
-        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&showGrid=false&height=120&width=250&showAxes=false&labelAxes=false&curveIds=";
-        curveUrl += this.model.get('curveid');
+        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&showGrid=false&height=120&width=250&curveIds=";
+        curveUrl += this.model.get('curveid') + "&showAxes=false&labelAxes=false";
       }
       this.$el.html(this.template({
         curveUrl: curveUrl
@@ -924,6 +924,7 @@
       this.filterKey = 'all';
       this.sortKey = 'none';
       this.sortAscending = true;
+      this.firstRun = true;
       if (this.options.selectedCurve != null) {
         return this.initiallySelectedCurveID = this.options.selectedCurve;
       } else {
@@ -932,6 +933,7 @@
     };
 
     CurveSummaryListController.prototype.render = function() {
+      var i;
       this.$el.empty();
       this.$el.html(this.template());
       this.curveEditorDirtyPanel = new CurveEditorDirtyPanelController({
@@ -960,30 +962,40 @@
         }
         this.toRender = new Backbone.Collection(this.toRender);
       }
+      i = 1;
       this.toRender.each((function(_this) {
         return function(cs) {
           var csController;
           csController = new CurveSummaryController({
             model: cs
           });
-          if (_this.initiallySelectedCurveID === cs.get('curveid')) {
-            _this.selectedcid = cs.cid;
-          }
           _this.$('.bv_curveSummaries').append(csController.render().el);
           csController.on('selected', _this.selectionUpdated);
           _this.on('clearSelected', csController.clearSelected);
+          if (_this.firstRun && (_this.initiallySelectedCurveID != null)) {
+            if (_this.initiallySelectedCurveID === cs.get('curveid')) {
+              _this.selectedcid = cs.cid;
+            }
+          }
           if (_this.selectedcid != null) {
             if (csController.model.cid === _this.selectedcid) {
-              if (_this.initiallySelectedCurveID === "NA") {
+              if (!_this.firstRun) {
                 return csController.styleSelected();
               } else {
-                csController.setSelected();
-                return _this.initiallySelectedCurveID = "NA";
+                return csController.setSelected();
               }
+            }
+          } else {
+            if (_this.firstRun && i === 1) {
+              _this.selectedcid = cs.id;
+              return csController.setSelected();
             }
           }
         };
       })(this));
+      if (this.toRender.length > 0) {
+        this.firstRun = false;
+      }
       return this;
     };
 
