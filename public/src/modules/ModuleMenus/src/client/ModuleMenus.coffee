@@ -3,7 +3,10 @@ class window.ModuleMenusController extends Backbone.View
 	template: _.template($("#ModuleMenusView").html())
 
 	window.onbeforeunload = () ->
-		return window.conf.leaveACASMessage
+		if window.conf.leaveACASMessage == "WARNING: There are unsaved changes."
+			return window.conf.leaveACASMessage
+		else
+			return null
 
 	initialize: ->
 
