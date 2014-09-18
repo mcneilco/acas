@@ -976,10 +976,10 @@
             if (csController.model.cid === _this.selectedcid) {
               if (_this.initiallySelectedCurveID === "NA") {
                 return csController.styleSelected();
-              } else {
-                csController.setSelected();
-                return _this.initiallySelectedCurveID = "NA";
               }
+            } else {
+              csController.setSelected();
+              return _this.initiallySelectedCurveID = "NA";
             }
           }
         };
