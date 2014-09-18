@@ -1,5 +1,5 @@
 ((exports) ->
-	exports.fullSavedProtocol =
+	exports.fullSavedPrimaryScreenProtocol =
 		codeName: "PROT-00000001"
 		id: 1
 		ignored: false
@@ -612,6 +612,34 @@
 				lsTypeAndKind: "codeValue_assay activity"
 				valueUnit: null
 				version: 0
+			,
+				clobValue: null
+				codeValue: "human"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80485
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 872
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 100.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "target origin"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_target origin"
+				valueUnit: null
+				version: 0
 			]
 			modifiedBy: null
 			modifiedDate: null
@@ -1216,20 +1244,9 @@
 			id: 2
 			tagText: "more stuff"
 		]
-		assayTreeRule: "example assay tree rule"
-		dnsTargetList: true
-		assayActivity: "luminescence"
-		molecularTarget: "target x"
-		targetOrigin: "human"
-		assayType: "cellular assay"
-		assayTechnology: "wizard triple luminescence"
-		cellLine: "cell line y"
-		assayStage: "assay development"
-		maxY: 200
-		minY: 2
 
 
-	exports.stubSavedProtocol = [
+	exports.stubSavedPrimaryScreenProtocol = [
 		codeName: "PROT-00000001"
 		id: 14325
 		ignored: false
@@ -1247,7 +1264,8 @@
 		shortDescription: "protocol short description goes here"
 		version: 0
 	]
-	exports.protocolToSave = [
+
+	exports.primaryScreenProtocolToSave = [
 		codeName: "PROT-00000066"
 		ignored: false
 		lsKind: null #changed from kind to lsKind
@@ -1652,7 +1670,7 @@
 		lsTypeAndKind: "uSol_default"
 		version: 0
 	]
-) (if (typeof process is "undefined" or not process.versions) then window.protocolServiceTestJSON = window.protocolServiceTestJSON or {} else exports)
+) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenProtocolTestJSON = window.primaryScreenProtocolTestJSON or {} else exports)
 
 
 

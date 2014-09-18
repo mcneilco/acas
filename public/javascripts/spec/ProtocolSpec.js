@@ -46,12 +46,6 @@
           it('Should have an empty assay tree rule', function() {
             return expect(this.prot.get('assayTreeRule')).toEqual(null);
           });
-          it('Should have the select DNS target list be checked', function() {
-            return expect(this.prot.get('dnsTargetList')).toEqual(false);
-          });
-          it('Should have the assayActivity default to unassigned', function() {
-            return expect(this.prot.get('assayActivity')).toEqual("unassigned");
-          });
           it('Should have the molecularTarget default to unassigned', function() {
             return expect(this.prot.get('molecularTarget')).toEqual("unassigned");
           });
@@ -67,14 +61,8 @@
           it('Should have the cellLine default to unassigned', function() {
             return expect(this.prot.get('cellLine')).toEqual("unassigned");
           });
-          it('Should have the assayStage default to unassigned', function() {
+          return it('Should have the assayStage default to unassigned', function() {
             return expect(this.prot.get('assayStage')).toEqual("unassigned");
-          });
-          it('Should have an default maxY curve display of 100', function() {
-            return expect(this.prot.get('maxY')).toEqual(100);
-          });
-          return it('Should have an default minY curve display of 0', function() {
-            return expect(this.prot.get('minY')).toEqual(0);
           });
         });
         describe("required states and values", function() {
@@ -503,7 +491,7 @@
           });
           it("should have the select dns target list checkbox checked and the molecular target add button hidden", function() {
             expect(this.pbc.$('.bv_dnsTargetList').attr("checked")).toEqual("checked");
-            return expect(this.pbc.$('.bv_molecularTargetModal')).toBeHidden();
+            return expect(this.pbc.$('.bv_addMolecularTarget')).toBeHidden();
           });
           it("should show the assay activity", function() {
             waitsFor(function() {

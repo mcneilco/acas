@@ -53,6 +53,7 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenus.js",
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
+	"/javascripts/src/PrimaryScreenProtocol.js",
 	"/javascripts/src/TagList.js"
 ];
 
@@ -86,6 +87,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/ModuleMenusTestJSON.js",
 	"/javascripts/spec/testFixtures/PampaTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenCodeTableTestJSON.js",
+	"/javascripts/spec/testFixtures/PrimaryScreenProtocolTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
@@ -121,6 +123,7 @@ exports.specScripts = [
 	"/javascripts/spec/PickListSpec.js",
 	"/javascripts/spec/PreferredBatchIdServiceSpec.js",
 	"/javascripts/spec/PrimaryScreenExperimentSpec.js",
+	"/javascripts/spec/PrimaryScreenProtocolSpec.js",
 	"/javascripts/spec/ProjectsServiceSpec.js",
 	"/javascripts/spec/ProtocolServiceSpec.js",
 	"/javascripts/spec/ProtocolSpec.js",

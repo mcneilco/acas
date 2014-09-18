@@ -1,0 +1,212 @@
+<script type="text/template" id="PrimaryScreenProtocolView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_protocolBase"></div>
+
+</script>
+
+
+<script type="text/template" id="PrimaryScreenProtocolParametersView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_primaryProtocolParameters">
+        <div class="form-horizontal">
+            <div class="bv_assayActivityWrapper">
+        </div>
+
+        <div class="control-group bv_group_dnsTargetList" style="margin-left:20px;margin-bottom:20px;">
+            <label class="control-label checkbox" style="width:145px;margin-left:140px;">
+                <input type="checkbox" name="bv_dnsTargetList" class="bv_dnsTargetList" />Select DNS Target List
+            </label>
+        </div>
+
+        <div class="form-horizontal">
+            <div class="control-group bv_group_molecularTarget">
+                <label class="control-label">Molecular Target</label>
+                <div class="controls">
+                    <select class="bv_molecularTarget" style="margin-right:15px;width:350px;display: inline-block;"></select>
+                    <button class="btn bv_addMolecularTarget" style="margin-right:269px;" data-toggle="modal" data-target="#addMolecularTargetModal" data-backdrop="static">Add</button>
+                </div>
+            </div>
+            <div class="control-group bv_group_targetOrigin">
+                <label class="control-label">Target Origin</label>
+                <div class="controls">
+                    <select class="bv_targetOrigin" style="margin-right:15px;width:350px;display: inline-block;"></select>
+                    <button class="btn" style="margin-right:269px;" data-toggle="modal" data-target="#addTargetOriginModal" data-backdrop="static">Add</button>
+                </div>
+            </div>
+            <div class="control-group bv_group_assayType">
+                <label class="control-label">Assay Type</label>
+                <div class="controls">
+                    <select class="bv_assayType" style="margin-right:15px;width:350px;display: inline-block;"></select>
+                    <button class="btn" style="margin-right:269px;" data-toggle="modal" data-target="#addAssayTypeModal" data-backdrop="static">Add</button>
+                </div>
+            </div>
+            <div class="control-group bv_group_assayTechnology">
+                <label class="control-label">Assay Technology</label>
+                <div class="controls">
+                    <select class="bv_assayTechnology" style="margin-right:15px;width:350px;display: inline-block;"></select>
+                    <button class="btn" style="margin-right:269px;" data-toggle="modal" data-target="#addAssayTechnologyModal" data-backdrop="static">Add</button>
+                </div>
+            </div>
+            <div class="control-group bv_group_cellLine">
+                <label class="control-label">Cell Line</label>
+                <div class="controls">
+                    <select class="bv_cellLine" style="margin-right:15px;width:350px;display: inline-block;"></select>
+                    <button class="btn" style="margin-right:269px;" data-toggle="modal" data-target="#addCellLineModal" data-backdrop="static">Add</button>
+                </div>
+            </div>
+            <div class="control-group bv_group_assayStage">
+                <label class="control-label">Assay Stage</label>
+                <div class="controls">
+                    <select class="bv_assayStage" style="width:350px;"></select>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-bottom:5px;">Curve Display Max/Min:</div>
+        <span class="control-group bv_group_maxY">
+            <label class="span5 control-label" style="width:150px;margin-top:9px;margin-right:10px;">Max Y Curve Display</label>
+            <span class="controls" style="margin-left:0px;">
+                <input class="bv_maxY" type="text" style="width:120px; margin-top:5px;"> </input>
+            </span>
+        </span>
+        <span class="control-group bv_group_minY">
+            <label class="span5 control-label" style="width:150px;margin-top:9px;margin-right:10px;">Min Y Curve Display</label>
+            <span class="controls" style="margin-left:0px;">
+                <input class="bv_minY" type="text" style="width:120px; margin-top:5px;"> </input>
+            </span>
+        </span>
+
+
+
+
+        <!-- Modals -->
+
+        <div class="modal fade" id="addMolecularTargetModal" tabindex="-1" role="dialog" aria-labelledby="addMolecularTargetLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                        <h4 class="modal-title" id="addMolecularTargetLabel">Add</h4>
+                    </div>
+                    <div class="modal-body" style="padding-left:0px;">
+                        <div class="form-horizontal">
+                            <div class="control-group bv_group_newMolecularTarget">
+                                <label class="control-label">Molecular Target</label>
+                                <div class="controls">
+                                    <input class="bv_newMolecularTarget" style="width:325px;" type="text" placeholder="Label text" />
+                                </div>
+                            </div>
+                            <div class="control-group bv_group_newMolecularTargetDescription">
+                                <label class="control-label">Description</label>
+                                <div class="controls">
+                                    <input class="bv_newMolecularTargetDescription" style="width:325px;" type="text" placeholder="Enter description here." />
+                                </div>
+                            </div>
+                            <div class="control-group bv_group_newMolecularTargetComments">
+                                <label class="control-label">Comments</label>
+                                <div class="controls">
+                                    <input class="bv_newMolecularTargetComments" style="width:325px;" type="text" placeholder="Enter comments here." />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-danger" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn bv_addNewMolecularTarget">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="addTargetOriginModal" tabindex="-1" role="dialog" aria-labelledby="addTargetOriginLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                        <h4 class="modal-title" id="addTargetOriginLabel">Add</h4>
+                    </div>
+                    <div class="modal-body" style="padding-left:0px;">
+                        <div class="form-horizontal">
+                            <div class="control-group bv_group_newTargetOrigin">
+                                <label class="control-label">Target Origin</label>
+                                <div class="controls">
+                                    <input class="bv_newTargetOrigin" style="width:325px;" type="text" placeholder="Label text" />
+                                </div>
+                            </div>
+                            <div class="control-group bv_group_newTargetOriginDescription">
+                                <label class="control-label">Description</label>
+                                <div class="controls">
+                                    <input class="bv_newTargetOriginDescription" style="width:325px;" type="text" placeholder="Enter description here." />
+                                </div>
+                            </div>
+                            <div class="control-group bv_group_newTargetOriginComments">
+                                <label class="control-label">Comments</label>
+                                <div class="controls">
+                                    <input class="bv_newTargetOriginComments" style="width:325px;" type="text" placeholder="Enter comments here." />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-danger" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn bv_addNewTargetOrigin">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+
+
+</script>
+
+<script type="text/template" id="AssayActivityView" xmlns="http://www.w3.org/1999/html">
+<div class="bv_assayActivityWrapper">
+    <div class="control-group bv_group_assayActivity">
+        <label class="control-label">Assay Activity</label>
+        <div class="controls">
+            <select class="bv_assayActivity" style="margin-right:15px;width:350px;display: inline-block;"></select>
+            <button class="btn bv_addAssayActivityBtn" style="margin-right:269px;" data-toggle="modal" data-target="#addAssayActivityModal" data-backdrop="static">Add</button>
+        </div>
+    </div>
+    <div class="modal fade" id="addAssayActivityModal" tabindex="-1" role="dialog" aria-labelledby="addAssayActivityLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                    <h4 class="modal-title" id="addAssayActivityLabel">Add</h4>
+                </div>
+                <div class="modal-body" style="padding-left:0px;">
+                    <div class="form-horizontal">
+                        <div class="control-group bv_group_newAssayActivity">
+                            <label class="control-label">Assay Activity</label>
+                            <div class="controls">
+                                <input class="bv_newAssayActivityLabel" style="width:325px;" type="text" placeholder="Label text" />
+                            </div>
+                        </div>
+                        <div class="control-group bv_group_newAssayActivityDescription">
+                            <label class="control-label">Description</label>
+                            <div class="controls">
+                                <input class="bv_newAssayActivityDescription" style="width:325px;" type="text" placeholder="Enter description here." />
+                            </div>
+                        </div>
+                        <div class="control-group bv_group_newAssayActivityComments">
+                            <label class="control-label">Comments</label>
+                            <div class="controls">
+                                <input class="bv_newAssayActivityComments" style="width:325px;" type="text" placeholder="Enter comments here." />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <span class="bv_optionAddedMessage" style="margin-right:10px;color:#62c462;">Option added.</span>
+                    <span class="bv_errorMessage" style="margin-right:10px;color:#FF0000;">Can not add option. Option already exists.</span>
+                    <button type="button" class="btn-danger" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn bv_addNewAssayActivityOption">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</script>

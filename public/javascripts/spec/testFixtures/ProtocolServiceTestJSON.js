@@ -590,6 +590,50 @@
           version: 0
         }, {
           comments: null,
+          id: 21,
+          ignored: false,
+          lsKind: "screening assay",
+          lsTransaction: 1,
+          lsType: "metadata",
+          lsTypeAndKind: "metadata_screening assay",
+          lsValues: [
+            {
+              clobValue: null,
+              codeValue: "luminescence",
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 80483,
+              ignored: false,
+              lsTransaction: {
+                comments: "primary analysis protocol transactions",
+                id: 87,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: 100.0,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: 2,
+              stringValue: null,
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "assay activity",
+              valueOperator: null,
+              lsType: "codeValue",
+              lsTypeAndKind: "codeValue_assay activity",
+              valueUnit: null,
+              version: 0
+            }
+          ],
+          modifiedBy: null,
+          modifiedDate: null,
+          recordedBy: "userName",
+          recordedDate: 1375141485000,
+          version: 0
+        }, {
+          comments: null,
           id: 15,
           ignored: false,
           lsKind: "protocol controls",

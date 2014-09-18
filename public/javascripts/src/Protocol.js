@@ -14,17 +14,7 @@
 
     Protocol.prototype.defaults = function() {
       return _(Protocol.__super__.defaults.call(this)).extend({
-        assayTreeRule: null,
-        dnsTargetList: false,
-        assayActivity: "unassigned",
-        molecularTarget: "unassigned",
-        targetOrigin: "unassigned",
-        assayType: "unassigned",
-        assayTechnology: "unassigned",
-        cellLine: "unassigned",
-        assayStage: "unassigned",
-        maxY: 100,
-        minY: 0
+        assayTreeRule: null
       });
     };
 
@@ -81,18 +71,6 @@
           message: "Notebook must be set"
         });
       }
-      if (_.isNaN(attrs.maxY)) {
-        errors.push({
-          attribute: 'maxY',
-          message: "maxY must be a number"
-        });
-      }
-      if (_.isNaN(attrs.minY)) {
-        errors.push({
-          attribute: 'minY',
-          message: "minY must be a number"
-        });
-      }
       if (errors.length > 0) {
         return errors;
       } else {
@@ -125,7 +103,6 @@
     __extends(ProtocolBaseController, _super);
 
     function ProtocolBaseController() {
-      this.handleTargetListChanged = __bind(this.handleTargetListChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return ProtocolBaseController.__super__.constructor.apply(this, arguments);
@@ -136,23 +113,7 @@
     ProtocolBaseController.prototype.events = function() {
       return _(ProtocolBaseController.__super__.events.call(this)).extend({
         "change .bv_protocolName": "handleNameChanged",
-        "change .bv_assayTreeRule": "attributeChanged",
-        "click .bv_dnsTargetList": "handleTargetListChanged",
-        "change .bv_assayActivity": "attributeChanged",
-        "click .bv_addNewAssayActivity": "addNewAssayActivity",
-        "change .bv_molecularTarget": "attributeChanged",
-        "click .bv_addNewMolecularTarget": "addNewMolecularTarget",
-        "change .bv_targetOrigin": "attributeChanged",
-        "click .bv_addNewTargetOrigin": "addNewTargetOrigin",
-        "change .bv_assayType": "attributeChanged",
-        "click .bv_addNewAssayType": "addNewAssayType",
-        "change .bv_assayTechnology": "attributeChanged",
-        "click .bv_addNewAssayTechnology": "addNewAssayTechnology",
-        "change .bv_cellLine": "attributeChanged",
-        "click .bv_addNewCellLine": "addNewCellLine",
-        "change .bv_assayStage": "attributeChanged",
-        "change .bv_maxY": "attributeChanged",
-        "change .bv_minY": "attributeChanged"
+        "change .bv_assayTreeRule": "attributeChanged"
       });
     };
 
@@ -181,29 +142,11 @@
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
       this.setupTagList();
-      this.model.getStatus().on('change', this.updateEditable);
-      this.setUpAssayActivitySelect();
-      this.setUpMolecularTargetSelect();
-      this.setUpTargetOriginSelect();
-      this.setUpAssayTypeSelect();
-      this.setUpAssayTechnologySelect();
-      this.setUpCellLineSelect();
-      return this.setUpAssayStageSelect();
+      return this.model.getStatus().on('change', this.updateEditable);
     };
 
     ProtocolBaseController.prototype.render = function() {
       this.$('.bv_assayTreeRule').val(this.model.get('assayTreeRule'));
-      this.$('.bv_dnsTargetList').val(this.model.get('dnsTargetList'));
-      this.$('.bv_maxY').val(this.model.get('maxY'));
-      this.$('.bv_minY').val(this.model.get('minY'));
-      this.setUpAssayActivitySelect();
-      this.setUpMolecularTargetSelect();
-      this.setUpTargetOriginSelect();
-      this.setUpAssayTypeSelect();
-      this.setUpAssayTechnologySelect();
-      this.setUpCellLineSelect();
-      this.setUpAssayStageSelect();
-      this.handleTargetListChanged();
       ProtocolBaseController.__super__.render.call(this);
       return this;
     };
@@ -308,80 +251,34 @@
 
     ProtocolBaseController.prototype.updateModel = function() {
       return this.model.set({
-        assayTreeRule: this.getTrimmedInput('.bv_assayTreeRule'),
-        assayActivity: this.$('.bv_assayActivity').val(),
-        molecularTarget: this.$('.bv_molecularTarget').val(),
-        targetOrigin: this.$('.bv_targetOrigin').val(),
-        assayType: this.$('.bv_assayType').val(),
-        assayTechnology: this.$('.bv_assayTechnology').val(),
-        cellLine: this.$('.bv_cellLine').val(),
-        assayStage: this.$('.bv_assayStage').val(),
-        maxY: parseFloat(this.getTrimmedInput('.bv_maxY')),
-        minY: parseFloat(this.getTrimmedInput('.bv_minY'))
+        assayTreeRule: this.getTrimmedInput('.bv_assayTreeRule')
       });
     };
 
-    ProtocolBaseController.prototype.handleTargetListChanged = function() {
-      var dnsTargetList;
-      dnsTargetList = this.$('.bv_dnsTargetList').is(":checked");
-      this.model.set({
-        dnsTargetList: dnsTargetList
-      });
-      if (dnsTargetList) {
-        this.$('.bv_molecularTargetModal').hide();
-      } else {
-        this.$('.bv_molecularTargetModal').show();
-      }
-      return this.attributeChanged();
-    };
-
-    ProtocolBaseController.prototype.addNewAssayActivity = function() {
-      var parameter, pascalCaseParameterName;
-      console.log("add new activity clicked");
-      parameter = 'assayActivity';
-      pascalCaseParameterName = 'AssayActivity';
-      return this.addNewParameter(parameter, pascalCaseParameterName);
-    };
-
-    ProtocolBaseController.prototype.addNewMolecularTarget = function() {
-      var parameter, pascalCaseParameterName;
-      console.log("add new activity clicked");
-      parameter = 'molecularTarget';
-      pascalCaseParameterName = 'MolecularTarget';
-      return this.addNewParameter(parameter, pascalCaseParameterName);
-    };
-
-    ProtocolBaseController.prototype.addNewTargetOrigin = function() {
-      var parameter, pascalCaseParameterName;
-      console.log("add new target origin clicked");
-      parameter = 'targetOrigin';
-      pascalCaseParameterName = 'TargetOrigin';
-      return this.addNewParameter(parameter, pascalCaseParameterName);
-    };
-
-    ProtocolBaseController.prototype.addNewParameter = function(parameter, pascalCaseParameterName) {
-      var newOptionName;
+    ProtocolBaseController.prototype.addNewParameter = function(parameter) {
+      var newOptionName, pascalCaseParameterName;
       console.log("add new parameter clicked");
+      pascalCaseParameterName = parameter.charAt(0).toUpperCase() + parameter.slice(1);
       console.log(pascalCaseParameterName);
-      newOptionName = this.$('.bv_new' + pascalCaseParameterName).val();
+      newOptionName = (this.$('.bv_new' + pascalCaseParameterName).val()).toLowerCase();
       console.log(newOptionName);
       if (this.validNewOption(newOptionName, parameter)) {
         console.log("will add new option");
         this.$('.bv_' + parameter).append('<option value=' + newOptionName + '>' + newOptionName + '</option>');
-        this.$('#add' + pascalCaseParameterName + 'Modal').modal('hide');
+        this.$('.bv_optionAddedMessage').show();
+        return this.$('.bv_errorMessage').hide();
       } else {
         console.log("option already exists");
+        this.$('.bv_optionAddedMessage').hide();
+        return this.$('.bv_errorMessage').show();
       }
-      this.$('.bv_new' + pascalCaseParameterName).val("");
-      this.$('.bv_new' + pascalCaseParameterName + 'Description').val("");
-      return this.$('.bv_new' + pascalCaseParameterName + 'Comments').val("");
     };
 
     ProtocolBaseController.prototype.validNewOption = function(newOptionName, parameter) {
       console.log("validating new option");
       console.log(newOptionName);
-      console.log(this.$('.bv_' + parameter + ' option[value=' + newOptionName + ']').length > 0);
-      if (this.$('.bv_' + parameter + ' option[value=' + newOptionName + ']').length > 0) {
+      console.log('.bv_' + parameter + ' option[value="' + newOptionName + '"]'.length > 0);
+      if (this.$('.bv_' + parameter + ' option[value="' + newOptionName + '"]').length > 0) {
         return false;
       } else {
         return true;

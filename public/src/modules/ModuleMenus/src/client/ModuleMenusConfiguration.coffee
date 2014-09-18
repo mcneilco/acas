@@ -23,6 +23,11 @@ window.ModuleMenusConfiguration =
 		autoLaunchName:"flipr_screening_assay"
 	,
 		isHeader: false
+		menuName: "Primary Screen Protocol"
+		mainControllerClassName: "PrimaryScreenProtocolController"
+		autoLaunchName:"primary_screen_protocol"
+	,
+		isHeader: false
 		menuName: "Base entity"
 		mainControllerClassName: "BaseEntityController"
 		autoLaunchName:"base_entity"

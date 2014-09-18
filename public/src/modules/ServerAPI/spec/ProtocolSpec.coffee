@@ -33,10 +33,10 @@ describe "Protocol module testing", ->
 					expect(@prot.get('shortDescription')).toEqual " "
 				it 'Should have an empty assay tree rule', ->
 					expect(@prot.get('assayTreeRule')).toEqual null
-				it 'Should have the select DNS target list be checked', ->
-					expect(@prot.get('dnsTargetList')).toEqual false
-				it 'Should have the assayActivity default to unassigned', ->
-					expect(@prot.get('assayActivity')).toEqual "unassigned"
+#				it 'Should have the select DNS target list be unchecked', ->
+#					expect(@prot.get('dnsTargetList')).toEqual false
+#				it 'Should have the assayActivity default to unassigned', ->
+#					expect(@prot.get('assayActivity')).toEqual "unassigned"
 				it 'Should have the molecularTarget default to unassigned', ->
 					expect(@prot.get('molecularTarget')).toEqual "unassigned"
 				it 'Should have the targetOrigin default to unassigned', ->
@@ -49,10 +49,10 @@ describe "Protocol module testing", ->
 					expect(@prot.get('cellLine')).toEqual "unassigned"
 				it 'Should have the assayStage default to unassigned', ->
 					expect(@prot.get('assayStage')).toEqual "unassigned"
-				it 'Should have an default maxY curve display of 100', ->
-					expect(@prot.get('maxY')).toEqual 100
-				it 'Should have an default minY curve display of 0', ->
-					expect(@prot.get('minY')).toEqual 0
+#				it 'Should have an default maxY curve display of 100', ->
+#					expect(@prot.get('maxY')).toEqual 100
+#				it 'Should have an default minY curve display of 0', ->
+#					expect(@prot.get('minY')).toEqual 0
 			describe "required states and values", ->
 				it 'Should have a description value', -> # description will be Protocol Details or experimentDetails
 					expect(@prot.getDescription() instanceof Value).toBeTruthy()
@@ -336,7 +336,7 @@ describe "Protocol module testing", ->
 					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "example assay tree rule"
 				it "should have the select dns target list checkbox checked and the molecular target add button hidden",  ->
 					expect(@pbc.$('.bv_dnsTargetList').attr("checked")).toEqual "checked"
-					expect(@pbc.$('.bv_molecularTargetModal')).toBeHidden()
+					expect(@pbc.$('.bv_addMolecularTarget')).toBeHidden()
 				it "should show the assay activity",  ->
 					waitsFor ->
 						@pbc.$('.bv_assayActivity option').length > 0

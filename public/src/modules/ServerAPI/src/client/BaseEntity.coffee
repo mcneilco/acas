@@ -199,7 +199,7 @@ class window.BaseEntityController extends AbstractFormController
 	render: =>
 		subclass = @model.get('subclass')
 		@$('.bv_shortDescription').html @model.get('shortDescription')
-		@$('.bv_description').html @model.get('description')
+#		@$('.bv_description').html @model.get('description')
 		bestName = @model.get('lsLabels').pickBestName()
 		if bestName?
 			@$('.bv_'+subclass+'Name').val bestName.get('labelText')
