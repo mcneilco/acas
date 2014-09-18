@@ -608,7 +608,7 @@ class window.CurveSummaryListController extends Backbone.View
 			if @selectedcid?
 				if csController.model.cid == @selectedcid
 						if @initiallySelectedCurveID == "NA"
-						csController.styleSelected()
+							csController.styleSelected()
 					else
 						csController.setSelected()
 						@initiallySelectedCurveID = "NA"
