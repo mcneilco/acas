@@ -518,7 +518,7 @@
 
     ExperimentBaseController.prototype.setupStatusSelect = function() {
       this.statusList = new PickListList();
-      this.statusList.url = "/api/dataDict/experimentStatus";
+      this.statusList.url = "/api/dataDict/experimentMetadata/experiment status";
       return this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,

@@ -10,11 +10,13 @@
   exports.getDataDictValues = function(req, resp) {
     var baseurl, codeTableServiceTestJSON, config, i, request, _i, _len, _ref, _results;
     if (global.specRunnerTestmode) {
+      console.log("hello");
       codeTableServiceTestJSON = require('../public/javascripts/spec/testFixtures/CodeTableJSON.js');
       _ref = codeTableServiceTestJSON.codes;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         i = _ref[_i];
+        console.log(req.params);
         if (i[req.params.kind]) {
           console.log("success");
           _results.push(resp.end(JSON.stringify(i[req.params.kind])));

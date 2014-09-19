@@ -2,7 +2,7 @@
   (function(exports) {
     return exports.dataDictValues = [
       {
-        "instrumentReaderCodes": [
+        "instrument reader": [
           {
             code: "flipr",
             name: "FLIPR",
@@ -10,15 +10,15 @@
           }
         ]
       }, {
-        "signalDirectionCodes": [
+        "signal direction": [
           {
-            code: "increasing signal (highest = 100%)",
+            code: "increasing",
             name: "Increasing Signal (highest = 100%)",
             ignored: false
           }
         ]
       }, {
-        "aggregateBy1Codes": [
+        "aggregate by1": [
           {
             code: "compound batch concentration",
             name: "Compound Batch Concentration",
@@ -26,7 +26,7 @@
           }
         ]
       }, {
-        "aggregateBy2Codes": [
+        "aggregate by2": [
           {
             code: "median",
             name: "Median",
@@ -38,7 +38,7 @@
           }
         ]
       }, {
-        "transformationCodes": [
+        "transformation": [
           {
             code: "% efficacy",
             name: "% Efficacy",
@@ -54,7 +54,7 @@
           }
         ]
       }, {
-        "normalizationCodes": [
+        "normalization": [
           {
             code: "plate order only",
             name: "Plate Order Only",
@@ -74,7 +74,7 @@
           }
         ]
       }, {
-        "readNameCodes": [
+        "read name": [
           {
             code: "luminescence",
             name: "Luminescence",

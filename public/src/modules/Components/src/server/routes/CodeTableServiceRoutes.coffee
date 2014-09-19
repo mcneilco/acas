@@ -6,8 +6,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.getDataDictValues = (req, resp) ->
 	if global.specRunnerTestmode
+		console.log "hello"
 		codeTableServiceTestJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
 		for i in codeTableServiceTestJSON.codes
+			console.log req.params
 			if i[req.params.kind]
 				console.log "success"
 				resp.end JSON.stringify i[req.params.kind]
