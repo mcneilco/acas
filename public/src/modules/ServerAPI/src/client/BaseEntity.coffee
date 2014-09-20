@@ -223,7 +223,7 @@ class window.BaseEntityController extends AbstractFormController
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/"+@model.get('subclass')+"Status"
+		@statusList.url = "/api/dataDict/"+@model.get('subclass')+" status"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList

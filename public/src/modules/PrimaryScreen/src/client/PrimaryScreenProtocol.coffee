@@ -2,24 +2,18 @@ class window.PrimaryScreenProtocol extends Protocol
 
 	defaults: ->
 		_(super()).extend(
-#			dnsTargetList: false
-			molecularTarget: "unassigned"
-#			targetOrigin: "unassigned"
-			assayType: "unassigned"
-			assayTechnology: "unassigned"
-			cellLine: "unassigned"
-			assayStage: "unassigned"
-			maxY: 100
-			minY: 0
+			dnsTargetList: false
 		)
 
 	validate: (attrs) ->
 		errors = []
-		if _.isNaN(attrs.maxY)
+		maxY = @getCurveDisplayMax().get('numericValue')
+		if isNaN(maxY)
 			errors.push
 				attribute: 'maxY'
 				message: "maxY must be a number"
-		if _.isNaN(attrs.minY)
+		minY = @getCurveDisplayMin().get('numericValue')
+		if isNaN(minY)
 			errors.push
 				attribute: 'minY'
 				message: "minY must be a number"
@@ -29,14 +23,25 @@ class window.PrimaryScreenProtocol extends Protocol
 		else
 			return null
 
-	getPrimaryScreenProtocolParameter: (parameterName) ->
-#		splitName = parameterName.replace /([A-Z])/g,' $1'
-#		splitName = splitName.toLowerCase()
-#		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", splitName
+	getPrimaryScreenProtocolParameterCodeValue: (parameterName) ->
 		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", parameterName
 		if parameter.get('codeValue') is undefined or parameter.get('codeValue') is ""
 			console.log "heres"
 			parameter.set codeValue: "unassigned"
+
+		parameter
+
+	getCurveDisplayMin: ->
+		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display min"
+		if parameter.get('numericValue') is undefined or parameter.get('numericValue') is ""
+			parameter.set numericValue: 0.0
+
+		parameter
+
+	getCurveDisplayMax: ->
+		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display max"
+		if parameter.get('numericValue') is undefined or parameter.get('numericValue') is ""
+			parameter.set numericValue: 100.0
 
 		parameter
 
@@ -57,7 +62,7 @@ class window.AbstractPrimaryScreenProtocolParameterController extends Backbone.V
 		console.log "parameter changed"
 		splitName = (@.parameter).replace /([A-Z])/g,' $1'
 		splitName = splitName.toLowerCase()
-		@model.getPrimaryScreenProtocolParameter(splitName).set
+		@model.getPrimaryScreenProtocolParameterCodeValue(splitName).set
 			codeValue: @$('.bv_'+@.parameter).val()
 
 	clearModal: ->
@@ -129,16 +134,17 @@ class window.AssayActivityController extends AbstractPrimaryScreenProtocolParame
 		console.log "setting up parameter select"
 		console.log @.parameter
 		@assayActivityList = new PickListList()
-		@assayActivityList.url = "/api/dataDict/assayActivityCodes"
+		@assayActivityList.url = "/api/dataDict/assay activity"
 		@assayActivityListController = new PickListSelectController
 			el: @$('.bv_assayActivity')
 			collection: @assayActivityList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select Assay Activity"
-			selectedCode: @model.getPrimaryScreenProtocolParameter('assay activity').get('codeValue')
-		console.log @model.getPrimaryScreenProtocolParameter('assay activity').get('codeValue')
+			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')
+		console.log @model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')
 		console.log "end"
+
 
 class window.MolecularTargetController extends AbstractPrimaryScreenProtocolParameterController
 	template: _.template($("#MolecularTargetView").html())
@@ -149,27 +155,140 @@ class window.MolecularTargetController extends AbstractPrimaryScreenProtocolPara
 		"click .bv_addNewMolecularTargetOption": "addNewParameterOption"
 
 	initialize: ->
-		console.log "initialize, pre-super"
 		@.parameter = "molecularTarget"
 		@setupParameterSelect()
 
 
 	render: ->
-		console.log "rendering aa controller"
 		$(@el).empty()
 		$(@el).html @template()
 		@setupParameterSelect()
 
-	setUpMolecularTargetSelect: ->
+	setupParameterSelect: ->
 		@molecularTargetList = new PickListList()
-		@molecularTargetList.url = "/api/dataDict/molecularTargetCodes"
+		@molecularTargetList.url = "/api/dataDict/molecular target"
 		@molecularTargetListController = new PickListSelectController
 			el: @$('.bv_molecularTarget')
 			collection: @molecularTargetList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select Molecular Target"
-			selectedCode: @model.get('molecularTarget')
+			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')
+
+class window.TargetOriginController extends AbstractPrimaryScreenProtocolParameterController
+	template: _.template($("#TargetOriginView").html())
+
+	events:
+		"change .bv_targetOrigin": "handleParameterChanged"
+		"click .bv_addTargetOriginBtn": "clearModal"
+		"click .bv_addNewTargetOriginOption": "addNewParameterOption"
+
+	initialize: ->
+		@.parameter = "targetOrigin"
+		@setupParameterSelect()
+
+	render: ->
+		$(@el).empty()
+		$(@el).html @template()
+		@setupParameterSelect()
+
+	setupParameterSelect: ->
+		@targetOriginList = new PickListList()
+		@targetOriginList.url = "/api/dataDict/target origin"
+		@targetOriginListController = new PickListSelectController
+			el: @$('.bv_targetOrigin')
+			collection: @targetOriginList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Target Origin"
+			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')
+
+
+class window.AssayTypeController extends AbstractPrimaryScreenProtocolParameterController
+	template: _.template($("#AssayTypeView").html())
+
+	events:
+		"change .bv_assayType": "handleParameterChanged"
+		"click .bv_addAssayTypeBtn": "clearModal"
+		"click .bv_addNewAssayTypeOption": "addNewParameterOption"
+
+	initialize: ->
+		@.parameter = "assayType"
+		@setupParameterSelect()
+
+	render: ->
+		$(@el).empty()
+		$(@el).html @template()
+		@setupParameterSelect()
+
+	setupParameterSelect: ->
+		@assayTypeList = new PickListList()
+		@assayTypeList.url = "/api/dataDict/assay type"
+		@assayTypeListController = new PickListSelectController
+			el: @$('.bv_assayType')
+			collection: @assayTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Assay Type"
+			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')
+
+
+class window.AssayTechnologyController extends AbstractPrimaryScreenProtocolParameterController
+	template: _.template($("#AssayTechnologyView").html())
+
+	events:
+		"change .bv_assayTechnology": "handleParameterChanged"
+		"click .bv_addAssayTechnologyBtn": "clearModal"
+		"click .bv_addNewAssayTechnologyOption": "addNewParameterOption"
+
+	initialize: ->
+		@.parameter = "assayTechnology"
+		@setupParameterSelect()
+
+	render: ->
+		$(@el).empty()
+		$(@el).html @template()
+		@setupParameterSelect()
+
+	setupParameterSelect: ->
+		@assayTechnologyList = new PickListList()
+		@assayTechnologyList.url = "/api/dataDict/assay technology"
+		@assayTechnologyListController = new PickListSelectController
+			el: @$('.bv_assayTechnology')
+			collection: @assayTechnologyList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Assay Technology"
+			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')
+
+class window.CellLineController extends AbstractPrimaryScreenProtocolParameterController
+	template: _.template($("#CellLineView").html())
+
+	events:
+		"change .bv_cellLine": "handleParameterChanged"
+		"click .bv_addCellLineBtn": "clearModal"
+		"click .bv_addNewCellLineOption": "addNewParameterOption"
+
+	initialize: ->
+		@.parameter = "cellLine"
+		@setupParameterSelect()
+
+	render: ->
+		$(@el).empty()
+		$(@el).html @template()
+		@setupParameterSelect()
+
+	setupParameterSelect: ->
+		@cellLineList = new PickListList()
+		@cellLineList.url = "/api/dataDict/cell line"
+		@cellLineListController = new PickListSelectController
+			el: @$('.bv_cellLine')
+			collection: @cellLineList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Cell Line"
+			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')
+
 
 
 class window.PrimaryScreenProtocolParametersController extends AbstractParserFormController
@@ -177,37 +296,15 @@ class window.PrimaryScreenProtocolParametersController extends AbstractParserFor
 
 	events:
 		"click .bv_dnsTargetList": "handleTargetListChanged"
-#		"change .bv_assayActivity": "handleAssayActivityChanged"
-#		"click .bv_addAssayActivityBtn": "clearModalTexts"
-#		"click .bv_addNewAssayActivity": "addNewAssayActivity"
-		"change .bv_molecularTarget": "attributeChanged"
-		"click .bv_addNewMolecularTarget": "addNewMolecularTarget"
-		"change .bv_targetOrigin": "handleTargetOriginChanged"
-		"click .bv_addNewTargetOrigin": "addNewTargetOrigin"
-		"change .bv_assayType": "attributeChanged"
-		"click .bv_addNewAssayType": "addNewAssayType"
-		"change .bv_assayTechnology": "attributeChanged"
-		"click .bv_addNewAssayTechnology": "addNewAssayTechnology"
-		"change .bv_cellLine": "attributeChanged"
-		"click .bv_addNewCellLine": "addNewCellLine"
-		"change .bv_assayStage": "attributeChanged"
-		"change .bv_maxY": "attributeChanged"
-		"change .bv_minY": "attributeChanged"
+		"change .bv_assayStage": "handleAssayStageChanged"
+		"change .bv_maxY": "handleMaxYChanged"
+		"change .bv_minY": "handleMinYChanged"
 
 
 	initialize: ->
 		console.log "initialize"
 		@errorOwnerName = 'PrimaryScreenProtocolParametersController'
 		super()
-#		@$('.bv_dnsTargetList').val(@model.get('dnsTargetList'))
-#		@$('.bv_maxY').val(@model.get('maxY'))
-#		@$('.bv_minY').val(@model.get('minY'))
-#		@setUpAssayActivitySelect()
-		@setUpMolecularTargetSelect()
-		@setUpTargetOriginSelect()
-		@setUpAssayTypeSelect()
-		@setUpAssayTechnologySelect()
-		@setUpCellLineSelect()
 		@setUpAssayStageSelect()
 
 
@@ -215,109 +312,33 @@ class window.PrimaryScreenProtocolParametersController extends AbstractParserFor
 	render: =>
 		console.log "rendering"
 		console.log @model
-		console.log @model.getPrimaryScreenProtocolParameter('assay activity').get('codeValue')
+		console.log
+		console.log @model.get('dnsTargetList')
+		console.log @model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')
+		console.log @model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')
 		@$('.bv_primaryProtocolParameters').empty()
 		@$('.bv_primaryProtocolParameters').html @template(@model.attributes)
 		@$('.bv_dnsTargetList').val(@model.get('dnsTargetList'))
-		@$('.bv_maxY').val(@model.get('maxY'))
-		@$('.bv_minY').val(@model.get('minY'))
-#		@setUpAssayActivitySelect()
-		@setUpMolecularTargetSelect()
-		@setUpTargetOriginSelect()
-		@setUpAssayTypeSelect()
-		@setUpAssayTechnologySelect()
-		@setUpCellLineSelect()
+		@$('.bv_maxY').val(@model.getCurveDisplayMax().get('numericValue'))
+		@$('.bv_minY').val(@model.getCurveDisplayMin().get('numericValue'))
 		@setUpAssayStageSelect()
-		@handleTargetListChanged()
 		super()
 
 		@
 
-	setUpAssayActivitySelect: ->
-		@assayActivityList = new PickListList()
-		@assayActivityList.url = "/api/dataDict/assayActivityCodes"
-		@assayActivityListController = new PickListSelectController
-			el: @$('.bv_assayActivity')
-			collection: @assayActivityList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Assay Activity"
-			selectedCode: @model.getPrimaryScreenProtocolParameter('assay activity').get('codeValue')
-
-	setUpMolecularTargetSelect: ->
-		@molecularTargetList = new PickListList()
-		@molecularTargetList.url = "/api/dataDict/molecularTargetCodes"
-		@molecularTargetListController = new PickListSelectController
-			el: @$('.bv_molecularTarget')
-			collection: @molecularTargetList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Molecular Target"
-			selectedCode: @model.get('molecularTarget')
-
-	setUpTargetOriginSelect: ->
-		@targetOriginList = new PickListList()
-		@targetOriginList.url = "/api/dataDict/targetOriginCodes"
-		@targetOriginListController = new PickListSelectController
-			el: @$('.bv_targetOrigin')
-			collection: @targetOriginList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Target Origin"
-			selectedCode: @model.getPrimaryScreenProtocolParameter('target origin').get('codeValue')
-
-	setUpAssayTypeSelect: ->
-		@assayTypeList = new PickListList()
-		@assayTypeList.url = "/api/dataDict/assayTypeCodes"
-		@assayTypeListController= new PickListSelectController
-			el: @$('.bv_assayType')
-			collection: @assayTypeList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Assay Type"
-			selectedCode: @model.get('assayType')
-
-	setUpAssayTechnologySelect: ->
-		@assayTechnologyList = new PickListList()
-		@assayTechnologyList.url = "/api/dataDict/assayTechnologyCodes"
-		@assayTechnologyListController = new PickListSelectController
-			el: @$('.bv_assayTechnology')
-			collection: @assayTechnologyList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Assay Technology"
-			selectedCode: @model.get('assayTechnology')
-
-	setUpCellLineSelect: ->
-		@cellLineList = new PickListList()
-		@cellLineList.url = "/api/dataDict/cellLineCodes"
-		@cellLineListController = new PickListSelectController
-			el: @$('.bv_cellLine')
-			collection: @cellLineList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Cell Line"
-			selectedCode: @model.get('cellLine')
-
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()
-		@assayStageList.url = "/api/dataDict/assayStageCodes"
+		@assayStageList.url = "/api/dataDict/assay stage"
 		@assayStageListController = new PickListSelectController
 			el: @$('.bv_assayStage')
 			collection: @assayStageList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select assay stage"
-			selectedCode: @model.get('assayStage')
+			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')
 
 	updateModel: =>
 		@model.set
-#			assayActivity: @$('.bv_assayActivity').val()
-#			molecularTarget: @$('.bv_molecularTarget').val()
-			targetOrigin: @$('.bv_targetOrigin').val()
-			assayType: @$('.bv_assayType').val()
-			assayTechnology: @$('.bv_assayTechnology').val()
-			cellLine: @$('.bv_cellLine').val()
 			assayStage: @$('.bv_assayStage').val()
 			maxY: parseFloat(@getTrimmedInput('.bv_maxY'))
 			minY: parseFloat(@getTrimmedInput('.bv_minY'))
@@ -327,88 +348,23 @@ class window.PrimaryScreenProtocolParametersController extends AbstractParserFor
 		dnsTargetList = @$('.bv_dnsTargetList').is(":checked")
 		@model.set dnsTargetList: dnsTargetList
 		if dnsTargetList
-			@$('.bv_addMolecularTarget').hide()
+			@$('.bv_addMolecularTargetBtn').hide()
 			# TODO: repopulate Molecular Target Select list with DNS Target List. Get route from Guy
 		else
-			@$('.bv_addMolecularTarget').show()
+			@$('.bv_addMolecularTargetBtn').show()
 		@attributeChanged()
 
-#	handleAssayActivityChanged: =>
-#		@.handlePrimaryScreenParameterChanged('assayActivity')
+	handleAssayStageChanged: =>
+		@model.getPrimaryScreenProtocolParameterCodeValue('assay stage').set
+			codeValue: @$('.bv_assayStage').val()
 
-	handleTargetOriginChanged: =>
-		@.handlePrimaryScreenParameterChanged('targetOrigin')
+	handleMaxYChanged: =>
+		@model.getCurveDisplayMax().set
+			numericValue: @$('.bv_maxY').val()
 
-	handlePrimaryScreenParameterChanged: (parameterName) ->
-		splitName = parameterName.replace /([A-Z])/g,' $1'
-		splitName = splitName.toLowerCase()
-		@model.getPrimaryScreenProtocolParameter(splitName).set
-			codeValue: @$('.bv_'+parameterName).val()
-
-	clearModalTexts: ->
-		console.log "clearing modal fields"
-		@$('.bv_optionAddedMessage').hide()
-		@$('.bv_errorMessage').hide()
-		@$('.bv_newAssayActivityLabel').val("")
-		@$('.bv_newAssayActivityDescription').val("")
-		@$('.bv_newAssayActivityComments').val("")
-
-	addNewAssayActivity: ->
-		@.addNewParameter('assayActivity')
-
-	addNewMolecularTarget: ->
-		console.log "add new activity clicked"
-		parameter = 'molecularTarget'
-		pascalCaseParameterName = 'MolecularTarget'
-		@.addNewParameter(parameter,pascalCaseParameterName)
-
-	addNewTargetOrigin: ->
-		console.log "add new target origin clicked"
-		parameter = 'targetOrigin'
-		pascalCaseParameterName = 'TargetOrigin'
-		@.addNewParameter(parameter,pascalCaseParameterName)
-
-
-	addNewParameter: (parameter) ->
-		console.log "add new parameter clicked"
-		pascalCaseParameterName = parameter.charAt(0).toUpperCase() + parameter.slice(1)
-		console.log pascalCaseParameterName
-		#		@$('.bv_new'+pascalCaseParameterName).val("")
-		#		@$('.bv_new'+pascalCaseParameterName+'Description').val("")
-		#		@$('.bv_new'+pascalCaseParameterName+'Comments').val("")
-
-		# new short name is generated by making everything lower case in label text
-		newOptionName = (@$('.bv_new'+pascalCaseParameterName).val()).toLowerCase()
-		console.log newOptionName
-		if @.validNewOption(newOptionName,parameter)
-			console.log "will add new option"
-			#add new option to code table. for now just append to html
-			# TODO: add to DataDictionary and refresh the select list
-			#			protocolCodeTableTestJSON = require ''
-			@$('.bv_'+parameter).append('<option value='+ newOptionName+'>'+newOptionName+'</option>')
-			@$('.bv_optionAddedMessage').show()
-			@$('.bv_errorMessage').hide()
-			#			@$('#add'+pascalCaseParameterName+'Modal').modal('hide')
-
-		else
-			console.log "option already exists"
-			@$('.bv_optionAddedMessage').hide()
-			@$('.bv_errorMessage').show()
-	# clear previous values in form so that if add is clicked again, it will be empty
-
-
-	validNewOption: (newOptionName,parameter) ->
-		console.log "validating new option"
-		#checks to see if assay activity option already exists
-		console.log newOptionName
-		console.log '.bv_'+parameter+' option[value="'+newOptionName+'"]'.length > 0
-		if @$('.bv_'+parameter+' option[value="'+newOptionName+'"]').length > 0
-			return false
-		else
-			return true
-
-
-
+	handleMinYChanged: =>
+		@model.getCurveDisplayMin().set
+			numericValue: @$('.bv_minY').val()
 
 class window.PrimaryScreenProtocolController extends Backbone.View
 	template: _.template($("#PrimaryScreenProtocolView").html())
@@ -418,6 +374,12 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		@completeInitialization()
 		@setupPrimaryScreenProtocolParametersController()
 		@setupAssayActivityController()
+		@setupMolecularTargetController()
+		@setupTargetOriginController()
+		@setupAssayTypeController()
+		@setupAssayTechnologyController()
+		@setupCellLineController()
+		console.log @.model
 
 	completeInitialization: ->
 		unless @model?
@@ -446,3 +408,35 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 			el: @$('.bv_assayActivityWrapper')
 		@assayActivityController.render()
 		console.log "set up aa controller"
+
+	setupMolecularTargetController: ->
+		console.log "beg of setting up mt controller"
+		@molecularTargetController = new MolecularTargetController
+			model: @model
+			el: @$('.bv_molecularTargetWrapper')
+		@molecularTargetController.render()
+		console.log "set up mt controller"
+
+	setupTargetOriginController: ->
+		@targetOriginController = new TargetOriginController
+			model: @model
+			el: @$('.bv_targetOriginWrapper')
+		@targetOriginController.render()
+
+	setupAssayTypeController: ->
+		@assayTypeController = new AssayTypeController
+			model: @model
+			el: @$('.bv_assayTypeWrapper')
+		@assayTypeController.render()
+
+	setupAssayTechnologyController: ->
+		@assayTechnologyController = new AssayTechnologyController
+			model: @model
+			el: @$('.bv_assayTechnologyWrapper')
+		@assayTechnologyController.render()
+
+	setupCellLineController: ->
+		@cellLineController = new CellLineController
+			model: @model
+			el: @$('.bv_cellLineWrapper')
+		@cellLineController.render()

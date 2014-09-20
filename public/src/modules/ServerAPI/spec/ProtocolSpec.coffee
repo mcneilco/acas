@@ -33,26 +33,6 @@ describe "Protocol module testing", ->
 					expect(@prot.get('shortDescription')).toEqual " "
 				it 'Should have an empty assay tree rule', ->
 					expect(@prot.get('assayTreeRule')).toEqual null
-#				it 'Should have the select DNS target list be unchecked', ->
-#					expect(@prot.get('dnsTargetList')).toEqual false
-#				it 'Should have the assayActivity default to unassigned', ->
-#					expect(@prot.get('assayActivity')).toEqual "unassigned"
-				it 'Should have the molecularTarget default to unassigned', ->
-					expect(@prot.get('molecularTarget')).toEqual "unassigned"
-				it 'Should have the targetOrigin default to unassigned', ->
-					expect(@prot.get('targetOrigin')).toEqual "unassigned"
-				it 'Should have the assayType default to unassigned', ->
-					expect(@prot.get('assayType')).toEqual "unassigned"
-				it 'Should have the assayTechnology default to unassigned', ->
-					expect(@prot.get('assayTechnology')).toEqual "unassigned"
-				it 'Should have the cellLine default to unassigned', ->
-					expect(@prot.get('cellLine')).toEqual "unassigned"
-				it 'Should have the assayStage default to unassigned', ->
-					expect(@prot.get('assayStage')).toEqual "unassigned"
-#				it 'Should have an default maxY curve display of 100', ->
-#					expect(@prot.get('maxY')).toEqual 100
-#				it 'Should have an default minY curve display of 0', ->
-#					expect(@prot.get('minY')).toEqual 0
 			describe "required states and values", ->
 				it 'Should have a description value', -> # description will be Protocol Details or experimentDetails
 					expect(@prot.getDescription() instanceof Value).toBeTruthy()
@@ -236,20 +216,6 @@ describe "Protocol module testing", ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when maxY is NaN", ->
-				@prot.set maxY: NaN
-				expect(@prot.isValid()).toBeFalsy()
-				filtErrors = _.filter(@prot.validationError, (err) ->
-					err.attribute=='maxY'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when minY is NaN", ->
-				@prot.set minY: NaN
-				expect(@prot.isValid()).toBeFalsy()
-				filtErrors = _.filter(@prot.validationError, (err) ->
-					err.attribute=='minY'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
 			it 'should require that completionDate not be ""', ->
 				@prot.getCompletionDate().set
 					dateValue: new Date("").getTime()
@@ -334,55 +300,6 @@ describe "Protocol module testing", ->
 					expect(@pbc.$('.bv_status').attr('disabled')).toBeUndefined()
 				it "should fill the assay tree rule",  ->
 					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "example assay tree rule"
-				it "should have the select dns target list checkbox checked and the molecular target add button hidden",  ->
-					expect(@pbc.$('.bv_dnsTargetList').attr("checked")).toEqual "checked"
-					expect(@pbc.$('.bv_addMolecularTarget')).toBeHidden()
-				it "should show the assay activity",  ->
-					waitsFor ->
-						@pbc.$('.bv_assayActivity option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_assayActivity').val()).toEqual "luminescence"
-				it "should show the molecular target",  ->
-					waitsFor ->
-						@pbc.$('.bv_molecularTarget option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_molecularTarget').val()).toEqual "target x"
-				it "should show the target origin",  ->
-					waitsFor ->
-						@pbc.$('.bv_targetOrigin option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_targetOrigin').val()).toEqual "human"
-				it "should show the assay type",  ->
-					waitsFor ->
-						@pbc.$('.bv_assayType option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_assayType').val()).toEqual "cellular assay"
-				it "should show the assay technology",  ->
-					waitsFor ->
-						@pbc.$('.bv_assayTechnology option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_assayTechnology').val()).toEqual "wizard triple luminescence"
-				it "should show the cell line",  ->
-					waitsFor ->
-						@pbc.$('.bv_cellLine option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_cellLine').val()).toEqual "cell line y"
-				it "should show the assay stage",  ->
-					waitsFor ->
-						@pbc.$('.bv_assayStage option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_assayStage').val()).toEqual "assay development"
-				it "should fill the max Y value",  ->
-					expect(@pbc.$('.bv_maxY').val()).toEqual "200"
-				it "should fill the min Y value",  ->
-					expect(@pbc.$('.bv_minY').val()).toEqual "2"
 			describe "Protocol status behavior", ->
 				it "should disable all fields if protocol is finalized", ->
 					waitsFor ->
@@ -464,79 +381,6 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_assayTreeRule').val(" Updated assay tree rule  ")
 					@pbc.$('.bv_assayTreeRule').change()
 					expect(@pbc.model.get('assayTreeRule')).toEqual "Updated assay tree rule"
-				it "should update the select DNS target list", ->
-					@pbc.$('.bv_dnsTargetList').click()
-					@pbc.$('.bv_dnsTargetList').click()
-					expect(@pbc.model.get('dnsTargetList')).toBeFalsy()
-					# don't know why there needs to be two clicks for spec to pass
-				it "should update model when assay activity changed", ->
-					waitsFor ->
-						@pbc.$('.bv_assayActivity option').length > 0
-					, 1000
-					runs ->
-						@pbc.$('.bv_assayActivity').val('unassigned')
-						@pbc.$('.bv_assayActivity').change()
-						expect(@pbc.model.get('assayActivity')).toEqual 'unassigned'
-				it "should update model when molecular target changed", ->
-					waitsFor ->
-						@pbc.$('.bv_molecularTarget option').length > 0
-					, 1000
-					runs ->
-						@pbc.$('.bv_molecularTarget').val('unassigned')
-						@pbc.$('.bv_molecularTarget').change()
-						expect(@pbc.model.get('molecularTarget')).toEqual 'unassigned'
-				it "should update model when target origin changed", ->
-					waitsFor ->
-						@pbc.$('.bv_targetOrigin option').length > 0
-					, 1000
-					runs ->
-						@pbc.$('.bv_targetOrigin').val('unassigned')
-						@pbc.$('.bv_targetOrigin').change()
-						expect(@pbc.model.get('targetOrigin')).toEqual 'unassigned'
-				it "should update model when assay type changed", ->
-					waitsFor ->
-						@pbc.$('.bv_assayType option').length > 0
-					, 1000
-					runs ->
-						@pbc.$('.bv_assayType').val('unassigned')
-						@pbc.$('.bv_assayType').change()
-						expect(@pbc.model.get('assayType')).toEqual 'unassigned'
-				it "should update model when assay technology changed", ->
-					waitsFor ->
-						@pbc.$('.bv_assayTechnology option').length > 0
-					, 1000
-					runs ->
-						@pbc.$('.bv_assayTechnology').val('unassigned')
-						@pbc.$('.bv_assayTechnology').change()
-						expect(@pbc.model.get('assayTechnology')).toEqual 'unassigned'
-				it "should update model when cell line changed", ->
-					waitsFor ->
-						@pbc.$('.bv_cellLine option').length > 0
-					, 1000
-					runs ->
-						@pbc.$('.bv_cellLine').val('unassigned')
-						@pbc.$('.bv_cellLine').change()
-						expect(@pbc.model.get('cellLine')).toEqual 'unassigned'
-				it "should update model when assay stage changed", ->
-					waitsFor ->
-						@pbc.$('.bv_assayStage option').length > 0
-					, 1000
-					runs ->
-						@pbc.$('.bv_assayStage').val('unassigned')
-						@pbc.$('.bv_assayStage').change()
-						expect(@pbc.model.get('assayStage')).toEqual 'unassigned'
-				it "should update model when maxY changed", ->
-					@pbc.$('.bv_maxY').val(" 50  ")
-					@pbc.$('.bv_maxY').change()
-					expect(@pbc.model.get('maxY')).toEqual 50
-				it "should update model when minY changed", ->
-					@pbc.$('.bv_minY').val(" 5  ")
-					@pbc.$('.bv_minY').change()
-					expect(@pbc.model.get('minY')).toEqual 5
-			describe "pop modal testing", ->
-				it "should display a modal when add button is clicked", ->
-					@pbc.$('.bv_addNewAssayActivity').click()
-					expect(@pbc.$('.bv_newAssayActivity').length).toEqual 1
 
 		describe "When created from a new protocol", ->
 			beforeEach ->
@@ -567,54 +411,6 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_status').val()).toEqual 'created'
 				it "should have the assay tree rule be empty", ->
 					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual ""
-				it "should have the select dns target list be unchecked", ->
-					expect(@pbc.$('.bv_dnsTargetList').attr("checked")).toBeUndefined()
-				it "should show assay activity select value as unassigned", ->
-					waitsFor ->
-						@pbc.$('.bv_assayActivity option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_assayActivity').val()).toEqual 'unassigned'
-				it "should show molecular target select value as unassigned", ->
-					waitsFor ->
-						@pbc.$('.bv_molecularTarget option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_molecularTarget').val()).toEqual 'unassigned'
-				it "should show target origin select value as unassigned", ->
-					waitsFor ->
-						@pbc.$('.bv_targetOrigin option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_targetOrigin').val()).toEqual 'unassigned'
-				it "should show assay type select value as unassigned", ->
-					waitsFor ->
-						@pbc.$('.bv_assayType option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_assayType').val()).toEqual 'unassigned'
-				it "should show assay technology select value as unassigned", ->
-					waitsFor ->
-						@pbc.$('.bv_assayTechnology option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_assayTechnology').val()).toEqual 'unassigned'
-				it "should show cell line select value as unassigned", ->
-					waitsFor ->
-						@pbc.$('.bv_cellLine option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_cellLine').val()).toEqual 'unassigned'
-				it "should show assay stage select value as unassigned", ->
-					waitsFor ->
-						@pbc.$('.bv_assayStage option').length > 0
-					, 1000
-					runs ->
-						expect(@pbc.$('.bv_assayStage').val()).toEqual 'unassigned'
-				it "should have the maxY value be 100", ->
-					expect(@pbc.$('.bv_maxY').val()).toEqual '100'
-				it "should have the minY value be 100", ->
-					expect(@pbc.$('.bv_minY').val()).toEqual '0'
 			describe "controller validation rules", ->
 				beforeEach ->
 					@pbc.$('.bv_recordedBy').val("nxm7557")
@@ -672,22 +468,6 @@ describe "Protocol module testing", ->
 					it "should show error on notebook dropdown", ->
 						runs ->
 							expect(@pbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
-				describe "when maxY is NaN", ->
-					beforeEach ->
-						runs ->
-							@pbc.$('.bv_maxY').val("b")
-							@pbc.$('.bv_maxY').change()
-					it "should show error on maxY field", ->
-						runs ->
-							expect(@pbc.$('.bv_group_maxY').hasClass('error')).toBeTruthy()
-				describe "when minY is NaN", ->
-					beforeEach ->
-						runs ->
-							@pbc.$('.bv_minY').val("b")
-							@pbc.$('.bv_minY').change()
-					it "should show error on minY field", ->
-						runs ->
-							expect(@pbc.$('.bv_group_minY').hasClass('error')).toBeTruthy()
 				describe "expect save to work", ->
 					it "model should be valid and ready to save", ->
 						runs ->

@@ -1,5 +1,6 @@
 ((exports) ->
 	exports.fullSavedPrimaryScreenProtocol =
+		dnsTargetList: true
 		codeName: "PROT-00000001"
 		id: 1
 		ignored: false
@@ -614,6 +615,34 @@
 				version: 0
 			,
 				clobValue: null
+				codeValue: "target x"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80484
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 100.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "molecular target"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_molecular target"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
 				codeValue: "human"
 				comments: null
 				dateValue: null
@@ -638,6 +667,174 @@
 				valueOperator: null
 				lsType: "codeValue"
 				lsTypeAndKind: "codeValue_target origin"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: "cellular assay"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80486
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 100.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "assay type"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_assay type"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: "wizard triple luminescence"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80487
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 100.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "assay technology"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_assay technology"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: "cell line y"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80488
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 872
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 100.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "cell line"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_cell line"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: "assay development"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80489
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 872
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 100.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "assay stage"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_assay stage"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80490
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 200.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "curve display max"
+				valueOperator: null
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_curve display max"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80491
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 872
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 10.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "curve display min"
+				valueOperator: null
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_curve display min"
 				valueUnit: null
 				version: 0
 			]

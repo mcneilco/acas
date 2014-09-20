@@ -1,7 +1,7 @@
 ((exports) ->
 	exports.dataDictValues =
 		[
-			"experimentStatus":
+			"experiment status":
 				[
 					code: "created"
 					name: "Created"

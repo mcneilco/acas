@@ -4,16 +4,6 @@ class window.Protocol extends BaseEntity
 	defaults: ->
 		_(super()).extend(
 			assayTreeRule: null
-#			dnsTargetList: false
-#			assayActivity: "unassigned"
-#			molecularTarget: "unassigned"
-#			targetOrigin: "unassigned"
-#			assayType: "unassigned"
-#			assayTechnology: "unassigned"
-#			cellLine: "unassigned"
-#			assayStage: "unassigned"
-#			maxY: 100
-#			minY: 0
 #			assayPrinciple:
 #			attachFiles: new AttachFilesList()
 		)
@@ -53,14 +43,6 @@ class window.Protocol extends BaseEntity
 			errors.push
 				attribute: 'notebook'
 				message: "Notebook must be set"
-#		if _.isNaN(attrs.maxY)
-#			errors.push
-#				attribute: 'maxY'
-#				message: "maxY must be a number"
-#		if _.isNaN(attrs.minY)
-#			errors.push
-#				attribute: 'minY'
-#				message: "minY must be a number"
 
 		if errors.length > 0
 			return errors
@@ -80,23 +62,6 @@ class window.ProtocolBaseController extends BaseEntityController
 		_(super()).extend(
 			"change .bv_protocolName": "handleNameChanged"
 			"change .bv_assayTreeRule": "attributeChanged"
-#			"click .bv_dnsTargetList": "handleTargetListChanged"
-#			"click .bv_addAssayActivityBtn": "clearModalTexts"
-#			"change .bv_assayActivity": "attributeChanged"
-#			"click .bv_addNewAssayActivity": "addNewAssayActivity"
-#			"change .bv_molecularTarget": "attributeChanged"
-#			"click .bv_addNewMolecularTarget": "addNewMolecularTarget"
-#			"change .bv_targetOrigin": "attributeChanged"
-#			"click .bv_addNewTargetOrigin": "addNewTargetOrigin"
-#			"change .bv_assayType": "attributeChanged"
-#			"click .bv_addNewAssayType": "addNewAssayType"
-#			"change .bv_assayTechnology": "attributeChanged"
-#			"click .bv_addNewAssayTechnology": "addNewAssayTechnology"
-#			"change .bv_cellLine": "attributeChanged"
-#			"click .bv_addNewCellLine": "addNewCellLine"
-#			"change .bv_assayStage": "attributeChanged"
-#			"change .bv_maxY": "attributeChanged"
-#			"change .bv_minY": "attributeChanged"
 		)
 
 	initialize: ->
@@ -118,192 +83,14 @@ class window.ProtocolBaseController extends BaseEntityController
 		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
-#		@setUpAssayActivitySelect()
-#		@setUpMolecularTargetSelect()
-#		@setUpTargetOriginSelect()
-#		@setUpAssayTypeSelect()
-#		@setUpAssayTechnologySelect()
-#		@setUpCellLineSelect()
-#		@setUpAssayStageSelect()
-#	using the code above, triggers amDirty whenever the module is clicked. is this ok?
 
 	render: =>
 		@$('.bv_assayTreeRule').val(@model.get('assayTreeRule'))
-#		@$('.bv_dnsTargetList').val(@model.get('dnsTargetList'))
-#		@$('.bv_maxY').val(@model.get('maxY'))
-#		@$('.bv_minY').val(@model.get('minY'))
-#		@setUpAssayActivitySelect()
-#		@setUpMolecularTargetSelect()
-#		@setUpTargetOriginSelect()
-#		@setUpAssayTypeSelect()
-#		@setUpAssayTechnologySelect()
-#		@setUpCellLineSelect()
-#		@setUpAssayStageSelect()
-#		@handleTargetListChanged()
 		super()
 		@
 
-	setUpAssayActivitySelect: ->
-		@assayActivityList = new PickListList()
-		@assayActivityList.url = "/api/dataDict/assayActivityCodes"
-		@assayActivityList = new PickListSelectController
-			el: @$('.bv_assayActivity')
-			collection: @assayActivityList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Assay Activity"
-			selectedCode: @model.get('assayActivity')
-
-	setUpMolecularTargetSelect: ->
-		@molecularTargetList = new PickListList()
-		@molecularTargetList.url = "/api/dataDict/molecularTargetCodes"
-		@molecularTargetList = new PickListSelectController
-			el: @$('.bv_molecularTarget')
-			collection: @molecularTargetList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Molecular Target"
-			selectedCode: @model.get('molecularTarget')
-
-	setUpTargetOriginSelect: ->
-		@targetOriginList = new PickListList()
-		@targetOriginList.url = "/api/dataDict/targetOriginCodes"
-		@targetOriginList = new PickListSelectController
-			el: @$('.bv_targetOrigin')
-			collection: @targetOriginList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Target Origin"
-			selectedCode: @model.get('targetOrigin')
-
-	setUpAssayTypeSelect: ->
-		@assayTypeList = new PickListList()
-		@assayTypeList.url = "/api/dataDict/assayTypeCodes"
-		@assayTypeList = new PickListSelectController
-			el: @$('.bv_assayType')
-			collection: @assayTypeList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Assay Type"
-			selectedCode: @model.get('assayType')
-
-	setUpAssayTechnologySelect: ->
-		@assayTechnologyList = new PickListList()
-		@assayTechnologyList.url = "/api/dataDict/assayTechnologyCodes"
-		@assayTechnologyList = new PickListSelectController
-			el: @$('.bv_assayTechnology')
-			collection: @assayTechnologyList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Assay Technology"
-			selectedCode: @model.get('assayTechnology')
-
-	setUpCellLineSelect: ->
-		@cellLineList = new PickListList()
-		@cellLineList.url = "/api/dataDict/cellLineCodes"
-		@cellLineList = new PickListSelectController
-			el: @$('.bv_cellLine')
-			collection: @cellLineList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Cell Line"
-			selectedCode: @model.get('cellLine')
-
-	setUpAssayStageSelect: ->
-		@assayStageList = new PickListList()
-		@assayStageList.url = "/api/dataDict/assayStageCodes"
-		@assayStageListController = new PickListSelectController
-			el: @$('.bv_assayStage')
-			collection: @assayStageList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select assay stage"
-			selectedCode: @model.get('assayStage')
 
 	updateModel: =>
 		@model.set
 			assayTreeRule: @getTrimmedInput('.bv_assayTreeRule')
-#			assayActivity: @$('.bv_assayActivity').val()
-#			molecularTarget: @$('.bv_molecularTarget').val()
-#			targetOrigin: @$('.bv_targetOrigin').val()
-#			assayType: @$('.bv_assayType').val()
-#			assayTechnology: @$('.bv_assayTechnology').val()
-#			cellLine: @$('.bv_cellLine').val()
-#			assayStage: @$('.bv_assayStage').val()
-#			maxY: parseFloat(@getTrimmedInput('.bv_maxY'))
-#			minY: parseFloat(@getTrimmedInput('.bv_minY'))
-
-#	handleTargetListChanged: =>
-#		dnsTargetList = @$('.bv_dnsTargetList').is(":checked")
-#		@model.set dnsTargetList: dnsTargetList
-#		if dnsTargetList
-#			@$('.bv_addMolecularTarget').hide()
-#			# TODO: repopulate Molecular Target Select list with DNS Target List. Get route from Guy
-#		else
-#			@$('.bv_addMolecularTarget').show()
-#		@attributeChanged()
-#
-#	clearModalTexts: ->
-#		console.log "clearing modal fields"
-#		@$('.bv_optionAddedMessage').hide()
-#		@$('.bv_errorMessage').hide()
-#		@$('.bv_newAssayActivity').val("")
-#		@$('.bv_newAssayActivityDescription').val("")
-#		@$('.bv_newAssayActivityComments').val("")
-#
-#	addNewAssayActivity: ->
-#		console.log "add new activity clicked"
-#		parameter = 'assayActivity'
-#		@.addNewParameter(parameter)
-#
-#	addNewMolecularTarget: ->
-#		console.log "add new activity clicked"
-#		parameter = 'molecularTarget'
-#		pascalCaseParameterName = 'MolecularTarget'
-#		@.addNewParameter(parameter,pascalCaseParameterName)
-#
-#	addNewTargetOrigin: ->
-#		console.log "add new target origin clicked"
-#		parameter = 'targetOrigin'
-#		pascalCaseParameterName = 'TargetOrigin'
-#		@.addNewParameter(parameter,pascalCaseParameterName)
-
-
-	addNewParameter: (parameter) ->
-		console.log "add new parameter clicked"
-		pascalCaseParameterName = parameter.charAt(0).toUpperCase() + parameter.slice(1)
-		console.log pascalCaseParameterName
-#		@$('.bv_new'+pascalCaseParameterName).val("")
-#		@$('.bv_new'+pascalCaseParameterName+'Description').val("")
-#		@$('.bv_new'+pascalCaseParameterName+'Comments').val("")
-
-		# new short name is generated by making everything lower case in label text
-		newOptionName = (@$('.bv_new'+pascalCaseParameterName).val()).toLowerCase()
-		console.log newOptionName
-		if @.validNewOption(newOptionName,parameter)
-			console.log "will add new option"
-			#add new option to code table. for now just append to html
-			# TODO: add to DataDictionary and refresh the select list
-			#			protocolCodeTableTestJSON = require ''
-			@$('.bv_'+parameter).append('<option value='+ newOptionName+'>'+newOptionName+'</option>')
-			@$('.bv_optionAddedMessage').show()
-			@$('.bv_errorMessage').hide()
-			#			@$('#add'+pascalCaseParameterName+'Modal').modal('hide')
-
-		else
-			console.log "option already exists"
-			@$('.bv_optionAddedMessage').hide()
-			@$('.bv_errorMessage').show()
-		# clear previous values in form so that if add is clicked again, it will be empty
-
-
-	validNewOption: (newOptionName,parameter) ->
-		console.log "validating new option"
-		#checks to see if assay activity option already exists
-		console.log newOptionName
-		console.log '.bv_'+parameter+' option[value="'+newOptionName+'"]'.length > 0
-		if @$('.bv_'+parameter+' option[value="'+newOptionName+'"]').length > 0
-			return false
-		else
-			return true
 

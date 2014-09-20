@@ -43,26 +43,8 @@
           it('Should have an empty short description with a space as an oracle work-around', function() {
             return expect(this.prot.get('shortDescription')).toEqual(" ");
           });
-          it('Should have an empty assay tree rule', function() {
+          return it('Should have an empty assay tree rule', function() {
             return expect(this.prot.get('assayTreeRule')).toEqual(null);
-          });
-          it('Should have the molecularTarget default to unassigned', function() {
-            return expect(this.prot.get('molecularTarget')).toEqual("unassigned");
-          });
-          it('Should have the targetOrigin default to unassigned', function() {
-            return expect(this.prot.get('targetOrigin')).toEqual("unassigned");
-          });
-          it('Should have the assayType default to unassigned', function() {
-            return expect(this.prot.get('assayType')).toEqual("unassigned");
-          });
-          it('Should have the assayTechnology default to unassigned', function() {
-            return expect(this.prot.get('assayTechnology')).toEqual("unassigned");
-          });
-          it('Should have the cellLine default to unassigned', function() {
-            return expect(this.prot.get('cellLine')).toEqual("unassigned");
-          });
-          return it('Should have the assayStage default to unassigned', function() {
-            return expect(this.prot.get('assayStage')).toEqual("unassigned");
           });
         });
         describe("required states and values", function() {
@@ -350,28 +332,6 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        it("should be invalid when maxY is NaN", function() {
-          var filtErrors;
-          this.prot.set({
-            maxY: NaN
-          });
-          expect(this.prot.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.prot.validationError, function(err) {
-            return err.attribute === 'maxY';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when minY is NaN", function() {
-          var filtErrors;
-          this.prot.set({
-            minY: NaN
-          });
-          expect(this.prot.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.prot.validationError, function(err) {
-            return err.attribute === 'minY';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
         return it('should require that completionDate not be ""', function() {
           var filtErrors;
           this.prot.getCompletionDate().set({
@@ -486,74 +446,8 @@
           it("should show the status select enabled", function() {
             return expect(this.pbc.$('.bv_status').attr('disabled')).toBeUndefined();
           });
-          it("should fill the assay tree rule", function() {
+          return it("should fill the assay tree rule", function() {
             return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("example assay tree rule");
-          });
-          it("should have the select dns target list checkbox checked and the molecular target add button hidden", function() {
-            expect(this.pbc.$('.bv_dnsTargetList').attr("checked")).toEqual("checked");
-            return expect(this.pbc.$('.bv_addMolecularTarget')).toBeHidden();
-          });
-          it("should show the assay activity", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayActivity option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_assayActivity').val()).toEqual("luminescence");
-            });
-          });
-          it("should show the molecular target", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_molecularTarget option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_molecularTarget').val()).toEqual("target x");
-            });
-          });
-          it("should show the target origin", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_targetOrigin option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_targetOrigin').val()).toEqual("human");
-            });
-          });
-          it("should show the assay type", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayType option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_assayType').val()).toEqual("cellular assay");
-            });
-          });
-          it("should show the assay technology", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayTechnology option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_assayTechnology').val()).toEqual("wizard triple luminescence");
-            });
-          });
-          it("should show the cell line", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_cellLine option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_cellLine').val()).toEqual("cell line y");
-            });
-          });
-          it("should show the assay stage", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayStage option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_assayStage').val()).toEqual("assay development");
-            });
-          });
-          it("should fill the max Y value", function() {
-            return expect(this.pbc.$('.bv_maxY').val()).toEqual("200");
-          });
-          return it("should fill the min Y value", function() {
-            return expect(this.pbc.$('.bv_minY').val()).toEqual("2");
           });
         });
         describe("Protocol status behavior", function() {
@@ -591,7 +485,7 @@
             });
           });
         });
-        describe("User edits fields", function() {
+        return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
             expect(this.pbc.model.get('recordedBy')).toEqual("nxm7557");
             this.pbc.$('.bv_recordedBy').val("xxl7932");
@@ -649,101 +543,10 @@
               return expect(this.pbc.model.getStatus().get('stringValue')).toEqual('complete');
             });
           });
-          it("should update model when assay tree rule changed", function() {
+          return it("should update model when assay tree rule changed", function() {
             this.pbc.$('.bv_assayTreeRule').val(" Updated assay tree rule  ");
             this.pbc.$('.bv_assayTreeRule').change();
             return expect(this.pbc.model.get('assayTreeRule')).toEqual("Updated assay tree rule");
-          });
-          it("should update the select DNS target list", function() {
-            this.pbc.$('.bv_dnsTargetList').click();
-            this.pbc.$('.bv_dnsTargetList').click();
-            return expect(this.pbc.model.get('dnsTargetList')).toBeFalsy();
-          });
-          it("should update model when assay activity changed", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayActivity option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.pbc.$('.bv_assayActivity').val('unassigned');
-              this.pbc.$('.bv_assayActivity').change();
-              return expect(this.pbc.model.get('assayActivity')).toEqual('unassigned');
-            });
-          });
-          it("should update model when molecular target changed", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_molecularTarget option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.pbc.$('.bv_molecularTarget').val('unassigned');
-              this.pbc.$('.bv_molecularTarget').change();
-              return expect(this.pbc.model.get('molecularTarget')).toEqual('unassigned');
-            });
-          });
-          it("should update model when target origin changed", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_targetOrigin option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.pbc.$('.bv_targetOrigin').val('unassigned');
-              this.pbc.$('.bv_targetOrigin').change();
-              return expect(this.pbc.model.get('targetOrigin')).toEqual('unassigned');
-            });
-          });
-          it("should update model when assay type changed", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayType option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.pbc.$('.bv_assayType').val('unassigned');
-              this.pbc.$('.bv_assayType').change();
-              return expect(this.pbc.model.get('assayType')).toEqual('unassigned');
-            });
-          });
-          it("should update model when assay technology changed", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayTechnology option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.pbc.$('.bv_assayTechnology').val('unassigned');
-              this.pbc.$('.bv_assayTechnology').change();
-              return expect(this.pbc.model.get('assayTechnology')).toEqual('unassigned');
-            });
-          });
-          it("should update model when cell line changed", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_cellLine option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.pbc.$('.bv_cellLine').val('unassigned');
-              this.pbc.$('.bv_cellLine').change();
-              return expect(this.pbc.model.get('cellLine')).toEqual('unassigned');
-            });
-          });
-          it("should update model when assay stage changed", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayStage option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.pbc.$('.bv_assayStage').val('unassigned');
-              this.pbc.$('.bv_assayStage').change();
-              return expect(this.pbc.model.get('assayStage')).toEqual('unassigned');
-            });
-          });
-          it("should update model when maxY changed", function() {
-            this.pbc.$('.bv_maxY').val(" 50  ");
-            this.pbc.$('.bv_maxY').change();
-            return expect(this.pbc.model.get('maxY')).toEqual(50);
-          });
-          return it("should update model when minY changed", function() {
-            this.pbc.$('.bv_minY').val(" 5  ");
-            this.pbc.$('.bv_minY').change();
-            return expect(this.pbc.model.get('minY')).toEqual(5);
-          });
-        });
-        return describe("pop modal testing", function() {
-          return it("should display a modal when add button is clicked", function() {
-            this.pbc.$('.bv_addNewAssayActivity').click();
-            return expect(this.pbc.$('.bv_newAssayActivity').length).toEqual(1);
           });
         });
       });
@@ -786,73 +589,8 @@
               return expect(this.pbc.$('.bv_status').val()).toEqual('created');
             });
           });
-          it("should have the assay tree rule be empty", function() {
+          return it("should have the assay tree rule be empty", function() {
             return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("");
-          });
-          it("should have the select dns target list be unchecked", function() {
-            return expect(this.pbc.$('.bv_dnsTargetList').attr("checked")).toBeUndefined();
-          });
-          it("should show assay activity select value as unassigned", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayActivity option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_assayActivity').val()).toEqual('unassigned');
-            });
-          });
-          it("should show molecular target select value as unassigned", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_molecularTarget option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_molecularTarget').val()).toEqual('unassigned');
-            });
-          });
-          it("should show target origin select value as unassigned", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_targetOrigin option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_targetOrigin').val()).toEqual('unassigned');
-            });
-          });
-          it("should show assay type select value as unassigned", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayType option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_assayType').val()).toEqual('unassigned');
-            });
-          });
-          it("should show assay technology select value as unassigned", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayTechnology option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_assayTechnology').val()).toEqual('unassigned');
-            });
-          });
-          it("should show cell line select value as unassigned", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_cellLine option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_cellLine').val()).toEqual('unassigned');
-            });
-          });
-          it("should show assay stage select value as unassigned", function() {
-            waitsFor(function() {
-              return this.pbc.$('.bv_assayStage option').length > 0;
-            }, 1000);
-            return runs(function() {
-              return expect(this.pbc.$('.bv_assayStage').val()).toEqual('unassigned');
-            });
-          });
-          it("should have the maxY value be 100", function() {
-            return expect(this.pbc.$('.bv_maxY').val()).toEqual('100');
-          });
-          return it("should have the minY value be 100", function() {
-            return expect(this.pbc.$('.bv_minY').val()).toEqual('0');
           });
         });
         return describe("controller validation rules", function() {
@@ -939,32 +677,6 @@
             return it("should show error on notebook dropdown", function() {
               return runs(function() {
                 return expect(this.pbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-          describe("when maxY is NaN", function() {
-            beforeEach(function() {
-              return runs(function() {
-                this.pbc.$('.bv_maxY').val("b");
-                return this.pbc.$('.bv_maxY').change();
-              });
-            });
-            return it("should show error on maxY field", function() {
-              return runs(function() {
-                return expect(this.pbc.$('.bv_group_maxY').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-          describe("when minY is NaN", function() {
-            beforeEach(function() {
-              return runs(function() {
-                this.pbc.$('.bv_minY').val("b");
-                return this.pbc.$('.bv_minY').change();
-              });
-            });
-            return it("should show error on minY field", function() {
-              return runs(function() {
-                return expect(this.pbc.$('.bv_group_minY').hasClass('error')).toBeTruthy();
               });
             });
           });
