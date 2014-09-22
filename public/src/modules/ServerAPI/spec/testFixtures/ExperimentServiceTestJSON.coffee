@@ -1437,6 +1437,33 @@
 				valueUnit: null
 				version: 0
 			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 8046999912
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
+				valueUnit: null
+				version: 0
+			,
 				clobValue: null
 				codeValue: "project1"
 				comments: null
@@ -2721,6 +2748,33 @@
 				valueUnit: null
 				version: 0
 			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 804699999123
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
+				valueUnit: null
+				version: 0
+			,
 				clobValue: null
 				codeValue: "project1"
 				comments: null
@@ -3105,6 +3159,33 @@
 				valueOperator: null
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_description"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 804699912399
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
 				valueUnit: null
 				version: 0
 			]

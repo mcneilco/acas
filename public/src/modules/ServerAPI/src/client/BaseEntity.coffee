@@ -61,6 +61,14 @@ class window.BaseEntity extends Backbone.Model
 
 		description
 
+	getComments: ->
+		metadataKind = @.get('subclass') + " metadata"
+		comments = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "comments"
+		if comments.get('clobValue') is undefined or comments.get('clobValue') is ""
+			comments.set clobValue: ""
+
+		comments
+
 	getCompletionDate: ->
 		metadataKind = @.get('subclass') + " metadata"
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "dateValue", "completion date"
@@ -167,6 +175,7 @@ class window.BaseEntityController extends AbstractFormController
 		"change .bv_recordedBy": "handleRecordedByChanged"
 		"change .bv_shortDescription": "handleShortDescriptionChanged"
 		"change .bv_description": "handleDescriptionChanged"
+		"change .bv_comments": "handleCommentsChanged"
 		"change .bv_entityName": "handleNameChanged"
 		"change .bv_completionDate": "handleDateChanged"
 		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
@@ -207,6 +216,7 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_'+subclass+'Code').html(@model.get('codeName'))
 		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
 		@$('.bv_description').html(@model.getDescription().get('clobValue'))
+		@$('.bv_comments').html(@model.getComments().get('clobValue'))
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCompletionDate().get('dateValue')?
@@ -251,6 +261,11 @@ class window.BaseEntityController extends AbstractFormController
 	handleDescriptionChanged: =>
 		@model.getDescription().set
 			clobValue: @getTrimmedInput('.bv_description')
+			recordedBy: @model.get('recordedBy')
+
+	handleCommentsChanged: =>
+		@model.getComments().set
+			clobValue: @getTrimmedInput('.bv_comments')
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>

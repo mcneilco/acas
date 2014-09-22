@@ -25,6 +25,17 @@
       return Protocol.__super__.initialize.call(this);
     };
 
+    Protocol.prototype.getAssayPrinciple = function() {
+      var assayPrinciple;
+      assayPrinciple = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "clobValue", "assay principle");
+      if (assayPrinciple.get('clobValue') === void 0 || assayPrinciple.get('clobValue') === "") {
+        assayPrinciple.set({
+          clobValue: ""
+        });
+      }
+      return assayPrinciple;
+    };
+
     Protocol.prototype.validate = function(attrs) {
       var bestName, cDate, errors, nameError, notebook;
       errors = [];
@@ -103,6 +114,7 @@
     __extends(ProtocolBaseController, _super);
 
     function ProtocolBaseController() {
+      this.handleAssayPrincipleChanged = __bind(this.handleAssayPrincipleChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return ProtocolBaseController.__super__.constructor.apply(this, arguments);
@@ -113,7 +125,8 @@
     ProtocolBaseController.prototype.events = function() {
       return _(ProtocolBaseController.__super__.events.call(this)).extend({
         "change .bv_protocolName": "handleNameChanged",
-        "change .bv_assayTreeRule": "attributeChanged"
+        "change .bv_assayTreeRule": "attributeChanged",
+        "change .bv_assayPrinciple": "handleAssayPrincipleChanged"
       });
     };
 
@@ -147,6 +160,7 @@
 
     ProtocolBaseController.prototype.render = function() {
       this.$('.bv_assayTreeRule').val(this.model.get('assayTreeRule'));
+      this.$('.bv_assayPrinciple').html(this.model.getAssayPrinciple().get('clobValue'));
       ProtocolBaseController.__super__.render.call(this);
       return this;
     };
@@ -154,6 +168,13 @@
     ProtocolBaseController.prototype.updateModel = function() {
       return this.model.set({
         assayTreeRule: this.getTrimmedInput('.bv_assayTreeRule')
+      });
+    };
+
+    ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
+      return this.model.getAssayPrinciple().set({
+        clobValue: this.getTrimmedInput('.bv_assayPrinciple'),
+        recordedBy: this.model.get('recordedBy')
       });
     };
 

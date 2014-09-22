@@ -158,6 +158,33 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_protocol metadata"
 			lsValues: [
+				clobValue: "assay principle goes here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 8046914569999
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "assay principle"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_assay principle"
+				valueUnit: null
+				version: 0
+			,
 				clobValue: "long description goes here"
 				codeValue: null
 				comments: null
@@ -182,6 +209,33 @@
 				valueOperator: null
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_description"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 8046991249979
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
 				valueUnit: null
 				version: 0
 			,
@@ -784,6 +838,33 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
+				clobValue: "assay principle goes here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80469912456999
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "assay principle"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_assay principle"
+				valueUnit: null
+				version: 0
+			,
 				clobValue: "long description goes here"
 				codeValue: null
 				comments: null
@@ -808,6 +889,33 @@
 				valueOperator: null
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_description"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 804699124999
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
 				valueUnit: null
 				version: 0
 			,

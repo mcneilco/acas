@@ -36,6 +36,9 @@ describe "Base Entity testing", ->
 				it 'Should have a description value', -> # description will be Protocol Details or experimentDetails
 					expect(@bem.getDescription() instanceof Value).toBeTruthy()
 					expect(@bem.getDescription().get('clobValue')).toEqual ""
+				it 'Should have a comments value', ->
+					expect(@bem.getComments() instanceof Value).toBeTruthy()
+					expect(@bem.getComments().get('clobValue')).toEqual ""
 				it 'Should have a notebook value', ->
 					expect(@bem.getNotebook() instanceof Value).toBeTruthy()
 				it 'Entity status should default to created ', ->
@@ -254,6 +257,8 @@ describe "Base Entity testing", ->
 					expect(@bec.$('.bv_shortDescription').html()).toEqual "experiment created by generic data parser"
 				it "should fill the long description field", ->
 					expect(@bec.$('.bv_description').html()).toEqual "long description goes here"
+				it "should fill the comments field", ->
+					expect(@bec.$('.bv_comments').html()).toEqual "comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
 				# then setting model attribites changes the hash
 				xit "should fill the entity name field", ->
@@ -331,6 +336,15 @@ describe "Base Entity testing", ->
 					desc = values[0].get('clobValue')
 					expect(desc).toEqual "New long description"
 					expect(@bec.model.getDescription().get('clobValue')).toEqual "New long description"
+				it "should update model when comments is changed", ->
+					@bec.$('.bv_comments').val(" New comments   ")
+					@bec.$('.bv_comments').change()
+					states = @bec.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
+					expect(states.length).toEqual 1
+					values = states[0].getValuesByTypeAndKind("clobValue", "comments")
+					desc = values[0].get('clobValue')
+					expect(desc).toEqual "New comments"
+					expect(@bec.model.getComments().get('clobValue')).toEqual "New comments"
 				it "should update model when entity name is changed", ->
 					@bem.set subclass: "entity" # work around for the spec to pass. In a subclass, the dom element would be .bv_[subclass]Name not .bv_entityName
 					@bec.render()

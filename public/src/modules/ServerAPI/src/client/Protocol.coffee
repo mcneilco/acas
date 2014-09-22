@@ -4,13 +4,20 @@ class window.Protocol extends BaseEntity
 	defaults: ->
 		_(super()).extend(
 			assayTreeRule: null
-#			assayPrinciple:
 #			attachFiles: new AttachFilesList()
 		)
 
 	initialize: ->
 		@.set subclass: "protocol"
 		super()
+
+	getAssayPrinciple: ->
+		assayPrinciple = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", "assay principle"
+		if assayPrinciple.get('clobValue') is undefined or assayPrinciple.get('clobValue') is ""
+			assayPrinciple.set clobValue: ""
+
+		assayPrinciple
+
 
 	validate: (attrs) ->
 		errors = []
@@ -62,6 +69,8 @@ class window.ProtocolBaseController extends BaseEntityController
 		_(super()).extend(
 			"change .bv_protocolName": "handleNameChanged"
 			"change .bv_assayTreeRule": "attributeChanged"
+			"change .bv_assayPrinciple": "handleAssayPrincipleChanged"
+
 		)
 
 	initialize: ->
@@ -86,6 +95,7 @@ class window.ProtocolBaseController extends BaseEntityController
 
 	render: =>
 		@$('.bv_assayTreeRule').val(@model.get('assayTreeRule'))
+		@$('.bv_assayPrinciple').html(@model.getAssayPrinciple().get('clobValue'))
 		super()
 		@
 
@@ -94,3 +104,7 @@ class window.ProtocolBaseController extends BaseEntityController
 		@model.set
 			assayTreeRule: @getTrimmedInput('.bv_assayTreeRule')
 
+	handleAssayPrincipleChanged: =>
+		@model.getAssayPrinciple().set
+			clobValue: @getTrimmedInput('.bv_assayPrinciple')
+			recordedBy: @model.get('recordedBy')

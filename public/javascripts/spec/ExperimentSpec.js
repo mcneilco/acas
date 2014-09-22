@@ -174,6 +174,9 @@
           it('Should have a description value', function() {
             return expect(this.exp.getDescription().get('clobValue')).toEqual("long description goes here");
           });
+          it('Should have a comments value', function() {
+            return expect(this.exp.getComments().get('clobValue')).toEqual("comments go here");
+          });
           it('Should have a notebook value', function() {
             return expect(this.exp.getNotebook().get('stringValue')).toEqual("911");
           });
@@ -226,6 +229,9 @@
           });
           it('Should have a description value', function() {
             return expect(this.exp.getDescription().get('clobValue')).toEqual("long description goes here");
+          });
+          it('Should have a comments value', function() {
+            return expect(this.exp.getComments().get('clobValue')).toEqual("comments go here");
           });
           it('Should not override set notebook value', function() {
             return expect(this.exp.getNotebook().get('stringValue')).toEqual("spec test NB");
@@ -590,6 +596,9 @@
           it("should fill the description field", function() {
             return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
           });
+          it("should fill the comments field", function() {
+            return expect(this.ebc.$('.bv_comments').html()).toEqual("comments go here");
+          });
           return it("should not fill the notebook field", function() {
             return expect(this.ebc.$('.bv_notebook').val()).toEqual("");
           });
@@ -610,6 +619,17 @@
             this.ebc.$('.bv_shortDescription').val("");
             this.ebc.$('.bv_shortDescription').change();
             return expect(this.ebc.model.get('shortDescription')).toEqual(" ");
+          });
+          it("should update model when description is changed", function() {
+            var desc, states, values;
+            this.ebc.$('.bv_description').val(" New long description   ");
+            this.ebc.$('.bv_description').change();
+            states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
+            expect(states.length).toEqual(1);
+            values = states[0].getValuesByTypeAndKind("clobValue", "description");
+            desc = values[0].get('clobValue');
+            expect(desc).toEqual("New long description");
+            return expect(this.ebc.model.getDescription().get('clobValue')).toEqual("New long description");
           });
           it("should update model when description is changed", function() {
             var desc, states, values;
@@ -724,6 +744,9 @@
           });
           it("should fill the long description field", function() {
             return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
+          });
+          it("should fill the comments field", function() {
+            return expect(this.ebc.$('.bv_comments').html()).toEqual("comments go here");
           });
           xit("should fill the name field", function() {
             return expect(this.ebc.$('.bv_experimentName').val()).toEqual("FLIPR target A biochemical");

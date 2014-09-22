@@ -278,6 +278,33 @@
 				lsTypeAndKind: "clobValue_description"
 				valueUnit: null
 				version: 0
+			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 804699994
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
+				valueUnit: null
+				version: 0
 			]
 			modifiedBy: null
 			modifiedDate: null
@@ -1839,6 +1866,33 @@
 				valueOperator: null
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_description"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 804699997
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
 				valueUnit: null
 				version: 0
 			,

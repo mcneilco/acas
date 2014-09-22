@@ -34,9 +34,15 @@ describe "Protocol module testing", ->
 				it 'Should have an empty assay tree rule', ->
 					expect(@prot.get('assayTreeRule')).toEqual null
 			describe "required states and values", ->
+				it 'Should have an assay principle value', ->
+					expect(@prot.getAssayPrinciple() instanceof Value).toBeTruthy()
+					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual ""
 				it 'Should have a description value', -> # description will be Protocol Details or experimentDetails
 					expect(@prot.getDescription() instanceof Value).toBeTruthy()
 					expect(@prot.getDescription().get('clobValue')).toEqual ""
+				it 'Should have a comments value', ->
+					expect(@prot.getComments() instanceof Value).toBeTruthy()
+					expect(@prot.getComments().get('clobValue')).toEqual ""
 				it 'Should have a notebook value', ->
 					expect(@prot.getNotebook() instanceof Value).toBeTruthy()
 				it 'Protocol status should default to created ', ->
@@ -81,8 +87,12 @@ describe "Protocol module testing", ->
 					expect(@prot.get('lsStates').at(0).get('lsKind')).toEqual "protocol controls"
 				it "states should have values", ->
 					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "data analysis parameters"
+				it 'Should have an assay principle value', ->
+					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual "assay principle goes here"
 				it 'Should have a description value', ->
 					expect(@prot.getDescription().get('clobValue')).toEqual "long description goes here"
+				it 'Should have a comments value', ->
+					expect(@prot.getComments().get('clobValue')).toEqual "comments go here"
 				it 'Should have a notebook value', ->
 					expect(@prot.getNotebook().get('stringValue')).toEqual "912"
 				it 'Should have a completionDate value', ->
@@ -274,8 +284,12 @@ describe "Protocol module testing", ->
 					expect(@pbc.$('.bv_save').html()).toEqual "Update"
 				it "should fill the short description field", ->
 					expect(@pbc.$('.bv_shortDescription').html()).toEqual "primary analysis"
+				it "should fill the assay principle field", ->
+					expect(@pbc.$('.bv_assayPrinciple').html()).toEqual "assay principle goes here"
 				it "should fill the long description field", ->
 					expect(@pbc.$('.bv_description').html()).toEqual "long description goes here"
+				it "should fill the comments field", ->
+					expect(@pbc.$('.bv_comments').html()).toEqual "comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
 				# then setting model attribites changes the hash
 				xit "should fill the protocol name field", ->
@@ -342,6 +356,15 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_shortDescription').val("")
 					@pbc.$('.bv_shortDescription').change()
 					expect(@pbc.model.get 'shortDescription').toEqual " "
+				it "should update model when assay principle is changed", ->
+					@pbc.$('.bv_assayPrinciple').val(" New assay principle   ")
+					@pbc.$('.bv_assayPrinciple').change()
+					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
+					expect(states.length).toEqual 1
+					values = states[0].getValuesByTypeAndKind("clobValue", "assay principle")
+					desc = values[0].get('clobValue')
+					expect(desc).toEqual "New assay principle"
+					expect(@pbc.model.getAssayPrinciple().get('clobValue')).toEqual "New assay principle"
 				it "should update model when description is changed", ->
 					@pbc.$('.bv_description').val(" New long description   ")
 					@pbc.$('.bv_description').change()
@@ -351,6 +374,15 @@ describe "Protocol module testing", ->
 					desc = values[0].get('clobValue')
 					expect(desc).toEqual "New long description"
 					expect(@pbc.model.getDescription().get('clobValue')).toEqual "New long description"
+				it "should update model when comments is changed", ->
+					@pbc.$('.bv_comments').val(" New comments   ")
+					@pbc.$('.bv_comments').change()
+					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
+					expect(states.length).toEqual 1
+					values = states[0].getValuesByTypeAndKind("clobValue", "comments")
+					desc = values[0].get('clobValue')
+					expect(desc).toEqual "New comments"
+					expect(@pbc.model.getComments().get('clobValue')).toEqual "New comments"
 				it "should update model when protocol name is changed", ->
 					@pbc.$('.bv_protocolName').val(" Updated protocol name   ")
 					@pbc.$('.bv_protocolName').change()

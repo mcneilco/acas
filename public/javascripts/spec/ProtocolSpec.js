@@ -48,9 +48,17 @@
           });
         });
         describe("required states and values", function() {
+          it('Should have an assay principle value', function() {
+            expect(this.prot.getAssayPrinciple() instanceof Value).toBeTruthy();
+            return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("");
+          });
           it('Should have a description value', function() {
             expect(this.prot.getDescription() instanceof Value).toBeTruthy();
             return expect(this.prot.getDescription().get('clobValue')).toEqual("");
+          });
+          it('Should have a comments value', function() {
+            expect(this.prot.getComments() instanceof Value).toBeTruthy();
+            return expect(this.prot.getComments().get('clobValue')).toEqual("");
           });
           it('Should have a notebook value', function() {
             return expect(this.prot.getNotebook() instanceof Value).toBeTruthy();
@@ -126,8 +134,14 @@
           it("states should have values", function() {
             return expect(this.prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual("data analysis parameters");
           });
+          it('Should have an assay principle value', function() {
+            return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("assay principle goes here");
+          });
           it('Should have a description value', function() {
             return expect(this.prot.getDescription().get('clobValue')).toEqual("long description goes here");
+          });
+          it('Should have a comments value', function() {
+            return expect(this.prot.getComments().get('clobValue')).toEqual("comments go here");
           });
           it('Should have a notebook value', function() {
             return expect(this.prot.getNotebook().get('stringValue')).toEqual("912");
@@ -414,8 +428,14 @@
           it("should fill the short description field", function() {
             return expect(this.pbc.$('.bv_shortDescription').html()).toEqual("primary analysis");
           });
+          it("should fill the assay principle field", function() {
+            return expect(this.pbc.$('.bv_assayPrinciple').html()).toEqual("assay principle goes here");
+          });
           it("should fill the long description field", function() {
             return expect(this.pbc.$('.bv_description').html()).toEqual("long description goes here");
+          });
+          it("should fill the comments field", function() {
+            return expect(this.pbc.$('.bv_comments').html()).toEqual("comments go here");
           });
           xit("should fill the protocol name field", function() {
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("FLIPR target A biochemical");
@@ -502,6 +522,17 @@
             this.pbc.$('.bv_shortDescription').change();
             return expect(this.pbc.model.get('shortDescription')).toEqual(" ");
           });
+          it("should update model when assay principle is changed", function() {
+            var desc, states, values;
+            this.pbc.$('.bv_assayPrinciple').val(" New assay principle   ");
+            this.pbc.$('.bv_assayPrinciple').change();
+            states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
+            expect(states.length).toEqual(1);
+            values = states[0].getValuesByTypeAndKind("clobValue", "assay principle");
+            desc = values[0].get('clobValue');
+            expect(desc).toEqual("New assay principle");
+            return expect(this.pbc.model.getAssayPrinciple().get('clobValue')).toEqual("New assay principle");
+          });
           it("should update model when description is changed", function() {
             var desc, states, values;
             this.pbc.$('.bv_description').val(" New long description   ");
@@ -512,6 +543,17 @@
             desc = values[0].get('clobValue');
             expect(desc).toEqual("New long description");
             return expect(this.pbc.model.getDescription().get('clobValue')).toEqual("New long description");
+          });
+          it("should update model when comments is changed", function() {
+            var desc, states, values;
+            this.pbc.$('.bv_comments').val(" New comments   ");
+            this.pbc.$('.bv_comments').change();
+            states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
+            expect(states.length).toEqual(1);
+            values = states[0].getValuesByTypeAndKind("clobValue", "comments");
+            desc = values[0].get('clobValue');
+            expect(desc).toEqual("New comments");
+            return expect(this.pbc.model.getComments().get('clobValue')).toEqual("New comments");
           });
           it("should update model when protocol name is changed", function() {
             this.pbc.$('.bv_protocolName').val(" Updated protocol name   ");
