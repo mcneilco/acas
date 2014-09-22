@@ -1,16 +1,19 @@
 # Sets the activity and column names to the user input. 
 # Sets column names included in input parameters to the format of Rn {acivity}
-# Inputs: readOrder (user input)
-#         readNames (user input)
+# Inputs: readsTable (data.table with columns readOrder, readNames, activity)
 #         activityColNames (assayData) (from instrument files)
 # Output: data table that can be used as a reference. Columns: userReadOrder, userReadName, ativityColName, newActivityColName
 
-formatUserInputActivityColumns <- function(readOrder, readNames, activityColNames, tempFilePath, matchNames) {
+formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFilePath, matchNames) {
   
   # For log file
   write.table(paste0(Sys.time(), "\tbegin formatUserInputActivityColumns"), file = file.path(tempFilePath, "runlog.tab"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  userInput <- data.table(userReadOrder=readOrder, userReadName=readNames, activityColName="None", newActivityColName="None")
+  userInput <- copy(readsTable)
+  setnames(userInput, c("readOrder", "readNames"), c("userReadOrder", "userReadName"))
+  userInput$activityCol <- NULL
+  userInput$activityColName <- "None"
+  userInput$newActivityColName <- "None"
   
   noMatch <- list()
   overWrite <- list()
@@ -20,7 +23,7 @@ formatUserInputActivityColumns <- function(readOrder, readNames, activityColName
   }
   
   if (matchNames) {
-    for(name in readNames) {
+    for(name in userInput$userReadName) {
       columnCount <- 0
       for(activity in activityColNames) {
         if(name == activity) {
@@ -37,11 +40,11 @@ formatUserInputActivityColumns <- function(readOrder, readNames, activityColName
       } 
     } 
   } else {
-    for (order in readOrder) {
+    for (order in userInput$userReadOrder) {
       userInput[userReadOrder == order, ]$activityColName <- activityColNames[[order]]
     }
     # Checks to see if data has a generic name (Rn)
-    for(name in readNames) {
+    for(name in userInput$userReadName) {
       if(!grepl("^R[0-9]+$", userInput[userReadName==name, ]$activityColName) && name != userInput[userReadName==name, ]$activityColName){
         overWrite[[length(overWrite) + 1]] <- userInput[userReadName==name, ]$activityColName
       }

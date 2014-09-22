@@ -35,7 +35,7 @@
 # agonistConc: 49.5
 # positive: FL0073900-1-1
 # negative: FL0073895-1-1
-# request <- fromJSON("{\"primaryAnalysisReads\":[{\"readOrder\":11,\"readName\":\"luminescence\",\"matchReadName\":true},{\"readOrder\":12,\"readName\":\"fluorescence\",\"matchReadName\":true},{\"readOrder\":13,\"readName\":\"other read name\",\"matchReadName\":false}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"transformationRule\":\"(maximum-minimum)/minimum\",\"normalizationRule\":\"plate order\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"primaryAnalysisReadList\":[{\"readOrder\":11,\"readName\":\"luminescence\",\"matchReadName\":true},{\"readOrder\":12,\"readName\":\"fluorescence\",\"matchReadName\":true},{\"readOrder\":13,\"readName\":\"other read name\",\"matchReadName\":false}]},\"instrumentReaderCodes\":[{\"code\":\"flipr\",\"name\":\"FLIPR\",\"ignored\":false}],\"signalDirectionCodes\":[{\"code\":\"increasing signal (highest = 100%)\",\"name\":\"Increasing Signal (highest = 100%)\",\"ignored\":false}],\"aggregateBy1Codes\":[{\"code\":\"compound batch concentration\",\"name\":\"Compound Batch Concentration\",\"ignored\":false}],\"aggregateBy2Codes\":[{\"code\":\"median\",\"name\":\"Median\",\"ignored\":false}],\"transformationCodes\":[{\"code\":\"(maximum-minimum)/minimum\",\"name\":\"(Max-Min)/Min\",\"ignored\":false}],\"normalizationCodes\":[{\"code\":\"plate order\",\"name\":\"Plate Order\",\"ignored\":false},{\"code\":\"none\",\"name\":\"None\",\"ignored\":false}],\"readNameCodes\":[{\"code\":\"luminescence\",\"name\":\"Luminescence\",\"ignored\":false}]}")
+# request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
 
 # DryRun
 # user  system elapsed 
@@ -1747,6 +1747,48 @@ computeNormalized  <- function(values, wellType, flag) {
   return((values - minLevel) / (maxLevel - minLevel))
 }
 
+loadInstrumentReadParameters <- function(instrumentType) {
+  # This function returns the parameters for instrument types. 
+  #
+  # Input:  instrumentType
+  # Output: assay file parameters (list)
+  
+  if (!file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType)) || 
+        !file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"instrumentType.json")) ||
+        !file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"detectionLine.json")) ||
+        !file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"paramList.json"))) 
+  {
+    stopUser("Instrument not loaded in to system.")
+  } 
+  
+  instrument <- fromJSON(readLines(system.file(file.path("instruments",instrumentType,"instrumentType.json"), package="rdap")))$instrumentType
+  if(instrumentType != instrument) {
+    stopUser("Instrument data loaded incorrectly.")
+  }
+  
+  paramList <- fromJSON(readLines(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"paramList.json")))$paramList
+  if(paramList$dataTitleIdentifier == "NA") {
+    paramList$dataTitleIdentifier <- NA
+  }
+  
+  return(paramList)  
+}
+
+getReadOrderTable <- function(readList) {
+  readsTable <- data.table(readOrder=readList[[1]]$readPosition, 
+                           readNames=readList[[1]]$readName,
+                           activityCol=readList[[1]]$activity)
+  for (i in 2:length(readList)) {
+    subTable <- data.table(readOrder=readList[[i]]$readPosition, 
+                           readNames=readList[[i]]$readName,
+                           activityCol=readList[[i]]$activity)
+    readsTable <- rbind(readsTable, subTable)
+  }
+  
+  return(readsTable)
+}
+
+
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
   # Runs main functions that are inside the tryCatch.W.E
@@ -1782,12 +1824,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # TODO: store this in protocol
   parameters$latePeakTime <- 80
   
-  if(is.null(parameters$useRdap)) {
-    useRdap <- FALSE
-  } else {
-    useRdap <- as.logical(parameters$useRdap)
-    rdapTestMode <- as.logical(parameters$rdapTestMode)
-  }
+  #   if(is.null(parameters$useRdap)) {
+  #     useRdap <- FALSE
+  #   } else {
+  #     useRdap <- as.logical(parameters$useRdap)
+  #     rdapTestMode <- as.logical(parameters$rdapTestMode)
+  #   }
   
   dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
   dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
@@ -1811,31 +1853,26 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     folderToParse <- paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData")
   } 
   
-  ### START HERE - FLIPR reading function
-  
-  if(useRdap) {
+  # GREEN (instrument-specific)
+  instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
     
-    # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
-
-    #     require(rdap)
+  # TODO: adjust to read in different file types - here or in specdataprep? 
     fileList <- c(list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/"), full.names=TRUE), 
                   list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE))
     lapply(fileList, source)
     
-    # GREEN (instrument-specific)
-    paramList <- loadInstrumentReadParameters(instrument, tempdir())
-    
     # instead of "if" statements, source an instrument class file.... yes?
     if(paramList$dataFormat != "stat1stat2seq1") {
+      readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)
+      
       instrumentData <- getInstrumentSpecificData(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse), 
-                                                  instrument=instrument, 
-                                                  readOrder=readOrder, 
-                                                  testMode=rdapTestMode,
+                                                  instrument=parameters$instrumentReader, 
+                                                  readsTable=readsTable, 
+                                                  testMode=TRUE,
                                                   errorEnv=errorEnv,
-                                                  tempFilePath=tempFilePath,
+                                                  tempFilePath=NULL, # this should be the analysis file?
                                                   dryRun=dryRun,
-                                                  readNames=readNames,
-                                                  mathNames=matchNames)
+                                                  matchNames=matchNames)
                          
     }
     

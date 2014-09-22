@@ -3,7 +3,7 @@
 #require(rdap)
 
 
-getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, readOrder=NA, testMode=TRUE, errorEnv, tempFilePath=NULL, dryRun=TRUE, readNames=NA, matchNames=FALSE) {
+getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, readsTable, testMode=TRUE, errorEnv, tempFilePath=NULL, dryRun=TRUE, matchNames=FALSE) {
   
   originalWD <- getwd()
   require(racas)
@@ -26,7 +26,7 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, re
   plateAssociationDT <- plateData
   
   # keep this in this part of the code so that warnings can be relayed to user before uploading data
-  userInputReadTable <- formatUserInputActivityColumns(readOrder=readOrder, readNames=readNames, activityColNames=unique(plateAssociationDT$dataTitle), tempFilePath=tempFilePath, matchNames=matchNames)
+  userInputReadTable <- formatUserInputActivityColumns(readsTable=readsTable, activityColNames=unique(plateAssociationDT$dataTitle), tempFilePath=tempFilePath, matchNames=matchNames)
   
   ## TODO: dryRun should return "summaryInfo" here?
 
