@@ -35,6 +35,7 @@
 # agonistConc: 49.5
 # positive: FL0073900-1-1
 # negative: FL0073895-1-1
+# request <- fromJSON("{\"primaryAnalysisReads\":[{\"readOrder\":11,\"readName\":\"luminescence\",\"matchReadName\":true},{\"readOrder\":12,\"readName\":\"fluorescence\",\"matchReadName\":true},{\"readOrder\":13,\"readName\":\"other read name\",\"matchReadName\":false}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"transformationRule\":\"(maximum-minimum)/minimum\",\"normalizationRule\":\"plate order\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"primaryAnalysisReadList\":[{\"readOrder\":11,\"readName\":\"luminescence\",\"matchReadName\":true},{\"readOrder\":12,\"readName\":\"fluorescence\",\"matchReadName\":true},{\"readOrder\":13,\"readName\":\"other read name\",\"matchReadName\":false}]},\"instrumentReaderCodes\":[{\"code\":\"flipr\",\"name\":\"FLIPR\",\"ignored\":false}],\"signalDirectionCodes\":[{\"code\":\"increasing signal (highest = 100%)\",\"name\":\"Increasing Signal (highest = 100%)\",\"ignored\":false}],\"aggregateBy1Codes\":[{\"code\":\"compound batch concentration\",\"name\":\"Compound Batch Concentration\",\"ignored\":false}],\"aggregateBy2Codes\":[{\"code\":\"median\",\"name\":\"Median\",\"ignored\":false}],\"transformationCodes\":[{\"code\":\"(maximum-minimum)/minimum\",\"name\":\"(Max-Min)/Min\",\"ignored\":false}],\"normalizationCodes\":[{\"code\":\"plate order\",\"name\":\"Plate Order\",\"ignored\":false},{\"code\":\"none\",\"name\":\"None\",\"ignored\":false}],\"readNameCodes\":[{\"code\":\"luminescence\",\"name\":\"Luminescence\",\"ignored\":false}]}")
 
 # DryRun
 # user  system elapsed 
@@ -43,6 +44,7 @@
 # real
 # user  system elapsed 
 # 7.904   0.250  45.444 
+
 
 
 makeDataFrameOfWellsGrid <- function(allData, barcode, valueName) {
@@ -1815,7 +1817,40 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
 
-    require(rdap)
+    #     require(rdap)
+    fileList <- c(list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/"), full.names=TRUE), 
+                  list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE))
+    lapply(fileList, source)
+    
+    # GREEN (instrument-specific)
+    paramList <- loadInstrumentReadParameters(instrument, tempdir())
+    
+    # instead of "if" statements, source an instrument class file.... yes?
+    if(paramList$dataFormat != "stat1stat2seq1") {
+      instrumentData <- getInstrumentSpecificData(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse), 
+                                                  instrument=instrument, 
+                                                  readOrder=readOrder, 
+                                                  testMode=rdapTestMode,
+                                                  errorEnv=errorEnv,
+                                                  tempFilePath=tempFilePath,
+                                                  dryRun=dryRun,
+                                                  readNames=readNames,
+                                                  mathNames=matchNames)
+                         
+    }
+    
+    # RED (client-specific)
+    if(paramList$dataFormat != "stat1stat2seq1") {
+      
+      # creates the output_well_data.srf. This needs to be adjusted to return a list instead - maybe.
+      getCompoundAssignments(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse),
+                             plateData=instrumentData$plateAssociationDT,
+                             testMode=rdapTestMode,
+                             tempFilePath=tempFilePath,
+                             assayData=instrumentData$assayData,
+                             originalWD=Sys.getenv("ACAS_HOME"))
+    }
+    
     rdapList <- catchExecuteDap(request=list(filePath=file.path(getwd(), folderToParse), testMode=rdapTestMode))
     # TODO: GUI will ask more things. These need to be passed through:
     #   (InstrumentType, list(readOrder[1], readName[luminescence], matchReadName[t/f]))
@@ -1834,38 +1869,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name", "cmpdBatch"), c("well", "barcode", "concentration", "batchName", "batchCode"))
     
-    ## TODO: Test Sructure
-      resultTable$hasAgonist <- FALSE
-      resultTable$concentrationUnit <- "uM"
-      # remove DNS batchCodes to make this work in localhost
-      rdapBatchCodes <- unique(resultTable$batchCode)
-      rdapBatchNames <- unique(resultTable$batchName)
-      fakeRdapBatchCodes <- list()
-      fakeRdapBatchNames <- list()
-      i <- 1
-      for (i in 1:max(length(rdapBatchCodes), length(rdapBatchNames), na.rm=TRUE)) {
-        fakeRdapBatchNames[i] <- paste0("CMPD-", sprintf("%07d", i))
-        fakeRdapBatchCodes[i] <- paste0(fakeRdapBatchNames[i], "-01A")
-      }
-      
-      i <- 1
-      if(length(rdapBatchCodes) > length(rdapBatchNames)){
-        stop("Error with fakeRdap test structure")
-      }
-      for( i in 1:length(rdapBatchCodes)) {
-        if(rdapBatchCodes[i] != "NA::NA") {
-          resultTable$batchCode <- gsub(rdapBatchCodes[i], fakeRdapBatchCodes[[i]], resultTable$batchCode)
-        }
-        if(rdapBatchNames[i] != "") {
-          resultTable$batchName <- gsub(rdapBatchNames[i], fakeRdapBatchNames[[i]], resultTable$batchName)
-        }
-      }
-    #       resultTable$fileName <- folderToParse
-    #       # normalization
-    normalization <- ""
+    ### test structure for fliprr thread pulled out in to untitled6
     
-    ## End Test Structure
   } else {
+    
+    ## GREEN (instrument-specific)
     fileNameTable <- validateInputFiles(folderToParse)
     
     # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
@@ -1874,6 +1882,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     resultTable <- as.data.table(do.call("rbind",resultList))
     barcodeList <- levels(resultTable$barcode)
     
+    ## RED (client-specific)
     wellTable <- createWellTable(barcodeList, testMode)
     
     # apply dilution
