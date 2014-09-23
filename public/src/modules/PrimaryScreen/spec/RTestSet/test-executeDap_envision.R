@@ -32,8 +32,12 @@ test_that("executeDap functionality (envision)", {
   
   testFilePath <- file.path(originalWD, "public/src/modules/PrimaryScreen/spec/RTestSet/docs/test_raw_data_envision/EXPT00EV01/Raw_data")
   
-  instrumentSpecData <- getInstrumentSpecificData(filePath=normalizePath(testFilePath, winslash = "\\", mustWork=NA), instrument="envision", testMode=TRUE, tempFilePath=tempFilePath, readOrder=list(1,2), readNames=list("R1","R2"), matchNames=FALSE)
-  getCompoundAssignments(plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData, originalWD=originalWD)
+  readOrder <- list(1,2)
+  readNames <- list("R1","R2")
+  readsTable <- data.table(readOrder=readOrder, readNames=readNames, activityCol=TRUE) 
+  
+  instrumentSpecData <- getInstrumentSpecificData(filePath=normalizePath(testFilePath, winslash = "\\", mustWork=NA), instrument="envision", testMode=TRUE, tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
+  getCompoundAssignments(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData, originalWD=originalWD)
   
   testFile <- normalizePath(file.path(tempdir(), "output_well_data.srf"))
   testTable <- read.table(testFile, sep="\t", stringsAsFactors=TRUE, header=TRUE)

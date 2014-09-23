@@ -10,15 +10,18 @@ test_that("formatUserInputActivityColumns functionality", {
   testReadNamesMissOne <- list("Fluorescence","ValidNeuronCount","ValidFieldCount")
   testReadNamesMissAll <- list("Fluorescence","Valid Neuron Count","Valid Field Count")
   testReadNames <- list("ValidNeuronCount","ValidFieldCount","NeuriteTotalLengthPerNeuronCh2")
-  testActivityColNames <- c("ValidNeuronCount","NeuriteTotalLengthPerNeuronCh2","ValidFieldCount")  
+  testActivityColNames <- c("ValidNeuronCount","NeuriteTotalLengthPerNeuronCh2","ValidFieldCount") 
+  testReadsTable <- data.table(readOrder=testReadOrder, readNames=testReadNames, activityCol=TRUE)
+  testReadsTableMissOne <- data.table(readOrder=testReadOrder, readNames=testReadNamesMissOne, activityCol=TRUE)
+  testReadsTableMissAll <- data.table(readOrder=testReadOrder, readNames=testReadNamesMissAll, activityCol=TRUE)
   tempFilePath <- tempdir()
   
-  testColTable <- formatUserInputActivityColumns(readOrder=testReadOrder, readName=testReadNames, activityColNames=testActivityColNames, tempFilePath, matchNames=TRUE)
-  testColTableMissOne <- suppressWarnings(formatUserInputActivityColumns(readOrder=testReadOrder, readName=testReadNamesMissOne, activityColNames=testActivityColNames, tempFilePath, matchNames=TRUE) )
+  testColTable <- formatUserInputActivityColumns(readsTable=testReadsTable, activityColNames=testActivityColNames, tempFilePath, matchNames=TRUE)
+  testColTableMissOne <- suppressWarnings(formatUserInputActivityColumns(readsTable=testReadsTableMissOne, activityColNames=testActivityColNames, tempFilePath, matchNames=TRUE) )
   
   
-  expect_that(formatUserInputActivityColumns(readOrder=testReadOrder, readName=testReadNamesMissOne, activityColNames=testActivityColNames, tempFilePath, matchNames=TRUE), gives_warning("No match found for read name\\(s): 'Fluorescence'"))
-  expect_that(suppressWarnings(formatUserInputActivityColumns(readOrder=testReadOrder, readName=testReadNamesMissAll, activityColNames=testActivityColNames, tempFilePath, matchNames=TRUE)), throws_error("No valid acvitivy columns were found from user input."))
+  expect_that(formatUserInputActivityColumns(readsTable=testReadsTableMissAll, activityColNames=testActivityColNames, tempFilePath, matchNames=TRUE), gives_warning("No match found for read name\\(s): 'Fluorescence'"))
+  expect_that(suppressWarnings(formatUserInputActivityColumns(readsTable=testReadsTableMissAll, activityColNames=testActivityColNames, tempFilePath, matchNames=TRUE)), throws_error("No valid acvitivy columns were found from user input."))
   expect_that(testColTable$newActivityColName, is_identical_to(c("R1 {ValidNeuronCount}","R2 {ValidFieldCount}","R3 {NeuriteTotalLengthPerNeuronCh2}")))
   expect_that(testColTableMissOne$activityColName, is_identical_to(c("None","ValidNeuronCount","ValidFieldCount")))
   expect_that(testColTableMissOne$newActivityColName, is_identical_to(c("R1 {Fluorescence}","R2 {ValidNeuronCount}","R3 {ValidFieldCount}")))
