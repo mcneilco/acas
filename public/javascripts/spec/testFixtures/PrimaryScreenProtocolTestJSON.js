@@ -601,6 +601,7 @@
             {
               clobValue: null,
               codeValue: "luminescence",
+              codeOrigin: "acas ddict",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -629,6 +630,7 @@
             }, {
               clobValue: null,
               codeValue: "target x",
+              codeOrigin: "dns target list",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -657,6 +659,7 @@
             }, {
               clobValue: null,
               codeValue: "human",
+              codeOrigin: "acas ddict",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -685,6 +688,7 @@
             }, {
               clobValue: null,
               codeValue: "cellular assay",
+              codeOrigin: "acas ddict",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -713,6 +717,7 @@
             }, {
               clobValue: null,
               codeValue: "wizard triple luminescence",
+              codeOrigin: "acas ddict",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -741,6 +746,7 @@
             }, {
               clobValue: null,
               codeValue: "cell line y",
+              codeOrigin: "acas ddict",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -769,6 +775,7 @@
             }, {
               clobValue: null,
               codeValue: "assay development",
+              codeOrigin: "acas ddict",
               comments: null,
               dateValue: null,
               fileValue: null,

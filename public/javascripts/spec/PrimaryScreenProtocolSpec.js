@@ -16,7 +16,7 @@
         });
         describe("Defaults", function() {
           it('Should have the select DNS target list be unchecked', function() {
-            return expect(this.psp.get('dnsTargetList')).toEqual(false);
+            return expect(this.psp.get('dnsList')).toBeFalsy();
           });
           it('Should have an default maxY curve display of 100', function() {
             expect(this.psp.getCurveDisplayMax() instanceof Value).toBeTruthy();
@@ -30,31 +30,38 @@
         return describe("required states and values", function() {
           it("should have an assay activity value", function() {
             expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay activity') instanceof Value).toBeTruthy();
-            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("unassigned");
+            expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("unassigned");
+            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeOrigin')).toEqual("acas ddict");
           });
-          it("should have a molecular target value", function() {
+          it("should have a molecular target value with code origin set to acas ddict", function() {
             expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target') instanceof Value).toBeTruthy();
-            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("unassigned");
+            expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("unassigned");
+            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual("acas ddict");
           });
           it("should have a target origin value", function() {
             expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('target origin') instanceof Value).toBeTruthy();
-            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual("unassigned");
+            expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual("unassigned");
+            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeOrigin')).toEqual("acas ddict");
           });
           it("should have an assay type value", function() {
             expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay type') instanceof Value).toBeTruthy();
-            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("unassigned");
+            expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("unassigned");
+            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeOrigin')).toEqual("acas ddict");
           });
           it("should have an assay technology value", function() {
             expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay technology') instanceof Value).toBeTruthy();
-            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("unassigned");
+            expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("unassigned");
+            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeOrigin')).toEqual("acas ddict");
           });
           it("should have a cell line value", function() {
             expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('cell line') instanceof Value).toBeTruthy();
-            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("unassigned");
+            expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("unassigned");
+            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeOrigin')).toEqual("acas ddict");
           });
           return it("should have an assay stage value", function() {
             expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay stage') instanceof Value).toBeTruthy();
-            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
+            expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
+            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeOrigin')).toEqual("acas ddict");
           });
         });
       });
@@ -69,7 +76,7 @@
         });
         return describe("after initial load", function() {
           it("should have the Select DNS Target List be checked ", function() {
-            return expect(this.psp.get('dnsTargetList')).toEqual(true);
+            return expect(this.psp.get('dnsList')).toBeTruthy();
           });
           it("should have a maxY curve display ", function() {
             return expect(this.psp.getCurveDisplayMax().get('numericValue')).toEqual(200);
@@ -83,7 +90,8 @@
           });
           it('Should have a molecularTarget value', function() {
             console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target'));
-            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("target x");
+            expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("target x");
+            return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual("dns target list");
           });
           it('Should have an targetOrigin value', function() {
             console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('target origin'));
@@ -93,7 +101,7 @@
             console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay type'));
             return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("cellular assay");
           });
-          it('Should have a molecularTarget value', function() {
+          it('Should have a molecularTarget value with code origin set to dns target list', function() {
             console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay technology'));
             return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("wizard triple luminescence");
           });
@@ -570,85 +578,83 @@
           });
           return this.psppc.render();
         });
-        return describe("when instantiated", function() {
-          describe("basic existence tests", function() {
-            it("should exist", function() {
-              return expect(this.psppc).toBeDefined();
-            });
-            return it("should load a template", function() {
-              return expect(this.psppc.$('.bv_dnsTargetList').length).toEqual(1);
+        describe("basic existence tests", function() {
+          it("should exist", function() {
+            return expect(this.psppc).toBeDefined();
+          });
+          return it("should load a template", function() {
+            return expect(this.psppc.$('.bv_dnsTargetListChkbx').length).toEqual(1);
+          });
+        });
+        describe("render parameters", function() {
+          it("should have the select dns target list be unchecked", function() {
+            console.log("dns list test");
+            console.log(this.psppc.$('.bv_dnsTargetListChkbx').attr("checked"));
+            return expect(this.psppc.$('.bv_dnsTargetListChkbx').attr("checked")).toBeUndefined();
+          });
+          it("should show the curve display max", function() {
+            expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual(100.0);
+            return expect(this.psppc.$('.bv_maxY').val()).toEqual("100");
+          });
+          it("should show the curve display min", function() {
+            expect(this.psppc.model.getCurveDisplayMin().get('numericValue')).toEqual(0.0);
+            return expect(this.psppc.$('.bv_minY').val()).toEqual("0");
+          });
+          return it('should show the assayStage', function() {
+            waitsFor(function() {
+              return this.psppc.$('.bv_assayStage option').length > 0;
+            }, 1000);
+            return runs(function() {
+              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
+              return expect(this.psppc.$('.bv_assayStage').val()).toEqual("unassigned");
             });
           });
-          describe("render existing parameters", function() {
-            it("should have the select dns target list be unchecked", function() {
-              expect(this.psppc.$('.bv_dnsTargetList').attr("checked")).toBeUndefined();
-              return expect(this.psppc.$('.bv_dnsTargetList').val()).toEqual("false");
-            });
-            it("should show the curve display max", function() {
-              expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual(100.0);
-              return expect(this.psppc.$('.bv_maxY').val()).toEqual("100");
-            });
-            it("should show the curve display min", function() {
-              expect(this.psppc.model.getCurveDisplayMin().get('numericValue')).toEqual(0.0);
-              return expect(this.psppc.$('.bv_minY').val()).toEqual("0");
-            });
-            return it('should show the assayStage', function() {
-              waitsFor(function() {
-                return this.psppc.$('.bv_assayStage option').length > 0;
-              }, 1000);
-              return runs(function() {
-                expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
-                return expect(this.psppc.$('.bv_assayStage').val()).toEqual("unassigned");
-              });
+        });
+        describe("model updates", function() {
+          it("should update the select DNS target list", function() {
+            this.psppc.$('.bv_dnsTargetListChkbx').click();
+            this.psppc.$('.bv_dnsTargetListChkbx').click();
+            expect(this.psppc.model.get('dnsList')).toBeTruthy();
+            return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual("dns target list");
+          });
+          it("should update the curve display max", function() {
+            this.psppc.$('.bv_maxY').val("130");
+            this.psppc.$('.bv_maxY').change();
+            return expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual("130");
+          });
+          it("should update the curve display min", function() {
+            this.psppc.$('.bv_minY').val("13");
+            this.psppc.$('.bv_minY').change();
+            return expect(this.psppc.model.getCurveDisplayMin().get('numericValue')).toEqual("13");
+          });
+          return it("should update model when assay stage changed", function() {
+            waitsFor(function() {
+              return this.psppc.$('.bv_assayStage option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psppc.$('.bv_assayStage').val('unassigned');
+              this.psppc.$('.bv_assayStage').change();
+              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
             });
           });
-          describe("model updates", function() {
-            it("should update the select DNS target list", function() {
-              this.psppc.$('.bv_dnsTargetList').click();
-              this.psppc.$('.bv_dnsTargetList').click();
-              return expect(this.psppc.model.get('dnsTargetList')).toBeTruthy();
-            });
-            it("should update the curve display max", function() {
-              this.psppc.$('.bv_maxY').val("130");
-              this.psppc.$('.bv_maxY').change();
-              return expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual("130");
-            });
-            it("should update the curve display min", function() {
-              this.psppc.$('.bv_minY').val("13");
-              this.psppc.$('.bv_minY').change();
-              return expect(this.psppc.model.getCurveDisplayMin().get('numericValue')).toEqual("13");
-            });
-            return it("should update model when assay stage changed", function() {
-              waitsFor(function() {
-                return this.psppc.$('.bv_assayStage option').length > 0;
-              }, 1000);
-              return runs(function() {
-                this.psppc.$('.bv_assayStage').val('unassigned');
-                this.psppc.$('.bv_assayStage').change();
-                return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
-              });
-            });
+        });
+        describe("behavior", function() {
+          return it("should hide the Molecular Target's add button when the Select dns target list checkbox is checked", function() {
+            this.psppc.$('.bv_dnsTargetListChkbx').click();
+            expect(this.psppc.model.get('dnsList')).toBeTruthy();
+            return expect(this.psppc.$('.bv_addMolecularTargetBtn')).toBeHidden();
           });
-          describe("behavior", function() {
-            return it("should hide the Molecular Target's add button when the Select dns target list checkbox is checked", function() {
-              this.psppc.$('.bv_dnsTargetList').click();
-              this.psppc.$('.bv_dnsTargetList').click();
-              expect(this.psppc.$('.bv_addMolecularTargetBtn')).toBeHidden();
-              expect(this.psppc.model.get('dnsTargetList')).toBeTruthy();
-              return expect(this.psppc.$('.bv_addMolecularTargetBtn')).toBeHidden();
-            });
+        });
+        return describe("controller validation rules", function() {
+          it("should show error when maxY is NaN", function() {
+            this.psppc.$('.bv_maxY').val("b");
+            this.psppc.$('.bv_maxY').change();
+            return expect(this.psppc.$('.bv_group_maxY').hasClass('error')).toBeTruthy();
           });
-          return describe("controller validation rules", function() {
-            it("should show error when maxY is NaN", function() {
-              this.psppc.$('.bv_maxY').val("b");
-              this.psppc.$('.bv_maxY').change();
-              return expect(this.psppc.$('.bv_group_maxY').hasClass('error')).toBeTruthy();
-            });
-            return it("should show error when minY is NaN", function() {
-              this.psppc.$('.bv_minY').val("b");
-              this.psppc.$('.bv_minY').change();
-              return expect(this.psppc.$('.bv_group_minY').hasClass('error')).toBeTruthy();
-            });
+          return it("should show error when minY is NaN", function() {
+            this.psppc.$('.bv_minY').val("b");
+            this.psppc.$('.bv_minY').change();
+            return expect(this.psppc.$('.bv_group_minY').hasClass('error')).toBeTruthy();
           });
         });
       });
@@ -666,13 +672,12 @@
               return expect(this.psppc).toBeDefined();
             });
             return it("should load a template", function() {
-              return expect(this.psppc.$('.bv_dnsTargetList').length).toEqual(1);
+              return expect(this.psppc.$('.bv_dnsTargetListChkbx').length).toEqual(1);
             });
           });
           return describe("render existing parameters", function() {
             it("should have the select dns target list be checked", function() {
-              console.log(this.psppc.model.get('dnsTargetList'));
-              return expect(this.psppc.$('.bv_dnsTargetList').attr("checked")).toEqual("checked");
+              return expect(this.psppc.$('.bv_dnsTargetListChkbx').attr("checked")).toEqual("checked");
             });
             it('should show the maxY', function() {
               return expect(this.psppc.$('.bv_maxY').val()).toEqual("200");

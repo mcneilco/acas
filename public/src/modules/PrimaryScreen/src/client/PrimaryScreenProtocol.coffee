@@ -2,10 +2,15 @@ class window.PrimaryScreenProtocol extends Protocol
 
 	defaults: ->
 		_(super()).extend(
-			dnsTargetList: false
+			dnsList: false
 		)
 
+	initialize: ->
+		super()
+		@.setdnsList()
+
 	validate: (attrs) ->
+		console.log "validating"
 		errors = []
 		maxY = @getCurveDisplayMax().get('numericValue')
 		if isNaN(maxY)
@@ -24,26 +29,38 @@ class window.PrimaryScreenProtocol extends Protocol
 			return null
 
 	getPrimaryScreenProtocolParameterCodeValue: (parameterName) ->
+		console.log "here"
 		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", parameterName
 		if parameter.get('codeValue') is undefined or parameter.get('codeValue') is ""
-			console.log "heres"
 			parameter.set codeValue: "unassigned"
+		if parameter.get('codeOrigin') is undefined or parameter.get('codeOrigin') is ""
+			parameter.set codeOrigin: "acas ddict"
 
 		parameter
+
+	setdnsList: ->
+		molecularTarget = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", "molecular target"
+		if molecularTarget.get('codeOrigin') is "dns target list"
+			console.log "different code origin"
+			@.set dnsList: true
+		else
+			@.set dnsList: false
+
+
 
 	getCurveDisplayMin: ->
-		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display min"
-		if parameter.get('numericValue') is undefined or parameter.get('numericValue') is ""
-			parameter.set numericValue: 0.0
+		minY = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display min"
+		if minY.get('numericValue') is undefined or minY.get('numericValue') is ""
+			minY.set numericValue: 0.0
 
-		parameter
+		minY
 
 	getCurveDisplayMax: ->
-		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display max"
-		if parameter.get('numericValue') is undefined or parameter.get('numericValue') is ""
-			parameter.set numericValue: 100.0
+		maxY = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display max"
+		if maxY.get('numericValue') is undefined or maxY.get('numericValue') is ""
+			maxY.set numericValue: 100.0
 
-		parameter
+		maxY
 
 
 class window.AbstractPrimaryScreenProtocolParameterController extends Backbone.View
@@ -291,11 +308,12 @@ class window.CellLineController extends AbstractPrimaryScreenProtocolParameterCo
 
 
 
-class window.PrimaryScreenProtocolParametersController extends AbstractParserFormController
+class window.PrimaryScreenProtocolParametersController extends AbstractFormController
 	template: _.template($("#PrimaryScreenProtocolParametersView").html())
+	autofillTemplate: _.template($("#PrimaryScreenProtocolParametersAutofillView").html())
 
 	events:
-		"click .bv_dnsTargetList": "handleTargetListChanged"
+		"click .bv_dnsTargetListChkbx": "handleTargetListChanged"
 		"change .bv_assayStage": "handleAssayStageChanged"
 		"change .bv_maxY": "handleMaxYChanged"
 		"change .bv_minY": "handleMinYChanged"
@@ -304,6 +322,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractParserFor
 	initialize: ->
 		console.log "initialize"
 		@errorOwnerName = 'PrimaryScreenProtocolParametersController'
+		@setBindings()
 		super()
 		@setUpAssayStageSelect()
 
@@ -311,17 +330,15 @@ class window.PrimaryScreenProtocolParametersController extends AbstractParserFor
 
 	render: =>
 		console.log "rendering"
-		console.log @model
-		console.log
-		console.log @model.get('dnsTargetList')
-		console.log @model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')
-		console.log @model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')
-		@$('.bv_primaryProtocolParameters').empty()
-		@$('.bv_primaryProtocolParameters').html @template(@model.attributes)
-		@$('.bv_dnsTargetList').val(@model.get('dnsTargetList'))
+		@$el.empty()
+		@$el.html @autofillTemplate(@model.attributes)
+		console.log "in render still"
+		console.log @model.get('dnsList')
+		@$('.bv_dnsTargetListChkbx').val(@model.get('dnsList'))
 		@$('.bv_maxY').val(@model.getCurveDisplayMax().get('numericValue'))
 		@$('.bv_minY').val(@model.getCurveDisplayMin().get('numericValue'))
 		@setUpAssayStageSelect()
+		@handleTargetListChanged()
 		super()
 
 		@
@@ -338,20 +355,28 @@ class window.PrimaryScreenProtocolParametersController extends AbstractParserFor
 			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')
 
 	updateModel: =>
+		console.log "updating model"
 		@model.set
 			assayStage: @$('.bv_assayStage').val()
-			maxY: parseFloat(@getTrimmedInput('.bv_maxY'))
-			minY: parseFloat(@getTrimmedInput('.bv_minY'))
-
 
 	handleTargetListChanged: =>
-		dnsTargetList = @$('.bv_dnsTargetList').is(":checked")
-		@model.set dnsTargetList: dnsTargetList
+		console.log "handling target list checkbox changed"
+		dnsTargetList = @$('.bv_dnsTargetListChkbx').is(":checked")
+#		@model.set dnsTargetList: dnsTargetList
+		console.log "look here"
+		console.log dnsTargetList
+		@model.set dnsList: dnsTargetList
 		if dnsTargetList
 			@$('.bv_addMolecularTargetBtn').hide()
+			@model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set
+				codeOrigin: "dns target list"
+			console.log "dns checked"
 			# TODO: repopulate Molecular Target Select list with DNS Target List. Get route from Guy
 		else
 			@$('.bv_addMolecularTargetBtn').show()
+			@model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set
+				codeOrigin: "acas ddict"
+
 		@attributeChanged()
 
 	handleAssayStageChanged: =>
@@ -359,12 +384,16 @@ class window.PrimaryScreenProtocolParametersController extends AbstractParserFor
 			codeValue: @$('.bv_assayStage').val()
 
 	handleMaxYChanged: =>
+		console.log "handling maxY changed"
 		@model.getCurveDisplayMax().set
 			numericValue: @$('.bv_maxY').val()
+		@attributeChanged()
+
 
 	handleMinYChanged: =>
 		@model.getCurveDisplayMin().set
 			numericValue: @$('.bv_minY').val()
+		@attributeChanged()
 
 class window.PrimaryScreenProtocolController extends Backbone.View
 	template: _.template($("#PrimaryScreenProtocolView").html())
@@ -385,7 +414,7 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		unless @model?
 			@model = new PrimaryScreenProtocol()
 		$(@el).html @template()
-#		@model.on 'sync', @handleProtocolSaved
+		@model.on 'sync', @handleProtocolSaved
 		@protocolBaseController = new ProtocolBaseController
 			model: new Protocol
 			el: @$('.bv_protocolBase')
@@ -398,7 +427,11 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 	setupPrimaryScreenProtocolParametersController: ->
 		@primaryScreenProtocolParametersController= new PrimaryScreenProtocolParametersController
 			model: @model
-			el: @$('.bv_primaryProtocolParameters')
+			el: @$('.bv_autofillSection')
+		@primaryScreenProtocolParametersController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@primaryScreenProtocolParametersController.on 'amClean', =>
+			@trigger 'amClean'
 		@primaryScreenProtocolParametersController.render()
 
 	setupAssayActivityController: ->
@@ -440,3 +473,6 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 			model: @model
 			el: @$('.bv_cellLineWrapper')
 		@cellLineController.render()
+
+	handleProtocolSaved: =>
+		@primaryScreenProtocolParametersController.render()

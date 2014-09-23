@@ -3,16 +3,18 @@
 
 </script>
 
-
 <script type="text/template" id="PrimaryScreenProtocolParametersView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_primaryProtocolParameters">
+    <div class="bv_autofillSection"></div>
+</script>
+
+<script type="text/template" id="PrimaryScreenProtocolParametersAutofillView" xmlns="http://www.w3.org/1999/html">
         <div class="form-horizontal">
             <div class="bv_assayActivityWrapper"></div>
         </div>
 
-        <div class="control-group bv_group_dnsTargetList" style="margin-left:20px;margin-bottom:20px;">
+        <div class="control-group bv_group_dnsTargetListChkbx" style="margin-left:20px;margin-bottom:20px;">
             <label class="control-label checkbox" style="width:145px;margin-left:140px;">
-                <input type="checkbox" name="bv_dnsTargetList" class="bv_dnsTargetList"  />Select DNS Target List
+                <input type="checkbox" name="bv_dnsTargetListChkbx" class="bv_dnsTargetListChkbx" <% if (dnsList) { %> checked="checked"<% }%>/>Select DNS Target List
             </label>
         </div>
 
@@ -44,7 +46,6 @@
                 <input class="bv_minY" type="text" style="width:120px; margin-top:5px;"> </input>
             </span>
         </span>
-    </div>
 
 </script>
 

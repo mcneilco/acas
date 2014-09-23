@@ -12,7 +12,7 @@ describe "Primary Screen Protocol module testing", ->
 				@psp = new PrimaryScreenProtocol()
 			describe "Defaults", ->
 				it 'Should have the select DNS target list be unchecked', ->
-					expect(@psp.get('dnsTargetList')).toEqual false
+					expect(@psp.get('dnsList')).toBeFalsy()
 				it 'Should have an default maxY curve display of 100', ->
 					expect(@psp.getCurveDisplayMax() instanceof Value).toBeTruthy()
 					expect(@psp.getCurveDisplayMax().get('numericValue')).toEqual 100.0
@@ -23,24 +23,31 @@ describe "Primary Screen Protocol module testing", ->
 				it "should have an assay activity value", ->
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay activity') instanceof Value).toBeTruthy()
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "unassigned"
-				it "should have a molecular target value", ->
+					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeOrigin')).toEqual "acas ddict"
+				it "should have a molecular target value with code origin set to acas ddict", ->
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('molecular target') instanceof Value).toBeTruthy()
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "unassigned"
+					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual "acas ddict"
 				it "should have a target origin value", ->
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('target origin') instanceof Value).toBeTruthy()
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "unassigned"
+					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeOrigin')).toEqual "acas ddict"
 				it "should have an assay type value", ->
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay type') instanceof Value).toBeTruthy()
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual "unassigned"
+					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeOrigin')).toEqual "acas ddict"
 				it "should have an assay technology value", ->
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay technology') instanceof Value).toBeTruthy()
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "unassigned"
+					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeOrigin')).toEqual "acas ddict"
 				it "should have a cell line value", ->
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('cell line') instanceof Value).toBeTruthy()
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "unassigned"
+					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeOrigin')).toEqual "acas ddict"
 				it "should have an assay stage value", ->
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay stage') instanceof Value).toBeTruthy()
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "unassigned"
+					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeOrigin')).toEqual "acas ddict"
 		describe "When loaded from existing", ->
 			beforeEach ->
 				@psp = new PrimaryScreenProtocol window.primaryScreenProtocolTestJSON.fullSavedPrimaryScreenProtocol
@@ -49,7 +56,8 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@psp).toBeDefined()
 			describe "after initial load", ->
 				it "should have the Select DNS Target List be checked ", ->
-					expect(@psp.get('dnsTargetList')).toEqual true
+#					expect(@psp.get('dnsTargetList')).toEqual true
+					expect(@psp.get('dnsList')).toBeTruthy()
 				it "should have a maxY curve display ", ->
 					expect(@psp.getCurveDisplayMax().get('numericValue')).toEqual 200
 				it "should have a minY curve display ", ->
@@ -60,13 +68,14 @@ describe "Primary Screen Protocol module testing", ->
 				it 'Should have a molecularTarget value', ->
 					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('molecular target')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "target x"
+					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual "dns target list"
 				it 'Should have an targetOrigin value', ->
 					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('target origin')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "human"
 				it 'Should have an assay type value', ->
 					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('assay type')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual "cellular assay"
-				it 'Should have a molecularTarget value', ->
+				it 'Should have a molecularTarget value with code origin set to dns target list', ->
 					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('assay technology')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "wizard triple luminescence"
 				it 'Should have an targetOrigin value', ->
@@ -408,70 +417,69 @@ describe "Primary Screen Protocol module testing", ->
 					model: new PrimaryScreenProtocol()
 					el: $('#fixture')
 				@psppc.render()
-			describe "when instantiated", ->
-				describe "basic existence tests", ->
-					it "should exist", ->
-						expect(@psppc).toBeDefined()
-					it "should load a template", ->
-						expect(@psppc.$('.bv_dnsTargetList').length).toEqual 1
-				describe "render existing parameters", ->
-					it "should have the select dns target list be unchecked", ->
-						expect(@psppc.$('.bv_dnsTargetList').attr("checked")).toBeUndefined()
-						expect(@psppc.$('.bv_dnsTargetList').val()).toEqual "false"
-					it "should show the curve display max", ->
-						expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual 100.0
-						expect(@psppc.$('.bv_maxY').val()).toEqual "100"
-					it "should show the curve display min", ->
-						expect(@psppc.model.getCurveDisplayMin().get('numericValue')).toEqual 0.0
-						expect(@psppc.$('.bv_minY').val()).toEqual "0"
-					it 'should show the assayStage', ->
-						waitsFor ->
-							@psppc.$('.bv_assayStage option').length > 0
-						, 1000
-						runs ->
-							expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "unassigned"
-							expect(@psppc.$('.bv_assayStage').val()).toEqual "unassigned"
+			describe "basic existence tests", ->
+				it "should exist", ->
+					expect(@psppc).toBeDefined()
+				it "should load a template", ->
+					expect(@psppc.$('.bv_dnsTargetListChkbx').length).toEqual 1
+			describe "render parameters", ->
+				it "should have the select dns target list be unchecked", ->
+					console.log "dns list test"
+					console.log @psppc.$('.bv_dnsTargetListChkbx').attr("checked")
+					expect(@psppc.$('.bv_dnsTargetListChkbx').attr("checked")).toBeUndefined()
+				it "should show the curve display max", ->
+					expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual 100.0
+					expect(@psppc.$('.bv_maxY').val()).toEqual "100"
+				it "should show the curve display min", ->
+					expect(@psppc.model.getCurveDisplayMin().get('numericValue')).toEqual 0.0
+					expect(@psppc.$('.bv_minY').val()).toEqual "0"
+				it 'should show the assayStage', ->
+					waitsFor ->
+						@psppc.$('.bv_assayStage option').length > 0
+					, 1000
+					runs ->
+						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.$('.bv_assayStage').val()).toEqual "unassigned"
 
-				describe "model updates", ->
-					it "should update the select DNS target list", ->
-						@psppc.$('.bv_dnsTargetList').click()
-						@psppc.$('.bv_dnsTargetList').click()
-						expect(@psppc.model.get('dnsTargetList')).toBeTruthy()
-						# don't know why you need to click twice for spec to pass. The implementation works.
-					it "should update the curve display max", ->
-						@psppc.$('.bv_maxY').val("130")
-						@psppc.$('.bv_maxY').change()
-						expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual "130"
-					it "should update the curve display min", ->
-						@psppc.$('.bv_minY').val("13")
-						@psppc.$('.bv_minY').change()
-						expect(@psppc.model.getCurveDisplayMin().get('numericValue')).toEqual "13"
-					it "should update model when assay stage changed", ->
-						waitsFor ->
-							@psppc.$('.bv_assayStage option').length > 0
-						, 1000
-						runs ->
-							@psppc.$('.bv_assayStage').val('unassigned')
-							@psppc.$('.bv_assayStage').change()
-							expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "unassigned"
+			describe "model updates", ->
+				it "should update the select DNS target list", ->
+					@psppc.$('.bv_dnsTargetListChkbx').click()
+					@psppc.$('.bv_dnsTargetListChkbx').click()
+					expect(@psppc.model.get('dnsList')).toBeTruthy()
+					expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual "dns target list"
+					# don't know why you need to click twice for spec to pass. The implementation works.
+				it "should update the curve display max", ->
+					@psppc.$('.bv_maxY').val("130")
+					@psppc.$('.bv_maxY').change()
+					expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual "130"
+				it "should update the curve display min", ->
+					@psppc.$('.bv_minY').val("13")
+					@psppc.$('.bv_minY').change()
+					expect(@psppc.model.getCurveDisplayMin().get('numericValue')).toEqual "13"
+				it "should update model when assay stage changed", ->
+					waitsFor ->
+						@psppc.$('.bv_assayStage option').length > 0
+					, 1000
+					runs ->
+						@psppc.$('.bv_assayStage').val('unassigned')
+						@psppc.$('.bv_assayStage').change()
+						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "unassigned"
 
-				describe "behavior", ->
-					it "should hide the Molecular Target's add button when the Select dns target list checkbox is checked", ->
-						@psppc.$('.bv_dnsTargetList').click()
-						@psppc.$('.bv_dnsTargetList').click()
-						expect(@psppc.$('.bv_addMolecularTargetBtn')).toBeHidden()
-						expect(@psppc.model.get('dnsTargetList')).toBeTruthy()
-						expect(@psppc.$('.bv_addMolecularTargetBtn')).toBeHidden()
+			describe "behavior", ->
+				it "should hide the Molecular Target's add button when the Select dns target list checkbox is checked", ->
+					@psppc.$('.bv_dnsTargetListChkbx').click()
+					expect(@psppc.model.get('dnsList')).toBeTruthy()
+					expect(@psppc.$('.bv_addMolecularTargetBtn')).toBeHidden()
 
-				describe "controller validation rules", ->
-					it "should show error when maxY is NaN", ->
-						@psppc.$('.bv_maxY').val("b")
-						@psppc.$('.bv_maxY').change()
-						expect(@psppc.$('.bv_group_maxY').hasClass('error')).toBeTruthy()
-					it "should show error when minY is NaN", ->
-						@psppc.$('.bv_minY').val("b")
-						@psppc.$('.bv_minY').change()
-						expect(@psppc.$('.bv_group_minY').hasClass('error')).toBeTruthy()
+			describe "controller validation rules", ->
+				it "should show error when maxY is NaN", ->
+					@psppc.$('.bv_maxY').val("b")
+					@psppc.$('.bv_maxY').change()
+					expect(@psppc.$('.bv_group_maxY').hasClass('error')).toBeTruthy()
+				it "should show error when minY is NaN", ->
+					@psppc.$('.bv_minY').val("b")
+					@psppc.$('.bv_minY').change()
+					expect(@psppc.$('.bv_group_minY').hasClass('error')).toBeTruthy()
 
 
 
@@ -487,11 +495,10 @@ describe "Primary Screen Protocol module testing", ->
 					it "should exist", ->
 						expect(@psppc).toBeDefined()
 					it "should load a template", ->
-						expect(@psppc.$('.bv_dnsTargetList').length).toEqual 1
+						expect(@psppc.$('.bv_dnsTargetListChkbx').length).toEqual 1
 				describe "render existing parameters", ->
 					it "should have the select dns target list be checked", ->
-						console.log @psppc.model.get('dnsTargetList')
-						expect(@psppc.$('.bv_dnsTargetList').attr("checked")).toEqual "checked"
+						expect(@psppc.$('.bv_dnsTargetListChkbx').attr("checked")).toEqual "checked"
 					it 'should show the maxY', ->
 						expect(@psppc.$('.bv_maxY').val()).toEqual "200"
 					it 'should show the minY', ->

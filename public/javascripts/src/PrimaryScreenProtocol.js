@@ -12,12 +12,18 @@
 
     PrimaryScreenProtocol.prototype.defaults = function() {
       return _(PrimaryScreenProtocol.__super__.defaults.call(this)).extend({
-        dnsTargetList: false
+        dnsList: false
       });
+    };
+
+    PrimaryScreenProtocol.prototype.initialize = function() {
+      PrimaryScreenProtocol.__super__.initialize.call(this);
+      return this.setdnsList();
     };
 
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
       var errors, maxY, minY;
+      console.log("validating");
       errors = [];
       maxY = this.getCurveDisplayMax().get('numericValue');
       if (isNaN(maxY)) {
@@ -42,36 +48,56 @@
 
     PrimaryScreenProtocol.prototype.getPrimaryScreenProtocolParameterCodeValue = function(parameterName) {
       var parameter;
+      console.log("here");
       parameter = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "screening assay", "codeValue", parameterName);
       if (parameter.get('codeValue') === void 0 || parameter.get('codeValue') === "") {
-        console.log("heres");
         parameter.set({
           codeValue: "unassigned"
         });
       }
+      if (parameter.get('codeOrigin') === void 0 || parameter.get('codeOrigin') === "") {
+        parameter.set({
+          codeOrigin: "acas ddict"
+        });
+      }
       return parameter;
+    };
+
+    PrimaryScreenProtocol.prototype.setdnsList = function() {
+      var molecularTarget;
+      molecularTarget = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "screening assay", "codeValue", "molecular target");
+      if (molecularTarget.get('codeOrigin') === "dns target list") {
+        console.log("different code origin");
+        return this.set({
+          dnsList: true
+        });
+      } else {
+        return this.set({
+          dnsList: false
+        });
+      }
     };
 
     PrimaryScreenProtocol.prototype.getCurveDisplayMin = function() {
-      var parameter;
-      parameter = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "screening assay", "numericValue", "curve display min");
-      if (parameter.get('numericValue') === void 0 || parameter.get('numericValue') === "") {
-        parameter.set({
+      var minY;
+      minY = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "screening assay", "numericValue", "curve display min");
+      if (minY.get('numericValue') === void 0 || minY.get('numericValue') === "") {
+        minY.set({
           numericValue: 0.0
         });
       }
-      return parameter;
+      return minY;
     };
 
     PrimaryScreenProtocol.prototype.getCurveDisplayMax = function() {
-      var parameter;
-      parameter = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "screening assay", "numericValue", "curve display max");
-      if (parameter.get('numericValue') === void 0 || parameter.get('numericValue') === "") {
-        parameter.set({
+      var maxY;
+      maxY = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "screening assay", "numericValue", "curve display max");
+      if (maxY.get('numericValue') === void 0 || maxY.get('numericValue') === "") {
+        maxY.set({
           numericValue: 100.0
         });
       }
-      return parameter;
+      return maxY;
     };
 
     return PrimaryScreenProtocol;
@@ -433,8 +459,10 @@
 
     PrimaryScreenProtocolParametersController.prototype.template = _.template($("#PrimaryScreenProtocolParametersView").html());
 
+    PrimaryScreenProtocolParametersController.prototype.autofillTemplate = _.template($("#PrimaryScreenProtocolParametersAutofillView").html());
+
     PrimaryScreenProtocolParametersController.prototype.events = {
-      "click .bv_dnsTargetList": "handleTargetListChanged",
+      "click .bv_dnsTargetListChkbx": "handleTargetListChanged",
       "change .bv_assayStage": "handleAssayStageChanged",
       "change .bv_maxY": "handleMaxYChanged",
       "change .bv_minY": "handleMinYChanged"
@@ -443,23 +471,22 @@
     PrimaryScreenProtocolParametersController.prototype.initialize = function() {
       console.log("initialize");
       this.errorOwnerName = 'PrimaryScreenProtocolParametersController';
+      this.setBindings();
       PrimaryScreenProtocolParametersController.__super__.initialize.call(this);
       return this.setUpAssayStageSelect();
     };
 
     PrimaryScreenProtocolParametersController.prototype.render = function() {
       console.log("rendering");
-      console.log(this.model);
-      console.log;
-      console.log(this.model.get('dnsTargetList'));
-      console.log(this.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue'));
-      console.log(this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue'));
-      this.$('.bv_primaryProtocolParameters').empty();
-      this.$('.bv_primaryProtocolParameters').html(this.template(this.model.attributes));
-      this.$('.bv_dnsTargetList').val(this.model.get('dnsTargetList'));
+      this.$el.empty();
+      this.$el.html(this.autofillTemplate(this.model.attributes));
+      console.log("in render still");
+      console.log(this.model.get('dnsList'));
+      this.$('.bv_dnsTargetListChkbx').val(this.model.get('dnsList'));
       this.$('.bv_maxY').val(this.model.getCurveDisplayMax().get('numericValue'));
       this.$('.bv_minY').val(this.model.getCurveDisplayMin().get('numericValue'));
       this.setUpAssayStageSelect();
+      this.handleTargetListChanged();
       PrimaryScreenProtocolParametersController.__super__.render.call(this);
       return this;
     };
@@ -479,23 +506,32 @@
     };
 
     PrimaryScreenProtocolParametersController.prototype.updateModel = function() {
+      console.log("updating model");
       return this.model.set({
-        assayStage: this.$('.bv_assayStage').val(),
-        maxY: parseFloat(this.getTrimmedInput('.bv_maxY')),
-        minY: parseFloat(this.getTrimmedInput('.bv_minY'))
+        assayStage: this.$('.bv_assayStage').val()
       });
     };
 
     PrimaryScreenProtocolParametersController.prototype.handleTargetListChanged = function() {
       var dnsTargetList;
-      dnsTargetList = this.$('.bv_dnsTargetList').is(":checked");
+      console.log("handling target list checkbox changed");
+      dnsTargetList = this.$('.bv_dnsTargetListChkbx').is(":checked");
+      console.log("look here");
+      console.log(dnsTargetList);
       this.model.set({
-        dnsTargetList: dnsTargetList
+        dnsList: dnsTargetList
       });
       if (dnsTargetList) {
         this.$('.bv_addMolecularTargetBtn').hide();
+        this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set({
+          codeOrigin: "dns target list"
+        });
+        console.log("dns checked");
       } else {
         this.$('.bv_addMolecularTargetBtn').show();
+        this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set({
+          codeOrigin: "acas ddict"
+        });
       }
       return this.attributeChanged();
     };
@@ -507,25 +543,29 @@
     };
 
     PrimaryScreenProtocolParametersController.prototype.handleMaxYChanged = function() {
-      return this.model.getCurveDisplayMax().set({
+      console.log("handling maxY changed");
+      this.model.getCurveDisplayMax().set({
         numericValue: this.$('.bv_maxY').val()
       });
+      return this.attributeChanged();
     };
 
     PrimaryScreenProtocolParametersController.prototype.handleMinYChanged = function() {
-      return this.model.getCurveDisplayMin().set({
+      this.model.getCurveDisplayMin().set({
         numericValue: this.$('.bv_minY').val()
       });
+      return this.attributeChanged();
     };
 
     return PrimaryScreenProtocolParametersController;
 
-  })(AbstractParserFormController);
+  })(AbstractFormController);
 
   window.PrimaryScreenProtocolController = (function(_super) {
     __extends(PrimaryScreenProtocolController, _super);
 
     function PrimaryScreenProtocolController() {
+      this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
       return PrimaryScreenProtocolController.__super__.constructor.apply(this, arguments);
     }
 
@@ -550,6 +590,7 @@
         this.model = new PrimaryScreenProtocol();
       }
       $(this.el).html(this.template());
+      this.model.on('sync', this.handleProtocolSaved);
       this.protocolBaseController = new ProtocolBaseController({
         model: new Protocol,
         el: this.$('.bv_protocolBase')
@@ -570,8 +611,18 @@
     PrimaryScreenProtocolController.prototype.setupPrimaryScreenProtocolParametersController = function() {
       this.primaryScreenProtocolParametersController = new PrimaryScreenProtocolParametersController({
         model: this.model,
-        el: this.$('.bv_primaryProtocolParameters')
+        el: this.$('.bv_autofillSection')
       });
+      this.primaryScreenProtocolParametersController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.primaryScreenProtocolParametersController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
       return this.primaryScreenProtocolParametersController.render();
     };
 
@@ -625,6 +676,10 @@
         el: this.$('.bv_cellLineWrapper')
       });
       return this.cellLineController.render();
+    };
+
+    PrimaryScreenProtocolController.prototype.handleProtocolSaved = function() {
+      return this.primaryScreenProtocolParametersController.render();
     };
 
     return PrimaryScreenProtocolController;
