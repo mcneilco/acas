@@ -138,7 +138,6 @@
           return expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
         });
         it("should show thumbs down when not user approved", function() {
-          console.log(this.csc);
           this.csc.model.set({
             flagUser: "rejected"
           });

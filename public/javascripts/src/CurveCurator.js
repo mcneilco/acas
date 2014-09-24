@@ -477,21 +477,23 @@
 
     CurveEditorController.prototype.render = function() {
       this.$el.empty();
-      this.$el.html(this.template());
       if (this.model != null) {
+        this.$el.html(this.template());
         this.drapc = new DoseResponseAnalysisParametersController({
           model: this.model.get('fitSettings'),
           el: this.$('.bv_analysisParameterForm')
         });
         this.drapc.setFormTitle("Fit Criteria");
         this.drapc.render();
-        this.drapc.model.on("change", this.handleParametersChanged);
+        this.stopListening(this.drapc.model, 'change');
+        this.listenTo(this.drapc.model, 'change', this.handleParametersChanged);
         this.drpc = new DoseResponsePlotController({
           model: new Backbone.Model(this.model.get('plotData')),
           el: this.$('.bv_plotWindowWrapper')
         });
         this.drpc.render();
-        this.drpc.model.on("change", this.handlePointsChanged);
+        this.stopListening(this.drpc.model, 'change');
+        this.listenTo(this.drpc.model, 'change', this.handlePointsChanged);
         this.$('.bv_reportedValues').html(this.model.get('reportedValues'));
         this.$('.bv_fitSummary').html(this.model.get('fitSummary'));
         this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));

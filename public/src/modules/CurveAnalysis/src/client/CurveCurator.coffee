@@ -307,22 +307,25 @@ class window.CurveEditorController extends Backbone.View
 
 	render: =>
 		@$el.empty()
-		@$el.html @template()
 		if @model?
+			@$el.html @template()
+
 			@drapc = new DoseResponseAnalysisParametersController
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
 			@drapc.setFormTitle "Fit Criteria"
 			@drapc.render()
 
-			@drapc.model.on "change", @handleParametersChanged
+			@stopListening @drapc.model, 'change'
+			@listenTo @drapc.model, 'change', @handleParametersChanged
 
 			@drpc = new DoseResponsePlotController
 				model: new Backbone.Model @model.get('plotData')
 				el: @$('.bv_plotWindowWrapper')
 			@drpc.render()
 
-			@drpc.model.on "change", @handlePointsChanged
+			@stopListening @drpc.model, 'change'
+			@listenTo @drpc.model, 'change', @handlePointsChanged
 
 			@$('.bv_reportedValues').html @model.get('reportedValues')
 			@$('.bv_fitSummary').html @model.get('fitSummary')
