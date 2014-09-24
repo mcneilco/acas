@@ -23,7 +23,6 @@
 
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
       var errors, maxY, minY;
-      console.log("validating");
       errors = [];
       maxY = this.getCurveDisplayMax().get('numericValue');
       if (isNaN(maxY)) {
@@ -48,7 +47,6 @@
 
     PrimaryScreenProtocol.prototype.getPrimaryScreenProtocolParameterCodeValue = function(parameterName) {
       var parameter;
-      console.log("here");
       parameter = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "screening assay", "codeValue", parameterName);
       if (parameter.get('codeValue') === void 0 || parameter.get('codeValue') === "") {
         parameter.set({
@@ -67,7 +65,6 @@
       var molecularTarget;
       molecularTarget = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "screening assay", "codeValue", "molecular target");
       if (molecularTarget.get('codeOrigin') === "dns target list") {
-        console.log("different code origin");
         return this.set({
           dnsList: true
         });
@@ -119,7 +116,6 @@
 
     AbstractPrimaryScreenProtocolParameterController.prototype.handleParameterChanged = function() {
       var splitName;
-      console.log("parameter changed");
       splitName = this.parameter.replace(/([A-Z])/g, ' $1');
       splitName = splitName.toLowerCase();
       return this.model.getPrimaryScreenProtocolParameterCodeValue(splitName).set({
@@ -129,7 +125,6 @@
 
     AbstractPrimaryScreenProtocolParameterController.prototype.clearModal = function() {
       var pascalCaseParameterName;
-      console.log("clearing modal");
       pascalCaseParameterName = this.parameter.charAt(0).toUpperCase() + this.parameter.slice(1);
       this.$('.bv_optionAddedMessage').hide();
       this.$('.bv_errorMessage').hide();
@@ -142,26 +137,19 @@
 
     AbstractPrimaryScreenProtocolParameterController.prototype.addNewParameterOption = function() {
       var newOptionName, pascalCaseParameterName;
-      console.log("add new parameter clicked");
       pascalCaseParameterName = this.parameter.charAt(0).toUpperCase() + this.parameter.slice(1);
       newOptionName = (this.$('.bv_new' + pascalCaseParameterName + 'Label').val()).toLowerCase();
-      console.log(newOptionName);
       if (this.validNewOption(newOptionName)) {
-        console.log("will add new option");
         this.$('.bv_' + this.parameter).append('<option value=' + newOptionName + '>' + newOptionName + '</option>');
         this.$('.bv_optionAddedMessage').show();
-        this.$('.bv_errorMessage').hide();
-        return console.log("messages shown");
+        return this.$('.bv_errorMessage').hide();
       } else {
-        console.log("option already exists");
         this.$('.bv_optionAddedMessage').hide();
         return this.$('.bv_errorMessage').show();
       }
     };
 
     AbstractPrimaryScreenProtocolParameterController.prototype.validNewOption = function(newOptionName) {
-      console.log("validating new option");
-      console.log(newOptionName);
       if (this.$('.bv_' + this.parameter + ' option[value="' + newOptionName + '"]').length > 0) {
         return false;
       } else {
@@ -189,25 +177,20 @@
     };
 
     AssayActivityController.prototype.initialize = function() {
-      console.log("initialize, pre-super");
       this.parameter = "assayActivity";
       return this.setupParameterSelect();
     };
 
     AssayActivityController.prototype.render = function() {
-      console.log("rendering aa controller");
       $(this.el).empty();
       $(this.el).html(this.template());
       return this.setupParameterSelect();
     };
 
     AssayActivityController.prototype.setupParameterSelect = function() {
-      console.log(this.model);
-      console.log("setting up parameter select");
-      console.log(this.parameter);
       this.assayActivityList = new PickListList();
       this.assayActivityList.url = "/api/dataDict/assay activity";
-      this.assayActivityListController = new PickListSelectController({
+      return this.assayActivityListController = new PickListSelectController({
         el: this.$('.bv_assayActivity'),
         collection: this.assayActivityList,
         insertFirstOption: new PickList({
@@ -216,8 +199,6 @@
         }),
         selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')
       });
-      console.log(this.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue'));
-      return console.log("end");
     };
 
     return AssayActivityController;
@@ -469,7 +450,6 @@
     };
 
     PrimaryScreenProtocolParametersController.prototype.initialize = function() {
-      console.log("initialize");
       this.errorOwnerName = 'PrimaryScreenProtocolParametersController';
       this.setBindings();
       PrimaryScreenProtocolParametersController.__super__.initialize.call(this);
@@ -477,11 +457,8 @@
     };
 
     PrimaryScreenProtocolParametersController.prototype.render = function() {
-      console.log("rendering");
       this.$el.empty();
       this.$el.html(this.autofillTemplate(this.model.attributes));
-      console.log("in render still");
-      console.log(this.model.get('dnsList'));
       this.$('.bv_dnsTargetListChkbx').val(this.model.get('dnsList'));
       this.$('.bv_maxY').val(this.model.getCurveDisplayMax().get('numericValue'));
       this.$('.bv_minY').val(this.model.getCurveDisplayMin().get('numericValue'));
@@ -506,7 +483,6 @@
     };
 
     PrimaryScreenProtocolParametersController.prototype.updateModel = function() {
-      console.log("updating model");
       return this.model.set({
         assayStage: this.$('.bv_assayStage').val()
       });
@@ -514,10 +490,7 @@
 
     PrimaryScreenProtocolParametersController.prototype.handleTargetListChanged = function() {
       var dnsTargetList;
-      console.log("handling target list checkbox changed");
       dnsTargetList = this.$('.bv_dnsTargetListChkbx').is(":checked");
-      console.log("look here");
-      console.log(dnsTargetList);
       this.model.set({
         dnsList: dnsTargetList
       });
@@ -526,7 +499,6 @@
         this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set({
           codeOrigin: "dns target list"
         });
-        console.log("dns checked");
       } else {
         this.$('.bv_addMolecularTargetBtn').show();
         this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set({
@@ -543,18 +515,17 @@
     };
 
     PrimaryScreenProtocolParametersController.prototype.handleMaxYChanged = function() {
-      console.log("handling maxY changed");
       this.model.getCurveDisplayMax().set({
         numericValue: this.$('.bv_maxY').val()
       });
-      return this.attributeChanged();
+      return this.handleModelChange();
     };
 
     PrimaryScreenProtocolParametersController.prototype.handleMinYChanged = function() {
       this.model.getCurveDisplayMin().set({
         numericValue: this.$('.bv_minY').val()
       });
-      return this.attributeChanged();
+      return this.handleModelChange();
     };
 
     return PrimaryScreenProtocolParametersController;
@@ -581,8 +552,7 @@
       this.setupTargetOriginController();
       this.setupAssayTypeController();
       this.setupAssayTechnologyController();
-      this.setupCellLineController();
-      return console.log(this.model);
+      return this.setupCellLineController();
     };
 
     PrimaryScreenProtocolController.prototype.completeInitialization = function() {
@@ -627,23 +597,19 @@
     };
 
     PrimaryScreenProtocolController.prototype.setupAssayActivityController = function() {
-      console.log("beg of setting up assay activity controller");
       this.assayActivityController = new AssayActivityController({
         model: this.model,
         el: this.$('.bv_assayActivityWrapper')
       });
-      this.assayActivityController.render();
-      return console.log("set up aa controller");
+      return this.assayActivityController.render();
     };
 
     PrimaryScreenProtocolController.prototype.setupMolecularTargetController = function() {
-      console.log("beg of setting up mt controller");
       this.molecularTargetController = new MolecularTargetController({
         model: this.model,
         el: this.$('.bv_molecularTargetWrapper')
       });
-      this.molecularTargetController.render();
-      return console.log("set up mt controller");
+      return this.molecularTargetController.render();
     };
 
     PrimaryScreenProtocolController.prototype.setupTargetOriginController = function() {

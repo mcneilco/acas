@@ -63,26 +63,19 @@ describe "Primary Screen Protocol module testing", ->
 				it "should have a minY curve display ", ->
 					expect(@psp.getCurveDisplayMin().get('numericValue')).toEqual 10.0
 				it 'Should have an assay Activity value', ->
-					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('assay activity')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "luminescence"
 				it 'Should have a molecularTarget value', ->
-					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('molecular target')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "target x"
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual "dns target list"
 				it 'Should have an targetOrigin value', ->
-					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('target origin')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "human"
 				it 'Should have an assay type value', ->
-					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('assay type')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual "cellular assay"
 				it 'Should have a molecularTarget value with code origin set to dns target list', ->
-					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('assay technology')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "wizard triple luminescence"
 				it 'Should have an targetOrigin value', ->
-					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('cell line')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "cell line y"
 				it 'Should have an assay stage value', ->
-					console.log @psp.getPrimaryScreenProtocolParameterCodeValue('assay stage')
 					expect(@psp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "assay development"
 		describe "model validation", ->
 			beforeEach ->
@@ -424,8 +417,6 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@psppc.$('.bv_dnsTargetListChkbx').length).toEqual 1
 			describe "render parameters", ->
 				it "should have the select dns target list be unchecked", ->
-					console.log "dns list test"
-					console.log @psppc.$('.bv_dnsTargetListChkbx').attr("checked")
 					expect(@psppc.$('.bv_dnsTargetListChkbx').attr("checked")).toBeUndefined()
 				it "should show the curve display max", ->
 					expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual 100.0
@@ -470,7 +461,7 @@ describe "Primary Screen Protocol module testing", ->
 					@psppc.$('.bv_dnsTargetListChkbx').click()
 					expect(@psppc.model.get('dnsList')).toBeTruthy()
 					expect(@psppc.$('.bv_addMolecularTargetBtn')).toBeHidden()
-
+				# not sure why this test fails but it works in the GUI
 			describe "controller validation rules", ->
 				it "should show error when maxY is NaN", ->
 					@psppc.$('.bv_maxY').val("b")
