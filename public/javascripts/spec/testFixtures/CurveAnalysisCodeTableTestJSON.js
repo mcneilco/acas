@@ -2,7 +2,9 @@
   (function(exports) {
     return exports.dataDictValues = [
       {
-        "algorithm well flags": [
+        type: "experimentMetadata",
+        kind: "algorithm well flags",
+        codes: [
           {
             code: "outlier",
             name: "Outlier",
@@ -13,7 +15,7 @@
             ignored: true
           }, {
             code: "low",
-            name: "Value to low",
+            name: "Value too low",
             ignored: true
           }, {
             code: "crashout",

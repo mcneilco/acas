@@ -986,7 +986,7 @@
               return this.psapc.$('.bv_signalDirectionRule option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.psapc.$('.bv_signalDirectionRule').val()).toEqual("increasing signal (highest = 100%)");
+              return expect(this.psapc.$('.bv_signalDirectionRule').val()).toEqual("increasing");
             });
           });
           it('should show the aggregateBy1', function() {
