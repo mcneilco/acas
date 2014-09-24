@@ -25,6 +25,17 @@
       return match;
     };
 
+    UtilityFunctions.prototype.showProgressModal = function(node) {
+      node.modal({
+        backdrop: "static"
+      });
+      return node.modal("show");
+    };
+
+    UtilityFunctions.prototype.hideProgressModal = function(node) {
+      return node.modal("hide");
+    };
+
     return UtilityFunctions;
 
   })();

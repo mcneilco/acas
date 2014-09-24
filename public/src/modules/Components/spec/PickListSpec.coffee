@@ -91,5 +91,22 @@ describe "PickList Select Unit Testing", ->
 						expect($(@pickListController.el).val()).toEqual "not_set"
 
 
+			describe "when created with populated collection and no fetch requested", ->
+				beforeEach ->
+					@pickListController = new PickListSelectController
+						el: @selectFixture
+						collection: new PickListList window.projectServiceTestJSON.projects
+						insertFirstOption: new PickList
+							code: "not_set"
+							name: "Select Category"
+						selectedCode: "not_set"
+						autoFetch: false
+				it "should have five choices", ->
+					runs ->
+						expect(@pickListController.$("option").length).toEqual 4
+				it "should set selected", ->
+					runs ->
+						expect($(@pickListController.el).val()).toEqual "not_set"
+
 
 

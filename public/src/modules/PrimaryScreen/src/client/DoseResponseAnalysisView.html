@@ -3,77 +3,70 @@
     <div class="bv_autofillSection"></div>
 </script>
 
-
 <script type="text/template" id="DoseResponseAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
 
-	<div class="span12">
-    <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:450px;height:370px;background-color:#ffffff;">
-        <form class="form-inline" style="margin-bottom:10px;">
-            <strong style="font-size:18px;">Global Fit Criteria</strong>
-            <label class="checkbox bv_group_inverseAgonistMode" style="margin-left:135px;">
-                <input type="checkbox" class="bv_inverseAgonistMode" style="margin-right:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%>  /> Inverse Agonist Mode
-            </label>
-        </form>
+	<div class="span5" style="margin-left:0;">
+    <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:350px;height:370px;background-color:#ffffff;">
+        <div class="form form-inline" style="margin-bottom:5px;">
+            <strong class="bv_formTitle" style="font-size:18px;">Global Fit Criteria</strong>
+            <input type="checkbox" class="bv_inverseAgonistMode" style="margin-left:10px;margin-bottom:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%> />
+            <label class="control-label bv_group_inverseAgonistMode" style="margin-left:0px;">Inverse Agonist Mode</label>
+        </div>
 
         <div class="well well-small" style="background-color:#ffffff;margin-bottom:10px;">
 
-            <form class="form-inline bv_group_max" style="margin-bottom:10px;">
-                <strong>Max:</strong>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_none" value="none" style="margin-right:5px;" <%if (max.limitType=="none"){%>checked="checked"<%}%>  />None
-                </label>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_pin" value="pin" style="margin-right:5px;" <%if (max.limitType=="pin"){%>checked="checked"<%}%>  />Pin
-                </label>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_limit" value="limit" style="margin-right:5px;" <%if (max.limitType=="limit"){%>checked="checked"<%}%>  />Limit
-                </label>
-            </form>
+            <div class="bv_group_max" style="margin-bottom:10px;">
+                <div class="form form-inline">
+                    <span style="margin-right:5px;"><strong>Max:</strong></span>
+                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_none" value="none" style="margin-right:5px;margin-bottom:5px;" <%if (max.limitType=="none"){%>checked="checked"<%}%>  />
+                    <label class="control-label" style="margin-right:15px;">None</label>
+                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_pin" value="pin" style="margin-right:5px;margin-bottom:5px;" <%if (max.limitType=="pin"){%>checked="checked"<%}%>  />
+                    <label class="control-label" style="margin-right:15px;">Pin</label>
+                    <input type="radio" name="bv_max_limitType" class="bv_max_limitType_limit" value="limit" style="margin-right:5px;margin-bottom:5px;" <%if (max.limitType=="limit"){%>checked="checked"<%}%>  />
+                    <label class="control-label" style="margin-right:15px;">Limit</label>
+                </div>
+            </div>
             <div class="control-group bv_group_max_value">
-                <input type="text" class=" bv_max_value" style="width:415px;" value="<%= max.value%>" <% if (max.limitType=="none"){ %> disabled="disabled"<% }%> />
+                <input type="text" class=" bv_max_value" style="width:315px;" value="<%= max.value%>" <% if (max.limitType=="none"){ %> disabled="disabled"<% }%> />
             </div>
 
 
-            <form class="form-inline bv_group_min" style="margin-bottom:10px;">
-                <strong>Min:</strong>
-                <label class="radio" style="padding-left:30px;">
-                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_none" value="none" style="margin-right:5px;" <%if (min.limitType=="none"){%>checked="checked"<%}%>  />None
-                </label>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_pin" value="pin" style="margin-right:5px;" <%if (min.limitType=="pin"){%>checked="checked"<%}%>  />Pin
-                </label>
-                <label class="radio" style="padding-left:25px;">
-                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_limit" value="limit" style="margin-right:5px;" <%if (min.limitType=="limit"){%>checked="checked"<%}%>  />Limit
-                </label>
-            </form>
+            <div class="bv_group_min" style="margin-bottom:10px;">
+                <div class="form form-inline">
+                    <span style="margin-right:5px;"><strong>Min:</strong></span>
+                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_none" value="none" style="margin-right:5px;margin-bottom:5px;" <%if (min.limitType=="none"){%>checked="checked"<%}%>  />
+                    <label class="control-label" style="margin-right:15px;">None</label>
+                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_pin" value="pin" style="margin-right:5px;margin-bottom:5px;" <%if (min.limitType=="pin"){%>checked="checked"<%}%>  />
+                    <label class="control-label" style="margin-right:15px;">Pin</label>
+                    <input type="radio" name="bv_min_limitType" class="bv_min_limitType_limit" value="limit" style="margin-right:5px;margin-bottom:5px;" <%if (min.limitType=="limit"){%>checked="checked"<%}%>  />
+                    <label class="control-label" style="margin-right:15px;">Limit</label>
+                </div>
+            </div>
 	        <div class="control-group bv_group_min_value">
-	            <input type="text" class="bv_group_min_value bv_min_value" style="width:415px;" value="<%= min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
+	            <input type="text" class="bv_group_min_value bv_min_value" style="width:315px;" value="<%= min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
 		    </div>
 
-            <form class="form-inline bv_group_slope" style="margin-bottom:10px;">
-                <strong>Slope:</strong>
-                <label class="radio"  style="padding-left:15px;">
-                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_none" value="none" style="margin-right:5px;" <%if (slope.limitType=="none"){%>checked="checked"<%}%>  />None
-                </label>
-                <label class="radio"  style="padding-left:25px;">
-                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_pin" value="pin" style="margin-right:5px;" <%if (slope.limitType=="pin"){%>checked="checked"<%}%>  />Pin
-                </label>
-                <label class="radio"  style="padding-left:25px;">
-                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_limit" value="limit" style="margin-right:5px;" <%if (slope.limitType=="limit"){%>checked="checked"<%}%>  />Limit
-                </label>
-            </form>
+            <div class="bv_group_slope" style="margin-bottom:10px;">
+                <div class="form form-inline">
+                    <span style="margin-right:5px;"><strong>Slope:</strong></span>
+                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_none" value="none" style="margin-right:5px;margin-bottom:5px;" <%if (slope.limitType=="none"){%>checked="checked"<%}%>  />
+                    <label class="control-label" style="margin-right:15px;">None</label>
+                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_pin" value="pin" style="margin-right:5px;margin-bottom:5px;" <%if (slope.limitType=="pin"){%>checked="checked"<%}%>  />
+                    <label class="control-label" style="margin-right:15px;">Pin</label>
+                    <input type="radio" name="bv_slope_limitType" class="bv_slope_limitType_limit" value="limit" style="margin-right:5px;margin-bottom:5px;" <%if (slope.limitType=="limit"){%>checked="checked"<%}%>  />
+                    <label class="control-label" style="margin-right:15px;">Limit</label>
+                </div>
+            </div>
 	        <div class="control-group bv_group_slope_value">
-		        <input type="text" class="bv_group_slope_value bv_slope_value" style="width:415px;" value="<%= slope.value%>" <% if (slope.limitType=="none"){ %> disabled="disabled"<% }%> />
+		        <input type="text" class="bv_group_slope_value bv_slope_value" style="width:315px;margin-bottom:0;" value="<%= slope.value%>" <% if (slope.limitType=="none"){ %> disabled="disabled"<% }%> />
 		    </div>
 
         </div>
 
         <h5>Inactive Threshold</h5>
         <div class="bv_group_inactiveThreshold">
-
-	        <div class="bv_inactiveThreshold pull-left" style="width:380px;margin-top:8px;margin-left:10px;"></div>
+	        <div class="bv_inactiveThreshold pull-left" style="width:280px;margin-top:8px;margin-left:10px;"></div>
 	        <div class="bv_inactiveThresholdDisplay well well-small pull-right" style="margin-bottom:5px;padding-top:5px;padding-right:7px;padding-bottom:5px;padding-left:7px;width:25px;"></div>
-
         </div>
 
     </div>
@@ -81,7 +74,6 @@
 </script>
 
 <script type="text/template" id="DoseResponseAnalysisView" xmlns="http://www.w3.org/1999/html">
-
     <div class="bv_fitOptionWrapper">
         <div class="bv_analysisParameterForm"></div>
     </div>
@@ -90,15 +82,13 @@
 	    <div class="span9" style="margin-left:0;margin-top:5px;"><strong>Fit Status:</strong>
 		    <span class="bv_modelFitStatus"> Curves not fit</span>
 	    </div>
-	    <button class="btn btn-default pull-right bv_fitModelButton" type="button" style="margin-right:47px;">Fit Data</button>
+	    <button class="btn btn-default offset6 bv_fitModelButton" type="button">Fit Data</button>
     </div>
 
-    <div class="span6 bv_group_resultsContainer" style="margin-left:10px;margin-top:5px;width:470px;">
+    <div class="span11 bv_group_resultsContainer" style="margin-left:10px;margin-top:5px;">
         <div class="well well-small bv_resultsContainer" style="margin-bottom:10px;">
             <div class="bv_modelFitResultsHTML"></div>
         </div>
     </div>
     <div class="bv_analyzeExperimentToFit span10">To fit data, save and analyze the experiment</div>
-
-
 </script>

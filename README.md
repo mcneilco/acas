@@ -4,13 +4,7 @@ Scroll down for previous deploy instructions
 
 ## Deploying to a customer
 
-See 
-```
-#!bash
-
-bin/install.sh
-```
-
+See acas_compiler repo
 
 ## Deploying in a development environment
 

@@ -103,7 +103,7 @@
             });
           });
         });
-        return describe("when created with added option not in database", function() {
+        describe("when created with added option not in database", function() {
           beforeEach(function() {
             runs(function() {
               return this.pickListController = new PickListSelectController({
@@ -126,6 +126,30 @@
             });
           });
           return it("should not set selected", function() {
+            return runs(function() {
+              return expect($(this.pickListController.el).val()).toEqual("not_set");
+            });
+          });
+        });
+        return describe("when created with populated collection and no fetch requested", function() {
+          beforeEach(function() {
+            return this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "not_set",
+              autoFetch: false
+            });
+          });
+          it("should have five choices", function() {
+            return runs(function() {
+              return expect(this.pickListController.$("option").length).toEqual(4);
+            });
+          });
+          return it("should set selected", function() {
             return runs(function() {
               return expect($(this.pickListController.el).val()).toEqual("not_set");
             });
