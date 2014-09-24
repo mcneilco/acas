@@ -138,5 +138,5 @@ describe 'Generic data parser Service testing', ->
 				expect(@serviceReturn.results.dryRun).toBeTruthy()
 				expect(@serviceReturn.hasWarning).toBeDefined()
 				expect(@serviceReturn.results.htmlSummary).toBeDefined()
-				expect(@serviceReturn.results.experimentCode).toBeDefined()
+#				expect(@serviceReturn.results.experimentCode).toBeDefined()
 

@@ -396,7 +396,7 @@
 
     BaseEntityController.prototype.setupStatusSelect = function() {
       this.statusList = new PickListList();
-      this.statusList.url = "/api/dataDict/" + this.model.get('subclass') + " status";
+      this.statusList.url = "/api/dataDict/" + this.model.get('subclass') + "Metadata/" + this.model.get('subclass') + " status";
       return this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,

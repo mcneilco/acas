@@ -181,8 +181,7 @@ This service parses data from the generic format and saves it to the database
           expect(this.serviceReturn.hasError).toBeFalsy();
           expect(this.serviceReturn.results.dryRun).toBeTruthy();
           expect(this.serviceReturn.hasWarning).toBeDefined();
-          expect(this.serviceReturn.results.htmlSummary).toBeDefined();
-          return expect(this.serviceReturn.results.experimentCode).toBeDefined();
+          return expect(this.serviceReturn.results.htmlSummary).toBeDefined();
         });
       });
     });

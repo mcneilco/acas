@@ -132,7 +132,7 @@ class window.AssayActivityController extends AbstractPrimaryScreenProtocolParame
 
 	setupParameterSelect: ->
 		@assayActivityList = new PickListList()
-		@assayActivityList.url = "/api/dataDict/assay activity"
+		@assayActivityList.url = "/api/dataDict/protocolMetadata/assay activity"
 		@assayActivityListController = new PickListSelectController
 			el: @$('.bv_assayActivity')
 			collection: @assayActivityList
@@ -162,7 +162,7 @@ class window.MolecularTargetController extends AbstractPrimaryScreenProtocolPara
 
 	setupParameterSelect: ->
 		@molecularTargetList = new PickListList()
-		@molecularTargetList.url = "/api/dataDict/molecular target"
+		@molecularTargetList.url = "/api/dataDict/protocolMetadata/molecular target"
 		@molecularTargetListController = new PickListSelectController
 			el: @$('.bv_molecularTarget')
 			collection: @molecularTargetList
@@ -190,7 +190,7 @@ class window.TargetOriginController extends AbstractPrimaryScreenProtocolParamet
 
 	setupParameterSelect: ->
 		@targetOriginList = new PickListList()
-		@targetOriginList.url = "/api/dataDict/target origin"
+		@targetOriginList.url = "/api/dataDict/protocolMetadata/target origin"
 		@targetOriginListController = new PickListSelectController
 			el: @$('.bv_targetOrigin')
 			collection: @targetOriginList
@@ -219,7 +219,7 @@ class window.AssayTypeController extends AbstractPrimaryScreenProtocolParameterC
 
 	setupParameterSelect: ->
 		@assayTypeList = new PickListList()
-		@assayTypeList.url = "/api/dataDict/assay type"
+		@assayTypeList.url = "/api/dataDict/protocolMetadata/assay type"
 		@assayTypeListController = new PickListSelectController
 			el: @$('.bv_assayType')
 			collection: @assayTypeList
@@ -248,7 +248,7 @@ class window.AssayTechnologyController extends AbstractPrimaryScreenProtocolPara
 
 	setupParameterSelect: ->
 		@assayTechnologyList = new PickListList()
-		@assayTechnologyList.url = "/api/dataDict/assay technology"
+		@assayTechnologyList.url = "/api/dataDict/protocolMetadata/assay technology"
 		@assayTechnologyListController = new PickListSelectController
 			el: @$('.bv_assayTechnology')
 			collection: @assayTechnologyList
@@ -276,7 +276,7 @@ class window.CellLineController extends AbstractPrimaryScreenProtocolParameterCo
 
 	setupParameterSelect: ->
 		@cellLineList = new PickListList()
-		@cellLineList.url = "/api/dataDict/cell line"
+		@cellLineList.url = "/api/dataDict/protocolMetadata/cell line"
 		@cellLineListController = new PickListSelectController
 			el: @$('.bv_cellLine')
 			collection: @cellLineList
@@ -320,7 +320,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()
-		@assayStageList.url = "/api/dataDict/assay stage"
+		@assayStageList.url = "/api/dataDict/protocolMetadata/assay stage"
 		@assayStageListController = new PickListSelectController
 			el: @$('.bv_assayStage')
 			collection: @assayStageList

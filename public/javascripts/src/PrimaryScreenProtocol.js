@@ -189,7 +189,7 @@
 
     AssayActivityController.prototype.setupParameterSelect = function() {
       this.assayActivityList = new PickListList();
-      this.assayActivityList.url = "/api/dataDict/assay activity";
+      this.assayActivityList.url = "/api/dataDict/protocolMetadata/assay activity";
       return this.assayActivityListController = new PickListSelectController({
         el: this.$('.bv_assayActivity'),
         collection: this.assayActivityList,
@@ -233,7 +233,7 @@
 
     MolecularTargetController.prototype.setupParameterSelect = function() {
       this.molecularTargetList = new PickListList();
-      this.molecularTargetList.url = "/api/dataDict/molecular target";
+      this.molecularTargetList.url = "/api/dataDict/protocolMetadata/molecular target";
       return this.molecularTargetListController = new PickListSelectController({
         el: this.$('.bv_molecularTarget'),
         collection: this.molecularTargetList,
@@ -277,7 +277,7 @@
 
     TargetOriginController.prototype.setupParameterSelect = function() {
       this.targetOriginList = new PickListList();
-      this.targetOriginList.url = "/api/dataDict/target origin";
+      this.targetOriginList.url = "/api/dataDict/protocolMetadata/target origin";
       return this.targetOriginListController = new PickListSelectController({
         el: this.$('.bv_targetOrigin'),
         collection: this.targetOriginList,
@@ -321,7 +321,7 @@
 
     AssayTypeController.prototype.setupParameterSelect = function() {
       this.assayTypeList = new PickListList();
-      this.assayTypeList.url = "/api/dataDict/assay type";
+      this.assayTypeList.url = "/api/dataDict/protocolMetadata/assay type";
       return this.assayTypeListController = new PickListSelectController({
         el: this.$('.bv_assayType'),
         collection: this.assayTypeList,
@@ -365,7 +365,7 @@
 
     AssayTechnologyController.prototype.setupParameterSelect = function() {
       this.assayTechnologyList = new PickListList();
-      this.assayTechnologyList.url = "/api/dataDict/assay technology";
+      this.assayTechnologyList.url = "/api/dataDict/protocolMetadata/assay technology";
       return this.assayTechnologyListController = new PickListSelectController({
         el: this.$('.bv_assayTechnology'),
         collection: this.assayTechnologyList,
@@ -409,7 +409,7 @@
 
     CellLineController.prototype.setupParameterSelect = function() {
       this.cellLineList = new PickListList();
-      this.cellLineList.url = "/api/dataDict/cell line";
+      this.cellLineList.url = "/api/dataDict/protocolMetadata/cell line";
       return this.cellLineListController = new PickListSelectController({
         el: this.$('.bv_cellLine'),
         collection: this.cellLineList,
@@ -470,7 +470,7 @@
 
     PrimaryScreenProtocolParametersController.prototype.setUpAssayStageSelect = function() {
       this.assayStageList = new PickListList();
-      this.assayStageList.url = "/api/dataDict/assay stage";
+      this.assayStageList.url = "/api/dataDict/protocolMetadata/assay stage";
       return this.assayStageListController = new PickListSelectController({
         el: this.$('.bv_assayStage'),
         collection: this.assayStageList,

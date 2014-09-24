@@ -2,7 +2,9 @@
   (function(exports) {
     return exports.dataDictValues = [
       {
-        "protocol status": [
+        type: "protocolMetadata",
+        kind: "protocol status",
+        codes: [
           {
             code: "created",
             name: "Created",

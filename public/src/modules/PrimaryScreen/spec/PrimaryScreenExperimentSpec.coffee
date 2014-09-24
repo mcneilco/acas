@@ -797,7 +797,6 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psapc.model.get('volumeType')).toEqual "transfer"
 				it "should update the autoHitSelection ", ->
 					@psapc.$('.bv_autoHitSelection').click()
-					@psapc.$('.bv_autoHitSelection').click()
 					expect(@psapc.model.get('autoHitSelection')).toBeTruthy()
 				it "should update the htsFormat checkbox ", ->
 					@psapc.$('.bv_htsFormat').click()
