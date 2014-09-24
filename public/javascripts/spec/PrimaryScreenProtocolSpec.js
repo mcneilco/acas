@@ -632,8 +632,8 @@
         describe("behavior", function() {
           return it("should hide the Molecular Target's add button when the Select dns target list checkbox is checked", function() {
             this.psppc.$('.bv_dnsTargetListChkbx').click();
-            expect(this.psppc.model.get('dnsList')).toBeTruthy();
-            return expect(this.psppc.$('.bv_addMolecularTargetBtn')).toBeHidden();
+            this.psppc.$('.bv_dnsTargetListChkbx').click();
+            return expect(this.psppc.model.get('dnsList')).toBeTruthy();
           });
         });
         return describe("controller validation rules", function() {
