@@ -15,7 +15,8 @@
     app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
     app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
     app.get('/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect);
-    return app["delete"]('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment);
+    app["delete"]('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment);
+    return app.get('/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename);
   };
 
   exports.experimentByCodename = function(request, response) {
@@ -187,6 +188,88 @@
         }
       };
     })(this));
+  };
+
+  exports.resultViewerURLByExperimentCodename = function(request, resp) {
+    var baseurl, config, experimentServiceTestJSON, resultViewerURL, serverUtilityFunctions, _;
+    console.log(__dirname);
+    _ = require('../public/src/lib/underscore.js');
+    if ((request.query.testMode === true) || (global.specRunnerTestmode === true)) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.end(JSON.stringify(experimentServiceTestJSON.resultViewerURLByExperimentCodeName));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      if (config.all.client.service.result && config.all.client.service.result.viewer && (config.all.client.service.result.viewer.experimentPrefix != null) && (config.all.client.service.result.viewer.protocolPrefix != null) && (config.all.client.service.result.viewer.experimentNameColumn != null)) {
+        resultViewerURL = [
+          {
+            resultViewerURL: ""
+          }
+        ];
+        serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+        baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + request.params.code;
+        request = require('request');
+        return request({
+          method: 'GET',
+          url: baseurl,
+          json: true
+        }, (function(_this) {
+          return function(error, response, experiment) {
+            if (!error && response.statusCode === 200) {
+              if (experiment.length === 0) {
+                resp.statusCode = 404;
+                return resp.json(resultViewerURL);
+              } else {
+                baseurl = config.all.client.service.persistence.fullpath + "protocols/" + experiment[0].protocol.id;
+                request = require('request');
+                return request({
+                  method: 'GET',
+                  url: baseurl,
+                  json: true
+                }, function(error, response, protocol) {
+                  var experimentName, preferredExperimentLabel, preferredExperimentLabelText, preferredProtocolLabel, preferredProtocolLabelText;
+                  if (response.statusCode === 404) {
+                    resp.statusCode = 404;
+                    return resp.json(resultViewerURL);
+                  } else {
+                    if (!error && response.statusCode === 200) {
+                      preferredExperimentLabel = _.filter(experiment[0].lsLabels, function(lab) {
+                        return lab.preferred && lab.ignored === false;
+                      });
+                      preferredExperimentLabelText = preferredExperimentLabel[0].labelText;
+                      if (config.all.client.service.result.viewer.experimentNameColumn === "EXPERIMENT_NAME") {
+                        experimentName = experiment[0].codeName + "::" + preferredExperimentLabelText;
+                      } else {
+                        experimentName = preferredExperimentLabelText;
+                      }
+                      preferredProtocolLabel = _.filter(protocol.lsLabels, function(lab) {
+                        return lab.preferred && lab.ignored === false;
+                      });
+                      preferredProtocolLabelText = preferredProtocolLabel[0].labelText;
+                      return resp.json({
+                        resultViewerURL: config.all.client.service.result.viewer.protocolPrefix + encodeURIComponent(preferredProtocolLabelText) + config.all.client.service.result.viewer.experimentPrefix + encodeURIComponent(experimentName)
+                      });
+                    } else {
+                      console.log('got ajax error trying to save new experiment');
+                      console.log(error);
+                      console.log(json);
+                      return console.log(response);
+                    }
+                  }
+                });
+              }
+            } else {
+              console.log('got ajax error trying to save new experiment');
+              console.log(error);
+              console.log(json);
+              return console.log(response);
+            }
+          };
+        })(this));
+      } else {
+        resp.statusCode = 500;
+        return resp.end("configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist");
+      }
+    }
   };
 
 }).call(this);

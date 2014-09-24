@@ -442,7 +442,7 @@
             });
             return expect(this.drac.$('.bv_max_limitType_none').attr('disabled')).toEqual('disabled');
           });
-          it("Should enable analsyis parameter editing if status is finalized", function() {
+          it("Should enable analsyis parameter editing if status is started", function() {
             this.drac.model.getStatus().set({
               stringValue: "finalized"
             });
