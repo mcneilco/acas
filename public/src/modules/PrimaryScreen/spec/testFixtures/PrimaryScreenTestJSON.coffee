@@ -1,16 +1,24 @@
 ((exports) ->
 	exports.primaryAnalysisReads = [
-		readOrder: 11
-		readName: "luminescence"
-		matchReadName: true
+		readPosition: 11
+		readName: "none"
+		activity: true
 	,
-		readOrder: 12
+		readPosition: 12
 		readName: "fluorescence"
-		matchReadName: true
+		activity: false
 	,
-		readOrder:13
-		readName: "other read name"
-		matchReadName: false
+		readPosition:13
+		readName: "luminescence"
+		activity: false
+	]
+
+	exports.transformationRules = [
+		transformationRule: "% efficacy"
+	,
+		transformationRule: "sd"
+	,
+		transformationRule: "null"
 	]
 
 	exports.primaryScreenAnalysisParameters =
@@ -31,11 +39,10 @@
 			concentration: null
 			concentrationUnits: null
 		instrumentReader: "flipr"
-		signalDirectionRule: "increasing signal (highest = 100%)"
+		signalDirectionRule: "increasing"
 		aggregateBy1: "compound batch concentration"
 		aggregateBy2: "median"
-		transformationRule: "(maximum-minimum)/minimum"
-		normalizationRule: "plate order"
+		normalizationRule: "plate order only"
 		hitEfficacyThreshold: 42
 		hitSDThreshold: 5.0
 		thresholdType: "sd" #or "efficacy"
@@ -44,7 +51,10 @@
 		volumeType: "dilution" #or "transfer"
 		assayVolume: 24
 		autoHitSelection: false
+		htsFormat: false
+		matchReadName: false
 		primaryAnalysisReadList: exports.primaryAnalysisReads
+		transformationRuleList: exports.transformationRules
 
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenTestJSON = window.primaryScreenTestJSON or {} else exports)
 

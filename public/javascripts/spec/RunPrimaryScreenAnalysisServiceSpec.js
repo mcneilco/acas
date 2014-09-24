@@ -136,7 +136,7 @@ This service runs a primary data analysis.
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/dataDict/instrumentReaderCodes",
+              url: "api/dataDict/experimentMetadata/instrument reader",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;
@@ -184,7 +184,7 @@ This service runs a primary data analysis.
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/dataDict/signalDirectionCodes",
+              url: "api/dataDict/experimentMetadata/signal direction",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;
@@ -232,7 +232,7 @@ This service runs a primary data analysis.
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/dataDict/aggregateBy1Codes",
+              url: "api/dataDict/experimentMetadata/aggregate by1",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;
@@ -280,7 +280,7 @@ This service runs a primary data analysis.
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/dataDict/aggregateBy2Codes",
+              url: "api/dataDict/experimentMetadata/aggregate by2",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;
@@ -328,7 +328,7 @@ This service runs a primary data analysis.
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/dataDict/transformationCodes",
+              url: "api/dataDict/experimentMetadata/transformation",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;
@@ -376,7 +376,7 @@ This service runs a primary data analysis.
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/dataDict/normalizationCodes",
+              url: "api/dataDict/experimentMetadata/normalization",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;
@@ -424,7 +424,7 @@ This service runs a primary data analysis.
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/dataDict/readNameCodes",
+              url: "api/dataDict/experimentMetadata/read name",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;

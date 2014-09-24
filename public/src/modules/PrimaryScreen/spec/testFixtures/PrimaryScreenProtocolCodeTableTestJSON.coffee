@@ -1,14 +1,18 @@
 ((exports) ->
 	exports.dataDictValues =
 		[
-			"assay stage":
+			type: "protocolMetadata"
+			kind: "assay stage"
+			codes:
 				[
 					code: "assay development"
 					name: "Assay Development"
 					ignored: false
 				]
 		,
-			"assay activity":
+			type: "protocolMetadata"
+			kind: "assay activity"
+			codes:
 				[
 					code: "luminescence"
 					name: "Luminescence"
@@ -19,7 +23,9 @@
 					ignored: false
 				]
 		,
-			"molecular target":
+			type: "protocolMetadata"
+			kind: "molecular target"
+			codes:
 				[
 					code: "target x"
 					name: "Target X"
@@ -30,7 +36,9 @@
 					ignored: false
 				]
 		,
-			"target origin":
+			type: "protocolMetadata"
+			kind: "target origin"
+			codes:
 				[
 					code: "human"
 					name: "Human"
@@ -41,21 +49,27 @@
 					ignored: false
 				]
 		,
-			"assay type":
+			type: "protocolMetadata"
+			kind:"assay type"
+			codes:
 				[
 					code: "cellular assay"
 					name: "Cellular Assay"
 					ignored: false
 				]
 		,
-			"assay technology":
+			type: "protocolMetadata"
+			kind: "assay technology"
+			codes:
 				[
 					code: "wizard triple luminescence"
 					name: "Wizard Triple Luminescence"
 					ignored: false
 				]
 		,
-			"cell line":
+			type: "protocolMetadata"
+			kind: "cell line"
+			codes:
 				[
 					code: "cell line x"
 					name: "Cell Line X"

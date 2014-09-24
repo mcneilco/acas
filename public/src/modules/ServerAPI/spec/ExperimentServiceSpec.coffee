@@ -112,7 +112,7 @@ describe 'Experiment Service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experimentStatus"
+						url: "api/dataDict/experimentMetadata/experiment status"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -138,3 +138,21 @@ describe 'Experiment Service testing', ->
 					expect(@serviceReturn[0].ignored).toBeDefined()
 
 
+	describe "Experiment result viewer url", ->
+		describe 'when experiment result viewer url service called', ->
+			beforeEach ->
+				runs ->
+					$.ajax
+						type: 'GET'
+						url: "/api/experiments/resultViewerURL/test"
+						success: (json) =>
+							@serviceReturn = json
+						error: (err) =>
+							console.log 'got ajax error'
+							@serviceReturn = null
+						dataType: 'json'
+
+			it 'should return a result viewer url', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn.resultViewerURL).toContain("runseurat")

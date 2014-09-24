@@ -109,7 +109,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/instrumentReaderCodes"
+						url: "api/dataDict/experimentMetadata/instrument reader"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -140,7 +140,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/signalDirectionCodes"
+						url: "api/dataDict/experimentMetadata/signal direction"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -171,7 +171,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/aggregateBy1Codes"
+						url: "api/dataDict/experimentMetadata/aggregate by1"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -202,7 +202,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/aggregateBy2Codes"
+						url: "api/dataDict/experimentMetadata/aggregate by2"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -233,7 +233,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/transformationCodes"
+						url: "api/dataDict/experimentMetadata/transformation"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -264,7 +264,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/normalizationCodes"
+						url: "api/dataDict/experimentMetadata/normalization"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -295,7 +295,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/readNameCodes"
+						url: "api/dataDict/experimentMetadata/read name"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>

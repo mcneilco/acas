@@ -1,28 +1,29 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.PrimaryAnalysisRead = (function(_super) {
     __extends(PrimaryAnalysisRead, _super);
 
     function PrimaryAnalysisRead() {
+      this.triggerAmDirty = __bind(this.triggerAmDirty, this);
       return PrimaryAnalysisRead.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryAnalysisRead.prototype.defaults = {
-      readOrder: null,
+      readPosition: null,
       readName: "unassigned",
-      matchReadName: true
+      activity: false
     };
 
     PrimaryAnalysisRead.prototype.validate = function(attrs) {
       var errors;
       errors = [];
-      if (attrs.readOrder === "" || _.isNaN(attrs.readOrder)) {
+      if (_.isNaN(attrs.readPosition) || attrs.readPosition === "") {
         errors.push({
-          attribute: 'readOrder',
-          message: "Read order must be a number"
+          attribute: 'readPosition',
+          message: "Read position must be a number"
         });
       }
       if (attrs.readName === "unassigned" || attrs.readName === "") {
@@ -38,7 +39,47 @@
       }
     };
 
+    PrimaryAnalysisRead.prototype.triggerAmDirty = function() {
+      return this.trigger('amDirty', this);
+    };
+
     return PrimaryAnalysisRead;
+
+  })(Backbone.Model);
+
+  window.TransformationRule = (function(_super) {
+    __extends(TransformationRule, _super);
+
+    function TransformationRule() {
+      this.triggerAmDirty = __bind(this.triggerAmDirty, this);
+      return TransformationRule.__super__.constructor.apply(this, arguments);
+    }
+
+    TransformationRule.prototype.defaults = {
+      transformationRule: "unassigned"
+    };
+
+    TransformationRule.prototype.validate = function(attrs) {
+      var errors;
+      errors = [];
+      if (attrs.transformationRule === "unassigned") {
+        errors.push({
+          attribute: 'transformationRule',
+          message: "Transformation Rule must be assigned"
+        });
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
+    };
+
+    TransformationRule.prototype.triggerAmDirty = function() {
+      return this.trigger('amDirty', this);
+    };
+
+    return TransformationRule;
 
   })(Backbone.Model);
 
@@ -51,7 +92,92 @@
 
     PrimaryAnalysisReadList.prototype.model = PrimaryAnalysisRead;
 
+    PrimaryAnalysisReadList.prototype.validateCollection = function(matchReadName) {
+      var currentReadName, error, index, indivModelErrors, model, modelErrors, usedReadNames, _i, _j, _len, _ref;
+      modelErrors = [];
+      usedReadNames = {};
+      if (this.length !== 0) {
+        for (index = _i = 0, _ref = this.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; index = 0 <= _ref ? ++_i : --_i) {
+          model = this.at(index);
+          indivModelErrors = model.validate(model.attributes);
+          if (indivModelErrors !== null) {
+            for (_j = 0, _len = indivModelErrors.length; _j < _len; _j++) {
+              error = indivModelErrors[_j];
+              if (!(matchReadName && error.attribute === 'readPosition')) {
+                modelErrors.push({
+                  attribute: error.attribute + ':eq(' + index + ')',
+                  message: error.message
+                });
+              }
+            }
+          }
+          currentReadName = model.get('readName');
+          if (currentReadName in usedReadNames) {
+            modelErrors.push({
+              attribute: 'readName:eq(' + index + ')',
+              message: "Read name can not be chosen more than once"
+            });
+            modelErrors.push({
+              attribute: 'readName:eq(' + usedReadNames[currentReadName] + ')',
+              message: "Read name can not be chosen more than once"
+            });
+          } else {
+            usedReadNames[currentReadName] = index;
+          }
+        }
+      }
+      return modelErrors;
+    };
+
     return PrimaryAnalysisReadList;
+
+  })(Backbone.Collection);
+
+  window.TransformationRuleList = (function(_super) {
+    __extends(TransformationRuleList, _super);
+
+    function TransformationRuleList() {
+      return TransformationRuleList.__super__.constructor.apply(this, arguments);
+    }
+
+    TransformationRuleList.prototype.model = TransformationRule;
+
+    TransformationRuleList.prototype.validateCollection = function() {
+      var currentRule, error, index, indivModelErrors, model, modelErrors, usedRules, _i, _j, _len, _ref;
+      modelErrors = [];
+      usedRules = {};
+      if (this.length !== 0) {
+        for (index = _i = 0, _ref = this.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; index = 0 <= _ref ? ++_i : --_i) {
+          model = this.at(index);
+          indivModelErrors = model.validate(model.attributes);
+          if (indivModelErrors !== null) {
+            for (_j = 0, _len = indivModelErrors.length; _j < _len; _j++) {
+              error = indivModelErrors[_j];
+              modelErrors.push({
+                attribute: error.attribute + ':eq(' + index + ')',
+                message: error.message
+              });
+            }
+          }
+          currentRule = model.get('transformationRule');
+          if (currentRule in usedRules) {
+            modelErrors.push({
+              attribute: 'transformationRule:eq(' + index + ')',
+              message: "Transformation Rules can not be chosen more than once"
+            });
+            modelErrors.push({
+              attribute: 'transformationRule:eq(' + usedRules[currentRule] + ')',
+              message: "Transformation Rules can not be chosen more than once"
+            });
+          } else {
+            usedRules[currentRule] = index;
+          }
+        }
+      }
+      return modelErrors;
+    };
+
+    return TransformationRuleList;
 
   })(Backbone.Collection);
 
@@ -68,7 +194,6 @@
       signalDirectionRule: "unassigned",
       aggregateBy1: "unassigned",
       aggregateBy2: "unassigned",
-      transformationRule: "unassigned",
       normalizationRule: "unassigned",
       assayVolume: null,
       transferVolume: null,
@@ -81,8 +206,11 @@
       agonistControl: new Backbone.Model(),
       thresholdType: "sd",
       volumeType: "dilution",
-      autoHitSelection: true,
-      primaryAnalysisReadList: new PrimaryAnalysisReadList()
+      htsFormat: false,
+      autoHitSelection: false,
+      matchReadName: true,
+      primaryAnalysisReadList: new PrimaryAnalysisReadList(),
+      transformationRuleList: new TransformationRuleList()
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
@@ -135,16 +263,40 @@
           primaryAnalysisReadList: new PrimaryAnalysisReadList(this.get('primaryAnalysisReadList'))
         });
       }
-      return this.get('primaryAnalysisReadList').on("change", (function(_this) {
+      this.get('primaryAnalysisReadList').on("change", (function(_this) {
         return function() {
           return _this.trigger('change');
+        };
+      })(this));
+      this.get('primaryAnalysisReadList').on("amDirty", (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      if (!(this.get('transformationRuleList') instanceof TransformationRuleList)) {
+        this.set({
+          transformationRuleList: new TransformationRuleList(this.get('transformationRuleList'))
+        });
+      }
+      this.get('transformationRuleList').on("change", (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
+      return this.get('transformationRuleList').on("amDirty", (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
         };
       })(this));
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
-      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc;
+      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, readErrors, transformationErrors;
       errors = [];
+      readErrors = this.get('primaryAnalysisReadList').validateCollection(attrs.matchReadName);
+      errors.push.apply(errors, readErrors);
+      transformationErrors = this.get('transformationRuleList').validateCollection();
+      errors.push.apply(errors, transformationErrors);
       positiveControl = this.get('positiveControl').get('batchCode');
       if (positiveControl === "" || positiveControl === void 0) {
         errors.push({
@@ -207,12 +359,6 @@
           message: "Aggregate By2 must be assigned"
         });
       }
-      if (attrs.transformationRule === "unassigned" || attrs.transformationRule === "") {
-        errors.push({
-          attribute: 'transformationRule',
-          message: "Transformation rule must be assigned"
-        });
-      }
       if (attrs.normalizationRule === "unassigned" || attrs.normalizationRule === "") {
         errors.push({
           attribute: 'normalizationRule',
@@ -237,6 +383,12 @@
           message: "Assay volume must be assigned"
         });
       }
+      if ((attrs.assayVolume === "" || attrs.assayVolume === null) && (attrs.transferVolume !== "" && attrs.transferVolume !== null)) {
+        errors.push({
+          attribute: 'assayVolume',
+          message: "Assay volume must be assigned"
+        });
+      }
       if (attrs.volumeType === "dilution" && _.isNaN(attrs.dilutionFactor)) {
         errors.push({
           attribute: 'dilutionFactor',
@@ -253,6 +405,34 @@
         return errors;
       } else {
         return null;
+      }
+    };
+
+    PrimaryScreenAnalysisParameters.prototype.autocalculateVolumes = function() {
+      var assayVolume, dilutionFactor, transferVolume;
+      dilutionFactor = this.get('dilutionFactor');
+      transferVolume = this.get('transferVolume');
+      assayVolume = this.get('assayVolume');
+      if (this.get('volumeType') === 'dilution') {
+        if (isNaN(dilutionFactor) || dilutionFactor === "" || dilutionFactor === 0 || isNaN(assayVolume) || assayVolume === "") {
+          transferVolume = "";
+        } else {
+          transferVolume = assayVolume / dilutionFactor;
+        }
+        this.set({
+          transferVolume: transferVolume
+        });
+        return transferVolume;
+      } else {
+        if (isNaN(transferVolume) || transferVolume === "" || transferVolume === 0 || isNaN(assayVolume) || assayVolume === "") {
+          dilutionFactor = "";
+        } else {
+          dilutionFactor = assayVolume / transferVolume;
+        }
+        this.set({
+          dilutionFactor: dilutionFactor
+        });
+        return dilutionFactor;
       }
     };
 
@@ -352,9 +532,9 @@
     PrimaryAnalysisReadController.prototype.className = "form-inline";
 
     PrimaryAnalysisReadController.prototype.events = {
-      "change .bv_readOrder": "attributeChanged",
+      "change .bv_readPosition": "attributeChanged",
       "change .bv_readName": "attributeChanged",
-      "click .bv_matchReadName": "attributeChanged",
+      "click .bv_activity": "attributeChanged",
       "click .bv_delete": "clear"
     };
 
@@ -367,14 +547,13 @@
     PrimaryAnalysisReadController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
-      this.$('.bv_readOrder').val(this.model.get('readOrder'));
       this.setUpReadNameSelect();
       return this;
     };
 
     PrimaryAnalysisReadController.prototype.setUpReadNameSelect = function() {
       this.readNameList = new PickListList();
-      this.readNameList.url = "/api/dataDict/readNameCodes";
+      this.readNameList.url = "/api/dataDict/experimentMetadata/read name";
       return this.readNameList = new PickListSelectController({
         el: this.$('.bv_readName'),
         collection: this.readNameList,
@@ -386,21 +565,90 @@
       });
     };
 
+    PrimaryAnalysisReadController.prototype.setUpReadPosition = function(matchReadNameChecked) {
+      if (matchReadNameChecked) {
+        return this.$('.bv_readPosition').attr('disabled', 'disabled');
+      } else {
+        return this.$('.bv_readPosition').removeAttr('disabled');
+      }
+    };
+
     PrimaryAnalysisReadController.prototype.updateModel = function() {
-      var matchReadName;
-      matchReadName = this.$('.bv_matchReadName').is(":checked");
-      return this.model.set({
-        readOrder: parseFloat(this.getTrimmedInput('.bv_readOrder')),
+      var activity;
+      activity = this.$('.bv_activity').is(":checked");
+      this.model.set({
+        readPosition: parseInt(this.getTrimmedInput('.bv_readPosition')),
         readName: this.$('.bv_readName').val(),
-        matchReadName: matchReadName
+        activity: activity
       });
+      return this.model.triggerAmDirty();
     };
 
     PrimaryAnalysisReadController.prototype.clear = function() {
-      return this.model.destroy();
+      this.model.destroy();
+      return this.model.triggerAmDirty();
     };
 
     return PrimaryAnalysisReadController;
+
+  })(AbstractFormController);
+
+  window.TransformationRuleController = (function(_super) {
+    __extends(TransformationRuleController, _super);
+
+    function TransformationRuleController() {
+      this.clear = __bind(this.clear, this);
+      this.updateModel = __bind(this.updateModel, this);
+      this.render = __bind(this.render, this);
+      return TransformationRuleController.__super__.constructor.apply(this, arguments);
+    }
+
+    TransformationRuleController.prototype.template = _.template($("#TransformationRuleView").html());
+
+    TransformationRuleController.prototype.events = {
+      "change .bv_transformationRule": "attributeChanged",
+      "click .bv_deleteRule": "clear"
+    };
+
+    TransformationRuleController.prototype.initialize = function() {
+      this.errorOwnerName = 'TransformationRuleController';
+      this.setBindings();
+      return this.model.on("destroy", this.remove, this);
+    };
+
+    TransformationRuleController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template(this.model.attributes));
+      this.setUpTransformationRuleSelect();
+      return this;
+    };
+
+    TransformationRuleController.prototype.updateModel = function() {
+      this.model.set({
+        transformationRule: this.$('.bv_transformationRule').val()
+      });
+      return this.model.triggerAmDirty();
+    };
+
+    TransformationRuleController.prototype.setUpTransformationRuleSelect = function() {
+      this.transformationList = new PickListList();
+      this.transformationList.url = "/api/dataDict/experimentMetadata/transformation";
+      return this.transformationList = new PickListSelectController({
+        el: this.$('.bv_transformationRule'),
+        collection: this.transformationList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Transformation Rule"
+        }),
+        selectedCode: this.model.get('transformationRule')
+      });
+    };
+
+    TransformationRuleController.prototype.clear = function() {
+      return this.model.destroy();
+    };
+
+    return TransformationRuleController;
 
   })(AbstractFormController);
 
@@ -408,15 +656,29 @@
     __extends(PrimaryAnalysisReadListController, _super);
 
     function PrimaryAnalysisReadListController() {
+      this.checkActivity = __bind(this.checkActivity, this);
+      this.matchReadNameChanged = __bind(this.matchReadNameChanged, this);
       this.addNewRead = __bind(this.addNewRead, this);
       this.render = __bind(this.render, this);
+      this.initialize = __bind(this.initialize, this);
       return PrimaryAnalysisReadListController.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryAnalysisReadListController.prototype.template = _.template($("#PrimaryAnalysisReadListView").html());
 
+    PrimaryAnalysisReadListController.prototype.matchReadNameChecked = true;
+
     PrimaryAnalysisReadListController.prototype.events = {
       "click .bv_addReadButton": "addNewRead"
+    };
+
+    PrimaryAnalysisReadListController.prototype.initialize = function() {
+      this.collection.on('remove', this.checkActivity);
+      return this.collection.on('remove', (function(_this) {
+        return function() {
+          return _this.collection.trigger('change');
+        };
+      })(this));
     };
 
     PrimaryAnalysisReadListController.prototype.render = function() {
@@ -430,6 +692,7 @@
       if (this.collection.length === 0) {
         this.addNewRead();
       }
+      this.checkActivity();
       return this;
     };
 
@@ -437,7 +700,11 @@
       var newModel;
       newModel = new PrimaryAnalysisRead();
       this.collection.add(newModel);
-      return this.addOneRead(newModel);
+      this.addOneRead(newModel);
+      if (this.collection.length === 1) {
+        this.checkActivity();
+      }
+      return newModel.triggerAmDirty();
     };
 
     PrimaryAnalysisReadListController.prototype.addOneRead = function(read) {
@@ -445,20 +712,130 @@
       parc = new PrimaryAnalysisReadController({
         model: read
       });
-      return this.$('.bv_readInfo').append(parc.render().el);
+      this.$('.bv_readInfo').append(parc.render().el);
+      return parc.setUpReadPosition(this.matchReadNameChecked);
+    };
+
+    PrimaryAnalysisReadListController.prototype.matchReadNameChanged = function(matchReadName) {
+      this.matchReadNameChecked = matchReadName;
+      if (this.matchReadNameChecked) {
+        this.$('.bv_readPosition').val('');
+        this.$('.bv_readPosition').attr('disabled', 'disabled');
+        return this.collection.each((function(_this) {
+          return function(read) {
+            return read.set({
+              readPosition: ''
+            });
+          };
+        })(this));
+      } else {
+        return this.$('.bv_readPosition').removeAttr('disabled');
+      }
+    };
+
+    PrimaryAnalysisReadListController.prototype.checkActivity = function() {
+      var activitySet, index, _results;
+      index = this.collection.length - 1;
+      activitySet = false;
+      _results = [];
+      while (index >= 0 && activitySet === false) {
+        if (this.collection.at(index).get('activity') === true) {
+          activitySet = true;
+        }
+        if (index === 0) {
+          this.$('.bv_activity:eq(0)').click();
+        }
+        _results.push(index = index - 1);
+      }
+      return _results;
     };
 
     return PrimaryAnalysisReadListController;
 
-  })(Backbone.View);
+  })(AbstractFormController);
+
+  window.TransformationRuleListController = (function(_super) {
+    __extends(TransformationRuleListController, _super);
+
+    function TransformationRuleListController() {
+      this.checkNumberOfRules = __bind(this.checkNumberOfRules, this);
+      this.addNewRule = __bind(this.addNewRule, this);
+      this.render = __bind(this.render, this);
+      this.initialize = __bind(this.initialize, this);
+      return TransformationRuleListController.__super__.constructor.apply(this, arguments);
+    }
+
+    TransformationRuleListController.prototype.template = _.template($("#TransformationRuleListView").html());
+
+    TransformationRuleListController.prototype.events = {
+      "click .bv_addTransformationButton": "addNewRule"
+    };
+
+    TransformationRuleListController.prototype.initialize = function() {
+      this.collection.on('remove', this.checkNumberOfRules);
+      this.collection.on('remove', (function(_this) {
+        return function() {
+          return _this.collection.trigger('amDirty');
+        };
+      })(this));
+      return this.collection.on('remove', (function(_this) {
+        return function() {
+          return _this.collection.trigger('change');
+        };
+      })(this));
+    };
+
+    TransformationRuleListController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.collection.each((function(_this) {
+        return function(rule) {
+          return _this.addOneRule(rule);
+        };
+      })(this));
+      if (this.collection.length === 0) {
+        this.addNewRule();
+      }
+      return this;
+    };
+
+    TransformationRuleListController.prototype.addNewRule = function() {
+      var newModel;
+      newModel = new TransformationRule();
+      this.collection.add(newModel);
+      this.addOneRule(newModel);
+      return newModel.triggerAmDirty();
+    };
+
+    TransformationRuleListController.prototype.addOneRule = function(rule) {
+      var trc;
+      trc = new TransformationRuleController({
+        model: rule
+      });
+      return this.$('.bv_transformationInfo').append(trc.render().el);
+    };
+
+    TransformationRuleListController.prototype.checkNumberOfRules = function() {
+      if (this.collection.length === 0) {
+        return this.addNewRule();
+      }
+    };
+
+    return TransformationRuleListController;
+
+  })(AbstractFormController);
 
   window.PrimaryScreenAnalysisParametersController = (function(_super) {
     __extends(PrimaryScreenAnalysisParametersController, _super);
 
     function PrimaryScreenAnalysisParametersController() {
+      this.handleMatchReadNameChanged = __bind(this.handleMatchReadNameChanged, this);
       this.handleVolumeTypeChanged = __bind(this.handleVolumeTypeChanged, this);
       this.handleAutoHitSelectionChanged = __bind(this.handleAutoHitSelectionChanged, this);
       this.handleThresholdTypeChanged = __bind(this.handleThresholdTypeChanged, this);
+      this.handleDilutionFactorChanged = __bind(this.handleDilutionFactorChanged, this);
+      this.handleTransferVolumeChanged = __bind(this.handleTransferVolumeChanged, this);
+      this.handleAssayVolumeChanged = __bind(this.handleAssayVolumeChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return PrimaryScreenAnalysisParametersController.__super__.constructor.apply(this, arguments);
@@ -473,11 +850,10 @@
       "change .bv_signalDirectionRule": "attributeChanged",
       "change .bv_aggregateBy1": "attributeChanged",
       "change .bv_aggregateBy2": "attributeChanged",
-      "change .bv_transformationRule": "attributeChanged",
       "change .bv_normalizationRule": "attributeChanged",
-      "change .bv_assayVolume": "attributeChanged",
-      "change .bv_dilutionFactor": "attributeChanged",
-      "change .bv_transferVolume": "attributeChanged",
+      "change .bv_assayVolume": "handleAssayVolumeChanged",
+      "change .bv_dilutionFactor": "handleDilutionFactorChanged",
+      "change .bv_transferVolume": "handleTransferVolumeChanged",
       "change .bv_hitEfficacyThreshold": "attributeChanged",
       "change .bv_hitSDThreshold": "attributeChanged",
       "change .bv_positiveControlBatch": "attributeChanged",
@@ -491,17 +867,23 @@
       "change .bv_thresholdTypeSD": "handleThresholdTypeChanged",
       "change .bv_volumeTypeTransfer": "handleVolumeTypeChanged",
       "change .bv_volumeTypeDilution": "handleVolumeTypeChanged",
-      "click .bv_autoHitSelection": "handleAutoHitSelectionChanged"
+      "change .bv_autoHitSelection": "handleAutoHitSelectionChanged",
+      "change .bv_htsFormat": "attributeChanged",
+      "click .bv_matchReadName": "handleMatchReadNameChanged"
     };
 
     PrimaryScreenAnalysisParametersController.prototype.initialize = function() {
       this.errorOwnerName = 'PrimaryScreenAnalysisParametersController';
       PrimaryScreenAnalysisParametersController.__super__.initialize.call(this);
+      this.model.bind('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty', _this);
+        };
+      })(this));
       this.setupInstrumentReaderSelect();
       this.setupSignalDirectionSelect();
       this.setupAggregateBy1Select();
       this.setupAggregateBy2Select();
-      this.setupTransformationSelect();
       return this.setupNormalizationSelect();
     };
 
@@ -512,16 +894,17 @@
       this.setupSignalDirectionSelect();
       this.setupAggregateBy1Select();
       this.setupAggregateBy2Select();
-      this.setupTransformationSelect();
       this.setupNormalizationSelect();
       this.handleAutoHitSelectionChanged();
       this.setupReadListController();
+      this.setupTransformationRuleListController();
+      this.handleMatchReadNameChanged();
       return this;
     };
 
     PrimaryScreenAnalysisParametersController.prototype.setupInstrumentReaderSelect = function() {
       this.instrumentList = new PickListList();
-      this.instrumentList.url = "/api/dataDict/instrumentReaderCodes";
+      this.instrumentList.url = "/api/dataDict/experimentMetadata/instrument reader";
       return this.instrumentListController = new PickListSelectController({
         el: this.$('.bv_instrumentReader'),
         collection: this.instrumentList,
@@ -535,7 +918,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupSignalDirectionSelect = function() {
       this.signalDirectionList = new PickListList();
-      this.signalDirectionList.url = "/api/dataDict/signalDirectionCodes";
+      this.signalDirectionList.url = "/api/dataDict/experimentMetadata/signal direction";
       return this.signalDirectionListController = new PickListSelectController({
         el: this.$('.bv_signalDirectionRule'),
         collection: this.signalDirectionList,
@@ -549,7 +932,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupAggregateBy1Select = function() {
       this.aggregateBy1List = new PickListList();
-      this.aggregateBy1List.url = "/api/dataDict/aggregateBy1Codes";
+      this.aggregateBy1List.url = "/api/dataDict/experimentMetadata/aggregate by1";
       return this.aggregateBy1ListController = new PickListSelectController({
         el: this.$('.bv_aggregateBy1'),
         collection: this.aggregateBy1List,
@@ -563,7 +946,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupAggregateBy2Select = function() {
       this.aggregateBy2List = new PickListList();
-      this.aggregateBy2List.url = "/api/dataDict/aggregateBy2Codes";
+      this.aggregateBy2List.url = "/api/dataDict/experimentMetadata/aggregate by2";
       return this.aggregateBy2ListController = new PickListSelectController({
         el: this.$('.bv_aggregateBy2'),
         collection: this.aggregateBy2List,
@@ -575,23 +958,9 @@
       });
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.setupTransformationSelect = function() {
-      this.transformationList = new PickListList();
-      this.transformationList.url = "/api/dataDict/transformationCodes";
-      return this.transformationListController = new PickListSelectController({
-        el: this.$('.bv_transformationRule'),
-        collection: this.transformationList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Rule"
-        }),
-        selectedCode: this.model.get('transformationRule')
-      });
-    };
-
     PrimaryScreenAnalysisParametersController.prototype.setupNormalizationSelect = function() {
       this.normalizationList = new PickListList();
-      this.normalizationList.url = "/api/dataDict/normalizationCodes";
+      this.normalizationList.url = "/api/dataDict/experimentMetadata/normalization";
       return this.normalizationListController = new PickListSelectController({
         el: this.$('.bv_normalizationRule'),
         collection: this.normalizationList,
@@ -611,19 +980,29 @@
       return this.readListController.render();
     };
 
+    PrimaryScreenAnalysisParametersController.prototype.setupTransformationRuleListController = function() {
+      this.transformationRuleListController = new TransformationRuleListController({
+        el: this.$('.bv_transformationList'),
+        collection: this.model.get('transformationRuleList')
+      });
+      return this.transformationRuleListController.render();
+    };
+
     PrimaryScreenAnalysisParametersController.prototype.updateModel = function() {
+      var htsFormat;
+      htsFormat = this.$('.bv_htsFormat').is(":checked");
       this.model.set({
         instrumentReader: this.$('.bv_instrumentReader').val(),
         signalDirectionRule: this.$('.bv_signalDirectionRule').val(),
         aggregateBy1: this.$('.bv_aggregateBy1').val(),
         aggregateBy2: this.$('.bv_aggregateBy2').val(),
-        transformationRule: this.$('.bv_transformationRule').val(),
         normalizationRule: this.$('.bv_normalizationRule').val(),
         hitEfficacyThreshold: parseFloat(this.getTrimmedInput('.bv_hitEfficacyThreshold')),
         hitSDThreshold: parseFloat(this.getTrimmedInput('.bv_hitSDThreshold')),
         assayVolume: this.getTrimmedInput('.bv_assayVolume'),
         transferVolume: this.getTrimmedInput('.bv_transferVolume'),
-        dilutionFactor: this.getTrimmedInput('.bv_dilutionFactor')
+        dilutionFactor: this.getTrimmedInput('.bv_dilutionFactor'),
+        htsFormat: htsFormat
       });
       if (this.model.get('assayVolume') !== "") {
         this.model.set({
@@ -660,6 +1039,34 @@
         return this.model.get('agonistControl').set({
           concentration: parseFloat(this.getTrimmedInput('.bv_agonistControlConc'))
         });
+      }
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handleAssayVolumeChanged = function() {
+      var volumeType;
+      this.attributeChanged();
+      volumeType = this.$("input[name='bv_volumeType']:checked").val();
+      if (volumeType === "dilution") {
+        return this.handleDilutionFactorChanged();
+      } else {
+        return this.handleTransferVolumeChanged();
+      }
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handleTransferVolumeChanged = function() {
+      var dilutionFactor;
+      this.attributeChanged();
+      dilutionFactor = this.model.autocalculateVolumes();
+      return this.$('.bv_dilutionFactor').val(dilutionFactor);
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handleDilutionFactorChanged = function() {
+      var transferVolume;
+      this.attributeChanged();
+      transferVolume = this.model.autocalculateVolumes();
+      this.$('.bv_transferVolume').val(transferVolume);
+      if (transferVolume === "" || transferVolume === null) {
+        return this.$('.bv_dilutionFactor').val(this.model.get('dilutionFactor'));
       }
     };
 
@@ -706,6 +1113,19 @@
         this.$('.bv_transferVolume').attr('disabled', 'disabled');
         this.$('.bv_dilutionFactor').removeAttr('disabled');
       }
+      if (this.model.get('transferVolume') === "" || this.model.get('assayVolume') === "") {
+        this.handleDilutionFactorChanged();
+      }
+      return this.attributeChanged();
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function() {
+      var matchReadName;
+      matchReadName = this.$('.bv_matchReadName').is(":checked");
+      this.model.set({
+        matchReadName: matchReadName
+      });
+      this.readListController.matchReadNameChanged(matchReadName);
       return this.attributeChanged();
     };
 
@@ -725,6 +1145,14 @@
       this.handleMSFormValid = __bind(this.handleMSFormValid, this);
       return AbstractUploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
     }
+
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.initialize = function() {
+      this.allowedFileTypes = ['zip'];
+      this.loadReportFile = true;
+      AbstractUploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
+      this.$('.bv_reportFileDirections').html('To upload an <b>optional well flagging file</b>, click the "Browse Files…" button and select a file.');
+      return this.$('.bv_attachReportCheckboxText').html('Attach optional well flagging file');
+    };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.completeInitialization = function() {
       this.analysisParameterController.on('valid', this.handleMSFormValid);

@@ -14,6 +14,14 @@
 
     ModuleMenusController.prototype.template = _.template($("#ModuleMenusView").html());
 
+    window.onbeforeunload = function() {
+      if (window.conf.leaveACASMessage === "WARNING: There are unsaved changes.") {
+        return window.conf.leaveACASMessage;
+      } else {
+        return null;
+      }
+    };
+
     ModuleMenusController.prototype.initialize = function() {
       $(this.el).html(this.template());
       this.moduleLauncherList = new ModuleLauncherList(this.options.menuListJSON);

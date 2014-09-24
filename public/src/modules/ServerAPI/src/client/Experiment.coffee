@@ -189,6 +189,21 @@ class window.ExperimentBaseController extends BaseEntityController
 				name: "Select Project"
 			selectedCode: @model.getProjectCode().get('codeValue')
 
+	setupStatusSelect: ->
+		@statusList = new PickListList()
+		@statusList.url = "/api/dataDict/experimentMetadata/experiment status"
+		@statusListController = new PickListSelectController
+			el: @$('.bv_status')
+			collection: @statusList
+			selectedCode: @model.getStatus().get 'stringValue'
+
+	setupTagList: ->
+		@$('.bv_tags').val ""
+		@tagListController = new TagListController
+			el: @$('.bv_tags')
+			collection: @model.get 'lsTags'
+		@tagListController.render()
+
 	setUseProtocolParametersDisabledState: ->
 		if (not @model.isNew()) or (@model.get('protocol') == null) or (@$('.bv_protocolCode').val() == "")
 			@$('.bv_useProtocolParameters').attr("disabled", "disabled")

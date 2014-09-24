@@ -2,7 +2,9 @@
   (function(exports) {
     return exports.dataDictValues = [
       {
-        "assay stage": [
+        type: "protocolMetadata",
+        kind: "assay stage",
+        codes: [
           {
             code: "assay development",
             name: "Assay Development",
@@ -10,7 +12,9 @@
           }
         ]
       }, {
-        "assay activity": [
+        type: "protocolMetadata",
+        kind: "assay activity",
+        codes: [
           {
             code: "luminescence",
             name: "Luminescence",
@@ -22,7 +26,9 @@
           }
         ]
       }, {
-        "molecular target": [
+        type: "protocolMetadata",
+        kind: "molecular target",
+        codes: [
           {
             code: "target x",
             name: "Target X",
@@ -34,7 +40,9 @@
           }
         ]
       }, {
-        "target origin": [
+        type: "protocolMetadata",
+        kind: "target origin",
+        codes: [
           {
             code: "human",
             name: "Human",
@@ -46,7 +54,9 @@
           }
         ]
       }, {
-        "assay type": [
+        type: "protocolMetadata",
+        kind: "assay type",
+        codes: [
           {
             code: "cellular assay",
             name: "Cellular Assay",
@@ -54,7 +64,9 @@
           }
         ]
       }, {
-        "assay technology": [
+        type: "protocolMetadata",
+        kind: "assay technology",
+        codes: [
           {
             code: "wizard triple luminescence",
             name: "Wizard Triple Luminescence",
@@ -62,7 +74,9 @@
           }
         ]
       }, {
-        "cell line": [
+        type: "protocolMetadata",
+        kind: "cell line",
+        codes: [
           {
             code: "cell line x",
             name: "Cell Line X",

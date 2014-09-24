@@ -2,17 +2,26 @@
   (function(exports) {
     exports.primaryAnalysisReads = [
       {
-        readOrder: 11,
-        readName: "luminescence",
-        matchReadName: true
+        readPosition: 11,
+        readName: "none",
+        activity: true
       }, {
-        readOrder: 12,
+        readPosition: 12,
         readName: "fluorescence",
-        matchReadName: true
+        activity: false
       }, {
-        readOrder: 13,
-        readName: "other read name",
-        matchReadName: false
+        readPosition: 13,
+        readName: "luminescence",
+        activity: false
+      }
+    ];
+    exports.transformationRules = [
+      {
+        transformationRule: "% efficacy"
+      }, {
+        transformationRule: "sd"
+      }, {
+        transformationRule: "null"
       }
     ];
     return exports.primaryScreenAnalysisParameters = {
@@ -37,11 +46,10 @@
         concentrationUnits: null
       },
       instrumentReader: "flipr",
-      signalDirectionRule: "increasing signal (highest = 100%)",
+      signalDirectionRule: "increasing",
       aggregateBy1: "compound batch concentration",
       aggregateBy2: "median",
-      transformationRule: "(maximum-minimum)/minimum",
-      normalizationRule: "plate order",
+      normalizationRule: "plate order only",
       hitEfficacyThreshold: 42,
       hitSDThreshold: 5.0,
       thresholdType: "sd",
@@ -50,7 +58,10 @@
       volumeType: "dilution",
       assayVolume: 24,
       autoHitSelection: false,
-      primaryAnalysisReadList: exports.primaryAnalysisReads
+      htsFormat: false,
+      matchReadName: false,
+      primaryAnalysisReadList: exports.primaryAnalysisReads,
+      transformationRuleList: exports.transformationRules
     };
   })((typeof process === "undefined" || !process.versions ? window.primaryScreenTestJSON = window.primaryScreenTestJSON || {} : exports));
 

@@ -9,7 +9,7 @@ describe 'Code Table Service testing', ->
 			runs ->
 				$.ajax
 					type: 'GET'
-					url: "api/dataDict/algorithm well flags"
+					url: "api/dataDict/experimentMetadata/algorithm well flags"
 					success: (json) =>
 						@serviceReturn = json
 					error: (err) =>

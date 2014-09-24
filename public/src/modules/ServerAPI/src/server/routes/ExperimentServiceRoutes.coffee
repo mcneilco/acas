@@ -207,7 +207,6 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 									console.log error
 									console.log json
 									console.log response
-						)
 				else
 					console.log 'got ajax error trying to save new experiment'
 					console.log error

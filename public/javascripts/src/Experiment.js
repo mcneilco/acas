@@ -310,6 +310,25 @@
       });
     };
 
+    ExperimentBaseController.prototype.setupStatusSelect = function() {
+      this.statusList = new PickListList();
+      this.statusList.url = "/api/dataDict/experimentMetadata/experiment status";
+      return this.statusListController = new PickListSelectController({
+        el: this.$('.bv_status'),
+        collection: this.statusList,
+        selectedCode: this.model.getStatus().get('stringValue')
+      });
+    };
+
+    ExperimentBaseController.prototype.setupTagList = function() {
+      this.$('.bv_tags').val("");
+      this.tagListController = new TagListController({
+        el: this.$('.bv_tags'),
+        collection: this.model.get('lsTags')
+      });
+      return this.tagListController.render();
+    };
+
     ExperimentBaseController.prototype.setUseProtocolParametersDisabledState = function() {
       if ((!this.model.isNew()) || (this.model.get('protocol') === null) || (this.$('.bv_protocolCode').val() === "")) {
         return this.$('.bv_useProtocolParameters').attr("disabled", "disabled");

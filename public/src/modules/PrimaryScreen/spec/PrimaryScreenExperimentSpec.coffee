@@ -15,27 +15,46 @@ describe "Primary Screen Experiment module testing", ->
 				it "should be defined", ->
 					expect(@par).toBeDefined()
 				it "should have defaults", ->
-					expect(@par.get('readOrder')).toBeNull()
+					expect(@par.get('readPosition')).toBeNull()
 					expect(@par.get('readName')).toEqual "unassigned"
-					expect(@par.get('matchReadName')).toBeTruthy()
+					expect(@par.get('activity')).toBeFalsy()
 		describe "model validation tests", ->
 			beforeEach ->
 				@par = new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisReads[0]
 			it "should be valid as initialized", ->
 				expect(@par.isValid()).toBeTruthy()
-			it "should be invalid when read order is NaN", ->
-				@par.set readOrder: NaN
+			it "should be invalid when read position is NaN", ->
+				@par.set readPosition: NaN
 				expect(@par.isValid()).toBeFalsy()
-				filtErrors = _.filter(@par.validationError, (err) ->
-					err.attribute=='readOrder'
-				)
+				filtErrors = _.filter @par.validationError, (err) ->
+					err.attribute=='readPosition'
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when read name is unassigned", ->
 				@par.set readName: "unassigned"
 				expect(@par.isValid()).toBeFalsy()
-				filtErrors = _.filter(@par.validationError, (err) ->
+				filtErrors = _.filter @par.validationError, (err) ->
 					err.attribute=='readName'
-				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
+	describe "Transformation Rule Model testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@tr = new TransformationRule()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@tr).toBeDefined()
+				it "should have defaults", ->
+					expect(@tr.get('transformationRule')).toEqual "unassigned"
+		describe "model validation tests", ->
+			beforeEach ->
+				@tr = new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
+			it "should be valid as initialized", ->
+				expect(@tr.isValid()).toBeTruthy()
+			it "should be invalid when transformation rule is unassigned", ->
+				@tr.set transformationRule: "unassigned"
+				expect(@tr.isValid()).toBeFalsy()
+				filtErrors = _.filter @tr.validationError, (err) ->
+					err.attribute=='transformationRule'
 				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Primary Analysis Read List testing", ->
@@ -45,6 +64,56 @@ describe "Primary Screen Experiment module testing", ->
 			describe "Existence", ->
 				it "should be defined", ->
 					expect(@parl).toBeDefined()
+		describe "When loaded form existing", ->
+			beforeEach ->
+				@parl = new PrimaryAnalysisReadList window.primaryScreenTestJSON.primaryAnalysisReads
+			it "should have three reads", ->
+				expect(@parl.length).toEqual 3
+			it "should have the correct read info for the first read", ->
+				readtwo = @parl.at(0)
+				expect(readtwo.get('readPosition')).toEqual 11
+				expect(readtwo.get('readName')).toEqual "none"
+				expect(readtwo.get('activity')).toBeTruthy()
+			it "should have the correct read info for the second read", ->
+				readtwo = @parl.at(1)
+				expect(readtwo.get('readPosition')).toEqual 12
+				expect(readtwo.get('readName')).toEqual "fluorescence"
+				expect(readtwo.get('activity')).toBeFalsy()
+			it "should have the correct read info for the third read", ->
+				readthree = @parl.at(2)
+				expect(readthree.get('readPosition')).toEqual 13
+				expect(readthree.get('readName')).toEqual "luminescence"
+				expect(readthree.get('activity')).toBeFalsy()
+
+
+	describe "Transformation Rule List testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@trl = new TransformationRuleList()
+			describe "Existence", ->
+				it "should be defined", ->
+					expect(@trl).toBeDefined()
+		describe "When loaded form existing", ->
+			beforeEach ->
+				@trl = new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+			it "should have three reads", ->
+				expect(@trl.length).toEqual 3
+			it "should have the correct rule info for the first rule", ->
+				ruleone = @trl.at(0)
+				expect(ruleone.get('transformationRule')).toEqual "% efficacy"
+			it "should have the correct read info for the second rule", ->
+				ruletwo = @trl.at(1)
+				expect(ruletwo.get('transformationRule')).toEqual "sd"
+			it "should have the correct read info for the third read", ->
+				rulethree = @trl.at(2)
+				expect(rulethree.get('transformationRule')).toEqual "null"
+		describe "collection validation", ->
+			beforeEach ->
+				@trl= new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+			it "should be invalid if a transformation rule is selected more than once", ->
+				@trl.at(0).set transformationRule: "sd"
+				@trl.at(1).set transformationRule: "sd"
+				expect((@trl.validateCollection()).length).toBeGreaterThan 0
 
 	describe "Analysis Parameter model testing", ->
 		describe "When loaded from new", ->
@@ -62,7 +131,6 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('signalDirectionRule')).toEqual "unassigned"
 					expect(@psap.get('aggregateBy1')).toEqual "unassigned"
 					expect(@psap.get('aggregateBy2')).toEqual "unassigned"
-					expect(@psap.get('transformationRule')).toEqual "unassigned"
 					expect(@psap.get('normalizationRule')).toEqual "unassigned"
 					expect(@psap.get('hitEfficacyThreshold')).toBeNull()
 					expect(@psap.get('hitSDThreshold')).toBeNull()
@@ -71,8 +139,11 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('vehicleControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('thresholdType')).toEqual "sd"
-					expect(@psap.get('autoHitSelection')).toBeTruthy()
+					expect(@psap.get('autoHitSelection')).toBeFalsy()
+					expect(@psap.get('htsFormat')).toBeFalsy()
+					expect(@psap.get('matchReadName')).toBeTruthy()
 					expect(@psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy()
+					expect(@psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
 
 		describe "When loaded form existing", ->
 			beforeEach ->
@@ -80,6 +151,8 @@ describe "Primary Screen Experiment module testing", ->
 			describe "composite object creation", ->
 				it "should convert readlist to PrimaryAnalysisReadList", ->
 					expect( @psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy()
+				it "should convert transformationRuleList to TransformationRuleList", ->
+					expect( @psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
 			describe "model validation tests", ->
 				it "should be valid as initialized", ->
 					expect(@psap.isValid()).toBeTruthy()
@@ -87,186 +160,200 @@ describe "Primary Screen Experiment module testing", ->
 					@psap.get('positiveControl').set
 						batchCode: ""
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='positiveControlBatch'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when positive control conc is NaN", ->
 					@psap.get('positiveControl').set
 						concentration: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='positiveControlConc'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when negative control batch is empty", ->
 					@psap.get('negativeControl').set
 						batchCode: ""
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='negativeControlBatch'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when negative control conc is NaN", ->
 					@psap.get('negativeControl').set
 						concentration: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='negativeControlConc'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be valid when agonist control batch and conc are both empty", ->
 					@psap.get('agonistControl').set
 						batchCode: ""
 						concentration: ""
-					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
-						err.attribute=='agonistControlBatch'
-						err.attribute=='agonistControlConc'
-					)
-					expect(filtErrors.length).toEqual 0
+					expect(@psap.validate(@psap.attributes)).toEqual null
 				it "should be valid when agonist control batch is entered and agonist control conc is a number ", ->
 					@psap.get('agonistControl').set
 						batchCode:"CMPD-87654399-01"
 						concentration: 12
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='agonistControlConc'
 						err.attribute=='agonistControlBatch'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when agonist control batch is entered and agonist control conc is NaN", ->
 					@psap.get('agonistControl').set
 						batchCode:"CMPD-87654399-01"
 						concentration: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='agonistControlConc'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when agonist control batch is empty and agonist control conc is a number ", ->
 					@psap.get('agonistControl').set
 						batchCode:""
 						concentration: 13
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='agonistControlBatch'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be valid when vehicle control is empty", ->
 					@psap.get('vehicleControl').set
 						batchCode: ""
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='vehicleControlBatch'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when assayVolume is NaN (but can be empty)", ->
 					@psap.set assayVolume: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='assayVolume'
-					)
-				it "should be valid when assayVolume is empty", ->
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be invalid when assayVolume is not set but transfer volume is set", ->
 					@psap.set assayVolume: ""
-					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					@psap.set dilutionFactor: ""
+					@psap.set transferVolume: 40
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='assayVolume'
-					)
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be valid when assayVolume, transfer volume, and dilution factors are empty", ->
+					@psap.set assayVolume: ""
+					@psap.set transferVolume: ""
+					@psap.set dilutionFactor: ""
+					expect(@psap.isValid()).toBeTruthy()
+					filtErrors = _.filter @psap.validationError, (err) ->
+						err.attribute=='assayVolume'
 					expect(filtErrors.length).toEqual 0
 				it "should be valid when instrument reader is unassigned", ->
 					@psap.set instrumentReader: "unassigned"
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='instrumentReader'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when aggregate by1 is unassigned", ->
 					@psap.set aggregateBy1: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='aggregateBy1'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when aggregate by2 is unassigned", ->
 					@psap.set aggregateBy2: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='aggregateBy2'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when signal direction rule is unassigned", ->
 					@psap.set signalDirectionRule: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='signalDirectionRule'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when transformation rule is unassigned", ->
-					@psap.set transformationRule: "unassigned"
-					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
-						err.attribute=='transformationRule'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when normalization rule is unassigned", ->
 					@psap.set normalizationRule: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='normalizationRule'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when volumeType is dilution and dilutionFactor is not a number (but can be empty)", ->
 					@psap.set volumeType: "dilution"
 					@psap.set dilutionFactor: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='dilutionFactor'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be valid when volumeType is dilution and dilutionFactor is empty", ->
 					@psap.set volumeType: "dilution"
 					@psap.set dilutionFactor: ""
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='dilutionFactor'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when volumeType is transfer and transferVolume is not a number (but can be empty)", ->
 					@psap.set volumeType: "transfer"
 					@psap.set transferVolume: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='transferVolume'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be valid when volumeType is transfer and transferVolume is empty", ->
 					@psap.set volumeType: "transfer"
 					@psap.set transferVolume: ""
 					expect(@psap.isValid()).toBeTruthy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='transferVolume'
-					)
 					expect(filtErrors.length).toEqual 0
 				it "should be invalid when autoHitSelection is checked and thresholdType is sd and hitSDThreshold is not a number", ->
 					@psap.set autoHitSelection: true
 					@psap.set thresholdType: "sd"
 					@psap.set hitSDThreshold: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='hitSDThreshold'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when autoHitSelection is checked and thresholdType is efficacy and hitEfficacyThreshold is not a number", ->
 					@psap.set autoHitSelection: true
 					@psap.set thresholdType: "efficacy"
 					@psap.set hitEfficacyThreshold: NaN
 					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter(@psap.validationError, (err) ->
+					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='hitEfficacyThreshold'
-					)
 					expect(filtErrors.length).toBeGreaterThan 0
 
+			describe "autocalculating volumes", ->
+				it "should autocalculate the dilution factor from the transfer volume and assay volume", ->
+					@psap.set volumeType: "transfer"
+					@psap.set transferVolume: 12
+					@psap.set assayVolume: 36
+					expect(@psap.autocalculateVolumes()).toEqual 36/12
+				it "should autocalculate the transfer volume from the dilution factor and assay volume", ->
+					@psap.set volumeType: "dilution"
+					@psap.set dilutionFactor: 4
+					@psap.set assayVolume: 36
+					expect(@psap.autocalculateVolumes()).toEqual 36/4
+				it "should not autocalculate the dilution factor if transfer volume is NaN", ->
+					@psap.set volumeType: "transfer"
+					@psap.set transferVolume: NaN
+					@psap.set assayVolume: 36
+					expect(@psap.autocalculateVolumes()).toEqual ""
+				it "should not autocalculate the dilution factor if assay volume is NaN", ->
+					@psap.set volumeType: "transfer"
+					@psap.set transferVolume: 14
+					@psap.set assayVolume: NaN
+					expect(@psap.autocalculateVolumes()).toEqual ""
+				it "should not autocalculate the transfer volume if the dilution factor is NaN", ->
+					@psap.set volumeType: "dilution"
+					@psap.set dilutionFactor: NaN
+					@psap.set assayVolume: 36
+					expect(@psap.autocalculateVolumes()).toEqual ""
+				it "should not autocalculate the dilution factor if the transfer volume is 0", ->
+					@psap.set volumeType: "transfer"
+					@psap.set transferVolume: 0
+					@psap.set assayVolume: 123
+					expect(@psap.autocalculateVolumes()).toEqual ""
+				it "should not autocalculate the transfer volume if the dilution factor is 0", ->
+					@psap.set volumeType: "dilution"
+					@psap.set dilutionFactor: 0
+					@psap.set assayVolume: 123
+					expect(@psap.autocalculateVolumes()).toEqual ""
 
 	describe "Primary Screen Experiment model testing", ->
 		describe "When loaded from existing", ->
@@ -329,21 +416,21 @@ describe "Primary Screen Experiment module testing", ->
 				it "should load a template", ->
 					expect(@parc.$('.bv_readName').length).toEqual 1
 			describe "render existing parameters", ->
-				it "should show read order", ->
-					expect(@parc.$('.bv_readOrder').val()).toEqual "11"
+				it "should show read position", ->
+					expect(@parc.$('.bv_readPosition').val()).toEqual "11"
 				it "should show read name", ->
 					waitsFor ->
 						@parc.$('.bv_readName option').length > 0
 					, 1000
 					runs ->
-						expect(@parc.$('.bv_readName').val()).toEqual "luminescence"
-				it "should have Match Read Name checked", ->
-					expect(@parc.$('.bv_matchReadName').attr("checked")).toEqual "checked"
+						expect(@parc.$('.bv_readName').val()).toEqual "none"
+				it "should have activity checked", ->
+					expect(@parc.$('.bv_activity').attr("checked")).toEqual "checked"
 			describe "model updates", ->
-				it "should update the readOrder ", ->
-					@parc.$('.bv_readOrder').val( '42' )
-					@parc.$('.bv_readOrder').change()
-					expect(@parc.model.get('readOrder')).toEqual 42
+				it "should update the readPosition ", ->
+					@parc.$('.bv_readPosition').val( '42' )
+					@parc.$('.bv_readPosition').change()
+					expect(@parc.model.get('readPosition')).toEqual 42
 				it "should update the read name", ->
 					waitsFor ->
 						@parc.$('.bv_readName option').length > 0
@@ -352,36 +439,41 @@ describe "Primary Screen Experiment module testing", ->
 						@parc.$('.bv_readName').val('unassigned')
 						@parc.$('.bv_readName').change()
 						expect(@parc.model.get('readName')).toEqual "unassigned"
-				it "should update the matchReadName ", ->
-					waitsFor ->
-						@parc.$('.bv_readName option').length > 0
-					, 1000
-					runs ->
-						@parc.$('.bv_matchReadName').click()
-						@parc.$('.bv_matchReadName').click()
-						expect(@parc.model.get('matchReadName')).toBeFalsy()
-						# don't know why one click does not pass the spec
 		describe "validation testing", ->
 			beforeEach ->
 				@parc = new PrimaryAnalysisReadController
-					model: new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisReads[0]
+					model: new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisReads
 					el: $('#fixture')
 				@parc.render()
-			describe "error notification", ->
-				it "should show error if readOrder is NaN", ->
-					@parc.$('.bv_readOrder').val ""
-					@parc.$('.bv_readOrder').change()
-					expect(@parc.$('.bv_group_readOrder').hasClass("error")).toBeTruthy()
-				it "should show error if read name is unassigned", ->
+
+	describe "TransformationRuleController", ->
+		describe "when instantiated", ->
+			beforeEach ->
+				@trc = new TransformationRuleController
+					model: new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
+					el: $('#fixture')
+				@trc.render()
+			describe "basic existance tests", ->
+				it "should exist", ->
+					expect(@trc).toBeDefined()
+				it "should load a template", ->
+					expect(@trc.$('.bv_transformationRule').length).toEqual 1
+			describe "render existing parameters", ->
+				it "should show transformation rule", ->
 					waitsFor ->
-						@parc.$('.bv_readName option').length > 0
+						@trc.$('.bv_transformationRule option').length > 0
 					, 1000
 					runs ->
-						@parc.$('.bv_readName').val "unassigned"
-						@parc.$('.bv_readName').change()
-						expect(@parc.$('.bv_group_readName').hasClass("error")).toBeTruthy()
-
-
+						expect(@trc.$('.bv_transformationRule').val()).toEqual "% efficacy"
+			describe "model updates", ->
+				it "should update the transformation rule", ->
+					waitsFor ->
+						@trc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@trc.$('.bv_transformationRule').val('sd')
+						@trc.$('.bv_transformationRule').change()
+						expect(@trc.model.get('transformationRule')).toEqual "sd"
 
 	describe "Primary Analysis Read List Controller testing", ->
 		describe "when instantiated with no data", ->
@@ -396,9 +488,10 @@ describe "Primary Screen Experiment module testing", ->
 				it "should load a template", ->
 					expect(@parlc.$('.bv_addReadButton').length).toEqual 1
 			describe "rendering", ->
-				it "should show one read", ->
+				it "should show one read with the activity selected", ->
 					expect(@parlc.$('.bv_readInfo .bv_readName').length).toEqual 1
 					expect(@parlc.collection.length).toEqual 1
+#					expect(@parlc.$('.bv_readPosition:eq(0)').toBeTruthy())
 			describe "adding and removing", ->
 				it "should have two reads when add read is clicked", ->
 					@parlc.$('.bv_addReadButton').click()
@@ -424,20 +517,91 @@ describe "Primary Screen Experiment module testing", ->
 			it "should have three reads", ->
 				expect(@parlc.collection.length).toEqual 3
 			it "should have the correct read info for the first read", ->
-				readone = @parlc.collection.at(0)
-				expect(readone.get('readOrder')).toEqual 11
-				expect(readone.get('readName')).toEqual "luminescence"
-				expect(readone.get('matchReadName')).toBeTruthy()
+				waitsFor ->
+					@parlc.$('.bv_readName option').length > 0
+				, 1000
+				runs ->
+					expect(@parlc.$('.bv_readPosition:eq(0)').val()).toEqual "11"
+					expect(@parlc.$('.bv_readName:eq(0)').val()).toEqual "none"
+					expect(@parlc.$('.bv_activity:eq(0)').attr("checked")).toEqual "checked"
 			it "should have the correct read info for the second read", ->
-				readtwo = @parlc.collection.at(1)
-				expect(readtwo.get('readOrder')).toEqual 12
-				expect(readtwo.get('readName')).toEqual "fluorescence"
-				expect(readtwo.get('matchReadName')).toBeTruthy()
+				waitsFor ->
+					@parlc.$('.bv_readName option').length > 0
+				, 1000
+				runs ->
+					expect(@parlc.$('.bv_readPosition:eq(1)').val()).toEqual "12"
+					expect(@parlc.$('.bv_readName:eq(1)').val()).toEqual "fluorescence"
+					expect(@parlc.$('.bv_activity:eq(1)').attr("checked")).toBeUndefined()
 			it "should have the correct read info for the third read", ->
-				readthree = @parlc.collection.at(2)
-				expect(readthree.get('readOrder')).toEqual 13
-				expect(readthree.get('readName')).toEqual "other read name"
-				expect(readthree.get('matchReadName')).toBeFalsy()
+				waitsFor ->
+					@parlc.$('.bv_readName option').length > 0
+				, 1000
+				runs ->
+					expect(@parlc.$('.bv_readPosition:eq(2)').val()).toEqual "13"
+					expect(@parlc.$('.bv_readName:eq(2)').val()).toEqual "luminescence"
+					expect(@parlc.$('.bv_activity:eq(2)').attr("checked")).toBeUndefined()
+
+	describe "Transformation Rule List Controller testing", ->
+		describe "when instantiated with no data", ->
+			beforeEach ->
+				@trlc= new TransformationRuleListController
+					el: $('#fixture')
+					collection: new TransformationRuleList()
+				@trlc.render()
+			describe "basic existence tests", ->
+				it "should exist", ->
+					expect(@trlc).toBeDefined()
+				it "should load a template", ->
+					expect(@trlc.$('.bv_addTransformationButton').length).toEqual 1
+			describe "rendering", ->
+				it "should show one rule", ->
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 1
+					expect(@trlc.collection.length).toEqual 1
+			describe "adding and removing", ->
+				it "should have two rules when add transformation button is clicked", ->
+					@trlc.$('.bv_addTransformationButton').click()
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 2
+					expect(@trlc.collection.length).toEqual 2
+				it "should have one rule when there are two rules and remove is clicked", ->
+					@trlc.$('.bv_addTransformationButton').click()
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 2
+					@trlc.$('.bv_deleteRule:eq(0)').click()
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 1
+					expect(@trlc.collection.length).toEqual 1
+				it "should always have one read", ->
+					expect(@trlc.collection.length).toEqual 1
+					@trlc.$('.bv_deleteRule').click()
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 1
+					expect(@trlc.collection.length).toEqual 1
+
+		describe "when instantiated with data", ->
+			beforeEach ->
+				@trlc= new TransformationRuleListController
+					el: $('#fixture')
+					collection: new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+				@trlc.render()
+			it "should have three rules", ->
+				expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 3
+				expect(@trlc.collection.length).toEqual 3
+			it "should have the correct rule info for the first rule", ->
+				waitsFor ->
+					@trlc.$('.bv_transformationRule option').length > 0
+				, 1000
+				runs ->
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val()).toEqual "% efficacy"
+			it "should have the correct rule info for the second rule", ->
+				waitsFor ->
+					@trlc.$('.bv_transformationRule option').length > 0
+				, 1000
+				runs ->
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(1)').val()).toEqual "sd"
+			it "should have the correct rule info for the third rule", ->
+				# note: this test sometimes breaks for no reason. If run the specific test, it will pass.
+				waitsFor ->
+					@trlc.$('.bv_transformationRule option').length > 0
+				, 1000
+				runs ->
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(2)').val()).toEqual "null"
 
 
 	describe 'PrimaryScreenAnalysisParameters Controller', ->
@@ -466,7 +630,7 @@ describe "Primary Screen Experiment module testing", ->
 						@psapc.$('.bv_signalDirectionRule option').length > 0
 					, 1000
 					runs ->
-						expect(@psapc.$('.bv_signalDirectionRule').val()).toEqual "increasing signal (highest = 100%)"
+						expect(@psapc.$('.bv_signalDirectionRule').val()).toEqual "increasing"
 				it 'should show the aggregateBy1', ->
 					waitsFor ->
 						@psapc.$('.bv_aggregateBy1 option').length > 0
@@ -479,18 +643,12 @@ describe "Primary Screen Experiment module testing", ->
 					, 1000
 					runs ->
 						expect(@psapc.$('.bv_aggregateBy2').val()).toEqual "median"
-				it 'should show the transformation rule', ->
-					waitsFor ->
-						@psapc.$('.bv_transformationRule option').length > 0
-					, 1000
-					runs ->
-						expect(@psapc.$('.bv_transformationRule').val()).toEqual "(maximum-minimum)/minimum"
 				it 'should show the normalization rule', ->
 					waitsFor ->
 						@psapc.$('.bv_normalizationRule option').length > 0
 					, 1000
 					runs ->
-						expect(@psapc.$('.bv_normalizationRule').val()).toEqual "plate order"
+						expect(@psapc.$('.bv_normalizationRule').val()).toEqual "plate order only"
 				it 'should show the assayVolume', ->
 					expect(@psapc.$('.bv_assayVolume').val()).toEqual '24'
 				it 'should show the transferVolume', ->
@@ -523,8 +681,13 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psapc.$("input[name='bv_thresholdType']:checked").val()).toEqual 'sd'
 				it 'should hide threshold controls if the model loads unchecked automaticHitSelection', ->
 					expect(@psapc.$('.bv_thresholdControls')).toBeHidden()
+				it 'should start with htsFormat unchecked', ->
+					expect(@psapc.$('.bv_htsFormat').attr("checked")).toBeUndefined()
+				it 'should start with matchReadName unchecked', ->
+					expect(@psapc.$('.bv_matchReadName').attr("checked")).toBeUndefined()
 				it 'should show a primary analysis read list', ->
 					expect(@psapc.$('.bv_readInfo .bv_readName').length).toEqual 3
+
 			describe "model updates", ->
 				it "should update the instrument reader", ->
 					waitsFor ->
@@ -558,14 +721,6 @@ describe "Primary Screen Experiment module testing", ->
 						@psapc.$('.bv_aggregateBy2').val('unassigned')
 						@psapc.$('.bv_aggregateBy2').change()
 						expect(@psapc.model.get('aggregateBy2')).toEqual "unassigned"
-				it "should update the transformation rule", ->
-					waitsFor ->
-						@psapc.$('.bv_transformationRule option').length > 0
-					, 1000
-					runs ->
-						@psapc.$('.bv_transformationRule').val('unassigned')
-						@psapc.$('.bv_transformationRule').change()
-						expect(@psapc.model.get('transformationRule')).toEqual "unassigned"
 				it "should update the normalizationRule rule", ->
 					waitsFor ->
 						@psapc.$('.bv_normalizationRule option').length > 0
@@ -574,18 +729,30 @@ describe "Primary Screen Experiment module testing", ->
 						@psapc.$('.bv_normalizationRule').val('unassigned')
 						@psapc.$('.bv_normalizationRule').change()
 						expect(@psapc.model.get('normalizationRule')).toEqual "unassigned"
-				it "should update the assayVolume ", ->
-					@psapc.$('.bv_assayVolume').val(' 24 ')
+				it "should update the assayVolume and recalculate the transfer volume if the dilution factor is set ", ->
+					@psapc.$('.bv_volumeTypeDilution').click()
+					@psapc.$('.bv_dilutionFactor').val(' 3 ')
+					@psapc.$('.bv_dilutionFactor').change()
+					expect(@psapc.model.get('dilutionFactor')).toEqual 3
+					@psapc.$('.bv_assayVolume').val(' 27 ')
 					@psapc.$('.bv_assayVolume').change()
-					expect(@psapc.model.get('assayVolume')).toEqual 24
-				it "should update the transferVolume ", ->
+					expect(@psapc.model.get('assayVolume')).toEqual 27
+					expect(@psapc.model.get('transferVolume')).toEqual 9
+				it "should update the transferVolume and autocalculate the dilution factor based on assay and transfer volumes", ->
+					@psapc.$('.bv_volumeTypeTransfer').click()
 					@psapc.$('.bv_transferVolume').val(' 12 ')
 					@psapc.$('.bv_transferVolume').change()
 					expect(@psapc.model.get('transferVolume')).toEqual 12
-				it "should update the dilution factor ", ->
-					@psapc.$('.bv_dilutionFactor').val(' 21 ')
+					@psapc.$('.bv_assayVolume').val(' 24 ')
+					@psapc.$('.bv_assayVolume').change()
+					expect(@psapc.model.get('dilutionFactor')).toEqual 2
+				it "should update the dilution factor and autocalculate the transfer volume based on assay volume and dilution factor ", ->
+					@psapc.$('.bv_dilutionFactor').val(' 4 ')
 					@psapc.$('.bv_dilutionFactor').change()
-					expect(@psapc.model.get('dilutionFactor')).toEqual 21
+					expect(@psapc.model.get('dilutionFactor')).toEqual 4
+					@psapc.$('.bv_assayVolume').val(' 24 ')
+					@psapc.$('.bv_assayVolume').change()
+					expect(@psapc.model.get('transferVolume')).toEqual 6
 				it "should update the hitSDThreshold ", ->
 					@psapc.$('.bv_hitSDThreshold').val(' 24 ')
 					@psapc.$('.bv_hitSDThreshold').change()
@@ -632,9 +799,21 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_autoHitSelection').click()
 					@psapc.$('.bv_autoHitSelection').click()
 					expect(@psapc.model.get('autoHitSelection')).toBeTruthy()
-				# don't know why one click does not pass the spec
-
+				it "should update the htsFormat checkbox ", ->
+					@psapc.$('.bv_htsFormat').click()
+					expect(@psapc.model.get('htsFormat')).toBeTruthy()
+				it "should update the matchReadName checkbox ", ->
+					@psapc.$('.bv_matchReadName').click()
+					@psapc.$('.bv_matchReadName').click()
+					expect(@psapc.model.get('matchReadName')).toBeTruthy()
+					#don't know why matcchReadName needs to be clicked twice for spec to pass but the implementation is correct
 			describe "behavior and validation", ->
+				it "should disable read position field if match read name is selected", ->
+					@psapc.$('.bv_matchReadName').click()
+					@psapc.$('.bv_matchReadName').click()
+					expect(@psapc.$('.bv_readPosition').attr("disabled")).toEqual "disabled"
+				it "should enable read position field if match read name is not selected", ->
+					expect(@psapc.$('.bv_readPosition').attr("disabled")).toBeUndefined()
 				it "should disable sd threshold field if that radio not selected", ->
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
 					expect(@psapc.$('.bv_hitSDThreshold').attr("disabled")).toEqual "disabled"
@@ -740,14 +919,6 @@ describe "Primary Screen Experiment module testing", ->
 						@psapc.$('.bv_aggregateBy2').val "unassigned"
 						@psapc.$('.bv_aggregateBy2').change()
 						expect(@psapc.$('.bv_group_aggregateBy2').hasClass("error")).toBeTruthy()
-				it "should show error if transformationRule is unassigned", ->
-					waitsFor ->
-						@psapc.$('.bv_transformationRule option').length > 0
-					, 1000
-					runs ->
-						@psapc.$('.bv_transformationRule').val "unassigned"
-						@psapc.$('.bv_transformationRule').change()
-						expect(@psapc.$('.bv_group_transformationRule').hasClass("error")).toBeTruthy()
 				it "should show error if normalizationRule is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_normalizationRule option').length > 0
@@ -790,12 +961,49 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_assayVolume').val "b"
 					@psapc.$('.bv_assayVolume').change()
 					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy()
-				it "should not show error if assayVolume is empty", ->
+				it "should not show error if assayVolume, dilutionFactor, and transferVolume are empty", ->
 					@psapc.$('.bv_assayVolume').val ""
 					@psapc.$('.bv_assayVolume').change()
+					@psapc.$('.bv_dilutionFactor').val ""
+					@psapc.$('.bv_dilutionFactor').change()
+					@psapc.$('.bv_transferVolume').val ""
+					@psapc.$('.bv_transferVolume').change()
 					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeFalsy()
-
-
+				it "should not show error on read position if match read name is checked", ->
+					@psapc.$('.bv_matchReadName').click()
+					expect(@psapc.$('bv_group_readPosition').hasClass("error")).toBeFalsy()
+				it "should show error if readPosition is NaN", ->
+					@psapc.$('.bv_readPosition:eq(0)').val ""
+					@psapc.$('.bv_readPosition:eq(0)').change()
+					expect(@psapc.$('.bv_group_readPosition:eq(0)').hasClass("error")).toBeTruthy()
+				it "should show error if read name is unassigned", ->
+					waitsFor ->
+						@psapc.$('.bv_readName option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_readName:eq(0)').val "unassigned"
+						@psapc.$('.bv_readName:eq(0)').change()
+						expect(@psapc.$('.bv_group_readName').hasClass("error")).toBeTruthy()
+				it "should show error if transformation rule is unassigned", ->
+					waitsFor ->
+						@psapc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_transformationRule:eq(0)').val "unassigned"
+						@psapc.$('.bv_transformationRule:eq(0)').change()
+						expect(@psapc.$('.bv_group_transformationRule:eq(0)').hasClass("error")).toBeTruthy()
+				it "should show error if a transformation rule is selected more than once", ->
+					@psapc.$('.bv_addTransformationButton').click()
+					waitsFor ->
+						@psapc.$('.bv_transformationInfo .bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@psapc.$('.bv_transformationRule:eq(0)').val "sd"
+						@psapc.$('.bv_transformationRule:eq(0)').change()
+						@psapc.$('.bv_transformationRule:eq(1)').val "sd"
+						@psapc.$('.bv_transformationRule:eq(1)').change()
+						expect(@psapc.$('.bv_group_transformationRule:eq(0)').hasClass('error')).toBeTruthy()
+						expect(@psapc.$('.bv_group_transformationRule:eq(1)').hasClass('error')).toBeTruthy()
 
 
 	describe "Abstract Upload and Run Primary Analysis Controller testing", ->
