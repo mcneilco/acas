@@ -324,7 +324,7 @@ describe "Dose Response Analysis Module Testing", ->
 				@drac.render()
 			describe "experiment status change handling", ->
 				it "Should disable model fit parameter editing if status is Finalized", ->
-					@drac.model.getStatus().set stringValue: "Finalized"
+					@drac.model.getStatus().set stringValue: "finalized"
 					expect(@drac.$('.bv_max_limitType_none').attr('disabled')).toEqual 'disabled'
 				it "Should enable analsyis parameter editing if status is Finalized", ->
 					@drac.model.getStatus().set stringValue: "Finalized"

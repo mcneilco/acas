@@ -630,7 +630,7 @@ describe "Primary Screen Experiment module testing", ->
 						@psapc.$('.bv_signalDirectionRule option').length > 0
 					, 1000
 					runs ->
-						expect(@psapc.$('.bv_signalDirectionRule').val()).toEqual "increasing signal (highest = 100%)"
+						expect(@psapc.$('.bv_signalDirectionRule').val()).toEqual "increasing"
 				it 'should show the aggregateBy1', ->
 					waitsFor ->
 						@psapc.$('.bv_aggregateBy1 option').length > 0

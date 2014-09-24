@@ -438,7 +438,7 @@
         describe("experiment status change handling", function() {
           it("Should disable model fit parameter editing if status is Finalized", function() {
             this.drac.model.getStatus().set({
-              stringValue: "Finalized"
+              stringValue: "finalized"
             });
             return expect(this.drac.$('.bv_max_limitType_none').attr('disabled')).toEqual('disabled');
           });
