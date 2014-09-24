@@ -497,7 +497,6 @@
     PrimaryScreenAnalysisParametersController.prototype.initialize = function() {
       this.errorOwnerName = 'PrimaryScreenAnalysisParametersController';
       PrimaryScreenAnalysisParametersController.__super__.initialize.call(this);
-      console.log("initialize");
       this.setupInstrumentReaderSelect();
       this.setupSignalDirectionSelect();
       this.setupAggregateBy1Select();
@@ -507,7 +506,6 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
-      console.log("rendering");
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
       this.setupInstrumentReaderSelect();
@@ -524,7 +522,7 @@
     PrimaryScreenAnalysisParametersController.prototype.setupInstrumentReaderSelect = function() {
       this.instrumentList = new PickListList();
       this.instrumentList.url = "/api/dataDict/instrumentReaderCodes";
-      this.instrumentListController = new PickListSelectController({
+      return this.instrumentListController = new PickListSelectController({
         el: this.$('.bv_instrumentReader'),
         collection: this.instrumentList,
         insertFirstOption: new PickList({
@@ -533,8 +531,6 @@
         }),
         selectedCode: this.model.get('instrumentReader')
       });
-      console.log(this.model);
-      return console.log(this.instrumentList);
     };
 
     PrimaryScreenAnalysisParametersController.prototype.setupSignalDirectionSelect = function() {

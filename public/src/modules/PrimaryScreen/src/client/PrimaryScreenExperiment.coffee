@@ -319,7 +319,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	initialize: ->
 		@errorOwnerName = 'PrimaryScreenAnalysisParametersController'
 		super()
-		console.log "initialize"
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
 		@setupAggregateBy1Select()
@@ -331,7 +330,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 
 	render: =>
-		console.log "rendering"
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
 		@setupInstrumentReaderSelect()
@@ -358,8 +356,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				code: "unassigned"
 				name: "Select Instrument"
 			selectedCode: @model.get('instrumentReader')
-		console.log @model
-		console.log @instrumentList
 
 	setupSignalDirectionSelect: ->
 		@signalDirectionList = new PickListList()
