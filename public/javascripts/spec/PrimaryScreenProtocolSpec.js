@@ -85,32 +85,25 @@
             return expect(this.psp.getCurveDisplayMin().get('numericValue')).toEqual(10.0);
           });
           it('Should have an assay Activity value', function() {
-            console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay activity'));
             return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("luminescence");
           });
           it('Should have a molecularTarget value', function() {
-            console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target'));
             expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("target x");
             return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual("dns target list");
           });
           it('Should have an targetOrigin value', function() {
-            console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('target origin'));
             return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual("human");
           });
           it('Should have an assay type value', function() {
-            console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay type'));
             return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("cellular assay");
           });
           it('Should have a molecularTarget value with code origin set to dns target list', function() {
-            console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay technology'));
             return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("wizard triple luminescence");
           });
           it('Should have an targetOrigin value', function() {
-            console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('cell line'));
             return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("cell line y");
           });
           return it('Should have an assay stage value', function() {
-            console.log(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay stage'));
             return expect(this.psp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("assay development");
           });
         });
@@ -588,8 +581,6 @@
         });
         describe("render parameters", function() {
           it("should have the select dns target list be unchecked", function() {
-            console.log("dns list test");
-            console.log(this.psppc.$('.bv_dnsTargetListChkbx').attr("checked"));
             return expect(this.psppc.$('.bv_dnsTargetListChkbx').attr("checked")).toBeUndefined();
           });
           it("should show the curve display max", function() {
