@@ -73,24 +73,26 @@ describe "Curve Curator Module testing", ->
 				expect(@csc.tagName).toEqual 'div'
 		describe "rendering thumbnail", ->
 			it "should have img src attribute set", ->
-				expect(@csc.$('.bv_thumbnail').attr('src')).toContain "AG-00344438_1717"
+				expect(@csc.$('.bv_thumbnail').attr('src')).toContain "AG-00344443_1680"
 			it "should show the compound code", ->
-				expect(@csc.$('.bv_compoundCode').html()).toEqual "CMPD-0000001-01A"
+				expect(@csc.$('.bv_compoundCode').html()).toEqual "CMPD-0000007-01A"
 		describe "selection", ->
 			it "should show selected when clicked", ->
 				@csc.$el.click()
 				expect(@csc.$el.hasClass('selected')).toBeTruthy()
 		describe "algorithm approved display", ->
 			it "should show not approved when algorithm flagged", ->
+				@csc.model.set flagAlgorithm: "no fit"
 				expect(@csc.$('.bv_fail')).toBeVisible()
 				expect(@csc.$('.bv_pass')).toBeHidden()
 			it "should show approved when algorithm not flagged ", ->
-				@csc.model.set algorithmFlag: "NA"
+				@csc.model.set flagAlgorithm: "NA"
 				@csc.render()
-				expect(@csc.$('.bv_pass')).toBeHidden()
-				expect(@csc.$('.bv_fail')).toBeVisible()
+				expect(@csc.$('.bv_pass')).toBeVisible()
+				expect(@csc.$('.bv_fail')).toBeHidden()
 		describe "user flagged display", ->
 			it "should show thumbs up when user approved", ->
+				@csc.model.set flagUser: "approved"
 				expect(@csc.$('.bv_thumbsUp')).toBeVisible()
 				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
 			it "should show thumbs down when not user approved", ->
@@ -103,6 +105,7 @@ describe "Curve Curator Module testing", ->
 				@csc.render()
 				expect(@csc.$('.bv_thumbsUp')).toBeHidden()
 				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
+				expect(@csc.$('.bv_na')).toBeVisible()
 
 	describe "Curve Summary List Controller tests", ->
 		beforeEach ->
@@ -141,13 +144,13 @@ describe "Curve Curator Module testing", ->
 		describe "sorting", ->
 			it "should show the lowest EC50 when requested", ->
 				@cslc.sort 'EC50', true
-				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000001-01A"
+				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000009-01A"
 			it "should show the highest EC50 when requested", ->
 				@cslc.sort 'EC50', false
-				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000008-01A"
+				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000007-01A"
 			it "should show the first one when no sorting is requested", ->
 				@cslc.sort 'none'
-				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000001-01A"
+				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000007-01A"
 
 	describe "Dose Response Plot Controller tests", ->
 		beforeEach ->
@@ -324,19 +327,19 @@ describe "Curve Curator Module testing", ->
 						@ccc.$('.bv_sortDirection_descending').prop("checked", true)
 						@ccc.$('.bv_sortDirection_ascending').prop("checked", false)
 						@ccc.$('.bv_sortDirection_descending').click()
-						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000008-01A"
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000007-01A"
 				it "should update sort when ascending/descending is changed", ->
 					runs ->
 						@ccc.$('.bv_sortBy').val 'EC50'
 						@ccc.$('.bv_sortBy').change()
+						@ccc.$('.bv_sortDirection_descending').prop("checked", false)
+						@ccc.$('.bv_sortDirection_ascending').prop("checked", true)
+						@ccc.$('.bv_sortDirection_ascending').click()
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000009-01A"
 						@ccc.$('.bv_sortDirection_descending').prop("checked", true)
 						@ccc.$('.bv_sortDirection_ascending').prop("checked", false)
 						@ccc.$('.bv_sortDirection_descending').click()
-						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000008-01A"
-						@ccc.$('.bv_sortDirection_ascending').prop("checked", true)
-						@ccc.$('.bv_sortDirection_descending').prop("checked", false)
-						@ccc.$('.bv_sortDirection_ascending').click()
-						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000001-01A"
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000007-01A"
 				it "should add the 'none' option if no sortBy options are received from the server", ->
 					runs ->
 						@ccc.model.set sortOptions: new Backbone.Collection()

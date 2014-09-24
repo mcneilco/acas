@@ -1076,7 +1076,6 @@
         this.curveEditorController.on('curveDetailSaved', this.handleCurveDetailSaved);
         this.curveEditorController.on('curveDetailUpdated', this.handleCurveDetailUpdated);
         this.curveEditorController.on('curveUpdateError', this.handleCurveUpdateError);
-        this.curveListController.render();
         if (this.model.get('sortOptions').length > 0) {
           this.sortBySelect = new PickListSelectController({
             collection: this.model.get('sortOptions'),
