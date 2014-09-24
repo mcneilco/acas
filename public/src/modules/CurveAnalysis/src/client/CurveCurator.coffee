@@ -672,7 +672,6 @@ class window.CurveCuratorController extends Backbone.View
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
 			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError
-			@curveListController.render()
 
 			if @model.get('sortOptions').length > 0
 				@sortBySelect = new PickListSelectController
