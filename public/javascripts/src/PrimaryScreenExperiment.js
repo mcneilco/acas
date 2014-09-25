@@ -899,6 +899,7 @@
       this.setupReadListController();
       this.setupTransformationRuleListController();
       this.handleMatchReadNameChanged();
+      this.$("[data-toggle=tooltip]").tooltip();
       return this;
     };
 

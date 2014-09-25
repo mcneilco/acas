@@ -1261,7 +1261,8 @@
           it("should show error if positiveControl batch is not set", function() {
             this.psapc.$('.bv_positiveControlBatch').val("");
             this.psapc.$('.bv_positiveControlBatch').change();
-            return expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
+            expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
+            return expect(this.psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual("tooltip");
           });
           it("should show error if positiveControl conc is not set", function() {
             this.psapc.$('.bv_positiveControlConc').val("");
