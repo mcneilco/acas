@@ -333,7 +333,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	setUpReadNameSelect: ->
 		@readNameList = new PickListList()
-		@readNameList.url = "/api/dataDict/readNameCodes"
+		@readNameList.url = "/api/dataDict/experimentMetadata/read name"
 		@readNameList = new PickListSelectController
 			el: @$('.bv_readName')
 			collection: @readNameList
@@ -388,7 +388,7 @@ class window.TransformationRuleController extends AbstractFormController
 
 	setUpTransformationRuleSelect: ->
 		@transformationList = new PickListList()
-		@transformationList.url = "/api/dataDict/transformationCodes"
+		@transformationList.url = "/api/dataDict/experimentMetadata/transformation"
 		@transformationList = new PickListSelectController
 			el: @$('.bv_transformationRule')
 			collection: @transformationList
@@ -563,7 +563,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupInstrumentReaderSelect: ->
 		@instrumentList = new PickListList()
-		@instrumentList.url = "/api/dataDict/instrumentReaderCodes"
+		@instrumentList.url = "/api/dataDict/experimentMetadata/instrument reader"
 		@instrumentListController = new PickListSelectController
 			el: @$('.bv_instrumentReader')
 			collection: @instrumentList
@@ -574,7 +574,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupSignalDirectionSelect: ->
 		@signalDirectionList = new PickListList()
-		@signalDirectionList.url = "/api/dataDict/signalDirectionCodes"
+		@signalDirectionList.url = "/api/dataDict/experimentMetadata/signal direction"
 		@signalDirectionListController = new PickListSelectController
 			el: @$('.bv_signalDirectionRule')
 			collection: @signalDirectionList
@@ -585,7 +585,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupAggregateBy1Select: ->
 		@aggregateBy1List = new PickListList()
-		@aggregateBy1List.url = "/api/dataDict/aggregateBy1Codes"
+		@aggregateBy1List.url = "/api/dataDict/experimentMetadata/aggregate by1"
 		@aggregateBy1ListController = new PickListSelectController
 			el: @$('.bv_aggregateBy1')
 			collection: @aggregateBy1List
@@ -596,7 +596,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupAggregateBy2Select: ->
 		@aggregateBy2List = new PickListList()
-		@aggregateBy2List.url = "/api/dataDict/aggregateBy2Codes"
+		@aggregateBy2List.url = "/api/dataDict/experimentMetadata/aggregate by2"
 		@aggregateBy2ListController = new PickListSelectController
 			el: @$('.bv_aggregateBy2')
 			collection: @aggregateBy2List
@@ -607,7 +607,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
-		@normalizationList.url = "/api/dataDict/normalizationCodes"
+		@normalizationList.url = "/api/dataDict/experimentMetadata/normalization"
 		@normalizationListController = new PickListSelectController
 			el: @$('.bv_normalizationRule')
 			collection: @normalizationList

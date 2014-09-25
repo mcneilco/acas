@@ -1,28 +1,36 @@
 ((exports) ->
 	exports.dataDictValues =
 		[
-			"instrumentReaderCodes":
+			type: "experimentMetadata"
+			kind: "instrument reader"
+			codes:
 				[
 					code: "flipr"
 					name: "FLIPR"
 					ignored: false
 				]
 		,
-			"signalDirectionCodes":
+			type: "experimentMetadata"
+			kind: "signal direction"
+			codes:
 				[
-					code: "increasing signal (highest = 100%)"
+					code: "increasing"
 					name: "Increasing Signal (highest = 100%)"
 					ignored: false
 				]
 		,
-			"aggregateBy1Codes":
+			type: "experimentMetadata"
+			kind: "aggregate by1"
+			codes:
 				[
 					code: "compound batch concentration"
 					name: "Compound Batch Concentration"
 					ignored: false
 				]
 		,
-			"aggregateBy2Codes":
+			type: "experimentMetadata"
+			kind: "aggregate by2"
+			codes:
 				[
 					code: "median"
 					name: "Median"
@@ -33,7 +41,9 @@
 					ignored: false
 				]
 		,
-			"transformationCodes":
+			type: "experimentMetadata"
+			kind: "transformation"
+			codes:
 				[
 					code: "% efficacy"
 					name: "% Efficacy"
@@ -48,7 +58,9 @@
 					ignored: false
 				]
 		,
-			"normalizationCodes":
+			type: "experimentMetadata"
+			kind: "normalization"
+			codes:
 				[
 					code: "plate order only",
 					name: "Plate Order Only",
@@ -67,7 +79,9 @@
 					ignored: false
 				]
 		,
-			"readNameCodes":
+			type: "experimentMetadata"
+			kind: "read name"
+			codes:
 				[
 					code: "luminescence"
 					name: "Luminescence"

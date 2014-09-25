@@ -94,7 +94,6 @@ describe "Curve Curator Module testing", ->
 				expect(@csc.$('.bv_thumbsUp')).toBeVisible()
 				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
 			it "should show thumbs down when not user approved", ->
-				console.log @csc
 				@csc.model.set flagUser: "rejected"
 				@csc.render()
 				expect(@csc.$('.bv_thumbsDown')).toBeVisible()

@@ -1,31 +1,28 @@
 (function() {
+  var _;
+
+  _ = require("underscore");
+
   exports.setupAPIRoutes = function(app) {
-    return app.get('/api/dataDict/:kind', exports.getDataDictValues);
+    return app.get('/api/dataDict/:type/:kind', exports.getDataDictValues);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
-    return app.get('/api/dataDict/:kind', loginRoutes.ensureAuthenticated, exports.getDataDictValues);
+    return app.get('/api/dataDict/:type/:kind', loginRoutes.ensureAuthenticated, exports.getDataDictValues);
   };
 
   exports.getDataDictValues = function(req, resp) {
-    var baseurl, codeTableServiceTestJSON, config, i, request, _i, _len, _ref, _results;
+    var baseurl, codeTableServiceTestJSON, config, correctCodeTable, request;
     if (global.specRunnerTestmode) {
       codeTableServiceTestJSON = require('../public/javascripts/spec/testFixtures/CodeTableJSON.js');
-      _ref = codeTableServiceTestJSON.codes;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        i = _ref[_i];
-        if (i[req.params.kind]) {
-          console.log("success");
-          _results.push(resp.end(JSON.stringify(i[req.params.kind])));
-        } else {
-          _results.push(void 0);
-        }
-      }
-      return _results;
+      correctCodeTable = _.findWhere(codeTableServiceTestJSON.codes, {
+        type: req.params.type,
+        kind: req.params.kind
+      });
+      return resp.end(JSON.stringify(correctCodeTable['codes']));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "api/v1/ddictvalues/bytype/" + req.params.kind + "/codetable";
+      baseurl = config.all.client.service.persistence.fullpath + "api/v1/ddictvalues/all/" + req.params.type + "/" + req.params.kind + "/codetable";
       request = require('request');
       return request({
         method: 'GET',
