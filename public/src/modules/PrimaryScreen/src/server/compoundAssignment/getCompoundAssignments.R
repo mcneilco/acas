@@ -1,5 +1,6 @@
 ### Compound data operations start here
-getCompoundAssignments <- function (filePath, plateData, testMode, tempFilePath, assayData, originalWD) {
+getCompoundAssignments <- function (filePath, plateData, testMode, tempFilePath, assayData) {
+  originalWD <- getwd()
   setwd(filePath)
   assayCompoundDT <- getPinTransfer(plateAssociationDT=plateData, testMode=testMode, tempFilePath=tempFilePath)
   
@@ -13,6 +14,12 @@ getCompoundAssignments <- function (filePath, plateData, testMode, tempFilePath,
   
   allAssayCompoundData$assayFileName <- NULL
   
+  colOrder <- c("plateType","assayBarcode","cmpdBarcode","sourceType","wellReference",
+                "rowName","colName","corp_name","batch_number","cmpdConc","supplier")
+  
+  activityColumns <- setdiff(colnames(allAssayCompoundData), colOrder)
+  setcolorder(allAssayCompoundData, c(colOrder, activityColumns))
+  
   #setwd(normalizePath("../Analysis/"))
   if(testMode) {
     write.table(allAssayCompoundData, file=file.path(tempFilePath, "output_well_data.srf"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE, na="")
@@ -20,8 +27,9 @@ getCompoundAssignments <- function (filePath, plateData, testMode, tempFilePath,
     write.table(allAssayCompoundData, file="../Analysis/output_well_data.srf", append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE, na="")
   }
   
-  setwd(originalWD)
+  setwd(originalWD)  
   
   # Needs to return a list for error catching
-  return(list())
+  # return(list(filePath=filePath, activity=allAssayCompoundData[ , activityColumns, with=FALSE]))
+  return(list(filePath=filePath, allAssayCompoundData=allAssayCompoundData, activityColNames=activityColumns))
 }

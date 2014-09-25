@@ -1778,11 +1778,13 @@ getReadOrderTable <- function(readList) {
   readsTable <- data.table(readOrder=readList[[1]]$readPosition, 
                            readNames=readList[[1]]$readName,
                            activityCol=readList[[1]]$activity)
-  for (i in 2:length(readList)) {
-    subTable <- data.table(readOrder=readList[[i]]$readPosition, 
-                           readNames=readList[[i]]$readName,
-                           activityCol=readList[[i]]$activity)
-    readsTable <- rbind(readsTable, subTable)
+  if(length(readList) > 1) {
+    for (i in 2:length(readList)) {
+      subTable <- data.table(readOrder=readList[[i]]$readPosition, 
+                             readNames=readList[[i]]$readName,
+                             activityCol=readList[[i]]$activity)
+      readsTable <- rbind(readsTable, subTable)
+    }
   }
   
   return(readsTable)
@@ -1862,35 +1864,32 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     lapply(fileList, source)
     
     # instead of "if" statements, source an instrument class file.... yes?
-    if(paramList$dataFormat != "stat1stat2seq1") {
+    if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
       readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)
+      
+      matchNames <- parameters$matchReadName
       
       instrumentData <- getInstrumentSpecificData(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse), 
                                                   instrument=parameters$instrumentReader, 
                                                   readsTable=readsTable, 
                                                   testMode=TRUE,
                                                   errorEnv=errorEnv,
-                                                  tempFilePath=NULL, # this should be the analysis file?
+                                                  tempFilePath=NULL, # this should be the analysis folder?
                                                   dryRun=dryRun,
                                                   matchNames=matchNames)
-                         
     }
     
     # RED (client-specific)
-    if(paramList$dataFormat != "stat1stat2seq1") {
-      
+    if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
       # creates the output_well_data.srf. This needs to be adjusted to return a list instead - maybe.
-      getCompoundAssignments(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse),
-                             plateData=instrumentData$plateAssociationDT,
-                             testMode=rdapTestMode,
-                             tempFilePath=tempFilePath,
-                             assayData=instrumentData$assayData,
-                             originalWD=Sys.getenv("ACAS_HOME"))
+      compoundAssignments <- getCompoundAssignments(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse),
+                                                    plateData=instrumentData$plateAssociationDT,
+                                                    testMode=TRUE,
+                                                    tempFilePath=tempdir(),
+                                                    assayData=instrumentData$assayData)
     }
     
-    rdapList <- catchExecuteDap(request=list(filePath=file.path(getwd(), folderToParse), testMode=rdapTestMode))
-    # TODO: GUI will ask more things. These need to be passed through:
-    #   (InstrumentType, list(readOrder[1], readName[luminescence], matchReadName[t/f]))
+  #     rdapList <- catchExecuteDap(request=list(filePath=file.path(getwd(), folderToParse), testMode=rdapTestMode))
         
     resultTable <- as.data.table(unique(read.table(file.path(dirname(folderToParse), "output_well_data.srf"),
                                                    header=TRUE, 
@@ -1903,10 +1902,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                               "corp_name", 
                                               "cmpdBatch", 
                                               colnames(rdapList$value$activity))]))
+  
+  resultTable <- compoundAssignments$allAssayCompoundData[ , c("wellReference",
+                                                               "assayBarcode",
+                                                               "cmpdConc",
+                                                               "corp_name",
+                                                               "batch_number"), with=FALSE]
+  
+  resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
+  resultTable$batch_number <- NULL  
+  setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
     
-    setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name", "cmpdBatch"), c("well", "barcode", "concentration", "batchName", "batchCode"))
-    
-    ### test structure for fliprr thread pulled out in to untitled6
+    ### test structure for flipr thread in untitled6
     
   } else {
     
