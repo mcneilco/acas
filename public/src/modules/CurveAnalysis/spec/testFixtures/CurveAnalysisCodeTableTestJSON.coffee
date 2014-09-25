@@ -1,8 +1,8 @@
 ((exports) ->
 	exports.dataDictValues =
 		[
-			type: "experimentMetadata"
-			kind: "algorithm well flags"
+			type: "algorithm well flags"
+			kind: "reason"
 			codes:
 				[
 					code: "outlier"
@@ -21,7 +21,10 @@
 					name: "Compound crashed out"
 					ignored: false
 				]
-			"user well flags":
+		,
+			type: "user well flags"
+			kind: "reason"
+			codes:
 				[
 					code: "outlier"
 					name: "Outlier"
