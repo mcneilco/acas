@@ -556,6 +556,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupReadListController()
 		@setupTransformationRuleListController()
 		@handleMatchReadNameChanged()
+		@$("[data-toggle=tooltip]").tooltip();
 
 		@
 
