@@ -301,28 +301,28 @@
       if (positiveControl === "" || positiveControl === void 0) {
         errors.push({
           attribute: 'positiveControlBatch',
-          message: "Positive control batch much be set"
+          message: "Positive control batch must be set"
         });
       }
       positiveControlConc = this.get('positiveControl').get('concentration');
       if (_.isNaN(positiveControlConc) || positiveControlConc === void 0) {
         errors.push({
           attribute: 'positiveControlConc',
-          message: "Positive control conc much be set"
+          message: "Positive control conc must be set"
         });
       }
       negativeControl = this.get('negativeControl').get('batchCode');
       if (negativeControl === "" || negativeControl === void 0) {
         errors.push({
           attribute: 'negativeControlBatch',
-          message: "Negative control batch much be set"
+          message: "Negative control batch must be set"
         });
       }
       negativeControlConc = this.get('negativeControl').get('concentration');
       if (_.isNaN(negativeControlConc) || negativeControlConc === void 0) {
         errors.push({
           attribute: 'negativeControlConc',
-          message: "Negative control conc much be set"
+          message: "Negative control conc must be set"
         });
       }
       agonistControl = this.get('agonistControl').get('batchCode');
@@ -331,13 +331,13 @@
         if (agonistControl === "" || agonistControl === void 0) {
           errors.push({
             attribute: 'agonistControlBatch',
-            message: "Agonist control batch much be set"
+            message: "Agonist control batch must be set"
           });
         }
         if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === "") {
           errors.push({
             attribute: 'agonistControlConc',
-            message: "Agonist control conc much be set"
+            message: "Agonist control conc must be set"
           });
         }
       }
