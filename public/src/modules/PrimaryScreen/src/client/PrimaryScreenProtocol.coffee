@@ -137,10 +137,9 @@ class window.AbstractPrimaryScreenProtocolParameterController extends Backbone.V
 		"click .bv_addParameterBtn": "clearModal"
 		"click .bv_addNewParameterOption": "addNewParameterOption"
 
-#	Your initialization function needs at least these three lines below:
+#	Your initialization function needs set the parameter variable:
 # initialize: ->
 #		@.parameter = "parameterName"
-#		@setupParameterSelect()
 #
 
 	handleParameterChanged: ->
@@ -193,7 +192,6 @@ class window.AssayActivityController extends AbstractPrimaryScreenProtocolParame
 
 	initialize: ->
 		@.parameter = "assayActivity"
-		@setupParameterSelect()
 
 
 	render: ->
@@ -223,7 +221,6 @@ class window.MolecularTargetController extends AbstractPrimaryScreenProtocolPara
 
 	initialize: ->
 		@.parameter = "molecularTarget"
-		@setupParameterSelect()
 
 
 	render: ->
@@ -252,7 +249,6 @@ class window.TargetOriginController extends AbstractPrimaryScreenProtocolParamet
 
 	initialize: ->
 		@.parameter = "targetOrigin"
-		@setupParameterSelect()
 
 	render: ->
 		$(@el).empty()
@@ -281,7 +277,6 @@ class window.AssayTypeController extends AbstractPrimaryScreenProtocolParameterC
 
 	initialize: ->
 		@.parameter = "assayType"
-		@setupParameterSelect()
 
 	render: ->
 		$(@el).empty()
@@ -310,7 +305,6 @@ class window.AssayTechnologyController extends AbstractPrimaryScreenProtocolPara
 
 	initialize: ->
 		@.parameter = "assayTechnology"
-		@setupParameterSelect()
 
 	render: ->
 		$(@el).empty()
@@ -338,7 +332,6 @@ class window.CellLineController extends AbstractPrimaryScreenProtocolParameterCo
 
 	initialize: ->
 		@.parameter = "cellLine"
-		@setupParameterSelect()
 
 	render: ->
 		$(@el).empty()
@@ -411,11 +404,23 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			@$('.bv_addMolecularTargetBtn').hide()
 			@model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set
 				codeOrigin: "dns target list"
+			targetListurl = "http://imapp01-d:8080/DNS/codes/v1/Codes/SB_Variant_Construct"
 			# TODO: repopulate Molecular Target Select list with DNS Target List. Get route from Guy
 		else
 			@$('.bv_addMolecularTargetBtn').show()
 			@model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set
 				codeOrigin: "acas ddict"
+			targetListurl = "/api/dataDict/protocolMetadata/molecular target"
+
+		@molecularTargetList = new PickListList()
+		@molecularTargetList.url = targetListurl
+		@molecularTargetListController = new PickListSelectController
+			el: @$('.bv_molecularTarget')
+			collection: @molecularTargetList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Molecular Target"
+			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')
 
 		@attributeChanged()
 

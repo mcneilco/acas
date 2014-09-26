@@ -284,8 +284,7 @@
     };
 
     AssayActivityController.prototype.initialize = function() {
-      this.parameter = "assayActivity";
-      return this.setupParameterSelect();
+      return this.parameter = "assayActivity";
     };
 
     AssayActivityController.prototype.render = function() {
@@ -328,8 +327,7 @@
     };
 
     MolecularTargetController.prototype.initialize = function() {
-      this.parameter = "molecularTarget";
-      return this.setupParameterSelect();
+      return this.parameter = "molecularTarget";
     };
 
     MolecularTargetController.prototype.render = function() {
@@ -372,8 +370,7 @@
     };
 
     TargetOriginController.prototype.initialize = function() {
-      this.parameter = "targetOrigin";
-      return this.setupParameterSelect();
+      return this.parameter = "targetOrigin";
     };
 
     TargetOriginController.prototype.render = function() {
@@ -416,8 +413,7 @@
     };
 
     AssayTypeController.prototype.initialize = function() {
-      this.parameter = "assayType";
-      return this.setupParameterSelect();
+      return this.parameter = "assayType";
     };
 
     AssayTypeController.prototype.render = function() {
@@ -460,8 +456,7 @@
     };
 
     AssayTechnologyController.prototype.initialize = function() {
-      this.parameter = "assayTechnology";
-      return this.setupParameterSelect();
+      return this.parameter = "assayTechnology";
     };
 
     AssayTechnologyController.prototype.render = function() {
@@ -504,8 +499,7 @@
     };
 
     CellLineController.prototype.initialize = function() {
-      this.parameter = "cellLine";
-      return this.setupParameterSelect();
+      return this.parameter = "cellLine";
     };
 
     CellLineController.prototype.render = function() {
@@ -596,7 +590,7 @@
     };
 
     PrimaryScreenProtocolParametersController.prototype.handleTargetListChanged = function() {
-      var dnsTargetList;
+      var dnsTargetList, targetListurl;
       dnsTargetList = this.$('.bv_dnsTargetListChkbx').is(":checked");
       this.model.set({
         dnsList: dnsTargetList
@@ -606,12 +600,25 @@
         this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set({
           codeOrigin: "dns target list"
         });
+        targetListurl = "http://imapp01-d:8080/DNS/codes/v1/Codes/SB_Variant_Construct";
       } else {
         this.$('.bv_addMolecularTargetBtn').show();
         this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set({
           codeOrigin: "acas ddict"
         });
+        targetListurl = "/api/dataDict/protocolMetadata/molecular target";
       }
+      this.molecularTargetList = new PickListList();
+      this.molecularTargetList.url = targetListurl;
+      this.molecularTargetListController = new PickListSelectController({
+        el: this.$('.bv_molecularTarget'),
+        collection: this.molecularTargetList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Molecular Target"
+        }),
+        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')
+      });
       return this.attributeChanged();
     };
 
