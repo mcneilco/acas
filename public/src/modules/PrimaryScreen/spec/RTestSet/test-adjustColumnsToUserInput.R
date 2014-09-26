@@ -6,7 +6,7 @@ test_that("adjustColumnsToUserInput functionality", {
   require(testthat)
   
   originalWD <- Sys.getenv("ACAS_HOME")
-  fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/"), full.names=TRUE), 
+  fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
                 list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE))
   lapply(fileList, source)
   

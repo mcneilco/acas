@@ -1858,30 +1858,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # GREEN (instrument-specific)
   instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
     
-  # TODO: adjust to read in different file types - here or in specdataprep? 
-    fileList <- c(list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/"), full.names=TRUE), 
-                  list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE))
-    lapply(fileList, source)
+  source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
     
-    # instead of "if" statements, source an instrument class file.... yes?
-    if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
-      readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)
-      
-      matchNames <- parameters$matchReadName
-      
-      instrumentData <- getInstrumentSpecificData(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse), 
-                                                  instrument=parameters$instrumentReader, 
-                                                  readsTable=readsTable, 
-                                                  testMode=TRUE,
-                                                  errorEnv=errorEnv,
-                                                  tempFilePath=NULL, # this should be the analysis folder?
-                                                  dryRun=dryRun,
-                                                  matchNames=matchNames)
-    }
-    
+  instrumentData <- specificDataPreProcessor(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat)
+  
+  
     # RED (client-specific)
     if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
-      # creates the output_well_data.srf. This needs to be adjusted to return a list instead - maybe.
+      # creates the output_well_data.srf
       compoundAssignments <- getCompoundAssignments(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse),
                                                     plateData=instrumentData$plateAssociationDT,
                                                     testMode=TRUE,
@@ -1924,9 +1908,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     resultList <- apply(fileNameTable,1,combineFiles)
     resultTable <- as.data.table(do.call("rbind",resultList))
-    barcodeList <- levels(resultTable$barcode)
     
     ## RED (client-specific)
+    barcodeList <- levels(resultTable$barcode)
+    
     wellTable <- createWellTable(barcodeList, testMode)
     
     # apply dilution

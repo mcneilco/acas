@@ -9,7 +9,7 @@ test_that("getInstrumentSpecificData & getCompoundAssignments functionality", {
   require(testthat)
   
   originalWD <- Sys.getenv("ACAS_HOME")
-  fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/"), full.names=TRUE), 
+  fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
                 list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE))
   lapply(fileList, source)
   
@@ -19,7 +19,7 @@ test_that("getInstrumentSpecificData & getCompoundAssignments functionality", {
   tempFilePath <- tempdir()
   testFilePath <- file.path(originalWD,"public/src/modules/PrimaryScreen/spec/RTestSet/docs/test_raw_data_flipr/EXPT00FL01/Raw_data")
   instrumentSpecData <- getInstrumentSpecificData(filePath=testFilePath, testMode=TRUE, instrument="flipr", tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
-  getCompoundAssignments(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData, originalWD=originalWD)
+  getCompoundAssignments(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
   testFile <- file.path(tempFilePath, "output_well_data.srf")
   testTable <- read.table(testFile, sep="\t", stringsAsFactors=TRUE, header=TRUE)
   testTable <- as.data.table(testTable)
@@ -46,7 +46,7 @@ test_that("getInstrumentSpecificData & getCompoundAssignments functionality", {
   
   testFilePath <- file.path(originalWD, "public/src/modules/PrimaryScreen/spec/RTestSet/docs/test_raw_data_microBeta/EXPT00MB01/Raw_data")
   instrumentSpecData <- getInstrumentSpecificData(filePath=testFilePath, testMode=TRUE, instrument="microBeta", tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
-  getCompoundAssignments(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData, originalWD=originalWD)
+  getCompoundAssignments(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
   testFile <- file.path(tempFilePath, "output_well_data.srf")
   testTable <- read.table(testFile, sep="\t", stringsAsFactors=FALSE, header=TRUE)
   testTable <- as.data.table(testTable)
