@@ -11,6 +11,35 @@ class window.PrimaryScreenProtocol extends Protocol
 
 	validate: (attrs) ->
 		errors = []
+		bestName = attrs.lsLabels.pickBestName()
+		nameError = true
+		if bestName?
+			nameError = true
+			if bestName.get('labelText') != ""
+				nameError = false
+		if nameError
+			errors.push
+				attribute: 'protocolName'
+				message: attrs.subclass+" name must be set"
+		if _.isNaN(attrs.recordedDate)
+			errors.push
+				attribute: 'recordedDate'
+				message: attrs.subclass+" date must be set"
+		if attrs.recordedBy is ""
+			errors.push
+				attribute: 'recordedBy'
+				message: "Scientist must be set"
+		cDate = @getCompletionDate().get('dateValue')
+		if cDate is undefined or cDate is "" then cDate = "fred"
+		if isNaN(cDate)
+			errors.push
+				attribute: 'completionDate'
+				message: "Assay completion date must be set"
+		notebook = @getNotebook().get('stringValue')
+		if notebook is "" or notebook is "unassigned" or notebook is undefined
+			errors.push
+				attribute: 'notebook'
+				message: "Notebook must be set"
 		maxY = @getCurveDisplayMax().get('numericValue')
 		if isNaN(maxY)
 			errors.push
@@ -58,6 +87,48 @@ class window.PrimaryScreenProtocol extends Protocol
 			maxY.set numericValue: 100.0
 
 		maxY
+
+	getAnalysisParameters: ->
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", "data analysis parameters"
+		if ap.get('clobValue')?
+			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
+		else
+			return new PrimaryScreenAnalysisParameters()
+
+	getModelFitParameters: ->
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", "model fit parameters"
+		if ap.get('clobValue')?
+			return $.parseJSON(ap.get('clobValue'))
+		else
+			return {}
+
+	getAnalysisStatus: ->
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "stringValue", "analysis status"
+		if !status.has('stringValue')
+			status.set stringValue: "not started"
+
+		status
+
+	getAnalysisResultHTML: ->
+		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", "analysis result html"
+		if !result.has('clobValue')
+			result.set clobValue: ""
+
+		result
+
+	getModelFitStatus: ->
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "stringValue", "model fit status"
+		if !status.has('stringValue')
+			status.set stringValue: "not started"
+
+		status
+
+	getModelFitResultHTML: ->
+		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", "model fit result html"
+		if !result.has('clobValue')
+			result.set clobValue: ""
+
+		result
 
 
 class window.AbstractPrimaryScreenProtocolParameterController extends Backbone.View
@@ -363,19 +434,38 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			numericValue: @$('.bv_minY').val()
 		@handleModelChange()
 
-class window.PrimaryScreenProtocolController extends Backbone.View
+
+# This wraps all the tabs
+class window.AbstractPrimaryScreenProtocolController extends Backbone.View
 	template: _.template($("#PrimaryScreenProtocolView").html())
-	moduleLaunchName: "primary_screen_protocol"
 
 	initialize: ->
-		@completeInitialization()
-		@setupPrimaryScreenProtocolParametersController()
-		@setupAssayActivityController()
-		@setupMolecularTargetController()
-		@setupTargetOriginController()
-		@setupAssayTypeController()
-		@setupAssayTechnologyController()
-		@setupCellLineController()
+		if @model?
+			@completeInitialization()
+		else
+			if window.AppLaunchParams.moduleLaunchParams?
+				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+					$.ajax
+						type: 'GET'
+						url: "/api/protocols/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+						dataType: 'json'
+						error: (err) ->
+							alert 'Could not get protocol for code in this URL, creating new one'
+							@completeInitialization()
+						success: (json) =>
+							if json.length == 0
+								alert 'Could not get protocol for code in this URL, creating new one'
+							else
+								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+								prot = new PrimaryScreenProtocol json
+								prot.fixCompositeClasses()
+								@model = prot
+							@completeInitialization()
+				else
+					@completeInitialization()
+			else
+				@completeInitialization()
+
 
 	completeInitialization: ->
 		unless @model?
@@ -383,13 +473,55 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		$(@el).html @template()
 		@model.on 'sync', @handleProtocolSaved
 		@protocolBaseController = new ProtocolBaseController
-			model: new Protocol
+			model: @model
 			el: @$('.bv_protocolBase')
 		@protocolBaseController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@protocolBaseController.on 'amClean', =>
 			@trigger 'amClean'
+		@analysisController = new PrimaryScreenAnalysisController
+			model: @model
+			el: @$('.bv_primaryScreenDataAnalysis')
+			uploadAndRunControllerName: @uploadAndRunControllerName
+		@analysisController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@analysisController.on 'amClean', =>
+			@trigger 'amClean'
+		@setupModelFitController(@modelFitControllerName)
+		@analysisController.on 'analysis-completed', =>
+			@modelFitController.primaryAnalysisCompleted()
 		@protocolBaseController.render()
+		@analysisController.render()
+		@modelFitController.render()
+
+	setupModelFitController: (modelFitControllerName) ->
+		newArgs =
+			model: @model
+			el: @$('.bv_doseResponseAnalysis')
+		@modelFitController = new window[modelFitControllerName](newArgs)
+		@modelFitController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@modelFitController.on 'amClean', =>
+			@trigger 'amClean'
+
+	handleProtocolSaved: =>
+		@analysisController.render()
+
+
+class window.PrimaryScreenProtocolController extends AbstractPrimaryScreenProtocolController
+	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
+	modelFitControllerName: "DoseResponseAnalysisController"
+	moduleLaunchName: "primary_screen_protocol"
+
+	initialize: ->
+		super()
+		@setupPrimaryScreenProtocolParametersController()
+		@setupAssayActivityController()
+		@setupMolecularTargetController()
+		@setupTargetOriginController()
+		@setupAssayTypeController()
+		@setupAssayTechnologyController()
+		@setupCellLineController()
 
 	setupPrimaryScreenProtocolParametersController: ->
 		@primaryScreenProtocolParametersController= new PrimaryScreenProtocolParametersController
@@ -437,5 +569,3 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 			el: @$('.bv_cellLineWrapper')
 		@cellLineController.render()
 
-	handleProtocolSaved: =>
-		@primaryScreenProtocolParametersController.render()

@@ -1,5 +1,27 @@
 <script type="text/template" id="PrimaryScreenProtocolView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_protocolBase"></div>
+    <div class="container">
+        <div class="tabbable span8">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#tab1" data-toggle="tab">General Information</a></li>
+                <li><a href="#tab3" data-toggle="tab">Data Analysis</a></li>
+                <li><a href="#tab5" data-toggle="tab">Model Fit</a></li>
+            </ul>
+
+            <div class="tab-content span12">
+
+                <!-- GENERAL INFORMATION TAB -->
+                <div class="tab-pane active bv_protocolBase" id="tab1"></div>
+
+                <!-- DATA ANALYSIS TAB -->
+                <div class="tab-pane bv_primaryScreenDataAnalysis" id="tab3" style="overflow:hidden;"></div>
+
+                <!-- CURVE FIT ANALYSIS TAB -->
+                <div class="tab-pane bv_doseResponseAnalysis" id="tab5"></div>
+
+            </div>
+        </div>
+    </div>
+
 
 </script>
 
@@ -55,7 +77,7 @@
             <label class="control-label">Assay Activity</label>
             <div class="controls">
                 <select class="bv_assayActivity" style="margin-right:15px;width:350px;display: inline-block;"></select>
-                <button class="btn bv_addAssayActivityBtn" style="margin-right:269px;" data-toggle="modal" data-target="#addAssayActivityModal" data-backdrop="static">Add</button>
+                <button class="btn bv_addAssayActivityBtn" data-toggle="modal" data-target="#addAssayActivityModal" data-backdrop="static">Add</button>
             </div>
         </div>
         <div class="modal fade" id="addAssayActivityModal" tabindex="-1" role="dialog" aria-labelledby="addAssayActivityLabel" aria-hidden="true">
@@ -105,7 +127,7 @@
             <label class="control-label">Molecular Target</label>
             <div class="controls">
                 <select class="bv_molecularTarget" style="margin-right:15px;width:350px;display: inline-block;"></select>
-                <button class="btn bv_addMolecularTargetBtn" style="margin-right:269px;" data-toggle="modal" data-target="#addMolecularTargetModal" data-backdrop="static">Add</button>
+                <button class="btn bv_addMolecularTargetBtn" data-toggle="modal" data-target="#addMolecularTargetModal" data-backdrop="static">Add</button>
             </div>
         </div>
         <div class="modal fade" id="addMolecularTargetModal" tabindex="-1" role="dialog" aria-labelledby="addMolecularTargetLabel" aria-hidden="true">
@@ -155,7 +177,7 @@
             <label class="control-label">Target Origin</label>
             <div class="controls">
                 <select class="bv_targetOrigin" style="margin-right:15px;width:350px;display: inline-block;"></select>
-                <button class="btn bv_addTargetOriginBtn" style="margin-right:269px;" data-toggle="modal" data-target="#addTargetOriginModal" data-backdrop="static">Add</button>
+                <button class="btn bv_addTargetOriginBtn" data-toggle="modal" data-target="#addTargetOriginModal" data-backdrop="static">Add</button>
             </div>
         </div>
         <div class="modal fade" id="addTargetOriginModal" tabindex="-1" role="dialog" aria-labelledby="addTargetOriginLabel" aria-hidden="true">
@@ -205,7 +227,7 @@
             <label class="control-label">Assay Type</label>
             <div class="controls">
                 <select class="bv_assayType" style="margin-right:15px;width:350px;display: inline-block;"></select>
-                <button class="btn bv_addAssayTypeBtn" style="margin-right:269px;" data-toggle="modal" data-target="#addAssayTypeModal" data-backdrop="static">Add</button>
+                <button class="btn bv_addAssayTypeBtn" data-toggle="modal" data-target="#addAssayTypeModal" data-backdrop="static">Add</button>
             </div>
         </div>
         <div class="modal fade" id="addAssayTypeModal" tabindex="-1" role="dialog" aria-labelledby="addAssayTypeLabel" aria-hidden="true">
@@ -255,7 +277,7 @@
             <label class="control-label">Assay Technology</label>
             <div class="controls">
                 <select class="bv_assayTechnology" style="margin-right:15px;width:350px;display: inline-block;"></select>
-                <button class="btn bv_addAssayTechnologyBtn" style="margin-right:269px;" data-toggle="modal" data-target="#addAssayTechnologyModal" data-backdrop="static">Add</button>
+                <button class="btn bv_addAssayTechnologyBtn" data-toggle="modal" data-target="#addAssayTechnologyModal" data-backdrop="static">Add</button>
             </div>
         </div>
         <div class="modal fade" id="addAssayTechnologyModal" tabindex="-1" role="dialog" aria-labelledby="addAssayTechnologyLabel" aria-hidden="true">
@@ -305,7 +327,7 @@
             <label class="control-label">Cell Line</label>
             <div class="controls">
                 <select class="bv_cellLine" style="margin-right:15px;width:350px;display: inline-block;"></select>
-                <button class="btn bv_addCellLineBtn" style="margin-right:269px;" data-toggle="modal" data-target="#addCellLineModal" data-backdrop="static">Add</button>
+                <button class="btn bv_addCellLineBtn" data-toggle="modal" data-target="#addCellLineModal" data-backdrop="static">Add</button>
             </div>
         </div>
         <div class="modal fade" id="addCellLineModal" tabindex="-1" role="dialog" aria-labelledby="addCellLineLabel" aria-hidden="true">

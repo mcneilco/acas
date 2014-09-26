@@ -22,8 +22,51 @@
     };
 
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
-      var errors, maxY, minY;
+      var bestName, cDate, errors, maxY, minY, nameError, notebook;
       errors = [];
+      bestName = attrs.lsLabels.pickBestName();
+      nameError = true;
+      if (bestName != null) {
+        nameError = true;
+        if (bestName.get('labelText') !== "") {
+          nameError = false;
+        }
+      }
+      if (nameError) {
+        errors.push({
+          attribute: 'protocolName',
+          message: attrs.subclass + " name must be set"
+        });
+      }
+      if (_.isNaN(attrs.recordedDate)) {
+        errors.push({
+          attribute: 'recordedDate',
+          message: attrs.subclass + " date must be set"
+        });
+      }
+      if (attrs.recordedBy === "") {
+        errors.push({
+          attribute: 'recordedBy',
+          message: "Scientist must be set"
+        });
+      }
+      cDate = this.getCompletionDate().get('dateValue');
+      if (cDate === void 0 || cDate === "") {
+        cDate = "fred";
+      }
+      if (isNaN(cDate)) {
+        errors.push({
+          attribute: 'completionDate',
+          message: "Assay completion date must be set"
+        });
+      }
+      notebook = this.getNotebook().get('stringValue');
+      if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
+        errors.push({
+          attribute: 'notebook',
+          message: "Notebook must be set"
+        });
+      }
       maxY = this.getCurveDisplayMax().get('numericValue');
       if (isNaN(maxY)) {
         errors.push({
@@ -95,6 +138,70 @@
         });
       }
       return maxY;
+    };
+
+    PrimaryScreenProtocol.prototype.getAnalysisParameters = function() {
+      var ap;
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "clobValue", "data analysis parameters");
+      if (ap.get('clobValue') != null) {
+        return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
+      } else {
+        return new PrimaryScreenAnalysisParameters();
+      }
+    };
+
+    PrimaryScreenProtocol.prototype.getModelFitParameters = function() {
+      var ap;
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "clobValue", "model fit parameters");
+      if (ap.get('clobValue') != null) {
+        return $.parseJSON(ap.get('clobValue'));
+      } else {
+        return {};
+      }
+    };
+
+    PrimaryScreenProtocol.prototype.getAnalysisStatus = function() {
+      var status;
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "stringValue", "analysis status");
+      if (!status.has('stringValue')) {
+        status.set({
+          stringValue: "not started"
+        });
+      }
+      return status;
+    };
+
+    PrimaryScreenProtocol.prototype.getAnalysisResultHTML = function() {
+      var result;
+      result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "clobValue", "analysis result html");
+      if (!result.has('clobValue')) {
+        result.set({
+          clobValue: ""
+        });
+      }
+      return result;
+    };
+
+    PrimaryScreenProtocol.prototype.getModelFitStatus = function() {
+      var status;
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "stringValue", "model fit status");
+      if (!status.has('stringValue')) {
+        status.set({
+          stringValue: "not started"
+        });
+      }
+      return status;
+    };
+
+    PrimaryScreenProtocol.prototype.getModelFitResultHTML = function() {
+      var result;
+      result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "clobValue", "model fit result html");
+      if (!result.has('clobValue')) {
+        result.set({
+          clobValue: ""
+        });
+      }
+      return result;
     };
 
     return PrimaryScreenProtocol;
@@ -532,37 +639,61 @@
 
   })(AbstractFormController);
 
-  window.PrimaryScreenProtocolController = (function(_super) {
-    __extends(PrimaryScreenProtocolController, _super);
+  window.AbstractPrimaryScreenProtocolController = (function(_super) {
+    __extends(AbstractPrimaryScreenProtocolController, _super);
 
-    function PrimaryScreenProtocolController() {
+    function AbstractPrimaryScreenProtocolController() {
       this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
-      return PrimaryScreenProtocolController.__super__.constructor.apply(this, arguments);
+      return AbstractPrimaryScreenProtocolController.__super__.constructor.apply(this, arguments);
     }
 
-    PrimaryScreenProtocolController.prototype.template = _.template($("#PrimaryScreenProtocolView").html());
+    AbstractPrimaryScreenProtocolController.prototype.template = _.template($("#PrimaryScreenProtocolView").html());
 
-    PrimaryScreenProtocolController.prototype.moduleLaunchName = "primary_screen_protocol";
-
-    PrimaryScreenProtocolController.prototype.initialize = function() {
-      this.completeInitialization();
-      this.setupPrimaryScreenProtocolParametersController();
-      this.setupAssayActivityController();
-      this.setupMolecularTargetController();
-      this.setupTargetOriginController();
-      this.setupAssayTypeController();
-      this.setupAssayTechnologyController();
-      return this.setupCellLineController();
+    AbstractPrimaryScreenProtocolController.prototype.initialize = function() {
+      if (this.model != null) {
+        return this.completeInitialization();
+      } else {
+        if (window.AppLaunchParams.moduleLaunchParams != null) {
+          if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
+            return $.ajax({
+              type: 'GET',
+              url: "/api/protocols/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+              dataType: 'json',
+              error: function(err) {
+                alert('Could not get protocol for code in this URL, creating new one');
+                return this.completeInitialization();
+              },
+              success: (function(_this) {
+                return function(json) {
+                  var prot;
+                  if (json.length === 0) {
+                    alert('Could not get protocol for code in this URL, creating new one');
+                  } else {
+                    prot = new PrimaryScreenProtocol(json);
+                    prot.fixCompositeClasses();
+                    _this.model = prot;
+                  }
+                  return _this.completeInitialization();
+                };
+              })(this)
+            });
+          } else {
+            return this.completeInitialization();
+          }
+        } else {
+          return this.completeInitialization();
+        }
+      }
     };
 
-    PrimaryScreenProtocolController.prototype.completeInitialization = function() {
+    AbstractPrimaryScreenProtocolController.prototype.completeInitialization = function() {
       if (this.model == null) {
         this.model = new PrimaryScreenProtocol();
       }
       $(this.el).html(this.template());
       this.model.on('sync', this.handleProtocolSaved);
       this.protocolBaseController = new ProtocolBaseController({
-        model: new Protocol,
+        model: this.model,
         el: this.$('.bv_protocolBase')
       });
       this.protocolBaseController.on('amDirty', (function(_this) {
@@ -575,7 +706,81 @@
           return _this.trigger('amClean');
         };
       })(this));
-      return this.protocolBaseController.render();
+      this.analysisController = new PrimaryScreenAnalysisController({
+        model: this.model,
+        el: this.$('.bv_primaryScreenDataAnalysis'),
+        uploadAndRunControllerName: this.uploadAndRunControllerName
+      });
+      this.analysisController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.analysisController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      this.setupModelFitController(this.modelFitControllerName);
+      this.analysisController.on('analysis-completed', (function(_this) {
+        return function() {
+          return _this.modelFitController.primaryAnalysisCompleted();
+        };
+      })(this));
+      this.protocolBaseController.render();
+      this.analysisController.render();
+      return this.modelFitController.render();
+    };
+
+    AbstractPrimaryScreenProtocolController.prototype.setupModelFitController = function(modelFitControllerName) {
+      var newArgs;
+      newArgs = {
+        model: this.model,
+        el: this.$('.bv_doseResponseAnalysis')
+      };
+      this.modelFitController = new window[modelFitControllerName](newArgs);
+      this.modelFitController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      return this.modelFitController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+    };
+
+    AbstractPrimaryScreenProtocolController.prototype.handleProtocolSaved = function() {
+      return this.analysisController.render();
+    };
+
+    return AbstractPrimaryScreenProtocolController;
+
+  })(Backbone.View);
+
+  window.PrimaryScreenProtocolController = (function(_super) {
+    __extends(PrimaryScreenProtocolController, _super);
+
+    function PrimaryScreenProtocolController() {
+      return PrimaryScreenProtocolController.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryScreenProtocolController.prototype.uploadAndRunControllerName = "UploadAndRunPrimaryAnalsysisController";
+
+    PrimaryScreenProtocolController.prototype.modelFitControllerName = "DoseResponseAnalysisController";
+
+    PrimaryScreenProtocolController.prototype.moduleLaunchName = "primary_screen_protocol";
+
+    PrimaryScreenProtocolController.prototype.initialize = function() {
+      PrimaryScreenProtocolController.__super__.initialize.call(this);
+      this.setupPrimaryScreenProtocolParametersController();
+      this.setupAssayActivityController();
+      this.setupMolecularTargetController();
+      this.setupTargetOriginController();
+      this.setupAssayTypeController();
+      this.setupAssayTechnologyController();
+      return this.setupCellLineController();
     };
 
     PrimaryScreenProtocolController.prototype.setupPrimaryScreenProtocolParametersController = function() {
@@ -644,12 +849,8 @@
       return this.cellLineController.render();
     };
 
-    PrimaryScreenProtocolController.prototype.handleProtocolSaved = function() {
-      return this.primaryScreenProtocolParametersController.render();
-    };
-
     return PrimaryScreenProtocolController;
 
-  })(Backbone.View);
+  })(AbstractPrimaryScreenProtocolController);
 
 }).call(this);

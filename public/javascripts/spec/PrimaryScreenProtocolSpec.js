@@ -688,6 +688,13 @@
         });
       });
     });
+    describe("Abstract Primary Screen Protocol Controller testing", function() {
+      return describe("Basic loading", function() {
+        return it("Class should exist", function() {
+          return expect(window.AbstractPrimaryScreenProtocolController).toBeDefined();
+        });
+      });
+    });
     return describe("PrimaryScreenProtocolController", function() {
       beforeEach(function() {
         this.pspc = new PrimaryScreenProtocolController({

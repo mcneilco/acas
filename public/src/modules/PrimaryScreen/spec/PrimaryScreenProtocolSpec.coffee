@@ -503,6 +503,10 @@ describe "Primary Screen Protocol module testing", ->
 							expect(@psppc.$('.bv_assayStage').val()).toEqual "assay development"
 
 
+	describe "Abstract Primary Screen Protocol Controller testing", ->
+		describe "Basic loading", ->
+			it "Class should exist", ->
+				expect(window.AbstractPrimaryScreenProtocolController).toBeDefined()
 
 
 	describe "PrimaryScreenProtocolController", ->
