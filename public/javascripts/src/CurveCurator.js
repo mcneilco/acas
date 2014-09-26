@@ -49,7 +49,7 @@
 
     DoseResponseKnockoutPanelController.prototype.setupKnockoutReasonPicklist = function() {
       this.knockoutReasonList = new PickListList();
-      this.knockoutReasonList.url = "/api/dataDict/user well flags";
+      this.knockoutReasonList.url = "/api/dataDict/user well flags/reason";
       return this.knockoutReasonListController = new PickListSelectController({
         el: this.$('.bv_dataDictPicklist'),
         collection: this.knockoutReasonList
@@ -622,12 +622,14 @@
     };
 
     CurveEditorController.prototype.handleSaveSuccess = function() {
-      var category, dirty, newID;
+      var category, dirty, flagAlgorithm, flagUser, newID;
       this.handleModelSync();
       newID = this.model.get('curveid');
       dirty = this.model.get('dirty');
       category = this.model.get('category');
-      return this.trigger('curveDetailSaved', this.oldID, newID, dirty, category);
+      flagUser = this.model.get('flagUser');
+      flagAlgorithm = this.model.get('flagAlgorithm');
+      return this.trigger('curveDetailSaved', this.oldID, newID, dirty, category, flagUser, flagAlgorithm);
     };
 
     CurveEditorController.prototype.handleUpdateSuccess = function() {
@@ -696,22 +698,22 @@
       return index;
     };
 
-    CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty, category) {
+    CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty, category, flagUser, flagAlgorithm) {
       var curve;
       curve = this.getCurveByID(oldID);
       return curve.set({
         curveid: newCurveID,
         dirty: dirty,
+        flagUser: flagUser,
+        flagAlgorithm: flagAlgorithm,
         category: category
       });
     };
 
-    CurveList.prototype.updateCurveFlagUser = function(curveid, flagUser, flagAlgorithm, dirty) {
+    CurveList.prototype.updateCurveFlagUser = function(curveid, dirty) {
       var curve;
       curve = this.getCurveByID(curveid);
       return curve.set({
-        flagUser: flagUser,
-        flagAlgorithm: flagAlgorithm,
         dirty: dirty
       });
     };
@@ -1076,7 +1078,6 @@
         this.curveEditorController.on('curveDetailSaved', this.handleCurveDetailSaved);
         this.curveEditorController.on('curveDetailUpdated', this.handleCurveDetailUpdated);
         this.curveEditorController.on('curveUpdateError', this.handleCurveUpdateError);
-        this.curveListController.render();
         if (this.model.get('sortOptions').length > 0) {
           this.sortBySelect = new PickListSelectController({
             collection: this.model.get('sortOptions'),
@@ -1118,12 +1119,12 @@
       return this;
     };
 
-    CurveCuratorController.prototype.handleCurveDetailSaved = function(oldID, newID, dirty, category) {
-      return this.curveListController.collection.updateCurveSummary(oldID, newID, dirty, category);
+    CurveCuratorController.prototype.handleCurveDetailSaved = function(oldID, newID, dirty, category, flagUser, flagAlgorithm) {
+      return this.curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, flagUser, flagAlgorithm);
     };
 
-    CurveCuratorController.prototype.handleCurveDetailUpdated = function(curveid, flagUser, flagAlgorithm, dirty) {
-      return this.curveListController.collection.updateCurveFlagUser(curveid, flagUser, flagAlgorithm, dirty);
+    CurveCuratorController.prototype.handleCurveDetailUpdated = function(curveid, dirty) {
+      return this.curveListController.collection.updateCurveFlagUser(curveid, dirty);
     };
 
     CurveCuratorController.prototype.handleCurveUpdateError = function() {

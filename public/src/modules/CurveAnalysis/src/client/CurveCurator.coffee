@@ -21,7 +21,7 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 
 	setupKnockoutReasonPicklist: =>
 		@knockoutReasonList = new PickListList()
-		@knockoutReasonList.url = "/api/dataDict/user well flags"
+		@knockoutReasonList.url = "/api/dataDict/user well flags/reason"
 		@knockoutReasonListController = new PickListSelectController
 			el: @$('.bv_dataDictPicklist')
 			collection: @knockoutReasonList
@@ -414,7 +414,9 @@ class window.CurveEditorController extends Backbone.View
 		newID = @model.get 'curveid'
 		dirty = @model.get 'dirty'
 		category = @model.get 'category'
-		@trigger 'curveDetailSaved', @oldID, newID, dirty, category
+		flagUser = @model.get 'flagUser'
+		flagAlgorithm = @model.get 'flagAlgorithm'
+		@trigger 'curveDetailSaved', @oldID, newID, dirty, category, flagUser, flagAlgorithm
 
 	handleUpdateSuccess: =>
 		@handleModelSync()
@@ -448,18 +450,18 @@ class window.CurveList extends Backbone.Collection
 		index = @.indexOf(curve)
 		return index
 
-	updateCurveSummary: (oldID, newCurveID, dirty, category) =>
+	updateCurveSummary: (oldID, newCurveID, dirty, category, flagUser, flagAlgorithm) =>
 		curve = @getCurveByID(oldID)
 		curve.set
 			curveid: newCurveID
 			dirty: dirty
-			category: category
-
-	updateCurveFlagUser: (curveid, flagUser, flagAlgorithm, dirty) =>
-		curve = @getCurveByID(curveid)
-		curve.set
 			flagUser: flagUser
 			flagAlgorithm: flagAlgorithm
+			category: category
+
+	updateCurveFlagUser: (curveid, dirty) =>
+		curve = @getCurveByID(curveid)
+		curve.set
 			dirty: dirty
 
 class window.CurveCurationSet extends Backbone.Model
@@ -672,7 +674,6 @@ class window.CurveCuratorController extends Backbone.View
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
 			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError
-			@curveListController.render()
 
 			if @model.get('sortOptions').length > 0
 				@sortBySelect = new PickListSelectController
@@ -714,11 +715,11 @@ class window.CurveCuratorController extends Backbone.View
 
 		@
 
-	handleCurveDetailSaved: (oldID, newID, dirty, category) =>
-		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category)
+	handleCurveDetailSaved: (oldID, newID, dirty, category, flagUser, flagAlgorithm) =>
+		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, flagUser, flagAlgorithm)
 
-	handleCurveDetailUpdated: (curveid, flagUser, flagAlgorithm, dirty) =>
-		@curveListController.collection.updateCurveFlagUser(curveid, flagUser,flagAlgorithm, dirty)
+	handleCurveDetailUpdated: (curveid, dirty) =>
+		@curveListController.collection.updateCurveFlagUser(curveid, dirty)
 
 	handleCurveUpdateError: =>
 		@$('.bv_badCurveUpdate').modal
