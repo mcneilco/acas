@@ -170,22 +170,22 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		if positiveControl is "" or positiveControl is undefined
 			errors.push
 				attribute: 'positiveControlBatch'
-				message: "Positive control batch much be set"
+				message: "Positive control batch must be set"
 		positiveControlConc = @get('positiveControl').get('concentration')
 		if _.isNaN(positiveControlConc) || positiveControlConc is undefined
 			errors.push
 				attribute: 'positiveControlConc'
-				message: "Positive control conc much be set"
+				message: "Positive control conc must be set"
 		negativeControl = @get('negativeControl').get('batchCode')
 		if negativeControl is "" or negativeControl is undefined
 			errors.push
 				attribute: 'negativeControlBatch'
-				message: "Negative control batch much be set"
+				message: "Negative control batch must be set"
 		negativeControlConc = @get('negativeControl').get('concentration')
 		if _.isNaN(negativeControlConc) || negativeControlConc is undefined
 			errors.push
 				attribute: 'negativeControlConc'
-				message: "Negative control conc much be set"
+				message: "Negative control conc must be set"
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
@@ -193,11 +193,11 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			if agonistControl is "" or agonistControl is undefined
 				errors.push
 					attribute: 'agonistControlBatch'
-					message: "Agonist control batch much be set"
+					message: "Agonist control batch must be set"
 			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is ""
 				errors.push
 					attribute: 'agonistControlConc'
-					message: "Agonist control conc much be set"
+					message: "Agonist control conc must be set"
 		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
 			errors.push
 				attribute: 'signalDirectionRule'
