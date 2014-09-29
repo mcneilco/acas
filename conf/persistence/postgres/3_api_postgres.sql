@@ -123,7 +123,7 @@ THEN
 		)
 WHEN agv.ls_type = 'dateValue'
 	THEN to_char(agv.date_value, 'yyyy-mm-dd')
-	ELSE agv.string_value
+	ELSE COALESCE(agv.string_value,agv.comments)
 END AS string_value,
 agv.clob_value,
 agv.comments, 
