@@ -57,6 +57,9 @@ or
     svn checkout http://smeyer@customer_repo/............. acas_custom
 
 ### Install dependencies
+    Install Mongodb for logging (if customer needs mongo logging service)
+    http://www.mongodb.org/downloads  (download appropriate version for the server being deployed to)
+    start mongo deamon
 
     npm install
     grunt coffee
