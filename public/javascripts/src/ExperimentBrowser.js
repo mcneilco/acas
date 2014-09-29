@@ -51,7 +51,7 @@
     ExperimentSearchController.prototype.updateModel = function() {
       return this.model.set({
         protocolCode: this.$('.bv_protocolName').val(),
-        experimentCode: this.getTrimmedInput('.bv_experimentCode')
+        experimentCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_experimentCode'))
       });
     };
 

@@ -268,7 +268,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCompletionDate().get('dateValue')?
-			@$('.bv_completionDate').val @convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
+			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		@$('.bv_description').html(@model.getDescription().get('clobValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('stringValue'))
@@ -347,7 +347,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@handleNameChanged()
 
 	handleShortDescriptionChanged: =>
-		trimmedDesc = @getTrimmedInput('.bv_shortDescription')
+		trimmedDesc = UtilityFunctions::getTrimmedInput @$('.bv_shortDescription')
 		if trimmedDesc != ""
 			@model.set shortDescription: trimmedDesc
 		else
@@ -355,11 +355,11 @@ class window.ExperimentBaseController extends AbstractFormController
 
 	handleDescriptionChanged: =>
 		@model.getDescription().set
-			clobValue: @getTrimmedInput('.bv_description')
+			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_description')
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
-		newName = @getTrimmedInput('.bv_experimentName')
+		newName = UtilityFunctions::getTrimmedInput @$('.bv_experimentName')
 		@model.get('lsLabels').setBestName new Label
 			lsKind: "experiment name"
 			labelText: newName
@@ -368,7 +368,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@model.trigger 'change'
 
 	handleDateChanged: =>
-		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
+		@model.getCompletionDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" );
@@ -397,7 +397,7 @@ class window.ExperimentBaseController extends AbstractFormController
 		@model.getProjectCode().set codeValue: @$('.bv_projectCode').val()
 
 	handleNotebookChanged: =>
-		@model.getNotebook().set stringValue: @getTrimmedInput('.bv_notebook')
+		@model.getNotebook().set stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))

@@ -94,11 +94,11 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 
 	updateModel: =>
 		@model.get('max').set
-			value: parseFloat(@getTrimmedInput('.bv_max_value'))
+			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_max_value'))
 		@model.get('min').set
-			value: parseFloat(@getTrimmedInput('.bv_min_value'))
+			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_min_value'))
 		@model.get('slope').set
-			value: parseFloat(@getTrimmedInput('.bv_slope_value'))
+			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_slope_value'))
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
 			silent: true
 		@model.trigger 'change'
