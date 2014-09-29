@@ -170,22 +170,22 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		if positiveControl is "" or positiveControl is undefined
 			errors.push
 				attribute: 'positiveControlBatch'
-				message: "Positive control batch must be set"
+				message: "Positive control batch much be set"
 		positiveControlConc = @get('positiveControl').get('concentration')
 		if _.isNaN(positiveControlConc) || positiveControlConc is undefined
 			errors.push
 				attribute: 'positiveControlConc'
-				message: "Positive control conc must be set"
+				message: "Positive control conc much be set"
 		negativeControl = @get('negativeControl').get('batchCode')
 		if negativeControl is "" or negativeControl is undefined
 			errors.push
 				attribute: 'negativeControlBatch'
-				message: "Negative control batch must be set"
+				message: "Negative control batch much be set"
 		negativeControlConc = @get('negativeControl').get('concentration')
 		if _.isNaN(negativeControlConc) || negativeControlConc is undefined
 			errors.push
 				attribute: 'negativeControlConc'
-				message: "Negative control conc must be set"
+				message: "Negative control conc much be set"
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
@@ -193,11 +193,11 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			if agonistControl is "" or agonistControl is undefined
 				errors.push
 					attribute: 'agonistControlBatch'
-					message: "Agonist control batch must be set"
+					message: "Agonist control batch much be set"
 			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is ""
 				errors.push
 					attribute: 'agonistControlConc'
-					message: "Agonist control conc must be set"
+					message: "Agonist control conc much be set"
 		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
 			errors.push
 				attribute: 'signalDirectionRule'
@@ -352,7 +352,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	updateModel: =>
 		activity = @$('.bv_activity').is(":checked")
 		@model.set
-			readPosition: parseInt(@getTrimmedInput('.bv_readPosition'))
+			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
 			readName: @$('.bv_readName').val()
 			activity: activity
 		@model.triggerAmDirty()
@@ -556,7 +556,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupReadListController()
 		@setupTransformationRuleListController()
 		@handleMatchReadNameChanged()
-		@$("[data-toggle=tooltip]").tooltip();
 
 		@
 
@@ -631,39 +630,42 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	updateModel: =>
 		htsFormat = @$('.bv_htsFormat').is(":checked")
+		console.log "testing update model"
+		console.log @$('.bv_agonistControlBatch').val()
+		console.log UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
 		@model.set
 			instrumentReader: @$('.bv_instrumentReader').val()
 			signalDirectionRule: @$('.bv_signalDirectionRule').val()
 			aggregateBy1: @$('.bv_aggregateBy1').val()
 			aggregateBy2: @$('.bv_aggregateBy2').val()
 			normalizationRule: @$('.bv_normalizationRule').val()
-			hitEfficacyThreshold: parseFloat(@getTrimmedInput('.bv_hitEfficacyThreshold'))
-			hitSDThreshold: parseFloat(@getTrimmedInput('.bv_hitSDThreshold'))
-			assayVolume: @getTrimmedInput('.bv_assayVolume')
-			transferVolume: @getTrimmedInput('.bv_transferVolume')
-			dilutionFactor: @getTrimmedInput('.bv_dilutionFactor')
+			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
+			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))
+			assayVolume: UtilityFunctions::getTrimmedInput @$('.bv_assayVolume')
+			transferVolume: UtilityFunctions::getTrimmedInput @$('.bv_transferVolume')
+			dilutionFactor: UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor')
 			htsFormat: htsFormat
 		if @model.get('assayVolume') != ""
-			@model.set assayVolume: parseFloat(@getTrimmedInput('.bv_assayVolume'))
+			@model.set assayVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_assayVolume'))
 		if @model.get('transferVolume') != ""
-			@model.set transferVolume: parseFloat(@getTrimmedInput('.bv_transferVolume'))
+			@model.set transferVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_transferVolume'))
 		if @model.get('dilutionFactor') != ""
-			@model.set dilutionFactor: parseFloat(@getTrimmedInput('.bv_dilutionFactor'))
+			@model.set dilutionFactor: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor'))
 		@model.get('positiveControl').set
-			batchCode: @getTrimmedInput('.bv_positiveControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_positiveControlConc'))
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
+			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_positiveControlConc'))
 		@model.get('negativeControl').set
-			batchCode: @getTrimmedInput('.bv_negativeControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_negativeControlConc'))
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_negativeControlBatch')
+			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_negativeControlConc'))
 		@model.get('vehicleControl').set
-			batchCode: @getTrimmedInput('.bv_vehicleControlBatch')
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_vehicleControlBatch')
 			concentration: null
 		@model.get('agonistControl').set
-			batchCode: @getTrimmedInput('.bv_agonistControlBatch')
-			concentration: @getTrimmedInput('.bv_agonistControlConc')
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
+			concentration: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc')
 		if @model.get('agonistControl').get('concentration') != ""
 			@model.get('agonistControl').set
-				concentration: parseFloat(@getTrimmedInput('.bv_agonistControlConc'))
+				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()

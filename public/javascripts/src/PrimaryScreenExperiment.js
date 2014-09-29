@@ -301,28 +301,28 @@
       if (positiveControl === "" || positiveControl === void 0) {
         errors.push({
           attribute: 'positiveControlBatch',
-          message: "Positive control batch must be set"
+          message: "Positive control batch much be set"
         });
       }
       positiveControlConc = this.get('positiveControl').get('concentration');
       if (_.isNaN(positiveControlConc) || positiveControlConc === void 0) {
         errors.push({
           attribute: 'positiveControlConc',
-          message: "Positive control conc must be set"
+          message: "Positive control conc much be set"
         });
       }
       negativeControl = this.get('negativeControl').get('batchCode');
       if (negativeControl === "" || negativeControl === void 0) {
         errors.push({
           attribute: 'negativeControlBatch',
-          message: "Negative control batch must be set"
+          message: "Negative control batch much be set"
         });
       }
       negativeControlConc = this.get('negativeControl').get('concentration');
       if (_.isNaN(negativeControlConc) || negativeControlConc === void 0) {
         errors.push({
           attribute: 'negativeControlConc',
-          message: "Negative control conc must be set"
+          message: "Negative control conc much be set"
         });
       }
       agonistControl = this.get('agonistControl').get('batchCode');
@@ -331,13 +331,13 @@
         if (agonistControl === "" || agonistControl === void 0) {
           errors.push({
             attribute: 'agonistControlBatch',
-            message: "Agonist control batch must be set"
+            message: "Agonist control batch much be set"
           });
         }
         if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === "") {
           errors.push({
             attribute: 'agonistControlConc',
-            message: "Agonist control conc must be set"
+            message: "Agonist control conc much be set"
           });
         }
       }
@@ -577,7 +577,7 @@
       var activity;
       activity = this.$('.bv_activity').is(":checked");
       this.model.set({
-        readPosition: parseInt(this.getTrimmedInput('.bv_readPosition')),
+        readPosition: parseInt(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_readPosition'))),
         readName: this.$('.bv_readName').val(),
         activity: activity
       });
@@ -899,7 +899,6 @@
       this.setupReadListController();
       this.setupTransformationRuleListController();
       this.handleMatchReadNameChanged();
-      this.$("[data-toggle=tooltip]").tooltip();
       return this;
     };
 
@@ -992,53 +991,56 @@
     PrimaryScreenAnalysisParametersController.prototype.updateModel = function() {
       var htsFormat;
       htsFormat = this.$('.bv_htsFormat').is(":checked");
+      console.log("testing update model");
+      console.log(this.$('.bv_agonistControlBatch').val());
+      console.log(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlBatch')));
       this.model.set({
         instrumentReader: this.$('.bv_instrumentReader').val(),
         signalDirectionRule: this.$('.bv_signalDirectionRule').val(),
         aggregateBy1: this.$('.bv_aggregateBy1').val(),
         aggregateBy2: this.$('.bv_aggregateBy2').val(),
         normalizationRule: this.$('.bv_normalizationRule').val(),
-        hitEfficacyThreshold: parseFloat(this.getTrimmedInput('.bv_hitEfficacyThreshold')),
-        hitSDThreshold: parseFloat(this.getTrimmedInput('.bv_hitSDThreshold')),
-        assayVolume: this.getTrimmedInput('.bv_assayVolume'),
-        transferVolume: this.getTrimmedInput('.bv_transferVolume'),
-        dilutionFactor: this.getTrimmedInput('.bv_dilutionFactor'),
+        hitEfficacyThreshold: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_hitEfficacyThreshold'))),
+        hitSDThreshold: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_hitSDThreshold'))),
+        assayVolume: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayVolume')),
+        transferVolume: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_transferVolume')),
+        dilutionFactor: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_dilutionFactor')),
         htsFormat: htsFormat
       });
       if (this.model.get('assayVolume') !== "") {
         this.model.set({
-          assayVolume: parseFloat(this.getTrimmedInput('.bv_assayVolume'))
+          assayVolume: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayVolume')))
         });
       }
       if (this.model.get('transferVolume') !== "") {
         this.model.set({
-          transferVolume: parseFloat(this.getTrimmedInput('.bv_transferVolume'))
+          transferVolume: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_transferVolume')))
         });
       }
       if (this.model.get('dilutionFactor') !== "") {
         this.model.set({
-          dilutionFactor: parseFloat(this.getTrimmedInput('.bv_dilutionFactor'))
+          dilutionFactor: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_dilutionFactor')))
         });
       }
       this.model.get('positiveControl').set({
-        batchCode: this.getTrimmedInput('.bv_positiveControlBatch'),
-        concentration: parseFloat(this.getTrimmedInput('.bv_positiveControlConc'))
+        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_positiveControlBatch')),
+        concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_positiveControlConc')))
       });
       this.model.get('negativeControl').set({
-        batchCode: this.getTrimmedInput('.bv_negativeControlBatch'),
-        concentration: parseFloat(this.getTrimmedInput('.bv_negativeControlConc'))
+        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_negativeControlBatch')),
+        concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_negativeControlConc')))
       });
       this.model.get('vehicleControl').set({
-        batchCode: this.getTrimmedInput('.bv_vehicleControlBatch'),
+        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_vehicleControlBatch')),
         concentration: null
       });
       this.model.get('agonistControl').set({
-        batchCode: this.getTrimmedInput('.bv_agonistControlBatch'),
-        concentration: this.getTrimmedInput('.bv_agonistControlConc')
+        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlBatch')),
+        concentration: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlConc'))
       });
       if (this.model.get('agonistControl').get('concentration') !== "") {
         return this.model.get('agonistControl').set({
-          concentration: parseFloat(this.getTrimmedInput('.bv_agonistControlConc'))
+          concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlConc')))
         });
       }
     };

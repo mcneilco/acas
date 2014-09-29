@@ -61,17 +61,17 @@ class window.AbstractFormController extends Backbone.View
 		else
 			@trigger 'invalid'
 
-	getTrimmedInput: (selector) ->
-		$.trim(@$(selector).val())
+#	getTrimmedInput: (selector) ->
+#		$.trim(@$(selector).val())
 
-	convertYMDDateToMs: (inStr) ->
-		dateParts = inStr.split('-')
-		new Date(dateParts[0], dateParts[1]-1, dateParts[2]).getTime()
-
-	convertMSToYMDDate: (ms) ->
-		date = new Date ms
-		monthNum = date.getMonth()+1
-		date.getFullYear()+'-'+("0" + monthNum).slice(-2)+'-'+("0" + date.getDate()).slice(-2)
+#	convertYMDDateToMs: (inStr) ->
+#		dateParts = inStr.split('-')
+#		new Date(dateParts[0], dateParts[1]-1, dateParts[2]).getTime()
+#
+#	convertMSToYMDDate: (ms) ->
+#		date = new Date ms
+#		monthNum = date.getMonth()+1
+#		date.getFullYear()+'-'+("0" + monthNum).slice(-2)+'-'+("0" + date.getDate()).slice(-2)
 
 	disableAllInputs: ->
 		@$('input').attr 'disabled', 'disabled'
