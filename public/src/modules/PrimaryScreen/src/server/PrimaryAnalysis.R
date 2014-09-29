@@ -1875,31 +1875,33 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
   #     rdapList <- catchExecuteDap(request=list(filePath=file.path(getwd(), folderToParse), testMode=rdapTestMode))
         
-    resultTable <- as.data.table(unique(read.table(file.path(dirname(folderToParse), "output_well_data.srf"),
-                                                   header=TRUE, 
-                                                   sep="\t", 
-                                                   stringsAsFactors=FALSE,
-                                                   check.names=FALSE)
-                                        [ , c(well="wellReference", 
-                                              "assayBarcode", 
-                                              "cmpdConc", 
-                                              "corp_name", 
-                                              "cmpdBatch", 
-                                              colnames(rdapList$value$activity))]))
+  #     resultTable <- as.data.table(unique(read.table(file.path(dirname(folderToParse), "output_well_data.srf"),
+  #                                                    header=TRUE, 
+  #                                                    sep="\t", 
+  #                                                    stringsAsFactors=FALSE,
+  #                                                    check.names=FALSE)
+  #                                         [ , c(well="wellReference", 
+  #                                               "assayBarcode", 
+  #                                               "cmpdConc", 
+  #                                               "corp_name", 
+  #                                               "cmpdBatch", 
+  #                                               colnames(rdapList$value$activity))]))
   
   resultTable <- compoundAssignments$allAssayCompoundData[ , c("wellReference",
                                                                "assayBarcode",
                                                                "cmpdConc",
                                                                "corp_name",
-                                                               "batch_number"), with=FALSE]
+                                                               "batch_number", 
+                                                               compoundAssignments$activityColNames), with=FALSE]
   
   resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
   resultTable$batch_number <- NULL  
   setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
-    
+  
+
     ### test structure for flipr thread in untitled6
     
-  } else {
+
     
     ## GREEN (instrument-specific)
     fileNameTable <- validateInputFiles(folderToParse)
@@ -1934,7 +1936,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     normalization <- parameters$normalizationRule
     
-  }
+  
   ### END FLIPR reading function
   
   resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, 
