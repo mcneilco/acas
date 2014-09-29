@@ -45,44 +45,6 @@
 # user  system elapsed 
 # 7.904   0.250  45.444 
 
-
-
-makeDataFrameOfWellsGrid <- function(allData, barcode, valueName) {
-  # Takes data and forms it into a data frame
-  #
-  # Args:
-  #   allData:    A matrix or data.frame of data, row.names are wells
-  #   barcode:    The barcode for this data
-  #   valueName:  a label for the values inside the wells
-  # Returns:
-  #   A data.frame with three columns:
-  #     "barcode":    barcode of source plate
-  #     "well":       well names of source
-  #     valueName:    the values for each well
-  
-  wellNames <- c()
-  values <- c()
-  for (i in 1:length(row.names(allData))) {
-    for (j in 1:length(names(allData))) {
-      if (j<10) {
-        wellName = (paste(sep='0',row.names(allData)[[i]], j))
-      } else {
-        wellName = (paste(sep='',row.names(allData)[[i]], j))
-      }	
-      wellNames <- c(wellNames, wellName)
-      values <- c(values, allData[i,j])
-    }
-  }
-  out <- data.frame(barcode=barcode, well=wellNames)
-  out[valueName] <- values
-  return(out)
-  
-}
-getParamByKey <- function(params, key) {
-  line <- params[[grep(key, params)]] 
-  components <- strsplit(line, " = ")
-  return( components[[1]][[2]])
-}
 getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
   # Matches result rows up with batch names and concentrations
   #
@@ -191,7 +153,7 @@ removeVehicle <- function(vehicle, wellTable) {
   library(plyr)
   
   vehicleRows <- wellTable$BATCH_CODE == vehicle$batchCode
-    #wellTable$CONCENTRATION <= agonist$concentration & wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
+  #wellTable$CONCENTRATION <= agonist$concentration & wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
   compoundCount <- ddply(wellTable, "WELL_ID", summarise, count = length(BATCH_CODE))
   hasMoreThanOneCompound <- compoundCount$WELL_ID[compoundCount$count > 1]
   vehicleIds <- wellTable$ID[vehicleRows & wellTable$WELL_ID %in% hasMoreThanOneCompound]
@@ -242,8 +204,8 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
   #   }
   
   wellTypes[!hasAgonist] <- "no agonist"
-
-	return(wellTypes)
+  
+  return(wellTypes)
 }
 getAnalysisGroupColumns <- function(replicateType) {
   # Determines what data is necessary to define an analysis group
@@ -257,10 +219,10 @@ getAnalysisGroupColumns <- function(replicateType) {
          "within plates" = {
            requiredColumns <- c("batchName", "barcode")
          },
-          {
-            requiredColumns <- c("well")
-          })
-  return(requiredColumns)
+{
+  requiredColumns <- c("well")
+})
+return(requiredColumns)
 }
 computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
@@ -344,19 +306,19 @@ createWellTable <- function(barcodeList, testMode) {
   if (testMode) {
     wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsConfirmation.csv")
     #wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContents.csv")
-#     fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
-#     fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
-#     fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
-#     fakeAPI$BARCODE <- gsub("BF00007390","TL00098003",fakeAPI$BARCODE)
-#     fakeAPI$BARCODE <- gsub("BF00007395","TL00098004",fakeAPI$BARCODE)
-#     wellTable <- fakeAPI[fakeAPI$BARCODE %in% barcodeList, ]
-#     wellTable$BATCH_CODE <- gsub("CRA-024169-1", "CRA-000399-1", wellTable$BATCH_CODE)
-#     wellTable$BATCH_CODE <- gsub("CRA-024184-1", "CRA-000396-1", wellTable$BATCH_CODE)
-#     wellTable$BATCH_CODE <- gsub("CRA-024074-1", "CRA-000399-1", wellTable$BATCH_CODE)
-#     wellTable$BATCH_CODE <- gsub("CRA-024087-1", "CRA-000396-1", wellTable$BATCH_CODE)
-#     # different test, remove after nextval deploy
-#     load("public/src/modules/PrimaryScreen/spec/wellTable.Rda")
-#     wellTable <- wellTable[!(wellTable$BATCH_CODE=="FL0073897-1-1" & (wellTable$CONCENTRATION < 0.2 | wellTable$CONCENTRATION>49.6)), ]
+    #     fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
+    #     fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
+    #     fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
+    #     fakeAPI$BARCODE <- gsub("BF00007390","TL00098003",fakeAPI$BARCODE)
+    #     fakeAPI$BARCODE <- gsub("BF00007395","TL00098004",fakeAPI$BARCODE)
+    #     wellTable <- fakeAPI[fakeAPI$BARCODE %in% barcodeList, ]
+    #     wellTable$BATCH_CODE <- gsub("CRA-024169-1", "CRA-000399-1", wellTable$BATCH_CODE)
+    #     wellTable$BATCH_CODE <- gsub("CRA-024184-1", "CRA-000396-1", wellTable$BATCH_CODE)
+    #     wellTable$BATCH_CODE <- gsub("CRA-024074-1", "CRA-000399-1", wellTable$BATCH_CODE)
+    #     wellTable$BATCH_CODE <- gsub("CRA-024087-1", "CRA-000396-1", wellTable$BATCH_CODE)
+    #     # different test, remove after nextval deploy
+    #     load("public/src/modules/PrimaryScreen/spec/wellTable.Rda")
+    #     wellTable <- wellTable[!(wellTable$BATCH_CODE=="FL0073897-1-1" & (wellTable$CONCENTRATION < 0.2 | wellTable$CONCENTRATION>49.6)), ]
   } else {
     wellTable <- query(paste0(
       "SELECT *
@@ -850,7 +812,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices))
   
   savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
-
+  
   #
   #####  
   # Treatment Group states =========================================================================
@@ -943,7 +905,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
                                                         stateGroupIndices = treatmentGroupIndices, 
                                                         lsTransaction = lsTransaction,
                                                         recordedBy=recordedBy)
-
+  
   
   if (length(analysisGroupIndices > 0)) {
     analysisGroupData <- treatmentGroupDataWithBatchCodeRows
@@ -994,22 +956,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   
   return(lsTransaction)
 }
-validateBarcode <- function(barcode, filePath) {
-  # Checks that the barcode inside the file matches the one in the file path
-  # Returns the barcode inside the file name
-  fileNameBarcode <- gsub(".+_([^/]+)_[^/]+$", "\\1", filePath)
-  if (fileNameBarcode == filePath) {
-    fileName <- gsub(".+/([^/]+)+$", "\\1", filePath)
-    warnUser(paste0("No barcode could be found between underscores in ", fileName, ", so the barcode inside the file will be used"))
-    return (barcode)
-  }
-  if (fileNameBarcode != barcode) {
-    fileName <- gsub(".+/([^/]+)+$", "\\1", filePath)
-    warnUser(paste0("The barcode '", barcode, "' inside the file ", fileName, 
-                   " was replaced by the barcode '", fileNameBarcode, "'"))
-  }
-  return(fileNameBarcode)
-}
+
 validateInputFiles <- function(dataDirectory) {
   # Validates and organizes the names of the input files
   #
@@ -1066,7 +1013,7 @@ validateWellFlagData <- function(flagData, resultTable) {
   #                for flagged wells
   # resultTable: A data.table containing, among other fields, a complete list of barcodes and wells
   # Returns: the input data frame, with accumulated warnings and errors, and with empty strings as NA
-
+  
   columnsIncluded <- c("well", "barcode", "flag") %in% names(flagData)
   if (!all(columnsIncluded)) {
     stopUser(paste0("An important column appears to be missing from the input. ",
@@ -1080,7 +1027,7 @@ validateWellFlagData <- function(flagData, resultTable) {
   if (any(duplicateIndices)) {
     duplicateTests <- unique(data.frame(flagData$barcode[duplicateIndices], flagData$well[duplicateIndices]))
     stopUser(paste0("The same barcode and well combination was listed multiple times in the flag file. Please remove ",
-             "duplicates for ", paste(duplicateTests[[1]], duplicateTests[[2]], collapse = ", "), "."))
+                    "duplicates for ", paste(duplicateTests[[1]], duplicateTests[[2]], collapse = ", "), "."))
   }
   
   results <- data.table(barcode = resultTable$barcode, well = resultTable$well)
@@ -1089,8 +1036,8 @@ validateWellFlagData <- function(flagData, resultTable) {
   extraTests <- flags[!results]
   if (nrow(extraTests) > 0) {
     warnUser(paste0("Some of the wells listed in the flag file were not found in the experiment ",
-            "data, and will be ignored. Please remove or modify ", 
-            paste(extraTests[[1]], extraTests[[2]], collapse = ", "), "."))
+                    "data, and will be ignored. Please remove or modify ", 
+                    paste(extraTests[[1]], extraTests[[2]], collapse = ", "), "."))
   }
   
   # If the table is blank, readExcelOrCsv decides all of the column types should be "logical",
@@ -1122,7 +1069,7 @@ validateAnalysisFlagData <- function(flagData, analysisGroupData, replicateType,
   requiredColumns <- c("userHit", "wellType", "hit", "well", "barcode", analysisColumns)
   
   columnsIncluded <- requiredColumns %in% names(flagData)
-
+  
   if (all(columnsIncluded)) {
     # replace missing values with the 'default' value
     replaceMissing <- function(userHit, systemHit) {
@@ -1156,7 +1103,7 @@ validateAnalysisFlagData <- function(flagData, analysisGroupData, replicateType,
   if (!is.null(flagData) && nrow(flagData) == 0) {
     flagData <- as.data.table(sapply(flagData, as.character))
   }
-
+  
   return(flagData)
 }
 validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) {
@@ -1182,12 +1129,12 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
         disagreeingIndices <- which(validatedFlagData$'userHit' != validatedFlagData$'hit')
         disagreeingWells <- unique(validatedFlagData$"well"[disagreeingIndices])
         warnUser(paste0("During this step of data analysis, you can only flag individual wells. ",
-                       "However, the 'User Defined Hit' column no longer agrees with the 'Hit' column for ",
-                       "at least one trial in each of the following wells: ", 
-                       paste0(disagreeingWells, collapse = ", "), ". The data in the 'Hit' column will ",
-                       "override the data in the 'User Defined Hit' column. If this is not what you intended, ",
-                       "please re-upload your file, and check the box to indicate that you have finished ",
-                       "flagging wells."))
+                        "However, the 'User Defined Hit' column no longer agrees with the 'Hit' column for ",
+                        "at least one trial in each of the following wells: ", 
+                        paste0(disagreeingWells, collapse = ", "), ". The data in the 'Hit' column will ",
+                        "override the data in the 'User Defined Hit' column. If this is not what you intended, ",
+                        "please re-upload your file, and check the box to indicate that you have finished ",
+                        "flagging wells."))
       }
     }
   } else if(!is.null(flaggingStage) && flaggingStage == "analysisGroupFlags") {
@@ -1203,11 +1150,11 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
         disagreeingIndices <- which(previousFlagData$"flag" != validatedFlagData$"flag")
         disagreeingWells <- unique(validatedFlagData$"well"[disagreeingIndices])
         warnUser(paste0("During this step of data analysis, you cannot flag wells. However, it appears that ",
-                       "the following wells have at least one changed flag: ", 
-                       paste0(disagreeingWells, collapse = ", "), 
-                       ". The new flags will be ignored. If you wish to flag more wells, please re-upload ",
-                       "the file and uncheck the box that indicates you are done flagging wells. Please be ",
-                       "aware that you cannot flag wells and override hits during the same upload."))
+                        "the following wells have at least one changed flag: ", 
+                        paste0(disagreeingWells, collapse = ", "), 
+                        ". The new flags will be ignored. If you wish to flag more wells, please re-upload ",
+                        "the file and uncheck the box that indicates you are done flagging wells. Please be ",
+                        "aware that you cannot flag wells and override hits during the same upload."))
       }
     } else {
       # They haven't uploaded flag data before -- make sure they have no flags
@@ -1215,116 +1162,20 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
         disagreeingIndices <- which(!is.na(validatedFlagData$"flag"))
         disagreeingWells <- unique(validatedFlagData$"well"[disagreeingIndices])
         warnUser(paste0("During this step of data analysis, you cannot flag wells. However, it appears that ",
-                       "the following wells have at least one changed flag: ", 
-                       paste0(disagreeingWells, collapse = ", "), 
-                       ". The new flags will be ignored. If you wish to flag more wells, please re-upload ",
-                       "the file and uncheck the box that indicates you are done flagging wells. Please be ",
-                       "aware that you cannot flag wells and override hits during the same upload."))
+                        "the following wells have at least one changed flag: ", 
+                        paste0(disagreeingWells, collapse = ", "), 
+                        ". The new flags will be ignored. If you wish to flag more wells, please re-upload ",
+                        "the file and uncheck the box that indicates you are done flagging wells. Please be ",
+                        "aware that you cannot flag wells and override hits during the same upload."))
       }
     }
   }
   #Otherwise, flagging hasn't been implemented yet, so we don't do anything
   return(invisible(NULL))
 }
-findFluorescents <- function(seqData) {
-  # Finds fluorescent compounds by initial slope
-  #
-  # Args:
-  #   sequenceFile: a path to a sequence file
-  # Returns:
-  #   A character vector of well names
-  
-  fluorescentRows <- (seqData[13, ] - seqData[9, ]) > 100
-  
-  fluorescentRowNums <- which(fluorescentRows)
-  
-  fluorescentRowCoordinates <- names(seqData)[fluorescentRowNums]
-  
-  return(fluorescentRowCoordinates)
-}
-combineFiles <- function(fileSet) {
-  # Takes a set of stat1, stat2, and seq files and merges them
-  #
-  # Args:
-  #   fileSet: a list of files which inclues stat1, stat2, and seq files
-  # Returns:
-  #   A data.frame with columns stat1, stat2, and seq files in sorted columns
-  
-  stat1Frame <- parseStatFile(as.character(fileSet[1]))
-  stat2Frame <- parseStatFile(as.character(fileSet[2]))
-  seqData <- parseSeqFile(as.character(fileSet[3]))
-  
-  fluorescentList <- findFluorescents(seqData)
-  allStatFrame <- merge(stat1Frame,stat2Frame)
-  allStatFrame$fluorescent <- allStatFrame$well %in% fluorescentList
-  
-  timeValues <- gsub("X","", row.names(seqData))
-  allStatFrame$timePoints <- paste(timeValues, collapse = "\t")
-  allStatFrame$sequence <- unlist(lapply(seqData[,as.character(allStatFrame$well)], paste, collapse="\t"),use.names=FALSE)
-  return(allStatFrame)
-}
-parseStatFile <- function(fileName) {
-  # Parses a stat file
-  #
-  # Args:
-  #   fileName:   the path to a file
-  #
-  # Returns:
-  #   A data.frame with four columns:
-  #     "barcode":    barcode of source plate
-  #     "well":       well names of source
-  #     Statistic:    the values for each well (name taken from the parameters of the stat file)
-  #     "fileName":  the path the to source file without the extension
-  
-  rawLines <- readLines(fileName)
-  
-  # The first line of the plate grid are the column headers and starts with  \t1
-  columnsHeaderLine <- grep("^\t1", rawLines)
-  
-  # The first line of the user requested paramters
-  userParamsLine <- grep("*User Requested Parameters*", rawLines)
-  
-  # Now collect all non-data lines
-  paramLines <- c(rawLines[1:(columnsHeaderLine-1)], rawLines[(userParamsLine+1):length(rawLines)])
-  paramLines <- unlist(strsplit(paramLines, "\t"))
-  # Find last data array line
-  #TODO, make this more robust
-  lastLineOfData <- userParamsLine-2
-  
-  # Get the data
-  mainData <- read.table(
-    fileName,
-    sep="\t",
-    skip=columnsHeaderLine-1,
-    nrows=lastLineOfData-columnsHeaderLine,
-    header=TRUE,
-    row.names=1
-  )
-  # all the rows end in \t, so I need to kill the last column
-  
-  mainData <- mainData[,!(names(mainData) %in% "X.1")]
-  
-  barcode <- getParamByKey(paramLines, "Source Plate 2 Barcode")
-  readName <- getParamByKey(paramLines, "Statistic")
-  startRead <- getParamByKey(paramLines, "Start Sample")
-  endRead <- getParamByKey(paramLines, "End Sample")
-  
-  barcode <- validateBarcode(barcode, fileName)
-  
-  statData <- makeDataFrameOfWellsGrid(mainData, barcode, readName)
-  statData$fileName <- gsub("(.*)\\.stat.$","\\1",fileName)
-  if (readName == "Maximum") {
-    statData$startReadMax <- startRead
-    statData$endReadMax <- endRead
-  } else if (readName == "Minimum") {
-    statData$startReadMin <- startRead
-    statData$endReadMin <- endRead
-  } else {
-    stopUser (paste("Unknown Statistic in ", fileName))
-  }
-  
-  return(statData)
-}
+
+
+
 parseSeqFile <- function(fileName) {
   # Parses a seq file
   #
@@ -1352,7 +1203,7 @@ parseAnalysisFlagFile <- function(flaggedWells, resultTable) {
   #             in the flaggedWells file (which may not include all the tests in resultTable). If the user
   #             didn't define a hit, it is left as NA
   #          OR "NULL" if the data frame wasn't given, or was in the wrong format
-
+  
   # If we don't have a file, send it back as "null" and don't do the analysis
   if(is.null(flaggedWells) || flaggedWells == "") {
     return(NULL)
@@ -1388,7 +1239,7 @@ parseAnalysisFlagFile <- function(flaggedWells, resultTable) {
     # default flag, so we stop the user (because we know this isn't the 'basic csv' format)
     if (!is.null(flagData) && NROW(resultTable) != NROW(flagData)) {
       stopUser(paste0("There were ", NROW(flagData), " rows of flag data in the given file, but the experiment has ",
-                     NROW(resultTable), " wells. If any rows were deleted from the QC file, please download it again."))
+                      NROW(resultTable), " wells. If any rows were deleted from the QC file, please download it again."))
     }
   }
   return(flagData)
@@ -1731,7 +1582,7 @@ computeNormalized  <- function(values, wellType, flag) {
   #   flag:     A vector of the same length as values, with text if the well was flagged, and NA otherwise
   # Returns:
   #   A numeric vector of the same length as the inputs that is normalized.
-
+  
   if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
     stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
   }
@@ -1857,24 +1708,24 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   # GREEN (instrument-specific)
   instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
-    
+  
   source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
-    
+  
   instrumentData <- specificDataPreProcessor(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat)
   
   
-    # RED (client-specific)
-    if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
-      # creates the output_well_data.srf
-      compoundAssignments <- getCompoundAssignments(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse),
-                                                    plateData=instrumentData$plateAssociationDT,
-                                                    testMode=TRUE,
-                                                    tempFilePath=tempdir(),
-                                                    assayData=instrumentData$assayData)
-    }
-    
+  # RED (client-specific)
+  if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
+    # creates the output_well_data.srf
+    compoundAssignments <- getCompoundAssignments(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse),
+                                                  plateData=instrumentData$plateAssociationDT,
+                                                  testMode=TRUE,
+                                                  tempFilePath=tempdir(),
+                                                  assayData=instrumentData$assayData)
+  }
+  
   #     rdapList <- catchExecuteDap(request=list(filePath=file.path(getwd(), folderToParse), testMode=rdapTestMode))
-        
+  
   #     resultTable <- as.data.table(unique(read.table(file.path(dirname(folderToParse), "output_well_data.srf"),
   #                                                    header=TRUE, 
   #                                                    sep="\t", 
@@ -1898,44 +1749,39 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable$batch_number <- NULL  
   setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
   
+  
+  ### test structure for flipr thread in untitled6
+  
+  #### stat1stat2 files
+  
+  ## GREEN (instrument-specific)
 
-    ### test structure for flipr thread in untitled6
-    
-
-    
-    ## GREEN (instrument-specific)
-    fileNameTable <- validateInputFiles(folderToParse)
-    
-    # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
-    
-    resultList <- apply(fileNameTable,1,combineFiles)
-    resultTable <- as.data.table(do.call("rbind",resultList))
-    
-    ## RED (client-specific)
-    barcodeList <- levels(resultTable$barcode)
-    
-    wellTable <- createWellTable(barcodeList, testMode)
-    
-    # apply dilution
-    if (!is.null(parameters$dilutionRatio)) {
-      wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
-    }
-    
-    wellTable <- getAgonist(parameters$agonistControl, wellTable)
-    
-    wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
-    
-    if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
-      stopUser(paste0("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
-           paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
-           "'. Please contact your system administrator."))
-    }
-    
-    batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
-    resultTable <- cbind(resultTable,batchNamesAndConcentrations)
-    
-    normalization <- parameters$normalizationRule
-    
+  
+  ## RED (client-specific)
+  barcodeList <- levels(resultTable$barcode)
+  
+  wellTable <- createWellTable(barcodeList, testMode)
+  
+  # apply dilution
+  if (!is.null(parameters$dilutionRatio)) {
+    wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
+  }
+  
+  wellTable <- getAgonist(parameters$agonistControl, wellTable)
+  
+  wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
+  
+  if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
+    stopUser(paste0("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
+                    paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
+                    "'. Please contact your system administrator."))
+  }
+  
+  batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
+  resultTable <- cbind(resultTable,batchNamesAndConcentrations)
+  
+  normalization <- parameters$normalizationRule
+  
   
   ### END FLIPR reading function
   
@@ -1975,7 +1821,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else if (length(which(resultTable$wellType == "test" & is.na(resultTable$flag))) == 1) {
     stopUser("Only one of the test wells is unflagged, so there is not enough data to analyze.")
   }
-
+  
   # normalization
   
   if (normalization=="plate order") {
@@ -2011,7 +1857,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     warnUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
     resultTable <- resultTable[!is.na(resultTable$batchName), ]
   }
-
+  
   hitSelection <- parameters$thresholdType #Other choice is "efficacyThreshold"
   if (hitSelection == "sd") {
     efficacyThreshold <- meanValue + sdValue * parameters$hitSDThreshold
@@ -2049,7 +1895,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                  concentration = flaglessTable$concentration,
                                  concUnit = flaglessTable$concUnit)
   }
-
+  
   if(!useRdap) {
     if (parameters$aggregateReplicates == "across plates") {
       treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
@@ -2096,14 +1942,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #analysisGroupData$threshold <- analysisGroupData$sdScore > parameters$hitSDThreshold & !analysisGroupData$fluorescent & analysisGroupData$wellType=="test"
     
     if (parameters$aggregateReplicates == "no") {
-    #     analysisGroupData$latePeak <- (analysisGroupData$overallMaxTime > 80) & 
-    #       (analysisGroupData$groupMean > efficacyThreshold) & !analysisGroupData$fluorescent
-    #     analysisGroupData$threshold <- analysisGroupData$groupMean > efficacyThreshold & !analysisGroupData$fluorescent & 
-    #       analysisGroupData$wellType=="test" & !analysisGroupData$latePeak
+      #     analysisGroupData$latePeak <- (analysisGroupData$overallMaxTime > 80) & 
+      #       (analysisGroupData$groupMean > efficacyThreshold) & !analysisGroupData$fluorescent
+      #     analysisGroupData$threshold <- analysisGroupData$groupMean > efficacyThreshold & !analysisGroupData$fluorescent & 
+      #       analysisGroupData$wellType=="test" & !analysisGroupData$latePeak
     } else {
       
     }
-  
+    
     
     library(plyr)
     #if (analysisType == "primary") {
@@ -2111,21 +1957,21 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       # May need to return to using analysisGroupData eventually
       outputTable <- ddply(resultTable, c("batchName", "hasAgonist", "barcode", "wellType"), function(idf) {
         data.frame("Flag" = idf$flag,
-          "Corporate Batch ID" = as.character(idf$batchName),
-          "Barcode" = as.character(idf$barcode),
-          "Well" = as.character(idf$well),
-          "Well Hit" = ifelse(idf$threshold, "yes", "no"),
-          "Hit" = rep(ifelse(all(idf$threshold), "yes", "no"), length.out = nrow(idf)),
-          "SD Score" = idf$sdScore,
-          "Activity" = idf$transformed,
-          "Normalized Activity" = idf$normalized,
-          "Fluorescent" = ifelse(idf$fluorescent, "yes", "no"),
-          "Max Time (s)" = idf$maxTime,
-          "Well Type" = idf$wellType,
-          "Late Peak" = ifelse(idf$latePeak, "yes", "no"),
-          "Has Agonist" = ifelse(idf$hasAgonist, "yes", "no"),
-          check.names = FALSE,
-          stringsAsFactors = FALSE)
+                   "Corporate Batch ID" = as.character(idf$batchName),
+                   "Barcode" = as.character(idf$barcode),
+                   "Well" = as.character(idf$well),
+                   "Well Hit" = ifelse(idf$threshold, "yes", "no"),
+                   "Hit" = rep(ifelse(all(idf$threshold), "yes", "no"), length.out = nrow(idf)),
+                   "SD Score" = idf$sdScore,
+                   "Activity" = idf$transformed,
+                   "Normalized Activity" = idf$normalized,
+                   "Fluorescent" = ifelse(idf$fluorescent, "yes", "no"),
+                   "Max Time (s)" = idf$maxTime,
+                   "Well Type" = idf$wellType,
+                   "Late Peak" = ifelse(idf$latePeak, "yes", "no"),
+                   "Has Agonist" = ifelse(idf$hasAgonist, "yes", "no"),
+                   check.names = FALSE,
+                   stringsAsFactors = FALSE)
       })
     }
     
@@ -2147,7 +1993,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #                               "Late Peak" = ifelse(resultTable$latePeak, "yes", "no"))
     outputTable <- as.data.table(outputTable)
     outputTable <- outputTable[order(Hit, Fluorescent, decreasing=TRUE)]
-  
+    
     summaryInfo <- list(
       info = list(
         "Sweetener" = parameters$agonist$batchCode,
@@ -2321,17 +2167,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       if (parameters$aggregateReplicates != "no") {
         source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")
         resultTable <- saveComparisonTraces(resultTable, paste0("experiments/", experiment$codeName, "/images"))
-    }
-    
-    #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
-    
-    lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
+      }
+      
+      #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
+      
+      lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
     } else { # We are using Rdap
       
       meltStuff <- function(resultTable, resultTypes) {
         ## this could be done as a data table. Check out http://stackoverflow.com/questions/6902087/proper-fastest-way-to-reshape-a-data-table
         resultTable <- as.data.frame(resultTable)
-           
+        
         longResults <- reshape(resultTable, idvar = c("id"), ids = row.names(resultTable), 
                                v.names = "UnparsedValue", 
                                timevar = "valueKind", varying=list(resultTypes$columnName),
@@ -2380,7 +2226,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       analysisGroupData$experimentID <- experimentId
       lsTransaction <- uploadData(analysisGroupData=analysisGroupData, recordedBy=user, lsTransaction=lsTransaction)
-
+      
       analysisGroupData$experimentVersion <- experiment$version
       
     }
@@ -2530,7 +2376,7 @@ saveFullEntityData <- function(entityData, entityKind) {
   }
   
   entities <- dlply(.data=entityData, .variables = paste0(entityKind, "ID"), createEntityFromDF, currentEntity=entityKind)
-
+  
   tempIds <- as.numeric(names(entities))
   
   names(entities) <- NULL
@@ -2820,7 +2666,7 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   if(is.null(lsTransaction)) {
     lsTransaction <- createLsTransaction()$id
   }
-    
+  
   ### Analysis Group Data
   # Not all of these will be filled
   analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex, "-", 
