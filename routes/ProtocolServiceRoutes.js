@@ -14,7 +14,7 @@
     console.log(req.params.code);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
+      return resp.end(JSON.stringify(protocolServiceTestJSON.fullSavedProtocol));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codename/" + req.params.code;

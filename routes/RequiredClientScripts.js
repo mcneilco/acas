@@ -55,7 +55,8 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
-	"/javascripts/src/TagList.js"
+	"/javascripts/src/TagList.js",
+	"/javascripts/src/WellFlagging.js"
 ];
 
 exports.jasmineScripts = [
@@ -133,5 +134,6 @@ exports.specScripts = [
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/TagListSpec.js",
 	"/javascripts/spec/UtilityFunctionsSpec.js",
+	"/javascripts/spec/WellFlaggingSpec.js",
 	"/javascripts/spec/dnsAuthenticationServiceSpec.js"
 ]

@@ -385,6 +385,8 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()
 		@assayStageList.url = "/api/dataDict/protocolMetadata/assay stage"
+		console.log "about to set up assay stage"
+		console.log @model
 		@assayStageListController = new PickListSelectController
 			el: @$('.bv_assayStage')
 			collection: @assayStageList
@@ -498,6 +500,14 @@ class window.AbstractPrimaryScreenProtocolController extends Backbone.View
 		@protocolBaseController.render()
 		@analysisController.render()
 		@modelFitController.render()
+		@setupPrimaryScreenProtocolParametersController()
+		@setupAssayActivityController()
+		@setupMolecularTargetController()
+		@setupTargetOriginController()
+		@setupAssayTypeController()
+		@setupAssayTechnologyController()
+		@setupCellLineController()
+
 
 	setupModelFitController: (modelFitControllerName) ->
 		newArgs =
@@ -511,22 +521,6 @@ class window.AbstractPrimaryScreenProtocolController extends Backbone.View
 
 	handleProtocolSaved: =>
 		@analysisController.render()
-
-
-class window.PrimaryScreenProtocolController extends AbstractPrimaryScreenProtocolController
-	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
-	modelFitControllerName: "DoseResponseAnalysisController"
-	moduleLaunchName: "primary_screen_protocol"
-
-	initialize: ->
-		super()
-		@setupPrimaryScreenProtocolParametersController()
-		@setupAssayActivityController()
-		@setupMolecularTargetController()
-		@setupTargetOriginController()
-		@setupAssayTypeController()
-		@setupAssayTechnologyController()
-		@setupCellLineController()
 
 	setupPrimaryScreenProtocolParametersController: ->
 		@primaryScreenProtocolParametersController= new PrimaryScreenProtocolParametersController
@@ -574,3 +568,10 @@ class window.PrimaryScreenProtocolController extends AbstractPrimaryScreenProtoc
 			el: @$('.bv_cellLineWrapper')
 		@cellLineController.render()
 
+
+
+
+class window.PrimaryScreenProtocolController extends AbstractPrimaryScreenProtocolController
+	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
+	modelFitControllerName: "DoseResponseAnalysisController"
+	moduleLaunchName: "primary_screen_protocol"

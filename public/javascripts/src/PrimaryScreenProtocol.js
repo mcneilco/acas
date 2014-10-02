@@ -572,6 +572,8 @@
     PrimaryScreenProtocolParametersController.prototype.setUpAssayStageSelect = function() {
       this.assayStageList = new PickListList();
       this.assayStageList.url = "/api/dataDict/protocolMetadata/assay stage";
+      console.log("about to set up assay stage");
+      console.log(this.model);
       return this.assayStageListController = new PickListSelectController({
         el: this.$('.bv_assayStage'),
         collection: this.assayStageList,
@@ -736,7 +738,14 @@
       })(this));
       this.protocolBaseController.render();
       this.analysisController.render();
-      return this.modelFitController.render();
+      this.modelFitController.render();
+      this.setupPrimaryScreenProtocolParametersController();
+      this.setupAssayActivityController();
+      this.setupMolecularTargetController();
+      this.setupTargetOriginController();
+      this.setupAssayTypeController();
+      this.setupAssayTechnologyController();
+      return this.setupCellLineController();
     };
 
     AbstractPrimaryScreenProtocolController.prototype.setupModelFitController = function(modelFitControllerName) {
@@ -762,35 +771,7 @@
       return this.analysisController.render();
     };
 
-    return AbstractPrimaryScreenProtocolController;
-
-  })(Backbone.View);
-
-  window.PrimaryScreenProtocolController = (function(_super) {
-    __extends(PrimaryScreenProtocolController, _super);
-
-    function PrimaryScreenProtocolController() {
-      return PrimaryScreenProtocolController.__super__.constructor.apply(this, arguments);
-    }
-
-    PrimaryScreenProtocolController.prototype.uploadAndRunControllerName = "UploadAndRunPrimaryAnalsysisController";
-
-    PrimaryScreenProtocolController.prototype.modelFitControllerName = "DoseResponseAnalysisController";
-
-    PrimaryScreenProtocolController.prototype.moduleLaunchName = "primary_screen_protocol";
-
-    PrimaryScreenProtocolController.prototype.initialize = function() {
-      PrimaryScreenProtocolController.__super__.initialize.call(this);
-      this.setupPrimaryScreenProtocolParametersController();
-      this.setupAssayActivityController();
-      this.setupMolecularTargetController();
-      this.setupTargetOriginController();
-      this.setupAssayTypeController();
-      this.setupAssayTechnologyController();
-      return this.setupCellLineController();
-    };
-
-    PrimaryScreenProtocolController.prototype.setupPrimaryScreenProtocolParametersController = function() {
+    AbstractPrimaryScreenProtocolController.prototype.setupPrimaryScreenProtocolParametersController = function() {
       this.primaryScreenProtocolParametersController = new PrimaryScreenProtocolParametersController({
         model: this.model,
         el: this.$('.bv_autofillSection')
@@ -808,7 +789,7 @@
       return this.primaryScreenProtocolParametersController.render();
     };
 
-    PrimaryScreenProtocolController.prototype.setupAssayActivityController = function() {
+    AbstractPrimaryScreenProtocolController.prototype.setupAssayActivityController = function() {
       this.assayActivityController = new AssayActivityController({
         model: this.model,
         el: this.$('.bv_assayActivityWrapper')
@@ -816,7 +797,7 @@
       return this.assayActivityController.render();
     };
 
-    PrimaryScreenProtocolController.prototype.setupMolecularTargetController = function() {
+    AbstractPrimaryScreenProtocolController.prototype.setupMolecularTargetController = function() {
       this.molecularTargetController = new MolecularTargetController({
         model: this.model,
         el: this.$('.bv_molecularTargetWrapper')
@@ -824,7 +805,7 @@
       return this.molecularTargetController.render();
     };
 
-    PrimaryScreenProtocolController.prototype.setupTargetOriginController = function() {
+    AbstractPrimaryScreenProtocolController.prototype.setupTargetOriginController = function() {
       this.targetOriginController = new TargetOriginController({
         model: this.model,
         el: this.$('.bv_targetOriginWrapper')
@@ -832,7 +813,7 @@
       return this.targetOriginController.render();
     };
 
-    PrimaryScreenProtocolController.prototype.setupAssayTypeController = function() {
+    AbstractPrimaryScreenProtocolController.prototype.setupAssayTypeController = function() {
       this.assayTypeController = new AssayTypeController({
         model: this.model,
         el: this.$('.bv_assayTypeWrapper')
@@ -840,7 +821,7 @@
       return this.assayTypeController.render();
     };
 
-    PrimaryScreenProtocolController.prototype.setupAssayTechnologyController = function() {
+    AbstractPrimaryScreenProtocolController.prototype.setupAssayTechnologyController = function() {
       this.assayTechnologyController = new AssayTechnologyController({
         model: this.model,
         el: this.$('.bv_assayTechnologyWrapper')
@@ -848,13 +829,30 @@
       return this.assayTechnologyController.render();
     };
 
-    PrimaryScreenProtocolController.prototype.setupCellLineController = function() {
+    AbstractPrimaryScreenProtocolController.prototype.setupCellLineController = function() {
       this.cellLineController = new CellLineController({
         model: this.model,
         el: this.$('.bv_cellLineWrapper')
       });
       return this.cellLineController.render();
     };
+
+    return AbstractPrimaryScreenProtocolController;
+
+  })(Backbone.View);
+
+  window.PrimaryScreenProtocolController = (function(_super) {
+    __extends(PrimaryScreenProtocolController, _super);
+
+    function PrimaryScreenProtocolController() {
+      return PrimaryScreenProtocolController.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryScreenProtocolController.prototype.uploadAndRunControllerName = "UploadAndRunPrimaryAnalsysisController";
+
+    PrimaryScreenProtocolController.prototype.modelFitControllerName = "DoseResponseAnalysisController";
+
+    PrimaryScreenProtocolController.prototype.moduleLaunchName = "primary_screen_protocol";
 
     return PrimaryScreenProtocolController;
 
