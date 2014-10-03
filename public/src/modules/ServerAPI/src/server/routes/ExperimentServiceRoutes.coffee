@@ -17,12 +17,22 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
 
-exports.experimentByCodename = (request, response) ->
-	console.log request.params.code
-	console.log request.query.testMode
-	if (request.query.testMode is true) or (global.specRunnerTestmode is true)
+exports.experimentByCodename = (req, resp) ->
+	console.log req.params.code
+	console.log req.query.testMode
+	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
-		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+#		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+		expt = JSON.parse(JSON.stringify (experimentServiceTestJSON.fullExperimentFromServer))
+
+		if req.params.code.indexOf("screening") > -1
+			expt.lsKind = "flipr screening assay"
+
+		else
+			expt.lsKind = "default"
+
+		resp.json expt
+
 	else
 		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
