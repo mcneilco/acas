@@ -22,7 +22,7 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, re
   # For log file
   write.table(paste0(Sys.time(), "\tbegin executeDap\tfilePath=",filePath,"\ttestMode=",testMode), file = file.path(tempFilePath, "runlog.tab"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  plateData <- generateIniFile(filePath, tempFilePath, testMode, instrument)
+  plateData <- generateIniFile(filePath, tempFilePath, instrument)
   plateAssociationDT <- plateData
   
   # keep this in this part of the code so that warnings can be relayed to user before uploading data
@@ -31,13 +31,13 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, re
   ## TODO: dryRun should return "summaryInfo" here?
 
   assayData <- data.frame()
-  assayData <- plateAssociationDT[ , parseAssayPlateFiles(assayFileName, unique(instrumentType), unique(plateAssociationDT$dataTitle), tempFilePath=tempFilePath), by=list(assayFileName, assayBarcode)]#, plateOrder)]
+  assayData <- plateAssociationDT[ , parseAssayPlateFiles(assayFileName, unique(instrumentType), unique(plateAssociationDT$dataTitle), tempFilePath=tempFilePath), by=list(assayFileName, assayBarcode, plateOrder)]
   
   assayData <- adjustColumnsToUserInput(inputColumnTable=userInputReadTable, inputDataTable=assayData, tempFilePath=tempFilePath)
 
-  return(list(plateAssociationDT=plateAssociationDT, assayData=assayData))
-  
   setwd(Sys.getenv("ACAS_HOME"))
+  
+  return(list(plateAssociationDT=plateAssociationDT, assayData=assayData))
 }
 
 

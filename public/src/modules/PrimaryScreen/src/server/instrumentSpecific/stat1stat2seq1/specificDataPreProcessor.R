@@ -1,4 +1,4 @@
-specificDataPreProcessor <- function(folderToParse) {
+specificDataPreProcessor <- function(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat) {
   
   fileNameTable <- validateInputFiles(folderToParse)
   
@@ -6,6 +6,8 @@ specificDataPreProcessor <- function(folderToParse) {
   
   resultList <- apply(fileNameTable,1,combineFiles)
   resultTable <- as.data.table(do.call("rbind",resultList))
+  
+  return(resultTable)
 }
 
 

@@ -3,13 +3,13 @@
 # Input: file path
 # Output: .ini file
 
-generateIniFile <- function(filePath, tempFilePath, testMode=TRUE, instrument) {
+generateIniFile <- function(filePath, tempFilePath, instrument) {
   
   setwd(filePath)
   iniData <- list()
   
   # runlog
-  write.table(paste0(Sys.time(), "\tbegin generateIniFile\tfilePath=",filePath,"\ttestMode=",testMode), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
+  write.table(paste0(Sys.time(), "\tbegin generateIniFile\tfilePath=",filePath), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
  
   plateData <- getPlateDataOrder(filePath=filePath, instrument=instrument, tempFilePath=tempFilePath)
   plateDataHeader <- "[Plate_Data_Order]"  

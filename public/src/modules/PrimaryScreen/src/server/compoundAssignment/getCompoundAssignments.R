@@ -15,7 +15,7 @@ getCompoundAssignments <- function (filePath, plateData, testMode, tempFilePath,
   allAssayCompoundData$assayFileName <- NULL
   
   colOrder <- c("plateType","assayBarcode","cmpdBarcode","sourceType","wellReference",
-                "rowName","colName","corp_name","batch_number","cmpdConc","supplier")
+                "rowName","colName","corp_name","batch_number","cmpdConc","supplier","plateOrder")
   
   activityColumns <- setdiff(colnames(allAssayCompoundData), colOrder)
   setcolorder(allAssayCompoundData, c(colOrder, activityColumns))

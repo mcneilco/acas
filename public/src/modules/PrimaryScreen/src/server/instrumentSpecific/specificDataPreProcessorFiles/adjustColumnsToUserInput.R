@@ -8,7 +8,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
   
   setnames(inputDataTable, inputColumnTable[activityColName != "None", ]$activityColName, inputColumnTable[activityColName != "None", ]$newActivityColName)
   
-  colNamesToCheck <- setdiff(colnames(inputDataTable), c("assayFileName", "assayBarcode", "rowName", "colName", "wellReference"))
+  colNamesToCheck <- setdiff(colnames(inputDataTable), c("assayFileName", "assayBarcode", "rowName", "colName", "wellReference", "plateOrder"))
   colNamesToKeep <- inputColumnTable$newActivityColName
   
   inputDataTable <- removeColumns(colNamesToCheck, colNamesToKeep, inputDataTable, tempFilePath)

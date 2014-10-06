@@ -1676,14 +1676,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   parameters <- getExperimentParameters(inputParameters)
   # TODO: store this in protocol
   parameters$latePeakTime <- 80
-  
-  #   if(is.null(parameters$useRdap)) {
-  #     useRdap <- FALSE
-  #   } else {
-  #     useRdap <- as.logical(parameters$useRdap)
-  #     rdapTestMode <- as.logical(parameters$rdapTestMode)
-  #   }
-  
+    
   dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
   dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
   
@@ -1703,7 +1696,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     do.call(unlink, list(oldFiles, recursive=T))
     
     unzip(zipfile=folderToParse, exdir=paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData"))
-    folderToParse <- paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData")
+    folderToParse <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName, "rawData")
   } 
   
   # GREEN (instrument-specific)
@@ -1717,77 +1710,59 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # RED (client-specific)
   if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
     # creates the output_well_data.srf
+    fileList <- list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE)
+    lapply(fileList, source)
+    
     compoundAssignments <- getCompoundAssignments(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse),
                                                   plateData=instrumentData$plateAssociationDT,
                                                   testMode=TRUE,
                                                   tempFilePath=tempdir(),
                                                   assayData=instrumentData$assayData)
+    
+    resultTable <- compoundAssignments$allAssayCompoundData[ , c("wellReference",
+                                                                 "assayBarcode",
+                                                                 "cmpdConc",
+                                                                 "corp_name",
+                                                                 "batch_number", 
+                                                                 compoundAssignments$activityColNames), with=FALSE]
+    
+    resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
+    resultTable <- resultTable[batchCode != "NA::NA"]
+    resultTable$batch_number <- NULL  
+    setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
+    
+  } else {
+    resultTable <- instrumentData
+    
+    barcodeList <- levels(resultTable$barcode)
+    
+    wellTable <- createWellTable(barcodeList, testMode)
+    
+    # apply dilution
+    if (!is.null(parameters$dilutionRatio)) {
+      wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
+    }
+    
+    wellTable <- getAgonist(parameters$agonistControl, wellTable)
+    
+    wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
+    
+    if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
+      stopUser(paste0("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
+                      paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
+                      "'. Please contact your system administrator."))
+    }
+    
+    batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
+    resultTable <- cbind(resultTable,batchNamesAndConcentrations)
+    
+    normalization <- parameters$normalizationRule
   }
   
-  #     rdapList <- catchExecuteDap(request=list(filePath=file.path(getwd(), folderToParse), testMode=rdapTestMode))
-  
-  #     resultTable <- as.data.table(unique(read.table(file.path(dirname(folderToParse), "output_well_data.srf"),
-  #                                                    header=TRUE, 
-  #                                                    sep="\t", 
-  #                                                    stringsAsFactors=FALSE,
-  #                                                    check.names=FALSE)
-  #                                         [ , c(well="wellReference", 
-  #                                               "assayBarcode", 
-  #                                               "cmpdConc", 
-  #                                               "corp_name", 
-  #                                               "cmpdBatch", 
-  #                                               colnames(rdapList$value$activity))]))
-  
-  resultTable <- compoundAssignments$allAssayCompoundData[ , c("wellReference",
-                                                               "assayBarcode",
-                                                               "cmpdConc",
-                                                               "corp_name",
-                                                               "batch_number", 
-                                                               compoundAssignments$activityColNames), with=FALSE]
-  
-  resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
-  resultTable$batch_number <- NULL  
-  setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
-  
-  
-  ### test structure for flipr thread in untitled6
-  
-  #### stat1stat2 files
-  
-  ## GREEN (instrument-specific)
-
-  
-  ## RED (client-specific)
-  barcodeList <- levels(resultTable$barcode)
-  
-  wellTable <- createWellTable(barcodeList, testMode)
-  
-  # apply dilution
-  if (!is.null(parameters$dilutionRatio)) {
-    wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
-  }
-  
-  wellTable <- getAgonist(parameters$agonistControl, wellTable)
-  
-  wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
-  
-  if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
-    stopUser(paste0("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
-                    paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
-                    "'. Please contact your system administrator."))
-  }
-  
-  batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
-  resultTable <- cbind(resultTable,batchNamesAndConcentrations)
-  
-  normalization <- parameters$normalizationRule
-  
-  
-  ### END FLIPR reading function
-  
-  resultTable$wellType <- getWellTypes(resultTable$batchName, resultTable$concentration, 
-                                       resultTable$concUnit, resultTable$hasAgonist, 
-                                       parameters$positiveControl, parameters$negativeControl, testMode)
+  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchName, concentrations=resultTable$concentration, 
+                                       concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
+                                       positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
+                                       testMode=testMode)
   
   if (!any(resultTable$wellType == "PC")) {
     stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded and your postive control is defined correctly.")
@@ -1846,11 +1821,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     resultTable[, maxTime:=as.numeric(unlist(strsplit(timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(sequence, "\t")))[startReadMax:endReadMax]) + as.integer(startReadMax) - 1L]), by = index]
     resultTable[, overallMaxTime:=as.numeric(unlist(strsplit(timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(sequence, "\t"))))]), by = index]
   }
-  #   #TODO: remove once real data is in place
-  #   if (any(is.na(resultTable$batchName))) {
-  #     warnUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
-  #     resultTable <- resultTable[!is.na(resultTable$batchName), ]
-  #   }
   
   #TODO: remove once real data is in place
   if (any(is.na(resultTable$batchName))) {
