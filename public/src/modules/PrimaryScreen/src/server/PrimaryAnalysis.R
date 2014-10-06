@@ -192,18 +192,29 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
   if (is.null(negativeControl$concentration) || negativeControl$concentration == "infinite") {
     negativeControl$concentration <- Inf
   }
-  #   if(testMode) {
-  #     wellTypes[batchNames==positiveControl$batchCode] <- "PC"
-  #     wellTypes[batchNames==negativeControl$batchCode] <- "NC"
-  #   } else {
   
-  wellTypes[batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration & 
-              concentrationUnits==positiveControl$concentrationUnits & hasAgonist] <- "PC"
-  wellTypes[batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration & 
-              concentrationUnits==negativeControl$concentrationUnits & hasAgonist] <- "NC"
-  #   }
+  posBatchFilter <- batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration
+  negBatchFilter <- batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration
   
-  wellTypes[!hasAgonist] <- "no agonist"
+  if(!is.null(concentrationUnits)) {
+    posBatchFilter <- posBatchFilter & concentrations==positiveControl$concentration
+    negBatchFilter <- negBatchFilter & concentrations==negativeControl$concentration
+  } 
+  if(!is.null(hasAgonist)) {
+    posBatchFilter <- posBatchFilter & hasAgonist
+    negBatchFilter <- negBatchFilter & hasAgonist
+  }
+  
+  wellTypes[posBatchFilter] <- "PC"
+  wellTypes[negBatchFilter] <- "NC"
+  #   wellTypes[batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration & 
+  #               concentrationUnits==positiveControl$concentrationUnits & hasAgonistFilter] <- "PC"
+  #   wellTypes[batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration & 
+  #               concentrationUnits==negativeControl$concentrationUnits & hasAgonist] <- "NC"
+  
+  if(!is.null(hasAgonist)) {
+    wellTypes[!hasAgonist] <- "no agonist"
+  } 
   
   return(wellTypes)
 }
@@ -228,8 +239,6 @@ computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
   if (transformation == "(maximum-minimum)/minimum") {
     return( (mainData$Maximum-mainData$Minimum)/mainData$Minimum )
-  } else if (transformation == "unknown") {
-    return ( mainData$"R1 {activity_1}") 
   } else {
     return ( list() )
   }	
@@ -1674,6 +1683,20 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   parameters <- getExperimentParameters(inputParameters)
+  
+  ## TODO: test structure for integration 2014-10-06 kcarr
+  parameters <- parameters$primaryScreenAnalysisParameters
+  parameters$primaryAnalysisReadList[[2]] <- NULL
+  parameters$primaryAnalysisReadList[[2]] <- NULL
+  parameters$primaryAnalysisReadList[[1]]$readPosition <- 1
+  parameters$primaryAnalysisReadList[[1]]$readName <- "none"
+  parameters$primaryAnalysisReadList[[1]]$activity <- TRUE
+  parameters$positiveControl$batchCode <- "DNS001315929"
+  parameters$positiveControl$concentration <- 0.5 
+  parameters$negativeControl$batchCode <- "DNS000000001"
+  parameters$negativeControl$concentration <- 0
+  ## END test structure
+    
   # TODO: store this in protocol
   parameters$latePeakTime <- 80
     
