@@ -43,7 +43,7 @@ test_that("executeDap functionality (arrayScan)", {
   testTable <- read.table(testFile, sep="\t", stringsAsFactors=TRUE, header=TRUE)
   testTable <- as.data.table(testTable)
   
-  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","R1..ValidNeuronCount.","R2..NeuriteTotalLengthPerNeuronCh2.","R3..ValidFieldCount.","R4..NeuriteTotalLengthPerNeuriteCh2.","R5..NeuriteTotalCountPerNeuronCh2.","R6..BranchPointTotalCountPerNeuronCh2.","R7..BranchPointCountPerNeuriteLengthCh2.","R8..Chamber.CO2.Percent.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType"))
+  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","plateOrder","R1..ValidNeuronCount.","R2..NeuriteTotalLengthPerNeuronCh2.","R3..ValidFieldCount.","R4..NeuriteTotalLengthPerNeuriteCh2.","R5..NeuriteTotalCountPerNeuronCh2.","R6..BranchPointTotalCountPerNeuronCh2.","R7..BranchPointCountPerNeuriteLengthCh2.","R8..Chamber.CO2.Percent.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType"))
   
   setwd(testFilePath)
   rdaTest(testTable, normalizePath("../Analysis/output_well_data.rda"))

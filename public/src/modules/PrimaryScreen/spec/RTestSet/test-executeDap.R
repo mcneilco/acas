@@ -28,7 +28,7 @@ test_that("getInstrumentSpecificData & getCompoundAssignments functionality", {
   expect_that(testTable[4446, R1..R1.], equals(69094.77))
   expect_that(nrow(testTable) %% 96, equals(0))
   expect_that(nrow(testTable), equals(4608))
-  expect_that(ncol(testTable), equals(12))
+  expect_that(ncol(testTable), equals(13))
   # expect_that(expect_that(testTable[4609, corp_name], equals("DNS000000001")), throws_error())
   # expect_that(expect_that(testTable[4447, activity], equals(69094.77)), throws_error())
   # expect_that(expect_that(nrow(testTable) %% 96, equals(1)), throws_error())
@@ -55,7 +55,7 @@ test_that("getInstrumentSpecificData & getCompoundAssignments functionality", {
   expect_that(testTable[645, R1..R1.], equals(1958))
   expect_that(nrow(testTable) %% 96, equals(0))
   expect_that(nrow(testTable), equals(768))
-  expect_that(ncol(testTable), equals(12))
+  expect_that(ncol(testTable), equals(13))
   
   file.remove(testFile)
   expect_that(read.table(testFile), gives_warning("No such file or directory"))

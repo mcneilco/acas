@@ -42,7 +42,7 @@ test_that("executeDap functionality (envision)", {
   testFile <- normalizePath(file.path(tempdir(), "output_well_data.srf"))
   testTable <- read.table(testFile, sep="\t", stringsAsFactors=TRUE, header=TRUE)
   testTable <- as.data.table(testTable)
-  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","R1..R1.","R2..R2.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType"))
+  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","plateOrder","R1..R1.","R2..R2.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType"))
   setwd(testFilePath)
   rdaTest(testTable, normalizePath("../Analysis/output_well_data.rda"))
   setwd(originalWD)
