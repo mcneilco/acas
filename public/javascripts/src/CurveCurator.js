@@ -875,9 +875,9 @@
         }
       }
       if (this.model.get('dirty')) {
-        this.$('.bv_dirty').show();
+        this.$('.bv_brokendirty').show();
       } else {
-        this.$('.bv_dirty').hide();
+        this.$('.bv_brokendirty').hide();
       }
       this.$('.bv_compoundCode').html(this.model.get('curveAttributes').compoundCode);
       this.model.on('change', this.render);
