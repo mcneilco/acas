@@ -546,9 +546,9 @@ class window.CurveSummaryController extends Backbone.View
 				@$('.bv_thumbsUp').hide()
 				@$('.bv_thumbsDown').show()
 		if @model.get 'dirty'
-			@$('.bv_brokendirty').show()
+			@$('.bv_dirty').show()
 		else
-			@$('.bv_brokendirty').hide()
+			@$('.bv_dirty').hide()
 
 		@$('.bv_compoundCode').html @model.get('curveAttributes').compoundCode
 		@model.on 'change', @render
