@@ -109,4 +109,90 @@ describe "PickList Select Unit Testing", ->
 						expect($(@pickListController.el).val()).toEqual "not_set"
 
 
+	describe "EditablePickList controller", ->
+		beforeEach ->
+			runs ->
+				@editablePickListList = new PickListList()
+				@editablePickListList.url = "/api/projects"
+
+		describe "when displayed", ->
+			describe "when displayed with default options", ->
+				beforeEach ->
+					runs ->
+						@editablepickListController = new EditablePickListSelectController
+							el: @selectFixture
+							collection: @editablePickListList
+							selectedCode: "unassigned"
+							parameter: "projects"
+					waitsFor ->
+						@editablePickListList.length > 0
+				it " should have three choices", ->
+					runs ->
+						expect(@editablepickListController.$("option").length).toEqual 3
+				it "should return selected model", ->
+					runs ->
+						@editablepickListController.$("option")[1].selected = true
+						mdl = @editablepickListController.getSelectedModel()
+						expect(mdl.get("code")).toEqual "project2"
+						@editablepickListController.$("option")[2].selected = true
+						mdl = @editablepickListController.getSelectedModel()
+						expect(mdl.get("code")).toEqual "project3"
+				it "should return selected code", ->
+					runs ->
+						@editablepickListController.$("option")[1].selected = true
+						expect(@editablepickListController.getSelectedCode()).toEqual "project2"
+
+
+
+#	describe "EditablePickListController testing", ->
+#		beforeEach ->
+#			runs ->
+#				@editablePickListList = new PickListList()
+#				@editablePickListList.url = "/api/projects"
+#
+#		describe "when displayed", ->
+#			describe "when displayed with default options", ->
+#				beforeEach ->
+#					runs ->
+#						@editablePickListController = new EditablePickListSelectController
+#							el: @selectFixture
+#							collection: @editablePickListList
+#						@editablePickListController.render()
+#					waitsFor ->
+#						@editablePickListList.length > 0
+#				it "should exist when instantiated", ->
+#					runs ->
+#						expect(@editablePickListController).toBeDefined()
+#				it " should have three choices", ->
+#					runs ->
+#						expect(@editablePickListController.$("option").length).toEqual 3
+#				it "should have an add button", ->
+#					runs ->
+#						expect(@editablePickListController.$('.bv_addParameterOptionBtn').length).toEqual 1
+
+
+#	describe "EditablePickList controller", ->
+#		beforeEach ->
+#			@eplsc = new EditablePickListSelectController
+#				model: new PrimaryScreenProtocol()
+#			@eplsc.render()
+#		describe "when instantiated", ->
+#			it "should exist", ->
+#				expect(@eplsc).toBeDefined()
+#			it "should have the parameter variable set to assay activity", ->
+#				expect(@eplsc.parameter).toEqual "assayActivity"
+#			it "should show a picklist", ->
+#				waitsFor ->
+#					@eplsc.$('.bv_assayActivity option').length > 0
+#				, 1000
+#				runs ->
+#					expect(@eplsc.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "unassigned"
+#					expect(@eplsc.$('.bv_assayActivity').val()).toEqual "unassigned"
+
+#			it "should have an add button", ->
+#				waitsFor ->
+#					@eplsc.$('.bv_assayActivity option').length > 0
+#				, 1000
+#				runs ->
+#				expect(@eplsc.$('.bv_addParameterOptionBtn').length).toEqual 1
 

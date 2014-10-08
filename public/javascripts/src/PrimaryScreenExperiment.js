@@ -905,7 +905,7 @@
     PrimaryScreenAnalysisParametersController.prototype.setupInstrumentReaderSelect = function() {
       this.instrumentList = new PickListList();
       this.instrumentList.url = "/api/dataDict/experimentMetadata/instrument reader";
-      return this.instrumentListController = new PickListSelectController({
+      this.instrumentListController = new PickListSelectController({
         el: this.$('.bv_instrumentReader'),
         collection: this.instrumentList,
         insertFirstOption: new PickList({
@@ -914,6 +914,7 @@
         }),
         selectedCode: this.model.get('instrumentReader')
       });
+      return console.log(this.instrumentListController);
     };
 
     PrimaryScreenAnalysisParametersController.prototype.setupSignalDirectionSelect = function() {
@@ -961,14 +962,11 @@
     PrimaryScreenAnalysisParametersController.prototype.setupNormalizationSelect = function() {
       this.normalizationList = new PickListList();
       this.normalizationList.url = "/api/dataDict/experimentMetadata/normalization";
-      return this.normalizationListController = new PickListSelectController({
+      return this.normalizationListController = new EditablePickListSelectController({
         el: this.$('.bv_normalizationRule'),
         collection: this.normalizationList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Rule"
-        }),
-        selectedCode: this.model.get('normalizationRule')
+        selectedCode: this.model.get('normalizationRule'),
+        parameter: "normalization"
       });
     };
 

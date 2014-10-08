@@ -1,0 +1,58 @@
+<script type="text/template" id="EditablePickListView" xmlns="http://www.w3.org/1999/html">
+    <select class="bv_parameterSelectList" style="width:349px;"></select>
+    <span class="bv_tooltipwrapper" style="display: inline-block;" data-toggle="tooltip" data-original-title="You do not have permission to add options to the select list.">
+    <!--<button type="button" class="btn" style="background-color:white; padding:4px;">-->
+        <!--<span class="icon icon-plus"></span>-->
+    <!--</button>-->
+    <button class="btn bv_addOptionBtn" data-toggle="modal" data-target="#addParameterOptionModal" data-backdrop="static">Add</button>
+    <!--<button class="btn bv_addOptionBtn">Add</button>-->
+    </span>
+        <div class="modal fade" id="addParameterOptionModal" tabindex="-1" role="dialog" aria-labelledby="addOptionLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                        <h4 class="modal-title" id="addOptionLabel">Add</h4>
+                    </div>
+                    <div class="modal-body" style="padding-left:0px;">
+                        <div class="form-horizontal">
+                            <div class="control-group bv_group_newOption">
+                                <label class="control-label bv_parameter">Parameter</label>
+                                <div class="controls">
+                                    <input class="bv_newOptionLabel" style="width:325px;" type="text" placeholder="Label text" />
+                                </div>
+                            </div>
+                            <div class="control-group bv_group_newOptionDescription">
+                                <label class="control-label">Description</label>
+                                <div class="controls">
+                                    <input class="bv_newOptionDescription" style="width:325px;" type="text" placeholder="Enter description here." />
+                                </div>
+                            </div>
+                            <div class="control-group bv_group_newOptionComments">
+                                <label class="control-label">Comments</label>
+                                <div class="controls">
+                                    <input class="bv_newOptionComments" style="width:325px;" type="text" placeholder="Enter comments here." />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <span class="bv_optionAddedMessage" style="margin-right:10px;color:#62c462;">Option added.</span>
+                        <span class="bv_errorMessage" style="margin-right:10px;color:#FF0000;">Can not add option. Option already exists.</span>
+                        <button type="button" class="btn-danger" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn bv_addNewParameterOption">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <ul id="contextMenu" class="dropdown-menu" role="menu" style="display:none" >
+        <li><a tabindex="-1" href="#">Edit</a></li>
+        <li><a tabindex="-1" href="#">Another action</a></li>
+        <li><a tabindex="-1" href="#">Something else here</a></li>
+        <li class="divider"></li>
+        <li><a tabindex="-1" href="#">Separated link</a></li>
+    </ul>
+
+
+
+</script>

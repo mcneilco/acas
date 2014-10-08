@@ -1,3 +1,40 @@
+class window.PrimaryScreenProtocolParameters extends Backbone.Model
+	getPrimaryScreenProtocolParameterCodeValue: (parameterName) ->
+		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", parameterName
+		if parameter.get('codeValue') is undefined or parameter.get('codeValue') is ""
+			parameter.set codeValue: "unassigned"
+		if parameter.get('codeOrigin') is undefined or parameter.get('codeOrigin') is ""
+			parameter.set codeOrigin: "acas ddict"
+
+		parameter
+
+
+class window.ParametersController extends Backbone.View
+	events:
+		"change .bv_assayActivity":"handleAttributeChanged"
+
+	initialize: ->
+		@setupAssayActivitySelect()
+
+	render: =>
+		@setupAssayActivitySelect()
+
+	setupAssayActivitySelect: ->
+		console.log "setting up assay activity select"
+		@assayActivityList = new PickListList()
+		@assayActivityList.url = "/api/dataDict/protocolMetadata/assay activity"
+		@assayActivityListController = new EditablePickListSelectController
+			el: @$('.bv_assayActivity')
+			collection: @assayActivityList
+#			insertFirstOption: new PickList
+#				code: "unassigned"
+#				name: "Select Assay Activity"
+			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')
+			parameter: "assayActivity"
+		@assayActivityListController.render()
+		console.log @assayActivityListController
+
+
 class window.PrimaryScreenProtocol extends Protocol
 
 	defaults: ->
@@ -501,7 +538,13 @@ class window.AbstractPrimaryScreenProtocolController extends Backbone.View
 		@analysisController.render()
 		@modelFitController.render()
 		@setupPrimaryScreenProtocolParametersController()
-		@setupAssayActivityController()
+		@parametersController = new ParametersController
+			model: @model
+			el: @$('.bv_primaryScreenProtocolAutofillSection')
+		@parametersController.render()
+		console.log "look here!!"
+		console.log @model
+#		@setupAssayActivityController()
 		@setupMolecularTargetController()
 		@setupTargetOriginController()
 		@setupAssayTypeController()
@@ -525,7 +568,7 @@ class window.AbstractPrimaryScreenProtocolController extends Backbone.View
 	setupPrimaryScreenProtocolParametersController: ->
 		@primaryScreenProtocolParametersController= new PrimaryScreenProtocolParametersController
 			model: @model
-			el: @$('.bv_autofillSection')
+			el: @$('.bv_primaryScreenProtocolAutofillSection')
 		@primaryScreenProtocolParametersController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@primaryScreenProtocolParametersController.on 'amClean', =>

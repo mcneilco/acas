@@ -570,6 +570,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				code: "unassigned"
 				name: "Select Instrument"
 			selectedCode: @model.get('instrumentReader')
+		console.log @instrumentListController
 
 	setupSignalDirectionSelect: ->
 		@signalDirectionList = new PickListList()
@@ -607,13 +608,18 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
 		@normalizationList.url = "/api/dataDict/experimentMetadata/normalization"
-		@normalizationListController = new PickListSelectController
+		@normalizationListController = new EditablePickListSelectController
 			el: @$('.bv_normalizationRule')
 			collection: @normalizationList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Rule"
+#			insertFirstOption: new PickList
+#				code: "unassigned"
+#				name: "Select Rule"
 			selectedCode: @model.get('normalizationRule')
+			parameter: "normalization"
+#		@normalizationListController.render()
+#		@editableController = new EditablePickListSelectController
+#			el: @$('.bv_AO')
+#			collection: @normalizationList
 
 	setupReadListController: ->
 		@readListController= new PrimaryAnalysisReadListController

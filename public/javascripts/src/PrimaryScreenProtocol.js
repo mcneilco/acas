@@ -3,6 +3,71 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
+  window.PrimaryScreenProtocolParameters = (function(_super) {
+    __extends(PrimaryScreenProtocolParameters, _super);
+
+    function PrimaryScreenProtocolParameters() {
+      return PrimaryScreenProtocolParameters.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryScreenProtocolParameters.prototype.getPrimaryScreenProtocolParameterCodeValue = function(parameterName) {
+      var parameter;
+      parameter = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "screening assay", "codeValue", parameterName);
+      if (parameter.get('codeValue') === void 0 || parameter.get('codeValue') === "") {
+        parameter.set({
+          codeValue: "unassigned"
+        });
+      }
+      if (parameter.get('codeOrigin') === void 0 || parameter.get('codeOrigin') === "") {
+        parameter.set({
+          codeOrigin: "acas ddict"
+        });
+      }
+      return parameter;
+    };
+
+    return PrimaryScreenProtocolParameters;
+
+  })(Backbone.Model);
+
+  window.ParametersController = (function(_super) {
+    __extends(ParametersController, _super);
+
+    function ParametersController() {
+      this.render = __bind(this.render, this);
+      return ParametersController.__super__.constructor.apply(this, arguments);
+    }
+
+    ParametersController.prototype.events = {
+      "change .bv_assayActivity": "handleAttributeChanged"
+    };
+
+    ParametersController.prototype.initialize = function() {
+      return this.setupAssayActivitySelect();
+    };
+
+    ParametersController.prototype.render = function() {
+      return this.setupAssayActivitySelect();
+    };
+
+    ParametersController.prototype.setupAssayActivitySelect = function() {
+      console.log("setting up assay activity select");
+      this.assayActivityList = new PickListList();
+      this.assayActivityList.url = "/api/dataDict/protocolMetadata/assay activity";
+      this.assayActivityListController = new EditablePickListSelectController({
+        el: this.$('.bv_assayActivity'),
+        collection: this.assayActivityList,
+        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue'),
+        parameter: "assayActivity"
+      });
+      this.assayActivityListController.render();
+      return console.log(this.assayActivityListController);
+    };
+
+    return ParametersController;
+
+  })(Backbone.View);
+
   window.PrimaryScreenProtocol = (function(_super) {
     __extends(PrimaryScreenProtocol, _super);
 
@@ -740,7 +805,13 @@
       this.analysisController.render();
       this.modelFitController.render();
       this.setupPrimaryScreenProtocolParametersController();
-      this.setupAssayActivityController();
+      this.parametersController = new ParametersController({
+        model: this.model,
+        el: this.$('.bv_primaryScreenProtocolAutofillSection')
+      });
+      this.parametersController.render();
+      console.log("look here!!");
+      console.log(this.model);
       this.setupMolecularTargetController();
       this.setupTargetOriginController();
       this.setupAssayTypeController();
@@ -774,7 +845,7 @@
     AbstractPrimaryScreenProtocolController.prototype.setupPrimaryScreenProtocolParametersController = function() {
       this.primaryScreenProtocolParametersController = new PrimaryScreenProtocolParametersController({
         model: this.model,
-        el: this.$('.bv_autofillSection')
+        el: this.$('.bv_primaryScreenProtocolAutofillSection')
       });
       this.primaryScreenProtocolParametersController.on('amDirty', (function(_this) {
         return function() {

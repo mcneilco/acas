@@ -41,7 +41,7 @@
         });
       });
     });
-    return describe("PickList controller", function() {
+    describe("PickList controller", function() {
       beforeEach(function() {
         return runs(function() {
           this.pickListList = new PickListList();
@@ -152,6 +152,53 @@
           return it("should set selected", function() {
             return runs(function() {
               return expect($(this.pickListController.el).val()).toEqual("not_set");
+            });
+          });
+        });
+      });
+    });
+    return describe("EditablePickList controller", function() {
+      beforeEach(function() {
+        return runs(function() {
+          this.editablePickListList = new PickListList();
+          return this.editablePickListList.url = "/api/projects";
+        });
+      });
+      return describe("when displayed", function() {
+        return describe("when displayed with default options", function() {
+          beforeEach(function() {
+            runs(function() {
+              return this.editablepickListController = new EditablePickListSelectController({
+                el: this.selectFixture,
+                collection: this.editablePickListList,
+                selectedCode: "unassigned",
+                parameter: "projects"
+              });
+            });
+            return waitsFor(function() {
+              return this.editablePickListList.length > 0;
+            });
+          });
+          it(" should have three choices", function() {
+            return runs(function() {
+              return expect(this.editablepickListController.$("option").length).toEqual(3);
+            });
+          });
+          it("should return selected model", function() {
+            return runs(function() {
+              var mdl;
+              this.editablepickListController.$("option")[1].selected = true;
+              mdl = this.editablepickListController.getSelectedModel();
+              expect(mdl.get("code")).toEqual("project2");
+              this.editablepickListController.$("option")[2].selected = true;
+              mdl = this.editablepickListController.getSelectedModel();
+              return expect(mdl.get("code")).toEqual("project3");
+            });
+          });
+          return it("should return selected code", function() {
+            return runs(function() {
+              this.editablepickListController.$("option")[1].selected = true;
+              return expect(this.editablepickListController.getSelectedCode()).toEqual("project2");
             });
           });
         });
