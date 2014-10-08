@@ -1803,11 +1803,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   ## RED SECTION - Client Specific
   #calculations
-  for (trans in 1:length(parameters$transformationRuleList)) {
-    transformation <- parameters$transformationRuleList[[trans]]$transformationRule
-    if(transformation != "null") {
-      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(resultTable, transformation)]
+  if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
+    for (trans in 1:length(parameters$transformationRuleList)) {
+      transformation <- parameters$transformationRuleList[[trans]]$transformationRule
+      if(transformation != "null") {
+        resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(resultTable, transformation)]
+      }
     }
+  } else {
+    resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformationRule)
   }
   
   # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
@@ -1839,6 +1843,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else if (normalization=="row order") {
     resultTable[,plateRow:=gsub("\\d", "",well)]
     resultTable[,normalized:=computeNormalized(transformed,wellType,flag), by= list(barcode,plateRow)]
+  } else if (normalization == "plate order only") {
+  
+  } else if (normalization == "plate order and row") {
+  
+  } else if (normalization == "plate order and tip") {
+  
   } else {
     resultTable$normalized <- resultTable$transformed
   }

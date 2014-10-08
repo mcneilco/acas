@@ -1,5 +1,4 @@
-# If matchNames is false, overwrites (with warning) existing dataTitles
-# If matchNames is true, scans through data titles for what we want
+
 
 adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFilePath) {
   
@@ -13,5 +12,10 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
   
   inputDataTable <- removeColumns(colNamesToCheck, colNamesToKeep, inputDataTable, tempFilePath)
   inputDataTable <- addMissingColumns(colNamesToKeep, inputDataTable, tempFilePath)
+  
+  # copy the read column that we want to do transformation/normalization on (user input)
+  activityColName <- inputColumnTable$newActivityColName[inputColumnTable$activityCol]
+  inputDataTable$activity <- inputDataTable[ , get(activityColName)]
+  
   return(inputDataTable)
 }

@@ -1,3 +1,5 @@
+# If matchNames is false, overwrites (with warning) existing dataTitles
+# If matchNames is true, scans through data titles for what we want
 # Sets the activity and column names to the user input. 
 # Sets column names included in input parameters to the format of Rn {acivity}
 # Inputs: readsTable (data.table with columns readOrder, readNames, activity)
@@ -11,12 +13,18 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
   
   userInput <- copy(readsTable)
   setnames(userInput, c("readOrder", "readNames"), c("userReadOrder", "userReadName"))
-  userInput$activityCol <- NULL
+  #userInput$activityCol <- NULL
   userInput$activityColName <- "None"
   userInput$newActivityColName <- "None"
   
   noMatch <- list()
   overWrite <- list()
+  
+  if(nrow(readsTable[readsTable$activityCol]) > 1) {
+    stopUser("More than one read column chosen as the activity column.")
+  } else if (nrow(readsTable[readsTable$activityCol]) < 1) {
+    stopUser("At least one read column needs to be chosen as the activity column.")
+  }
   
   if(length(activityColNames) < nrow(userInput)) {
     stopUser("More fields are defined in read input than are available from data file.")
