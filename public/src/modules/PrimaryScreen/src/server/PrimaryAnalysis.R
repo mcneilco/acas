@@ -239,6 +239,14 @@ computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
   if (transformation == "(maximum-minimum)/minimum") {
     return( (mainData$Maximum-mainData$Minimum)/mainData$Minimum )
+  } else if (transformation == "% efficacy") {
+    meanPosControl <- mean(as.numeric(mainData$"R1 {none}"[mainData$wellType == "PC"]))
+    meanVehControl <- mean(as.numeric(mainData$"R1 {none}"[mainData$wellType == "NC"]))
+    return((1-(as.numeric(mainData$"R1 {none}") - meanPosControl)/(meanVehControl-meanPosControl)) * 100)
+  } else if (transformation == "sd") {
+    meanVehControl <- mean(as.numeric(mainData$"R1 {none}"[mainData$wellType == "NC"]))
+    stdevVehControl <- sd(as.numeric(mainData$"R1 {none}"[mainData$wellType == "NC"]))
+    return((as.numeric(mainData$"R1 {none}") - meanVehControl)/(stdevVehControl))
   } else {
     return ( list() )
   }	
@@ -1778,8 +1786,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
     resultTable <- cbind(resultTable,batchNamesAndConcentrations)
-    
-    normalization <- parameters$normalizationRule
   }
   
   resultTable$wellType <- getWellTypes(batchNames=resultTable$batchName, concentrations=resultTable$concentration, 
@@ -1795,8 +1801,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded and your negative control is defined correctly.")
   }
   
+  ## RED SECTION - Client Specific
   #calculations
-  resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformationRule)
+  for (trans in 1:length(parameters$transformationRuleList)) {
+    transformation <- parameters$transformationRuleList[[trans]]$transformationRule
+    if(transformation != "null") {
+      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(resultTable, transformation)]
+    }
+  }
   
   # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
   flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
@@ -1821,7 +1833,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   # normalization
-  
+  normalization <- parameters$normalizationRule
   if (normalization=="plate order") {
     resultTable[,normalized:=computeNormalized(transformed,wellType,flag), by= barcode]
   } else if (normalization=="row order") {
