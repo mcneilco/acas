@@ -1,6 +1,12 @@
 
 
 adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFilePath) {
+  # inputColumnTable: 
+  #   userReadOrder: numbers
+  #   userReadName: character
+  #   activityColName: character
+  #   newActivityColName: character
+  #   activityCol: boolean
   
   # For log file
   write.table(paste0(Sys.time(), "\tbegin adjustColumnsToUserInput"), file = file.path(tempFilePath, "runlog.tab"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)

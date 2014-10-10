@@ -45,39 +45,8 @@
 # user  system elapsed 
 # 7.904   0.250  45.444 
 
-getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
-  # Matches result rows up with batch names and concentrations
-  #
-  # Args:
-  #   barcode:        A vector of the barcodes
-  #   well:           A vector of the wells
-  #   wellTabe:       A data.frame with columns of BARCODE, WELL_NAME, BATCH_CODE,CONCENTRATION,CONCENTRATION_UNIT
-  # Returns:
-  #   A data.frame with batchName,concentration, and concUnit that matches the order of the input barcodes and wells
-  
-  wellUniqueId <- paste(barcode, well)
-  wellTableUniqueId <- paste(wellTable$BARCODE, wellTable$WELL_NAME)
-  outputFrame <- wellTable[match(wellUniqueId,wellTableUniqueId),c("BATCH_CODE","CONCENTRATION","CONCENTRATION_UNIT", "hasAgonist")]
-  names(outputFrame) <- c("batchName","concentration","concUnit", "hasAgonist")
-  return(outputFrame)
-}
-getAgonist <- function(agonist, wellTable) {
-  # TODO: does not deal with multiple compounds in one well
-  if((length(agonist) > 0) && !(agonist$batchCode %in% wellTable$BATCH_CODE)) {
-    stopUser("The agonist was not found in the plates. Have all transfers been loaded?")
-  }
-  
-  agonistRows <- wellTable$BATCH_CODE == agonist$batchCode & 
-    wellTable$CONCENTRATION <= agonist$concentration & wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
-  agonistTable <- wellTable[agonistRows, c("BARCODE", "WELL_NAME")]
-  agonistLocations <- paste(agonistTable$BARCODE, agonistTable$WELL_NAME, sep=":")
-  wellTable$tableAndWell <- paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":")
-  wellTable$hasAgonist <- wellTable$tableAndWell %in% agonistLocations
-  
-  wellTable <- wellTable[!agonistRows, ]
-  
-  return(wellTable)
-}
+
+
 getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
   # Reads the flagged wells from an input csv or Excel file
   # Input: flaggedWells, the name of a file in privateUploads that contains well-flagging information
@@ -147,19 +116,7 @@ getUserHits <- function(analysisGroupData, flaggedWells, resultTable, replicateT
   
   return(list(analysisGroupData = analysisGroupData, flagData = summaryFlagData))
 }
-removeVehicle <- function(vehicle, wellTable) {
-  #Removes rows with a vehicle that are part of another well
-  # If the vehicle is the only compound in a well, it is kept
-  library(plyr)
-  
-  vehicleRows <- wellTable$BATCH_CODE == vehicle$batchCode
-  #wellTable$CONCENTRATION <= agonist$concentration & wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
-  compoundCount <- ddply(wellTable, "WELL_ID", summarise, count = length(BATCH_CODE))
-  hasMoreThanOneCompound <- compoundCount$WELL_ID[compoundCount$count > 1]
-  vehicleIds <- wellTable$ID[vehicleRows & wellTable$WELL_ID %in% hasMoreThanOneCompound]
-  wellTable <- wellTable[!(wellTable$ID %in% vehicleIds), ]
-  return(wellTable)
-}
+
 removeControls <- function(validatedFlagData) {
   # Remove all rows that are not labeled "test", and adds warnings if you try to flag a non-test well
   #
@@ -179,7 +136,7 @@ removeControls <- function(validatedFlagData) {
   
   return(testOnly)
 }
-getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgonist, positiveControl, negativeControl, testMode=F) {
+getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgonist, positiveControl, negativeControl, vehicleControl, testMode=F) {
   # Takes vectors of batchNames, concentrations, and concunits 
   # and compares to named lists of the same for positive and negative controls
   # TODO: get client to send "infinite" as text for the negative control
@@ -196,6 +153,10 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
   posBatchFilter <- batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration
   negBatchFilter <- batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration
   
+  if(vehicleControl$batchCode != "null") {
+    wellTypes[batchNames==vehicleControl$batchCode] <- "VC"
+  }
+    
   if(!is.null(concentrationUnits)) {
     posBatchFilter <- posBatchFilter & concentrations==positiveControl$concentration
     negBatchFilter <- negBatchFilter & concentrations==negativeControl$concentration
@@ -235,18 +196,31 @@ getAnalysisGroupColumns <- function(replicateType) {
 })
 return(requiredColumns)
 }
+
 computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
   if (transformation == "(maximum-minimum)/minimum") {
     return( (mainData$Maximum-mainData$Minimum)/mainData$Minimum )
   } else if (transformation == "% efficacy") {
-    meanPosControl <- mean(as.numeric(mainData$"R1 {none}"[mainData$wellType == "PC"]))
-    meanVehControl <- mean(as.numeric(mainData$"R1 {none}"[mainData$wellType == "NC"]))
-    return((1-(as.numeric(mainData$"R1 {none}") - meanPosControl)/(meanVehControl-meanPosControl)) * 100)
+    meanPosControl <- mean(as.numeric(mainData$activity[mainData$wellType == "PC"]))
+    if(length(resultTable$activity[resultTable$wellType == "VC"]) == 0) {
+      meanVehControl <- mean(as.numeric(mainData$activity[mainData$wellType == "NC"]))
+    } else {
+      meanVehControl <- mean(as.numeric(mainData$activity[mainData$wellType == "VC"]))
+    }
+    return((1-(as.numeric(mainData$activity) - meanPosControl)/(meanVehControl-meanPosControl)) * 100)
   } else if (transformation == "sd") {
-    meanVehControl <- mean(as.numeric(mainData$"R1 {none}"[mainData$wellType == "NC"]))
-    stdevVehControl <- sd(as.numeric(mainData$"R1 {none}"[mainData$wellType == "NC"]))
-    return((as.numeric(mainData$"R1 {none}") - meanVehControl)/(stdevVehControl))
+    if(length(resultTable$activity[resultTable$wellType == "VC"]) == 0) {
+      meanVehControl <- mean(as.numeric(mainData$activity[mainData$wellType == "NC"]))
+    } else {
+      meanVehControl <- mean(as.numeric(mainData$activity[mainData$wellType == "VC"]))
+    }
+    if(length(resultTable$activity[resultTable$wellType == "VC"]) == 0) {
+      stdevVehControl <- sd(as.numeric(mainData$activity[mainData$wellType == "NC"]))
+    } else {
+      stdevVehControl <- sd(as.numeric(mainData$activity[mainData$wellType == "VC"]))
+    }
+    return((as.numeric(mainData$activity) - meanVehControl)/(stdevVehControl))
   } else {
     return ( list() )
   }	
@@ -309,44 +283,7 @@ computeSDScore <- function(dataVector, meanValue, sdValue) {
   
   return ((dataVector - meanValue)/sdValue)
 }
-createWellTable <- function(barcodeList, testMode) {
-  # Creates a table of wells and corporate batch id's
-  #
-  # Args:
-  #   barcodeList:    A list of plate barcodes used in the experiment
-  #   testMode:       A boolean of the testMode
-  # Returns:
-  #   A table of wells and corporate batch id's
-  
-  barcodeQuery <- paste(barcodeList,collapse="','")
-  
-  if (testMode) {
-    wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsConfirmation.csv")
-    #wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContents.csv")
-    #     fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
-    #     fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
-    #     fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
-    #     fakeAPI$BARCODE <- gsub("BF00007390","TL00098003",fakeAPI$BARCODE)
-    #     fakeAPI$BARCODE <- gsub("BF00007395","TL00098004",fakeAPI$BARCODE)
-    #     wellTable <- fakeAPI[fakeAPI$BARCODE %in% barcodeList, ]
-    #     wellTable$BATCH_CODE <- gsub("CRA-024169-1", "CRA-000399-1", wellTable$BATCH_CODE)
-    #     wellTable$BATCH_CODE <- gsub("CRA-024184-1", "CRA-000396-1", wellTable$BATCH_CODE)
-    #     wellTable$BATCH_CODE <- gsub("CRA-024074-1", "CRA-000399-1", wellTable$BATCH_CODE)
-    #     wellTable$BATCH_CODE <- gsub("CRA-024087-1", "CRA-000396-1", wellTable$BATCH_CODE)
-    #     # different test, remove after nextval deploy
-    #     load("public/src/modules/PrimaryScreen/spec/wellTable.Rda")
-    #     wellTable <- wellTable[!(wellTable$BATCH_CODE=="FL0073897-1-1" & (wellTable$CONCENTRATION < 0.2 | wellTable$CONCENTRATION>49.6)), ]
-  } else {
-    wellTable <- query(paste0(
-      "SELECT *
-    FROM api_container_contents
-    WHERE barcode IN ('", barcodeQuery, "')"))
-  }
-  
-  wellTable$CONCENTRATION[wellTable$CONCENTRATION_STRING == "infinite"] <- Inf
-  
-  return(wellTable)
-}
+
 
 createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, threshold, experiment, dryRun=F) {
   require('gplots')
@@ -1658,6 +1595,33 @@ getReadOrderTable <- function(readList) {
   return(readsTable)
 }
 
+flagCheck <- function(resultTable) {
+  # Error handling -- what if there are no unflagged PC's or NC's? 
+  if (!any(is.na(resultTable$flag))) { 
+    stopUser("All data points appear to have been flagged, so the data cannot be analyzed")
+  }
+  if (!any(resultTable$wellType == "NC" & is.na(resultTable$flag))) {
+    stopUser("All negative controls appear to have been flagged, so the data cannot be normalized.")
+  }
+  if (!any(resultTable$wellType == "PC" & is.na(resultTable$flag))) {
+    stopUser("All positive controls appear to have been flagged, so the data cannot be normalized.")
+  }
+  if (!any(resultTable$wellType == "test" & is.na(resultTable$flag))) {
+    stopUser("All of the test wells appear to have been flagged, so there is no data to analyze.")
+  } else if (length(which(resultTable$wellType == "test" & is.na(resultTable$flag))) == 1) {
+    stopUser("Only one of the test wells is unflagged, so there is not enough data to analyze.")
+  }
+}
+
+controlCheck <- function(resultTable) {
+  if (!any(resultTable$wellType == "PC")) {
+    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded and your postive control is defined correctly.")
+  }
+  
+  if (!any(resultTable$wellType == "NC")) {
+    stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded and your negative control is defined correctly.")
+  }
+}
 
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
@@ -1694,15 +1658,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   ## TODO: test structure for integration 2014-10-06 kcarr
   parameters <- parameters$primaryScreenAnalysisParameters
-  parameters$primaryAnalysisReadList[[2]] <- NULL
-  parameters$primaryAnalysisReadList[[2]] <- NULL
-  parameters$primaryAnalysisReadList[[1]]$readPosition <- 1
-  parameters$primaryAnalysisReadList[[1]]$readName <- "none"
-  parameters$primaryAnalysisReadList[[1]]$activity <- TRUE
-  parameters$positiveControl$batchCode <- "DNS001315929"
-  parameters$positiveControl$concentration <- 0.5 
-  parameters$negativeControl$batchCode <- "DNS000000001"
-  parameters$negativeControl$concentration <- 0
   ## END test structure
     
   # TODO: store this in protocol
@@ -1739,78 +1694,23 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   
   # RED (client-specific)
-  if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
-    # creates the output_well_data.srf
-    fileList <- list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE)
-    lapply(fileList, source)
-    
-    compoundAssignments <- getCompoundAssignments(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse),
-                                                  plateData=instrumentData$plateAssociationDT,
-                                                  testMode=TRUE,
-                                                  tempFilePath=tempdir(),
-                                                  assayData=instrumentData$assayData)
-    
-    resultTable <- compoundAssignments$allAssayCompoundData[ , c("wellReference",
-                                                                 "assayBarcode",
-                                                                 "cmpdConc",
-                                                                 "corp_name",
-                                                                 "batch_number", 
-                                                                 compoundAssignments$activityColNames), with=FALSE]
-    
-    resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
-    resultTable <- resultTable[batchCode != "NA::NA"]
-    resultTable$batch_number <- NULL  
-    setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
-    
-  } else {
-    resultTable <- instrumentData
-    
-    barcodeList <- levels(resultTable$barcode)
-    
-    wellTable <- createWellTable(barcodeList, testMode)
-    
-    # apply dilution
-    if (!is.null(parameters$dilutionRatio)) {
-      wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
-    }
-    
-    wellTable <- getAgonist(parameters$agonistControl, wellTable)
-    
-    wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
-    
-    if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
-      stopUser(paste0("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
-                      paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
-                      "'. Please contact your system administrator."))
-    }
-    
-    batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
-    resultTable <- cbind(resultTable,batchNamesAndConcentrations)
-  }
+  # getCompoundAssignments
+  
+  source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/",clientName,"getCompoundAssignments.R"))
+  
+  resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters)
   
   resultTable$wellType <- getWellTypes(batchNames=resultTable$batchName, concentrations=resultTable$concentration, 
                                        concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
                                        positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
-                                       testMode=testMode)
+                                       vehicleControl=parameters$vehicleControl, testMode=testMode)
   
-  if (!any(resultTable$wellType == "PC")) {
-    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded and your postive control is defined correctly.")
-  }
+  controlCheck(resultTable)
   
-  if (!any(resultTable$wellType == "NC")) {
-    stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded and your negative control is defined correctly.")
-  }
   
   ## RED SECTION - Client Specific
   #calculations
-  if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
-    for (trans in 1:length(parameters$transformationRuleList)) {
-      transformation <- parameters$transformationRuleList[[trans]]$transformationRule
-      if(transformation != "null") {
-        resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(resultTable, transformation)]
-      }
-    }
-  } else {
+  if(instrumentReadParams$dataFormat == "stat1stat2seq1") {
     resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformationRule)
   }
   
@@ -1820,21 +1720,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # In order to merge with a data.table, the columns have to have the same name
   resultTable <- merge(resultTable, flagData, by = c("barcode", "well"), all.x = TRUE, all.y = FALSE)
   
-  # Error handling -- what if there are no unflagged PC's or NC's? 
-  if (!any(is.na(resultTable$flag))) { 
-    stopUser("All data points appear to have been flagged, so the data cannot be analyzed")
-  }
-  if (!any(resultTable$wellType == "NC" & is.na(resultTable$flag))) {
-    stopUser("All negative controls appear to have been flagged, so the data cannot be normalized.")
-  }
-  if (!any(resultTable$wellType == "PC" & is.na(resultTable$flag))) {
-    stopUser("All positive controls appear to have been flagged, so the data cannot be normalized.")
-  }
-  if (!any(resultTable$wellType == "test" & is.na(resultTable$flag))) {
-    stopUser("All of the test wells appear to have been flagged, so there is no data to analyze.")
-  } else if (length(which(resultTable$wellType == "test" & is.na(resultTable$flag))) == 1) {
-    stopUser("Only one of the test wells is unflagged, so there is not enough data to analyze.")
-  }
+  flagCheck(resultTable)
   
   # normalization
   normalization <- parameters$normalizationRule
@@ -1844,13 +1730,22 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     resultTable[,plateRow:=gsub("\\d", "",well)]
     resultTable[,normalized:=computeNormalized(transformed,wellType,flag), by= list(barcode,plateRow)]
   } else if (normalization == "plate order only") {
-  
+    
   } else if (normalization == "plate order and row") {
   
   } else if (normalization == "plate order and tip") {
   
   } else {
     resultTable$normalized <- resultTable$transformed
+  }
+  
+  if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
+    for (trans in 1:length(parameters$transformationRuleList)) {
+      transformation <- parameters$transformationRuleList[[trans]]$transformationRule
+      if(transformation != "null") {
+        resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(resultTable, transformation)]
+      }
+    }
   }
   
   if(!useRdap) {
