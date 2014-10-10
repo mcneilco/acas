@@ -3,7 +3,7 @@ context("Testing the function that correlates the user input read order and name
 test_that("formatUserInputActivityColumns functionality", {
   originalWD <- Sys.getenv("ACAS_HOME")
   fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
-                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE))
+                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS"), full.names=TRUE))
   lapply(fileList, source)
   
   testReadOrder <- list(1, 2, 3)

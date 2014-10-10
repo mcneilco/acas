@@ -3,7 +3,7 @@ context("Testing the function importing the assay data")
 test_that("getAssayData fuctionality", {
   originalWD <- Sys.getenv("ACAS_HOME")
   fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
-                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE))
+                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS"), full.names=TRUE))
   lapply(fileList, source)
   
   tempFilePath <- tempdir()

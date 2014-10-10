@@ -7,7 +7,7 @@ test_that("adjustColumnsToUserInput functionality", {
   
   originalWD <- Sys.getenv("ACAS_HOME")
   fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
-                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/"), full.names=TRUE))
+                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS"), full.names=TRUE))
   lapply(fileList, source)
   
   testInputColumnTable <- data.table(userReadOrder=c(1,2,3), userReadName=c("Alpha", "Beta", "Delta"), activityColName=c("Alpha","Beta","None"), newActivityColName=c("R1 {Alpha}", "R2 {Beta}", "R3 {Delta}"), activityCol=c(TRUE,FALSE,FALSE))
