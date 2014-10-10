@@ -197,34 +197,7 @@ getAnalysisGroupColumns <- function(replicateType) {
 return(requiredColumns)
 }
 
-computeTransformedResults <- function(mainData, transformation) {
-  #TODO switch on transformation
-  if (transformation == "(maximum-minimum)/minimum") {
-    return( (mainData$Maximum-mainData$Minimum)/mainData$Minimum )
-  } else if (transformation == "% efficacy") {
-    meanPosControl <- mean(as.numeric(mainData$activity[mainData$wellType == "PC"]))
-    if(length(resultTable$activity[resultTable$wellType == "VC"]) == 0) {
-      meanVehControl <- mean(as.numeric(mainData$activity[mainData$wellType == "NC"]))
-    } else {
-      meanVehControl <- mean(as.numeric(mainData$activity[mainData$wellType == "VC"]))
-    }
-    return((1-(as.numeric(mainData$activity) - meanPosControl)/(meanVehControl-meanPosControl)) * 100)
-  } else if (transformation == "sd") {
-    if(length(resultTable$activity[resultTable$wellType == "VC"]) == 0) {
-      meanVehControl <- mean(as.numeric(mainData$activity[mainData$wellType == "NC"]))
-    } else {
-      meanVehControl <- mean(as.numeric(mainData$activity[mainData$wellType == "VC"]))
-    }
-    if(length(resultTable$activity[resultTable$wellType == "VC"]) == 0) {
-      stdevVehControl <- sd(as.numeric(mainData$activity[mainData$wellType == "NC"]))
-    } else {
-      stdevVehControl <- sd(as.numeric(mainData$activity[mainData$wellType == "VC"]))
-    }
-    return((as.numeric(mainData$activity) - meanVehControl)/(stdevVehControl))
-  } else {
-    return ( list() )
-  }	
-}
+
 computeZPrime <- function(positiveControls, negativeControls) {
   # Computes Z'
   #
@@ -1526,31 +1499,6 @@ setAnalysisStatus <- function(status, metadataState) {
   })
   return(NULL)
 }
-computeNormalized  <- function(values, wellType, flag) {
-  # Computes normalized version of the given values based on the unflagged positive and 
-  # negative controls
-  #
-  # Args:
-  #   values:   A vector of numeric values
-  #   wellType: A vector of the same length as values which marks the type of each
-  #   flag:     A vector of the same length as values, with text if the well was flagged, and NA otherwise
-  # Returns:
-  #   A numeric vector of the same length as the inputs that is normalized.
-  
-  if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
-    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
-  }
-  if ((length((values[(wellType == 'PC' & is.na(flag))])) == 0)) {
-    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
-  }
-  
-  #find min (mean of unflagged Negative Controls)
-  minLevel <- mean(values[(wellType=='NC' & is.na(flag))])
-  #find max (mean of unflagged Positive Controls)
-  maxLevel <- mean(values[(wellType=='PC' & is.na(flag))])
-  
-  return((values - minLevel) / (maxLevel - minLevel))
-}
 
 loadInstrumentReadParameters <- function(instrumentType) {
   # This function returns the parameters for instrument types. 
@@ -1621,6 +1569,32 @@ controlCheck <- function(resultTable) {
   if (!any(resultTable$wellType == "NC")) {
     stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded and your negative control is defined correctly.")
   }
+}
+
+computeNormalized  <- function(values, wellType, flag) {
+  # Computes normalized version of the given values based on the unflagged positive and 
+  # negative controls
+  #
+  # Args:
+  #   values:   A vector of numeric values
+  #   wellType: A vector of the same length as values which marks the type of each
+  #   flag:     A vector of the same length as values, with text if the well was flagged, and NA otherwise
+  # Returns:
+  #   A numeric vector of the same length as the inputs that is normalized.
+  
+  if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
+    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
+  }
+  if ((length((values[(wellType == 'PC' & is.na(flag))])) == 0)) {
+    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
+  }
+  
+  #find min (mean of unflagged Negative Controls)
+  minLevel <- mean(values[(wellType=='NC' & is.na(flag))])
+  #find max (mean of unflagged Positive Controls)
+  maxLevel <- mean(values[(wellType=='PC' & is.na(flag))])
+  
+  return((values - minLevel) / (maxLevel - minLevel))
 }
 
 ####### Main function
@@ -1710,43 +1684,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   ## RED SECTION - Client Specific
   #calculations
-  if(instrumentReadParams$dataFormat == "stat1stat2seq1") {
-    resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformationRule)
-  }
+  fileList <- c(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/",clientName,"performCalculations.R"),
+                list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/Generic"), full.names=TRUE))
+  lapply(fileList, source)
   
-  # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
-  flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
+  resultTable <- performCalculations(resultTable, parameters, flaggedWells, flaggingStage, experiment)
+
   
-  # In order to merge with a data.table, the columns have to have the same name
-  resultTable <- merge(resultTable, flagData, by = c("barcode", "well"), all.x = TRUE, all.y = FALSE)
   
-  flagCheck(resultTable)
   
   # normalization
-  normalization <- parameters$normalizationRule
-  if (normalization=="plate order") {
-    resultTable[,normalized:=computeNormalized(transformed,wellType,flag), by= barcode]
-  } else if (normalization=="row order") {
-    resultTable[,plateRow:=gsub("\\d", "",well)]
-    resultTable[,normalized:=computeNormalized(transformed,wellType,flag), by= list(barcode,plateRow)]
-  } else if (normalization == "plate order only") {
-    
-  } else if (normalization == "plate order and row") {
-  
-  } else if (normalization == "plate order and tip") {
-  
-  } else {
-    resultTable$normalized <- resultTable$transformed
-  }
-  
-  if(instrumentReadParams$dataFormat != "stat1stat2seq1") {
-    for (trans in 1:length(parameters$transformationRuleList)) {
-      transformation <- parameters$transformationRuleList[[trans]]$transformationRule
-      if(transformation != "null") {
-        resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(resultTable, transformation)]
-      }
-    }
-  }
+
   
   if(!useRdap) {
     flaglessResults <- resultTable[is.na(flag)]

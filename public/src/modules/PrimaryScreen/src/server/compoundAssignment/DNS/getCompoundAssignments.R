@@ -1,5 +1,6 @@
 
 getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters) {
+  # DNS
   fileList <- list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS"), full.names=TRUE)
   lapply(fileList, source)
   

@@ -1,5 +1,6 @@
 
 getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters) {
+  # IFF
   resultTable <- instrumentData
   
   barcodeList <- levels(resultTable$barcode)

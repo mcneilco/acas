@@ -22,8 +22,7 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, re
   # For log file
   write.table(paste0(Sys.time(), "\tbegin executeDap\tfilePath=",filePath,"\ttestMode=",testMode), file = file.path(tempFilePath, "runlog.tab"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  plateData <- generateIniFile(filePath, tempFilePath, instrument)
-  plateAssociationDT <- plateData
+  plateAssociationDT <- generateIniFile(filePath, tempFilePath, instrument)
   
   # keep this in this part of the code so that warnings can be relayed to user before uploading data
   userInputReadTable <- formatUserInputActivityColumns(readsTable=readsTable, activityColNames=unique(plateAssociationDT$dataTitle), tempFilePath=tempFilePath, matchNames=matchNames)

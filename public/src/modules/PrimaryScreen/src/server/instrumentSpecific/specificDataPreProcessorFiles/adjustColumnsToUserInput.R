@@ -21,7 +21,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
   
   # copy the read column that we want to do transformation/normalization on (user input)
   activityColName <- inputColumnTable$newActivityColName[inputColumnTable$activityCol]
-  inputDataTable$activity <- inputDataTable[ , get(activityColName)]
+  inputDataTable$activity <- as.numeric(inputDataTable[ , get(activityColName)])
   
   return(inputDataTable)
 }
