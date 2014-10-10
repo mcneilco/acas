@@ -35,12 +35,12 @@ test_that("executeDap functionality (microBeta)", {
   readsTable <- data.table(readOrder=1, readNames="R1", activityCol=TRUE) 
   
   instrumentSpecData <- getInstrumentSpecificData(filePath=normalizePath(testFilePath, winslash = "\\", mustWork=NA), instrument="microBeta", testMode=TRUE, tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
-  getCompoundAssignments(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
+  getAssayCompoundData(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
   
   testFile <- normalizePath(file.path(tempdir(), "output_well_data.srf"))
   testTable <- read.table(testFile, sep="\t", stringsAsFactors=TRUE, header=TRUE)
   testTable <- as.data.table(testTable)
-  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","plateOrder","R1..R1.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType"))
+  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","plateOrder","R1..R1.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType","activity"))
   
   setwd(testFilePath)
   rdaTest(testTable, normalizePath("../Analysis/output_well_data.rda"))

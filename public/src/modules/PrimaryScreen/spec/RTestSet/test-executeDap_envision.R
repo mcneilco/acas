@@ -34,15 +34,17 @@ test_that("executeDap functionality (envision)", {
   
   readOrder <- list(1,2)
   readNames <- list("R1","R2")
-  readsTable <- data.table(readOrder=readOrder, readNames=readNames, activityCol=TRUE) 
+  readsTable <- data.table(readOrder=readOrder, readNames=readNames, activityCol=c(TRUE, FALSE)) 
   
   instrumentSpecData <- getInstrumentSpecificData(filePath=normalizePath(testFilePath, winslash = "\\", mustWork=NA), instrument="envision", testMode=TRUE, tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
-  getCompoundAssignments(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
+  getAssayCompoundData(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
   
   testFile <- normalizePath(file.path(tempdir(), "output_well_data.srf"))
   testTable <- read.table(testFile, sep="\t", stringsAsFactors=TRUE, header=TRUE)
   testTable <- as.data.table(testTable)
-  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","plateOrder","R1..R1.","R2..R2.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType"))
+  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","plateOrder","R1..R1.","R2..R2.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType","activity"))
+  expect_that(testTable$"R1..R1.", is_identical_to(testTable$activity))
+  
   setwd(testFilePath)
   rdaTest(testTable, normalizePath("../Analysis/output_well_data.rda"))
   setwd(originalWD)

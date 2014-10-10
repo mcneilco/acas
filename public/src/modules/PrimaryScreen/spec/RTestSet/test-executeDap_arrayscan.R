@@ -34,16 +34,17 @@ test_that("executeDap functionality (arrayScan)", {
   
   readOrder <- list(1,2,3,4,5,6,7,8) 
   readNames <- list("ValidNeuronCount","NeuriteTotalLengthPerNeuronCh2","ValidFieldCount","NeuriteTotalLengthPerNeuriteCh2","NeuriteTotalCountPerNeuronCh2","BranchPointTotalCountPerNeuronCh2","BranchPointCountPerNeuriteLengthCh2","Chamber CO2 Percent")
-  readsTable <- data.table(readOrder=readOrder, readNames=readNames, activityCol=TRUE) 
+  readsTable <- data.table(readOrder=readOrder, readNames=readNames, activityCol=c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)) 
   
   instrumentSpecData <- getInstrumentSpecificData(filePath=normalizePath(testFilePath, winslash = "\\", mustWork=NA), instrument="arrayScan", testMode=TRUE, tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
-  getCompoundAssignments(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
+  getAssayCompoundData(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
 
   testFile <- normalizePath(file.path(tempdir(), "output_well_data.srf"))
   testTable <- read.table(testFile, sep="\t", stringsAsFactors=TRUE, header=TRUE)
   testTable <- as.data.table(testTable)
   
-  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","plateOrder","R1..ValidNeuronCount.","R2..NeuriteTotalLengthPerNeuronCh2.","R3..ValidFieldCount.","R4..NeuriteTotalLengthPerNeuriteCh2.","R5..NeuriteTotalCountPerNeuronCh2.","R6..BranchPointTotalCountPerNeuronCh2.","R7..BranchPointCountPerNeuriteLengthCh2.","R8..Chamber.CO2.Percent.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType"))
+  setcolorder(testTable, c("assayBarcode","wellReference","rowName","colName","plateOrder","R1..ValidNeuronCount.","R2..NeuriteTotalLengthPerNeuronCh2.","R3..ValidFieldCount.","R4..NeuriteTotalLengthPerNeuriteCh2.","R5..NeuriteTotalCountPerNeuronCh2.","R6..BranchPointTotalCountPerNeuronCh2.","R7..BranchPointCountPerNeuriteLengthCh2.","R8..Chamber.CO2.Percent.","cmpdBarcode","plateType","corp_name","batch_number","cmpdConc","supplier","sourceType","activity"))
+  expect_that(testTable$"R1..ValidNeuronCount.", is_identical_to(testTable$activity))
   
   setwd(testFilePath)
   rdaTest(testTable, normalizePath("../Analysis/output_well_data.rda"))
