@@ -1,5 +1,5 @@
 ### Compound data operations start here
-getCompoundAssignments <- function (filePath, plateData, testMode, tempFilePath, assayData) {
+getAssayCompoundData <- function (filePath, plateData, testMode, tempFilePath, assayData) {
   originalWD <- getwd()
   setwd(filePath)
   assayCompoundDT <- getPinTransfer(plateAssociationDT=plateData, testMode=testMode, tempFilePath=tempFilePath)
