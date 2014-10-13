@@ -1,6 +1,6 @@
 
 
-specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, dryRun, instrumentClass) {
+specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, dryRun, instrumentClass, testMode) {
   fileList <- c(list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE))
   lapply(fileList, source)
   
@@ -11,7 +11,7 @@ specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, dryRu
   instrumentData <- getInstrumentSpecificData(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse), 
                                               instrument=parameters$instrumentReader, 
                                               readsTable=readsTable, 
-                                              testMode=TRUE,
+                                              testMode=testMode,
                                               errorEnv=errorEnv,
                                               tempFilePath=NULL, # this should be the analysis folder?
                                               dryRun=dryRun,

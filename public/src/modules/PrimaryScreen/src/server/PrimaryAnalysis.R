@@ -67,7 +67,7 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
   }
   
   # Remove unneeded columns
-  flagData <- data.table(barcode = validatedFlagData$barcode, well = validatedFlagData$well, flag = validatedFlagData$flag)
+  flagData <- data.table(assayBarcode = validatedFlagData$assayBarcode, well = validatedFlagData$well, flag = validatedFlagData$flag)
   
   return(flagData)
 }
@@ -189,7 +189,7 @@ getAnalysisGroupColumns <- function(replicateType) {
            requiredColumns <- c("batchName")
          },
          "within plates" = {
-           requiredColumns <- c("batchName", "barcode")
+           requiredColumns <- c("batchName", "assayBarcode")
          },
 {
   requiredColumns <- c("well")
@@ -934,7 +934,7 @@ validateWellFlagData <- function(flagData, resultTable) {
   # resultTable: A data.table containing, among other fields, a complete list of barcodes and wells
   # Returns: the input data frame, with accumulated warnings and errors, and with empty strings as NA
   
-  columnsIncluded <- c("well", "barcode", "flag") %in% names(flagData)
+  columnsIncluded <- c("well", "assayBarcode", "flag") %in% names(flagData)
   if (!all(columnsIncluded)) {
     stopUser(paste0("An important column appears to be missing from the input. ",
                     "Please ensure that the uploaded file contains columns for Well, ", 
@@ -943,16 +943,16 @@ validateWellFlagData <- function(flagData, resultTable) {
                     "as editable."))
   }
   
-  duplicateIndices <- duplicated(data.frame(flagData$barcode, flagData$well))
+  duplicateIndices <- duplicated(data.frame(flagData$assayBarcode, flagData$well))
   if (any(duplicateIndices)) {
-    duplicateTests <- unique(data.frame(flagData$barcode[duplicateIndices], flagData$well[duplicateIndices]))
+    duplicateTests <- unique(data.frame(flagData$assayBarcode[duplicateIndices], flagData$well[duplicateIndices]))
     stopUser(paste0("The same barcode and well combination was listed multiple times in the flag file. Please remove ",
                     "duplicates for ", paste(duplicateTests[[1]], duplicateTests[[2]], collapse = ", "), "."))
   }
   
-  results <- data.table(barcode = resultTable$barcode, well = resultTable$well)
-  flags <- data.table(barcode = flagData$barcode, well = flagData$well)
-  setkey(flags, barcode, well)
+  results <- data.table(assayBarcode = resultTable$assayBarcode, well = resultTable$well)
+  flags <- data.table(assayBarcode = flagData$assayBarcode, well = flagData$well)
+  setkey(flags, assayBarcode, well)
   extraTests <- flags[!results]
   if (nrow(extraTests) > 0) {
     warnUser(paste0("Some of the wells listed in the flag file were not found in the experiment ",
@@ -986,7 +986,7 @@ validateAnalysisFlagData <- function(flagData, analysisGroupData, replicateType,
   }
   # Get a list of all the columns we need to work with analysis group flags
   analysisColumns <- getAnalysisGroupColumns(replicateType)
-  requiredColumns <- c("userHit", "wellType", "hit", "well", "barcode", analysisColumns)
+  requiredColumns <- c("userHit", "wellType", "hit", "well", "assayBarcode", analysisColumns)
   
   columnsIncluded <- requiredColumns %in% names(flagData)
   
@@ -1064,8 +1064,8 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
     if(file.exists(racas::getUploadedFilePath(pathToLastUpload))) {
       # They have uploaded flag data before -- compare to that
       previousFlagData <- as.data.table(parseWellFlagFile(pathToLastUpload))
-      setkey(previousFlagData, barcode, well)
-      setkey(validatedFlagData, barcode, well)
+      setkey(previousFlagData, assayBarcode, well)
+      setkey(validatedFlagData, assayBarcode, well)
       if(any(previousFlagData$"flag" != validatedFlagData$"flag")) {
         disagreeingIndices <- which(previousFlagData$"flag" != validatedFlagData$"flag")
         disagreeingWells <- unique(validatedFlagData$"well"[disagreeingIndices])
@@ -1176,7 +1176,7 @@ parseWellFlagFile <- function(flaggedWells, resultTable) {
   
   # If we don't have a file, make all flags NA
   if(is.null(flaggedWells) || flaggedWells == "") {
-    flagData <- data.table(barcode = resultTable$barcode, 
+    flagData <- data.table(assayBarcode = resultTable$assayBarcode, 
                            well = resultTable$well, 
                            batchName = resultTable$batchName,
                            flag = c(NA_character_))
@@ -1657,7 +1657,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
   
-  instrumentData <- specificDataPreProcessor(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat)
+  instrumentData <- specificDataPreProcessor(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat, testMode=testMode)
   
   
   # RED (client-specific)
@@ -1667,7 +1667,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters)
   
-  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchName, concentrations=resultTable$concentration, 
+  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchName, concentrations=resultTable$cmpdConc, 
                                        concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
                                        positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
                                        vehicleControl=parameters$vehicleControl, testMode=testMode)
@@ -1687,29 +1687,32 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   ###### Rdap Refactor stopped here 2014-10-10
   
   # Omit the flagged results when calculating treatment group data
-  flaglessTable <- resultTable[is.na(flag)]
-  if(useRdap) {
-    batchDataTable <- data.table(values = flaglessTable$normalizedActivity, 
-                                 batchName = flaglessTable$batchName,
-                                 wellType = flaglessTable$wellType,
-                                 barcode = flaglessTable$barcode)
-  } else {
-    batchDataTable <- data.table(values = flaglessTable$normalized, 
-                                 batchName = flaglessTable$batchName,
-                                 fluorescent = flaglessTable$fluorescent,
-                                 sdScore = flaglessTable$sdScore,
-                                 wellType = flaglessTable$wellType,
-                                 barcode = flaglessTable$barcode,
-                                 maxTime = flaglessTable$maxTime,
-                                 overallMaxTime = flaglessTable$overallMaxTime,
-                                 threshold = flaglessTable$threshold,
-                                 hasAgonist = flaglessTable$hasAgonist,
-                                 latePeak = flaglessTable$latePeak,
-                                 concentration = flaglessTable$concentration,
-                                 concUnit = flaglessTable$concUnit)
-  }
+  #   flaglessTable <- resultTable[is.na(flag)]
+  #   if(useRdap) {
+  #     ## this section can likely be gotten rid of
+  #     batchDataTable <- data.table(values = flaglessTable$normalizedActivity, 
+  #                                  batchName = flaglessTable$batchName,
+  #                                  wellType = flaglessTable$wellType,
+  #                                  barcode = flaglessTable$barcode)
+  #   } else {
+  #     batchDataTable <- data.table(values = flaglessTable$normalizedActivity, 
+  #                                  batchName = flaglessTable$batchName,
+  #                                  fluorescent = flaglessTable$fluorescent,
+  #                                  sdScore = flaglessTable$tranformed_sd,
+  #                                  wellType = flaglessTable$wellType,
+  #                                  barcode = flaglessTable$barcode,
+  #                                  maxTime = flaglessTable$maxTime,
+  #                                  overallMaxTime = flaglessTable$overallMaxTime,
+  #                                  threshold = flaglessTable$threshold,
+  #                                  hasAgonist = flaglessTable$hasAgonist,
+  #                                  latePeak = flaglessTable$latePeak,
+  #                                  concentration = flaglessTable$concentration,
+  #                                  concUnit = flaglessTable$concUnit)
+  #   }
+  batchDataTable <- resultTable[is.na(flag)]
   
   if(!useRdap) {
+    ##### TODO: Sam Fix
     if (parameters$aggregateReplicates == "across plates") {
       treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
                                                   stDev = sd(values), n=length(values), 
@@ -1739,7 +1742,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                   hasAgonist = hasAgonist)]
     }
     treatmentGroupData$treatmentGroupId <- 1:nrow(treatmentGroupData)
+    ##### TODO: End Sam Fix
     
+    ## Decides what to save as analysis group or treatment group
     analysisType <- "primary"
     if (analysisType == "primary" || analysisType == "confirmation") {
       analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
@@ -1748,26 +1753,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       analysisGroupData <- treatmentGroupData
       analysisGroupData$analysisGroupId <- as.numeric(factor(analysisGroupData$batchName))
     }
+    
     # add a "userHit" column to the table
     userHitList <- getUserHits(analysisGroupData, flaggedWells, resultTable, parameters$aggregateReplicates, experiment, flaggingStage)
     analysisGroupData <- userHitList$analysisGroupData
     flagData <- userHitList$flagData
     #analysisGroupData$threshold <- analysisGroupData$sdScore > parameters$hitSDThreshold & !analysisGroupData$fluorescent & analysisGroupData$wellType=="test"
     
-    if (parameters$aggregateReplicates == "no") {
-      #     analysisGroupData$latePeak <- (analysisGroupData$overallMaxTime > 80) & 
-      #       (analysisGroupData$groupMean > efficacyThreshold) & !analysisGroupData$fluorescent
-      #     analysisGroupData$threshold <- analysisGroupData$groupMean > efficacyThreshold & !analysisGroupData$fluorescent & 
-      #       analysisGroupData$wellType=="test" & !analysisGroupData$latePeak
-    } else {
-      
-    }
-    
-    
     library(plyr)
     #if (analysisType == "primary") {
-    if (TRUE) {
+    if (TRUE) {  # racas::applicationSettings$client.blah.usespotfire
       # May need to return to using analysisGroupData eventually
+      # this output table renames
       outputTable <- ddply(resultTable, c("batchName", "hasAgonist", "barcode", "wellType"), function(idf) {
         data.frame("Flag" = idf$flag,
                    "Corporate Batch ID" = as.character(idf$batchName),

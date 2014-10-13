@@ -25,6 +25,8 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
   batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$barcode, resultTable$well, wellTable)
   resultTable <- cbind(resultTable,batchNamesAndConcentrations)
   
+  setnames(resultTable,c("barcode","concentration"),c("assayBarcode","cmpdConc"))
+  
   return(resultTable)
 }
 

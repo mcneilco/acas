@@ -4,7 +4,7 @@ performCalculations <- function(resultTable, parameters, flaggedWells, flaggingS
   flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
   
   # In order to merge with a data.table, the columns have to have the same name
-  resultTable <- merge(resultTable, flagData, by = c("barcode", "well"), all.x = TRUE, all.y = FALSE)
+  resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
   
   flagCheck(resultTable)
   
@@ -31,10 +31,10 @@ performCalculations <- function(resultTable, parameters, flaggedWells, flaggingS
 normalizeData <- function(resultTable, parameters) {
   normalization <- parameters$normalizationRule
   if (normalization == "plate order only") {
-    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= barcode]
+    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= assayBarcode]
   } else if (normalization == "plate order and row") {
     resultTable[,plateRow:=gsub("\\d", "",well)]
-    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= list(barcode,plateRow)]
+    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= list(assayBarcode,plateRow)]
   } else if (normalization == "plate order and tip") {
     stopUser("Normalization not coded for 'plate order and tip'.")
   } else {
