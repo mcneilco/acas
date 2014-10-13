@@ -89,6 +89,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/PampaTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenProtocolCodeTableTestJSON.js",
+	"/javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenProtocolTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolCodeTableTestJSON.js",

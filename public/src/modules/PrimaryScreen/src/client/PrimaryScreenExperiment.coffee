@@ -334,7 +334,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	setUpReadNameSelect: ->
 		@readNameList = new PickListList()
 		@readNameList.url = "/api/dataDict/experimentMetadata/read name"
-		@readNameList = new PickListSelectController
+		@readNameListController = new PickListSelectController
 			el: @$('.bv_readName')
 			collection: @readNameList
 			insertFirstOption: new PickList
@@ -353,7 +353,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		activity = @$('.bv_activity').is(":checked")
 		@model.set
 			readPosition: parseInt(@getTrimmedInput('.bv_readPosition'))
-			readName: @$('.bv_readName').val()
+			readName: @readNameListController.getSelectedCode()
 			activity: activity
 		@model.triggerAmDirty()
 
@@ -382,14 +382,14 @@ class window.TransformationRuleController extends AbstractFormController
 		@
 
 	updateModel: =>
-		@model.set transformationRule: @$('.bv_transformationRule').val()
+		@model.set transformationRule: @transformationListController.getSelectedCode()
 		@model.triggerAmDirty()
 
 
 	setUpTransformationRuleSelect: ->
 		@transformationList = new PickListList()
 		@transformationList.url = "/api/dataDict/experimentMetadata/transformation"
-		@transformationList = new PickListSelectController
+		@transformationListController = new PickListSelectController
 			el: @$('.bv_transformationRule')
 			collection: @transformationList
 			insertFirstOption: new PickList
@@ -547,6 +547,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	render: =>
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
+		# insert line and Upload Data and Analyze text here because primary screen protocol does not have this.
+		@$('.bv_autofillSection').after "<hr class='span12' style='margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:6px;' /><h5 style='margin-bottom:27px;'>Upload Data and Analyze</h5>"
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
 		@setupAggregateBy1Select()
@@ -608,18 +610,13 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
 		@normalizationList.url = "/api/dataDict/experimentMetadata/normalization"
-		@normalizationListController = new EditablePickListSelectController
+		@normalizationListController = new PickListSelectController
 			el: @$('.bv_normalizationRule')
 			collection: @normalizationList
-#			insertFirstOption: new PickList
-#				code: "unassigned"
-#				name: "Select Rule"
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Rule"
 			selectedCode: @model.get('normalizationRule')
-			parameter: "normalization"
-#		@normalizationListController.render()
-#		@editableController = new EditablePickListSelectController
-#			el: @$('.bv_AO')
-#			collection: @normalizationList
 
 	setupReadListController: ->
 		@readListController= new PrimaryAnalysisReadListController
@@ -637,11 +634,11 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	updateModel: =>
 		htsFormat = @$('.bv_htsFormat').is(":checked")
 		@model.set
-			instrumentReader: @$('.bv_instrumentReader').val()
-			signalDirectionRule: @$('.bv_signalDirectionRule').val()
-			aggregateBy1: @$('.bv_aggregateBy1').val()
-			aggregateBy2: @$('.bv_aggregateBy2').val()
-			normalizationRule: @$('.bv_normalizationRule').val()
+			instrumentReader: @instrumentListController.getSelectedCode()
+			signalDirectionRule: @signalDirectionListController.getSelectedCode()
+			aggregateBy1: @aggregateBy1ListController.getSelectedCode()
+			aggregateBy2: @aggregateBy2ListController.getSelectedCode()
+			normalizationRule: @normalizationListController.getSelectedCode()
 			hitEfficacyThreshold: parseFloat(@getTrimmedInput('.bv_hitEfficacyThreshold'))
 			hitSDThreshold: parseFloat(@getTrimmedInput('.bv_hitSDThreshold'))
 			assayVolume: @getTrimmedInput('.bv_assayVolume')

@@ -1,4 +1,281 @@
 ((exports) ->
+	exports.primaryScreenProtocolParameters =
+		comments: null
+		id: 2
+		ignored: false
+		lsKind: "screening assay"
+		lsTransaction: 1
+		lsType: "metadata"
+		lsTypeAndKind: "metadata_screening assay"
+		lsValues: [
+			clobValue: null
+			codeValue: "luminescence"
+			codeOrigin: "acas ddict"
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 80483
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 87
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 100.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: null
+			uncertainty: null
+			urlValue: null
+			lsKind: "assay activity"
+			valueOperator: null
+			lsType: "codeValue"
+			lsTypeAndKind: "codeValue_assay activity"
+			valueUnit: null
+			version: 0
+		,
+			clobValue: null
+			codeValue: "target x"
+			codeOrigin: "customer ddict"
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 80484
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 87
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 100.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: null
+			uncertainty: null
+			urlValue: null
+			lsKind: "molecular target"
+			valueOperator: null
+			lsType: "codeValue"
+			lsTypeAndKind: "codeValue_molecular target"
+			valueUnit: null
+			version: 0
+		,
+			clobValue: null
+			codeValue: "human"
+			codeOrigin: "acas ddict"
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 80485
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 872
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 100.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: null
+			uncertainty: null
+			urlValue: null
+			lsKind: "target origin"
+			valueOperator: null
+			lsType: "codeValue"
+			lsTypeAndKind: "codeValue_target origin"
+			valueUnit: null
+			version: 0
+		,
+			clobValue: null
+			codeValue: "cellular assay"
+			codeOrigin: "acas ddict"
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 80486
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 87
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 100.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: null
+			uncertainty: null
+			urlValue: null
+			lsKind: "assay type"
+			valueOperator: null
+			lsType: "codeValue"
+			lsTypeAndKind: "codeValue_assay type"
+			valueUnit: null
+			version: 0
+		,
+			clobValue: null
+			codeValue: "wizard triple luminescence"
+			codeOrigin: "acas ddict"
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 80487
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 87
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 100.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: null
+			uncertainty: null
+			urlValue: null
+			lsKind: "assay technology"
+			valueOperator: null
+			lsType: "codeValue"
+			lsTypeAndKind: "codeValue_assay technology"
+			valueUnit: null
+			version: 0
+		,
+			clobValue: null
+			codeValue: "cell line y"
+			codeOrigin: "acas ddict"
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 80488
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 872
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 100.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: null
+			uncertainty: null
+			urlValue: null
+			lsKind: "cell line"
+			valueOperator: null
+			lsType: "codeValue"
+			lsTypeAndKind: "codeValue_cell line"
+			valueUnit: null
+			version: 0
+		,
+			clobValue: null
+			codeValue: "assay development"
+			codeOrigin: "acas ddict"
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 80489
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 872
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 100.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: null
+			uncertainty: null
+			urlValue: null
+			lsKind: "assay stage"
+			valueOperator: null
+			lsType: "codeValue"
+			lsTypeAndKind: "codeValue_assay stage"
+			valueUnit: null
+			version: 0
+		,
+			clobValue: null
+			codeValue: null
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 80490
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 87
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 200.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: null
+			uncertainty: null
+			urlValue: null
+			lsKind: "curve display max"
+			valueOperator: null
+			lsType: "numericValue"
+			lsTypeAndKind: "numericValue_curve display max"
+			valueUnit: null
+			version: 0
+		,
+			clobValue: null
+			codeValue: null
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 80491
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 872
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 10.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: null
+			uncertainty: null
+			urlValue: null
+			lsKind: "curve display min"
+			valueOperator: null
+			lsType: "numericValue"
+			lsTypeAndKind: "numericValue_curve display min"
+			valueUnit: null
+			version: 0
+		]
+		modifiedBy: null
+		modifiedDate: null
+		recordedBy: "userName"
+		recordedDate: 1375141485000
+		version: 0
+
+
+
+
 	exports.fullSavedPrimaryScreenProtocol =
 		dnsTargetList: true
 		codeName: "PROT-00000001"
@@ -617,7 +894,7 @@
 			,
 				clobValue: null
 				codeValue: "target x"
-				codeOrigin: "dns target list"
+				codeOrigin: "customer ddict"
 				comments: null
 				dateValue: null
 				fileValue: null

@@ -154,16 +154,26 @@
       return status;
     };
 
-    BaseEntity.prototype.getAnalysisStatus = function() {
-      var metadataKind, status;
+    BaseEntity.prototype.getAnalysisParameters = function() {
+      var ap, metadataKind;
       metadataKind = this.get('subclass') + " metadata";
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "stringValue", "analysis status");
-      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
-        status.set({
-          stringValue: "created"
-        });
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", "data analysis parameters");
+      if (ap.get('clobValue') != null) {
+        return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
+      } else {
+        return new PrimaryScreenAnalysisParameters();
       }
-      return status;
+    };
+
+    BaseEntity.prototype.getModelFitParameters = function() {
+      var ap, metadataKind;
+      metadataKind = this.get('subclass') + " metadata";
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", "model fit parameters");
+      if (ap.get('clobValue') != null) {
+        return $.parseJSON(ap.get('clobValue'));
+      } else {
+        return {};
+      }
     };
 
     BaseEntity.prototype.isEditable = function() {
@@ -239,6 +249,8 @@
 
     BaseEntity.prototype.prepareToSave = function() {
       var rBy, rDate;
+      this.trigger("checkForNewPickListOption");
+      console.log("prepare ti save");
       rBy = this.get('recordedBy');
       rDate = new Date().getTime();
       this.set({
@@ -478,7 +490,7 @@
 
     BaseEntityController.prototype.handleStatusChanged = function() {
       this.model.getStatus().set({
-        stringValue: this.$('.bv_status').val()
+        stringValue: this.statusListController.getSelectedCode()
       });
       return this.updateEditable();
     };

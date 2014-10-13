@@ -131,6 +131,15 @@ class window.Experiment extends BaseEntity
 
 		projectCodeValue
 
+	getAnalysisStatus: ->
+		metadataKind = @.get('subclass') + " metadata"
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "analysis status"
+		#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+		if status.get('stringValue') is undefined or status.get('stringValue') is ""
+			status.set stringValue: "created"
+
+		status
+
 
 class window.ExperimentList extends Backbone.Collection
 	model: Experiment
@@ -205,7 +214,7 @@ class window.ExperimentBaseController extends BaseEntityController
 		@tagListController.render()
 
 	setUseProtocolParametersDisabledState: ->
-		if (not @model.isNew()) or (@model.get('protocol') == null) or (@$('.bv_protocolCode').val() == "")
+		if (not @model.isNew()) or (@model.get('protocol') == null) or (@protocolListController.getSelectedCode() == "")
 			@$('.bv_useProtocolParameters').attr("disabled", "disabled")
 		else
 			@$('.bv_useProtocolParameters').removeAttr("disabled")
@@ -224,7 +233,7 @@ class window.ExperimentBaseController extends BaseEntityController
 					@handleUseProtocolParametersClicked()
 
 	handleProtocolCodeChanged: =>
-		code = @$('.bv_protocolCode').val()
+		code = @protocolListController.getSelectedCode()
 		if code == "" || code == "unassigned"
 			@model.set 'protocol': null
 			#@getFullProtocol()
@@ -244,7 +253,7 @@ class window.ExperimentBaseController extends BaseEntityController
 				dataType: 'json'
 
 	handleProjectCodeChanged: =>
-		@model.getProjectCode().set codeValue: @$('.bv_projectCode').val()
+		@model.getProjectCode().set codeValue: @projectListController.getSelectedCode()
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))

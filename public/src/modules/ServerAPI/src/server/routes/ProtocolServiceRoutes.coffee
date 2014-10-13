@@ -15,7 +15,7 @@ exports.protocolByCodename = (req, resp) ->
 	#TODO: figure out if service should return a full protocol or just a stub
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-		resp.end JSON.stringify protocolServiceTestJSON.fullSavedProtocol
+		resp.end JSON.stringify protocolServiceTestJSON.stubSavedProtocol
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code

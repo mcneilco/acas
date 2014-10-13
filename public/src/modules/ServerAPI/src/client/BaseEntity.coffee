@@ -88,14 +88,21 @@ class window.BaseEntity extends Backbone.Model
 
 		status
 
-	getAnalysisStatus: ->
+	getAnalysisParameters: ->
 		metadataKind = @.get('subclass') + " metadata"
-		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "analysis status"
-#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
-		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "created"
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "data analysis parameters"
+		if ap.get('clobValue')?
+			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
+		else
+			return new PrimaryScreenAnalysisParameters()
 
-		status
+	getModelFitParameters: ->
+		metadataKind = @.get('subclass') + " metadata"
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "model fit parameters"
+		if ap.get('clobValue')?
+			return $.parseJSON(ap.get('clobValue'))
+		else
+			return {}
 
 
 	isEditable: ->
@@ -146,6 +153,8 @@ class window.BaseEntity extends Backbone.Model
 			return null
 
 	prepareToSave: ->
+		@trigger "checkForNewPickListOption"
+		console.log "prepare ti save"
 		rBy = @get('recordedBy')
 		rDate = new Date().getTime()
 		@set recordedDate: rDate
@@ -288,7 +297,7 @@ class window.BaseEntityController extends AbstractFormController
 		@model.getNotebook().set stringValue: @getTrimmedInput('.bv_notebook')
 
 	handleStatusChanged: =>
-		@model.getStatus().set stringValue: @$('.bv_status').val()
+		@model.getStatus().set stringValue: @statusListController.getSelectedCode()
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
 

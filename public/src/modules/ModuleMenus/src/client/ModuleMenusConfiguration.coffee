@@ -24,7 +24,7 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: false
 		menuName: "Primary Screen Protocol"
-		mainControllerClassName: "PrimaryScreenProtocolController"
+		mainControllerClassName: "PrimaryScreenProtocolModuleController"
 		autoLaunchName:"primary_screen_protocol"
 	,
 		isHeader: false

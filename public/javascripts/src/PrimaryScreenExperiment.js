@@ -554,7 +554,7 @@
     PrimaryAnalysisReadController.prototype.setUpReadNameSelect = function() {
       this.readNameList = new PickListList();
       this.readNameList.url = "/api/dataDict/experimentMetadata/read name";
-      return this.readNameList = new PickListSelectController({
+      return this.readNameListController = new PickListSelectController({
         el: this.$('.bv_readName'),
         collection: this.readNameList,
         insertFirstOption: new PickList({
@@ -578,7 +578,7 @@
       activity = this.$('.bv_activity').is(":checked");
       this.model.set({
         readPosition: parseInt(this.getTrimmedInput('.bv_readPosition')),
-        readName: this.$('.bv_readName').val(),
+        readName: this.readNameListController.getSelectedCode(),
         activity: activity
       });
       return this.model.triggerAmDirty();
@@ -625,7 +625,7 @@
 
     TransformationRuleController.prototype.updateModel = function() {
       this.model.set({
-        transformationRule: this.$('.bv_transformationRule').val()
+        transformationRule: this.transformationListController.getSelectedCode()
       });
       return this.model.triggerAmDirty();
     };
@@ -633,7 +633,7 @@
     TransformationRuleController.prototype.setUpTransformationRuleSelect = function() {
       this.transformationList = new PickListList();
       this.transformationList.url = "/api/dataDict/experimentMetadata/transformation";
-      return this.transformationList = new PickListSelectController({
+      return this.transformationListController = new PickListSelectController({
         el: this.$('.bv_transformationRule'),
         collection: this.transformationList,
         insertFirstOption: new PickList({
@@ -890,6 +890,7 @@
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
+      this.$('.bv_autofillSection').after("<hr class='span12' style='margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:6px;' /><h5 style='margin-bottom:27px;'>Upload Data and Analyze</h5>");
       this.setupInstrumentReaderSelect();
       this.setupSignalDirectionSelect();
       this.setupAggregateBy1Select();
@@ -962,11 +963,14 @@
     PrimaryScreenAnalysisParametersController.prototype.setupNormalizationSelect = function() {
       this.normalizationList = new PickListList();
       this.normalizationList.url = "/api/dataDict/experimentMetadata/normalization";
-      return this.normalizationListController = new EditablePickListSelectController({
+      return this.normalizationListController = new PickListSelectController({
         el: this.$('.bv_normalizationRule'),
         collection: this.normalizationList,
-        selectedCode: this.model.get('normalizationRule'),
-        parameter: "normalization"
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Rule"
+        }),
+        selectedCode: this.model.get('normalizationRule')
       });
     };
 
@@ -990,11 +994,11 @@
       var htsFormat;
       htsFormat = this.$('.bv_htsFormat').is(":checked");
       this.model.set({
-        instrumentReader: this.$('.bv_instrumentReader').val(),
-        signalDirectionRule: this.$('.bv_signalDirectionRule').val(),
-        aggregateBy1: this.$('.bv_aggregateBy1').val(),
-        aggregateBy2: this.$('.bv_aggregateBy2').val(),
-        normalizationRule: this.$('.bv_normalizationRule').val(),
+        instrumentReader: this.instrumentListController.getSelectedCode(),
+        signalDirectionRule: this.signalDirectionListController.getSelectedCode(),
+        aggregateBy1: this.aggregateBy1ListController.getSelectedCode(),
+        aggregateBy2: this.aggregateBy2ListController.getSelectedCode(),
+        normalizationRule: this.normalizationListController.getSelectedCode(),
         hitEfficacyThreshold: parseFloat(this.getTrimmedInput('.bv_hitEfficacyThreshold')),
         hitSDThreshold: parseFloat(this.getTrimmedInput('.bv_hitSDThreshold')),
         assayVolume: this.getTrimmedInput('.bv_assayVolume'),

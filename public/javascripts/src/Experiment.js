@@ -214,6 +214,18 @@
       return projectCodeValue;
     };
 
+    Experiment.prototype.getAnalysisStatus = function() {
+      var metadataKind, status;
+      metadataKind = this.get('subclass') + " metadata";
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "stringValue", "analysis status");
+      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
+        status.set({
+          stringValue: "created"
+        });
+      }
+      return status;
+    };
+
     return Experiment;
 
   })(BaseEntity);
@@ -330,7 +342,7 @@
     };
 
     ExperimentBaseController.prototype.setUseProtocolParametersDisabledState = function() {
-      if ((!this.model.isNew()) || (this.model.get('protocol') === null) || (this.$('.bv_protocolCode').val() === "")) {
+      if ((!this.model.isNew()) || (this.model.get('protocol') === null) || (this.protocolListController.getSelectedCode() === "")) {
         return this.$('.bv_useProtocolParameters').attr("disabled", "disabled");
       } else {
         return this.$('.bv_useProtocolParameters').removeAttr("disabled");
@@ -363,7 +375,7 @@
 
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
       var code;
-      code = this.$('.bv_protocolCode').val();
+      code = this.protocolListController.getSelectedCode();
       if (code === "" || code === "unassigned") {
         this.model.set({
           'protocol': null
@@ -395,7 +407,7 @@
 
     ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
       return this.model.getProjectCode().set({
-        codeValue: this.$('.bv_projectCode').val()
+        codeValue: this.projectListController.getSelectedCode()
       });
     };
 
