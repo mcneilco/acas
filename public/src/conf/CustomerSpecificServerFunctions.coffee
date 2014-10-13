@@ -7,8 +7,8 @@
 exports.logUsage = (action, data, username) ->
 	# no ACAS logging service yet
 	console.log "would have logged: "+action+" with data: "+data+" and user: "+username
-	logger = require "../../../routes/Logger"
-	logger.writeToLog("info", "logUsage", action, data, username, null)
+	# logger = require "../../../routes/Logger"
+	global.logger.writeToLog("info", "logUsage", action, data, username, null)
 
 
 exports.getConfServiceVars = (sysEnv, callback) ->
