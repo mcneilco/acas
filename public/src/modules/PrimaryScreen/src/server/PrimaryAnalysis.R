@@ -1689,56 +1689,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   lapply(fileList, source)
   
   resultTable <- performCalculations(resultTable, parameters, flaggedWells, flaggingStage, experiment)
-
   
   
+  ###### Rdap Refactor stopped here 2014-10-10
   
-  # normalization
-
-  
-  if(!useRdap) {
-    flaglessResults <- resultTable[is.na(flag)]
-    meanValue <- mean(flaglessResults$normalized[flaglessResults$wellType == "test"])
-    sdValue <- sd(flaglessResults$normalized[flaglessResults$wellType == "test"])
-    resultTable$sdScore <- computeSDScore(resultTable$normalized, meanValue, sdValue)
-  }
-  #maxTime is the point used by the stat1/2 files, overallMaxTime includes points outside of that range
-  resultTable[, index:=1:nrow(resultTable)]
-  
-  if(!useRdap) {
-    resultTable[, maxTime:=as.numeric(unlist(strsplit(timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(sequence, "\t")))[startReadMax:endReadMax]) + as.integer(startReadMax) - 1L]), by = index]
-    resultTable[, overallMaxTime:=as.numeric(unlist(strsplit(timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(sequence, "\t"))))]), by = index]
-  }
-  
-  #TODO: remove once real data is in place
-  if (any(is.na(resultTable$batchName))) {
-    warnUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
-    resultTable <- resultTable[!is.na(resultTable$batchName), ]
-  }
-  
-  hitSelection <- parameters$thresholdType #Other choice is "efficacyThreshold"
-  if (hitSelection == "sd") {
-    efficacyThreshold <- meanValue + sdValue * parameters$hitSDThreshold
-  } else {
-    efficacyThreshold <- parameters$hitEfficacyThreshold
-  }
-  
+  # Omit the flagged results when calculating treatment group data
+  flaglessTable <- resultTable[is.na(flag)]
   if(useRdap) {
-    flaglessTable <- resultTable[is.na(flag)]
-    batchDataTable <- data.table(values = flaglessTable$normalized, 
+    batchDataTable <- data.table(values = flaglessTable$normalizedActivity, 
                                  batchName = flaglessTable$batchName,
                                  wellType = flaglessTable$wellType,
                                  barcode = flaglessTable$barcode)
   } else {
-    # Get the late peak points
-    resultTable$latePeak <- (resultTable$overallMaxTime > parameters$latePeakTime) & 
-      (resultTable$normalized > efficacyThreshold) & !resultTable$fluorescent
-    # Get individual points that are greater than the threshold
-    resultTable$threshold <- (resultTable$normalized > efficacyThreshold) & !resultTable$fluorescent & 
-      resultTable$wellType=="test" & !resultTable$latePeak
-    
-    # Omit the flagged results when calculating treatment group data
-    flaglessTable <- resultTable[is.na(flag)]
     batchDataTable <- data.table(values = flaglessTable$normalized, 
                                  batchName = flaglessTable$batchName,
                                  fluorescent = flaglessTable$fluorescent,
@@ -1933,7 +1895,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     userOverrideFrame <- rbind.fill(headerSection, columnTypeSection, columnNamesSection, dataSection)
     names(userOverrideFrame) <- c("Experiment Meta Data", rep("", length(userOverrideFrame) - 1))
   } else { #This section is "if(useRdap)"
-    
+    library('RCurl')
     protocol <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "protocols/", experiment$protocol$id)))
     protocolName <- protocol$lsLabels[[1]]$labelText
     
@@ -2592,7 +2554,9 @@ runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
   library('racas')
   options("scipen"=15)
-  save(request, file="request.Rda")
+  #save(request, file="request.Rda")
+  load("backupRequest.Rda")
+  request <- backupRequest
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse

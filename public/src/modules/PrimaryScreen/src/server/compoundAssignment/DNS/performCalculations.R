@@ -17,6 +17,13 @@ performCalculations <- function(resultTable, parameters, flaggedWells, flaggingS
     }
   }
   
+  resultTable[, index:=1:nrow(resultTable)]
+  
+  #TODO: remove once real data is in place
+  if (any(is.na(resultTable$batchName))) {
+    warnUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
+    resultTable <- resultTable[!is.na(resultTable$batchName), ]
+  }
   
   return(resultTable)
 }
