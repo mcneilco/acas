@@ -1,6 +1,6 @@
 performCalculations <- function(resultTable, parameters, flaggedWells, flaggingStage, experiment) {
   # IFF
-  resultTable$transformed <- computeTransformedResults(resultTable, parameters$transformationRule)
+  resultTable$activity <- computeActivity(resultTable, parameters$transformationRule)
   
   # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
   flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
@@ -13,9 +13,9 @@ performCalculations <- function(resultTable, parameters, flaggedWells, flaggingS
   resultTable <- normalizeData(resultTable, parameters$normalizationRule)
   
   flaglessResults <- resultTable[is.na(flag)]
-  meanValue <- mean(flaglessResults$normalized[flaglessResults$wellType == "test"])
-  sdValue <- sd(flaglessResults$normalized[flaglessResults$wellType == "test"])
-  resultTable$sdScore <- computeSDScore(resultTable$normalized, meanValue, sdValue)
+  meanValue <- mean(flaglessResults$normalizedActivity[flaglessResults$wellType == "test"])
+  sdValue <- sd(flaglessResults$normalizedActivity[flaglessResults$wellType == "test"])
+  resultTable$transformed_sd <- computeSDScore(resultTable$normalizedActivity, meanValue, sdValue)
   
   #maxTime is the point used by the stat1/2 files, overallMaxTime includes points outside of that range
   resultTable[, index:=1:nrow(resultTable)]
@@ -38,15 +38,22 @@ performCalculations <- function(resultTable, parameters, flaggedWells, flaggingS
   
   # Get the late peak points
   resultTable$latePeak <- (resultTable$overallMaxTime > parameters$latePeakTime) & 
-    (resultTable$normalized > efficacyThreshold) & !resultTable$fluorescent
+    (resultTable$normalizedActivity > efficacyThreshold) & !resultTable$fluorescent
   # Get individual points that are greater than the threshold
-  resultTable$threshold <- (resultTable$normalized > efficacyThreshold) & !resultTable$fluorescent & 
+  resultTable$threshold <- (resultTable$normalizedActivity > efficacyThreshold) & !resultTable$fluorescent & 
     resultTable$wellType=="test" & !resultTable$latePeak
   
   return(resultTable)
 }
 
-computeTransformedResults <- function(mainData, transformation) {
+computeSDScore <- function(dataVector, meanValue, sdValue) {
+  # TODO: check math, what should be included?
+  # Computes an SD Score
+  
+  return ((dataVector - meanValue)/sdValue)
+}
+
+computeActivity <- function(mainData, transformation) {
   #TODO switch on transformation
   if (transformation == "(maximum-minimum)/minimum") {
     return( (mainData$Maximum-mainData$Minimum)/mainData$Minimum )
@@ -57,12 +64,12 @@ computeTransformedResults <- function(mainData, transformation) {
 
 normalizeData <- function(resultTable, normalization) {
   if (normalization=="plate order") {
-    resultTable[,normalized:=computeNormalized(transformed,wellType,flag), by= barcode]
-  } else if (normalization=="row order") {
+    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= barcode]
+  } else if (normalizedActivity=="row order") {
     resultTable[,plateRow:=gsub("\\d", "",well)]
-    resultTable[,normalized:=computeNormalized(transformed,wellType,flag), by= list(barcode,plateRow)]
+    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= list(barcode,plateRow)]
   } else {
-    resultTable$normalized <- resultTable$transformed
+    resultTable$normalizedActivity <- resultTable$activity
   }
   
   return(resultTable)

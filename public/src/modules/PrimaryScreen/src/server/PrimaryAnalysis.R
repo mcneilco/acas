@@ -250,13 +250,6 @@ computeRobustZ <- function(positiveControls, testCompounds) {
   
   return(computeRobustZPrime(positiveControls, testCompounds))
 }
-computeSDScore <- function(dataVector, meanValue, sdValue) {
-  # TODO: check math, what should be included?
-  # Computes an SD Score
-  
-  return ((dataVector - meanValue)/sdValue)
-}
-
 
 createPDF <- function(resultTable, analysisGroupData, parameters, summaryInfo, threshold, experiment, dryRun=F) {
   require('gplots')
