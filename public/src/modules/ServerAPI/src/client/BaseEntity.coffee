@@ -230,7 +230,7 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCompletionDate().get('dateValue')?
-			@$('.bv_completionDate').val @convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
+			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('stringValue'))
 		if @model.isNew()
@@ -264,7 +264,7 @@ class window.BaseEntityController extends AbstractFormController
 		@handleNameChanged()
 
 	handleShortDescriptionChanged: =>
-		trimmedDesc = @getTrimmedInput('.bv_shortDescription')
+		trimmedDesc = UtilityFunctions::getTrimmedInput @$('.bv_shortDescription')
 		if trimmedDesc != ""
 			@model.set shortDescription: trimmedDesc
 		else
@@ -272,17 +272,17 @@ class window.BaseEntityController extends AbstractFormController
 
 	handleDescriptionChanged: =>
 		@model.getDescription().set
-			clobValue: @getTrimmedInput('.bv_description')
+			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_description')
 			recordedBy: @model.get('recordedBy')
 
 	handleCommentsChanged: =>
 		@model.getComments().set
-			clobValue: @getTrimmedInput('.bv_comments')
+			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_comments')
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
 		subclass = @model.get('subclass')
-		newName = @getTrimmedInput('.bv_'+subclass+'Name')
+		newName = UtilityFunctions::getTrimmedInput @$('.bv_'+subclass+'Name')
 		@model.get('lsLabels').setBestName new Label
 			lsKind: subclass+" name"
 			labelText: newName
@@ -291,13 +291,13 @@ class window.BaseEntityController extends AbstractFormController
 		@model.trigger 'change'
 
 	handleDateChanged: =>
-		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
+		@model.getCompletionDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" );
 
 	handleNotebookChanged: =>
-		@model.getNotebook().set stringValue: @getTrimmedInput('.bv_notebook')
+		@model.getNotebook().set stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
 
 	handleStatusChanged: =>
 		@model.getStatus().set stringValue: @statusListController.getSelectedCode()

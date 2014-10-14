@@ -393,7 +393,7 @@
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
       if (this.model.getCompletionDate().get('dateValue') != null) {
-        this.$('.bv_completionDate').val(this.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
+        this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
       }
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
       this.$('.bv_status').val(this.model.getStatus().get('stringValue'));
@@ -435,7 +435,7 @@
 
     BaseEntityController.prototype.handleShortDescriptionChanged = function() {
       var trimmedDesc;
-      trimmedDesc = this.getTrimmedInput('.bv_shortDescription');
+      trimmedDesc = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_shortDescription'));
       if (trimmedDesc !== "") {
         return this.model.set({
           shortDescription: trimmedDesc
@@ -449,14 +449,14 @@
 
     BaseEntityController.prototype.handleDescriptionChanged = function() {
       return this.model.getDescription().set({
-        clobValue: this.getTrimmedInput('.bv_description'),
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_description')),
         recordedBy: this.model.get('recordedBy')
       });
     };
 
     BaseEntityController.prototype.handleCommentsChanged = function() {
       return this.model.getComments().set({
-        clobValue: this.getTrimmedInput('.bv_comments'),
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_comments')),
         recordedBy: this.model.get('recordedBy')
       });
     };
@@ -464,7 +464,7 @@
     BaseEntityController.prototype.handleNameChanged = function() {
       var newName, subclass;
       subclass = this.model.get('subclass');
-      newName = this.getTrimmedInput('.bv_' + subclass + 'Name');
+      newName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + subclass + 'Name'));
       this.model.get('lsLabels').setBestName(new Label({
         lsKind: subclass + " name",
         labelText: newName,
@@ -475,7 +475,7 @@
 
     BaseEntityController.prototype.handleDateChanged = function() {
       return this.model.getCompletionDate().set({
-        dateValue: this.convertYMDDateToMs(this.getTrimmedInput('.bv_completionDate'))
+        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')))
       });
     };
 
@@ -485,7 +485,7 @@
 
     BaseEntityController.prototype.handleNotebookChanged = function() {
       return this.model.getNotebook().set({
-        stringValue: this.getTrimmedInput('.bv_notebook')
+        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook'))
       });
     };
 

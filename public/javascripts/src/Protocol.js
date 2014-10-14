@@ -167,13 +167,13 @@
 
     ProtocolBaseController.prototype.updateModel = function() {
       return this.model.set({
-        assayTreeRule: this.getTrimmedInput('.bv_assayTreeRule')
+        assayTreeRule: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayTreeRule'))
       });
     };
 
     ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
       return this.model.getAssayPrinciple().set({
-        clobValue: this.getTrimmedInput('.bv_assayPrinciple'),
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple')),
         recordedBy: this.model.get('recordedBy')
       });
     };

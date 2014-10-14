@@ -102,9 +102,9 @@ class window.ProtocolBaseController extends BaseEntityController
 
 	updateModel: =>
 		@model.set
-			assayTreeRule: @getTrimmedInput('.bv_assayTreeRule')
+			assayTreeRule: UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')
 
 	handleAssayPrincipleChanged: =>
 		@model.getAssayPrinciple().set
-			clobValue: @getTrimmedInput('.bv_assayPrinciple')
+			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
 			recordedBy: @model.get('recordedBy')

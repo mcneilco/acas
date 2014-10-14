@@ -247,9 +247,9 @@
 
     AddParameterOptionPanelController.prototype.updateModel = function() {
       return this.model.set({
-        newOptionLabel: this.getTrimmedInput('.bv_newOptionLabel'),
-        newOptionDescription: this.getTrimmedInput('.bv_newOptionDescription'),
-        newOptionComments: this.getTrimmedInput('.bv_newOptionComments')
+        newOptionLabel: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_newOptionLabel')),
+        newOptionDescription: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_newOptionDescription')),
+        newOptionComments: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_newOptionComments'))
       });
     };
 

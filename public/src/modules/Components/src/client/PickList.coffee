@@ -146,9 +146,9 @@ class window.AddParameterOptionPanelController extends AbstractFormController
 
 	updateModel: =>
 		@model.set # TODO: trim inputs, use Utility Function after merging with dev
-			newOptionLabel: @getTrimmedInput('.bv_newOptionLabel')
-			newOptionDescription: @getTrimmedInput('.bv_newOptionDescription')
-			newOptionComments: @getTrimmedInput('.bv_newOptionComments')
+			newOptionLabel: UtilityFunctions::getTrimmedInput @$('.bv_newOptionLabel')
+			newOptionDescription: UtilityFunctions::getTrimmedInput @$('.bv_newOptionDescription')
+			newOptionComments: UtilityFunctions::getTrimmedInput @$('.bv_newOptionComments')
 
 	triggerAddRequest: =>
 		@trigger 'addOptionRequested'
