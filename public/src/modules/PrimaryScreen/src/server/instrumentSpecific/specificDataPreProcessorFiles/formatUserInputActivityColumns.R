@@ -4,7 +4,7 @@
 # Sets column names included in input parameters to the format of Rn {acivity}
 # Inputs: readsTable (data.table with columns readOrder, readNames, activity)
 #         activityColNames (assayData) (from instrument files)
-# Output: data table that can be used as a reference. Columns: userReadOrder, userReadName, ativityColName, newActivityColName
+# Output: data table that can be used as a reference. Columns: userReadPosition, userReadName, ativityColName, newActivityColName
 
 formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFilePath, matchNames) {
   
@@ -12,7 +12,7 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
   write.table(paste0(Sys.time(), "\tbegin formatUserInputActivityColumns"), file = file.path(tempFilePath, "runlog.tab"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
   userInput <- copy(readsTable)
-  setnames(userInput, c("readOrder", "readNames"), c("userReadOrder", "userReadName"))
+  setnames(userInput, c("readPosition", "readName","activity"), c("userReadPosition", "userReadName","activityCol"))
   #userInput$activityCol <- NULL
   userInput$activityColName <- "None"
   userInput$newActivityColName <- "None"
@@ -20,9 +20,9 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
   noMatch <- list()
   overWrite <- list()
   
-  if(nrow(readsTable[readsTable$activityCol]) > 1) {
+  if(nrow(readsTable[readsTable$activity]) > 1) {
     stopUser("More than one read column chosen as the activity column.")
-  } else if (nrow(readsTable[readsTable$activityCol]) < 1) {
+  } else if (nrow(readsTable[readsTable$activity]) < 1) {
     stopUser("At least one read column needs to be chosen as the activity column.")
   }
   
@@ -36,27 +36,27 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
       for(activity in activityColNames) {
         if(name == activity) {
           userInput[userReadName==name, ]$activityColName <- activity
-          userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",activity,"}")
+          userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadPosition, " {",activity,"}")
           columnCount <- columnCount + 1
         }
       }
       if(columnCount == 0) {
         noMatch[[length(noMatch) + 1]] <- name
-        userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",name,"}")
+        userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadPosition, " {",name,"}")
       } else if(columnCount > 1) {
         stopUser(paste0("Multiple activity columns found for read name: '", name, "'"))
       } 
     } 
   } else {
-    for (order in userInput$userReadOrder) {
-      userInput[userReadOrder == order, ]$activityColName <- activityColNames[[order]]
+    for (order in userInput$userReadPosition) {
+      userInput[userReadPosition == order, ]$activityColName <- activityColNames[[order]]
     }
     # Checks to see if data has a generic name (Rn)
     for(name in userInput$userReadName) {
       if(!grepl("^R[0-9]+$", userInput[userReadName==name, ]$activityColName) && name != userInput[userReadName==name, ]$activityColName){
         overWrite[[length(overWrite) + 1]] <- userInput[userReadName==name, ]$activityColName
       }
-      userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",name,"}")
+      userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadPosition, " {",name,"}")
     }
   }
   

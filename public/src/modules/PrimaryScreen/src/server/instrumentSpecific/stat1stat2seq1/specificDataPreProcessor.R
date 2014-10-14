@@ -1,5 +1,5 @@
-specificDataPreProcessor <- function(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat) {
-  
+specificDataPreProcessor <- function(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat, testMode) {
+  # IFF
   fileNameTable <- validateInputFiles(folderToParse)
   
   # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371

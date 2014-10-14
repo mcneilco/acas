@@ -150,12 +150,12 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
     negativeControl$concentration <- Inf
   }
   
-  posBatchFilter <- batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration
-  negBatchFilter <- batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration
-  
   if(vehicleControl$batchCode != "null") {
     wellTypes[batchNames==vehicleControl$batchCode] <- "VC"
   }
+  
+  posBatchFilter <- batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration
+  negBatchFilter <- batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration
     
   if(!is.null(concentrationUnits)) {
     posBatchFilter <- posBatchFilter & concentrations==positiveControl$concentration
@@ -1504,15 +1504,19 @@ loadInstrumentReadParameters <- function(instrumentType) {
         !file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"detectionLine.json")) ||
         !file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"paramList.json"))) 
   {
-    stopUser("Instrument not loaded in to system.")
+    stopUser("Configuration error: Instrument not loaded in to system.")
   } 
   
-  instrument <- fromJSON(readLines(system.file(file.path("instruments",instrumentType,"instrumentType.json"), package="rdap")))$instrumentType
+  instrument <- fromJSON(readLines(file.path(Sys.getenv("ACAS_HOME"), 
+                                             "public/src/modules/PrimaryScreen/src/conf/instruments",
+                                             instrumentType,"instrumentType.json")))$instrumentType
   if(instrumentType != instrument) {
-    stopUser("Instrument data loaded incorrectly.")
+    stopUser("Configuration error: Instrument data loaded incorrectly.")
   }
   
-  paramList <- fromJSON(readLines(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"paramList.json")))$paramList
+  paramList <- fromJSON(readLines(file.path(Sys.getenv("ACAS_HOME"), 
+                                            "public/src/modules/PrimaryScreen/src/conf/instruments",
+                                            instrumentType,"paramList.json")))$paramList
   if(paramList$dataTitleIdentifier == "NA") {
     paramList$dataTitleIdentifier <- NA
   }
@@ -1521,16 +1525,19 @@ loadInstrumentReadParameters <- function(instrumentType) {
 }
 
 getReadOrderTable <- function(readList) {
-  readsTable <- data.table(readOrder=readList[[1]]$readPosition, 
-                           readNames=readList[[1]]$readName,
-                           activityCol=readList[[1]]$activity)
-  if(length(readList) > 1) {
-    for (i in 2:length(readList)) {
-      subTable <- data.table(readOrder=readList[[i]]$readPosition, 
-                             readNames=readList[[i]]$readName,
-                             activityCol=readList[[i]]$activity)
-      readsTable <- rbind(readsTable, subTable)
-    }
+  
+  readsTable <- data.table(ldply(readList, data.frame))
+  
+  if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
+    warnUser("Some reads have the same name.")
+  }
+  
+  if(length(unique(readsTable$activity)) != 2 && !unique(readsTable$activity)) {
+    stopUser("No read has been marked as activity.")
+  } 
+  
+  if(length(unique(readsTable$activity)) == 2 && nrow(readsTable[!readsTable$activity, ]) != 1) {
+    stopUser("More than one read has been marked as activity.")
   }
   
   return(readsTable)
@@ -1554,13 +1561,15 @@ flagCheck <- function(resultTable) {
   }
 }
 
-controlCheck <- function(resultTable) {
+checkControls <- function(resultTable) {
   if (!any(resultTable$wellType == "PC")) {
-    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded and your postive control is defined correctly.")
+    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded 
+             and your postive control is defined correctly.")
   }
   
   if (!any(resultTable$wellType == "NC")) {
-    stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded and your negative control is defined correctly.")
+    stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded 
+             and your negative control is defined correctly.")
   }
 }
 
@@ -1576,10 +1585,12 @@ computeNormalized  <- function(values, wellType, flag) {
   #   A numeric vector of the same length as the inputs that is normalized.
   
   if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
-    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
+    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) 
+             were flagged, so normalization cannot proceed.")
   }
   if ((length((values[(wellType == 'PC' & is.na(flag))])) == 0)) {
-    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) were flagged, so normalization cannot proceed.")
+    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) 
+             were flagged, so normalization cannot proceed.")
   }
   
   #find min (mean of unflagged Negative Controls)
@@ -1599,13 +1610,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # flaggingStage: a string indicating whether the user is currently altering "wellFlags" or 
   #               "analysisGroupFlags"
   
+  require("data.table")
+  library(plyr)
+  
   folderToParse <- racas::getUploadedFilePath(folderToParse)
   
   if (!file.exists(folderToParse)) {
     stopUser("Input file not found")
   }
-  
-  require("data.table")
   
   if(!testMode) {
     experiment <- getExperimentById(experimentId)
@@ -1655,15 +1667,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # GREEN (instrument-specific)
   instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
   
-  source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
+  source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",
+                   instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
   
-  instrumentData <- specificDataPreProcessor(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat, testMode=testMode)
+  instrumentData <- specificDataPreProcessor(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, 
+                                             dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat, testMode=testMode)
   
   
   # RED (client-specific)
   # getCompoundAssignments
   
-  source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/",clientName,"getCompoundAssignments.R"))
+  source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
+                   clientName,"getCompoundAssignments.R"))
   
   resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters)
   
@@ -1672,13 +1687,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                        positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
                                        vehicleControl=parameters$vehicleControl, testMode=testMode)
   
-  controlCheck(resultTable)
+  checkControls(resultTable)
   
   
   ## RED SECTION - Client Specific
   #calculations
-  fileList <- c(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/",clientName,"performCalculations.R"),
-                list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/Generic"), full.names=TRUE))
+  fileList <- c(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
+                          clientName,"performCalculations.R"),
+                list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/Generic"), 
+                           full.names=TRUE))
   lapply(fileList, source)
   
   resultTable <- performCalculations(resultTable, parameters, flaggedWells, flaggingStage, experiment)
@@ -1760,7 +1777,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     flagData <- userHitList$flagData
     #analysisGroupData$threshold <- analysisGroupData$sdScore > parameters$hitSDThreshold & !analysisGroupData$fluorescent & analysisGroupData$wellType=="test"
     
-    library(plyr)
     #if (analysisType == "primary") {
     if (TRUE) {  # racas::applicationSettings$client.blah.usespotfire
       # May need to return to using analysisGroupData eventually
@@ -2545,8 +2561,6 @@ runPrimaryAnalysis <- function(request) {
   library('racas')
   options("scipen"=15)
   #save(request, file="request.Rda")
-  load("backupRequest.Rda")
-  request <- backupRequest
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse

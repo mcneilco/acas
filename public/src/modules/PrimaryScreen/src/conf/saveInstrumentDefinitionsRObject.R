@@ -72,7 +72,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
                         dataTitleIdentifier   = NA,
                         dataFormat            = "plateFormatSingleFile")
     } else if (instrumentType == "flipr1") {
-      detectionLine     <- NA
+      detectionLine     <- "NA"
       paramList <- list(headerRowSearchString = NA,
                         dataRowSearchString   = NA,
                         sepChar               = NA,
