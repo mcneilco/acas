@@ -55,7 +55,8 @@
         loginUser: loginUser,
         testMode: false,
         moduleLaunchParams: moduleLaunchParams != null ? moduleLaunchParams : null,
-        deployMode: global.deployMode
+        deployMode: global.deployMode,
+        loggingToMongo: config.all.logging.usemongo
       }
     });
   };

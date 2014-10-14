@@ -7,7 +7,8 @@
 
 (function() {
   exports.logUsage = function(action, data, username) {
-    return console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
+    console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
+    return global.logger.writeToLog("info", "logUsage", action, data, username, null);
   };
 
   exports.getConfServiceVars = function(sysEnv, callback) {
