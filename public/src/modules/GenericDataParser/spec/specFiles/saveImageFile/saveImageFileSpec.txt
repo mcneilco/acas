@@ -1,0 +1,33 @@
+This JSON object shows how to save an inline file. The user will
+enter a column in their Excel spreadsheet that has file names. We save
+both the file name and the full file path.
+
+{ "codeTypeAndKind" : "null_null",
+  "comments" : "TEST0001_1.png",
+  "fileValue" : "experiments/EXPT-00000247/analysis/uploadedFiles/TEST0001_1.png"
+  "id" : 2081622,
+  "ignored" : false,
+  "lsKind" : "western blot",
+  "lsState" : { "comments" : "",
+      "id" : 648220,
+      "ignored" : false,
+      "lsKind" : "results",
+      "lsTransaction" : 1173,
+      "lsType" : "data",
+      "lsTypeAndKind" : "data_results",
+      "recordedBy" : "bob",
+      "recordedDate" : 1404770349000,
+      "version" : 0
+    },
+  "lsTransaction" : 1173,
+  "lsType" : "inlineFileValue",
+  "lsTypeAndKind" : "inlineFileValue_western blot",
+  "numberOfReplicates" : 1,
+  "operatorTypeAndKind" : "null_null",
+  "publicData" : true,
+  "recordedBy" : "bob",
+  "recordedDate" : 1404770351000,
+  "uncertaintyType" : "standard deviation",
+  "unitTypeAndKind" : "null_null",
+  "version" : 0
+}

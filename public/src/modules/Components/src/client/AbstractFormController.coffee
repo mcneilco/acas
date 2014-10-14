@@ -30,7 +30,13 @@ class window.AbstractFormController extends Backbone.View
 	validationError: =>
 		errors = @model.validationError
 		@clearValidationErrorStyles()
+
 		_.each errors, (err) =>
+			@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
+			@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
+			@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
+			@$("[data-toggle=tooltip]").tooltip();
+			@$("body").tooltip selector: '.bv_group_'+err.attribute
 			@$('.bv_group_'+err.attribute).addClass 'input_error error'
 			@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 		@trigger 'invalid'
@@ -39,6 +45,10 @@ class window.AbstractFormController extends Backbone.View
 		errorElms = @$('.input_error')
 		@trigger 'clearErrors', @errorOwnerName
 		_.each errorElms, (ee) =>
+			$(ee).removeAttr('data-toggle')
+			$(ee).removeAttr('data-placement')
+			$(ee).removeAttr('title')
+			$(ee).removeAttr('data-original-title')
 			$(ee).removeClass 'input_error error'
 
 	isValid: ->
@@ -51,17 +61,17 @@ class window.AbstractFormController extends Backbone.View
 		else
 			@trigger 'invalid'
 
-	getTrimmedInput: (selector) ->
-		$.trim(@$(selector).val())
+#	getTrimmedInput: (selector) ->
+#		$.trim(@$(selector).val())
 
-	convertYMDDateToMs: (inStr) ->
-		dateParts = inStr.split('-')
-		new Date(dateParts[0], dateParts[1]-1, dateParts[2]).getTime()
-
-	convertMSToYMDDate: (ms) ->
-		date = new Date ms
-		monthNum = date.getMonth()+1
-		date.getFullYear()+'-'+("0" + monthNum).slice(-2)+'-'+("0" + date.getDate()).slice(-2)
+#	convertYMDDateToMs: (inStr) ->
+#		dateParts = inStr.split('-')
+#		new Date(dateParts[0], dateParts[1]-1, dateParts[2]).getTime()
+#
+#	convertMSToYMDDate: (ms) ->
+#		date = new Date ms
+#		monthNum = date.getMonth()+1
+#		date.getFullYear()+'-'+("0" + monthNum).slice(-2)+'-'+("0" + date.getDate()).slice(-2)
 
 	disableAllInputs: ->
 		@$('input').attr 'disabled', 'disabled'

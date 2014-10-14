@@ -3,9 +3,7 @@
 # description: start and stop the acas app.js, server.js and apache instance
 # processname: node
 
-scriptPath=$(readlink ${BASH_SOURCE[0]})
-ACAS_HOME=$(cd "$(dirname "$scriptPath")"/..; pwd)
-
+ACAS_HOME=$(cd "$(dirname "$0")/.."; pwd)
 #Get ACAS config variables
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/conf/readproperties.awk)"
 

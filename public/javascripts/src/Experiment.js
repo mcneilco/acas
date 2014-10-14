@@ -327,7 +327,7 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
-          stringValue: "Created"
+          stringValue: "created"
         });
       }
       return status;
@@ -338,7 +338,7 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
-          stringValue: "Created"
+          stringValue: "created"
         });
       }
       return status;
@@ -348,15 +348,15 @@
       var status;
       status = this.getStatus().get('stringValue');
       switch (status) {
-        case "Created":
+        case "created":
           return true;
-        case "Started":
+        case "started":
           return true;
-        case "Complete":
+        case "complete":
           return true;
-        case "Finalized":
+        case "finalized":
           return false;
-        case "Rejected":
+        case "rejected":
           return false;
       }
       return true;
@@ -442,6 +442,7 @@
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupProtocolSelect(this.options.protocolFilter);
       this.setupProjectSelect();
+      this.setupStatusSelect();
       this.setupTagList();
       return this.model.getStatus().on('change', this.updateEditable);
     };
@@ -464,7 +465,7 @@
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
       if (this.model.getCompletionDate().get('dateValue') != null) {
-        this.$('.bv_completionDate').val(this.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
+        this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
       }
       this.$('.bv_description').html(this.model.getDescription().get('clobValue'));
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
@@ -512,6 +513,16 @@
           name: "Select Project"
         }),
         selectedCode: this.model.getProjectCode().get('codeValue')
+      });
+    };
+
+    ExperimentBaseController.prototype.setupStatusSelect = function() {
+      this.statusList = new PickListList();
+      this.statusList.url = "/api/dataDict/experimentMetadata/experiment status";
+      return this.statusListController = new PickListSelectController({
+        el: this.$('.bv_status'),
+        collection: this.statusList,
+        selectedCode: this.model.getStatus().get('stringValue')
       });
     };
 
@@ -565,7 +576,7 @@
 
     ExperimentBaseController.prototype.handleShortDescriptionChanged = function() {
       var trimmedDesc;
-      trimmedDesc = this.getTrimmedInput('.bv_shortDescription');
+      trimmedDesc = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_shortDescription'));
       if (trimmedDesc !== "") {
         return this.model.set({
           shortDescription: trimmedDesc
@@ -579,14 +590,14 @@
 
     ExperimentBaseController.prototype.handleDescriptionChanged = function() {
       return this.model.getDescription().set({
-        clobValue: this.getTrimmedInput('.bv_description'),
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_description')),
         recordedBy: this.model.get('recordedBy')
       });
     };
 
     ExperimentBaseController.prototype.handleNameChanged = function() {
       var newName;
-      newName = this.getTrimmedInput('.bv_experimentName');
+      newName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_experimentName'));
       this.model.get('lsLabels').setBestName(new Label({
         lsKind: "experiment name",
         labelText: newName,
@@ -597,12 +608,12 @@
 
     ExperimentBaseController.prototype.handleDateChanged = function() {
       return this.model.getCompletionDate().set({
-        dateValue: this.convertYMDDateToMs(this.getTrimmedInput('.bv_completionDate'))
+        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')))
       });
     };
 
     ExperimentBaseController.prototype.handleCompletionDateIconClicked = function() {
-      return $(".bv_completionDate").datepicker("show");
+      return this.$(".bv_completionDate").datepicker("show");
     };
 
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
@@ -645,7 +656,7 @@
 
     ExperimentBaseController.prototype.handleNotebookChanged = function() {
       return this.model.getNotebook().set({
-        stringValue: this.getTrimmedInput('.bv_notebook')
+        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook'))
       });
     };
 
@@ -656,7 +667,7 @@
 
     ExperimentBaseController.prototype.handleStatusChanged = function() {
       this.model.getStatus().set({
-        stringValue: this.getTrimmedInput('.bv_status')
+        stringValue: this.$('.bv_status').val()
       });
       return this.updateEditable();
     };

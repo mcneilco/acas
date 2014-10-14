@@ -29,10 +29,24 @@ makeAbsolutePath = (relativePath) ->
 
 setupRoutes = (app, loginRoutes, requireLogin) ->
 	config = require '../conf/compiled/conf.js'
-#	dataFilesPath = makeAbsolutePath "../../playprivateUploads"
-#	dataFilesPath = makeAbsolutePath "playprivateUploads"
+	upload = require '../node_modules_customized/jquery-file-upload-middleware'
+
 	dataFilesPath = makeAbsolutePath config.all.server.datafiles.relative_path
 	tempFilesPath = makeAbsolutePath config.all.server.tempfiles.relative_path
+
+	#configure upload middleware
+	upload.configure
+		uploadDir: dataFilesPath
+		ssl: config.all.client.use.ssl
+		uploadUrl: "/dataFiles"
+
+	app.use '/uploads', upload.fileHandler()
+	upload.on "error", (e) ->
+		console.log "fileUpload: ", e.message
+	upload.on "end", (fileInfo) ->
+		app.emit "file-uploaded", fileInfo
+
+
 	ensureExists dataFilesPath, 0o0744, (err) ->
 		if err?
 			console.log "Can't find or create data files dir: "+dataFilesPath

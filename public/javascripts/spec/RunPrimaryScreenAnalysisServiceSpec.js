@@ -98,7 +98,7 @@ This service runs a primary data analysis.
         });
       });
     });
-    return describe('when run with flawed input file', function() {
+    describe('when run with flawed input file', function() {
       beforeEach(function() {
         var self;
         goodExampleData.fileToParse += "_with_error";
@@ -127,6 +127,342 @@ This service runs a primary data analysis.
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
           return (expect(this.serviceReturn.errorMessages.length)).toBeGreaterThan(0);
+        });
+      });
+    });
+    describe("Instrument reader code", function() {
+      return describe('when instrumentReader code service called', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "api/dataDict/experimentMetadata/instrument reader",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        it('should return an array of instrumentReader codes', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.length).toBeGreaterThan(0);
+          });
+        });
+        it('should a hash with code defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].code).toBeDefined();
+          });
+        });
+        it('should a hash with name defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].name).toBeDefined();
+          });
+        });
+        return it('should a hash with ignore defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].ignored).toBeDefined();
+          });
+        });
+      });
+    });
+    describe("Signal direction code", function() {
+      return describe('when signal direction code service called', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "api/dataDict/experimentMetadata/signal direction",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        it('should return an array of signal direction codes', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.length).toBeGreaterThan(0);
+          });
+        });
+        it('should a hash with code defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].code).toBeDefined();
+          });
+        });
+        it('should a hash with name defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].name).toBeDefined();
+          });
+        });
+        return it('should a hash with ignore defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].ignored).toBeDefined();
+          });
+        });
+      });
+    });
+    describe("aggregateBy1 code", function() {
+      return describe('when aggregateBy1 code service called', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "api/dataDict/experimentMetadata/aggregate by1",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        it('should return an array of aggregateBy1  codes', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.length).toBeGreaterThan(0);
+          });
+        });
+        it('should a hash with code defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].code).toBeDefined();
+          });
+        });
+        it('should a hash with name defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].name).toBeDefined();
+          });
+        });
+        return it('should a hash with ignore defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].ignored).toBeDefined();
+          });
+        });
+      });
+    });
+    describe("aggregateBy2 code", function() {
+      return describe('when aggregateBy2 code service called', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "api/dataDict/experimentMetadata/aggregate by2",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        it('should return an array of aggregateBy2  codes', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.length).toBeGreaterThan(0);
+          });
+        });
+        it('should a hash with code defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].code).toBeDefined();
+          });
+        });
+        it('should a hash with name defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].name).toBeDefined();
+          });
+        });
+        return it('should a hash with ignore defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].ignored).toBeDefined();
+          });
+        });
+      });
+    });
+    describe("Transformation code", function() {
+      return describe('when transformation code service called', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "api/dataDict/experimentMetadata/transformation",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        it('should return an array of transformation codes', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.length).toBeGreaterThan(0);
+          });
+        });
+        it('should a hash with code defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].code).toBeDefined();
+          });
+        });
+        it('should a hash with name defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].name).toBeDefined();
+          });
+        });
+        return it('should a hash with ignore defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].ignored).toBeDefined();
+          });
+        });
+      });
+    });
+    describe("Normalization code", function() {
+      return describe('when normalization code service called', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "api/dataDict/experimentMetadata/normalization",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        it('should return an array of normalization codes', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.length).toBeGreaterThan(0);
+          });
+        });
+        it('should a hash with code defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].code).toBeDefined();
+          });
+        });
+        it('should a hash with name defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].name).toBeDefined();
+          });
+        });
+        return it('should a hash with ignore defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].ignored).toBeDefined();
+          });
+        });
+      });
+    });
+    return describe("Read name code", function() {
+      return describe('when read name code service called', function() {
+        beforeEach(function() {
+          return runs(function() {
+            return $.ajax({
+              type: 'GET',
+              url: "api/dataDict/experimentMetadata/read name",
+              success: (function(_this) {
+                return function(json) {
+                  return _this.serviceReturn = json;
+                };
+              })(this),
+              error: (function(_this) {
+                return function(err) {
+                  console.log('got ajax error');
+                  return _this.serviceReturn = null;
+                };
+              })(this),
+              dataType: 'json'
+            });
+          });
+        });
+        it('should return an array of readName codes', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.length).toBeGreaterThan(0);
+          });
+        });
+        it('should a hash with code defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].code).toBeDefined();
+          });
+        });
+        it('should a hash with name defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].name).toBeDefined();
+          });
+        });
+        return it('should a hash with ignore defined', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn[0].ignored).toBeDefined();
+          });
         });
       });
     });

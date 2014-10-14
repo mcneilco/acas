@@ -9,13 +9,13 @@ exports.setupRoutes = (app, passport) ->
 	app.get '/logout', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/api/users/:username', exports.ensureAuthenticated, exports.getUsers
-	app.get '/reset', exports.resetpage
-	app.post '/reset',
+	app.get '/passwordReset', exports.resetpage
+	app.post '/passwordReset',
 		exports.resetAuthenticationService,
 		exports.resetPost
 	app.post '/api/userResetAuthentication', exports.resetAuthenticationService
-	app.get '/change', exports.ensureAuthenticated, exports.changePage
-	app.post '/change',
+	app.get '/passwordChange', exports.ensureAuthenticated, exports.changePage
+	app.post '/passwordChange',
 		exports.changeAuthenticationService,
 		exports.changePost
 	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
@@ -41,17 +41,19 @@ exports.loginPage = (req, res) ->
 exports.resetPost = (req, res) ->
 	console.log req.session
 	#	res.redirect '/'
-	res.redirect '/reset'
+	res.redirect '/passwordReset'
 	
 exports.loginPost = (req, res) ->
 	console.log "got to login post"
-#	res.redirect '/'
-	res.redirect req.session.returnTo
+	if req.session.returnTo?
+		res.redirect req.session.returnTo
+	else
+		res.redirect '/'
 
 exports.changePost = (req, res) ->
 	console.log req.session
 	#	res.redirect '/'
-	res.redirect '/change'
+	res.redirect '/passwordChange'
 
 exports.logout = (req, res) ->
 	req.logout()
@@ -67,7 +69,7 @@ exports.ensureAuthenticated = (req, res, next) ->
 
 
 exports.getUsers = (req, resp) ->
-	console.log "ghet users in route file"
+	console.log "get users in route file"
 	callback = (err, user) ->
 		if user == null
 			resp.send(204)
@@ -98,10 +100,13 @@ exports.resetAuthenticationService = (req, resp) ->
 		console.log results
 		if results.indexOf("Your new password is sent to your email address")>=0
 			req.flash 'error','Your new password is sent to your email address'
-			resp.redirect '/reset'
+			resp.redirect '/passwordReset'
+		else if results.indexOf("connection_error")>=0
+			req.flash 'error','Cannot connect to authentication service. Please contact an administrator'
+			resp.redirect '/passwordReset'
 		else
 			req.flash 'error','Invalid Email or Username'
-			resp.redirect '/reset'
+			resp.redirect '/passwordReset'
 
 	if global.specRunnerTestmode
 		callback("Success")
@@ -114,14 +119,17 @@ exports.changeAuthenticationService = (req, resp) ->
 		if results.indexOf("You password has been successfully been changed")>=0
 			req.flash 'error','Your new password is set'
 			resp.redirect '/login'
+		else if results.indexOf("connection_error")>=0
+			req.flash 'error','Cannot connect to authentication service. Please contact an administrator'
+			resp.redirect '/passwordChange'
 		else
 			req.flash 'error','Invalid password or new password does not match'
-			resp.redirect '/change'
+			resp.redirect '/passwordChange'
 
 	if global.specRunnerTestmode
 		callback("Success")
 	else
-		csUtilities.changeAuth req.body.user, req.body.oldPassword,req.body.newPassword,req.body.newPasswordAgain, callback
+		csUtilities.changeAuth req.body.user, req.body.oldPassword, req.body.newPassword, req.body.newPasswordAgain, callback
 
 exports.resetpage = (req, res) ->
 	user = null
@@ -132,7 +140,7 @@ exports.resetpage = (req, res) ->
 	error = req.flash('error')
 	if error.length > 0
 		errorMsg = error[0]
-	res.render 'reset',
+	res.render 'passwordReset',
 		title: "ACAS reset"
 		scripts: []
 		user: user
@@ -148,7 +156,7 @@ exports.changePage = (req, res) ->
 		if error.length > 0
 			errorMsg = error[0]
 
-		res.render 'change',
+		res.render 'passwordChange',
 			title: "ACAS reset"
 			scripts: []
 			user: user

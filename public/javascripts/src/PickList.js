@@ -78,18 +78,27 @@
       this.rendered = false;
       this.collection.bind("add", this.addOne);
       this.collection.bind("reset", this.handleListReset);
-      this.collection.fetch({
-        success: this.handleListReset
-      });
       if (this.options.selectedCode !== "") {
         this.selectedCode = this.options.selectedCode;
       } else {
         this.selectedCode = null;
       }
       if (this.options.insertFirstOption != null) {
-        return this.insertFirstOption = this.options.insertFirstOption;
+        this.insertFirstOption = this.options.insertFirstOption;
       } else {
-        return this.insertFirstOption = null;
+        this.insertFirstOption = null;
+      }
+      if (this.options.autoFetch != null) {
+        this.autoFetch = this.options.autoFetch;
+      } else {
+        this.autoFetch = true;
+      }
+      if (this.autoFetch) {
+        return this.collection.fetch({
+          success: this.handleListReset
+        });
+      } else {
+        return this.handleListReset();
       }
     };
 

@@ -21,7 +21,7 @@ class window.ExperimentSearchController extends AbstractFormController
 	updateModel: =>
 		@model.set
 			protocolCode: @$('.bv_protocolName').val()
-			experimentCode: @getTrimmedInput('.bv_experimentCode')
+			experimentCode: UtilityFunctions::getTrimmedInput @$('.bv_experimentCode')
 
 	updateExperimentCode: =>
 		experimentCode = $.trim(@$(".bv_experimentCode").val())

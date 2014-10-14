@@ -32,7 +32,7 @@ load("public/src/modules/GenericDataParser/spec/RTestSet/IO_for_test_files/valid
 
 test_that("validateMetaData handles cases where all metadata is present", {
   validatedMetaData <- metaData
-  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
+  validatedMetaData$"Assay Date" <- "2012-11-07"
   duplicateExperimentNamesAllowed <- FALSE
   useExisting <- FALSE
   
@@ -50,7 +50,7 @@ test_that("validateMetaData handles a missing format, replacing it with NA as a 
   metaData$"Format" <- NA_character_
   validatedMetaData$"Format" <- "NA"
   
-  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
+  validatedMetaData$"Assay Date" <- "2012-11-07"
   duplicateExperimentNamesAllowed <- FALSE
   useExisting <- FALSE
   
@@ -109,7 +109,7 @@ test_that("validateMetaData returns the correct frame when given extra columns o
   #This is called "extraData", and it has three rows, including some NA's
   load("public/src/modules/GenericDataParser/spec/RTestSet/IO_for_test_files/validateMetaData/inputExtraData.rda")
   
-  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
+  validatedMetaData$"Assay Date" <- "2012-11-07"
   duplicateExperimentNamesAllowed <- FALSE
   useExisting <- FALSE
   
@@ -142,7 +142,7 @@ test_that("validateMetaData throws no warnings when given extra columns of metad
   #This is called "extraData", and it has three rows, including some NA's
   load("public/src/modules/GenericDataParser/spec/RTestSet/IO_for_test_files/validateMetaData/inputExtraData.rda")
   
-  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
+  validatedMetaData$"Assay Date" <- "2012-11-07"
   duplicateExperimentNamesAllowed <- FALSE
   useExisting <- FALSE
   
@@ -167,7 +167,7 @@ test_that("validateMetaData handles an unknown scientist", {
   metaData$"Scientist" <- "unknownUser"
   validatedMetaData$"Scientist" <- ""
   
-  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
+  validatedMetaData$"Assay Date" <- "2012-11-07"
   duplicateExperimentNamesAllowed <- FALSE
   useExisting <- FALSE
   
@@ -185,7 +185,7 @@ test_that("validateMetaData handles an incorrectly formatted date (will err when
   
   metaData$"Assay Date" <- "2012/11/07"
   
-  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
+  validatedMetaData$"Assay Date" <- "2012-11-07"
   duplicateExperimentNamesAllowed <- FALSE
   useExisting <- FALSE
   
@@ -223,7 +223,7 @@ test_that("validateMetaData will accept CREATETHISEXPERIMENT", {
   metaData$"Experiment Name" <- "CREATETHISEXPERIMENT"
   validatedMetaData$"Experiment Name" <- ""
   
-  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
+  validatedMetaData$"Assay Date" <- "2012-11-07"
   
   
   expect_equal(suppressWarnings(validateMetaData(metaData, configList, testMode = TRUE)),
@@ -246,7 +246,7 @@ test_that("validateMetaData can use custom headers", {
                                                                          isNullable = c(FALSE)),
                                                sigFigs = 3))
   
-  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
+  validatedMetaData$"Assay Date" <- "2012-11-07"
   
   expect_equal(validateMetaData(metaData, configList, formatSettings = formatSettings, testMode = TRUE),
                list(validatedMetaData = validatedMetaData, 
@@ -263,7 +263,7 @@ test_that("validateMetaData rejects extra headers", {
 
 test_that("validateMetaData responds correctly to the client.include.project setting", {
   validatedMetaData <- metaData
-  validatedMetaData$"Assay Date" <- as.Date("2012-11-07")
+  validatedMetaData$"Assay Date" <- "2012-11-07"
   duplicateExperimentNamesAllowed <- FALSE
   useExisting <- FALSE
   # Save the old application settings

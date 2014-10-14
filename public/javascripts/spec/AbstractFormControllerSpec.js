@@ -33,19 +33,9 @@
         });
         return this.tafc.render();
       });
-      describe("basic existance tests", function() {
+      return describe("basic existance tests", function() {
         return it('should exist', function() {
           return expect(AbstractFormController).toBeDefined();
-        });
-      });
-      return describe("input formatting features", function() {
-        it("get val from input and trim it", function() {
-          this.tafc.$el.append("<input type='text' class='bv_testInput' />");
-          this.tafc.$('.bv_testInput').val("  some input with spaces  ");
-          return expect(this.tafc.getTrimmedInput('.bv_testInput')).toEqual("some input with spaces");
-        });
-        return it("should parse ACAS standard format yyyy-mm-dd correctly in IE8 and other browsers", function() {
-          return expect(this.tafc.convertYMDDateToMs("2013-6-6")).toEqual(new Date(2013, 5, 6).getTime());
         });
       });
     });

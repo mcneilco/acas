@@ -125,7 +125,7 @@ WHEN agv.ls_type = 'dateValue'
 	THEN to_char(agv.date_value, 'yyyy-mm-dd')
 WHEN agv.ls_type = 'clobValue' 
 	THEN DBMS_LOB.substr(agv.clob_value, 3000)
-	ELSE agv.string_value
+	ELSE COALESCE(agv.string_value,agv.comments)
 END AS string_value,
 agv.clob_value,
 agv.comments, 

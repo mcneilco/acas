@@ -1,10 +1,11 @@
 (function() {
-  var allCodeTableFiles, allCodeTableKeys, allCodeTables, allCodeTablesFileName, allFiles, codeTable, codeTablesFile, data, fileName, fs, glob, jsonallcodetablesstring, jsonfilestring, newFileName, _i, _j, _k, _len, _len1, _len2, _ref, _ref1,
-    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  var allCodeTableFiles, allCodeTableTypesAndKinds, allCodeTables, allCodeTablesFileName, allFiles, codeTable, codeTableFile, currentTypeAndKind, data, fileName, fs, glob, jsonallcodetablesstring, jsonfilestring, kind, newFileName, type, _, _i, _j, _k, _len, _len1, _len2, _ref;
 
   fs = require('fs');
 
   glob = require('glob');
+
+  _ = require("underscore");
 
   allFiles = glob.sync("../public/javascripts/spec/testFixtures/*.js");
 
@@ -21,20 +22,31 @@
 
   allCodeTables = [];
 
-  allCodeTableKeys = [];
+  allCodeTableTypesAndKinds = [];
+
+  currentTypeAndKind = {};
 
   for (_j = 0, _len1 = allCodeTableFiles.length; _j < _len1; _j++) {
     fileName = allCodeTableFiles[_j];
-    codeTablesFile = require(fileName);
-    _ref = codeTablesFile['dataDictValues'];
+    codeTableFile = require(fileName);
+    _ref = codeTableFile['dataDictValues'];
     for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
       codeTable = _ref[_k];
-      if ((_ref1 = Object.keys(codeTable)[0], __indexOf.call(allCodeTableKeys, _ref1) >= 0)) {
-        console.log("Error: code table for " + Object.keys(codeTable)[0] + " already stored");
-        process.exit(-1);
-      } else {
+      type = codeTable['type'];
+      kind = codeTable['kind'];
+      currentTypeAndKind['type'] = type;
+      currentTypeAndKind['kind'] = kind;
+      if (_.findWhere(allCodeTableTypesAndKinds, currentTypeAndKind) === void 0) {
+        allCodeTableTypesAndKinds.push.apply(allCodeTableTypesAndKinds, [
+          {
+            type: codeTable['type'],
+            kind: codeTable['kind']
+          }
+        ]);
         allCodeTables.push(codeTable);
-        Array.prototype.push.apply(allCodeTableKeys, Object.keys(codeTable));
+      } else {
+        console.log("Error: code table for type: " + type + "and kind: " + kind + " already stored");
+        process.exit(-1);
       }
     }
   }

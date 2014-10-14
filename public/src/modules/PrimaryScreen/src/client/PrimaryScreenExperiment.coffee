@@ -1,7 +1,115 @@
-class window.PrimaryScreenAnalysisParameters extends Backbone.Model
+
+class window.PrimaryAnalysisRead extends Backbone.Model
+	defaults:
+		readPosition: null
+		readName: "unassigned"
+		activity: false
+
+	validate: (attrs) ->
+		errors = []
+		if _.isNaN(attrs.readPosition) or attrs.readPosition == ""
+			errors.push
+				attribute: 'readPosition'
+				message: "Read position must be a number"
+		if attrs.readName is "unassigned" or attrs.readName is ""
+			errors.push
+				attribute: 'readName'
+				message: "Read name must be assigned"
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+	triggerAmDirty: =>
+		@trigger 'amDirty', @
+
+class window.TransformationRule extends Backbone.Model
 	defaults:
 		transformationRule: "unassigned"
+
+	validate: (attrs) ->
+		errors = []
+		if attrs.transformationRule is "unassigned"
+			errors.push
+				attribute: 'transformationRule'
+				message: "Transformation Rule must be assigned"
+
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+	triggerAmDirty: =>
+		@trigger 'amDirty', @
+
+class window.PrimaryAnalysisReadList extends Backbone.Collection
+	model: PrimaryAnalysisRead
+
+	validateCollection: (matchReadName)->
+		modelErrors = []
+		usedReadNames = {}
+		if @.length != 0
+			for index in [0..@.length-1]
+				model = @.at(index)
+				indivModelErrors = model.validate(model.attributes) # note: can't call model.isValid() because if invalid, the function will trigger validationError, which adds the class "error" to the invalid attributes
+				if indivModelErrors != null
+					for error in indivModelErrors
+						unless matchReadName and error.attribute == 'readPosition'
+								modelErrors.push
+									attribute: error.attribute+':eq('+index+')'
+									message: error.message
+				currentReadName = model.get('readName')
+				if currentReadName of usedReadNames
+					modelErrors.push
+						attribute: 'readName:eq('+index+')'
+						message: "Read name can not be chosen more than once"
+					modelErrors.push
+						attribute: 'readName:eq('+usedReadNames[currentReadName]+')'
+						message: "Read name can not be chosen more than once"
+				else
+					usedReadNames[currentReadName] = index
+		return modelErrors
+
+
+class window.TransformationRuleList extends Backbone.Collection
+	model: TransformationRule
+
+
+	validateCollection: ->
+		modelErrors = []
+		usedRules ={}
+		if @.length != 0
+			for index in [0..@.length-1]
+				model = @.at(index)
+				indivModelErrors = model.validate(model.attributes)
+				if indivModelErrors != null
+					for error in indivModelErrors
+						modelErrors.push
+							attribute: error.attribute+':eq('+index+')'
+							message: error.message
+				currentRule = model.get('transformationRule')
+				if currentRule of usedRules
+					modelErrors.push
+						attribute: 'transformationRule:eq('+index+')'
+						message: "Transformation Rules can not be chosen more than once"
+					modelErrors.push
+						attribute: 'transformationRule:eq('+usedRules[currentRule]+')'
+						message: "Transformation Rules can not be chosen more than once"
+				else
+					usedRules[currentRule] = index
+		return modelErrors
+
+
+class window.PrimaryScreenAnalysisParameters extends Backbone.Model
+	defaults:
+		instrumentReader: "unassigned"
+		signalDirectionRule: "unassigned"
+		aggregateBy1: "unassigned"
+		aggregateBy2: "unassigned"
 		normalizationRule: "unassigned"
+		assayVolume: null
+		transferVolume: null
+		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
 		positiveControl: new Backbone.Model()
@@ -9,6 +117,13 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		vehicleControl: new Backbone.Model()
 		agonistControl: new Backbone.Model()
 		thresholdType: "sd"
+		volumeType: "dilution"
+		htsFormat: false
+		autoHitSelection: false
+		matchReadName: true
+		primaryAnalysisReadList: new PrimaryAnalysisReadList()
+		transformationRuleList: new TransformationRuleList()
+
 
 	initialize: ->
 		@fixCompositeClasses()
@@ -31,9 +146,26 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			@set agonistControl: new Backbone.Model(@get('agonistControl'))
 		@get('agonistControl').on "change", =>
 			@trigger 'change'
+		if @get('primaryAnalysisReadList') not instanceof PrimaryAnalysisReadList
+			@set primaryAnalysisReadList: new PrimaryAnalysisReadList(@get('primaryAnalysisReadList'))
+		@get('primaryAnalysisReadList').on "change", =>
+			@trigger 'change'
+		@get('primaryAnalysisReadList').on "amDirty", =>
+			@trigger 'amDirty'
+		if @get('transformationRuleList') not instanceof TransformationRuleList
+			@set transformationRuleList: new TransformationRuleList(@get('transformationRuleList'))
+		@get('transformationRuleList').on "change", =>
+			@trigger 'change'
+		@get('transformationRuleList').on "amDirty", =>
+			@trigger 'amDirty'
+
 
 	validate: (attrs) ->
 		errors = []
+		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
+		errors.push readErrors...
+		transformationErrors = @get('transformationRuleList').validateCollection()
+		errors.push transformationErrors...
 		positiveControl = @get('positiveControl').get('batchCode')
 		if positiveControl is "" or positiveControl is undefined
 			errors.push
@@ -54,25 +186,30 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'negativeControlConc'
 				message: "Negative control conc much be set"
+
 		agonistControl = @get('agonistControl').get('batchCode')
-		if agonistControl is "" or agonistControl is undefined
-			errors.push
-				attribute: 'agonistControlBatch'
-				message: "Agonist control batch much be set"
 		agonistControlConc = @get('agonistControl').get('concentration')
-		if _.isNaN(agonistControlConc) || agonistControlConc is undefined
+		if agonistControl !="" or agonistControlConc != "" # at least one of the agonist control fields is filled
+			if agonistControl is "" or agonistControl is undefined
+				errors.push
+					attribute: 'agonistControlBatch'
+					message: "Agonist control batch much be set"
+			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is ""
+				errors.push
+					attribute: 'agonistControlConc'
+					message: "Agonist control conc much be set"
+		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
 			errors.push
-				attribute: 'agonistControlConc'
-				message: "Agonist control conc much be set"
-		vehicleControl = @get('vehicleControl').get('batchCode')
-		if vehicleControl is "" or vehicleControl is undefined
+				attribute: 'signalDirectionRule'
+				message: "Signal Direction Rule must be assigned"
+		if attrs.aggregateBy1 is "unassigned" or attrs.aggregateBy1 is ""
 			errors.push
-				attribute: 'vehicleControlBatch'
-				message: "Vehicle control must be set"
-		if attrs.transformationRule is "unassigned" or attrs.transformationRule is ""
+				attribute: 'aggregateBy1'
+				message: "Aggregate By1 must be assigned"
+		if attrs.aggregateBy2 is "unassigned" or attrs.aggregateBy2 is ""
 			errors.push
-				attribute: 'transformationRule'
-				message: "Transformation rule must be assigned"
+				attribute: 'aggregateBy2'
+				message: "Aggregate By2 must be assigned"
 		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is ""
 			errors.push
 				attribute: 'normalizationRule'
@@ -85,11 +222,47 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'hitEfficacyThreshold'
 				message: "Efficacy threshold must be assigned"
+		if _.isNaN(attrs.assayVolume)
+			errors.push
+				attribute: 'assayVolume'
+				message: "Assay volume must be assigned"
+		if (attrs.assayVolume == "" or attrs.assayVolume == null) and (attrs.transferVolume != "" and attrs.transferVolume != null)
+				errors.push
+					attribute: 'assayVolume'
+					message: "Assay volume must be assigned"
+		if attrs.volumeType == "dilution" && _.isNaN(attrs.dilutionFactor)
+			errors.push
+				attribute: 'dilutionFactor'
+				message: "Dilution factor must be a number"
+		if attrs.volumeType == "transfer" and _.isNaN(attrs.transferVolume)
+			errors.push
+				attribute: 'transferVolume'
+				message: "Transfer volume must be assigned"
 
 		if errors.length > 0
 			return errors
 		else
 			return null
+
+	autocalculateVolumes: ->
+		dilutionFactor = @.get('dilutionFactor')
+		transferVolume = @.get('transferVolume')
+		assayVolume = @.get('assayVolume')
+		if @.get('volumeType')=='dilution'
+			if isNaN(dilutionFactor) or dilutionFactor=="" or dilutionFactor == 0 or isNaN(assayVolume) or assayVolume==""
+				transferVolume = ""
+			else
+				transferVolume = assayVolume/dilutionFactor
+			@.set transferVolume: transferVolume
+			return transferVolume
+		else
+			if isNaN(transferVolume) or transferVolume=="" or transferVolume == 0 or isNaN(assayVolume) or assayVolume==""
+				dilutionFactor = ""
+			else
+				dilutionFactor = assayVolume/transferVolume
+			@.set dilutionFactor: dilutionFactor
+			return dilutionFactor
+
 
 class window.PrimaryScreenExperiment extends Experiment
 	getAnalysisParameters: ->
@@ -134,14 +307,210 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		result
 
+class window.PrimaryAnalysisReadController extends AbstractFormController
+	template: _.template($("#PrimaryAnalysisReadView").html())
+	tagName: "div"
+	className: "form-inline"
+	events:
+		"change .bv_readPosition": "attributeChanged"
+		"change .bv_readName": "attributeChanged"
+		"click .bv_activity": "attributeChanged"
+		"click .bv_delete": "clear"
+
+	initialize: ->
+		@errorOwnerName = 'PrimaryAnalysisReadController'
+		@setBindings()
+		@model.on "destroy", @remove, @
+
+
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@setUpReadNameSelect()
+
+		@
+
+	setUpReadNameSelect: ->
+		@readNameList = new PickListList()
+		@readNameList.url = "/api/dataDict/experimentMetadata/read name"
+		@readNameList = new PickListSelectController
+			el: @$('.bv_readName')
+			collection: @readNameList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Read Name"
+			selectedCode: @model.get('readName')
+
+	setUpReadPosition: (matchReadNameChecked) ->
+		if matchReadNameChecked
+			@$('.bv_readPosition').attr('disabled','disabled')
+		else
+			@$('.bv_readPosition').removeAttr('disabled')
+
+
+	updateModel: =>
+		activity = @$('.bv_activity').is(":checked")
+		@model.set
+			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
+			readName: @$('.bv_readName').val()
+			activity: activity
+		@model.triggerAmDirty()
+
+	clear: =>
+		@model.destroy()
+		@model.triggerAmDirty()
+
+
+class window.TransformationRuleController extends AbstractFormController
+	template: _.template($("#TransformationRuleView").html())
+	events:
+		"change .bv_transformationRule": "attributeChanged"
+		"click .bv_deleteRule": "clear"
+
+	initialize: ->
+		@errorOwnerName = 'TransformationRuleController'
+		@setBindings()
+		@model.on "destroy", @remove, @
+
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@setUpTransformationRuleSelect()
+
+		@
+
+	updateModel: =>
+		@model.set transformationRule: @$('.bv_transformationRule').val()
+		@model.triggerAmDirty()
+
+
+	setUpTransformationRuleSelect: ->
+		@transformationList = new PickListList()
+		@transformationList.url = "/api/dataDict/experimentMetadata/transformation"
+		@transformationList = new PickListSelectController
+			el: @$('.bv_transformationRule')
+			collection: @transformationList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Transformation Rule"
+			selectedCode: @model.get('transformationRule')
+
+
+	clear: =>
+		@model.destroy()
+
+
+class window.PrimaryAnalysisReadListController extends AbstractFormController
+	template: _.template($("#PrimaryAnalysisReadListView").html())
+	matchReadNameChecked: true
+	events:
+		"click .bv_addReadButton": "addNewRead"
+
+	initialize: =>
+		@collection.on 'remove', @checkActivity
+		@collection.on 'remove', => @collection.trigger 'change'
+
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@collection.each (read) =>
+			@addOneRead(read)
+		if @collection.length == 0
+			@addNewRead()
+		@checkActivity()
+
+		@
+
+	addNewRead: =>
+		newModel = new PrimaryAnalysisRead()
+		@collection.add newModel
+		@addOneRead(newModel)
+		if @collection.length ==1
+			@checkActivity()
+		newModel.triggerAmDirty()
+
+	addOneRead: (read) ->
+		parc = new PrimaryAnalysisReadController
+			model: read
+		@$('.bv_readInfo').append parc.render().el
+		parc.setUpReadPosition(@matchReadNameChecked)
+
+	matchReadNameChanged: (matchReadName) =>
+		@matchReadNameChecked = matchReadName
+		if @matchReadNameChecked
+			@$('.bv_readPosition').val('')
+			@$('.bv_readPosition').attr('disabled','disabled')
+			@collection.each (read) =>
+				read.set readPosition: ''
+		else
+			@$('.bv_readPosition').removeAttr('disabled')
+
+	checkActivity: => #check that at least one activity is set
+		index = @collection.length-1
+		activitySet = false
+		while index >= 0 and activitySet == false
+			if @collection.at(index).get('activity') == true
+				activitySet = true
+			if index == 0
+				@$('.bv_activity:eq(0)').click()
+			index = index - 1
+
+
+class window.TransformationRuleListController extends AbstractFormController
+	template: _.template($("#TransformationRuleListView").html())
+	events:
+		"click .bv_addTransformationButton": "addNewRule"
+
+	initialize: =>
+		@collection.on 'remove', @checkNumberOfRules
+		@collection.on 'remove', => @collection.trigger 'amDirty'
+		@collection.on 'remove', => @collection.trigger 'change'
+
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@collection.each (rule) =>
+			@addOneRule(rule)
+		if @collection.length == 0
+			@addNewRule()
+
+		@
+
+	addNewRule: =>
+		newModel = new TransformationRule()
+		@collection.add newModel
+		@addOneRule(newModel)
+		newModel.triggerAmDirty()
+
+
+	addOneRule: (rule) ->
+		trc = new TransformationRuleController
+			model: rule
+		@$('.bv_transformationInfo').append trc.render().el
+
+
+	checkNumberOfRules: => #ensures that there is always one rule
+		if @collection.length == 0
+			@addNewRule()
+
 class window.PrimaryScreenAnalysisParametersController extends AbstractParserFormController
 	template: _.template($("#PrimaryScreenAnalysisParametersView").html())
 	autofillTemplate: _.template($("#PrimaryScreenAnalysisParametersAutofillView").html())
 
+
 	events:
-		"change .bv_transformationRule": "attributeChanged"
+		"change .bv_instrumentReader": "attributeChanged"
+		"change .bv_signalDirectionRule": "attributeChanged"
+		"change .bv_aggregateBy1": "attributeChanged"
+		"change .bv_aggregateBy2": "attributeChanged"
 		"change .bv_normalizationRule": "attributeChanged"
-		"change .bv_transformationRule": "attributeChanged"
+		"change .bv_assayVolume": "handleAssayVolumeChanged"
+		"change .bv_dilutionFactor": "handleDilutionFactorChanged"
+		"change .bv_transferVolume": "handleTransferVolumeChanged"
 		"change .bv_hitEfficacyThreshold": "attributeChanged"
 		"change .bv_hitSDThreshold": "attributeChanged"
 		"change .bv_positiveControlBatch": "attributeChanged"
@@ -153,37 +522,172 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_agonistControlConc": "attributeChanged"
 		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
+		"change .bv_volumeTypeTransfer": "handleVolumeTypeChanged"
+		"change .bv_volumeTypeDilution": "handleVolumeTypeChanged"
+		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
+		"change .bv_htsFormat": "attributeChanged"
+		"click .bv_matchReadName": "handleMatchReadNameChanged"
+
+
+
 
 	initialize: ->
 		@errorOwnerName = 'PrimaryScreenAnalysisParametersController'
 		super()
+		@model.bind 'amDirty', => @trigger 'amDirty', @
+		@setupInstrumentReaderSelect()
+		@setupSignalDirectionSelect()
+		@setupAggregateBy1Select()
+		@setupAggregateBy2Select()
+		@setupNormalizationSelect()
+
+
+
 
 	render: =>
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
-		@$('.bv_transformationRule').val(@model.get('transformationRule'))
-		@$('.bv_normalizationRule').val(@model.get('normalizationRule'))
+		@setupInstrumentReaderSelect()
+		@setupSignalDirectionSelect()
+		@setupAggregateBy1Select()
+		@setupAggregateBy2Select()
+		@setupNormalizationSelect()
+		@handleAutoHitSelectionChanged()
+		@setupReadListController()
+		@setupTransformationRuleListController()
+		@handleMatchReadNameChanged()
 
 		@
 
+
+	setupInstrumentReaderSelect: ->
+		@instrumentList = new PickListList()
+		@instrumentList.url = "/api/dataDict/experimentMetadata/instrument reader"
+		@instrumentListController = new PickListSelectController
+			el: @$('.bv_instrumentReader')
+			collection: @instrumentList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Instrument"
+			selectedCode: @model.get('instrumentReader')
+
+	setupSignalDirectionSelect: ->
+		@signalDirectionList = new PickListList()
+		@signalDirectionList.url = "/api/dataDict/experimentMetadata/signal direction"
+		@signalDirectionListController = new PickListSelectController
+			el: @$('.bv_signalDirectionRule')
+			collection: @signalDirectionList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Signal Direction"
+			selectedCode: @model.get('signalDirectionRule')
+
+	setupAggregateBy1Select: ->
+		@aggregateBy1List = new PickListList()
+		@aggregateBy1List.url = "/api/dataDict/experimentMetadata/aggregate by1"
+		@aggregateBy1ListController = new PickListSelectController
+			el: @$('.bv_aggregateBy1')
+			collection: @aggregateBy1List
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select"
+			selectedCode: @model.get('aggregateBy1')
+
+	setupAggregateBy2Select: ->
+		@aggregateBy2List = new PickListList()
+		@aggregateBy2List.url = "/api/dataDict/experimentMetadata/aggregate by2"
+		@aggregateBy2ListController = new PickListSelectController
+			el: @$('.bv_aggregateBy2')
+			collection: @aggregateBy2List
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select"
+			selectedCode: @model.get('aggregateBy2')
+
+	setupNormalizationSelect: ->
+		@normalizationList = new PickListList()
+		@normalizationList.url = "/api/dataDict/experimentMetadata/normalization"
+		@normalizationListController = new PickListSelectController
+			el: @$('.bv_normalizationRule')
+			collection: @normalizationList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Rule"
+			selectedCode: @model.get('normalizationRule')
+
+	setupReadListController: ->
+		@readListController= new PrimaryAnalysisReadListController
+			el: @$('.bv_readList')
+			collection: @model.get('primaryAnalysisReadList')
+		@readListController.render()
+
+	setupTransformationRuleListController: ->
+		@transformationRuleListController= new TransformationRuleListController
+			el: @$('.bv_transformationList')
+			collection: @model.get('transformationRuleList')
+		@transformationRuleListController.render()
+
+
 	updateModel: =>
+		htsFormat = @$('.bv_htsFormat').is(":checked")
+		console.log "testing update model"
+		console.log @$('.bv_agonistControlBatch').val()
+		console.log UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
 		@model.set
-			transformationRule: @$('.bv_transformationRule').val()
+			instrumentReader: @$('.bv_instrumentReader').val()
+			signalDirectionRule: @$('.bv_signalDirectionRule').val()
+			aggregateBy1: @$('.bv_aggregateBy1').val()
+			aggregateBy2: @$('.bv_aggregateBy2').val()
 			normalizationRule: @$('.bv_normalizationRule').val()
-			hitEfficacyThreshold: parseFloat(@getTrimmedInput('.bv_hitEfficacyThreshold'))
-			hitSDThreshold: parseFloat(@getTrimmedInput('.bv_hitSDThreshold'))
+			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
+			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))
+			assayVolume: UtilityFunctions::getTrimmedInput @$('.bv_assayVolume')
+			transferVolume: UtilityFunctions::getTrimmedInput @$('.bv_transferVolume')
+			dilutionFactor: UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor')
+			htsFormat: htsFormat
+		if @model.get('assayVolume') != ""
+			@model.set assayVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_assayVolume'))
+		if @model.get('transferVolume') != ""
+			@model.set transferVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_transferVolume'))
+		if @model.get('dilutionFactor') != ""
+			@model.set dilutionFactor: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor'))
 		@model.get('positiveControl').set
-			batchCode: @getTrimmedInput('.bv_positiveControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_positiveControlConc'))
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
+			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_positiveControlConc'))
 		@model.get('negativeControl').set
-			batchCode: @getTrimmedInput('.bv_negativeControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_negativeControlConc'))
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_negativeControlBatch')
+			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_negativeControlConc'))
 		@model.get('vehicleControl').set
-			batchCode: @getTrimmedInput('.bv_vehicleControlBatch')
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_vehicleControlBatch')
 			concentration: null
 		@model.get('agonistControl').set
-			batchCode: @getTrimmedInput('.bv_agonistControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_agonistControlConc'))
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
+			concentration: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc')
+		if @model.get('agonistControl').get('concentration') != ""
+			@model.get('agonistControl').set
+				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
+
+	handleAssayVolumeChanged: =>
+		@attributeChanged()
+		volumeType = @$("input[name='bv_volumeType']:checked").val()
+		if volumeType == "dilution"
+			@handleDilutionFactorChanged()
+		else
+			@handleTransferVolumeChanged()
+
+
+	handleTransferVolumeChanged: =>
+		@attributeChanged()
+		dilutionFactor = @model.autocalculateVolumes()
+		@$('.bv_dilutionFactor').val(dilutionFactor)
+
+	handleDilutionFactorChanged: =>
+		@attributeChanged()
+		transferVolume = @model.autocalculateVolumes()
+		@$('.bv_transferVolume').val(transferVolume)
+		if transferVolume=="" or transferVolume == null
+			@$('.bv_dilutionFactor').val(@model.get('dilutionFactor'))
+
 
 	handleThresholdTypeChanged: =>
 		thresholdType = @$("input[name='bv_thresholdType']:checked").val()
@@ -196,8 +700,44 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_hitSDThreshold').removeAttr('disabled')
 		@attributeChanged()
 
+	handleAutoHitSelectionChanged: =>
+		autoHitSelection = @$('.bv_autoHitSelection').is(":checked")
+		@model.set autoHitSelection: autoHitSelection
+		if autoHitSelection
+			@$('.bv_thresholdControls').show()
+		else
+			@$('.bv_thresholdControls').hide()
+		@attributeChanged()
+
+	handleVolumeTypeChanged: =>
+		volumeType = @$("input[name='bv_volumeType']:checked").val()
+		@model.set volumeType: volumeType
+		if volumeType=="transfer"
+			@$('.bv_dilutionFactor').attr('disabled','disabled')
+			@$('.bv_transferVolume').removeAttr('disabled')
+		else
+			@$('.bv_transferVolume').attr('disabled','disabled')
+			@$('.bv_dilutionFactor').removeAttr('disabled')
+		if @model.get('transferVolume') == "" or @model.get('assayVolume')== ""
+			@handleDilutionFactorChanged()
+		@attributeChanged()
+
+	handleMatchReadNameChanged: =>
+		matchReadName = @$('.bv_matchReadName').is(":checked")
+		@model.set matchReadName: matchReadName
+		@readListController.matchReadNameChanged(matchReadName)
+		@attributeChanged()
+
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 #	See UploadAndRunPrimaryAnalsysisController for example required initialization function
+
+	initialize: ->
+		@allowedFileTypes = ['zip']
+		@loadReportFile = true
+		super()
+		@$('.bv_reportFileDirections').html('To upload an <b>optional well flagging file</b>, click the "Browse Files…" button and select a file.')
+#		@$("label[for='.bv_attachReportFile']").innerHTML('Attach optional well flagging file')
+		@$('.bv_attachReportCheckboxText').html('Attach optional well flagging file')
 
 	completeInitialization: ->
 		@analysisParameterController.on 'valid', @handleMSFormValid
@@ -299,6 +839,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		else
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 			@setExperimentSaved()
+
 
 	render: =>
 		@showExistingResults()
@@ -444,3 +985,11 @@ class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExpe
 	modelFitControllerName: "DoseResponseAnalysisController"
 	protocolFilter: "?protocolName=FLIPR"
 	moduleLaunchName: "flipr_screening_assay"
+
+
+
+
+
+
+
+

@@ -1,5 +1,7 @@
 fs = require 'fs'
 glob = require 'glob'
+_ = require "underscore"
+
 
 allFiles = glob.sync "../public/javascripts/spec/testFixtures/*.js"
 for fileName in allFiles
@@ -11,16 +13,22 @@ for fileName in allFiles
 
 allCodeTableFiles = glob.sync "../public/javascripts/spec/testFixtures/*CodeTableTestJSON.js"
 allCodeTables = []
-allCodeTableKeys = []
+allCodeTableTypesAndKinds = []
+currentTypeAndKind = {}
+
 for fileName in allCodeTableFiles
-	codeTablesFile = require fileName
-	for codeTable in codeTablesFile['dataDictValues']
-		if (Object.keys(codeTable)[0] in allCodeTableKeys)
-			console.log "Error: code table for " + Object.keys(codeTable)[0] + " already stored"
-			process.exit -1
-		else
+	codeTableFile = require fileName
+	for codeTable in codeTableFile['dataDictValues']
+		type = codeTable['type']
+		kind = codeTable['kind']
+		currentTypeAndKind['type'] = type
+		currentTypeAndKind['kind'] = kind
+		if _.findWhere(allCodeTableTypesAndKinds, currentTypeAndKind) is undefined
+			allCodeTableTypesAndKinds.push [{type:codeTable['type'], kind:codeTable['kind']}]...
 			allCodeTables.push codeTable
-			Array::push.apply allCodeTableKeys, Object.keys(codeTable)
+		else
+			console.log "Error: code table for type: " + type + "and kind: " + kind + " already stored"
+			process.exit -1
 
 jsonallcodetablesstring = JSON.stringify allCodeTables
 allCodeTablesFileName = "../public/javascripts/spec/testFixtures/CodeTableJSON.js"

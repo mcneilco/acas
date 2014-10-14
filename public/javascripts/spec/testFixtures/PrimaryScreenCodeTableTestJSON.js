@@ -2,7 +2,9 @@
   (function(exports) {
     return exports.dataDictValues = [
       {
-        "instrumentReaderCodes": [
+        type: "experimentMetadata",
+        kind: "instrument reader",
+        codes: [
           {
             code: "flipr",
             name: "FLIPR",
@@ -10,15 +12,19 @@
           }
         ]
       }, {
-        "signalDirectionCodes": [
+        type: "experimentMetadata",
+        kind: "signal direction",
+        codes: [
           {
-            code: "increasing signal (highest = 100%)",
+            code: "increasing",
             name: "Increasing Signal (highest = 100%)",
             ignored: false
           }
         ]
       }, {
-        "aggregateBy1Codes": [
+        type: "experimentMetadata",
+        kind: "aggregate by1",
+        codes: [
           {
             code: "compound batch concentration",
             name: "Compound Batch Concentration",
@@ -26,26 +32,52 @@
           }
         ]
       }, {
-        "aggregateBy2Codes": [
+        type: "experimentMetadata",
+        kind: "aggregate by2",
+        codes: [
           {
             code: "median",
             name: "Median",
             ignored: false
-          }
-        ]
-      }, {
-        "transformationCodes": [
-          {
-            code: "(maximum-minimum)/minimum",
-            name: "(Max-Min)/Min",
+          }, {
+            code: "mean",
+            name: "Mean",
             ignored: false
           }
         ]
       }, {
-        "normalizationCodes": [
+        type: "experimentMetadata",
+        kind: "transformation",
+        codes: [
           {
-            code: "plate order",
-            name: "Plate Order",
+            code: "% efficacy",
+            name: "% Efficacy",
+            ignored: false
+          }, {
+            code: "sd",
+            name: "SD",
+            ignored: false
+          }, {
+            code: "null",
+            name: "Not Set",
+            ignored: false
+          }
+        ]
+      }, {
+        type: "experimentMetadata",
+        kind: "normalization",
+        codes: [
+          {
+            code: "plate order only",
+            name: "Plate Order Only",
+            ignored: false
+          }, {
+            code: "plate order and row",
+            name: "Plate Order And Row",
+            ignored: false
+          }, {
+            code: "plate order and tip",
+            name: "Plate Order And Tip",
             ignored: false
           }, {
             code: "none",
@@ -54,8 +86,14 @@
           }
         ]
       }, {
-        "readNameCodes": [
+        type: "experimentMetadata",
+        kind: "read name",
+        codes: [
           {
+            code: "luminescence",
+            name: "Luminescence",
+            ignored: false
+          }, {
             code: "fluorescence",
             name: "Fluorescence",
             ignored: false
