@@ -173,20 +173,6 @@ class window.ApplicationSourcesList extends Backbone.Collection
 class window.UsersList extends Backbone.Collection
 	url: '/api/logger/users'
 
-class window.PickList extends Backbone.View
-	template: $("#pick-list").html()
-
-	initialize: ->
-		@collection.bind "fetch", @render
-		@collection.bind "change", @render
-		@collection.bind "add", @render
-
-	render: =>
-		$(@el).empty()
-		$(@el).html(_.template(@template, {collection: @collection}))
-
-		@
-
 class window.GraphLogStats extends Backbone.View
 	template: $("#log-stats-view").html()
 	initialize: ->
