@@ -553,7 +553,7 @@
 
     PrimaryAnalysisReadController.prototype.setUpReadNameSelect = function() {
       this.readNameList = new PickListList();
-      this.readNameList.url = "/api/dataDict/readNameCodes";
+      this.readNameList.url = "/api/dataDict/experimentMetadata/read name";
       return this.readNameList = new PickListSelectController({
         el: this.$('.bv_readName'),
         collection: this.readNameList,
@@ -577,7 +577,7 @@
       var activity;
       activity = this.$('.bv_activity').is(":checked");
       this.model.set({
-        readPosition: parseInt(this.getTrimmedInput('.bv_readPosition')),
+        readPosition: parseInt(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_readPosition'))),
         readName: this.$('.bv_readName').val(),
         activity: activity
       });
@@ -632,7 +632,7 @@
 
     TransformationRuleController.prototype.setUpTransformationRuleSelect = function() {
       this.transformationList = new PickListList();
-      this.transformationList.url = "/api/dataDict/transformationCodes";
+      this.transformationList.url = "/api/dataDict/experimentMetadata/transformation";
       return this.transformationList = new PickListSelectController({
         el: this.$('.bv_transformationRule'),
         collection: this.transformationList,
@@ -904,7 +904,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupInstrumentReaderSelect = function() {
       this.instrumentList = new PickListList();
-      this.instrumentList.url = "/api/dataDict/instrumentReaderCodes";
+      this.instrumentList.url = "/api/dataDict/experimentMetadata/instrument reader";
       return this.instrumentListController = new PickListSelectController({
         el: this.$('.bv_instrumentReader'),
         collection: this.instrumentList,
@@ -918,7 +918,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupSignalDirectionSelect = function() {
       this.signalDirectionList = new PickListList();
-      this.signalDirectionList.url = "/api/dataDict/signalDirectionCodes";
+      this.signalDirectionList.url = "/api/dataDict/experimentMetadata/signal direction";
       return this.signalDirectionListController = new PickListSelectController({
         el: this.$('.bv_signalDirectionRule'),
         collection: this.signalDirectionList,
@@ -932,7 +932,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupAggregateBy1Select = function() {
       this.aggregateBy1List = new PickListList();
-      this.aggregateBy1List.url = "/api/dataDict/aggregateBy1Codes";
+      this.aggregateBy1List.url = "/api/dataDict/experimentMetadata/aggregate by1";
       return this.aggregateBy1ListController = new PickListSelectController({
         el: this.$('.bv_aggregateBy1'),
         collection: this.aggregateBy1List,
@@ -946,7 +946,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupAggregateBy2Select = function() {
       this.aggregateBy2List = new PickListList();
-      this.aggregateBy2List.url = "/api/dataDict/aggregateBy2Codes";
+      this.aggregateBy2List.url = "/api/dataDict/experimentMetadata/aggregate by2";
       return this.aggregateBy2ListController = new PickListSelectController({
         el: this.$('.bv_aggregateBy2'),
         collection: this.aggregateBy2List,
@@ -960,7 +960,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupNormalizationSelect = function() {
       this.normalizationList = new PickListList();
-      this.normalizationList.url = "/api/dataDict/normalizationCodes";
+      this.normalizationList.url = "/api/dataDict/experimentMetadata/normalization";
       return this.normalizationListController = new PickListSelectController({
         el: this.$('.bv_normalizationRule'),
         collection: this.normalizationList,
@@ -991,53 +991,56 @@
     PrimaryScreenAnalysisParametersController.prototype.updateModel = function() {
       var htsFormat;
       htsFormat = this.$('.bv_htsFormat').is(":checked");
+      console.log("testing update model");
+      console.log(this.$('.bv_agonistControlBatch').val());
+      console.log(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlBatch')));
       this.model.set({
         instrumentReader: this.$('.bv_instrumentReader').val(),
         signalDirectionRule: this.$('.bv_signalDirectionRule').val(),
         aggregateBy1: this.$('.bv_aggregateBy1').val(),
         aggregateBy2: this.$('.bv_aggregateBy2').val(),
         normalizationRule: this.$('.bv_normalizationRule').val(),
-        hitEfficacyThreshold: parseFloat(this.getTrimmedInput('.bv_hitEfficacyThreshold')),
-        hitSDThreshold: parseFloat(this.getTrimmedInput('.bv_hitSDThreshold')),
-        assayVolume: this.getTrimmedInput('.bv_assayVolume'),
-        transferVolume: this.getTrimmedInput('.bv_transferVolume'),
-        dilutionFactor: this.getTrimmedInput('.bv_dilutionFactor'),
+        hitEfficacyThreshold: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_hitEfficacyThreshold'))),
+        hitSDThreshold: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_hitSDThreshold'))),
+        assayVolume: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayVolume')),
+        transferVolume: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_transferVolume')),
+        dilutionFactor: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_dilutionFactor')),
         htsFormat: htsFormat
       });
       if (this.model.get('assayVolume') !== "") {
         this.model.set({
-          assayVolume: parseFloat(this.getTrimmedInput('.bv_assayVolume'))
+          assayVolume: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayVolume')))
         });
       }
       if (this.model.get('transferVolume') !== "") {
         this.model.set({
-          transferVolume: parseFloat(this.getTrimmedInput('.bv_transferVolume'))
+          transferVolume: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_transferVolume')))
         });
       }
       if (this.model.get('dilutionFactor') !== "") {
         this.model.set({
-          dilutionFactor: parseFloat(this.getTrimmedInput('.bv_dilutionFactor'))
+          dilutionFactor: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_dilutionFactor')))
         });
       }
       this.model.get('positiveControl').set({
-        batchCode: this.getTrimmedInput('.bv_positiveControlBatch'),
-        concentration: parseFloat(this.getTrimmedInput('.bv_positiveControlConc'))
+        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_positiveControlBatch')),
+        concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_positiveControlConc')))
       });
       this.model.get('negativeControl').set({
-        batchCode: this.getTrimmedInput('.bv_negativeControlBatch'),
-        concentration: parseFloat(this.getTrimmedInput('.bv_negativeControlConc'))
+        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_negativeControlBatch')),
+        concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_negativeControlConc')))
       });
       this.model.get('vehicleControl').set({
-        batchCode: this.getTrimmedInput('.bv_vehicleControlBatch'),
+        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_vehicleControlBatch')),
         concentration: null
       });
       this.model.get('agonistControl').set({
-        batchCode: this.getTrimmedInput('.bv_agonistControlBatch'),
-        concentration: this.getTrimmedInput('.bv_agonistControlConc')
+        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlBatch')),
+        concentration: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlConc'))
       });
       if (this.model.get('agonistControl').get('concentration') !== "") {
         return this.model.get('agonistControl').set({
-          concentration: parseFloat(this.getTrimmedInput('.bv_agonistControlConc'))
+          concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlConc')))
         });
       }
     };

@@ -88,6 +88,7 @@
         window.conf.leaveACASMessage = "WARNING: There are unsaved changes.";
       } else {
         this.$('.bv_isDirty').hide();
+        window.conf.leaveACASMessage = "There are no unsaved changes.";
       }
       if (this.model.has('requireUserRoles')) {
         if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.model.get('requireUserRoles'))) {

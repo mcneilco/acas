@@ -2892,10 +2892,11 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       #subjectDataKept <- as.data.table(subjectData)
       #subjectDataKept2 <- subjectDataKept[!(rowID %in% removeRowID), createTreatmentGroupData(.SD), by = groupByColumns]
       
-      intermedList <- organizeSubjectData(
-        subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, 
-        link, precise, stateAssignments = NULL, keepColumn=keepColumn, 
-        errorEnv=errorEnv, formatParameters =  formatParameters)
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = c("test compound treatment", "results", "results"))
+      
+      intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, keepColumn=keepColumn, errorEnv=errorEnv, formatParameters =  formatParameters)
+      subjectData <- intermedList$subjectData
+      treatmentGroupData <- intermedList$treatmentGroupData
     }
   } else {
     # Grab the Raw Results Section

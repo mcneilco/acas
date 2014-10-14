@@ -630,7 +630,7 @@ describe "Primary Screen Experiment module testing", ->
 						@psapc.$('.bv_signalDirectionRule option').length > 0
 					, 1000
 					runs ->
-						expect(@psapc.$('.bv_signalDirectionRule').val()).toEqual "increasing signal (highest = 100%)"
+						expect(@psapc.$('.bv_signalDirectionRule').val()).toEqual "increasing"
 				it 'should show the aggregateBy1', ->
 					waitsFor ->
 						@psapc.$('.bv_aggregateBy1 option').length > 0
@@ -842,6 +842,7 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_positiveControlBatch').val ""
 					@psapc.$('.bv_positiveControlBatch').change()
 					expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
+					expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
 				it "should show error if positiveControl conc is not set", ->
 					@psapc.$('.bv_positiveControlConc').val ""
 					@psapc.$('.bv_positiveControlConc').change()

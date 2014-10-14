@@ -36,6 +36,23 @@
       return node.modal("hide");
     };
 
+    UtilityFunctions.prototype.getTrimmedInput = function(selector) {
+      return $.trim(selector.val());
+    };
+
+    UtilityFunctions.prototype.convertYMDDateToMs = function(inStr) {
+      var dateParts;
+      dateParts = inStr.split('-');
+      return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getTime();
+    };
+
+    UtilityFunctions.prototype.convertMSToYMDDate = function(ms) {
+      var date, monthNum;
+      date = new Date(ms);
+      monthNum = date.getMonth() + 1;
+      return date.getFullYear() + '-' + ("0" + monthNum).slice(-2) + '-' + ("0" + date.getDate()).slice(-2);
+    };
+
     return UtilityFunctions;
 
   })();
