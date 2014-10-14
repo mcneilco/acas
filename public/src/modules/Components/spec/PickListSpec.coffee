@@ -130,6 +130,12 @@ describe "PickList Select Unit Testing", ->
 				expect(@adop).toBeDefined()
 			it "should have the parameter name set to null", ->
 				expect(@adop.get('parameter')).toBeNull()
+			it "should have the codeType set to null", ->
+				expect(@adop.get('codeType')).toBeNull()
+			it "should have the codeKind set to null", ->
+				expect(@adop.get('codeKind')).toBeNull()
+			it "should have the codeOrigin set to acas ddict", ->
+				expect(@adop.get('codeOrigin')).toEqual "acas ddict"
 			it "should have the label text be null", ->
 				expect(@adop.get('newOptionLabel')).toBeNull()
 			it "should have the description be set to null", ->
@@ -149,11 +155,14 @@ describe "PickList Select Unit Testing", ->
 			@adopc = new AddParameterOptionPanelController
 				model: new AddParameterOptionPanel
 					parameter: "projects"
+					codeType: "protocolMetadata"
 				el: $('#fixture')
 			@adopc.render()
 		describe "basic startup conditions", ->
 			it "should exist", ->
 				expect(@adopc).toBeDefined()
+			it "should set the codeKind", ->
+				expect(@adopc.model.get('codeKind')).toEqual "projects"
 			it "should load a template", ->
 				expect(@adopc.$('.bv_addParameterOptionModal').length).toEqual 1
 			it "should have the save button disabled", ->
@@ -177,16 +186,6 @@ describe "PickList Select Unit Testing", ->
 				@adopc.$('.bv_newOptionLabel').change()
 				console.log @adopc.$('.bv_newOptionLabel')
 				expect(@adopc.$('.bv_group_newOptionLabel').hasClass("error")).toBeTruthy()
-			it "should show error when the description is not filled in", ->
-				@adopc.$('.bv_newOptionDescription').val ""
-				@adopc.$('.bv_newOptionDescription').change()
-				console.log @adopc.$('.bv_newOptionDescription')
-				expect(@adopc.$('.bv_group_newOptionDescription').hasClass("error")).toBeTruthy()
-			it "should show error when the comments is not filled in", ->
-				@adopc.$('.bv_newOptionComments').val ""
-				@adopc.$('.bv_newOptionComments').change()
-				console.log @adopc.$('.bv_newOptionComments')
-				expect(@adopc.$('.bv_group_newOptionComments').hasClass("error")).toBeTruthy()
 		describe "form validation setup", ->
 			it "should be valid and add button is enabled if form fully filled out", ->
 				runs ->
@@ -213,6 +212,7 @@ describe "PickList Select Unit Testing", ->
 						collection: @editablePickListList
 						selectedCode: "unassigned"
 						parameter: "projects"
+						codeType: "protocolMetadata"
 						roles: ["admin"]
 					@editablePickListController.render()
 				waitsFor ->

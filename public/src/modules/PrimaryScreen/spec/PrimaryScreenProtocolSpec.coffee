@@ -26,30 +26,37 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity') instanceof Value).toBeTruthy()
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "unassigned"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeOrigin')).toEqual "acas ddict"
+					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeType')).toEqual "protocolMetadata"
 				it "should have a molecular target value with code origin set to acas ddict", ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target') instanceof Value).toBeTruthy()
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "unassigned"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual "acas ddict"
+					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeType')).toEqual "protocolMetadata"
 				it "should have a target origin value", ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin') instanceof Value).toBeTruthy()
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "unassigned"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeOrigin')).toEqual "acas ddict"
+					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeType')).toEqual "protocolMetadata"
 				it "should have an assay type value", ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type') instanceof Value).toBeTruthy()
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual "unassigned"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeOrigin')).toEqual "acas ddict"
+					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeType')).toEqual "protocolMetadata"
 				it "should have an assay technology value", ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology') instanceof Value).toBeTruthy()
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "unassigned"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeOrigin')).toEqual "acas ddict"
+					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeType')).toEqual "protocolMetadata"
 				it "should have a cell line value", ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line') instanceof Value).toBeTruthy()
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "unassigned"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeOrigin')).toEqual "acas ddict"
+					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeType')).toEqual "protocolMetadata"
 				it "should have an assay stage value", ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage') instanceof Value).toBeTruthy()
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "unassigned"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeOrigin')).toEqual "acas ddict"
+					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeType')).toEqual "protocolMetadata"
 
 		describe "When loaded from existing", ->
 			beforeEach ->

@@ -187,6 +187,15 @@
         it("should have the parameter name set to null", function() {
           return expect(this.adop.get('parameter')).toBeNull();
         });
+        it("should have the codeType set to null", function() {
+          return expect(this.adop.get('codeType')).toBeNull();
+        });
+        it("should have the codeKind set to null", function() {
+          return expect(this.adop.get('codeKind')).toBeNull();
+        });
+        it("should have the codeOrigin set to acas ddict", function() {
+          return expect(this.adop.get('codeOrigin')).toEqual("acas ddict");
+        });
         it("should have the label text be null", function() {
           return expect(this.adop.get('newOptionLabel')).toBeNull();
         });
@@ -215,7 +224,8 @@
       beforeEach(function() {
         this.adopc = new AddParameterOptionPanelController({
           model: new AddParameterOptionPanel({
-            parameter: "projects"
+            parameter: "projects",
+            codeType: "protocolMetadata"
           }),
           el: $('#fixture')
         });
@@ -224,6 +234,9 @@
       describe("basic startup conditions", function() {
         it("should exist", function() {
           return expect(this.adopc).toBeDefined();
+        });
+        it("should set the codeKind", function() {
+          return expect(this.adopc.model.get('codeKind')).toEqual("projects");
         });
         it("should load a template", function() {
           return expect(this.adopc.$('.bv_addParameterOptionModal').length).toEqual(1);
@@ -250,23 +263,11 @@
         });
       });
       describe("behavior and validation testing", function() {
-        it("should show error when the label is not filled in", function() {
+        return it("should show error when the label is not filled in", function() {
           this.adopc.$('.bv_newOptionLabel').val("");
           this.adopc.$('.bv_newOptionLabel').change();
           console.log(this.adopc.$('.bv_newOptionLabel'));
           return expect(this.adopc.$('.bv_group_newOptionLabel').hasClass("error")).toBeTruthy();
-        });
-        it("should show error when the description is not filled in", function() {
-          this.adopc.$('.bv_newOptionDescription').val("");
-          this.adopc.$('.bv_newOptionDescription').change();
-          console.log(this.adopc.$('.bv_newOptionDescription'));
-          return expect(this.adopc.$('.bv_group_newOptionDescription').hasClass("error")).toBeTruthy();
-        });
-        return it("should show error when the comments is not filled in", function() {
-          this.adopc.$('.bv_newOptionComments').val("");
-          this.adopc.$('.bv_newOptionComments').change();
-          console.log(this.adopc.$('.bv_newOptionComments'));
-          return expect(this.adopc.$('.bv_group_newOptionComments').hasClass("error")).toBeTruthy();
         });
       });
       return describe("form validation setup", function() {
@@ -299,6 +300,7 @@
               collection: this.editablePickListList,
               selectedCode: "unassigned",
               parameter: "projects",
+              codeType: "protocolMetadata",
               roles: ["admin"]
             });
             return this.editablePickListController.render();

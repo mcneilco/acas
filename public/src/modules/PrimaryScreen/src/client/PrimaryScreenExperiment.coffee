@@ -547,8 +547,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	render: =>
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
-		# insert line and Upload Data and Analyze text here because primary screen protocol does not have this.
-		@$('.bv_autofillSection').after "<hr class='span12' style='margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:6px;' /><h5 style='margin-bottom:27px;'>Upload Data and Analyze</h5>"
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
 		@setupAggregateBy1Select()
@@ -572,7 +570,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				code: "unassigned"
 				name: "Select Instrument"
 			selectedCode: @model.get('instrumentReader')
-		console.log @instrumentListController
 
 	setupSignalDirectionSelect: ->
 		@signalDirectionList = new PickListList()

@@ -30,37 +30,44 @@
           it("should have an assay activity value", function() {
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity') instanceof Value).toBeTruthy();
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("unassigned");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeOrigin')).toEqual("acas ddict");
+            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeOrigin')).toEqual("acas ddict");
+            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeType')).toEqual("protocolMetadata");
           });
           it("should have a molecular target value with code origin set to acas ddict", function() {
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target') instanceof Value).toBeTruthy();
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("unassigned");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual("acas ddict");
+            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual("acas ddict");
+            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeType')).toEqual("protocolMetadata");
           });
           it("should have a target origin value", function() {
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin') instanceof Value).toBeTruthy();
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual("unassigned");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeOrigin')).toEqual("acas ddict");
+            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeOrigin')).toEqual("acas ddict");
+            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeType')).toEqual("protocolMetadata");
           });
           it("should have an assay type value", function() {
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type') instanceof Value).toBeTruthy();
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("unassigned");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeOrigin')).toEqual("acas ddict");
+            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeOrigin')).toEqual("acas ddict");
+            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeType')).toEqual("protocolMetadata");
           });
           it("should have an assay technology value", function() {
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology') instanceof Value).toBeTruthy();
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("unassigned");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeOrigin')).toEqual("acas ddict");
+            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeOrigin')).toEqual("acas ddict");
+            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeType')).toEqual("protocolMetadata");
           });
           it("should have a cell line value", function() {
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line') instanceof Value).toBeTruthy();
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("unassigned");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeOrigin')).toEqual("acas ddict");
+            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeOrigin')).toEqual("acas ddict");
+            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeType')).toEqual("protocolMetadata");
           });
           return it("should have an assay stage value", function() {
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage') instanceof Value).toBeTruthy();
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeOrigin')).toEqual("acas ddict");
+            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeOrigin')).toEqual("acas ddict");
+            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeType')).toEqual("protocolMetadata");
           });
         });
       });

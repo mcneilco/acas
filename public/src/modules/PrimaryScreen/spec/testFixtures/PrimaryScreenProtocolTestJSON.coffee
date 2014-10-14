@@ -1,4 +1,16 @@
 ((exports) ->
+
+	exports.newPickListOption =
+		code: "test new option" #same as codeValue
+		codeKind: "assay type"
+		codeOrigin: "acas ddict" #default value
+		codeType: "protocolMetadata"
+		comments: "test comments"
+		description: "test description"
+		ignored: false
+		name: "Test New Option" #same as code but with the first letters of each word capitalized
+
+
 	exports.primaryScreenProtocolParameters =
 		comments: null
 		id: 2
@@ -9,6 +21,7 @@
 		lsTypeAndKind: "metadata_screening assay"
 		lsValues: [
 			clobValue: null
+			codeType: "protocolMetadata"
 			codeValue: "luminescence"
 			codeOrigin: "acas ddict"
 			comments: null
@@ -38,6 +51,7 @@
 			version: 0
 		,
 			clobValue: null
+			codeType: "protocolMetadata"
 			codeValue: "target x"
 			codeOrigin: "customer ddict"
 			comments: null
@@ -67,6 +81,7 @@
 			version: 0
 		,
 			clobValue: null
+			codeType: "protocolMetadata"
 			codeValue: "human"
 			codeOrigin: "acas ddict"
 			comments: null
@@ -96,6 +111,7 @@
 			version: 0
 		,
 			clobValue: null
+			codeType: "protocolMetadata"
 			codeValue: "cellular assay"
 			codeOrigin: "acas ddict"
 			comments: null
@@ -125,6 +141,7 @@
 			version: 0
 		,
 			clobValue: null
+			codeType: "protocolMetadata"
 			codeValue: "wizard triple luminescence"
 			codeOrigin: "acas ddict"
 			comments: null
@@ -154,6 +171,7 @@
 			version: 0
 		,
 			clobValue: null
+			codeType: "protocolMetadata"
 			codeValue: "cell line y"
 			codeOrigin: "acas ddict"
 			comments: null
@@ -183,6 +201,7 @@
 			version: 0
 		,
 			clobValue: null
+			codeType: "protocolMetadata"
 			codeValue: "assay development"
 			codeOrigin: "acas ddict"
 			comments: null
@@ -864,6 +883,7 @@
 			lsTypeAndKind: "metadata_screening assay"
 			lsValues: [
 				clobValue: null
+				codeType: "protocolMetadata"
 				codeValue: "luminescence"
 				codeOrigin: "acas ddict"
 				comments: null
@@ -893,6 +913,7 @@
 				version: 0
 			,
 				clobValue: null
+				codeType: "protocolMetadata"
 				codeValue: "target x"
 				codeOrigin: "customer ddict"
 				comments: null
@@ -922,6 +943,7 @@
 				version: 0
 			,
 				clobValue: null
+				codeType: "protocolMetadata"
 				codeValue: "human"
 				codeOrigin: "acas ddict"
 				comments: null
@@ -951,6 +973,7 @@
 				version: 0
 			,
 				clobValue: null
+				codeType: "protocolMetadata"
 				codeValue: "cellular assay"
 				codeOrigin: "acas ddict"
 				comments: null
@@ -980,6 +1003,7 @@
 				version: 0
 			,
 				clobValue: null
+				codeType: "protocolMetadata"
 				codeValue: "wizard triple luminescence"
 				codeOrigin: "acas ddict"
 				comments: null
@@ -1009,6 +1033,7 @@
 				version: 0
 			,
 				clobValue: null
+				codeType: "protocolMetadata"
 				codeValue: "cell line y"
 				codeOrigin: "acas ddict"
 				comments: null
@@ -1038,6 +1063,7 @@
 				version: 0
 			,
 				clobValue: null
+				codeType: "protocolMetadata"
 				codeValue: "assay development"
 				codeOrigin: "acas ddict"
 				comments: null

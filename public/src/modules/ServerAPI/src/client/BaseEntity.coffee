@@ -153,8 +153,6 @@ class window.BaseEntity extends Backbone.Model
 			return null
 
 	prepareToSave: ->
-		@trigger "checkForNewPickListOption"
-		console.log "prepare ti save"
 		rBy = @get('recordedBy')
 		rDate = new Date().getTime()
 		@set recordedDate: rDate
@@ -173,6 +171,8 @@ class window.BaseEntity extends Backbone.Model
 					val.set recordedBy: rBy
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
+		@trigger "readyToSave", @
+
 
 class window.BaseEntityList extends Backbone.Collection
 	model: BaseEntity
@@ -212,7 +212,8 @@ class window.BaseEntityController extends AbstractFormController
 		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
-#	using the code above, triggers amDirty whenever the module is clicked. is this ok? not a problem for primary screen experiment
+
+#	using the code above, triggers amDirty whenever the module is clicked. is this ok?
 
 	render: =>
 		subclass = @model.get('subclass')
@@ -237,6 +238,8 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_save').html("Update")
 		@updateEditable()
+		@model.on 'readyToSave', @handleSaveClickedPart2
+
 
 		@
 
@@ -317,8 +320,15 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_status').removeAttr("disabled")
 
 	handleSaveClicked: =>
+		if @model.checkForNewPickListOptions?
+			@model.checkForNewPickListOptions()
+		else
+			@model.prepareToSave()
+
+#		@model.prepareToSave()
+
+	handleSaveClickedPart2: =>
 		@tagListController.handleTagsChanged()
-		@model.prepareToSave()
 		if @model.isNew()
 			@$('.bv_updateComplete').html "Save Complete"
 		else

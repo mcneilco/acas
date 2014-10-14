@@ -12,6 +12,13 @@ class window.PrimaryScreenProtocolParameters extends State
 			errors.push
 				attribute: 'minY'
 				message: "minY must be a number"
+		if maxY<minY
+			errors.push
+				attribute: 'maxY'
+				message: "maxY must be greater than minY"
+			errors.push
+				attribute: 'minY'
+				message: "minY must be less than maxY"
 
 		if errors.length > 0
 			return errors
@@ -21,17 +28,13 @@ class window.PrimaryScreenProtocolParameters extends State
 	getCustomerMolecularTargetCodeOrigin: ->
 	#returns true if molecular target's codeOrigin is not acas ddict
 		molecularTarget = @getOrCreateValueByTypeAndKind "codeValue", "molecular target"
-		console.log molecularTarget.get('codeOrigin')
 		if molecularTarget.get('codeOrigin') is "customer ddict"
-			console.log "getCustomerMolecularTargetCodeOrigin and is customer ddict"
 			return true
 		else
 			return false
 
 	setCustomerMolecularTargetCodeOrigin: (customerCodeOrigin) ->
 	# customerCodeOrigin is boolean. If true, codeOrigin for molecular target is not acas ddict
-		console.log @
-		console.log "setting customer target List"
 		molecularTarget = @getOrCreateValueByTypeAndKind "codeValue", "molecular target"
 		if customerCodeOrigin
 #		molecularTarget = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", "molecular target"
@@ -58,6 +61,7 @@ class window.PrimaryScreenProtocolParameters extends State
 	getPrimaryScreenProtocolParameterCodeValue: (parameterName) ->
 #		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", parameterName
 		parameter = @.getOrCreateValueByTypeAndKind "codeValue", parameterName
+		parameter.set codeType: "protocolMetadata"
 		if parameter.get('codeValue') is undefined or parameter.get('codeValue') is ""
 			parameter.set codeValue: "unassigned"
 		if parameter.get('codeOrigin') is undefined or parameter.get('codeOrigin') is ""
@@ -83,10 +87,54 @@ class window.PrimaryScreenProtocolParameters extends State
 
 class window.PrimaryScreenProtocol extends Protocol
 
+	validate: (attrs) ->
+		errors = []
+		psProtocolParameters = @getPrimaryScreenProtocolParameters()
+		psProtocolParametersErrors = psProtocolParameters.validate()
+		errors.push psProtocolParametersErrors...
+		bestName = attrs.lsLabels.pickBestName()
+		nameError = true
+		if bestName?
+			nameError = true
+			if bestName.get('labelText') != ""
+				nameError = false
+		if nameError
+			errors.push
+				attribute: 'protocolName'
+				message: attrs.subclass+" name must be set"
+		if _.isNaN(attrs.recordedDate)
+			errors.push
+				attribute: 'recordedDate'
+				message: attrs.subclass+" date must be set"
+		if attrs.recordedBy is ""
+			errors.push
+				attribute: 'recordedBy'
+				message: "Scientist must be set"
+		cDate = @getCompletionDate().get('dateValue')
+		if cDate is undefined or cDate is "" then cDate = "fred"
+		if isNaN(cDate)
+			errors.push
+				attribute: 'completionDate'
+				message: "Assay completion date must be set"
+		notebook = @getNotebook().get('stringValue')
+		if notebook is "" or notebook is "unassigned" or notebook is undefined
+			errors.push
+				attribute: 'notebook'
+				message: "Notebook must be set"
+
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+
 	getPrimaryScreenProtocolParameters: ->
 		pspp = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", "screening assay"
 
 		new PrimaryScreenProtocolParameters pspp.attributes
+
+	checkForNewPickListOptions: ->
+		@trigger "checkForNewPickListOptions"
 
 
 class window.PrimaryScreenProtocolParametersController extends AbstractFormController
@@ -139,40 +187,28 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@
 
 	setupAssayActivitySelect: ->
-		console.log "setting up assay activity select"
-		console.log @model
-		console.log @model.getPrimaryScreenProtocolParameterCodeValue('assay activity')
 		@assayActivityList = new PickListList()
 		@assayActivityList.url = "/api/dataDict/protocolMetadata/assay activity"
 		@assayActivityListController = new EditablePickListSelectController
 			el: @$('.bv_assayActivity')
 			collection: @assayActivityList
-#			insertFirstOption: new PickList
-#				code: "unassigned"
-#				name: "Select Assay Activity"
 			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')
 			parameter: "assayActivity"
+			codeType: "protocolMetadata"
 			roles: ["admin"]
 		@assayActivityListController.render()
-		console.log @assayActivityListController
 
 	setupMolecularTargetSelect: ->
-		console.log "setting up molecular target select"
-		console.log @model
-		console.log @model.getPrimaryScreenProtocolParameterCodeValue('molecular target')
 		@molecularTargetList = new PickListList()
 		@molecularTargetList.url = "/api/dataDict/protocolMetadata/molecular target"
 		@molecularTargetListController = new EditablePickListSelectController
 			el: @$('.bv_molecularTarget')
 			collection: @molecularTargetList
-#			insertFirstOption: new PickList
-#				code: "unassigned"
-#				name: "Select Molecular Target"
 			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')
 			parameter: "molecularTarget"
+			codeType: "protocolMetadata"
 			roles: ["admin"]
 		@molecularTargetListController.render()
-		console.log @molecularTargetListController
 
 	setupTargetOriginSelect: ->
 		@targetOriginList = new PickListList()
@@ -180,11 +216,9 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@targetOriginListController = new EditablePickListSelectController
 			el: @$('.bv_targetOrigin')
 			collection: @targetOriginList
-#			insertFirstOption: new PickList
-#				code: "unassigned"
-#				name: "Select Target Origin"
 			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')
 			parameter: "targetOrigin"
+			codeType: "protocolMetadata"
 			roles: ["admin"]
 		@targetOriginListController.render()
 
@@ -194,11 +228,9 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@assayTypeListController = new EditablePickListSelectController
 			el: @$('.bv_assayType')
 			collection: @assayTypeList
-#			insertFirstOption: new PickList
-#				code: "unassigned"
-#				name: "Select Assay Type"
 			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')
 			parameter: "assayType"
+			codeType: "protocolMetadata"
 			roles: ["admin"]
 		@assayTypeListController.render()
 
@@ -208,11 +240,9 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@assayTechnologyListController = new EditablePickListSelectController
 			el: @$('.bv_assayTechnology')
 			collection: @assayTechnologyList
-#			insertFirstOption: new PickList
-#				code: "unassigned"
-#				name: "Select Assay Technology"
 			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')
 			parameter: "assayTechnology"
+			codeType: "protocolMetadata"
 			roles: ["admin"]
 		@assayTechnologyListController.render()
 
@@ -222,11 +252,9 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@cellLineListController = new EditablePickListSelectController
 			el: @$('.bv_cellLine')
 			collection: @cellLineList
-#			insertFirstOption: new PickList
-#				code: "unassigned"
-#				name: "Select Cell Line"
 			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')
 			parameter: "cellLine"
+			codeType: "protocolMetadata"
 			roles: ["admin"]
 		@cellLineListController.render()
 
@@ -234,8 +262,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()
 		@assayStageList.url = "/api/dataDict/protocolMetadata/assay stage"
-		console.log "about to set up assay stage"
-		console.log @model
 		@assayStageListController = new PickListSelectController
 			el: @$('.bv_assayStage')
 			collection: @assayStageList
@@ -247,11 +273,9 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 	setupCustomerMolecularTargetDDictChkbx: ->
 		checked = @model.getCustomerMolecularTargetCodeOrigin()
 		if checked
-			console.log "code origin is customer specific"
 			@$('.bv_customerMolecularTargetDDictChkbx').attr("checked", "checked")
 
 	updateModel: =>
-		console.log "update model"
 		@model.getPrimaryScreenProtocolParameterCodeValue('assay activity').set
 			codeValue: @assayActivityListController.getSelectedCode()
 		@model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set
@@ -270,31 +294,31 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			numericValue: parseFloat(@getTrimmedInput('.bv_maxY')) #TODO: trim - will do after merge so can use utility function
 		@model.getCurveDisplayMin().set
 			numericValue: parseFloat(@getTrimmedInput('.bv_minY'))
-		console.log @model
 
 
 	handleMolecularTargetDDictChanged: =>
 		customerDDict = @$('.bv_customerMolecularTargetDDictChkbx').is(":checked")
-		console.log "handle molec traget ddict changed"
-		console.log customerDDict
 		@model.setCustomerMolecularTargetCodeOrigin(customerDDict)
 		if customerDDict
+			@molecularTargetList.url = "/api/customerMolecularTargetCodeTable"
+			@molecularTargetListController.render()
 			@molecularTargetListController.hideAddOptionButton()
-			targetListurl = "http://imapp01-d:8080/DNS/codes/v1/Codes/SB_Variant_Construct"
-			# TODO: repopulate Molecular Target Select list with DNS Target List.
 		else
+			@molecularTargetList.url = "/api/dataDict/protocolMetadata/molecular target"
+			@molecularTargetListController.render()
 			@molecularTargetListController.showAddOptionButton()
-			targetListurl = "/api/dataDict/protocolMetadata/molecular target"
+
+
 		@attributeChanged()
 
-	saveNewPickListOptions: =>
-		console.log "save new pick list options"
-		@assayActivityListController.saveNewOption()
-		@molecularTargetListController.saveNewOption()
-		@targetOriginListController.saveNewOption()
-		@assayTypeListController.saveNewOption()
-		@assayTechnologyListController.saveNewOption()
-		@cellLineListController.saveNewOption()
+	saveNewPickListOptions: (callback) =>
+		@assayActivityListController.saveNewOption =>
+			@molecularTargetListController.saveNewOption =>
+				@targetOriginListController.saveNewOption =>
+					@assayTypeListController.saveNewOption =>
+						@assayTechnologyListController.saveNewOption =>
+							@cellLineListController.saveNewOption =>
+								callback.call()
 
 
 
@@ -304,12 +328,11 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 	initialize: ->
 		@setupProtocolBaseController()
 		@setupPrimaryScreenProtocolParametersController()
-		@protocolBaseController.model.on "checkForNewPickListOption", @handleCheckForNewPickListOption
+		@protocolBaseController.model.on "checkForNewPickListOptions", @handleCheckForNewPickListOptions
 
 
 
 	setupProtocolBaseController: ->
-		console.log @model
 		@protocolBaseController = new ProtocolBaseController
 			model: @model
 			el: @el
@@ -318,11 +341,8 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		@protocolBaseController.on 'amClean', =>
 			@trigger 'amClean'
 		@protocolBaseController.render()
-		console.log "set up protocol base controller"
 
 	setupPrimaryScreenProtocolParametersController: ->
-		console.log "SETTING UP PRIMARY SCREEN PROTOCOL PARAMETERS CONTROLLER"
-		#		console.log @model.get('primaryScreenProtocolParameters')
 		@primaryScreenProtocolParametersController= new PrimaryScreenProtocolParametersController
 			model: @model.getPrimaryScreenProtocolParameters()
 #			model: @model.get('primaryScreenProtocolParameters')
@@ -332,12 +352,11 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		@primaryScreenProtocolParametersController.on 'amClean', =>
 			@trigger 'amClean'
 		@primaryScreenProtocolParametersController.render()
-		console.log "set up ps protocol parameters controller"
 
 
-	handleCheckForNewPickListOption: =>
-		console.log "triggered save new picklist option"
-		@primaryScreenProtocolParametersController.saveNewPickListOptions()
+	handleCheckForNewPickListOptions: =>
+		@primaryScreenProtocolParametersController.saveNewPickListOptions =>
+			@protocolBaseController.model.prepareToSave()
 
 
 
@@ -381,32 +400,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends Backbone.View
 
 		@setupPrimaryScreenProtocolController()
 		@setupPrimaryScreenAnalysisParametersController()
+		@setupPrimaryScreenModelFitParametersController()
 
-
-#		@analysisController = new PrimaryScreenAnalysisController
-#			model: @model
-#			el: @$('.bv_primaryScreenDataAnalysis')
-#			uploadAndRunControllerName: @uploadAndRunControllerName
-#		@analysisController.on 'amDirty', =>
-#			@trigger 'amDirty'
-#		@analysisController.on 'amClean', =>
-#			@trigger 'amClean'
-#		@setupModelFitController(@modelFitControllerName)
-#		@analysisController.on 'analysis-completed', =>
-#			@modelFitController.primaryAnalysisCompleted()
-#		@analysisController.render()
-#		@modelFitController.render()
-
-
-#	setupModelFitController: (modelFitControllerName) ->
-#		newArgs =
-#			model: @model
-#			el: @$('.bv_doseResponseAnalysis')
-#		@modelFitController = new window[modelFitControllerName](newArgs)
-#		@modelFitController.on 'amDirty', =>
-#			@trigger 'amDirty'
-#		@modelFitController.on 'amClean', =>
-#			@trigger 'amClean'
 
 	handleProtocolSaved: =>
 		@primaryScreenAnalysisParametersController.render()
@@ -431,7 +426,16 @@ class window.AbstractPrimaryScreenProtocolModuleController extends Backbone.View
 		@primaryScreenAnalysisParametersController.on 'amClean', =>
 			@trigger 'amClean'
 		@primaryScreenAnalysisParametersController.render()
-		console.log @primaryScreenAnalysisParametersController
+
+	setupPrimaryScreenModelFitParametersController: ->
+		@primaryScreenModelFitParametersController = new DoseResponseAnalysisParametersController
+			model: new DoseResponseAnalysisParameters @model.getModelFitParameters()
+			el: @$('.bv_doseResponseAnalysisParameters')
+		@primaryScreenModelFitParametersController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@primaryScreenModelFitParametersController.on 'amClean', =>
+			@trigger 'amClean'
+		@primaryScreenModelFitParametersController.render()
 
 
 class window.PrimaryScreenProtocolModuleController extends AbstractPrimaryScreenProtocolModuleController

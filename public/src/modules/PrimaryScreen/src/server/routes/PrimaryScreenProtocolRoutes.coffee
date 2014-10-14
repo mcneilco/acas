@@ -1,14 +1,17 @@
 csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 
-exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/DNS/codes/v1/Codes/SB_Variant_Construct', loginRoutes.ensureAuthenticated, exports.getMolecularTargetCodes
+exports.setupAPIRoutes = (app) ->
+	app.get '/api/customerMolecularTargetCodeTable', exports.getCustomerMolecularTargetCodes
 
-exports.getMolecularTargetCodes = (req, resp) ->
+exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/api/customerMolecularTargetCodeTable', loginRoutes.ensureAuthenticated, exports.getCustomerMolecularTargetCodes
+
+exports.getCustomerMolecularTargetCodes = (req, resp) ->
 	if global.specRunnerTestmode
 		molecTargetTestJSON = require '../public/javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
-		console.log molecTargetTestJSON
 		resp.end JSON.stringify molecTargetTestJSON.customerMolecularTargetCodeTable
 	else
-		csUtilities.getDNSCodes(resp, config.all.server.service.external.requestmanager.queueItemTypes.url, req.user)
+		csUtilities.getCustomerMolecularTargetCodes resp
+
 
 

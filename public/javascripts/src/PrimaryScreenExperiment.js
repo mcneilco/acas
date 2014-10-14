@@ -890,7 +890,6 @@
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
-      this.$('.bv_autofillSection').after("<hr class='span12' style='margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:6px;' /><h5 style='margin-bottom:27px;'>Upload Data and Analyze</h5>");
       this.setupInstrumentReaderSelect();
       this.setupSignalDirectionSelect();
       this.setupAggregateBy1Select();
@@ -906,7 +905,7 @@
     PrimaryScreenAnalysisParametersController.prototype.setupInstrumentReaderSelect = function() {
       this.instrumentList = new PickListList();
       this.instrumentList.url = "/api/dataDict/experimentMetadata/instrument reader";
-      this.instrumentListController = new PickListSelectController({
+      return this.instrumentListController = new PickListSelectController({
         el: this.$('.bv_instrumentReader'),
         collection: this.instrumentList,
         insertFirstOption: new PickList({
@@ -915,7 +914,6 @@
         }),
         selectedCode: this.model.get('instrumentReader')
       });
-      return console.log(this.instrumentListController);
     };
 
     PrimaryScreenAnalysisParametersController.prototype.setupSignalDirectionSelect = function() {

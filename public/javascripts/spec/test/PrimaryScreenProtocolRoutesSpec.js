@@ -1,13 +1,14 @@
 (function() {
-  var assert, parseResponse, request;
+  var assert, config, parseResponse, request;
 
   assert = require('assert');
 
   request = require('request');
 
+  config = require('../../../../conf/compiled/conf.js');
+
   parseResponse = function(jsonStr) {
     var error;
-    console.log(jsonStr);
     try {
       return JSON.parse(jsonStr);
     } catch (_error) {
@@ -20,15 +21,22 @@
   describe("Primary Screen Protocol Routes testing", function() {
     return describe("Using customer code tables", function() {
       before(function(done) {
-        return request("http://imapp01-d:8080/DNS/codes/v1/Codes/SB_Variant_Construct", (function(_this) {
+        return request("http://localhost:" + config.all.server.nodeapi.port + "/api/customerMolecularTargetCodeTable", (function(_this) {
           return function(error, response, body) {
+            console.log("after request sent");
             _this.responseJSON = parseResponse(body);
             return done();
           };
         })(this));
       });
-      return it("should return an array of dns codes", function() {
+      it("should return an array of dns codes", function() {
         return assert.equal(this.responseJSON instanceof Array, true);
+      });
+      it('should have elements that be a hash with code defined', function() {
+        return assert.equal(this.responseJSON[0].code != null, true);
+      });
+      return it('should have elements that be a hash with name defined', function() {
+        return assert.equal(this.responseJSON[0].name != null, true);
       });
     });
   });

@@ -249,8 +249,6 @@
 
     BaseEntity.prototype.prepareToSave = function() {
       var rBy, rDate;
-      this.trigger("checkForNewPickListOption");
-      console.log("prepare ti save");
       rBy = this.get('recordedBy');
       rDate = new Date().getTime();
       this.set({
@@ -268,7 +266,7 @@
           });
         }
       });
-      return this.get('lsStates').each(function(state) {
+      this.get('lsStates').each(function(state) {
         if (state.get('recordedBy') === "") {
           state.set({
             recordedBy: rBy
@@ -292,6 +290,7 @@
           }
         });
       });
+      return this.trigger("readyToSave", this);
     };
 
     return BaseEntity;
@@ -317,6 +316,7 @@
     function BaseEntityController() {
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
+      this.handleSaveClickedPart2 = __bind(this.handleSaveClickedPart2, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
       this.updateEditable = __bind(this.updateEditable, this);
       this.handleStatusChanged = __bind(this.handleStatusChanged, this);
@@ -403,6 +403,7 @@
         this.$('.bv_save').html("Update");
       }
       this.updateEditable();
+      this.model.on('readyToSave', this.handleSaveClickedPart2);
       return this;
     };
 
@@ -512,8 +513,15 @@
     };
 
     BaseEntityController.prototype.handleSaveClicked = function() {
+      if (this.model.checkForNewPickListOptions != null) {
+        return this.model.checkForNewPickListOptions();
+      } else {
+        return this.model.prepareToSave();
+      }
+    };
+
+    BaseEntityController.prototype.handleSaveClickedPart2 = function() {
       this.tagListController.handleTagsChanged();
-      this.model.prepareToSave();
       if (this.model.isNew()) {
         this.$('.bv_updateComplete').html("Save Complete");
       } else {

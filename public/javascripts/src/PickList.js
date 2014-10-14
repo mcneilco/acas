@@ -154,7 +154,6 @@
     };
 
     PickListSelectController.prototype.checkOptionInCollection = function(code) {
-      console.log("checking Option");
       return this.collection.findWhere({
         code: code
       });
@@ -173,6 +172,9 @@
 
     AddParameterOptionPanel.prototype.defaults = {
       parameter: null,
+      codeType: null,
+      codeOrigin: "acas ddict",
+      codeKind: null,
       newOptionLabel: null,
       newOptionDescription: null,
       newOptionComments: null
@@ -180,24 +182,10 @@
 
     AddParameterOptionPanel.prototype.validate = function(attrs) {
       var errors;
-      console.log("validating add option panel");
-      console.log(attrs);
       errors = [];
       if (attrs.newOptionLabel === null || attrs.newOptionLabel === "") {
         errors.push({
           attribute: 'newOptionLabel',
-          message: "Label must be set"
-        });
-      }
-      if (attrs.newOptionDescription === null || attrs.newOptionDescription === "") {
-        errors.push({
-          attribute: 'newOptionDescription',
-          message: "Description must be set"
-        });
-      }
-      if (attrs.newOptionComments === null || attrs.newOptionComments === "") {
-        errors.push({
-          attribute: 'newOptionComments',
           message: "Label must be set"
         });
       }
@@ -248,25 +236,24 @@
 
     AddParameterOptionPanelController.prototype.showModal = function() {
       var parameterNameWithSpaces, pascalCaseParameterName;
-      console.log("add option button clicked");
       this.$('.bv_addParameterOptionModal').modal('show');
       parameterNameWithSpaces = this.model.get('parameter').replace(/([A-Z])/g, ' $1');
       pascalCaseParameterName = parameterNameWithSpaces.charAt(0).toUpperCase() + parameterNameWithSpaces.slice(1);
-      return this.$('.bv_parameter').html(pascalCaseParameterName);
+      this.$('.bv_parameter').html(pascalCaseParameterName);
+      return this.model.set({
+        codeKind: parameterNameWithSpaces.toLowerCase()
+      });
     };
 
     AddParameterOptionPanelController.prototype.updateModel = function() {
-      console.log("updating model");
-      this.model.set({
+      return this.model.set({
         newOptionLabel: this.getTrimmedInput('.bv_newOptionLabel'),
         newOptionDescription: this.getTrimmedInput('.bv_newOptionDescription'),
         newOptionComments: this.getTrimmedInput('.bv_newOptionComments')
       });
-      return console.log(this.model.get('newOptionLabel'));
     };
 
     AddParameterOptionPanelController.prototype.triggerAddRequest = function() {
-      console.log("trigger add request");
       return this.trigger('addOptionRequested');
     };
 
@@ -301,11 +288,6 @@
       "click .bv_addOptionBtn": "handleShowAddPanel"
     };
 
-    EditablePickListSelectController.prototype.initialize = function() {
-      console.log("initialize editable pick list");
-      return console.log(this.options.parameter);
-    };
-
     EditablePickListSelectController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
@@ -314,8 +296,7 @@
     };
 
     EditablePickListSelectController.prototype.setupEditablePickList = function() {
-      console.log("setting up editable picklist");
-      this.pickListController = new PickListSelectController({
+      return this.pickListController = new PickListSelectController({
         el: this.$('.bv_parameterSelectList'),
         collection: this.collection,
         insertFirstOption: new PickList({
@@ -324,15 +305,10 @@
         }),
         selectedCode: this.options.selectedCode
       });
-      return console.log("finished setting up picklist");
     };
 
     EditablePickListSelectController.prototype.setupEditingPrivileges = function() {
-      console.log("setup editing privileges");
-      console.log(window.AppLaunchParams.loginUser);
-      console.log(this.options.roles);
       if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
-        console.log("disable add button and insert tooltip");
         this.$('.bv_addOptionBtn').removeAttr('data-toggle');
         this.$('.bv_addOptionBtn').removeAttr('data-target');
         this.$('.bv_addOptionBtn').removeAttr('data-backdrop');
@@ -340,12 +316,9 @@
           'color': "#cccccc"
         });
         this.$('.bv_tooltipwrapper').tooltip();
-        this.$("body").tooltip({
+        return this.$("body").tooltip({
           selector: '.bv_tooltipwrapper'
         });
-        return this.$('.bv_addOptionBtn');
-      } else {
-        return console.log("user can edit");
       }
     };
 
@@ -354,13 +327,12 @@
     };
 
     EditablePickListSelectController.prototype.handleShowAddPanel = function() {
-      console.log("handle show add panel");
       if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
-        console.log("setting up add panel");
         if (this.addPanelController == null) {
           this.addPanelController = new AddParameterOptionPanelController({
             model: new AddParameterOptionPanel({
-              parameter: this.options.parameter
+              parameter: this.options.parameter,
+              codeType: this.options.codeType
             }),
             el: this.$('.bv_addOptionPanel')
           });
@@ -371,51 +343,61 @@
     };
 
     EditablePickListSelectController.prototype.handleAddOptionRequested = function() {
-      var newOptionName, newPickList;
-      console.log("add new parameter option clicked");
-      newOptionName = this.addPanelController.model.get('newOptionLabel').toLowerCase();
-      if (this.pickListController.checkOptionInCollection(newOptionName) === void 0) {
-        console.log("valid new option. will add");
+      var newOptionCode, newPickList, requestedOptionModel;
+      requestedOptionModel = this.addPanelController.model;
+      newOptionCode = requestedOptionModel.get('newOptionLabel').toLowerCase();
+      if (this.pickListController.checkOptionInCollection(newOptionCode) === void 0) {
         newPickList = new PickList({
-          code: newOptionName,
-          name: newOptionName,
+          code: newOptionCode,
+          name: newOptionCode.toLowerCase().replace(/(^|[^a-z0-9-])([a-z])/g, function(m, m1, m2, p) {
+            return m1 + m2.toUpperCase();
+          }),
           ignored: false,
+          codeType: requestedOptionModel.get('codeType'),
+          codeKind: requestedOptionModel.get('codeKind'),
+          codeOrigin: requestedOptionModel.get('codeOrigin'),
+          description: requestedOptionModel.get('newOptionDescription'),
+          comments: requestedOptionModel.get('newOptionComments'),
           newOption: true
         });
         this.pickListController.collection.add(newPickList);
         this.$('.bv_optionAddedMessage').show();
         return this.$('.bv_errorMessage').hide();
       } else {
-        console.log("option already exists");
         this.$('.bv_optionAddedMessage').hide();
         return this.$('.bv_errorMessage').show();
       }
     };
 
     EditablePickListSelectController.prototype.hideAddOptionButton = function() {
-      console.log("hide add button");
       return this.$('.bv_addOptionBtn').hide();
     };
 
     EditablePickListSelectController.prototype.showAddOptionButton = function() {
-      console.log("show add button");
       return this.$('.bv_addOptionBtn').show();
     };
 
-    EditablePickListSelectController.prototype.saveNewOption = function() {
+    EditablePickListSelectController.prototype.saveNewOption = function(callback) {
       var code, selectedModel;
-      console.log("saveNewOption");
       code = this.pickListController.getSelectedCode();
       selectedModel = this.pickListController.collection.getModelWithCode(code);
-      console.log(selectedModel);
-      console.log(selectedModel.get('newOption'));
       if (selectedModel.get('newOption')) {
-        console.log("new Option");
         selectedModel.unset('newOption');
-        console.log(selectedModel);
-        return console.log(this.pickListController.collection.getModelWithCode(code));
+        return $.ajax({
+          type: 'POST',
+          url: "/api/codeTables",
+          data: selectedModel,
+          success: callback.call(),
+          error: (function(_this) {
+            return function(err) {
+              alert('could not add option to code table');
+              return _this.serviceReturn = null;
+            };
+          })(this),
+          dataType: 'json'
+        });
       } else {
-        return console.log("don't need to save to database");
+        return callback.call();
       }
     };
 

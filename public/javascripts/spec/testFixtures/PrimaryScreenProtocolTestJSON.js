@@ -1,5 +1,15 @@
 (function() {
   (function(exports) {
+    exports.newPickListOption = {
+      code: "test new option",
+      codeKind: "assay type",
+      codeOrigin: "acas ddict",
+      codeType: "protocolMetadata",
+      comments: "test comments",
+      description: "test description",
+      ignored: false,
+      name: "Test New Option"
+    };
     exports.primaryScreenProtocolParameters = {
       comments: null,
       id: 2,
@@ -11,6 +21,7 @@
       lsValues: [
         {
           clobValue: null,
+          codeType: "protocolMetadata",
           codeValue: "luminescence",
           codeOrigin: "acas ddict",
           comments: null,
@@ -40,6 +51,7 @@
           version: 0
         }, {
           clobValue: null,
+          codeType: "protocolMetadata",
           codeValue: "target x",
           codeOrigin: "customer ddict",
           comments: null,
@@ -69,6 +81,7 @@
           version: 0
         }, {
           clobValue: null,
+          codeType: "protocolMetadata",
           codeValue: "human",
           codeOrigin: "acas ddict",
           comments: null,
@@ -98,6 +111,7 @@
           version: 0
         }, {
           clobValue: null,
+          codeType: "protocolMetadata",
           codeValue: "cellular assay",
           codeOrigin: "acas ddict",
           comments: null,
@@ -127,6 +141,7 @@
           version: 0
         }, {
           clobValue: null,
+          codeType: "protocolMetadata",
           codeValue: "wizard triple luminescence",
           codeOrigin: "acas ddict",
           comments: null,
@@ -156,6 +171,7 @@
           version: 0
         }, {
           clobValue: null,
+          codeType: "protocolMetadata",
           codeValue: "cell line y",
           codeOrigin: "acas ddict",
           comments: null,
@@ -185,6 +201,7 @@
           version: 0
         }, {
           clobValue: null,
+          codeType: "protocolMetadata",
           codeValue: "assay development",
           codeOrigin: "acas ddict",
           comments: null,
@@ -876,6 +893,7 @@
           lsValues: [
             {
               clobValue: null,
+              codeType: "protocolMetadata",
               codeValue: "luminescence",
               codeOrigin: "acas ddict",
               comments: null,
@@ -905,6 +923,7 @@
               version: 0
             }, {
               clobValue: null,
+              codeType: "protocolMetadata",
               codeValue: "target x",
               codeOrigin: "customer ddict",
               comments: null,
@@ -934,6 +953,7 @@
               version: 0
             }, {
               clobValue: null,
+              codeType: "protocolMetadata",
               codeValue: "human",
               codeOrigin: "acas ddict",
               comments: null,
@@ -963,6 +983,7 @@
               version: 0
             }, {
               clobValue: null,
+              codeType: "protocolMetadata",
               codeValue: "cellular assay",
               codeOrigin: "acas ddict",
               comments: null,
@@ -992,6 +1013,7 @@
               version: 0
             }, {
               clobValue: null,
+              codeType: "protocolMetadata",
               codeValue: "wizard triple luminescence",
               codeOrigin: "acas ddict",
               comments: null,
@@ -1021,6 +1043,7 @@
               version: 0
             }, {
               clobValue: null,
+              codeType: "protocolMetadata",
               codeValue: "cell line y",
               codeOrigin: "acas ddict",
               comments: null,
@@ -1050,6 +1073,7 @@
               version: 0
             }, {
               clobValue: null,
+              codeType: "protocolMetadata",
               codeValue: "assay development",
               codeOrigin: "acas ddict",
               comments: null,
