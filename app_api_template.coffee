@@ -1,3 +1,4 @@
+global.logger = require "./routes/Logger"
 csUtilities = require "./public/src/conf/CustomerSpecificServerFunctions.js"
 
 startApp = ->

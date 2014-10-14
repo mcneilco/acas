@@ -352,7 +352,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	updateModel: =>
 		activity = @$('.bv_activity').is(":checked")
 		@model.set
-			readPosition: parseInt(@getTrimmedInput('.bv_readPosition'))
+			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
 			readName: @readNameListController.getSelectedCode()
 			activity: activity
 		@model.triggerAmDirty()
@@ -636,33 +636,33 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			aggregateBy1: @aggregateBy1ListController.getSelectedCode()
 			aggregateBy2: @aggregateBy2ListController.getSelectedCode()
 			normalizationRule: @normalizationListController.getSelectedCode()
-			hitEfficacyThreshold: parseFloat(@getTrimmedInput('.bv_hitEfficacyThreshold'))
-			hitSDThreshold: parseFloat(@getTrimmedInput('.bv_hitSDThreshold'))
-			assayVolume: @getTrimmedInput('.bv_assayVolume')
-			transferVolume: @getTrimmedInput('.bv_transferVolume')
-			dilutionFactor: @getTrimmedInput('.bv_dilutionFactor')
+			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
+			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))
+			assayVolume: UtilityFunctions::getTrimmedInput @$('.bv_assayVolume')
+			transferVolume: UtilityFunctions::getTrimmedInput @$('.bv_transferVolume')
+			dilutionFactor: UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor')
 			htsFormat: htsFormat
 		if @model.get('assayVolume') != ""
-			@model.set assayVolume: parseFloat(@getTrimmedInput('.bv_assayVolume'))
+			@model.set assayVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_assayVolume'))
 		if @model.get('transferVolume') != ""
-			@model.set transferVolume: parseFloat(@getTrimmedInput('.bv_transferVolume'))
+			@model.set transferVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_transferVolume'))
 		if @model.get('dilutionFactor') != ""
-			@model.set dilutionFactor: parseFloat(@getTrimmedInput('.bv_dilutionFactor'))
+			@model.set dilutionFactor: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor'))
 		@model.get('positiveControl').set
-			batchCode: @getTrimmedInput('.bv_positiveControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_positiveControlConc'))
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
+			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_positiveControlConc'))
 		@model.get('negativeControl').set
-			batchCode: @getTrimmedInput('.bv_negativeControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_negativeControlConc'))
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_negativeControlBatch')
+			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_negativeControlConc'))
 		@model.get('vehicleControl').set
-			batchCode: @getTrimmedInput('.bv_vehicleControlBatch')
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_vehicleControlBatch')
 			concentration: null
 		@model.get('agonistControl').set
-			batchCode: @getTrimmedInput('.bv_agonistControlBatch')
-			concentration: @getTrimmedInput('.bv_agonistControlConc')
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
+			concentration: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc')
 		if @model.get('agonistControl').get('concentration') != ""
 			@model.get('agonistControl').set
-				concentration: parseFloat(@getTrimmedInput('.bv_agonistControlConc'))
+				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()

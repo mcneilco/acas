@@ -396,10 +396,10 @@
         codeValue: this.assayStageListController.getSelectedCode()
       });
       this.model.getCurveDisplayMax().set({
-        numericValue: parseFloat(this.getTrimmedInput('.bv_maxY'))
+        numericValue: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_maxY')))
       });
       return this.model.getCurveDisplayMin().set({
-        numericValue: parseFloat(this.getTrimmedInput('.bv_minY'))
+        numericValue: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_minY')))
       });
     };
 

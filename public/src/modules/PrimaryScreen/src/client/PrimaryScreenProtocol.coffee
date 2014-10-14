@@ -291,9 +291,9 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@model.getPrimaryScreenProtocolParameterCodeValue('assay stage').set
 			codeValue: @assayStageListController.getSelectedCode()
 		@model.getCurveDisplayMax().set
-			numericValue: parseFloat(@getTrimmedInput('.bv_maxY')) #TODO: trim - will do after merge so can use utility function
+			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_maxY')) #TODO: trim - will do after merge so can use utility function
 		@model.getCurveDisplayMin().set
-			numericValue: parseFloat(@getTrimmedInput('.bv_minY'))
+			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_minY'))
 
 
 	handleMolecularTargetDDictChanged: =>

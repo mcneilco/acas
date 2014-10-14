@@ -21,7 +21,7 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 
 	setupKnockoutReasonPicklist: =>
 		@knockoutReasonList = new PickListList()
-		@knockoutReasonList.url = "/api/dataDict/user well flags"
+		@knockoutReasonList.url = "/api/dataDict/user well flags/reason"
 		@knockoutReasonListController = new PickListSelectController
 			el: @$('.bv_dataDictPicklist')
 			collection: @knockoutReasonList
@@ -307,22 +307,25 @@ class window.CurveEditorController extends Backbone.View
 
 	render: =>
 		@$el.empty()
-		@$el.html @template()
 		if @model?
+			@$el.html @template()
+
 			@drapc = new DoseResponseAnalysisParametersController
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
 			@drapc.setFormTitle "Fit Criteria"
 			@drapc.render()
 
-			@drapc.model.on "change", @handleParametersChanged
+			@stopListening @drapc.model, 'change'
+			@listenTo @drapc.model, 'change', @handleParametersChanged
 
 			@drpc = new DoseResponsePlotController
 				model: new Backbone.Model @model.get('plotData')
 				el: @$('.bv_plotWindowWrapper')
 			@drpc.render()
 
-			@drpc.model.on "change", @handlePointsChanged
+			@stopListening @drpc.model, 'change'
+			@listenTo @drpc.model, 'change', @handlePointsChanged
 
 			@$('.bv_reportedValues').html @model.get('reportedValues')
 			@$('.bv_fitSummary').html @model.get('fitSummary')
@@ -411,7 +414,9 @@ class window.CurveEditorController extends Backbone.View
 		newID = @model.get 'curveid'
 		dirty = @model.get 'dirty'
 		category = @model.get 'category'
-		@trigger 'curveDetailSaved', @oldID, newID, dirty, category
+		flagUser = @model.get 'flagUser'
+		flagAlgorithm = @model.get 'flagAlgorithm'
+		@trigger 'curveDetailSaved', @oldID, newID, dirty, category, flagUser, flagAlgorithm
 
 	handleUpdateSuccess: =>
 		@handleModelSync()
@@ -445,18 +450,18 @@ class window.CurveList extends Backbone.Collection
 		index = @.indexOf(curve)
 		return index
 
-	updateCurveSummary: (oldID, newCurveID, dirty, category) =>
+	updateCurveSummary: (oldID, newCurveID, dirty, category, flagUser, flagAlgorithm) =>
 		curve = @getCurveByID(oldID)
 		curve.set
 			curveid: newCurveID
 			dirty: dirty
-			category: category
-
-	updateCurveFlagUser: (curveid, flagUser, flagAlgorithm, dirty) =>
-		curve = @getCurveByID(curveid)
-		curve.set
 			flagUser: flagUser
 			flagAlgorithm: flagAlgorithm
+			category: category
+
+	updateCurveFlagUser: (curveid, dirty) =>
+		curve = @getCurveByID(curveid)
+		curve.set
 			dirty: dirty
 
 class window.CurveCurationSet extends Backbone.Model
@@ -519,8 +524,8 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
 		else
-			curveUrl = window.conf.service.rapache.fullpath+"curve/render/dr/?legend=false&showGrid=false&height=120&width=250&showAxes=false&labelAxes=false&curveIds="
-			curveUrl += @model.get('curveid')
+			curveUrl = window.conf.service.rapache.fullpath+"curve/render/dr/?legend=false&showGrid=false&height=120&width=250&curveIds="
+			curveUrl += @model.get('curveid') + "&showAxes=false&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
 		if @model.get('flagAlgorithm') == 'no fit'
@@ -573,6 +578,7 @@ class window.CurveSummaryListController extends Backbone.View
 		@filterKey = 'all'
 		@sortKey = 'none'
 		@sortAscending = true
+		@firstRun = true
 		if @options.selectedCurve?
 			@initiallySelectedCurveID = @options.selectedCurve
 		else
@@ -598,21 +604,29 @@ class window.CurveSummaryListController extends Backbone.View
 			unless @sortAscending
 				@toRender = @toRender.reverse()
 			@toRender = new Backbone.Collection @toRender
+
+		i = 1
 		@toRender.each (cs) =>
 			csController = new CurveSummaryController(model: cs)
-			if @initiallySelectedCurveID == cs.get 'curveid'
-				@selectedcid = cs.cid
 			@$('.bv_curveSummaries').append(csController.render().el)
 			csController.on 'selected', @selectionUpdated
 			@on 'clearSelected', csController.clearSelected
+			if @firstRun && @initiallySelectedCurveID?
+				if @initiallySelectedCurveID == cs.get 'curveid'
+					@selectedcid = cs.cid
 			if @selectedcid?
 				if csController.model.cid == @selectedcid
-						if @initiallySelectedCurveID == "NA"
-							csController.styleSelected()
+					if !@firstRun
+						csController.styleSelected()
 					else
 						csController.setSelected()
-						@initiallySelectedCurveID = "NA"
+			else
+				if @firstRun && i==1
+					@selectedcid = cs.id
+					csController.setSelected()
 
+		if @toRender.length > 0
+			@firstRun = false
 		@
 
 	anyDirty: =>
@@ -660,7 +674,6 @@ class window.CurveCuratorController extends Backbone.View
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
 			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError
-			@curveListController.render()
 
 			if @model.get('sortOptions').length > 0
 				@sortBySelect = new PickListSelectController
@@ -702,11 +715,11 @@ class window.CurveCuratorController extends Backbone.View
 
 		@
 
-	handleCurveDetailSaved: (oldID, newID, dirty, category) =>
-		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category)
+	handleCurveDetailSaved: (oldID, newID, dirty, category, flagUser, flagAlgorithm) =>
+		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, flagUser, flagAlgorithm)
 
-	handleCurveDetailUpdated: (curveid, flagUser, flagAlgorithm, dirty) =>
-		@curveListController.collection.updateCurveFlagUser(curveid, flagUser,flagAlgorithm, dirty)
+	handleCurveDetailUpdated: (curveid, dirty) =>
+		@curveListController.collection.updateCurveFlagUser(curveid, dirty)
 
 	handleCurveUpdateError: =>
 		@$('.bv_badCurveUpdate').modal

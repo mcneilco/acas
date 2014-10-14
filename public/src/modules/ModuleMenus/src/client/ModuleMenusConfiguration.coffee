@@ -58,5 +58,11 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: false, menuName: "Experiment Browser"
 		mainControllerClassName: "ExperimentBrowserController"
+	,
+		isHeader: true
+		menuName: "Admin"
+	,
+		isHeader: false, menuName: "Logging"
+		mainControllerClassName: "LoggingController"
 	]
 

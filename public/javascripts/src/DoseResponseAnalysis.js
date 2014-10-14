@@ -158,13 +158,13 @@
 
     DoseResponseAnalysisParametersController.prototype.updateModel = function() {
       this.model.get('max').set({
-        value: parseFloat(this.getTrimmedInput('.bv_max_value'))
+        value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_max_value')))
       });
       this.model.get('min').set({
-        value: parseFloat(this.getTrimmedInput('.bv_min_value'))
+        value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_min_value')))
       });
       this.model.get('slope').set({
-        value: parseFloat(this.getTrimmedInput('.bv_slope_value'))
+        value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_slope_value')))
       });
       this.model.set({
         inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
