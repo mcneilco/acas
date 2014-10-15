@@ -28,11 +28,6 @@ window.ModuleMenusConfiguration =
 		autoLaunchName:"primary_screen_protocol"
 	,
 		isHeader: false
-		menuName: "Base entity"
-		mainControllerClassName: "BaseEntityController"
-		autoLaunchName:"base_entity"
-	,
-		isHeader: false
 		menuName: "Protocol Base"
 		mainControllerClassName: "ProtocolBaseController"
 		autoLaunchName:"protocol_base"
