@@ -606,7 +606,6 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_protocolCode option').length > 0
 					, 1000
 					runs ->
-						console.log @ebc.model.getStatus()
 						expect(@ebc.$('.bv_status').val()).toEqual 'created'
 				it "should show the status select disabled", ->
 					expect(@ebc.$('.bv_status').attr('disabled')).toEqual 'disabled'
@@ -662,7 +661,6 @@ describe "Experiment module testing", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@ebc.isValid()).toBeTruthy()
-							console.log @ebc.model.validationError
 					it "save button should be enabled", ->
 						runs ->
 							expect(@ebc.$('.bv_save').attr('disabled')).toBeUndefined()

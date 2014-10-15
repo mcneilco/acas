@@ -9,9 +9,7 @@ describe "Primary Screen Protocol module testing", ->
 	describe "Primary Screen Protocol Parameters model testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
-				console.log "before Each"
 				@pspp = new PrimaryScreenProtocolParameters()
-				console.log @pspp
 			describe "Defaults", ->
 #				it 'Should have the select DNS target list be unchecked', ->
 #					expect(@pspp.get('dnsList')).toBeFalsy()
@@ -65,12 +63,7 @@ describe "Primary Screen Protocol module testing", ->
 				it "should be defined", ->
 					expect(@pspp).toBeDefined()
 			describe "after initial load", ->
-#				it "should have the Select DNS Target List be checked ", ->
-#					expect(@pspp.get('dnsTargetList')).toEqual true
-#					expect(@psp.get('dnsList')).toBeTruthy()
 				it "should have a maxY curve display ", ->
-					console.log "loaded from existing"
-					console.log @pspp
 					expect(@pspp.getCurveDisplayMax().get('numericValue')).toEqual 200.0
 				it "should have a minY curve display ", ->
 					expect(@pspp.getCurveDisplayMin().get('numericValue')).toEqual 10.0
@@ -244,7 +237,6 @@ describe "Primary Screen Protocol module testing", ->
 						waits(1000)
 						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "target x"
 						expect(@psppc.molecularTargetListController.getSelectedCode()).toEqual "target x"
-						console.log @psppc.molecularTargetListController.getSelectedCode()
 				it "should have the targetOrigin set", ->
 					waitsFor ->
 						@psppc.$('.bv_targetOrigin option').length > 0

@@ -184,7 +184,6 @@ describe "PickList Select Unit Testing", ->
 			it "should show error when the label is not filled in", ->
 				@adopc.$('.bv_newOptionLabel').val ""
 				@adopc.$('.bv_newOptionLabel').change()
-				console.log @adopc.$('.bv_newOptionLabel')
 				expect(@adopc.$('.bv_group_newOptionLabel').hasClass("error")).toBeTruthy()
 		describe "form validation setup", ->
 			it "should be valid and add button is enabled if form fully filled out", ->
@@ -223,8 +222,6 @@ describe "PickList Select Unit Testing", ->
 						expect(@editablePickListController.pickListController).toBeDefined()
 				it "should have an add button", ->
 					runs ->
-						console.log @editablePickListController.$('.bv_addOptionBtn')
-						console.log @editablePickListController
 						expect(@editablePickListController.$('.bv_addOptionBtn').length).toEqual 1
 			describe "when add button is clicked", ->
 				it " should have an add panel controller", ->
@@ -258,7 +255,6 @@ describe "PickList Select Unit Testing", ->
 								@editablePickListController.addPanelController.$('.bv_newOptionComments').change()
 								@editablePickListController.addPanelController.$('.bv_addNewParameterOption').click()
 						it "should tell user that the option already exists", ->
-							console.log @editablePickListController
 							expect(@editablePickListController.$('.bv_optionAddedMessage')).toBeHidden()
 							expect(@editablePickListController.$('.bv_errorMessage')).toBeVisible()
 

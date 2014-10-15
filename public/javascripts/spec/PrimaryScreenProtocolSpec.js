@@ -12,9 +12,7 @@
     describe("Primary Screen Protocol Parameters model testing", function() {
       describe("When loaded from new", function() {
         beforeEach(function() {
-          console.log("before Each");
-          this.pspp = new PrimaryScreenProtocolParameters();
-          return console.log(this.pspp);
+          return this.pspp = new PrimaryScreenProtocolParameters();
         });
         describe("Defaults", function() {
           it('Should have an default maxY curve display of 100', function() {
@@ -82,8 +80,6 @@
         });
         return describe("after initial load", function() {
           it("should have a maxY curve display ", function() {
-            console.log("loaded from existing");
-            console.log(this.pspp);
             return expect(this.pspp.getCurveDisplayMax().get('numericValue')).toEqual(200.0);
           });
           it("should have a minY curve display ", function() {
@@ -304,8 +300,7 @@
             return runs(function() {
               waits(1000);
               expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("target x");
-              expect(this.psppc.molecularTargetListController.getSelectedCode()).toEqual("target x");
-              return console.log(this.psppc.molecularTargetListController.getSelectedCode());
+              return expect(this.psppc.molecularTargetListController.getSelectedCode()).toEqual("target x");
             });
           });
           it("should have the targetOrigin set", function() {

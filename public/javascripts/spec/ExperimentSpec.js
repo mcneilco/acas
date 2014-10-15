@@ -864,7 +864,6 @@
               return this.ebc.$('.bv_protocolCode option').length > 0;
             }, 1000);
             return runs(function() {
-              console.log(this.ebc.model.getStatus());
               return expect(this.ebc.$('.bv_status').val()).toEqual('created');
             });
           });
@@ -939,8 +938,7 @@
           describe("form validation setup", function() {
             it("should be valid if form fully filled out", function() {
               return runs(function() {
-                expect(this.ebc.isValid()).toBeTruthy();
-                return console.log(this.ebc.model.validationError);
+                return expect(this.ebc.isValid()).toBeTruthy();
               });
             });
             return it("save button should be enabled", function() {

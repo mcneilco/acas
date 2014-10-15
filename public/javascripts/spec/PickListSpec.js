@@ -266,7 +266,6 @@
         return it("should show error when the label is not filled in", function() {
           this.adopc.$('.bv_newOptionLabel').val("");
           this.adopc.$('.bv_newOptionLabel').change();
-          console.log(this.adopc.$('.bv_newOptionLabel'));
           return expect(this.adopc.$('.bv_group_newOptionLabel').hasClass("error")).toBeTruthy();
         });
       });
@@ -317,8 +316,6 @@
           });
           return it("should have an add button", function() {
             return runs(function() {
-              console.log(this.editablePickListController.$('.bv_addOptionBtn'));
-              console.log(this.editablePickListController);
               return expect(this.editablePickListController.$('.bv_addOptionBtn').length).toEqual(1);
             });
           });
@@ -366,7 +363,6 @@
                 });
               });
               return it("should tell user that the option already exists", function() {
-                console.log(this.editablePickListController);
                 expect(this.editablePickListController.$('.bv_optionAddedMessage')).toBeHidden();
                 return expect(this.editablePickListController.$('.bv_errorMessage')).toBeVisible();
               });
