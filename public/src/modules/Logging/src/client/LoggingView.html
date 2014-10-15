@@ -1,0 +1,85 @@
+<script type="text/template" id="LoggingView" xmlns="http://www.w3.org/1999/html">
+    <h3>Logging View</h3>
+</script>
+<script type="text/template" id="app-view">
+	<h3>Logging</h3>
+	<div class="row bv_filtersMenu"></div>
+	<div class="row bv_logStats"></div>
+	<br />
+	<div class="row bv_logTable"></div>
+
+</script>
+
+<script type="text/template" id="log-list-view">
+	<table class="table table-striped">
+		<thead>
+		<tr>
+			<th>
+				Level
+			</th><th>
+			Source
+		</th><th>
+			Action
+		</th><th>
+			Data
+		</th><th>
+			User
+		</th><th>
+			Date
+		</th>
+		</tr>
+		</thead>
+		<tbody class="bv_logListBody"></tbody>
+	</table>
+
+
+</script>
+<script type="text/template" id="log-entry-item">
+	<td>
+		<%= level %>
+	</td><td>
+		<%= sourceApp %>
+	</td><td>
+		<%= action %>
+	</td><td>
+		<%= data %>
+	</td><td>
+		<%= user %>
+	</td><td>
+		<%= new Date(timestamp).toLocaleString() %>
+	</td>
+</script>
+
+<script type="text/template" id="log-filters-menu">
+	<div class="row-fluid">
+		<div class="span3">
+			<label for="logLevel">Level</label>
+			<select class="form-control bv_logLevel" style="width: 10em;" name="logLevel">
+				<option value="all">all</option>
+				<option value="info">info</option>
+				<option value="warn">warn</option>
+				<option value="error">error</option>
+			</select>
+		</div>
+		<div class="span3">
+			<label for="application">Application</label>
+			<div class="bv_application" name="application"></div>
+		</div>
+		<div class="span3">
+			<label for="user">User</label>
+			<div class="bv_user" name="user"></div>
+		</div>
+	</div>
+</script>
+
+<script type="text/template" id="pick-list">
+	<select class="form-control bv_pickList " style="width: 10em;">
+		<option value="all">all</option>
+		<% collection.each(function(item) { %>
+		<option value="<%= item.get('value') %>"><%= item.get('value') %></option>
+		<% }); %>
+	</select>
+</script>
+<script type="text/template" id="log-stats-view">
+	<div id="chart1"></div>
+</script>

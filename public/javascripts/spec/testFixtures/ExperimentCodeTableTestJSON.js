@@ -2,7 +2,9 @@
   (function(exports) {
     return exports.dataDictValues = [
       {
-        "experimentStatus": [
+        type: "experimentMetadata",
+        kind: "experiment status",
+        codes: [
           {
             code: "created",
             name: "Created",

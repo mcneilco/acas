@@ -46,7 +46,7 @@
         concentrationUnits: null
       },
       instrumentReader: "flipr",
-      signalDirectionRule: "increasing signal (highest = 100%)",
+      signalDirectionRule: "increasing",
       aggregateBy1: "compound batch concentration",
       aggregateBy2: "median",
       normalizationRule: "plate order only",

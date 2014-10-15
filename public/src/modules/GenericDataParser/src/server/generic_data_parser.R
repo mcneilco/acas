@@ -674,8 +674,6 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
                                 "concUnits" = fillerArray, "reshapeText" = fillerArray)
   returnDataFrame$DataColumn <- dataColumns
   returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
-  # This removes "Reported" from all columns
-  returnDataFrame$valueKind <- trim(gsub("Reported","",returnDataFrame$valueKind))
   returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
   returnDataFrame$Conc <- as.numeric(gsub("[^0-9\\.]", "", concAndUnits))
@@ -838,8 +836,10 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   } else {
     valueKinds$stateKind <- stateAssignments$stateKind[match(valueKinds$valueKind, stateAssignments$valueKind)]
     valueKinds$stateType <- stateAssignments$stateType[match(valueKinds$valueKind, stateAssignments$valueKind)]
+    valueKinds[is.na(valueKinds$stateKind), "stateKind"] <- "results"
+    valueKinds[is.na(valueKinds$stateType), "stateType"] <- "data"
   }
- 
+  
   valueKinds$publicData <- !hiddenColumns[notMainCode]
   valueKinds$linkColumn <- linkColumns[notMainCode]
   
@@ -2147,11 +2147,28 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = formatParameters$lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
+  stateAssignments <- NULL
+  if (inputFormat == "Dose Response") {
+    doseResponseKinds <- c(
+      "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
+      "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+      "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
+      "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
+    )
+    stateAssignments <- data.frame(
+      valueKind = doseResponseKinds,
+      stateType = rep("data", length(doseResponseKinds)), 
+      stateKind = rep("dose response", length(doseResponseKinds)),
+      stringsAsFactors = FALSE
+    )
+  }
+  
   calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
   calculatedResults <- organizeCalculatedResults(
     calculatedResults, inputFormat, formatParameters, mainCode, 
     lockCorpBatchId = formatParameters$lockCorpBatchId, rawOnlyFormat = rawOnlyFormat, 
-    errorEnv = errorEnv, precise = precise, calculateGroupingID = calculateGroupingID)
+    errorEnv = errorEnv, precise = precise, calculateGroupingID = calculateGroupingID,
+    stateAssignments = stateAssignments)
   
   if (!is.null(formatParameters$splitSubjects)) {
     calculatedResults$subjectID <- calculatedResults$groupingID_2
@@ -2854,6 +2871,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
   
   subjectData <- NULL
   treatmentGroupData <- NULL
+  intermedList <- list()
   if (precise) {
     subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
     link <- calculatedResults[calculatedResults$linkColumn, c("rowID", "stringValue")]
@@ -2908,11 +2926,19 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       subjectData$Col5[1] <- "Text"
       subjectData$Col5[2] <- "flag"
       
-      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = c("test compound treatment", "results", "results"))
+      stateAssignments <- data.frame(
+        valueKind = c("Dose", "Response", "flag"), 
+        stateType = c("data", "data", "data"), 
+        stateKind = c("test compound treatment", "results", "results"),
+        stringsAsFactors = FALSE
+      )
       
       # list(subjectData, treatmentGroupData)
-      intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL, link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, formatParameters = formatParameters)
-      return(intermedList)
+      intermedList <- organizeSubjectData(
+        subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
+        link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
+        formatParameters = formatParameters)
     }
   }
+  return(intermedList)
 }

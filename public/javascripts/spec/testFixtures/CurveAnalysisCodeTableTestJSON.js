@@ -2,7 +2,9 @@
   (function(exports) {
     return exports.dataDictValues = [
       {
-        "algorithm well flags": [
+        type: "algorithm well flags",
+        kind: "reason",
+        codes: [
           {
             code: "outlier",
             name: "Outlier",
@@ -13,15 +15,18 @@
             ignored: true
           }, {
             code: "low",
-            name: "Value to low",
+            name: "Value too low",
             ignored: true
           }, {
             code: "crashout",
             name: "Compound crashed out",
             ignored: false
           }
-        ],
-        "user well flags": [
+        ]
+      }, {
+        type: "user well flags",
+        kind: "reason",
+        codes: [
           {
             code: "outlier",
             name: "Outlier",

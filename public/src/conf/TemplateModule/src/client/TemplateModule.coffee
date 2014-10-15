@@ -42,8 +42,8 @@ class window.ReagentController extends AbstractFormController
 
 	updateModel: =>
 		@model.set
-			cas: parseInt(@getTrimmedInput('.bv_cas'))
-			barcode: @getTrimmedInput('.bv_barcode')
+			cas: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_cas'))
+			barcode: UtilityFunctions::getTrimmedInput @$('.bv_barcode')
 
 	setupHazardCategorySelect: ->
 		@hazardCategoryList = new PickListList()

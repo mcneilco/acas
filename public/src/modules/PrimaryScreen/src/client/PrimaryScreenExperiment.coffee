@@ -333,7 +333,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	setUpReadNameSelect: ->
 		@readNameList = new PickListList()
-		@readNameList.url = "/api/dataDict/readNameCodes"
+		@readNameList.url = "/api/dataDict/experimentMetadata/read name"
 		@readNameList = new PickListSelectController
 			el: @$('.bv_readName')
 			collection: @readNameList
@@ -352,7 +352,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	updateModel: =>
 		activity = @$('.bv_activity').is(":checked")
 		@model.set
-			readPosition: parseInt(@getTrimmedInput('.bv_readPosition'))
+			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
 			readName: @$('.bv_readName').val()
 			activity: activity
 		@model.triggerAmDirty()
@@ -388,7 +388,7 @@ class window.TransformationRuleController extends AbstractFormController
 
 	setUpTransformationRuleSelect: ->
 		@transformationList = new PickListList()
-		@transformationList.url = "/api/dataDict/transformationCodes"
+		@transformationList.url = "/api/dataDict/experimentMetadata/transformation"
 		@transformationList = new PickListSelectController
 			el: @$('.bv_transformationRule')
 			collection: @transformationList
@@ -562,7 +562,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupInstrumentReaderSelect: ->
 		@instrumentList = new PickListList()
-		@instrumentList.url = "/api/dataDict/instrumentReaderCodes"
+		@instrumentList.url = "/api/dataDict/experimentMetadata/instrument reader"
 		@instrumentListController = new PickListSelectController
 			el: @$('.bv_instrumentReader')
 			collection: @instrumentList
@@ -573,7 +573,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupSignalDirectionSelect: ->
 		@signalDirectionList = new PickListList()
-		@signalDirectionList.url = "/api/dataDict/signalDirectionCodes"
+		@signalDirectionList.url = "/api/dataDict/experimentMetadata/signal direction"
 		@signalDirectionListController = new PickListSelectController
 			el: @$('.bv_signalDirectionRule')
 			collection: @signalDirectionList
@@ -584,7 +584,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupAggregateBy1Select: ->
 		@aggregateBy1List = new PickListList()
-		@aggregateBy1List.url = "/api/dataDict/aggregateBy1Codes"
+		@aggregateBy1List.url = "/api/dataDict/experimentMetadata/aggregate by1"
 		@aggregateBy1ListController = new PickListSelectController
 			el: @$('.bv_aggregateBy1')
 			collection: @aggregateBy1List
@@ -595,7 +595,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupAggregateBy2Select: ->
 		@aggregateBy2List = new PickListList()
-		@aggregateBy2List.url = "/api/dataDict/aggregateBy2Codes"
+		@aggregateBy2List.url = "/api/dataDict/experimentMetadata/aggregate by2"
 		@aggregateBy2ListController = new PickListSelectController
 			el: @$('.bv_aggregateBy2')
 			collection: @aggregateBy2List
@@ -606,7 +606,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
-		@normalizationList.url = "/api/dataDict/normalizationCodes"
+		@normalizationList.url = "/api/dataDict/experimentMetadata/normalization"
 		@normalizationListController = new PickListSelectController
 			el: @$('.bv_normalizationRule')
 			collection: @normalizationList
@@ -630,39 +630,42 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	updateModel: =>
 		htsFormat = @$('.bv_htsFormat').is(":checked")
+		console.log "testing update model"
+		console.log @$('.bv_agonistControlBatch').val()
+		console.log UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
 		@model.set
 			instrumentReader: @$('.bv_instrumentReader').val()
 			signalDirectionRule: @$('.bv_signalDirectionRule').val()
 			aggregateBy1: @$('.bv_aggregateBy1').val()
 			aggregateBy2: @$('.bv_aggregateBy2').val()
 			normalizationRule: @$('.bv_normalizationRule').val()
-			hitEfficacyThreshold: parseFloat(@getTrimmedInput('.bv_hitEfficacyThreshold'))
-			hitSDThreshold: parseFloat(@getTrimmedInput('.bv_hitSDThreshold'))
-			assayVolume: @getTrimmedInput('.bv_assayVolume')
-			transferVolume: @getTrimmedInput('.bv_transferVolume')
-			dilutionFactor: @getTrimmedInput('.bv_dilutionFactor')
+			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
+			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))
+			assayVolume: UtilityFunctions::getTrimmedInput @$('.bv_assayVolume')
+			transferVolume: UtilityFunctions::getTrimmedInput @$('.bv_transferVolume')
+			dilutionFactor: UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor')
 			htsFormat: htsFormat
 		if @model.get('assayVolume') != ""
-			@model.set assayVolume: parseFloat(@getTrimmedInput('.bv_assayVolume'))
+			@model.set assayVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_assayVolume'))
 		if @model.get('transferVolume') != ""
-			@model.set transferVolume: parseFloat(@getTrimmedInput('.bv_transferVolume'))
+			@model.set transferVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_transferVolume'))
 		if @model.get('dilutionFactor') != ""
-			@model.set dilutionFactor: parseFloat(@getTrimmedInput('.bv_dilutionFactor'))
+			@model.set dilutionFactor: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor'))
 		@model.get('positiveControl').set
-			batchCode: @getTrimmedInput('.bv_positiveControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_positiveControlConc'))
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
+			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_positiveControlConc'))
 		@model.get('negativeControl').set
-			batchCode: @getTrimmedInput('.bv_negativeControlBatch')
-			concentration: parseFloat(@getTrimmedInput('.bv_negativeControlConc'))
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_negativeControlBatch')
+			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_negativeControlConc'))
 		@model.get('vehicleControl').set
-			batchCode: @getTrimmedInput('.bv_vehicleControlBatch')
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_vehicleControlBatch')
 			concentration: null
 		@model.get('agonistControl').set
-			batchCode: @getTrimmedInput('.bv_agonistControlBatch')
-			concentration: @getTrimmedInput('.bv_agonistControlConc')
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
+			concentration: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc')
 		if @model.get('agonistControl').get('concentration') != ""
 			@model.get('agonistControl').set
-				concentration: parseFloat(@getTrimmedInput('.bv_agonistControlConc'))
+				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
