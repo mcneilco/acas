@@ -31,9 +31,8 @@ dataframe_to_csvstring <- function(x) {
 }
 
 normalizeData <- function() {
-    csv_data <- rawToChar(receiveBin(-1))
-    csv_data <- gsub("\\r","\\\n",csv_data)
-    data <- fread(csv_data)
+    experimentCode <- POST$experimentCode
+    data <- fread(paste0("file://",FILES$file$tmp_name))
     data[, originalOrder:=1:nrow(data)]
     keyColumns <- c("Assay Barcode", "Well")
     setkeyv(data, keyColumns)
