@@ -2871,6 +2871,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
   
   subjectData <- NULL
   treatmentGroupData <- NULL
+  intermedList <- list()
   if (precise) {
     subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
     link <- calculatedResults[calculatedResults$linkColumn, c("rowID", "stringValue")]
