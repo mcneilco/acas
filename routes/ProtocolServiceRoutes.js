@@ -1,4 +1,8 @@
 (function() {
+  exports.setupAPIRoutes = function(app, loginRoutes) {
+    return app.get('/api/protocols/codename/:code', exports.protocolByCodename);
+  };
+
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/protocols/codename/:code', loginRoutes.ensureAuthenticated, exports.protocolByCodename);
     app.get('/api/protocols/:id', loginRoutes.ensureAuthenticated, exports.protocolById);
@@ -10,11 +14,18 @@
   };
 
   exports.protocolByCodename = function(req, resp) {
-    var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, prot, protocolServiceTestJSON, serverUtilityFunctions;
+    console.log("protocolByCodename");
     console.log(req.params.code);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
+      prot = JSON.parse(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
+      if (req.params.code.indexOf("screening") > -1) {
+        prot[0].lsKind = "flipr screening assay";
+      } else {
+        prot[0].lsKind = "default";
+      }
+      return resp.json(prot);
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codename/" + req.params.code;
