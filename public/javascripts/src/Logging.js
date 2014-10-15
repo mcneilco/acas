@@ -358,34 +358,6 @@
 
   })(Backbone.Collection);
 
-  window.PickList = (function(_super) {
-    __extends(PickList, _super);
-
-    function PickList() {
-      this.render = __bind(this.render, this);
-      return PickList.__super__.constructor.apply(this, arguments);
-    }
-
-    PickList.prototype.template = $("#pick-list").html();
-
-    PickList.prototype.initialize = function() {
-      this.collection.bind("fetch", this.render);
-      this.collection.bind("change", this.render);
-      return this.collection.bind("add", this.render);
-    };
-
-    PickList.prototype.render = function() {
-      $(this.el).empty();
-      $(this.el).html(_.template(this.template, {
-        collection: this.collection
-      }));
-      return this;
-    };
-
-    return PickList;
-
-  })(Backbone.View);
-
   window.GraphLogStats = (function(_super) {
     __extends(GraphLogStats, _super);
 
