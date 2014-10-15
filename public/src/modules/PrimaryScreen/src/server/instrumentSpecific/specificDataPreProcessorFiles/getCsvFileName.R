@@ -5,7 +5,7 @@ getCsvFileName <- function(filePath=".", tempFilePath){
   # runlog
   write.table(paste0(Sys.time(), "\tbegin getCsvFileName\tfilePath=",filePath), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  csvFiles <- list.files(pattern=".csv")
+  csvFiles <- list.files(path=filePath, pattern=".csv")
   csvFileName <- NULL
   
   if (length(csvFiles) == 1){

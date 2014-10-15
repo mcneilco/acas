@@ -7,7 +7,7 @@ getAssayFileName <- function(barcode="barcode text", filePath=".", tempFilePath)
   # runlog
   write.table(paste0(Sys.time(), "\tbegin getAssayFileName\tbarcode=",barcode), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  assayFileNames <- list.files(pattern=barcode)
+  assayFileNames <- list.files(path=filePath, pattern=barcode)
   if (length(assayFileNames) == 1){
     assayFileNames <- data.table(assayFileName=assayFileNames[1])
   } else if (length(assayFileNames) > 1) { 

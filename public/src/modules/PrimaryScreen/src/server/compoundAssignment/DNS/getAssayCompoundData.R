@@ -1,7 +1,6 @@
 ### Compound data operations start here
 getAssayCompoundData <- function (filePath, plateData, testMode, tempFilePath, assayData) {
-  originalWD <- getwd()
-  setwd(filePath)
+  
   assayCompoundDT <- getPinTransfer(plateAssociationDT=plateData, testMode=testMode, tempFilePath=tempFilePath)
   
   allCompoundData <- formatCompoundData(assayCompoundDT, assayData, testMode=testMode, tempFilePath=tempFilePath)
@@ -26,8 +25,6 @@ getAssayCompoundData <- function (filePath, plateData, testMode, tempFilePath, a
   } else {
     write.table(allAssayCompoundData, file="../Analysis/output_well_data.srf", append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE, na="")
   }
-  
-  setwd(originalWD)  
   
   # Needs to return a list for error catching
   # return(list(filePath=filePath, activity=allAssayCompoundData[ , activityColumns, with=FALSE]))

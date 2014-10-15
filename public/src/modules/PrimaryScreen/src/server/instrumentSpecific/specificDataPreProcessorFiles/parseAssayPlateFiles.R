@@ -23,7 +23,7 @@ parseAssayPlateFiles <- function(assayFileName = "assayFileName", instrumentType
   print(paste0("instrument type is ", instrumentType))
   
   # returns a list of the params
-  instrumentParams <- loadInstrumentReadParameters(instrumentType=instrumentType, tempFilePath=tempFilePath)
+  instrumentParams <- loadInstrumentReadParameters(instrumentType=instrumentType)
   
   parseInstrumentPlateData(fileName=assayFileName, parseParams=instrumentParams, titleVector, tempFilePath=tempFilePath)
     

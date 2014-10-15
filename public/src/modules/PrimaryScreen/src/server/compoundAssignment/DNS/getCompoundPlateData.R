@@ -49,7 +49,7 @@ getCompoundPlateData <- function(barcodes, testMode=FALSE, tempFilePath) {
                         
   
   queryCompoundsFromTestFile <- function(barcodes){    
-    testFile  <- file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/spec/RTestSet/docs", "compoundDataFile.tab")
+    testFile  <- file.path("public/src/modules/PrimaryScreen/spec/RTestSet/docs", "compoundDataFile.tab")
     testDF    <- read.csv(testFile, header=TRUE, sep="\t", stringsAsFactors=FALSE)
     testDF    <- subset(testDF, cmpdBarcode %in% barcodes) 
     return(testDF)

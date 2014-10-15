@@ -1499,23 +1499,21 @@ loadInstrumentReadParameters <- function(instrumentType) {
   # Input:  instrumentType
   # Output: assay file parameters (list)
   
-  if (!file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType)) || 
-        !file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"instrumentType.json")) ||
-        !file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"detectionLine.json")) ||
-        !file.exists(file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"paramList.json"))) 
+  if (!file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType)) || 
+        !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"instrumentType.json")) ||
+        !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"detectionLine.json")) ||
+        !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"paramList.json"))) 
   {
     stopUser("Configuration error: Instrument not loaded in to system.")
   } 
   
-  instrument <- fromJSON(readLines(file.path(Sys.getenv("ACAS_HOME"), 
-                                             "public/src/modules/PrimaryScreen/src/conf/instruments",
+  instrument <- fromJSON(readLines(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",
                                              instrumentType,"instrumentType.json")))$instrumentType
   if(instrumentType != instrument) {
     stopUser("Configuration error: Instrument data loaded incorrectly.")
   }
   
-  paramList <- fromJSON(readLines(file.path(Sys.getenv("ACAS_HOME"), 
-                                            "public/src/modules/PrimaryScreen/src/conf/instruments",
+  paramList <- fromJSON(readLines(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",
                                             instrumentType,"paramList.json")))$paramList
   if(paramList$dataTitleIdentifier == "NA") {
     paramList$dataTitleIdentifier <- NA
@@ -1667,7 +1665,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # GREEN (instrument-specific)
   instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
   
-  source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",
+  source(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",
                    instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
   
   instrumentData <- specificDataPreProcessor(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, 
@@ -1677,7 +1675,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # RED (client-specific)
   # getCompoundAssignments
   
-  source(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
+  source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"getCompoundAssignments.R"))
   
   resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters)
@@ -1692,9 +1690,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   ## RED SECTION - Client Specific
   #calculations
-  fileList <- c(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
+  fileList <- c(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                           clientName,"performCalculations.R"),
-                list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/Generic"), 
+                list.files(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/Generic"), 
                            full.names=TRUE))
   lapply(fileList, source)
   

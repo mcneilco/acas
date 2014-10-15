@@ -21,7 +21,11 @@ getDataSectionTitles <- function(fileName, parseParams, tempFilePath) {
   if (parseParams$dataFormat == "listFormatSingleFile" && length(headerRowVector) == 1) {
     # TODO: Checks column names for "formatted" data
     # currently only works for biacore
-    dataTitles <- data.table(dataTitle=setdiff(colnames(read.table(fileName, sep=parseParams$sepChar, skip=headerRowVector-1, nrows=1, header=TRUE)), c("Well", "X")))
+    # TODO: Remove this in to own function
+    dataTitles <- data.table(dataTitle=setdiff(colnames(read.table(fileName, 
+                                                                   sep=parseParams$sepChar, 
+                                                                   skip=headerRowVector-1, 
+                                                                   nrows=1, header=TRUE)), c("Well", "X")))
     dataTitles$readOrder <- 1:nrow(dataTitles) 
   } else if (is.na(parseParams$dataTitleIdentifier)) {
     if(parseParams$dataFormat == "plateFormatMultiFile") {
@@ -30,7 +34,9 @@ getDataSectionTitles <- function(fileName, parseParams, tempFilePath) {
       dataTitles <- data.table(dataTitle=c(paste0("R", 1:length(headerRowVector))), readOrder=1:length(headerRowVector))
     }
   } else {
-    dataTitleRowVector <- getDataRowNumber(fileName, searchString=parseParams$dataTitleIdentifier, tempFilePath=tempFilePath)
+    dataTitleRowVector <- getDataRowNumber(fileName, 
+                                           searchString=parseParams$dataTitleIdentifier, 
+                                           tempFilePath=tempFilePath)
   
     # Shift the vector to a data table with a read order column
     if(parseParams$dataFormat == "plateFormatMultiFile") {
@@ -41,7 +47,12 @@ getDataSectionTitles <- function(fileName, parseParams, tempFilePath) {
     
     # Read the file for the data titles
     if(parseParams$dataFormat == "plateFormatMultiFile"){
-      dataTitles <- titleRowTable[ , read.table(fileName, sep=parseParams$sepChar, skip=titleRow-1, nrows=1, header=FALSE, stringsAsFactors=FALSE)[1,1], by=titleRow]
+      dataTitles <- titleRowTable[ , read.table(fileName, 
+                                                sep=parseParams$sepChar, 
+                                                skip=titleRow-1, 
+                                                nrows=1, 
+                                                header=FALSE, 
+                                                stringsAsFactors=FALSE)[1,1], by=titleRow]
       dataTitles$titleRow <- NULL
     } else {
       dataTitles <- titleRowTable[ , read.table(fileName, sep=parseParams$sepChar, skip=titleRow-1, nrows=1, header=FALSE, stringsAsFactors=FALSE)[1,1], by=readOrder]

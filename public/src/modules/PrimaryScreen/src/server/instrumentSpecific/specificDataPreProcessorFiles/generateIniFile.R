@@ -5,8 +5,7 @@
 
 generateIniFile <- function(filePath, tempFilePath, instrument) {
   
-  setwd(filePath)
-  iniData <- list()
+  #   setwd(filePath)
   
   # runlog
   write.table(paste0(Sys.time(), "\tbegin generateIniFile\tfilePath=",filePath), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
@@ -15,7 +14,7 @@ generateIniFile <- function(filePath, tempFilePath, instrument) {
   plateDataHeader <- "[Plate_Data_Order]"  
   
   write.table(plateDataHeader, file = file.path(tempFilePath, "defaultlog.ini"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
-  suppressWarnings(write.table(iniData$plateData, file = file.path(tempFilePath, "defaultlog.ini"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE))
+  suppressWarnings(write.table(plateData, file = file.path(tempFilePath, "defaultlog.ini"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE))
 
   #   iniData$pinTransfer <- getPinTransfer(plateAssociationDT=iniData$plateData, testMode=testMode, tempFilePath=tempFilePath)
   #   pinTransferHeader <- "[Pin_Transfer]"

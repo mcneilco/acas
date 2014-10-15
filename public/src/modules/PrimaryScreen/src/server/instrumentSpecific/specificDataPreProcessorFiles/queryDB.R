@@ -12,7 +12,7 @@
 
 sqlQuery <- function(queryString='sql query', host='***REMOVED***', port='1521', sid='ORATEST', ***REMOVED***, ***REMOVED***){
   require(RJDBC)
-  jdbcDriverJar  <- file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/spec/RTestSet/docs", "ojdbc6.jar")  
+  jdbcDriverJar  <- file.path("public/src/modules/PrimaryScreen/spec/RTestSet/docs", "ojdbc6.jar")  
   drv <- JDBC('oracle.jdbc.driver.OracleDriver', jdbcDriverJar);
   jdbcURL <- paste0('jdbc:oracle:thin:@', host, ':', port, ':', sid)
   conn<- dbConnect(drv, jdbcURL, userName, userPassword);

@@ -102,7 +102,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
   
 }
 
-removeInstrumentFiles <- function(filePath=file.path(Sys.getenv("ACAS_HOME"), "public/src/modules/PrimaryScreen/src/conf/instruments"), 
+removeInstrumentFiles <- function(filePath=file.path("public/src/modules/PrimaryScreen/src/conf/instruments"), 
                                   instruments=list("acumen","arrayScan","biacore","envision","flipr","lumiLux","microBeta","thermalMelt","viewLux","flipr1"),
                                   extension=".Rda"){
   for (instrumentType in instruments) {

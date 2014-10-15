@@ -1,10 +1,10 @@
 
 getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters) {
   # DNS
-  fileList <- list.files(file.path(Sys.getenv("ACAS_HOME"),"public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS"), full.names=TRUE)
+  fileList <- list.files("public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS", full.names=TRUE)
   lapply(fileList, source)
   
-  assayCompoundData <- getAssayCompoundData(filePath=file.path(Sys.getenv("ACAS_HOME"), folderToParse),
+  assayCompoundData <- getAssayCompoundData(filePath=folderToParse,
                                             plateData=instrumentData$plateAssociationDT,
                                             testMode=testMode,
                                             tempFilePath=tempdir(),

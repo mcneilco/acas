@@ -5,10 +5,10 @@
 
 getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, readsTable, testMode=TRUE, errorEnv, tempFilePath=NULL, dryRun=TRUE, matchNames=FALSE) {
   
-  originalWD <- getwd()
-  require(racas)
+  #   originalWD <- getwd()
+  #   require(racas)
   
-  setwd(filePath)
+  #   setwd(filePath)
   if(is.null(tempFilePath)) {
     if(testMode) {
       tempFilePath <- tempdir()
@@ -30,11 +30,9 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, re
   ## TODO: dryRun should return "summaryInfo" here?
 
   assayData <- data.frame()
-  assayData <- plateAssociationDT[ , parseAssayPlateFiles(assayFileName, unique(instrumentType), unique(plateAssociationDT$dataTitle), tempFilePath=tempFilePath), by=list(assayFileName, assayBarcode, plateOrder)]
+  assayData <- plateAssociationDT[ , parseAssayPlateFiles(file.path(filePath,assayFileName), unique(instrumentType), unique(plateAssociationDT$dataTitle), tempFilePath=tempFilePath), by=list(assayFileName, assayBarcode, plateOrder)]
   
   assayData <- adjustColumnsToUserInput(inputColumnTable=userInputReadTable, inputDataTable=assayData, tempFilePath=tempFilePath)
-
-  setwd(Sys.getenv("ACAS_HOME"))
   
   return(list(plateAssociationDT=plateAssociationDT, assayData=assayData))
 }
