@@ -22,29 +22,39 @@ write_csv <- function(x, file, rows = 1000L, ...) {
                   FALSE, col.names = FALSE, ...)
   }
 }
+
 dataframe_to_csvstring <- function(x) {
   t <- tempfile()
   on.exit(unlink(t))
-  write_csv(x,t, sep = ",")
+  write_csv(x,t, sep = "\t")
   csv_string <- readChar(t, file.info(t)$size)
 }
 
 normalizeData <- function() {
     csv_data <- rawToChar(receiveBin(-1))
+    csv_data <- gsub("\\r","\\\n",csv_data)
     data <- fread(csv_data)
     data[, originalOrder:=1:nrow(data)]
-    setkey(data, assayBarcode, wellReference)
-    readColumnIndexes <- which(grepl("{R[0-9].*}",names(data), perl = TRUE))
-    readColumnNames <- names(data)[readColumnIndexes]
-    normalizedNames <- paste0(readColumnNames," [NORMALIZED]")
-    keyColumns <- c("assayBarcode","wellReference")
-    normalizedData <- data[ , get("normalizedNames"):={
-             lapply(readColumnNames, function(x) get(x)*3)
-             }, by = keyColumns]
+    keyColumns <- c("Assay Barcode", "Well")
+    setkeyv(data, keyColumns)
+#    readColumnIndexes <- which(grepl("{R[0-9].*}",names(data), perl = TRUE))
+#    readColumnNames <- names(data)[readColumnIndexes]
+#    normalizedNames <- paste0(readColumnNames," [NORMALIZED]")
+#    keyColumns <- c("Assay Barcode", "Well")
+#    normalizedData <- data[ , get("normalizedNames"):={
+#             lapply(readColumnNames, function(x) get(x)*3)
+#             }, by = keyColumns]
+    normalizedNames <- c("Efficacy", "SD Score", "Z' By Plate", "Z'", "Activity", "Normalized Activity")
+    data[ , "Efficacy":=runif(.N, 0, 100)]
+    data[ , "SD Score":=runif(.N, -1, 10)]
+    data[ , "Z' By Plate":=runif(.N, 0, 1)]
+    data[ , "Z'":=runif(.N, 0, 1)]
+    data[ , "Activity":=runif(.N, 0, 50000)]
+    data[ , "Normalized Activity":=runif(.N, 0, 50000)]
     setkey(data,originalOrder)
     keepColumns <- c(keyColumns,normalizedNames)
     data[ , setdiff(colnames(data),keepColumns):=NULL, with = FALSE]
-    csv_data <- dataframe_to_csvstring(normalizedData)
+    csv_data <- dataframe_to_csvstring(data)
     setHeader("Access-Control-Allow-Origin","*")
     setHeader("Content-Length",nchar(csv_data))
     setContentType("text/csv;")
