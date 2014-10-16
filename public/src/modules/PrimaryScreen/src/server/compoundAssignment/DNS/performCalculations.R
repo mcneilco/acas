@@ -45,25 +45,53 @@ normalizeData <- function(resultTable, parameters) {
   return(resultTable)
 }
 
+computeNormalized  <- function(values, wellType, flag) {
+  # Computes normalized version of the given values based on the unflagged positive and 
+  # negative controls
+  #
+  # Args:
+  #   values:   A vector of numeric values
+  #   wellType: A vector of the same length as values which marks the type of each
+  #   flag:     A vector of the same length as values, with text if the well was flagged, and NA otherwise
+  # Returns:
+  #   A numeric vector of the same length as the inputs that is normalized.
+  
+  if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
+    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) 
+             were flagged, so normalization cannot proceed.")
+  }
+  if ((length((values[(wellType == 'PC' & is.na(flag))])) == 0)) {
+    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) 
+             were flagged, so normalization cannot proceed.")
+  }
+  
+  #find min (median of unflagged Negative Controls)
+  minLevel <- median(values[(wellType=='NC' & is.na(flag))])
+  #find max (median of unflagged Positive Controls)
+  maxLevel <- median(values[(wellType=='PC' & is.na(flag))])
+  
+  return((values - minLevel) / (maxLevel - minLevel))
+}
+
 computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
   if (transformation == "% efficacy") {
-    meanPosControl <- mean(as.numeric(mainData[mainData$wellType == "PC"]$normalizedActivity))
+    medianPosControl <- median(as.numeric(mainData[mainData$wellType == "PC"]$normalizedActivity))
     
     # Use Negative Control if Vehicle Control is not defined
     if(length(resultTable[resultTable$wellType == "VC"]$normalizedActivity) == 0) {
-      meanVehControl <- mean(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
+      medianVehControl <- median(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
     } else {
-      meanVehControl <- mean(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
+      medianVehControl <- median(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
     }
-    return((1-(as.numeric(mainData$normalizedActivity) - meanPosControl)/(meanVehControl-meanPosControl)) * 100)
+    return((1-(as.numeric(mainData$normalizedActivity) - medianPosControl)/(medianVehControl-medianPosControl)) * 100)
   } else if (transformation == "sd") {
     
     # Use Negative Control if Vehicle Control is not defined
     if(length(resultTable[resultTable$wellType == "VC"]$normalizedActivity) == 0) {
-      meanVehControl <- mean(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
+      medianVehControl <- median(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
     } else {
-      meanVehControl <- mean(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
+      medianVehControl <- median(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
     }
     
     # Use Negative Control if Vehicle Control is not defined
@@ -72,7 +100,7 @@ computeTransformedResults <- function(mainData, transformation) {
     } else {
       stdevVehControl <- sd(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
     }
-    return((as.numeric(mainData$normalizedActivity) - meanVehControl)/(stdevVehControl))
+    return((as.numeric(mainData$normalizedActivity) - medianVehControl)/(stdevVehControl))
   } else if (transformation == "null") {
     return(mainData$normalizedActivity)
   } else {
