@@ -74,3 +74,69 @@ normalizeData <- function(resultTable, normalization) {
   
   return(resultTable)
 }
+
+computeNormalized  <- function(values, wellType, flag) {
+  # Computes normalized version of the given values based on the unflagged positive and 
+  # negative controls
+  #
+  # Args:
+  #   values:   A vector of numeric values
+  #   wellType: A vector of the same length as values which marks the type of each
+  #   flag:     A vector of the same length as values, with text if the well was flagged, and NA otherwise
+  # Returns:
+  #   A numeric vector of the same length as the inputs that is normalized.
+  
+  if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
+    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) 
+             were flagged, so normalization cannot proceed.")
+  }
+  if ((length((values[(wellType == 'PC' & is.na(flag))])) == 0)) {
+    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) 
+             were flagged, so normalization cannot proceed.")
+  }
+  
+  #find min (mean of unflagged Negative Controls)
+  minLevel <- mean(values[(wellType=='NC' & is.na(flag))])
+  #find max (mean of unflagged Positive Controls)
+  maxLevel <- mean(values[(wellType=='PC' & is.na(flag))])
+  
+  return((values - minLevel) / (maxLevel - minLevel))
+}
+
+computeRobustZPrime <- function(positiveControls, negativeControls) {
+  # Computes robust Z'
+  #
+  # Args:
+  #   positiveControls:   A vector of the values of the positive controls
+  #   negativeControls:   A vector of the values of the negative controls
+  # Returns:
+  #   A numeric value between 0 and 1
+  
+  madPositiveControl <- mad(positiveControls)
+  madNegativeControl <- mad(negativeControls)
+  medianPositiveControl <- median(positiveControls)
+  medianNegativeControl <- median(negativeControls)
+  return (1 - 3*(madPositiveControl+madNegativeControl)/abs(medianPositiveControl-medianNegativeControl))
+}
+computeZ <- function(positiveControls, testCompounds) {
+  # Computes Z (by using the Z Prime function, but with test compounds as negative controls)
+  #
+  # Args:
+  #   positiveControls:   A vector of the values of the positive controls
+  #   testCompounds:      A vector of the values of the test compounds
+  # Returns:
+  #   A numeric value between 0 and 1
+  
+  return(computeZPrime(positiveControls, testCompounds))
+}
+computeRobustZ <- function(positiveControls, testCompounds) {
+  # Computes Robust Z (by using the Robust Z Prime function, but with test compounds as negative controls)
+  #
+  # Args:
+  #   positiveControls:   A vector of the values of the positive controls
+  #   testCompounds:      A vector of the values of the test compounds
+  # Returns:
+  #   A numeric value between 0 and 1
+  
+  return(computeRobustZPrime(positiveControls, testCompounds))
+}
