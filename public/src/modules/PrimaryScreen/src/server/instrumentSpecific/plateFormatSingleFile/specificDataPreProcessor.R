@@ -2,7 +2,8 @@
 
 specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, dryRun, instrumentClass, testMode) {
   # DNS 
-  fileList <- c(list.files(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE))
+  fileList <- c(list.files(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE),
+                list.files(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/", instrumentClass), full.names=TRUE))
   lapply(fileList, source)
   
   readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)

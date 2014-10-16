@@ -48,29 +48,29 @@ normalizeData <- function(resultTable, parameters) {
 computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
   if (transformation == "% efficacy") {
-    meanPosControl <- mean(as.numeric(mainData$normalizedActivity[mainData$wellType == "PC"]))
+    meanPosControl <- mean(as.numeric(mainData[mainData$wellType == "PC"]$normalizedActivity))
     
     # Use Negative Control if Vehicle Control is not defined
-    if(length(resultTable$normalizedActivity[resultTable$wellType == "VC"]) == 0) {
-      meanVehControl <- mean(as.numeric(mainData$normalizedActivity[mainData$wellType == "NC"]))
+    if(length(resultTable[resultTable$wellType == "VC"]$normalizedActivity) == 0) {
+      meanVehControl <- mean(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
     } else {
-      meanVehControl <- mean(as.numeric(mainData$normalizedActivity[mainData$wellType == "VC"]))
+      meanVehControl <- mean(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
     }
     return((1-(as.numeric(mainData$normalizedActivity) - meanPosControl)/(meanVehControl-meanPosControl)) * 100)
   } else if (transformation == "sd") {
     
     # Use Negative Control if Vehicle Control is not defined
-    if(length(resultTable$normalizedActivity[resultTable$wellType == "VC"]) == 0) {
-      meanVehControl <- mean(as.numeric(mainData$normalizedActivity[mainData$wellType == "NC"]))
+    if(length(resultTable[resultTable$wellType == "VC"]$normalizedActivity) == 0) {
+      meanVehControl <- mean(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
     } else {
-      meanVehControl <- mean(as.numeric(mainData$normalizedActivity[mainData$wellType == "VC"]))
+      meanVehControl <- mean(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
     }
     
     # Use Negative Control if Vehicle Control is not defined
-    if(length(resultTable$normalizedActivity[resultTable$wellType == "VC"]) == 0) {
-      stdevVehControl <- sd(as.numeric(mainData$normalizedActivity[mainData$wellType == "NC"]))
+    if(length(resultTable[resultTable$wellType == "VC"]$normalizedActivity) == 0) {
+      stdevVehControl <- sd(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
     } else {
-      stdevVehControl <- sd(as.numeric(mainData$normalizedActivity[mainData$wellType == "VC"]))
+      stdevVehControl <- sd(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
     }
     return((as.numeric(mainData$normalizedActivity) - meanVehControl)/(stdevVehControl))
   } else if (transformation == "null") {

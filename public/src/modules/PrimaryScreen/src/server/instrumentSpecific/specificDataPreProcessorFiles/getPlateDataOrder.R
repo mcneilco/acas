@@ -21,7 +21,7 @@ getPlateDataOrder <- function(filePath, instrument, tempFilePath) {
     
   parseParams <- loadInstrumentReadParameters(instrument)
   
-  dataTitles <- plateAssociationDT[ , getDataSectionTitles(file.path(filePath, assayFileName), parseParams, tempFilePath=tempFilePath), by=assayFileName]
+  dataTitles <- plateAssociationDT[ , getDataSectionTitles(fileName=file.path(filePath, assayFileName), parseParams, tempFilePath=tempFilePath), by=assayFileName]
   
   setkey(plateAssociationDT, assayFileName)
   setkey(dataTitles, assayFileName)

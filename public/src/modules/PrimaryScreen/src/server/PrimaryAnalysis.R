@@ -1534,7 +1534,7 @@ getReadOrderTable <- function(readList) {
     stopUser("No read has been marked as activity.")
   } 
   
-  if(length(unique(readsTable$activity)) == 2 && nrow(readsTable[!readsTable$activity, ]) != 1) {
+  if(length(unique(readsTable$activity)) == 2 && nrow(readsTable[readsTable$activity, ]) != 1) {
     stopUser("More than one read has been marked as activity.")
   }
   
@@ -1668,9 +1668,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   source(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",
                    instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
   
-  instrumentData <- specificDataPreProcessor(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, 
-                                             dryRun=dryRun, instrumentClass=instrumentReadParams$dataFormat, testMode=testMode)
-  
+  instrumentData <- specificDataPreProcessor(parameters=parameters, 
+                                             folderToParse=folderToParse, 
+                                             errorEnv=errorEnv, 
+                                             dryRun=dryRun, 
+                                             instrumentClass=instrumentReadParams$dataFormat, 
+                                             testMode=testMode)
   
   # RED (client-specific)
   # getCompoundAssignments
@@ -1724,6 +1727,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   #                                  concentration = flaglessTable$concentration,
   #                                  concUnit = flaglessTable$concUnit)
   #   }
+  
   batchDataTable <- resultTable[is.na(flag)]
   
   if(!useRdap) {
@@ -1959,7 +1963,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                          basename(zipFile)))
     }
     
-    
     lsTransaction <- createLsTransaction()$id
     dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     #experiment <<- experiment
@@ -2025,11 +2028,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       # transformed and normalized should be included if they are not null
       # resultKinds should include activityColumns, numericValue, data, results
-      resultTypes <- data.frame(valueKind=c("barcode", "well name", "well type", "transformed efficacy"), 
-                                valueType=c("codeValue", "stringValue", "stringValue", "numericValue"), 
-                                columnName=c("barcode", "well", "wellType", "transformed"), 
-                                stateType=c("metadata","metadata","metadata", "data"), 
-                                stateKind=c("plate information", "plate information", "plate information", "results"), 
+      resultTypes <- data.frame(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
+                                valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
+                                columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_% efficacy", "transformed_sd"), 
+                                stateType=c("metadata","metadata","metadata", "data", "data", "data"), 
+                                stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
                                 stringsAsFactors=FALSE) 
       
       analysisGroupData <- meltStuff(resultTable, resultTypes)
