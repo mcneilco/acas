@@ -10,12 +10,19 @@ performCalculations <- function(resultTable, parameters, flaggedWells, flaggingS
   
   resultTable <- normalizeData(resultTable, parameters)
   
+  # get transformed columns
   for (trans in 1:length(parameters$transformationRuleList)) {
     transformation <- parameters$transformationRuleList[[trans]]$transformationRule
     if(transformation != "null") {
       resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(resultTable, transformation)]
     }
   }
+  
+  # compute Z' and Z' by plate
+  resultTable[, zPrime := computeZPrime(positiveControls=resultTable[resultTable$wellType == "PC", ]$normalizedActivity,
+                                        negativeControls=resultTable[resultTable$wellType == "NC", ]$normalizedActivity)]
+  resultTable[, zPrimeByPlate := computeZPrimeByPlate(normalizedActivity, wellType),
+              by=assayBarcode]
   
   resultTable[, index:=1:nrow(resultTable)]
   
@@ -26,6 +33,14 @@ performCalculations <- function(resultTable, parameters, flaggedWells, flaggingS
   }
   
   return(resultTable)
+}
+
+computeZPrimeByPlate <- function(normalizedActivity, wellType) {
+  # creates a vector called
+  positiveControls <- normalizedActivity[wellType == "PC"]
+  negativeControls <- normalizedActivity[wellType == "NC"]
+  
+  return(computeZPrime(positiveControls, negativeControls))
 }
 
 normalizeData <- function(resultTable, parameters) {
