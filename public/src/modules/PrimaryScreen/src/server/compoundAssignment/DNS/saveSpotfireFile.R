@@ -1,4 +1,4 @@
-saveSpotfireFile <- function(inputTable) {
+saveSpotfireFile <- function(inputTable, saveLocation) {
   inputTable <- as.data.frame(inputTable)
   
   inputTable <- renameColumnsForSpotfire(inputTable)  
@@ -30,7 +30,7 @@ saveSpotfireFile <- function(inputTable) {
   inputTable <- addMissingColumns(requiredColNames=requiredColumns, inputTable)
   setcolorder(inputTable, requiredColumns)
   
-  write.csv(inputTable, file="", quote=FALSE, na="", row.names=FALSE)
+  write.csv(inputTable, file=file.path(saveLocation,"spotfire.csv"), quote=FALSE, na="", row.names=FALSE)
   
 }
 

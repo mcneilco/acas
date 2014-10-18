@@ -1457,7 +1457,7 @@ setAnalysisStatus <- function(status, metadataState) {
 }
 
 loadInstrumentReadParameters <- function(instrumentType) {
-  # This function returns the parameters for instrument types. 
+  # Loads the parameters for instruments. 
   #
   # Input:  instrumentType
   # Output: assay file parameters (list)
@@ -1486,6 +1486,10 @@ loadInstrumentReadParameters <- function(instrumentType) {
 }
 
 getReadOrderTable <- function(readList) {
+  # Takes the reads list from the GUI and outputs a data.table
+  #
+  # Input:  readList (list)
+  # Output: readsTable (data.table)
   
   readsTable <- data.table(ldply(readList, data.frame))
   
@@ -1622,6 +1626,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
   dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
   
+  
   # If the folderToParse is actually a zip file
   zipFile <- NULL
   if (!file.info(folderToParse)$isdir) {
@@ -1629,9 +1634,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       stopUser("The file provided must be a zip file or a directory")
     }
     zipFile <- folderToParse
+    dryRunFileLocation <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName,"dryRun")
     filesLocation <- paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData")
     
     dir.create(filesLocation, showWarnings = FALSE)
+    dir.create(dryRunFileLocation, showWarnings = FALSE)
     
     oldFiles <- as.list(paste0(filesLocation,"/",list.files(filesLocation)))
     
