@@ -1504,7 +1504,7 @@ getReadOrderTable <- function(readList) {
   return(readsTable)
 }
 
-flagCheck <- function(resultTable) {
+checkFlags <- function(resultTable) {
   # Error handling -- what if there are no unflagged PC's or NC's? 
   if (!any(is.na(resultTable$flag))) { 
     stopUser("All data points appear to have been flagged, so the data cannot be analyzed")
@@ -1532,6 +1532,50 @@ checkControls <- function(resultTable) {
     stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded 
              and your negative control is defined correctly.")
   }
+}
+
+removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
+  # This function cycles through the column names in an data.table and removes 
+  # the columns not in a list of columns to keep.
+  #
+  # Input:  colNamesToCheck (list)
+  #         colNamesToKeep (list)
+  #         inputDataTable (data.table)
+  # Output: inputDataTable (data.table)
+  
+  removeList <- list()
+  for(name in colNamesToCheck) {
+    if(!grepl(paste0("(",paste(gsub("\\{","\\\\{",colNamesToKeep), collapse="|"), ")"), name)) {
+      inputDataTable[[name]] <- NULL
+      removeList[[length(removeList) + 1]] <- name
+    }
+  }
+  
+  if(length(removeList) == 1) {
+    warnUser(paste0("Removed 1 data column: '", removeList[[1]], "'"))
+  } else if(length(removeList) > 1) {
+    warnUser(paste0("Removed ",length(removeList)," data columns: '", paste(removeList, collapse="','"), "'"))
+  }
+  return(inputDataTable)
+}
+
+addMissingColumns <- function(requiredColNames, inputDataTable)  {
+  # This function cycles through a list of required column names and compares them to 
+  # colnames in a data.table. It adds any columns with a value of "NA" if they are not found.
+  #
+  # Input:  requiredColNames (list)
+  #         inputDataTable (data.table)
+  # Output: inputDataTable (data.table)
+  
+  for(column in requiredColNames) {
+    if(!grepl(gsub("\\{","",column), gsub("\\{","",paste(colnames(inputDataTable),collapse=",")))) {
+      inputDataTable[[column]] <- as.numeric(NA)
+      warnUser(paste0("Adding column '",column,"', coercing to NA."))
+    }
+    column <- requiredColNames[i]
+    i <- i + 1
+  }
+  return(inputDataTable)
 }
 
 ####### Main function

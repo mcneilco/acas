@@ -6,7 +6,7 @@ performCalculations <- function(resultTable, parameters, flaggedWells, flaggingS
   # In order to merge with a data.table, the columns have to have the same name
   resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
   
-  flagCheck(resultTable)
+  checkFlags(resultTable)
   
   resultTable <- normalizeData(resultTable, parameters)
   

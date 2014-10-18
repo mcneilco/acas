@@ -16,8 +16,8 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
   colNamesToCheck <- setdiff(colnames(inputDataTable), c("assayFileName", "assayBarcode", "rowName", "colName", "wellReference", "plateOrder"))
   colNamesToKeep <- inputColumnTable$newActivityColName
   
-  inputDataTable <- removeColumns(colNamesToCheck, colNamesToKeep, inputDataTable, tempFilePath)
-  inputDataTable <- addMissingColumns(colNamesToKeep, inputDataTable, tempFilePath)
+  inputDataTable <- removeColumns(colNamesToCheck, colNamesToKeep, inputDataTable)
+  inputDataTable <- addMissingColumns(colNamesToKeep, inputDataTable)
   
   # copy the read column that we want to do transformation/normalization on (user input)
   activityColName <- inputColumnTable$newActivityColName[inputColumnTable$activityCol]
