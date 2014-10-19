@@ -23,10 +23,10 @@ write_csv <- function(x, file, rows = 1000L, ...) {
   }
 }
 
-dataframe_to_csvstring <- function(x) {
+dataframe_to_csvstring <- function(x, ...) {
   t <- tempfile()
   on.exit(unlink(t))
-  write_csv(x,t, sep = "\t")
+  write_csv(x,t, sep = "\t", ...)
   csv_string <- readChar(t, file.info(t)$size)
 }
 
@@ -36,24 +36,25 @@ normalizeData <- function() {
     data[, originalOrder:=1:nrow(data)]
     keyColumns <- c("Assay Barcode", "Well")
     setkeyv(data, keyColumns)
-#    readColumnIndexes <- which(grepl("{R[0-9].*}",names(data), perl = TRUE))
-#    readColumnNames <- names(data)[readColumnIndexes]
-#    normalizedNames <- paste0(readColumnNames," [NORMALIZED]")
-#    keyColumns <- c("Assay Barcode", "Well")
-#    normalizedData <- data[ , get("normalizedNames"):={
-#             lapply(readColumnNames, function(x) get(x)*3)
-#             }, by = keyColumns]
-    normalizedNames <- c("Efficacy", "SD Score", "Z' By Plate", "Z'", "Activity", "Normalized Activity")
+    normalizedNames <- c("Efficacy", "SD Score", "Z' By Plate", "Z'", "Activity", "Normalized Activity", "Auto Flag Type", "Auto Flag Observation", "Auto Flag Reason")
     data[ , "Efficacy":=runif(.N, 0, 100)]
     data[ , "SD Score":=runif(.N, -1, 10)]
     data[ , "Z' By Plate":=runif(.N, 0, 1)]
     data[ , "Z'":=runif(.N, 0, 1)]
     data[ , "Activity":=runif(.N, 0, 50000)]
-    data[ , "Normalized Activity":=runif(.N, 0, 50000)]
+    data[ , "Normalized Activity":= runif(.N, 0, 50000)]
+    flags <- list(
+        list("Auto Flag Type" = "KO - Well Knocked Out", "Auto Flag Observation" = "Low - Signal too low", "Auto Flag Reason" = "Bad Tip"),
+        list("Auto Flag Type" = "KO - Well Knocked Out", "Auto Flag Observation" = "Low - Signal too high", "Auto Flag Reason" = "Pin carryover"),
+        list("Auto Flag Type" = "Hit", "Auto Flag Observation" = "Threshold", "Auto Flag Reason" = "Agonist Hit")
+        )
+    flags <- rbindlist(flags)
+    cols <- names(flags)
+    data[sample(1:.N,.N/10), get("cols"):=flags[sample(1:nrow(flags),.N, replace = TRUE)]]
     setkey(data,originalOrder)
     keepColumns <- c(keyColumns,normalizedNames)
     data[ , setdiff(colnames(data),keepColumns):=NULL, with = FALSE]
-    csv_data <- dataframe_to_csvstring(data)
+    csv_data <- dataframe_to_csvstring(data, na = "")
     setHeader("Access-Control-Allow-Origin","*")
     setHeader("Content-Length",nchar(csv_data))
     setContentType("text/csv;")
