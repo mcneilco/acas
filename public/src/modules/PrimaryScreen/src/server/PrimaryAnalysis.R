@@ -1457,7 +1457,8 @@ setAnalysisStatus <- function(status, metadataState) {
 }
 
 loadInstrumentReadParameters <- function(instrumentType) {
-  # Loads the parameters for instruments. 
+  # Loads the parameters for instruments. Only works if the instrument 
+  # folder has been loaded in to conf. 
   #
   # Input:  instrumentType
   # Output: assay file parameters (list)
@@ -1488,7 +1489,7 @@ loadInstrumentReadParameters <- function(instrumentType) {
 getReadOrderTable <- function(readList) {
   # Takes the reads list from the GUI and outputs a data.table
   #
-  # Input:  readList (list)
+  # Input:  readList (list of lists)
   # Output: readsTable (data.table)
   
   readsTable <- data.table(ldply(readList, data.frame))
@@ -1509,6 +1510,11 @@ getReadOrderTable <- function(readList) {
 }
 
 checkFlags <- function(resultTable) {
+  # Checks to see if flags leave enough data for analysis. 
+  # 
+  # Input:  resultTable (data.table)
+  # Output: none
+  
   # Error handling -- what if there are no unflagged PC's or NC's? 
   if (!any(is.na(resultTable$flag))) { 
     stopUser("All data points appear to have been flagged, so the data cannot be analyzed")
@@ -1527,6 +1533,11 @@ checkFlags <- function(resultTable) {
 }
 
 checkControls <- function(resultTable) {
+  # Checks to see if the controls are present in the plate.
+  # 
+  # Input:  resultTable (data.table)
+  # Output: none
+  
   if (!any(resultTable$wellType == "PC")) {
     stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded 
              and your postive control is defined correctly.")
@@ -1571,14 +1582,20 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   #         inputDataTable (data.table)
   # Output: inputDataTable (data.table)
   
+  addList <- list()
   for(column in requiredColNames) {
     if(!grepl(gsub("\\{","",column), gsub("\\{","",paste(colnames(inputDataTable),collapse=",")))) {
       inputDataTable[[column]] <- as.numeric(NA)
-      warnUser(paste0("Adding column '",column,"', coercing to NA."))
+      addList[[length(addList) + 1]] <- column
     }
-    column <- requiredColNames[i]
-    i <- i + 1
   }
+  
+  if(length(addList) == 1) {
+    warnUser(paste0("Added 1 data column: '", addList[[1]], "', coercing to NA."))
+  } else if(length(addList) > 1) {
+    warnUser(paste0("Added ",length(addList)," data columns: '", paste(addList, collapse="','"), "', coercing to NA"))
+  }
+  
   return(inputDataTable)
 }
 
@@ -1634,8 +1651,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       stopUser("The file provided must be a zip file or a directory")
     }
     zipFile <- folderToParse
-    dryRunFileLocation <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName,"dryRun")
+    
     filesLocation <- paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData")
+    dryRunFileLocation <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName,"dryRun")
     
     dir.create(filesLocation, showWarnings = FALSE)
     dir.create(dryRunFileLocation, showWarnings = FALSE)
@@ -1679,11 +1697,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   ## RED SECTION - Client Specific
   #calculations
-  fileList <- c(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
-                          clientName,"performCalculations.R"),
-                list.files(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/Generic"), 
-                           full.names=TRUE))
-  lapply(fileList, source)
+  source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
+                   clientName,"performCalculations.R"))
   
   resultTable <- performCalculations(resultTable, parameters, flaggedWells, flaggingStage, experiment)
   
@@ -1749,15 +1764,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     treatmentGroupData$treatmentGroupId <- 1:nrow(treatmentGroupData)
     ##### TODO: End Sam Fix
     
+    
+    ##### TODO: Write function that will correctly assign analyisGroupIDs for 'dose response' or other
     ## Decides what to save as analysis group or treatment group
-    analysisType <- "primary"
-    if (analysisType == "primary" || analysisType == "confirmation") {
+    #     analysisType <- "primary"
+    #     if (analysisType == "primary" || analysisType == "confirmation") {
       analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
       analysisGroupData[, analysisGroupId := treatmentGroupId]
-    } else if (analysisType == "dose response") {
-      analysisGroupData <- treatmentGroupData
-      analysisGroupData$analysisGroupId <- as.numeric(factor(analysisGroupData$batchName))
-    }
+    #     } else if (analysisType == "dose response") {
+    #       analysisGroupData <- treatmentGroupData
+    #       analysisGroupData$analysisGroupId <- as.numeric(factor(analysisGroupData$batchName))
+    #     }
     
     # add a "userHit" column to the table
     userHitList <- getUserHits(analysisGroupData, flaggedWells, resultTable, parameters$aggregateReplicates, experiment, flaggingStage)
@@ -2081,6 +2098,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                          URLencode(experimentName, reserved=TRUE))
     summaryInfo$viewerLink <- viewerLink
   }
+    
+  summaryInfo$dryRunReports <- saveDryRunReports(resultTable, saveLocation=dryRunFileLocation)
   
   summaryInfo$lsTransactionId <- lsTransaction
   summaryInfo$experiment <- experiment
