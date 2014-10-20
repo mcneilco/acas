@@ -1731,50 +1731,58 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   batchDataTable <- resultTable[is.na(flag)]
   
-  if(!useRdap) {
-    ##### TODO: Sam Fix
-    if (parameters$aggregateReplicates == "across plates") {
-      treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
-                                                  stDev = sd(values), n=length(values), 
-                                                  sdScore = mean(sdScore), 
-                                                  threshold = ifelse(all(threshold), "yes", "no"),
-                                                  latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
-                                           by=list(batchName,fluorescent,concUnit,hasAgonist, wellType)]
-    } else if (parameters$aggregateReplicates == "within plates") {
-      treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
-                                                  stDev = sd(values), 
-                                                  n=length(values),
-                                                  sdScore = mean(sdScore),
-                                                  threshold = ifelse(all(threshold), "yes", "no"),
-                                                  latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
-                                           by=list(batchName,fluorescent,barcode,concUnit,hasAgonist, wellType)]
-    } else {
-      treatmentGroupData <- batchDataTable[, list(batchName = batchName, 
-                                                  fluorescent = fluorescent, 
-                                                  wellType = wellType, 
-                                                  groupMean = values, 
-                                                  stDev = NA, 
-                                                  n = 1, 
-                                                  sdScore = sdScore,
-                                                  maxTime = maxTime,
-                                                  overallMaxTime = overallMaxTime,
-                                                  threshold = ifelse(threshold, "yes", "no"),
-                                                  hasAgonist = hasAgonist)]
+  #   if(!useRdap) {
+  if(FALSE) {
+    getTreatmentGroupData <- function(batchDataTable, parameters) {
+      #IFF
+      ##### TODO: Sam Fix
+      if (parameters$aggregateReplicates == "across plates") {
+        treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
+                                                    stDev = sd(values), n=length(values), 
+                                                    sdScore = mean(sdScore), 
+                                                    threshold = ifelse(all(threshold), "yes", "no"),
+                                                    latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
+                                             by=list(batchName,fluorescent,concUnit,hasAgonist, wellType)]
+      } else if (parameters$aggregateReplicates == "within plates") {
+        treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
+                                                    stDev = sd(values), 
+                                                    n=length(values),
+                                                    sdScore = mean(sdScore),
+                                                    threshold = ifelse(all(threshold), "yes", "no"),
+                                                    latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
+                                             by=list(batchName,fluorescent,barcode,concUnit,hasAgonist, wellType)]
+      } else {
+        treatmentGroupData <- batchDataTable[, list(batchName = batchName, 
+                                                    fluorescent = fluorescent, 
+                                                    wellType = wellType, 
+                                                    groupMean = values, 
+                                                    stDev = NA, 
+                                                    n = 1, 
+                                                    sdScore = sdScore,
+                                                    maxTime = maxTime,
+                                                    overallMaxTime = overallMaxTime,
+                                                    threshold = ifelse(threshold, "yes", "no"),
+                                                    hasAgonist = hasAgonist)]
+      }
+      treatmentGroupData$treatmentGroupId <- 1:nrow(treatmentGroupData)
+      ##### TODO: End Sam Fix
+      
+      return(treatmentGroupData)
     }
-    treatmentGroupData$treatmentGroupId <- 1:nrow(treatmentGroupData)
-    ##### TODO: End Sam Fix
     
+    treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters)
     
-    ##### TODO: Write function that will correctly assign analyisGroupIDs for 'dose response' or other
-    ## Decides what to save as analysis group or treatment group
-    #     analysisType <- "primary"
-    #     if (analysisType == "primary" || analysisType == "confirmation") {
+    getAnalysisGroupData <- function(treatmentGroupData) {
+      # IFF
+      
+      ##### TODO: Write function that will correctly assign analyisGroupIDs for 'dose response' or other
       analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
       analysisGroupData[, analysisGroupId := treatmentGroupId]
-    #     } else if (analysisType == "dose response") {
-    #       analysisGroupData <- treatmentGroupData
-    #       analysisGroupData$analysisGroupId <- as.numeric(factor(analysisGroupData$batchName))
-    #     }
+      
+      return(analysisGroupData)
+    }
+    
+    analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
     
     # add a "userHit" column to the table
     userHitList <- getUserHits(analysisGroupData, flaggedWells, resultTable, parameters$aggregateReplicates, experiment, flaggingStage)
@@ -1786,7 +1794,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     if (TRUE) {  # racas::applicationSettings$client.blah.usespotfire
       # May need to return to using analysisGroupData eventually
       # this output table renames
-      outputTable <- ddply(resultTable, c("batchName", "hasAgonist", "barcode", "wellType"), function(idf) {
+      # TODO: Should this be in an IFF specific "saveSpotfireFile" function?
+      outputTable <- ddply(resultTable, c("batchName", "hasAgonist", "assayBarcode", "wellType"), function(idf) {
         data.frame("Flag" = idf$flag,
                    "Corporate Batch ID" = as.character(idf$batchName),
                    "Barcode" = as.character(idf$barcode),
@@ -1933,7 +1942,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     lsTransaction <- NULL
     dryRunLocation <- racas::getUploadedFilePath(paste0("experiments/", experiment$codeName, "/draft"))
     dir.create(dryRunLocation, showWarnings = FALSE)
-    if(!useRdap) {
+    
+    #     if(!useRdap) {
+    if(FALSE) {
       #save(experiment, file="experiment.Rda")
       
       pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
@@ -1959,6 +1970,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
                                            experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
     }
+      
+    ## TODO: decide if "resultTable" is the correct object to write
+    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, saveLocation=dryRunFileLocation)
+    
   } else { #This section is "If not dry run"
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
@@ -1982,7 +1997,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     deleteExperimentAnalysisGroups(experiment)
-    if (!useRdap) {
+    
+    #     if (!useRdap) {
+    if (FALSE) {
       rawResultsLocation <- paste0("experiments/",experiment$codeName,"/analysis/rawResults.Rda")
       save(resultTable,parameters,file=paste0(racas::getUploadedFilePath(rawResultsLocation)))
       
@@ -2064,7 +2081,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     saveInputParameters(inputParameters, experiment, lsTransaction, user)
     
-    if (!useRdap) {
+    #     if (!useRdap) {
+    if (FALSE) {
       saveFileLocations(rawResultsLocation, resultsLocation, pdfLocation, overrideLocation, experiment, dryRun, user, lsTransaction)
       
       #TODO: allow saving in an external file service
@@ -2098,8 +2116,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                          URLencode(experimentName, reserved=TRUE))
     summaryInfo$viewerLink <- viewerLink
   }
-    
-  summaryInfo$dryRunReports <- saveDryRunReports(resultTable, saveLocation=dryRunFileLocation)
   
   summaryInfo$lsTransactionId <- lsTransaction
   summaryInfo$experiment <- experiment
