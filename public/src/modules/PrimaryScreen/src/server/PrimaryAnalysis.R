@@ -1682,6 +1682,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # RED (client-specific)
   # getCompoundAssignments
   
+  # TODO: Test structure
+  clientName <- "DNS"
+  # END: Test structure
+  
   source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"getCompoundAssignments.R"))
   

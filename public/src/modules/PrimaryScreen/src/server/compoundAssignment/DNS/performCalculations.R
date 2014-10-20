@@ -14,7 +14,7 @@ performCalculations <- function(resultTable, parameters, flaggedWells, flaggingS
   for (trans in 1:length(parameters$transformationRuleList)) {
     transformation <- parameters$transformationRuleList[[trans]]$transformationRule
     if(transformation != "null") {
-      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(resultTable, transformation)]
+      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation)]
     }
   }
   
@@ -94,7 +94,7 @@ computeTransformedResults <- function(mainData, transformation) {
     medianPosControl <- median(as.numeric(mainData[mainData$wellType == "PC"]$normalizedActivity))
     
     # Use Negative Control if Vehicle Control is not defined
-    if(length(resultTable[resultTable$wellType == "VC"]$normalizedActivity) == 0) {
+    if(length(mainData[mainData$wellType == "VC"]$normalizedActivity) == 0) {
       medianVehControl <- median(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
     } else {
       medianVehControl <- median(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
@@ -103,14 +103,14 @@ computeTransformedResults <- function(mainData, transformation) {
   } else if (transformation == "sd") {
     
     # Use Negative Control if Vehicle Control is not defined
-    if(length(resultTable[resultTable$wellType == "VC"]$normalizedActivity) == 0) {
+    if(length(mainData[mainData$wellType == "VC"]$normalizedActivity) == 0) {
       medianVehControl <- median(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
     } else {
       medianVehControl <- median(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
     }
     
     # Use Negative Control if Vehicle Control is not defined
-    if(length(resultTable[resultTable$wellType == "VC"]$normalizedActivity) == 0) {
+    if(length(mainData[mainData$wellType == "VC"]$normalizedActivity) == 0) {
       stdevVehControl <- sd(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
     } else {
       stdevVehControl <- sd(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))

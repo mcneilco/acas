@@ -28,9 +28,9 @@ saveSpotfireFile <- function(inputTable, saveLocation) {
   inputTable <- addMissingColumns(requiredColNames=requiredColumns, inputTable)
   setcolorder(inputTable, requiredColumns)
   
-  write.table(inputTable, file=file.path(saveLocation,"spotfire.csv"), quote=FALSE, na="", row.names=FALSE, sep="\t")
+  write.table(inputTable, file=file.path(saveLocation,"spotfire-DRAFT.txt"), quote=FALSE, na="", row.names=FALSE, sep="\t")
   
-  return(file.path(saveLocation, "spotfire.csv"))
+  return(file.path(saveLocation, "spotfire-DRAFT.txt"))
 }
 
 renameColumnsForSpotfire <- function(inputTable){
