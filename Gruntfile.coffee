@@ -213,6 +213,12 @@ module.exports = (grunt) ->
 				options:
 					cwd: 'conf'
 				src: 'conf/PrepareTestJSON.js'
+			reload_rapache:
+				call: (grunt, options) ->
+					shell = require('shelljs')
+					result = shell.exec('bin/acas-darwin.sh reload', {silent:true})
+					return result.output
+
 		replace:
 			clientHost:
 				src: ["conf/config.properties"]
@@ -332,7 +338,11 @@ module.exports = (grunt) ->
 					"public/javascripts/spec/testFixtures/*.js"
 				]
 				tasks: "execute:prepare_test_JSON"
-
+			reload_rapache:
+				files: [
+					"r_libs/racas/*"
+				]
+				tasks: "execute:reload_rapache"
 
 
 

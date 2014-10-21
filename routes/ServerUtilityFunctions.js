@@ -22,7 +22,7 @@
   };
 
   exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
-    var Tempfile, child, command, config, csUtilities, exec, preValErrors, rCommand, rCommandFile, rScriptCommand, requestJSONFile, serverUtilityFunctions;
+    var Tempfile, config, csUtilities, exec, preValErrors, rCommandFile, rScriptCommand, requestJSONFile, serverUtilityFunctions, stdoutFile;
     config = require('../conf/compiled/conf.js');
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     rScriptCommand = config.all.server.rscript;
@@ -47,51 +47,65 @@
     Tempfile = require('temporary/lib/file');
     rCommandFile = new Tempfile;
     requestJSONFile = new Tempfile;
-    requestJSONFile.writeFileSync(JSON.stringify(request.body));
-    rCommand = 'tryCatch({ ';
-    rCommand += '	out <- capture.output(.libPaths("r_libs")); ';
-    rCommand += '	out <- capture.output(require("rjson")); ';
-    rCommand += '	out <- capture.output(source("' + rScript + '")); ';
-    rCommand += '	out <- capture.output(request <- fromJSON(file=' + JSON.stringify(requestJSONFile.path) + '));';
-    rCommand += '	out <- capture.output(returnValues <- ' + rFunction + '(request));';
-    rCommand += '	cat(toJSON(returnValues));';
-    rCommand += '},error = function(ex) {cat(paste("R Execution Error:",ex));})';
-    rCommandFile.writeFileSync(rCommand);
-    console.log(rCommand);
-    command = rScriptCommand + " " + rCommandFile.path + " 2> /dev/null";
-    return child = exec(command, function(error, stdout, stderr) {
-      var message, result;
-      console.log("stderr: " + stderr);
-      console.log("stdout: " + stdout);
-      if (stdout.indexOf("R Execution Error") === 0) {
-        message = {
-          errorLevel: "error",
-          message: stdout
-        };
-        result = {
-          hasError: true,
-          hasWarning: false,
-          errorMessages: [message],
-          transactionId: null,
-          experimentId: null,
-          results: null
-        };
-        returnFunction.call(JSON.stringify(result));
-        return csUtilities.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), request.body.user);
-      } else {
-        returnFunction.call(this, stdout);
-        try {
-          if (stdout.indexOf('"hasError":true' > -1)) {
-            return csUtilities.logUsage("Returned success from R function with trapped errors: " + rFunction, stdout, request.body.user);
-          } else {
-            return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", request.body.user);
-          }
-        } catch (_error) {
-          error = _error;
-          return console.log(error);
-        }
-      }
-    });
+    stdoutFile = new Tempfile;
+    return requestJSONFile.writeFile(JSON.stringify(request.body), (function(_this) {
+      return function() {
+        var rCommand;
+        rCommand = 'tryCatch({ ';
+        rCommand += '	out <- capture.output(.libPaths("r_libs")); ';
+        rCommand += '	out <- capture.output(require("rjson")); ';
+        rCommand += '	out <- capture.output(source("' + rScript + '")); ';
+        rCommand += '	out <- capture.output(request <- fromJSON(file=' + JSON.stringify(requestJSONFile.path) + '));';
+        rCommand += '	out <- capture.output(returnValues <- ' + rFunction + '(request));';
+        rCommand += '	cat(toJSON(returnValues));';
+        rCommand += '},error = function(ex) {cat(paste("R Execution Error:",ex));})';
+        return rCommandFile.writeFile(rCommand, function() {
+          var child, command;
+          console.log(rCommand);
+          console.log(stdoutFile.path);
+          command = rScriptCommand + " " + rCommandFile.path + " > " + stdoutFile.path + " 2> /dev/null";
+          return child = exec(command, function(error, stdout, stderr) {
+            console.log("stderr: " + stderr);
+            console.log("stdout: " + stdout);
+            return stdoutFile.readFile({
+              encoding: 'utf8'
+            }, (function(_this) {
+              return function(err, stdoutFileText) {
+                var message, result;
+                if (stdoutFileText.indexOf("R Execution Error") === 0) {
+                  message = {
+                    errorLevel: "error",
+                    message: stdoutFileText
+                  };
+                  result = {
+                    hasError: true,
+                    hasWarning: false,
+                    errorMessages: [message],
+                    transactionId: null,
+                    experimentId: null,
+                    results: null
+                  };
+                  returnFunction.call(JSON.stringify(result));
+                  return csUtilities.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), request.body.user);
+                } else {
+                  returnFunction.call(_this, stdoutFileText);
+                  try {
+                    if (stdoutFileText.indexOf('"hasError":true' > -1)) {
+                      return csUtilities.logUsage("Returned success from R function with trapped errors: " + rFunction, stdoutFileText, request.body.user);
+                    } else {
+                      return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", request.body.user);
+                    }
+                  } catch (_error) {
+                    error = _error;
+                    return console.log(error);
+                  }
+                }
+              };
+            })(this));
+          });
+        });
+      };
+    })(this));
   };
 
 

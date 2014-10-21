@@ -11,13 +11,14 @@
   };
 
   exports.preferredBatchId = function(req, resp) {
-    var config, each, request, requests, serverUtilityFunctions, serviceType, _;
+    var config, csUtilities, each, request, requests, serverUtilityFunctions, serviceType, _;
     _ = require("underscore");
     each = require("each");
     request = require('request');
     config = require('../conf/compiled/conf.js');
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     serviceType = config.all.client.service.external.preferred.batchid.type;
+    csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
     requests = req.body.requests;
     if (serviceType === "SeuratCmpdReg" && !global.specRunnerTestmode) {
       req.body.user = "";
@@ -65,7 +66,8 @@
           return request({
             method: 'GET',
             url: baseurl + batchName.requestName + ".csv",
-            json: false
+            json: false,
+            headers: csUtilities.makeServiceRequestHeaders(req.user)
           }, (function(_this) {
             return function(error, response, body) {
               if (!error && response.statusCode === 200) {

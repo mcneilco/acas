@@ -13,6 +13,7 @@ exports.preferredBatchId = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serviceType = config.all.client.service.external.preferred.batchid.type
+	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 
 
 	requests = req.body.requests
@@ -67,6 +68,7 @@ exports.preferredBatchId = (req, resp) ->
 					method: 'GET'
 					url: baseurl+batchName.requestName+".csv"
 					json: false
+					headers: csUtilities.makeServiceRequestHeaders(req.user)
 				, (error, response, body) =>
 					if !error && response.statusCode == 200
 						console.log body

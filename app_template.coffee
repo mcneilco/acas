@@ -1,3 +1,4 @@
+global.logger = require "./routes/Logger"
 csUtilities = require "./public/src/conf/CustomerSpecificServerFunctions.js"
 
 startApp = ->
@@ -7,7 +8,6 @@ startApp = ->
 	user = require './routes/user'
 	http = require 'http'
 	path = require 'path'
-	upload = require './node_modules_customized/jquery-file-upload-middleware'
 
 	# Added for logging support
 	flash = require 'connect-flash'
@@ -23,19 +23,20 @@ startApp = ->
 			global.stubsMode = true
 			console.log "############ Starting in stubs mode"
 
-	#configure upload middleware
-	upload.configure
-		uploadDir: __dirname + '/privateUploads'
-		ssl: config.all.client.use.ssl
-		uploadUrl: "/dataFiles"
-
-
 	# login setup
 	passport.serializeUser (user, done) ->
-		done null, user.username
-	passport.deserializeUser (username, done) ->
-		csUtilities.findByUsername username, (err, user) ->
-			done err, user
+		#make sure to save only required attributes and not the password
+		userToSerialize =
+			id: user.id
+			username: user.username
+			email: user.email
+			firstName: user.firstName
+			lastName: user.lastName
+			roles: user.roles
+		done null, userToSerialize
+
+	passport.deserializeUser (user, done) ->
+		done null, user
 
 	passport.use new LocalStrategy csUtilities.loginStrategy
 #	passport.isAdmin = (req, resp, next) ->
@@ -68,18 +69,12 @@ startApp = ->
 		app.use passport.initialize()
 		app.use passport.session pauseStream:  true
 #		app.use express.bodyParser()
-		app.use '/uploads', upload.fileHandler()
 		app.use express.json()
 		app.use express.urlencoded()
 		app.use express.methodOverride()
 		app.use express.static path.join(__dirname, 'public')
 		# It's important to start the router after everything else is configured
 		app.use app.router
-
-	upload.on "error", (e) ->
-		console.log "fileUpload: ", e.message
-	upload.on "end", (fileInfo) ->
-		app.emit "file-uploaded", fileInfo
 
 	loginRoutes.setupRoutes(app, passport)
 

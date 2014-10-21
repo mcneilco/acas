@@ -95,6 +95,7 @@
     testJSONInJavascripts = makeFileNameHash(glob.sync('../public/javascripts/spec/testFixtures/*.js'));
     testJSONInJavascripts = _.omit(testJSONInJavascripts, _.keys(testJSONInModules));
     testJSONScripts = _.extend(testJSONInModules, testJSONInJavascripts);
+    testJSONScripts = _.omit(testJSONScripts, ["CodeTableJSON.js"]);
     specScriptsInModules = makeFileNameHash(glob.sync('../public/src/modules/*/spec/*.js'));
     specScriptsInJavascripts = makeFileNameHash(glob.sync('../public/javascripts/spec/*.js'));
     specScriptsInJavascripts = _.omit(specScriptsInJavascripts, _.keys(specScriptsInModules));

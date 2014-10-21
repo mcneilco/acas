@@ -19,60 +19,38 @@ suAdd="-i"
 
 case $1 in
     start)
-        for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
-        do
-            if [ -e $dir/app.js ]; then
-                app=app.js
-            fi
-            if [ -e $dir/server.js ]; then
-                app=server.js
-            fi
+        dirname=`basename $ACAS_HOME`
+        logname=$server_log_path/${dirname}${server_log_suffix}.log
+        logout=$server_log_path/${dirname}${server_log_suffix}_stdout.log
+        logerr=$server_log_path/${dirname}${server_log_suffix}_stderr.log
 
-            dirname=`basename $dir`
-            logname=$server_log_path/${dirname}${server_log_suffix}.log
-            logout=$server_log_path/${dirname}${server_log_suffix}_stdout.log
-            logerr=$server_log_path/${dirname}${server_log_suffix}_stderr.log
-
-            echo "starting $dirname/$app"
-            startCommand="cd $dir && forever start --append -l $logname -o $logout -e $logerr $app"
-            if [ $(whoami) == $ACAS_USER ]; then
-                eval $startCommand
-            else
-                command="su - $ACAS_USER $suAdd -c \"($startCommand)\""
-                eval $command
-            fi
-
-            echo "$dirname/$app started"
-        done
+        echo "starting $ACAS_HOME/app.js"
+        startCommand="cd $ACAS_HOME && forever start --append -l $logname -o $logout -e $logerr app.js"
+        if [ $(whoami) == $ACAS_USER ]; then
+          eval $startCommand
+        else
+          command="su - $ACAS_USER $suAdd -c \"($startCommand)\""
+          eval $command
+        fi
+        echo "$ACAS_HOME/app.js started"
 
         echo "starting apache instance $ACAS_HOME/conf/compiled/apache.conf"
         /usr/sbin/apache2 -f $ACAS_HOME/conf/compiled/apache.conf -k start
         echo "apache instance $ACAS_HOME/conf/compiled/apache.conf started"
     ;;
     stop)
-        for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
-        do
-            if [ -e $dir/app.js ]; then
-                app=app.js
-            fi
-            if [ -e $dir/server.js ]; then
-                app=server.js
-            fi
+    	dirname=`basename $ACAS_HOME`
 
-            dirname=`basename $dir`
+        echo "stopping $ACAS_HOME/app.js"
 
-            echo "stopping $dirname/$app"
-
-            stopCommand="cd $dir && forever stop $app"
-            if [ $(whoami) == $ACAS_USER ]; then
-                eval $stopCommand
-            else
-                command="su - $ACAS_USER $suAdd -c \"($stopCommand)\""
-                eval $command
-            fi
-
-            echo "$dirname/$app stopped"
-        done
+        stopCommand="cd $ACAS_HOME && forever stop app.js"
+        if [ $(whoami) == $ACAS_USER ]; then
+          eval $stopCommand
+        else
+          command="su - $ACAS_USER $suAdd -c \"($stopCommand)\""
+          eval $command
+        fi
+        echo "$ACAS_HOME/app.js stopped"
 
         echo "stoppping apache instance $ACAS_HOME/conf/compiled/apache.conf"
         /usr/sbin/apache2 -f $ACAS_HOME/conf/compiled/apache.conf -k stop

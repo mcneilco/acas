@@ -47,6 +47,7 @@ exports.index = (req, res, moduleLaunchParams) ->
 			testMode: false
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
+			loggingToMongo: config.all.logging.usemongo
 
 
 exports.specRunner = (req, res) ->
@@ -85,7 +86,7 @@ exports.liveServiceSpecRunner = (req, res) ->
 		'javascripts/spec/PreferredBatchIdServiceSpec.js'
 	]
 
-	scriptsToLoad = requiredScripts.concat(scriptPaths.jasmineScripts, specScripts)
+	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.jasmineScripts, specScripts)
 	scriptsToLoad = scriptsToLoad.concat(scriptPaths.applicationScripts)
 
 	res.render('LiveServiceSpecRunner', {

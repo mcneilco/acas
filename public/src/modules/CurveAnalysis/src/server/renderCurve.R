@@ -2,105 +2,130 @@
 # ROUTE: /curve/render/dr
 
 renderCurve <- function(getParams) {
-	# Get data
-	if(is.null(getParams$ymin)) {
-		yMin <- NA
-	} else {
-		yMin <- as.numeric(getParams$ymin)
-	}
-	if(!is.null(getParams$yNormMin)) {
-		yMin <- as.numeric(getParams$yNormMin)
-	}
-	if(is.null(getParams$ymax)) {
-		yMax <- NA
-	} else {
-		yMax <- as.numeric(getParams$ymax)
-	}
-	if(!is.null(getParams$yNormMax)) {
-		yMax <- as.numeric(getParams$yNormMax)
-	}
-	if(is.null(getParams$xmin)) {
-		xMin <- NA
-	} else {
-		xMin <- as.numeric(getParams$xmin)
-	}
-	if(!is.null(getParams$xNormMin)) {
-		xMin <- as.numeric(getParams$xNormMin)
-	}
-	if(is.null(getParams$xmax)) {
-		xMax <- NA
-	} else {
-		xMax <- as.numeric(getParams$xmax)
-	}
-	if(!is.null(getParams$xNormMax)) {
-		xMax <- as.numeric(getParams$xNormMax)
-	}
-	if(is.null(getParams$height)) {
-		height <- 500
-	} else {
-		height <- as.numeric(getParams$height)
-	}
-	if(!is.null(getParams$cellHeight)) {
-		height <- as.numeric(getParams$cellHeight)
-	}
-	if(is.null(getParams$width)) {
-		width <- 700
-	} else {
-		width <- as.numeric(getParams$width)
-	}
-	if(!is.null(getParams$cellWidth)) {
-		width <- as.numeric(getParams$cellWidth)
-	}
-	if(is.null(getParams$inTable)) {
-		inTable <- FALSE
-	} else {
-		if(getParams$inTable=="true") {
-			inTable <- TRUE
-		} else {
-			inTable <- FALSE
-		}
-	}
-	if(is.null(getParams$axes)) {
-		axes <- TRUE
-	} else {
-		if(getParams$axes=="true") {
-			axes <- TRUE
-		} else {
-			axes <- FALSE
-		}
-	}
-	if(is.null(getParams$legend)) {
-		legend <- !inTable
-	} else {
-		if(getParams$legend=="true") {
-			legend <- TRUE
-		} else {
-			legend <- FALSE
-		}
-	}
+  # Get data
+  if(is.null(getParams$ymin)) {
+    yMin <- NA
+  } else {
+    yMin <- as.numeric(getParams$ymin)
+  }
+  if(!is.null(getParams$yNormMin)) {
+    yMin <- as.numeric(getParams$yNormMin)
+  }
+  if(is.null(getParams$ymax)) {
+    yMax <- NA
+  } else {
+    yMax <- as.numeric(getParams$ymax)
+  }
+  if(!is.null(getParams$yNormMax)) {
+    yMax <- as.numeric(getParams$yNormMax)
+  }
+  if(is.null(getParams$xmin)) {
+    xMin <- NA
+  } else {
+    xMin <- as.numeric(getParams$xmin)
+  }
+  if(!is.null(getParams$xNormMin)) {
+    xMin <- as.numeric(getParams$xNormMin)
+  }
+  if(is.null(getParams$xmax)) {
+    xMax <- NA
+  } else {
+    xMax <- as.numeric(getParams$xmax)
+  }
+  if(!is.null(getParams$xNormMax)) {
+    xMax <- as.numeric(getParams$xNormMax)
+  }
+  if(is.null(getParams$height)) {
+    height <- 500
+  } else {
+    height <- as.numeric(getParams$height)
+  }
+  if(!is.null(getParams$cellHeight)) {
+    height <- as.numeric(getParams$cellHeight)
+  }
+  if(is.null(getParams$width)) {
+    width <- 700
+  } else {
+    width <- as.numeric(getParams$width)
+  }
+  if(!is.null(getParams$cellWidth)) {
+    width <- as.numeric(getParams$cellWidth)
+  }
+  if(is.null(getParams$inTable)) {
+    inTable <- FALSE
+  } else {
+    inTable <- as.logical(getParams$inTable)
+  }
+  if(is.null(getParams$showAxes)) {
+    showAxes <- TRUE
+  } else {
+    showAxes <- as.logical(getParams$showAxes)
+  }
+  if(is.null(getParams$showGrid)) {
+    showGrid <- TRUE
+  } else {
+    showGrid <- as.logical(getParams$showGrid)
+  }
+  if(is.null(getParams$labelAxes)) {
+    labelAxes <- !inTable
+  } else {
+    labelAxes <- as.logical(getParams$labelAxes)
+  }
+  if(is.null(getParams$legend)) {
+    legend <- !inTable
+  } else {
+    legend <- as.logical(getParams$legend)
+  }
+  
+  if(is.null(getParams$curveIds)) {
+    stop("curveIds not provided, provide curveIds")
+    DONE
+  } else {
+    curveIds <- getParams$curveIds
+    curveIdsStrings <- strsplit(curveIds,",")[[1]]
+    curveIds <- suppressWarnings(as.integer(curveIds))
+    if(is.na(curveIds)) {
+      curveIds <- curveIdsStrings
+    }
+  }
+  if(!is.null(getParams$inTable)) {
+    if(!as.logical(getParams$inTable)) {
+      if(length(curveIds == 1)) {
+        experimentCode <- query(paste0("SELECT e.code_name
+                                     FROM experiment e
+                                     JOIN analysis_group ag on ag.experiment_id=e.id
+                                     JOIN analysis_group_state ags on ags.analysis_group_id=ag.id
+                                     JOIN analysis_group_value agv on agv.analysis_state_id=ags.id
+                                     WHERE agv.string_value = ",sqliz(GET$curveIds),"
+                                     AND agv.ls_kind        = 'curve id'"),globalConnect= TRUE)
+        link <- paste(getSSLString(), racas::applicationSettings$client.host, ":",
+                      racas::applicationSettings$client.port,
+                      "/curveCurator/",experimentCode,"/",curveIds,
+                      sep = "")
+        setHeader("Location", link)
+        return(HTTP_MOVED_TEMPORARILY)
+        DONE
+      }
+    }
+  }
+data <- getCurveData(curveIds, globalConnect=TRUE)
 
-	if(is.null(getParams$curveIds)) {
-		stop("curveIds not provided, provide curveIds")
-		DONE
-	} else {
-		curveIds <- getParams$curveIds
-		curveIdsStrings <- strsplit(curveIds,",")[[1]]
-		curveIds <- suppressWarnings(as.integer(curveIds))
-		if(is.na(curveIds)) {
-			curveIds <- curveIdsStrings
-		}
-	}
-	
-	data <- getCurveData(curveIds, globalConnect=TRUE)
-	
-	setContentType("image/png")
-	setHeader(header="Cache-Control",value="max-age=1000000000000"); 
-	setHeader(header="Expires",value="Thu, 31 Dec 2099 24:24:24 GMT");
-	t <- tempfile()
-	PlotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "hill"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = TRUE, labelAxes = TRUE, showLegend=legend, axes = axes)
-	sendBin(readBin(t,'raw',n=file.info(t)$size))
-	unlink(t) 
-	DONE
+#To be backwards compatable with hill slope example files
+hillSlopes <- which(!is.na(data$parameters$hillslope))
+if(length(hillSlopes) > 0  ) {
+  data$parameters$slope <- -data$parameters$hillslope[hillSlopes]
+}
+fittedHillSLopes <- which(!is.na(data$parameters$fitted_hillslope))
+if(length(fittedHillSLopes) > 0 ) {
+  data$parameters$fitted_slope <- -data$parameters$fitted_hillslope[fittedHillSLopes]
 }
 
+setContentType("image/png")
+t <- tempfile()
+plotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "slope"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = showGrid, showAxes = showAxes, labelAxes = labelAxes, showLegend=legend)
+sendBin(readBin(t,'raw',n=file.info(t)$size))
+unlink(t)
+DONE
+}
+#dput(GET)
 renderCurve(getParams = GET)

@@ -25,14 +25,14 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 					urlPref = "http://"
 				filename = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query.csv';
 				file = fs.createWriteStream './privateTempFiles/'+filename
-				rem = request urlPref+'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
+				rem = request urlPref+'localhost:'+config.all.client.port+'/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
 				rem.on 'data', (chunk) ->
 					file.write(chunk);
 				rem.on 'end', ->
 					file.close()
 					console.log "file written"
 					resp.json
-						fileURL: urlPref+"localhost:3000/tempFiles/"+filename
+						fileURL: urlPref+"localhost:'+config.all.client.port+'/tempFiles/"+filename
 			else
 				config = require '../conf/compiled/conf.js'
 				baseurl = config.all.client.service.rapache.fullpath+"getGeneData?format=CSV"
@@ -198,7 +198,6 @@ exports.getExperimentSearchAttributes = (req, resp)  ->
 		)
 
 exports.geneIDQueryIndex = (req, res) ->
-	#"use strict"
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
 
@@ -243,13 +242,13 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 			if global.specRunnerTestmode
 				filename = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query.csv';
 				file = fs.createWriteStream './privateTempFiles/'+filename
-				rem = request urlPref+'localhost:3000/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
+				rem = request urlPref+'localhost:'+config.all.client.port+'/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
 				rem.on 'data', (chunk) ->
 					file.write(chunk);
 				rem.on 'end', ->
 					file.close()
 					resp.json
-						fileURL: urlPref+"localhost:3000/tempFiles/"+filename
+						fileURL: urlPref+"localhost:'+config.all.client.port+'/tempFiles/"+filename
 			else
 				config = require '../conf/compiled/conf.js'
 				baseurl = config.all.client.service.rapache.fullpath+"getFilteredGeneData?format=CSV"

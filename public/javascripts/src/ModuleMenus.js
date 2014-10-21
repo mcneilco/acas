@@ -7,11 +7,20 @@
     __extends(ModuleMenusController, _super);
 
     function ModuleMenusController() {
+      this.handleHome = __bind(this.handleHome, this);
       this.render = __bind(this.render, this);
       return ModuleMenusController.__super__.constructor.apply(this, arguments);
     }
 
     ModuleMenusController.prototype.template = _.template($("#ModuleMenusView").html());
+
+    window.onbeforeunload = function() {
+      if (window.conf.leaveACASMessage === "WARNING: There are unsaved changes.") {
+        return window.conf.leaveACASMessage;
+      } else {
+        return null;
+      }
+    };
 
     ModuleMenusController.prototype.initialize = function() {
       $(this.el).html(this.template());
@@ -30,10 +39,29 @@
       } else {
         this.$('.bv_userInfo').hide();
       }
+      if (!window.conf.roologin.showpasswordchange) {
+        this.$('.bv_changePassword').hide();
+      }
       this.moduleLauncherMenuListController.render();
       this.moduleLauncherListController.render();
+      if (window.conf.moduleMenus.summaryStats) {
+        this.$('.bv_summaryStats').load('/dataFiles/summaryStatistics/summaryStatistics.html');
+      } else {
+        this.$('.bv_summaryStats').hide();
+      }
       if (window.AppLaunchParams.moduleLaunchParams != null) {
-        return this.moduleLauncherMenuListController.launchModule(window.AppLaunchParams.moduleLaunchParams.moduleName);
+        this.moduleLauncherMenuListController.launchModule(window.AppLaunchParams.moduleLaunchParams.moduleName);
+      } else {
+        this.$('.bv_homePageWrapper').show();
+      }
+      if (window.conf.moduleMenus.headerName != null) {
+        this.$('.bv_headerName').html(window.conf.moduleMenus.headerName);
+      }
+      if (window.conf.moduleMenus.homePageMessage != null) {
+        this.$('.bv_homePageMessage').html(window.conf.moduleMenus.homePageMessage);
+      }
+      if (window.conf.moduleMenus.copyrightMessage != null) {
+        return this.$('.bv_copyrightMessage').html(window.conf.moduleMenus.copyrightMessage);
       }
     };
 
@@ -44,6 +72,15 @@
         }
       }
       return this;
+    };
+
+    ModuleMenusController.prototype.events = {
+      'click .bv_headerName': "handleHome"
+    };
+
+    ModuleMenusController.prototype.handleHome = function() {
+      $('.bv_mainModuleWrapper').hide();
+      return $('.bv_homePageWrapper').show();
     };
 
     return ModuleMenusController;

@@ -6,7 +6,8 @@
     }, {
       isHeader: false,
       menuName: "Load Experiment",
-      mainControllerClassName: "GenericDataParserController"
+      mainControllerClassName: "GenericDataParserController",
+      autoLaunchName: "generic_data_parser"
     }, {
       isHeader: false,
       menuName: "Load Experiment",
@@ -27,10 +28,6 @@
       mainControllerClassName: "DNSKDPrimaryScreenExperimentController",
       autoLaunchName: "dnskd_screening_assay"
     }, {
-      isHeader: false,
-      menuName: "Experiment Browser",
-      mainControllerClassName: "ExperimentBrowserController"
-    }, {
       isHeader: true,
       menuName: "Inventory"
     }, {
@@ -41,6 +38,20 @@
       isHeader: false,
       menuName: "Load Sample Transfer Log",
       mainControllerClassName: "BulkLoadSampleTransfersController"
+    }, {
+      isHeader: true,
+      menuName: "Search and Edit"
+    }, {
+      isHeader: false,
+      menuName: "Experiment Browser",
+      mainControllerClassName: "ExperimentBrowserController"
+    }, {
+      isHeader: true,
+      menuName: "Admin"
+    }, {
+      isHeader: false,
+      menuName: "Logging",
+      mainControllerClassName: "LoggingController"
     }
   ];
 

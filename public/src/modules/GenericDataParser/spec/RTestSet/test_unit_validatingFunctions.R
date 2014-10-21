@@ -36,17 +36,17 @@ test_that("validateCharacter handles factors as input", {
 })
 
 test_that("validateDate (from racas) works in normal cases", {
-  expect_equal(validateDate("2012-12-05"), as.Date("2012-12-05"))
-  expect_equal(validateDate(factor("2012-12-05")), as.Date("2012-12-05"))
+  expect_equal(validateDate("2012-12-05"), "2012-12-05")
+  expect_equal(validateDate(factor("2012-12-05")), "2012-12-05")
 })
 
 test_that("validateDate gives warnings", {
   # Check that there is a warning (bad date format)
-  output <- tryCatch.W.E(expect_equal(as.Date("2012-02-05"), validateDate("02-05-2012")))
+  output <- tryCatch.W.E(expect_equal("2012-02-05", validateDate("02-05-2012")))
   expect_true(output$value$passed)
   expect_equal(1, length(output$warningList))
   
-  output <- tryCatch.W.E(expect_equal(as.Date("2005-03-16"), validateDate("3/16/05")))
+  output <- tryCatch.W.E(expect_equal("2005-03-16", validateDate("3/16/05")))
   expect_true(output$value$passed)
   expect_equal(1,length(output$warningList))
   
@@ -88,7 +88,7 @@ test_that("validateNumeric gives NA for non-numeric values", {
   expect_identical(list("An entry was expected to be a number but was: '2013-01-04'. Please enter a number instead."), errorList)
 })
 
-test_that("validateDate consistently returns a date (bug RACAS#6)", {
-  expect_that(validateDate("2012-11-07"), is_a("Date"))
-  expect_that(suppressWarnings(validateDate("2012/11/07")), is_a("Date"))
+test_that("validateDate consistently returns a date (was bug RACAS#6)", {
+  expect_that(validateDate("2012-11-07"), is_a("character"))
+  expect_that(suppressWarnings(validateDate("2012/11/07")), is_a("character"))
 })
