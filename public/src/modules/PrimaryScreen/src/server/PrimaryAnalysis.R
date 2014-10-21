@@ -1128,7 +1128,7 @@ parseAnalysisFlagFile <- function(flaggedWells, resultTable) {
   return(flagData)
 }
 parseWellFlagFile <- function(flaggedWells, resultTable) {
-  # Turns a csv or Excel file into a table of well-level flag information
+  # Turns a csv, Excel, or .txt file into a table of well-level flag information
   #
   # Input:  flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #         resultTable, a table containing, among other columns, the barcode, well, and batch code for
