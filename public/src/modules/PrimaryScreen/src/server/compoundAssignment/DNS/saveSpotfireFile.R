@@ -1,13 +1,13 @@
 saveSpotfireFile <- function(inputTable, saveLocation) {
-  inputTable <- as.data.frame(inputTable)
   
-  inputTable <- renameColumnsForSpotfire(inputTable)  
+  inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman")
+
   newColNames <- colnames(inputTable)
   
   # find activity columns
   activityColNames <- colnames(inputTable)[grep("^R[0-9]{1,2} ",colnames(inputTable))]
   
-  # ANY NAMES CHANGED HERE should also be changed in renameColumnsForSpotfire()
+  # ANY NAMES CHANGED HERE should also be changed in getColNameChangeDataTables()
   requiredColumns <- c("Plate Type", "Assay Barcode", "Compound Barcode", "Source Type",
                        "Well", "Row", "Column", "Plate Order", "Well Type", "Corporate Name",
                        "Batch Number", "Corporate Batch Name", "Compound Concentration",
@@ -33,62 +33,6 @@ saveSpotfireFile <- function(inputTable, saveLocation) {
   return(file.path(saveLocation, "spotfire-DRAFT.txt"))
 }
 
-renameColumnsForSpotfire <- function(inputTable){
-  # Changes the names of the resultTable to conform with a spotfire file
-  # ANY NAMES CHANGED HERE should also be changed in createSpotfireFile()
-  require(plyr)
+
   
   
-  
-  ### Use this 'rename' until Flag column names have been stabilized
-  inputTable <- rename(inputTable, replace=c("plateType"="Plate Type",
-                                             "assayBarcode"="Assay Barcode",
-                                             "cmpdBarcode"="Compound Barcode",
-                                             "sourceType"="Source Type",
-                                             "well"="Well",
-                                             "row"="Row",
-                                             "column"="Column",
-                                             "plateOrder"="Plate Order",
-                                             "wellType"="Well Type",
-                                             "batchName"="Corporate Name",
-                                             "batch_number"="Batch Number",
-                                             "batchCode"="Corporate Batch Name",
-                                             "cmpdConc"="Compound Concentration",
-                                             "transformed_% efficacy"="Efficacy",
-                                             "transformed_sd"="SD Score",
-                                             "zPrimeByPlate"="Z' By Plate",
-                                             "zPrime"="Z'",
-                                             "activity"="Activity",
-                                             "normalizedActivity"="Normalized Activity"), warn_missing=FALSE)
-  
-  #### Use this 'rename' instead once Flag column names have been stabilized.
-  #   inputTable <- rename(inputTable, replace=c("plateType"="Plate Type",
-  #                                              "assayBarcode"="Assay Barcode",
-  #                                              "cmpdBarcode"="Compound Barcode",
-  #                                              "sourceType"="Source Type",
-  #                                              "well"="Well",
-  #                                              "row"="Row",
-  #                                              "column"="Column",
-  #                                              "plateOrder"="Plate Order",
-  #                                              "wellType"="Well Type",
-  #                                              "batchName"="Corporate Name",
-  #                                              "batch_number"="Batch Number",
-  #                                              "batchCode"="Corporate Batch Name",
-  #                                              "cmpdConc"="Compound Concentration",
-  #                                              "transformed_% efficacy"="Efficacy",
-  #                                              "transformed_sd"="SD Score",
-  #                                              "zPrimeByPlate"="Z' By Plate",
-  #                                              "zPrime"="Z'",
-  #                                              "activity"="Activity",
-  #                                              "normalizedActivity"="Normalized Activity",
-  #                                              ""="Flag Type",
-  #                                              ""="Flag Observation",
-  #                                              ""="Flag Reason",
-  #                                              ""="Flag Comment",
-  #                                              ""="Auto Flag Type",
-  #                                              ""="Auto Flag Observation",
-  #                                              ""="Auto Flag Reason"), warn_missing=FALSE)
-  
-  return(inputTable)
-  
-}

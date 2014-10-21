@@ -4,7 +4,7 @@
 # Sets column names included in input parameters to the format of Rn {acivity}
 # Inputs: readsTable (data.table with columns readOrder, readNames, activity)
 #         activityColNames (assayData) (from instrument files)
-# Output: data table that can be used as a reference. Columns: userReadPosition, userReadName, ativityColName, newActivityColName
+# Output: data table that can be used as a reference. Columns: readPosition, readName, ativityColName, newActivityColName, activity
 
 formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFilePath, matchNames) {
   

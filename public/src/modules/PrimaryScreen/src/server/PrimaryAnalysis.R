@@ -46,6 +46,8 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
   # Extract information from the flag file
   flagData <- parseWellFlagFile(flaggedWells, resultTable)
   
+  flagData <- changeColNameReadability(flagData, "humanToComputer")
+  
   # Ensure that the data is in the proper form
   validatedFlagData <- validateWellFlagData(flagData, resultTable)
   
@@ -55,7 +57,8 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
   }
   
   # Remove unneeded columns
-  flagData <- data.table(assayBarcode = validatedFlagData$assayBarcode, well = validatedFlagData$well, flag = validatedFlagData$flag)
+  # flagData <- data.table(assayBarcode = validatedFlagData$assayBarcode, well = validatedFlagData$well, flag = validatedFlagData$flag)
+  flagData <- data.table(validatedFlagData)
   
   return(flagData)
 }
@@ -885,11 +888,12 @@ validateWellFlagData <- function(flagData, resultTable) {
   # resultTable: A data.table containing, among other fields, a complete list of barcodes and wells
   # Returns: the input data frame, with accumulated warnings and errors, and with empty strings as NA
   
-  columnsIncluded <- c("well", "assayBarcode", "flag") %in% names(flagData)
+  columnsIncluded <- c("well", "assayBarcode", "flagType","flagObservation","flagReason","flagComment") %in% names(flagData)
   if (!all(columnsIncluded)) {
     stopUser(paste0("An important column appears to be missing from the input. ",
                     "Please ensure that the uploaded file contains columns for Well, ", 
-                    "Barcode, and Flag. If the uploaded file contained calculated ", 
+                    "Assay Barcode, Flag Type, Flag Observation, Flag Reason, and Flag Comment. ",
+                    "If the uploaded file contained calculated ", 
                     "results, please ensure that you only modified the columns marked ",
                     "as editable."))
   }
@@ -1142,13 +1146,13 @@ parseWellFlagFile <- function(flaggedWells, resultTable) {
       # Remove "Editable" Row
       flagData <- flagData[1:nrow(flagData)>1,]
       # Get the headers in the appropriate place
-      names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
+      names(flagData) <- flagData[1:nrow(flagData)==1,]
       flagData <- flagData[1:nrow(flagData)>1,]
     }, error = function(e) {
       if (any(class(e) == "userStop")) {
         # If we received an error that we defined, it means the section heading wasn't there
         # (or there were too few rows); we assume we just had the basic csv file
-        names(flagData) <- tolower(flagData[1:nrow(flagData)==1,])
+        names(flagData) <- flagData[1:nrow(flagData)==1,]
         flagData <- flagData[1:nrow(flagData)>1,]
         return(flagData)
       } else {
@@ -1663,6 +1667,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
   
   checkFlags(resultTable)
+
+  resultTable$flag <- as.character(NA)
+  
+  resultTable[flagType=="KO", flag := "KO"]
   
   ## End Well Flagging
   
@@ -1671,7 +1679,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"performCalculations.R"))
   
-  resultTable <- performCalculations(resultTable, parameters, flaggedWells, flaggingStage, experiment)
+  resultTable <- performCalculations(resultTable, parameters)
   
   
   ###### Rdap Refactor stopped here 2014-10-10
@@ -2540,6 +2548,118 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   }
   
   return (lsTransaction)
+}
+
+changeColNameReadability <- function(inputTable, readabilityChange) {
+  
+  colNameChangeTable <- getColNameChangeDataTables()[[readabilityChange]]
+  
+  colNameChangeTable <- selectColNamesToChange(colnames(inputTable), colNameChangeTable)
+  
+  setnames(inputTable, 
+           colNameChangeTable[!is.na(colNamesToChange)]$oldColNames, 
+           colNameChangeTable[!is.na(colNamesToChange)]$newColNames)
+  
+  return(inputTable)
+  
+}
+
+selectColNamesToChange <- function(currentColNames, colNameChangeTable) {
+  
+  for(name in colNameChangeTable$oldColName) {
+    columnCount <- 0
+    for(currentName in currentColNames) {
+      if(name == currentName) {
+        colNameChangeTable[oldColNames==name, ]$colNamesToChange <- name
+        columnCount <- columnCount + 1
+      }
+    }
+    if(columnCount > 1) {
+      stopUser(paste0("Non-unique colnames when changing between computer and human readability."))
+    } 
+  } 
+  
+  return(colNameChangeTable)
+}
+
+getColNameChangeDataTables <- function() {
+  
+  colNameDataTable <- data.table(computerColNames = c("plateType",
+                                                      "assayBarcode",
+                                                      "cmpdBarcode",
+                                                      "sourceType",
+                                                      "well",
+                                                      "row",
+                                                      "column",
+                                                      "plateOrder",
+                                                      "wellType",
+                                                      "batchName",
+                                                      "batch_number",
+                                                      "batchCode",
+                                                      "cmpdConc",
+                                                      "transformed_% efficacy",
+                                                      "transformed_sd",
+                                                      "zPrimeByPlate",
+                                                      "zPrime",
+                                                      "activity",
+                                                      "normalizedActivity",
+                                                      "flagType",  
+                                                      "flagObservation",
+                                                      "flagReason",
+                                                      "flagComment",
+                                                      "autoFlagType",
+                                                      "autoFlagObservation",
+                                                      "autoFlagReason"),
+                                 humanColNames = c("Plate Type",
+                                                   "Assay Barcode",
+                                                   "Compound Barcode",
+                                                   "Source Type",
+                                                   "Well",
+                                                   "Row",
+                                                   "Column",
+                                                   "Plate Order",
+                                                   "Well Type",
+                                                   "Corporate Name",
+                                                   "Batch Number",
+                                                   "Corporate Batch Name",
+                                                   "Compound Concentration",
+                                                   "Efficacy",
+                                                   "SD Score",
+                                                   "Z' By Plate",
+                                                   "Z'",
+                                                   "Activity",
+                                                   "Normalized Activity",
+                                                   "Flag Type",
+                                                   "Flag Observation",
+                                                   "Flag Reason",
+                                                   "Flag Comment",
+                                                   "Auto Flag Type",
+                                                   "Auto Flag Observation",
+                                                   "Auto Flag Reason"))
+  
+  colNameDataTableList <- formatColumnNameChangeDT(colNameDataTable)
+  
+  return(colNameDataTableList)
+}
+
+formatColumnNameChangeDT <- function(colDataTable) {
+  # Takes a data.table containing two columns: compColNames and humColNames. Returns a list containing two data tables. 
+  # One will translate human to computer readable, the other will be computer to human readable. 
+  # Depending on what you want, you can pick the data.table that you need for translation.
+  # Input:  colDataTable (colnames = "compColNames", "humColNames")
+  # Output: list of two data.tables - computerToHuman and humanToComputer
+  
+  colDataTable$colNamesToChange <- as.character(NA)
+  
+  computerToHuman <- copy(colDataTable)
+  setnames(computerToHuman, c("computerColNames","humanColNames"), c("oldColNames","newColNames"))
+  
+  
+  humanToComputer <- copy(colDataTable)
+  setnames(humanToComputer, c("humanColNames","computerColNames"), c("oldColNames","newColNames"))
+  
+  
+  return(list(computerToHuman=computerToHuman, humanToComputer=humanToComputer))
 }
 
 runPrimaryAnalysis <- function(request) {
