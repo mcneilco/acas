@@ -1,12 +1,6 @@
-performCalculations <- function(resultTable, parameters, flaggedWells, flaggingStage, experiment) {
+performCalculations <- function(resultTable, parameters) {
   # DNS
-  # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
-  flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
-  
-  # In order to merge with a data.table, the columns have to have the same name
-  resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
-  
-  checkFlags(resultTable)
+
   
   resultTable <- normalizeData(resultTable, parameters)
   

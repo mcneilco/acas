@@ -1116,7 +1116,7 @@ parseAnalysisFlagFile <- function(flaggedWells, resultTable) {
   return(flagData)
 }
 parseWellFlagFile <- function(flaggedWells, resultTable) {
-  # Turns a csv or Excel file into a table of well-level flag information
+  # Turns a csv, Excel, or .txt file into a table of well-level flag information
   #
   # Input:  flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #         resultTable, a table containing, among other columns, the barcode, well, and batch code for
@@ -1654,6 +1654,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   checkControls(resultTable)
   
+  ## Well Flagging Here
+  
+  # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
+  flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
+  
+  # In order to merge with a data.table, the columns have to have the same name
+  resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
+  
+  checkFlags(resultTable)
+  
+  ## End Well Flagging
   
   ## RED SECTION - Client Specific
   #calculations
