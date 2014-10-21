@@ -31,19 +31,7 @@
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
 # newest experimentID: 75191, 9036, 11203
-# agonist:"FL0073897-1-1"
-# agonistConc: 49.5
-# positive: FL0073900-1-1
-# negative: FL0073895-1-1
 # request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
-
-# DryRun
-# user  system elapsed 
-# 1.847   0.061  37.876
-
-# real
-# user  system elapsed 
-# 7.904   0.250  45.444 
 
 
 
@@ -1348,40 +1336,15 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
 }
 saveInputParameters <- function(inputParameters, experiment, lsTransaction, recordedBy) {
   # input: inputParameters a string that is JSON
-  metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"]
+  metadataState <- getOrCreateExperimentState(experiment, "metadata", "experiment metadata", recordedBy, lsTransaction)
   
-  if (length(metadataState)> 0) {
-    metadataState <- metadataState[[1]]
-    
-    valueKinds <- lapply(metadataState$lsValues,getElement,"lsKind")
-    valuesToDelete <- metadataState$lsValues[valueKinds %in% c("data analysis parameters")]
-    lapply(valuesToDelete, deleteExperimentValue)
-  } else {
-    metadataState <- createExperimentState(
-      recordedBy = recordedBy,
-      experiment = experiment,
-      lsType = "metadata",
-      lsKind = "experiment metadata",
-      lsTransaction=lsTransaction)
-    tryCatch({
-      metadataState <- saveExperimentState(metadataState)
-    }, error = function(e) {
-      stopUser("Could not save the input parameters")
-    })
-  }
-  
-  tryCatch({
-    inputParametersValue <- createStateValue(
-      lsType = "clobValue",
-      lsKind = "data analysis parameters",
-      clobValue = inputParameters,
-      lsState = metadataState)
-    saveExperimentValues(list(inputParametersValue))
-  }, error = function(e) {
-    stopUser("Could not save the input parameters")
-  })
-  
-  
+  inputParamValue <- updateOrCreateStateValue(
+    "experiment", metadataState, lsType = "clobValue",
+    lsKind = "data analysis parameters",
+    clobValue = inputParameters,
+    lsState = metadataState,
+    lsTransaction = lsTransaction,
+    recordedBy = recordedBy)
   
   return(NULL)
 }
@@ -1619,14 +1582,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   if(!testMode) {
     experiment <- getExperimentById(experimentId)
-    
-    metadataState <- Filter(function(x) x$lsKind == "experiment metadata", 
-                            x = experiment$lsStates)[[1]]
-    
-    # metadataState <- experiment$lsStates[lapply(experiment$lsStates,getElement,"lsKind")=="experiment metadata"][[1]]
-    if(!dryRun) {
-      setAnalysisStatus(status = "parsing", metadataState)
-    }
+    setExperimentStatus(status = "running", experiment, dryRun)
   } else {
     experiment <- list(id = experimentId, codeName = "test", version = 0)
   }
@@ -1942,6 +1898,20 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     )
   }
   
+  # This runs on dryRun and save, could be split to save different values
+  
+  if (!testMode) {
+    lsTransaction <- createLsTransaction()$id
+    saveInputParameters(inputParameters, experiment, lsTransaction, user)
+  } else {
+    lsTransaction <- 1345
+  }
+  if (dryRun) {
+    saveAcasFileToExperiment(
+      folderToParse, experiment, 
+      "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
+  }
+  
   if (dryRun) {
     lsTransaction <- NULL
     dryRunLocation <- racas::getUploadedFilePath(paste0("experiments/", experiment$codeName, "/draft"))
@@ -1985,7 +1955,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                          basename(zipFile)))
     }
     
-    lsTransaction <- createLsTransaction()$id
     dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     #experiment <<- experiment
     deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
@@ -2082,9 +2051,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
     }
     
-    
-    saveInputParameters(inputParameters, experiment, lsTransaction, user)
-    
     #     if (!useRdap) {
     if (FALSE) {
       saveFileLocations(rawResultsLocation, resultsLocation, pdfLocation, overrideLocation, experiment, dryRun, user, lsTransaction)
@@ -2160,23 +2126,6 @@ meltConcentrations <- function(entityData, entityKind = "treatmentGroup") {
   output <- ddply(.data=entityData, .variables = c("stateID"), .fun = createConcentrationRows)
   return(output)
 }
-
-getExperimentById <- function(experimentId, include="", errorEnv=NULL, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
-  require('RCurl')
-  experiment <- NULL
-  tryCatch({
-    if(include=="") {
-      experiment <- getURL(paste0(lsServerURL, "experiments/", experimentId))
-    } else {
-      experiment <- getURL(paste0(lsServerURL, "experiments/", experimentId, "?with=", include))  
-    }
-    experiment <- fromJSON(experiment)
-  }, error = function(e) {
-    addError(paste0("Could not get experiment ", experimentId, " from the server"), errorEnv)
-  })
-  return(experiment)
-}
-
 saveFullEntityData <- function(entityData, entityKind) {
   
   ### local names
