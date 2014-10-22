@@ -131,7 +131,7 @@
   };
 
   exports.genericExperimentSearch = function(req, res) {
-    var emptyResponse, experimentServiceTestJSON, json;
+    var baseurl, config, emptyResponse, experimentServiceTestJSON, serverUtilityFunctions;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       if (req.params.searchTerm === "no-match") {
@@ -141,10 +141,12 @@
         return res.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer]));
       }
     } else {
-      json = {
-        message: "genericExperimentSearch not implemented yet"
-      };
-      return res.end(JSON.stringify(json));
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "api/v1/experiments/search?q=" + req.params.searchTerm;
+      console.log("baseurl");
+      console.log(baseurl);
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, res);
     }
   };
 

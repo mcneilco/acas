@@ -119,8 +119,15 @@ exports.genericExperimentSearch = (req, res) ->
 		else
 			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
 	else
-		json = {message: "genericExperimentSearch not implemented yet"}
-		res.end JSON.stringify json
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"api/v1/experiments/search?q="+req.params.searchTerm
+		console.log "baseurl"
+		console.log baseurl
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, res)
+
+#		json = {message: "genericExperimentSearch not implemented yet"}
+#		res.end JSON.stringify json
 
 exports.editExperimentLookupAndRedirect = (req, res) ->
 	if global.specRunnerTestmode
