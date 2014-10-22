@@ -46,7 +46,7 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   # In order to merge with a data.table, the columns have to have the same name
   resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
   
-  resultTable$flag <- as.character(NA)
+  resultTable[ , flag := as.character(NA)]
   
   resultTable[flagType=="KO", flag := "KO"]
   
@@ -2580,7 +2580,7 @@ selectColNamesToChange <- function(currentColNames, colNameChangeTable) {
     columnCount <- 0
     for(currentName in currentColNames) {
       if(name == currentName) {
-        colNameChangeTable[oldColNames==name, ]$colNamesToChange <- name
+        colNameChangeTable[oldColNames==name, colNamesToChange := name]
         columnCount <- columnCount + 1
       }
     }
