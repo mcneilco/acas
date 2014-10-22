@@ -33,7 +33,27 @@
 # newest experimentID: 75191, 9036, 11203
 # request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
 
-
+getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
+  
+  if(is.null(flaggedWells)) {
+    resultTable[ , flag:= as.character(NA)]
+    return(resultTable)
+  }
+  
+  # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
+  flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
+  
+  # In order to merge with a data.table, the columns have to have the same name
+  resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
+  
+  checkFlags(resultTable)
+  
+  resultTable$flag <- as.character(NA)
+  
+  resultTable[flagType=="KO", flag := "KO"]
+  
+  return(resultTable)
+}
 
 getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
   # Reads the flagged wells from an input csv or Excel file
@@ -1660,22 +1680,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   ## Well Flagging Here
   
-  if(!is.null(flaggedWells)) {
-  
-    # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
-    flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
-    
-    # In order to merge with a data.table, the columns have to have the same name
-    resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
-    
-    checkFlags(resultTable)
-    
-    resultTable$flag <- as.character(NA)
-    
-    resultTable[flagType=="KO", flag := "KO"]
-  } else {
-    resultTable[ , flag:= as.character(NA)]
-  }
+  resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment)
   
   ## End Well Flagging
   
