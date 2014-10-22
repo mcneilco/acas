@@ -53,8 +53,8 @@ class window.BaseEntity extends Backbone.Model
 			@trigger 'change'
 
 	getDescription: ->
-		metadataKind = @.get('subclass') + " metadata"
-		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "description"
+#		metadataKind = @.get('subclass') + " metadata"
+		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
 #		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
 		if description.get('clobValue') is undefined or description.get('clobValue') is ""
 			description.set clobValue: ""
@@ -88,17 +88,22 @@ class window.BaseEntity extends Backbone.Model
 
 		status
 
-	getAnalysisParameters: ->
-		metadataKind = @.get('subclass') + " metadata"
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "data analysis parameters"
+	getAnalysisParameters: =>
+		console.log "calling getAnalysisParameters"
+#		metadataKind = @.get('subclass') + " metadata"
+		console.log @.get('lsStates')
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
+		console.log @
 		if ap.get('clobValue')?
+			console.log "used existing clobValue"
 			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
 		else
+			console.log "created completely new analysis parameters"
 			return new PrimaryScreenAnalysisParameters()
 
-	getModelFitParameters: ->
-		metadataKind = @.get('subclass') + " metadata"
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "model fit parameters"
+	getModelFitParameters: =>
+#		metadataKind = @.get('subclass') + " metadata"
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
 		if ap.get('clobValue')?
 			return $.parseJSON(ap.get('clobValue'))
 		else
@@ -153,6 +158,7 @@ class window.BaseEntity extends Backbone.Model
 			return null
 
 	prepareToSave: ->
+		console.log "prepareToSave"
 		rBy = @get('recordedBy')
 		rDate = new Date().getTime()
 		@set recordedDate: rDate
@@ -197,6 +203,7 @@ class window.BaseEntityController extends AbstractFormController
 		unless @model?
 			@model=new BaseEntity()
 		@model.on 'sync', =>
+			console.log "@model sync"
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
@@ -216,6 +223,8 @@ class window.BaseEntityController extends AbstractFormController
 #	using the code above, triggers amDirty whenever the module is clicked. is this ok?
 
 	render: =>
+		unless @model?
+			@model = new BaseEntity()
 		subclass = @model.get('subclass')
 		@$('.bv_shortDescription').html @model.get('shortDescription')
 #		@$('.bv_description').html @model.get('description')
@@ -238,14 +247,14 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_save').html("Update")
 		@updateEditable()
-		@model.on 'readyToSave', @handleSaveClickedPart2
+#		@model.on 'readyToSave', @handleFinishSave
 
 
 		@
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/"+@model.get('subclass')+"Metadata/"+@model.get('subclass')+" status"
+		@statusList.url = "/api/dataDict/"+@model.get('subclass')+" metadata/"+@model.get('subclass')+" status"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList
@@ -319,19 +328,25 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_status').removeAttr("disabled")
 
-	handleSaveClicked: =>
+	beginSave: => #TODO: add original prepareToSave so that base protocol/expt can be saved still too
+		console.log "beginSave in base controller"
+		@tagListController.handleTagsChanged()
 		if @model.checkForNewPickListOptions?
 			@model.checkForNewPickListOptions()
 		else
-			@model.prepareToSave()
+#			@model.prepareToSave() #TODO: have module controller call prepareToSaveAnalysisParameters - DONE
+			@trigger "noEditablePickLists"
 
 #		@model.prepareToSave()
 
-	handleSaveClickedPart2: =>
+	handleSaveClicked: =>
 		@tagListController.handleTagsChanged()
+		@model.prepareToSave()
 		if @model.isNew()
+			console.log "model is new"
 			@$('.bv_updateComplete').html "Save Complete"
 		else
+			console.log "model is not new"
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_saving').show()
 		@model.save()
@@ -339,8 +354,9 @@ class window.BaseEntityController extends AbstractFormController
 	validationError: =>
 		super()
 		@$('.bv_save').attr('disabled', 'disabled')
+		console.log "validation error in base entity"
 
 	clearValidationErrorStyles: =>
 		super()
 		@$('.bv_save').removeAttr('disabled')
-
+		console.log "clear validation error styles in base entity"

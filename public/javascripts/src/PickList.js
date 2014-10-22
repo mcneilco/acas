@@ -296,6 +296,9 @@
     };
 
     EditablePickListSelectController.prototype.setupEditablePickList = function() {
+      console.log("set up editable picklist");
+      console.log(this);
+      console.log(this.options.selectedCode);
       return this.pickListController = new PickListSelectController({
         el: this.$('.bv_parameterSelectList'),
         collection: this.collection,
@@ -308,16 +311,20 @@
     };
 
     EditablePickListSelectController.prototype.setupEditingPrivileges = function() {
-      if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+        this.$('.bv_tooltipWrapper').removeAttr('data-toggle');
+        return this.$('.bv_tooltipWrapper').removeAttr('data-original-title');
+      } else {
+        console.log("user doesn't have admin privileges");
         this.$('.bv_addOptionBtn').removeAttr('data-toggle');
         this.$('.bv_addOptionBtn').removeAttr('data-target');
         this.$('.bv_addOptionBtn').removeAttr('data-backdrop');
         this.$('.bv_addOptionBtn').css({
           'color': "#cccccc"
         });
-        this.$('.bv_tooltipwrapper').tooltip();
+        this.$('.bv_tooltipWrapper').tooltip();
         return this.$("body").tooltip({
-          selector: '.bv_tooltipwrapper'
+          selector: '.bv_tooltipWrapper'
         });
       }
     };
@@ -379,24 +386,34 @@
 
     EditablePickListSelectController.prototype.saveNewOption = function(callback) {
       var code, selectedModel;
+      console.log("saveNewOption");
       code = this.pickListController.getSelectedCode();
+      console.log(code);
+      console.log(this.pickListController.collection);
       selectedModel = this.pickListController.collection.getModelWithCode(code);
-      if (selectedModel.get('newOption')) {
-        selectedModel.unset('newOption');
-        return $.ajax({
-          type: 'POST',
-          url: "/api/codeTables",
-          data: selectedModel,
-          success: callback.call(),
-          error: (function(_this) {
-            return function(err) {
-              alert('could not add option to code table');
-              return _this.serviceReturn = null;
-            };
-          })(this),
-          dataType: 'json'
-        });
+      console.log(selectedModel);
+      if (selectedModel !== void 0) {
+        if (selectedModel.get('newOption') != null) {
+          selectedModel.unset('newOption');
+          console.log("save new option to database");
+          return $.ajax({
+            type: 'POST',
+            url: "/api/codeTables",
+            data: selectedModel,
+            success: callback.call(),
+            error: (function(_this) {
+              return function(err) {
+                alert('could not add option to code table');
+                return _this.serviceReturn = null;
+              };
+            })(this),
+            dataType: 'json'
+          });
+        } else {
+          return callback.call();
+        }
       } else {
+        console.log("don't need to save new option to database");
         return callback.call();
       }
     };

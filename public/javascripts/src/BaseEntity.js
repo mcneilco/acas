@@ -7,6 +7,8 @@
     __extends(BaseEntity, _super);
 
     function BaseEntity() {
+      this.getModelFitParameters = __bind(this.getModelFitParameters, this);
+      this.getAnalysisParameters = __bind(this.getAnalysisParameters, this);
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       this.parse = __bind(this.parse, this);
       return BaseEntity.__super__.constructor.apply(this, arguments);
@@ -107,9 +109,8 @@
     };
 
     BaseEntity.prototype.getDescription = function() {
-      var description, metadataKind;
-      metadataKind = this.get('subclass') + " metadata";
-      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", "description");
+      var description;
+      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "description");
       if (description.get('clobValue') === void 0 || description.get('clobValue') === "") {
         description.set({
           clobValue: ""
@@ -155,20 +156,23 @@
     };
 
     BaseEntity.prototype.getAnalysisParameters = function() {
-      var ap, metadataKind;
-      metadataKind = this.get('subclass') + " metadata";
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", "data analysis parameters");
+      var ap;
+      console.log("calling getAnalysisParameters");
+      console.log(this.get('lsStates'));
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
+      console.log(this);
       if (ap.get('clobValue') != null) {
+        console.log("used existing clobValue");
         return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
       } else {
+        console.log("created completely new analysis parameters");
         return new PrimaryScreenAnalysisParameters();
       }
     };
 
     BaseEntity.prototype.getModelFitParameters = function() {
-      var ap, metadataKind;
-      metadataKind = this.get('subclass') + " metadata";
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", "model fit parameters");
+      var ap;
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
       if (ap.get('clobValue') != null) {
         return $.parseJSON(ap.get('clobValue'));
       } else {
@@ -249,6 +253,7 @@
 
     BaseEntity.prototype.prepareToSave = function() {
       var rBy, rDate;
+      console.log("prepareToSave");
       rBy = this.get('recordedBy');
       rDate = new Date().getTime();
       this.set({
@@ -316,8 +321,8 @@
     function BaseEntityController() {
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
-      this.handleSaveClickedPart2 = __bind(this.handleSaveClickedPart2, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
+      this.beginSave = __bind(this.beginSave, this);
       this.updateEditable = __bind(this.updateEditable, this);
       this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.handleNotebookChanged = __bind(this.handleNotebookChanged, this);
@@ -355,6 +360,7 @@
       }
       this.model.on('sync', (function(_this) {
         return function() {
+          console.log("@model sync");
           _this.trigger('amClean');
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
@@ -379,6 +385,9 @@
 
     BaseEntityController.prototype.render = function() {
       var bestName, subclass;
+      if (this.model == null) {
+        this.model = new BaseEntity();
+      }
       subclass = this.model.get('subclass');
       this.$('.bv_shortDescription').html(this.model.get('shortDescription'));
       bestName = this.model.get('lsLabels').pickBestName();
@@ -403,13 +412,12 @@
         this.$('.bv_save').html("Update");
       }
       this.updateEditable();
-      this.model.on('readyToSave', this.handleSaveClickedPart2);
       return this;
     };
 
     BaseEntityController.prototype.setupStatusSelect = function() {
       this.statusList = new PickListList();
-      this.statusList.url = "/api/dataDict/" + this.model.get('subclass') + "Metadata/" + this.model.get('subclass') + " status";
+      this.statusList.url = "/api/dataDict/" + this.model.get('subclass') + " metadata/" + this.model.get('subclass') + " status";
       return this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,
@@ -512,19 +520,24 @@
       }
     };
 
-    BaseEntityController.prototype.handleSaveClicked = function() {
+    BaseEntityController.prototype.beginSave = function() {
+      console.log("beginSave in base controller");
+      this.tagListController.handleTagsChanged();
       if (this.model.checkForNewPickListOptions != null) {
         return this.model.checkForNewPickListOptions();
       } else {
-        return this.model.prepareToSave();
+        return this.trigger("noEditablePickLists");
       }
     };
 
-    BaseEntityController.prototype.handleSaveClickedPart2 = function() {
+    BaseEntityController.prototype.handleSaveClicked = function() {
       this.tagListController.handleTagsChanged();
+      this.model.prepareToSave();
       if (this.model.isNew()) {
+        console.log("model is new");
         this.$('.bv_updateComplete').html("Save Complete");
       } else {
+        console.log("model is not new");
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
@@ -533,12 +546,14 @@
 
     BaseEntityController.prototype.validationError = function() {
       BaseEntityController.__super__.validationError.call(this);
-      return this.$('.bv_save').attr('disabled', 'disabled');
+      this.$('.bv_save').attr('disabled', 'disabled');
+      return console.log("validation error in base entity");
     };
 
     BaseEntityController.prototype.clearValidationErrorStyles = function() {
       BaseEntityController.__super__.clearValidationErrorStyles.call(this);
-      return this.$('.bv_save').removeAttr('disabled');
+      this.$('.bv_save').removeAttr('disabled');
+      return console.log("clear validation error styles in base entity");
     };
 
     return BaseEntityController;

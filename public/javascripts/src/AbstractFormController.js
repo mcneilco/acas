@@ -46,6 +46,8 @@
     AbstractFormController.prototype.validationError = function() {
       var errors;
       errors = this.model.validationError;
+      console.log("validation Errors");
+      console.log(errors);
       this.clearValidationErrorStyles();
       _.each(errors, (function(_this) {
         return function(err) {

@@ -2,7 +2,7 @@
   (function(exports) {
     return exports.dataDictValues = [
       {
-        type: "protocolMetadata",
+        type: "protocol metadata",
         kind: "assay stage",
         codes: [
           {
@@ -12,7 +12,7 @@
           }
         ]
       }, {
-        type: "protocolMetadata",
+        type: "protocol metadata",
         kind: "assay activity",
         codes: [
           {
@@ -26,7 +26,7 @@
           }
         ]
       }, {
-        type: "protocolMetadata",
+        type: "protocol metadata",
         kind: "molecular target",
         codes: [
           {
@@ -40,7 +40,7 @@
           }
         ]
       }, {
-        type: "protocolMetadata",
+        type: "protocol metadata",
         kind: "target origin",
         codes: [
           {
@@ -54,7 +54,7 @@
           }
         ]
       }, {
-        type: "protocolMetadata",
+        type: "protocol metadata",
         kind: "assay type",
         codes: [
           {
@@ -64,7 +64,7 @@
           }
         ]
       }, {
-        type: "protocolMetadata",
+        type: "protocol metadata",
         kind: "assay technology",
         codes: [
           {
@@ -74,7 +74,7 @@
           }
         ]
       }, {
-        type: "protocolMetadata",
+        type: "protocol metadata",
         kind: "cell line",
         codes: [
           {

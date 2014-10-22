@@ -11,8 +11,6 @@ describe "Primary Screen Protocol module testing", ->
 			beforeEach ->
 				@pspp = new PrimaryScreenProtocolParameters()
 			describe "Defaults", ->
-#				it 'Should have the select DNS target list be unchecked', ->
-#					expect(@pspp.get('dnsList')).toBeFalsy()
 				it 'Should have an default maxY curve display of 100', ->
 					expect(@pspp.getCurveDisplayMax() instanceof Value).toBeTruthy()
 					expect(@pspp.getCurveDisplayMax().get('numericValue')).toEqual 100.0
@@ -70,7 +68,7 @@ describe "Primary Screen Protocol module testing", ->
 				it 'Should have an assay Activity value', ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "luminescence"
 				it 'Should have a molecularTarget value with the codeOrigin set to customer ddict', ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "target x"
+					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "test1"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual "customer ddict"
 				it 'Should have an targetOrigin value', ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "human"
@@ -235,8 +233,8 @@ describe "Primary Screen Protocol module testing", ->
 					, 1000
 					runs ->
 						waits(1000)
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "target x"
-						expect(@psppc.molecularTargetListController.getSelectedCode()).toEqual "target x"
+						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "test1"
+						expect(@psppc.molecularTargetListController.getSelectedCode()).toEqual "test1"
 				it "should have the targetOrigin set", ->
 					waitsFor ->
 						@psppc.$('.bv_targetOrigin option').length > 0
@@ -293,9 +291,9 @@ describe "Primary Screen Protocol module testing", ->
 						@psppc.$('.bv_molecularTarget option').length > 0
 					, 1000
 					runs ->
-						@psppc.$('.bv_molecularTarget .bv_parameterSelectList').val('target y')
+						@psppc.$('.bv_molecularTarget .bv_parameterSelectList').val('test2')
 						@psppc.$('.bv_molecularTarget').change()
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "target y"
+						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "test2"
 				it "should update the target origin", ->
 					waitsFor ->
 						@psppc.$('.bv_targetOrigin option').length > 0
@@ -381,12 +379,12 @@ describe "Primary Screen Protocol module testing", ->
 				expect(window.AbstractPrimaryScreenProtocolModuleController).toBeDefined()
 
 	describe "Primary Screen Protocol Module Controller testing", ->
-		beforeEach ->
-			@pspmc = new PrimaryScreenProtocolModuleController
-				model: new PrimaryScreenProtocol()
-				el: $('#fixture')
-			@pspmc.render()
-		describe "when instantiated", ->
+		describe "when instantiated with no data", ->
+			beforeEach ->
+				@pspmc = new PrimaryScreenProtocolModuleController
+					model: new PrimaryScreenProtocol()
+					el: $('#fixture')
+				@pspmc.render()
 			describe "basic existence tests", ->
 				it "should exist", ->
 					expect(@pspmc).toBeDefined()
@@ -394,6 +392,135 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@pspmc.primaryScreenProtocolController).toBeDefined()
 				it "should have a primary screen analysis parameters controller", ->
 					expect(@pspmc.primaryScreenAnalysisParametersController).toBeDefined()
+			describe "save module button testing", ->
+				describe "when instantiated with new primary screen protocol", ->
+					it "should show the save button text as Save", ->
+						expect(@pspmc.$('.bv_saveModule').html()).toEqual "Save"
+					it "should show the save button disabled", ->
+						expect(@pspmc.$('.bv_saveModule').attr('disabled')).toEqual 'disabled'
+				describe "expect save to work", ->
+					beforeEach ->
+						runs ->
+							@pspmc.$('.bv_protocolName').val(" example protocol name   ")
+							@pspmc.$('.bv_protocolName').change()
+							@pspmc.$('.bv_recordedBy').val("nxm7557")
+							@pspmc.$('.bv_recordedBy').change()
+							@pspmc.$('.bv_completionDate').val(" 2013-3-16   ")
+							@pspmc.$('.bv_completionDate').change()
+							@pspmc.$('.bv_notebook').val("my notebook")
+							@pspmc.$('.bv_notebook').change()
+							@pspmc.$('.bv_positiveControlBatch').val("test")
+							@pspmc.$('.bv_positiveControlBatch').change()
+							@pspmc.$('.bv_positiveControlConc').val(" 123 ")
+							@pspmc.$('.bv_positiveControlConc').change()
+							@pspmc.$('.bv_negativeControlBatch').val("test2")
+							@pspmc.$('.bv_negativeControlBatch').change()
+							@pspmc.$('.bv_negativeControlConc').val(" 1231 ")
+							@pspmc.$('.bv_negativeControlConc').change()
+							@pspmc.$('.bv_readName').val("luminescence")
+							@pspmc.$('.bv_readName').change()
+							@pspmc.$('.bv_signalDirectionRule').val("increasing")
+							@pspmc.$('.bv_signalDirectionRule').change()
+							@pspmc.$('.bv_aggregateBy1').val("compound batch concentration")
+							@pspmc.$('.bv_aggregateBy1').change()
+							@pspmc.$('.bv_aggregateBy2').val("mean")
+							@pspmc.$('.bv_aggregateBy2').change()
+							@pspmc.$('.bv_normalizationRule').val("plate order only")
+							@pspmc.$('.bv_normalizationRule').change()
+							@pspmc.$('.bv_transformationRule').val("sd")
+							@pspmc.$('.bv_transformationRule').change()
+						waitsFor ->
+							@pspmc.$('.bv_transformationRule option').length > 0
+						, 1000
+					it "should have a save button", ->
+						runs ->
+							expect(@pspmc.$('.bv_saveModule').length).toEqual 1
+					it "model should be valid and ready to save", ->
+						runs ->
+							expect(@pspmc.model.isValid()).toBeTruthy()
+					it "should update protocol code", ->
+						runs ->
+							@pspmc.$('.bv_saveModule').click()
+						waits(1000)
+						runs ->
+							console.log "save should have been clicked"
+							console.log @pspmc
+							expect(@pspmc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
+					it "should show the save button text as Update", ->
+						runs ->
+							@pspmc.$('.bv_saveModule').click()
+						waits(1000)
+						runs ->
+							console.log @pspmc.model.get('lsStates')
+							console.log @pspmc.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
+							expect(@pspmc.$('.bv_saveModule').html()).toEqual "Update"
+		describe "when instantiated with data", ->
+			beforeEach ->
+				@pspmc = new PrimaryScreenProtocolModuleController
+					model: new PrimaryScreenProtocol window.primaryScreenProtocolTestJSON.fullSavedPrimaryScreenProtocol
+					el: $('#fixture')
+				@pspmc.render()
+			describe "basic existence tests", ->
+				it "should exist", ->
+					expect(@pspmc).toBeDefined()
+				it "should have a primary screen protocol controller", ->
+					expect(@pspmc.primaryScreenProtocolController).toBeDefined()
+				it "should have a primary screen analysis parameters controller", ->
+					expect(@pspmc.primaryScreenAnalysisParametersController).toBeDefined()
+			describe "save module button testing", ->
+				describe "when instantiated with new primary screen protocol", ->
+					it "should show the save button text as Update", ->
+						expect(@pspmc.$('.bv_saveModule').html()).toEqual "Update"
+					it "should show the save button disabled", ->
+						expect(@pspmc.$('.bv_saveModule').attr('disabled')).toEqual 'disabled'
+				describe "when a tab is invalid", ->
+					it "should have the save button disabled if the general information tab is not filled in properly", ->
+						expect(@pspmc.$('.bv_saveModule').attr('disabled')).toEqual 'disabled'
+				describe "expect save to work", ->
+					beforeEach ->
+						runs ->
+							@pspmc.$('.bv_protocolName').val(" example protocol name   ")
+							@pspmc.$('.bv_protocolName').change()
+							@pspmc.$('.bv_recordedBy').val("nxm7557")
+							@pspmc.$('.bv_recordedBy').change()
+							@pspmc.$('.bv_completionDate').val(" 2013-3-16   ")
+							@pspmc.$('.bv_completionDate').change()
+							@pspmc.$('.bv_notebook').val("my notebook")
+							@pspmc.$('.bv_notebook').change()
+							@pspmc.$('.bv_positiveControlBatch').val("test")
+							@pspmc.$('.bv_positiveControlBatch').change()
+							@pspmc.$('.bv_positiveControlConc').val(" 123 ")
+							@pspmc.$('.bv_positiveControlConc').change()
+							@pspmc.$('.bv_negativeControlBatch').val("test2")
+							@pspmc.$('.bv_negativeControlBatch').change()
+							@pspmc.$('.bv_negativeControlConc').val(" 1231 ")
+							@pspmc.$('.bv_negativeControlConc').change()
+							@pspmc.$('.bv_readName').val("luminescence")
+							@pspmc.$('.bv_readName').change()
+							@pspmc.$('.bv_signalDirectionRule').val("increasing")
+							@pspmc.$('.bv_signalDirectionRule').change()
+							@pspmc.$('.bv_aggregateBy1').val("compound batch concentration")
+							@pspmc.$('.bv_aggregateBy1').change()
+							@pspmc.$('.bv_aggregateBy2').val("mean")
+							@pspmc.$('.bv_aggregateBy2').change()
+							@pspmc.$('.bv_normalizationRule').val("plate order only")
+							@pspmc.$('.bv_normalizationRule').change()
+							@pspmc.$('.bv_transformationRule').val("sd")
+							@pspmc.$('.bv_transformationRule').change()
+						waitsFor ->
+							@pspmc.$('.bv_transformationRule option').length > 0
+						, 1000
+					it "should show the save button text as Update", ->
+						runs ->
+							@pspmc.$('.bv_saveModule').click()
+						waits(1000)
+						runs ->
+							console.log @pspmc.model.get('lsStates')
+							console.log @pspmc.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
+							expect(@pspmc.$('.bv_saveModule').html()).toEqual "Update"
+
+
+
 
 
 

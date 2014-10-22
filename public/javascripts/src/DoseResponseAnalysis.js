@@ -171,7 +171,8 @@
       }, {
         silent: true
       });
-      return this.model.trigger('change');
+      this.model.trigger('change');
+      return this.trigger('updateState');
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdChanged = function(event, ui) {

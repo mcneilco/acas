@@ -1,19 +1,20 @@
 class window.Protocol extends BaseEntity
 	urlRoot: "/api/protocols"
 
-	defaults: ->
-		_(super()).extend(
-			assayTreeRule: null
-#			attachFiles: new AttachFilesList()
-		)
-
 	initialize: ->
 		@.set subclass: "protocol"
 		super()
 
+	getAssayTreeRule: ->
+		assayTreeRule = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "stringValue", "assay tree rule"
+		if assayTreeRule.get('stringValue') is undefined
+			assayTreeRule.set stringValue: ""
+
+		assayTreeRule
+
 	getAssayPrinciple: ->
 		assayPrinciple = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", "assay principle"
-		if assayPrinciple.get('clobValue') is undefined or assayPrinciple.get('clobValue') is ""
+		if assayPrinciple.get('clobValue') is undefined
 			assayPrinciple.set clobValue: ""
 
 		assayPrinciple
@@ -64,47 +65,96 @@ class window.ProtocolList extends Backbone.Collection
 
 class window.ProtocolBaseController extends BaseEntityController
 	template: _.template($("#ProtocolBaseView").html())
+	moduleLaunchName: "protocol_base"
 
 	events: ->
 		_(super()).extend(
 			"change .bv_protocolName": "handleNameChanged"
-			"change .bv_assayTreeRule": "attributeChanged"
+			"change .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayPrinciple": "handleAssayPrincipleChanged"
 
 		)
 
 	initialize: ->
+		if @model?
+			console.log "model exists"
+			@completeInitialization()
+		else
+			if window.AppLaunchParams.moduleLaunchParams?
+				console.log "second if"
+				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+					$.ajax
+						type: 'GET'
+						url: "/api/protocols/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+						dataType: 'json'
+						error: (err) ->
+							alert 'Could not get protocol for code in this URL, creating new one'
+							@completeInitialization()
+						success: (json) =>
+							if json.length == 0
+								alert 'Could not get protocol for code in this URL, creating new one'
+							else
+								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#								prot = new PrimaryScreenProtocol json
+								console.log "success see json below"
+								console.log json[0]
+								prot = new Protocol json[0]
+								prot.fixCompositeClasses()
+								@model = prot
+								console.log "should have gotten the protocol"
+							@completeInitialization()
+				else
+					console.log "second to last else"
+					@completeInitialization()
+			else
+				console.log "last else"
+				@completeInitialization()
+
+	completeInitialization: ->
+		console.log "complete initialization"
 		unless @model?
 			@model = new Protocol()
+		@errorOwnerName = 'ProtocolBaseController'
+		console.log "setting bindings"
+		@setBindings()
+		console.log "done setting bindings"
+		$(@el).empty()
+		console.log "empty el"
+		$(@el).html @template(@model.attributes)
+		console.log "filling template"
 		@model.on 'sync', =>
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
+			@$('.bv_save').attr('disabled', 'disabled')
 			@render()
 		@model.on 'change', =>
 			@trigger 'amDirty'
 			@$('.bv_updateComplete').hide()
-		@errorOwnerName = 'ProtocolBaseController'
-		@setBindings()
-		$(@el).empty()
-		$(@el).html @template(@model.attributes)
-		@$('.bv_save').attr('disabled', 'disabled')
+#		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 
+		@render()
+
 	render: =>
-		@$('.bv_assayTreeRule').val(@model.get('assayTreeRule'))
-		@$('.bv_assayPrinciple').html(@model.getAssayPrinciple().get('clobValue'))
+		console.log @
+		console.log @model
+		unless @model?
+			@model = new Protocol()
+			console.log "created new model"
+		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
+		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
 		super()
 		@
 
-
-	updateModel: =>
-		@model.set
-			assayTreeRule: UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')
 
 	handleAssayPrincipleChanged: =>
 		@model.getAssayPrinciple().set
 			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
 			recordedBy: @model.get('recordedBy')
+
+	handleAssayTreeRuleChanged: =>
+		@model.getAssayTreeRule().set
+			stringValue: UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')

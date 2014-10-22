@@ -181,6 +181,9 @@ class window.EditablePickListSelectController extends Backbone.View
 
 
 	setupEditablePickList: ->
+		console.log "set up editable picklist"
+		console.log @
+		console.log @options.selectedCode
 		@pickListController = new PickListSelectController
 			el: @$('.bv_parameterSelectList')
 			collection: @collection
@@ -190,13 +193,18 @@ class window.EditablePickListSelectController extends Backbone.View
 			selectedCode: @options.selectedCode
 
 	setupEditingPrivileges: =>
-		if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles #TODO: pass in role as argument
+		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles #TODO: pass in role as argument
+			@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+			@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+
+		else
+			console.log "user doesn't have admin privileges"
 			@$('.bv_addOptionBtn').removeAttr('data-toggle')
 			@$('.bv_addOptionBtn').removeAttr('data-target')
 			@$('.bv_addOptionBtn').removeAttr('data-backdrop')
 			@$('.bv_addOptionBtn').css({'color':"#cccccc"})
-			@$('.bv_tooltipwrapper').tooltip();
-			@$("body").tooltip selector: '.bv_tooltipwrapper'
+			@$('.bv_tooltipWrapper').tooltip()
+			@$("body").tooltip selector: '.bv_tooltipWrapper'
 
 	getSelectedCode: ->
 		@pickListController.getSelectedCode()
@@ -244,23 +252,32 @@ class window.EditablePickListSelectController extends Backbone.View
 		@$('.bv_addOptionBtn').show()
 
 	saveNewOption: (callback) -> # TODO: should be called in modules with editablePickLists
+		console.log "saveNewOption"
 		# TODO: check to see if selected option in picklist was newly added - DONE but not with isNew
 		code = @pickListController.getSelectedCode()
+		console.log code
+		console.log @pickListController.collection
 		selectedModel = @pickListController.collection.getModelWithCode(code)
-		if selectedModel.get('newOption')
-			selectedModel.unset('newOption')
-			#TODO: save to database.
-			$.ajax
-				type: 'POST'
-				url: "/api/codeTables"
-				data: selectedModel
-				success: callback.call()
-				error: (err) =>
-					alert 'could not add option to code table'
-					@serviceReturn = null #need?
-				dataType: 'json'
+		console.log selectedModel
+		if selectedModel != undefined
+			if selectedModel.get('newOption')?
+				selectedModel.unset('newOption')
+				#TODO: save to database.
+				console.log "save new option to database"
+				$.ajax
+					type: 'POST'
+					url: "/api/codeTables"
+					data: selectedModel
+					success: callback.call()
+					error: (err) =>
+						alert 'could not add option to code table'
+						@serviceReturn = null #need?
+					dataType: 'json'
+			else
+				callback.call()
 
 		else
+			console.log "don't need to save new option to database"
 			callback.call()
 
 

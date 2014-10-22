@@ -1,7 +1,7 @@
 ((exports) ->
 	exports.dataDictValues =
 		[
-			type: "protocolMetadata"
+			type: "protocol metadata"
 			kind: "assay stage"
 			codes:
 				[
@@ -10,7 +10,7 @@
 					ignored: false
 				]
 		,
-			type: "protocolMetadata"
+			type: "protocol metadata"
 			kind: "assay activity"
 			codes:
 				[
@@ -23,7 +23,7 @@
 					ignored: false
 				]
 		,
-			type: "protocolMetadata"
+			type: "protocol metadata"
 			kind: "molecular target"
 			codes:
 				[
@@ -36,7 +36,7 @@
 					ignored: false
 				]
 		,
-			type: "protocolMetadata"
+			type: "protocol metadata"
 			kind: "target origin"
 			codes:
 				[
@@ -49,7 +49,7 @@
 					ignored: false
 				]
 		,
-			type: "protocolMetadata"
+			type: "protocol metadata"
 			kind:"assay type"
 			codes:
 				[
@@ -58,7 +58,7 @@
 					ignored: false
 				]
 		,
-			type: "protocolMetadata"
+			type: "protocol metadata"
 			kind: "assay technology"
 			codes:
 				[
@@ -67,7 +67,7 @@
 					ignored: false
 				]
 		,
-			type: "protocolMetadata"
+			type: "protocol metadata"
 			kind: "cell line"
 			codes:
 				[

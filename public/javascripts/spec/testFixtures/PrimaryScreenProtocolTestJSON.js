@@ -52,7 +52,7 @@
         }, {
           clobValue: null,
           codeType: "protocolMetadata",
-          codeValue: "target x",
+          codeValue: "test1",
           codeOrigin: "customer ddict",
           comments: null,
           dateValue: null,
@@ -924,7 +924,7 @@
             }, {
               clobValue: null,
               codeType: "protocolMetadata",
-              codeValue: "target x",
+              codeValue: "test1",
               codeOrigin: "customer ddict",
               comments: null,
               dateValue: null,

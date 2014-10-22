@@ -5,9 +5,9 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 		readName: "unassigned"
 		activity: false
 
-	validate: (attrs) ->
+	validate: (attrs) =>
 		errors = []
-		if _.isNaN(attrs.readPosition) or attrs.readPosition == ""
+		if _.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -45,7 +45,9 @@ class window.TransformationRule extends Backbone.Model
 class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
 
-	validateCollection: (matchReadName)->
+	validateCollection: (matchReadName) =>
+		console.log "validating read collection"
+		console.log @
 		modelErrors = []
 		usedReadNames = {}
 		if @.length != 0
@@ -75,7 +77,9 @@ class window.TransformationRuleList extends Backbone.Collection
 	model: TransformationRule
 
 
-	validateCollection: ->
+	validateCollection: =>
+		console.log "validating transformation collection"
+		console.log @
 		modelErrors = []
 		usedRules ={}
 		if @.length != 0
@@ -97,7 +101,7 @@ class window.TransformationRuleList extends Backbone.Collection
 						message: "Transformation Rules can not be chosen more than once"
 				else
 					usedRules[currentRule] = index
-		return modelErrors
+		modelErrors
 
 
 class window.PrimaryScreenAnalysisParameters extends Backbone.Model
@@ -165,6 +169,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
 		errors.push readErrors...
 		transformationErrors = @get('transformationRuleList').validateCollection()
+		console.log transformationErrors
 		errors.push transformationErrors...
 		positiveControl = @get('positiveControl').get('batchCode')
 		if positiveControl is "" or positiveControl is undefined
@@ -172,7 +177,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				attribute: 'positiveControlBatch'
 				message: "Positive control batch much be set"
 		positiveControlConc = @get('positiveControl').get('concentration')
-		if _.isNaN(positiveControlConc) || positiveControlConc is undefined
+		if _.isNaN(positiveControlConc) or positiveControlConc is undefined or positiveControlConc is null or positiveControlConc is ""
 			errors.push
 				attribute: 'positiveControlConc'
 				message: "Positive control conc much be set"
@@ -182,7 +187,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				attribute: 'negativeControlBatch'
 				message: "Negative control batch much be set"
 		negativeControlConc = @get('negativeControl').get('concentration')
-		if _.isNaN(negativeControlConc) || negativeControlConc is undefined
+		if _.isNaN(negativeControlConc) || negativeControlConc is undefined || negativeControlConc is null or negativeControlConc is ""
 			errors.push
 				attribute: 'negativeControlConc'
 				message: "Negative control conc much be set"
@@ -333,7 +338,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	setUpReadNameSelect: ->
 		@readNameList = new PickListList()
-		@readNameList.url = "/api/dataDict/experimentMetadata/read name"
+		@readNameList.url = "/api/dataDict/experiment metadata/read name"
 		@readNameListController = new PickListSelectController
 			el: @$('.bv_readName')
 			collection: @readNameList
@@ -356,6 +361,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 			readName: @readNameListController.getSelectedCode()
 			activity: activity
 		@model.triggerAmDirty()
+		@trigger 'updateState'
 
 	clear: =>
 		@model.destroy()
@@ -384,11 +390,12 @@ class window.TransformationRuleController extends AbstractFormController
 	updateModel: =>
 		@model.set transformationRule: @transformationListController.getSelectedCode()
 		@model.triggerAmDirty()
+		@trigger 'updateState'
 
 
 	setUpTransformationRuleSelect: ->
 		@transformationList = new PickListList()
-		@transformationList.url = "/api/dataDict/experimentMetadata/transformation"
+		@transformationList.url = "/api/dataDict/experiment metadata/transformation"
 		@transformationListController = new PickListSelectController
 			el: @$('.bv_transformationRule')
 			collection: @transformationList
@@ -437,6 +444,8 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			model: read
 		@$('.bv_readInfo').append parc.render().el
 		parc.setUpReadPosition(@matchReadNameChecked)
+		parc.on 'updateState', =>
+			@trigger 'updateState'
 
 	matchReadNameChanged: (matchReadName) =>
 		@matchReadNameChecked = matchReadName
@@ -491,6 +500,8 @@ class window.TransformationRuleListController extends AbstractFormController
 		trc = new TransformationRuleController
 			model: rule
 		@$('.bv_transformationInfo').append trc.render().el
+		trc.on 'updateState', =>
+			@trigger 'updateState'
 
 
 	checkNumberOfRules: => #ensures that there is always one rule
@@ -562,7 +573,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupInstrumentReaderSelect: ->
 		@instrumentList = new PickListList()
-		@instrumentList.url = "/api/dataDict/experimentMetadata/instrument reader"
+		@instrumentList.url = "/api/dataDict/experiment metadata/instrument reader"
 		@instrumentListController = new PickListSelectController
 			el: @$('.bv_instrumentReader')
 			collection: @instrumentList
@@ -573,7 +584,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupSignalDirectionSelect: ->
 		@signalDirectionList = new PickListList()
-		@signalDirectionList.url = "/api/dataDict/experimentMetadata/signal direction"
+		@signalDirectionList.url = "/api/dataDict/experiment metadata/signal direction"
 		@signalDirectionListController = new PickListSelectController
 			el: @$('.bv_signalDirectionRule')
 			collection: @signalDirectionList
@@ -584,7 +595,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupAggregateBy1Select: ->
 		@aggregateBy1List = new PickListList()
-		@aggregateBy1List.url = "/api/dataDict/experimentMetadata/aggregate by1"
+		@aggregateBy1List.url = "/api/dataDict/experiment metadata/aggregate by1"
 		@aggregateBy1ListController = new PickListSelectController
 			el: @$('.bv_aggregateBy1')
 			collection: @aggregateBy1List
@@ -595,7 +606,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupAggregateBy2Select: ->
 		@aggregateBy2List = new PickListList()
-		@aggregateBy2List.url = "/api/dataDict/experimentMetadata/aggregate by2"
+		@aggregateBy2List.url = "/api/dataDict/experiment metadata/aggregate by2"
 		@aggregateBy2ListController = new PickListSelectController
 			el: @$('.bv_aggregateBy2')
 			collection: @aggregateBy2List
@@ -606,7 +617,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
-		@normalizationList.url = "/api/dataDict/experimentMetadata/normalization"
+		@normalizationList.url = "/api/dataDict/experiment metadata/normalization"
 		@normalizationListController = new PickListSelectController
 			el: @$('.bv_normalizationRule')
 			collection: @normalizationList
@@ -620,12 +631,17 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			el: @$('.bv_readList')
 			collection: @model.get('primaryAnalysisReadList')
 		@readListController.render()
+		@readListController.on 'updateState', =>
+			@trigger 'updateState'
 
 	setupTransformationRuleListController: ->
 		@transformationRuleListController= new TransformationRuleListController
 			el: @$('.bv_transformationList')
 			collection: @model.get('transformationRuleList')
 		@transformationRuleListController.render()
+		@transformationRuleListController.on 'updateState', =>
+			@trigger 'updateState'
+
 
 
 	updateModel: =>
@@ -663,6 +679,11 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		if @model.get('agonistControl').get('concentration') != ""
 			@model.get('agonistControl').set
 				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
+		console.log "updating primary screen analysis parameters model"
+		console.log @model
+		@trigger 'updateState'
+		console.log "triggered updateState"
+
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
@@ -921,8 +942,8 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								alert 'Could not get experiment for code in this URL, creating new one'
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-								exp = new PrimaryScreenExperiment json
-#								exp = new PrimaryScreenExperiment json[0]
+#								exp = new PrimaryScreenExperiment json
+								exp = new PrimaryScreenExperiment json[0]
 								exp.fixCompositeClasses()
 								@model = exp
 							@completeInitialization()

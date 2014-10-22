@@ -102,6 +102,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
 			silent: true
 		@model.trigger 'change'
+		@trigger 'updateState'
 
 	handleInactiveThresholdChanged: (event, ui) =>
 		@model.set 'inactiveThreshold': ui.value

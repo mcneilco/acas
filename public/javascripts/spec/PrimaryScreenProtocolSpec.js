@@ -89,7 +89,7 @@
             return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("luminescence");
           });
           it('Should have a molecularTarget value with the codeOrigin set to customer ddict', function() {
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("target x");
+            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("test1");
             return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual("customer ddict");
           });
           it('Should have an targetOrigin value', function() {
@@ -299,8 +299,8 @@
             }, 1000);
             return runs(function() {
               waits(1000);
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("target x");
-              return expect(this.psppc.molecularTargetListController.getSelectedCode()).toEqual("target x");
+              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("test1");
+              return expect(this.psppc.molecularTargetListController.getSelectedCode()).toEqual("test1");
             });
           });
           it("should have the targetOrigin set", function() {
@@ -374,9 +374,9 @@
               return this.psppc.$('.bv_molecularTarget option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psppc.$('.bv_molecularTarget .bv_parameterSelectList').val('target y');
+              this.psppc.$('.bv_molecularTarget .bv_parameterSelectList').val('test2');
               this.psppc.$('.bv_molecularTarget').change();
-              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("target y");
+              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("test2");
             });
           });
           it("should update the target origin", function() {
@@ -490,15 +490,15 @@
       });
     });
     return describe("Primary Screen Protocol Module Controller testing", function() {
-      beforeEach(function() {
-        this.pspmc = new PrimaryScreenProtocolModuleController({
-          model: new PrimaryScreenProtocol(),
-          el: $('#fixture')
+      describe("when instantiated with no data", function() {
+        beforeEach(function() {
+          this.pspmc = new PrimaryScreenProtocolModuleController({
+            model: new PrimaryScreenProtocol(),
+            el: $('#fixture')
+          });
+          return this.pspmc.render();
         });
-        return this.pspmc.render();
-      });
-      return describe("when instantiated", function() {
-        return describe("basic existence tests", function() {
+        describe("basic existence tests", function() {
           it("should exist", function() {
             return expect(this.pspmc).toBeDefined();
           });
@@ -507,6 +507,168 @@
           });
           return it("should have a primary screen analysis parameters controller", function() {
             return expect(this.pspmc.primaryScreenAnalysisParametersController).toBeDefined();
+          });
+        });
+        return describe("save module button testing", function() {
+          describe("when instantiated with new primary screen protocol", function() {
+            it("should show the save button text as Save", function() {
+              return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Save");
+            });
+            return it("should show the save button disabled", function() {
+              return expect(this.pspmc.$('.bv_saveModule').attr('disabled')).toEqual('disabled');
+            });
+          });
+          return describe("expect save to work", function() {
+            beforeEach(function() {
+              runs(function() {
+                this.pspmc.$('.bv_protocolName').val(" example protocol name   ");
+                this.pspmc.$('.bv_protocolName').change();
+                this.pspmc.$('.bv_recordedBy').val("nxm7557");
+                this.pspmc.$('.bv_recordedBy').change();
+                this.pspmc.$('.bv_completionDate').val(" 2013-3-16   ");
+                this.pspmc.$('.bv_completionDate').change();
+                this.pspmc.$('.bv_notebook').val("my notebook");
+                this.pspmc.$('.bv_notebook').change();
+                this.pspmc.$('.bv_positiveControlBatch').val("test");
+                this.pspmc.$('.bv_positiveControlBatch').change();
+                this.pspmc.$('.bv_positiveControlConc').val(" 123 ");
+                this.pspmc.$('.bv_positiveControlConc').change();
+                this.pspmc.$('.bv_negativeControlBatch').val("test2");
+                this.pspmc.$('.bv_negativeControlBatch').change();
+                this.pspmc.$('.bv_negativeControlConc').val(" 1231 ");
+                this.pspmc.$('.bv_negativeControlConc').change();
+                this.pspmc.$('.bv_readName').val("luminescence");
+                this.pspmc.$('.bv_readName').change();
+                this.pspmc.$('.bv_signalDirectionRule').val("increasing");
+                this.pspmc.$('.bv_signalDirectionRule').change();
+                this.pspmc.$('.bv_aggregateBy1').val("compound batch concentration");
+                this.pspmc.$('.bv_aggregateBy1').change();
+                this.pspmc.$('.bv_aggregateBy2').val("mean");
+                this.pspmc.$('.bv_aggregateBy2').change();
+                this.pspmc.$('.bv_normalizationRule').val("plate order only");
+                this.pspmc.$('.bv_normalizationRule').change();
+                this.pspmc.$('.bv_transformationRule').val("sd");
+                return this.pspmc.$('.bv_transformationRule').change();
+              });
+              return waitsFor(function() {
+                return this.pspmc.$('.bv_transformationRule option').length > 0;
+              }, 1000);
+            });
+            it("should have a save button", function() {
+              return runs(function() {
+                return expect(this.pspmc.$('.bv_saveModule').length).toEqual(1);
+              });
+            });
+            it("model should be valid and ready to save", function() {
+              return runs(function() {
+                return expect(this.pspmc.model.isValid()).toBeTruthy();
+              });
+            });
+            it("should update protocol code", function() {
+              runs(function() {
+                return this.pspmc.$('.bv_saveModule').click();
+              });
+              waits(1000);
+              return runs(function() {
+                console.log("save should have been clicked");
+                console.log(this.pspmc);
+                return expect(this.pspmc.$('.bv_protocolCode').html()).toEqual("PROT-00000001");
+              });
+            });
+            return it("should show the save button text as Update", function() {
+              runs(function() {
+                return this.pspmc.$('.bv_saveModule').click();
+              });
+              waits(1000);
+              return runs(function() {
+                console.log(this.pspmc.model.get('lsStates'));
+                console.log(this.pspmc.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters"));
+                return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Update");
+              });
+            });
+          });
+        });
+      });
+      return describe("when instantiated with data", function() {
+        beforeEach(function() {
+          this.pspmc = new PrimaryScreenProtocolModuleController({
+            model: new PrimaryScreenProtocol(window.primaryScreenProtocolTestJSON.fullSavedPrimaryScreenProtocol),
+            el: $('#fixture')
+          });
+          return this.pspmc.render();
+        });
+        describe("basic existence tests", function() {
+          it("should exist", function() {
+            return expect(this.pspmc).toBeDefined();
+          });
+          it("should have a primary screen protocol controller", function() {
+            return expect(this.pspmc.primaryScreenProtocolController).toBeDefined();
+          });
+          return it("should have a primary screen analysis parameters controller", function() {
+            return expect(this.pspmc.primaryScreenAnalysisParametersController).toBeDefined();
+          });
+        });
+        return describe("save module button testing", function() {
+          describe("when instantiated with new primary screen protocol", function() {
+            it("should show the save button text as Update", function() {
+              return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Update");
+            });
+            return it("should show the save button disabled", function() {
+              return expect(this.pspmc.$('.bv_saveModule').attr('disabled')).toEqual('disabled');
+            });
+          });
+          describe("when a tab is invalid", function() {
+            return it("should have the save button disabled if the general information tab is not filled in properly", function() {
+              return expect(this.pspmc.$('.bv_saveModule').attr('disabled')).toEqual('disabled');
+            });
+          });
+          return describe("expect save to work", function() {
+            beforeEach(function() {
+              runs(function() {
+                this.pspmc.$('.bv_protocolName').val(" example protocol name   ");
+                this.pspmc.$('.bv_protocolName').change();
+                this.pspmc.$('.bv_recordedBy').val("nxm7557");
+                this.pspmc.$('.bv_recordedBy').change();
+                this.pspmc.$('.bv_completionDate').val(" 2013-3-16   ");
+                this.pspmc.$('.bv_completionDate').change();
+                this.pspmc.$('.bv_notebook').val("my notebook");
+                this.pspmc.$('.bv_notebook').change();
+                this.pspmc.$('.bv_positiveControlBatch').val("test");
+                this.pspmc.$('.bv_positiveControlBatch').change();
+                this.pspmc.$('.bv_positiveControlConc').val(" 123 ");
+                this.pspmc.$('.bv_positiveControlConc').change();
+                this.pspmc.$('.bv_negativeControlBatch').val("test2");
+                this.pspmc.$('.bv_negativeControlBatch').change();
+                this.pspmc.$('.bv_negativeControlConc').val(" 1231 ");
+                this.pspmc.$('.bv_negativeControlConc').change();
+                this.pspmc.$('.bv_readName').val("luminescence");
+                this.pspmc.$('.bv_readName').change();
+                this.pspmc.$('.bv_signalDirectionRule').val("increasing");
+                this.pspmc.$('.bv_signalDirectionRule').change();
+                this.pspmc.$('.bv_aggregateBy1').val("compound batch concentration");
+                this.pspmc.$('.bv_aggregateBy1').change();
+                this.pspmc.$('.bv_aggregateBy2').val("mean");
+                this.pspmc.$('.bv_aggregateBy2').change();
+                this.pspmc.$('.bv_normalizationRule').val("plate order only");
+                this.pspmc.$('.bv_normalizationRule').change();
+                this.pspmc.$('.bv_transformationRule').val("sd");
+                return this.pspmc.$('.bv_transformationRule').change();
+              });
+              return waitsFor(function() {
+                return this.pspmc.$('.bv_transformationRule option').length > 0;
+              }, 1000);
+            });
+            return it("should show the save button text as Update", function() {
+              runs(function() {
+                return this.pspmc.$('.bv_saveModule').click();
+              });
+              waits(1000);
+              return runs(function() {
+                console.log(this.pspmc.model.get('lsStates'));
+                console.log(this.pspmc.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters"));
+                return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Update");
+              });
+            });
           });
         });
       });

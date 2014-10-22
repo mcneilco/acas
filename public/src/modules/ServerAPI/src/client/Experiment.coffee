@@ -200,7 +200,7 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/experimentMetadata/experiment status"
+		@statusList.url = "/api/dataDict/experiment metadata/experiment status"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList

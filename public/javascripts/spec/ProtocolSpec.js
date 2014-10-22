@@ -40,14 +40,15 @@
           it('Should have an recordedDate set to now', function() {
             return expect(new Date(this.prot.get('recordedDate')).getHours()).toEqual(new Date().getHours());
           });
-          it('Should have an empty short description with a space as an oracle work-around', function() {
+          return it('Should have an empty short description with a space as an oracle work-around', function() {
             return expect(this.prot.get('shortDescription')).toEqual(" ");
-          });
-          return it('Should have an empty assay tree rule', function() {
-            return expect(this.prot.get('assayTreeRule')).toEqual(null);
           });
         });
         describe("required states and values", function() {
+          it('Should have an assay tree rule value', function() {
+            expect(this.prot.getAssayTreeRule() instanceof Value).toBeTruthy();
+            return expect(this.prot.getAssayTreeRule().get('stringValue')).toEqual("");
+          });
           it('Should have an assay principle value', function() {
             expect(this.prot.getAssayPrinciple() instanceof Value).toBeTruthy();
             return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("");
@@ -428,8 +429,11 @@
           it("should fill the short description field", function() {
             return expect(this.pbc.$('.bv_shortDescription').html()).toEqual("primary analysis");
           });
+          it("should fill the assay tree rule field", function() {
+            return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("assay tree rule goes here");
+          });
           it("should fill the assay principle field", function() {
-            return expect(this.pbc.$('.bv_assayPrinciple').html()).toEqual("assay principle goes here");
+            return expect(this.pbc.$('.bv_assayPrinciple').val()).toEqual("assay principle goes here");
           });
           it("should fill the long description field", function() {
             return expect(this.pbc.$('.bv_description').html()).toEqual("long description goes here");
@@ -463,11 +467,8 @@
               return expect(this.pbc.$('.bv_status').val()).toEqual("created");
             });
           });
-          it("should show the status select enabled", function() {
+          return it("should show the status select enabled", function() {
             return expect(this.pbc.$('.bv_status').attr('disabled')).toBeUndefined();
-          });
-          return it("should fill the assay tree rule", function() {
-            return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("example assay tree rule");
           });
         });
         describe("Protocol status behavior", function() {
@@ -522,6 +523,17 @@
             this.pbc.$('.bv_shortDescription').change();
             return expect(this.pbc.model.get('shortDescription')).toEqual(" ");
           });
+          it("should update model when assay tree rule changed", function() {
+            var desc, states, values;
+            this.pbc.$('.bv_assayTreeRule').val(" Updated assay tree rule  ");
+            this.pbc.$('.bv_assayTreeRule').change();
+            states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
+            expect(states.length).toEqual(1);
+            values = states[0].getValuesByTypeAndKind("stringValue", "assay tree rule");
+            desc = values[0].get('stringValue');
+            expect(desc).toEqual("Updated assay tree rule");
+            return expect(this.pbc.model.getAssayTreeRule().get('stringValue')).toEqual("Updated assay tree rule");
+          });
           it("should update model when assay principle is changed", function() {
             var desc, states, values;
             this.pbc.$('.bv_assayPrinciple').val(" New assay principle   ");
@@ -575,7 +587,7 @@
             this.pbc.tagListController.handleTagsChanged();
             return expect(this.pbc.model.get('lsTags').at(2).get('tagText')).toEqual("lucy");
           });
-          it("should update model when protocol status changed", function() {
+          return it("should update model when protocol status changed", function() {
             waitsFor(function() {
               return this.pbc.$('.bv_status option').length > 0;
             }, 1000);
@@ -584,11 +596,6 @@
               this.pbc.$('.bv_status').change();
               return expect(this.pbc.model.getStatus().get('stringValue')).toEqual('complete');
             });
-          });
-          return it("should update model when assay tree rule changed", function() {
-            this.pbc.$('.bv_assayTreeRule').val(" Updated assay tree rule  ");
-            this.pbc.$('.bv_assayTreeRule').change();
-            return expect(this.pbc.model.get('assayTreeRule')).toEqual("Updated assay tree rule");
           });
         });
       });
