@@ -1,7 +1,5 @@
 performCalculations <- function(resultTable, parameters) {
   # DNS
-
-  
   resultTable <- normalizeData(resultTable, parameters)
   
   # get transformed columns
@@ -13,9 +11,9 @@ performCalculations <- function(resultTable, parameters) {
   }
   
   # compute Z' and Z' by plate
-  resultTable[, zPrime := computeZPrime(positiveControls=resultTable[resultTable$wellType == "PC", ]$normalizedActivity,
-                                        negativeControls=resultTable[resultTable$wellType == "NC", ]$normalizedActivity)]
-  resultTable[, zPrimeByPlate := computeZPrimeByPlate(normalizedActivity, wellType),
+  resultTable[, zPrime := computeZPrime(positiveControls=resultTable[wellType == "PC" & is.na(flag), ]$normalizedActivity,
+                                        negativeControls=resultTable[wellType == "NC" & is.na(flag), ]$normalizedActivity)]
+  resultTable[, zPrimeByPlate := computeZPrimeByPlate(.SD),
               by=assayBarcode]
   
   resultTable[, index:=1:nrow(resultTable)]
@@ -29,10 +27,10 @@ performCalculations <- function(resultTable, parameters) {
   return(resultTable)
 }
 
-computeZPrimeByPlate <- function(normalizedActivity, wellType) {
+computeZPrimeByPlate <- function(mainData) {
   # creates a vector called
-  positiveControls <- normalizedActivity[wellType == "PC"]
-  negativeControls <- normalizedActivity[wellType == "NC"]
+  positiveControls <- mainData[wellType == "PC" & is.na(flag)]$normalizedActivity
+  negativeControls <- mainData[wellType == "NC" & is.na(flag)]$normalizedActivity
   
   return(computeZPrime(positiveControls, negativeControls))
 }
@@ -85,29 +83,29 @@ computeNormalized  <- function(values, wellType, flag) {
 computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
   if (transformation == "% efficacy") {
-    medianPosControl <- median(as.numeric(mainData[mainData$wellType == "PC"]$normalizedActivity))
+    medianPosControl <- median(as.numeric(mainData[wellType == "PC" & is.na(flag)]$normalizedActivity))
     
     # Use Negative Control if Vehicle Control is not defined
-    if(length(mainData[mainData$wellType == "VC"]$normalizedActivity) == 0) {
-      medianVehControl <- median(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
+    if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
+      medianVehControl <- median(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity))
     } else {
-      medianVehControl <- median(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
+      medianVehControl <- median(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity))
     }
     return((1-(as.numeric(mainData$normalizedActivity) - medianPosControl)/(medianVehControl-medianPosControl)) * 100)
   } else if (transformation == "sd") {
     
     # Use Negative Control if Vehicle Control is not defined
-    if(length(mainData[mainData$wellType == "VC"]$normalizedActivity) == 0) {
-      medianVehControl <- median(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
+    if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
+      medianVehControl <- median(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity))
     } else {
-      medianVehControl <- median(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
+      medianVehControl <- median(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity))
     }
     
     # Use Negative Control if Vehicle Control is not defined
-    if(length(mainData[mainData$wellType == "VC"]$normalizedActivity) == 0) {
-      stdevVehControl <- sd(as.numeric(mainData[mainData$wellType == "NC"]$normalizedActivity))
+    if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
+      stdevVehControl <- sd(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity))
     } else {
-      stdevVehControl <- sd(as.numeric(mainData[mainData$wellType == "VC"]$normalizedActivity))
+      stdevVehControl <- sd(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity))
     }
     return((as.numeric(mainData$normalizedActivity) - medianVehControl)/(stdevVehControl))
   } else if (transformation == "null") {
