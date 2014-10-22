@@ -1660,17 +1660,22 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   ## Well Flagging Here
   
-  # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
-  flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
+  if(!is.null(flaggedWells)) {
   
-  # In order to merge with a data.table, the columns have to have the same name
-  resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
-  
-  checkFlags(resultTable)
-
-  resultTable$flag <- as.character(NA)
-  
-  resultTable[flagType=="KO", flag := "KO"]
+    # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
+    flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
+    
+    # In order to merge with a data.table, the columns have to have the same name
+    resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
+    
+    checkFlags(resultTable)
+    
+    resultTable$flag <- as.character(NA)
+    
+    resultTable[flagType=="KO", flag := "KO"]
+  } else {
+    resultTable[ , flag:= as.character(NA)]
+  }
   
   ## End Well Flagging
   
