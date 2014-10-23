@@ -547,7 +547,7 @@ class window.CurveSummaryController extends Backbone.View
 				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').hide()
 				@$('.bv_thumbsDown').show()
-		if @model.get('dirty')
+		if @model.get 'dirty'
 			@$('.bv_dirty').show()
 		else
 			@$('.bv_dirty').hide()
