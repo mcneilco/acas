@@ -110,6 +110,7 @@
 
     BaseEntity.prototype.getDescription = function() {
       var description;
+      console.log("getting description");
       description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "description");
       if (description.get('clobValue') === void 0 || description.get('clobValue') === "") {
         description.set({
@@ -385,6 +386,7 @@
 
     BaseEntityController.prototype.render = function() {
       var bestName, subclass;
+      console.log("rendering in base entity controller");
       if (this.model == null) {
         this.model = new BaseEntity();
       }

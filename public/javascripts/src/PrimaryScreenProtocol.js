@@ -144,9 +144,15 @@
       return PrimaryScreenProtocol.__super__.constructor.apply(this, arguments);
     }
 
+    PrimaryScreenProtocol.prototype.initialize = function() {
+      this.set({
+        lsKind: "flipr screening assay"
+      });
+      return PrimaryScreenProtocol.__super__.initialize.call(this);
+    };
+
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
       var bestName, cDate, errors, nameError, notebook, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
-      console.log("validating ps protocol");
       errors = [];
       psProtocolParameters = this.getPrimaryScreenProtocolParameters();
       psProtocolParametersErrors = psProtocolParameters.validate();
@@ -154,8 +160,6 @@
       psAnalysisParameters = this.getAnalysisParameters();
       psAnalysisParametersErrors = psAnalysisParameters.validate(psAnalysisParameters.attributes);
       errors.push.apply(errors, psAnalysisParametersErrors);
-      console.log("model fit errors");
-      console.log(this.getModelFitParameters());
       psModelFitParameters = new DoseResponseAnalysisParameters(this.getModelFitParameters());
       console.log("psModelFitParameters");
       console.log(psModelFitParameters);
@@ -204,7 +208,6 @@
           message: "Notebook must be set"
         });
       }
-      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {
@@ -555,6 +558,7 @@
       this.setupPrimaryScreenProtocolController = __bind(this.setupPrimaryScreenProtocolController, this);
       this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
+      this.initialize = __bind(this.initialize, this);
       return AbstractPrimaryScreenProtocolModuleController.__super__.constructor.apply(this, arguments);
     }
 
@@ -580,17 +584,22 @@
               },
               success: (function(_this) {
                 return function(json) {
-                  var prot;
+                  var lsKind, prot;
                   if (json.length === 0) {
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
-                    prot = new PrimaryScreenProtocol(json[0]);
-                    console.log(json[0]);
-                    prot.fixCompositeClasses();
-                    console.log(prot);
-                    _this.model = prot;
-                    console.log(prot);
-                    console.log(_this.model);
+                    lsKind = json[0].lsKind;
+                    if (lsKind === "flipr screening assay") {
+                      prot = new PrimaryScreenProtocol(json[0]);
+                      console.log(json[0]);
+                      prot.fixCompositeClasses();
+                      console.log(prot);
+                      _this.model = prot;
+                      console.log(prot);
+                      console.log(_this.model);
+                    } else {
+                      alert('Could not get primary screen protocol for code in this URL. Creating new primary screen protocol');
+                    }
                   }
                   return _this.completeInitialization();
                 };

@@ -53,9 +53,9 @@ class window.BaseEntity extends Backbone.Model
 			@trigger 'change'
 
 	getDescription: ->
+		console.log "getting description"
 #		metadataKind = @.get('subclass') + " metadata"
 		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
-#		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
 		if description.get('clobValue') is undefined or description.get('clobValue') is ""
 			description.set clobValue: ""
 
@@ -223,6 +223,7 @@ class window.BaseEntityController extends AbstractFormController
 #	using the code above, triggers amDirty whenever the module is clicked. is this ok?
 
 	render: =>
+		console.log "rendering in base entity controller"
 		unless @model?
 			@model = new BaseEntity()
 		subclass = @model.get('subclass')

@@ -87,7 +87,7 @@ describe "Protocol module testing", ->
 				it "should have states with kind ", ->
 					expect(@prot.get('lsStates').at(0).get('lsKind')).toEqual "protocol controls"
 				it "states should have values", ->
-					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "data analysis parameters"
+					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "tested concentration"
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual "assay principle goes here"
 				it 'Should have a description value', ->
@@ -378,7 +378,7 @@ describe "Protocol module testing", ->
 				it "should update model when description is changed", ->
 					@pbc.$('.bv_description').val(" New long description   ")
 					@pbc.$('.bv_description').change()
-					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
+					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "description")
 					desc = values[0].get('clobValue')

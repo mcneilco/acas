@@ -455,6 +455,13 @@
       return PrimaryScreenExperiment.__super__.constructor.apply(this, arguments);
     }
 
+    PrimaryScreenExperiment.prototype.initialize = function() {
+      this.set({
+        lsKind: "flipr screening assay"
+      });
+      return PrimaryScreenExperiment.__super__.initialize.call(this);
+    };
+
     PrimaryScreenExperiment.prototype.getAnalysisParameters = function() {
       var ap;
       ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
@@ -1456,13 +1463,18 @@
               },
               success: (function(_this) {
                 return function(json) {
-                  var exp;
+                  var exp, lsKind;
                   if (json.length === 0) {
                     alert('Could not get experiment for code in this URL, creating new one');
                   } else {
-                    exp = new PrimaryScreenExperiment(json[0]);
-                    exp.fixCompositeClasses();
-                    _this.model = exp;
+                    lsKind = json[0].lsKind;
+                    if (lsKind === "flipr screening assay") {
+                      exp = new PrimaryScreenExperiment(json[0]);
+                      exp.fixCompositeClasses();
+                      _this.model = exp;
+                    } else {
+                      alert('Could not get primary screen experiment for code in this URL. Creating new primary screen experiment');
+                    }
                   }
                   return _this.completeInitialization();
                 };

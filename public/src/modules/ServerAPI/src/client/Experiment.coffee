@@ -257,6 +257,7 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
+		@model.getComments().set clobValue: @model.get('protocol').getComments().get('clobValue')
 		@render()
 
 	updateEditable: =>

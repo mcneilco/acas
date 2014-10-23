@@ -115,6 +115,8 @@ describe "Primary Screen Protocol module testing", ->
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
 					expect(@psp).toBeDefined()
+				it "should have lsKind set to flipr screening assay", ->
+					expect(@psp.get('lsKind')).toEqual "flipr screening assay"
 			describe "special getters", ->
 				describe "primary screen protocol parameters", ->
 					it 'Should be able to get primary screen protocol parameters', ->
@@ -446,14 +448,6 @@ describe "Primary Screen Protocol module testing", ->
 							console.log "save should have been clicked"
 							console.log @pspmc
 							expect(@pspmc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
-					it "should show the save button text as Update", ->
-						runs ->
-							@pspmc.$('.bv_saveModule').click()
-						waits(1000)
-						runs ->
-							console.log @pspmc.model.get('lsStates')
-							console.log @pspmc.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
-							expect(@pspmc.$('.bv_saveModule').html()).toEqual "Update"
 		describe "when instantiated with data", ->
 			beforeEach ->
 				@pspmc = new PrimaryScreenProtocolModuleController
@@ -515,8 +509,6 @@ describe "Primary Screen Protocol module testing", ->
 							@pspmc.$('.bv_saveModule').click()
 						waits(1000)
 						runs ->
-							console.log @pspmc.model.get('lsStates')
-							console.log @pspmc.model.get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
 							expect(@pspmc.$('.bv_saveModule').html()).toEqual "Update"
 
 

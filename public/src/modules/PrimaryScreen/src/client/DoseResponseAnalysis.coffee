@@ -22,17 +22,17 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 		errors = []
 
 		limitType = attrs.min.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && _.isNaN(attrs.min.get('value'))
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.min.get('value')) || attrs.min.get('value') == null)
 			errors.push
 				attribute: 'min_value'
 				message: "Min threshold value must be set when limit type is pin or limit"
 		limitType = attrs.max.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && _.isNaN(attrs.max.get('value'))
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.max.get('value')) || attrs.max.get('value') == null)
 			errors.push
 				attribute: 'max_value'
 				message: "Max threshold value must be set when limit type is pin or limit"
 		limitType = attrs.slope.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && _.isNaN(attrs.slope.get('value'))
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.slope.get('value')) || attrs.slope.get('value') == null)
 			errors.push
 				attribute: 'slope_value'
 				message: "Slope threshold value must be set when limit type is pin or limit"
@@ -107,7 +107,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 	handleInactiveThresholdChanged: (event, ui) =>
 		@model.set 'inactiveThreshold': ui.value
 		@updateThresholdDisplay(@model.get 'inactiveThreshold')
-		@attributeChanged
+		@attributeChanged()
 
 	handleInactiveThresholdMoved: (event, ui) =>
 		@updateThresholdDisplay(ui.value)

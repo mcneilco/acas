@@ -143,7 +143,6 @@
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
-          console.log("second if");
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
             return $.ajax({
               type: 'GET',
@@ -155,16 +154,20 @@
               },
               success: (function(_this) {
                 return function(json) {
-                  var prot;
+                  var lsKind, prot;
                   if (json.length === 0) {
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
-                    console.log("success see json below");
-                    console.log(json[0]);
-                    prot = new Protocol(json[0]);
-                    prot.fixCompositeClasses();
-                    _this.model = prot;
-                    console.log("should have gotten the protocol");
+                    lsKind = json[0].lsKind;
+                    if (lsKind === "default") {
+                      console.log(json[0]);
+                      prot = new Protocol(json[0]);
+                      prot.fixCompositeClasses();
+                      _this.model = prot;
+                      console.log("should have gotten the protocol");
+                    } else {
+                      alert('Could not get protocol for code in this URL. Creating new protocol');
+                    }
                   }
                   return _this.completeInitialization();
                 };
@@ -209,6 +212,7 @@
           return _this.$('.bv_updateComplete').hide();
         };
       })(this));
+      this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
       this.setupTagList();
       this.model.getStatus().on('change', this.updateEditable);

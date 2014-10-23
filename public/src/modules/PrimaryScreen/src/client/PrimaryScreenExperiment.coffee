@@ -270,6 +270,10 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 
 
 class window.PrimaryScreenExperiment extends Experiment
+	initialize: ->
+		@.set lsKind: "flipr screening assay"
+		super()
+
 	getAnalysisParameters: ->
 		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
 		if ap.get('clobValue')?
@@ -943,9 +947,13 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								exp = new PrimaryScreenExperiment json
-								exp = new PrimaryScreenExperiment json[0]
-								exp.fixCompositeClasses()
-								@model = exp
+								lsKind = json[0].lsKind
+								if lsKind is "flipr screening assay"
+									exp = new PrimaryScreenExperiment json[0]
+									exp.fixCompositeClasses()
+									@model = exp
+								else
+									alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
 							@completeInitialization()
 				else
 					@completeInitialization()

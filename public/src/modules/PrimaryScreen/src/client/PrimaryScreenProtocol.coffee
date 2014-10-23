@@ -92,9 +92,11 @@ class window.PrimaryScreenProtocolParameters extends State
 
 
 class window.PrimaryScreenProtocol extends Protocol
+	initialize: ->
+		@.set lsKind: "flipr screening assay"
+		super()
 
 	validate: (attrs) ->
-		console.log "validating ps protocol"
 		errors = []
 		psProtocolParameters = @getPrimaryScreenProtocolParameters()
 		psProtocolParametersErrors = psProtocolParameters.validate()
@@ -104,8 +106,6 @@ class window.PrimaryScreenProtocol extends Protocol
 		psAnalysisParametersErrors = psAnalysisParameters.validate(psAnalysisParameters.attributes)
 #		psAnalysisParametersErrors = psAnalysisParameters.validationError
 		errors.push psAnalysisParametersErrors...
-		console.log "model fit errors"
-		console.log @getModelFitParameters()
 		psModelFitParameters = new DoseResponseAnalysisParameters @getModelFitParameters()
 		console.log "psModelFitParameters"
 		console.log psModelFitParameters
@@ -141,8 +141,6 @@ class window.PrimaryScreenProtocol extends Protocol
 			errors.push
 				attribute: 'notebook'
 				message: "Notebook must be set"
-
-		console.log errors
 
 		if errors.length > 0
 			return errors
@@ -436,7 +434,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		"click .bv_saveModule": "handleSaveModule"
 
 
-	initialize: ->
+	initialize: =>
 		if @model?
 			@completeInitialization()
 		else
@@ -455,13 +453,17 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								prot = new PrimaryScreenProtocol json
-								prot = new PrimaryScreenProtocol json[0]
-								console.log json[0] #TODO: has all of the correct data
-								prot.fixCompositeClasses()
-								console.log prot # TODO: figure out why this does not have the data anymore
-								@model = prot
-								console.log prot
-								console.log @model
+								lsKind = json[0].lsKind
+								if lsKind is "flipr screening assay"
+									prot = new PrimaryScreenProtocol json[0]
+									console.log json[0] #TODO: has all of the correct data
+									prot.fixCompositeClasses()
+									console.log prot # TODO: figure out why this does not have the data anymore
+									@model = prot
+									console.log prot
+									console.log @model
+								else
+									alert 'Could not get primary screen protocol for code in this URL. Creating new primary screen protocol'
 							@completeInitialization()
 				else
 					@completeInitialization()

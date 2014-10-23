@@ -413,6 +413,9 @@
 
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
       this.model.copyProtocolAttributes(this.model.get('protocol'));
+      this.model.getComments().set({
+        clobValue: this.model.get('protocol').getComments().get('clobValue')
+      });
       return this.render();
     };
 

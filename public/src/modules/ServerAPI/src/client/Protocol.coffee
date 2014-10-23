@@ -81,7 +81,6 @@ class window.ProtocolBaseController extends BaseEntityController
 			@completeInitialization()
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
-				console.log "second if"
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
@@ -96,12 +95,15 @@ class window.ProtocolBaseController extends BaseEntityController
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								prot = new PrimaryScreenProtocol json
-								console.log "success see json below"
-								console.log json[0]
-								prot = new Protocol json[0]
-								prot.fixCompositeClasses()
-								@model = prot
-								console.log "should have gotten the protocol"
+								lsKind = json[0].lsKind
+								if lsKind is "default"
+									console.log json[0]
+									prot = new Protocol json[0]
+									prot.fixCompositeClasses()
+									@model = prot
+									console.log "should have gotten the protocol"
+								else
+									alert 'Could not get protocol for code in this URL. Creating new protocol'
 							@completeInitialization()
 				else
 					console.log "second to last else"
@@ -131,7 +133,7 @@ class window.ProtocolBaseController extends BaseEntityController
 		@model.on 'change', =>
 			@trigger 'amDirty'
 			@$('.bv_updateComplete').hide()
-#		@$('.bv_save').attr('disabled', 'disabled')
+		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable

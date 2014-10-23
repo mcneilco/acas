@@ -156,8 +156,11 @@
           return this.psp = new PrimaryScreenProtocol(window.primaryScreenProtocolTestJSON.fullSavedPrimaryScreenProtocol);
         });
         describe("Existence and Defaults", function() {
-          return it("should be defined", function() {
+          it("should be defined", function() {
             return expect(this.psp).toBeDefined();
+          });
+          return it("should have lsKind set to flipr screening assay", function() {
+            return expect(this.psp.get('lsKind')).toEqual("flipr screening assay");
           });
         });
         return describe("special getters", function() {
@@ -564,7 +567,7 @@
                 return expect(this.pspmc.model.isValid()).toBeTruthy();
               });
             });
-            it("should update protocol code", function() {
+            return it("should update protocol code", function() {
               runs(function() {
                 return this.pspmc.$('.bv_saveModule').click();
               });
@@ -573,17 +576,6 @@
                 console.log("save should have been clicked");
                 console.log(this.pspmc);
                 return expect(this.pspmc.$('.bv_protocolCode').html()).toEqual("PROT-00000001");
-              });
-            });
-            return it("should show the save button text as Update", function() {
-              runs(function() {
-                return this.pspmc.$('.bv_saveModule').click();
-              });
-              waits(1000);
-              return runs(function() {
-                console.log(this.pspmc.model.get('lsStates'));
-                console.log(this.pspmc.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters"));
-                return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Update");
               });
             });
           });
@@ -664,8 +656,6 @@
               });
               waits(1000);
               return runs(function() {
-                console.log(this.pspmc.model.get('lsStates'));
-                console.log(this.pspmc.model.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters"));
                 return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Update");
               });
             });
