@@ -20,11 +20,7 @@ getAssayCompoundData <- function (filePath, plateData, testMode, tempFilePath, a
   setcolorder(allAssayCompoundData, c(colOrder, activityColumns))
   
   #setwd(normalizePath("../Analysis/"))
-  if(testMode) {
-    write.table(allAssayCompoundData, file=file.path(tempFilePath, "output_well_data.srf"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE, na="")
-  } else {
-    write.table(allAssayCompoundData, file="../Analysis/output_well_data.srf", append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE, na="")
-  }
+  write.table(allAssayCompoundData, file=file.path(tempFilePath, "output_well_data.srf"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE, na="")
   
   # Needs to return a list for error catching
   # return(list(filePath=filePath, activity=allAssayCompoundData[ , activityColumns, with=FALSE]))

@@ -1632,11 +1632,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     zipFile <- folderToParse
     
-    filesLocation <- paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData")
-    dryRunFileLocation <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName,"dryRun")
+    experimentFolderPath <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName)
+    
+    filesLocation <- file.path(experimentFolderPath, "rawData")
+    dryRunFileLocation <- file.path(experimentFolderPath,"dryRun")
+    specDataPrepFileLocation <- file.path(experimentFolderPath, "parseLogs")
     
     dir.create(filesLocation, showWarnings = FALSE)
     dir.create(dryRunFileLocation, showWarnings = FALSE)
+    dir.create(specDataPrepFileLocation, showWarnings = FALSE)
     
     oldFiles <- as.list(paste0(filesLocation,"/",list.files(filesLocation)))
     
@@ -1649,6 +1653,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # GREEN (instrument-specific)
   instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
   
+  
   source(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",
                    instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
   
@@ -1657,7 +1662,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                              errorEnv=errorEnv, 
                                              dryRun=dryRun, 
                                              instrumentClass=instrumentReadParams$dataFormat, 
-                                             testMode=testMode)
+                                             testMode=testMode,
+                                             tempFilePath=specDataPrepFileLocation)
   
   # RED (client-specific)
   # getCompoundAssignments
@@ -1669,7 +1675,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"getCompoundAssignments.R"))
   
-  resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters)
+  resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
   
   resultTable$wellType <- getWellTypes(batchNames=resultTable$batchName, concentrations=resultTable$cmpdConc, 
                                        concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 

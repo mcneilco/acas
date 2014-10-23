@@ -12,9 +12,7 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, re
   if(is.null(tempFilePath)) {
     if(testMode) {
       tempFilePath <- tempdir()
-    } else {
-      tempFilePath <- file.path("..", "analysis")
-    }
+    } 
   }
   
   checkAnalysisFiles(testMode=testMode, dryRun=dryRun)

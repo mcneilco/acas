@@ -1,6 +1,6 @@
 
 
-specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, dryRun, instrumentClass, testMode) {
+specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, dryRun, instrumentClass, testMode, tempFilePath) {
   # DNS 
   fileList <- c(list.files(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE),
                 list.files(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/", instrumentClass), full.names=TRUE))
@@ -15,7 +15,7 @@ specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, dryRu
                                               readsTable=readsTable, 
                                               testMode=testMode,
                                               errorEnv=errorEnv,
-                                              tempFilePath=NULL, # this should be the analysis folder?
+                                              tempFilePath=tempFilePath, # this should be the analysis folder?
                                               dryRun=dryRun,
                                               matchNames=matchNames)
   
