@@ -53,9 +53,9 @@ class window.BaseEntity extends Backbone.Model
 			@trigger 'change'
 
 	getDescription: ->
-		metadataKind = @.get('subclass') + " metadata"
-		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "description"
-#		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
+		console.log "getting description"
+#		metadataKind = @.get('subclass') + " metadata"
+		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
 		if description.get('clobValue') is undefined or description.get('clobValue') is ""
 			description.set clobValue: ""
 
@@ -88,14 +88,26 @@ class window.BaseEntity extends Backbone.Model
 
 		status
 
-	getAnalysisStatus: ->
-		metadataKind = @.get('subclass') + " metadata"
-		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "analysis status"
-#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
-		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "created"
+	getAnalysisParameters: =>
+		console.log "calling getAnalysisParameters"
+#		metadataKind = @.get('subclass') + " metadata"
+		console.log @.get('lsStates')
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
+		console.log @
+		if ap.get('clobValue')?
+			console.log "used existing clobValue"
+			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
+		else
+			console.log "created completely new analysis parameters"
+			return new PrimaryScreenAnalysisParameters()
 
-		status
+	getModelFitParameters: =>
+#		metadataKind = @.get('subclass') + " metadata"
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
+		if ap.get('clobValue')?
+			return $.parseJSON(ap.get('clobValue'))
+		else
+			return {}
 
 
 	isEditable: ->
@@ -146,6 +158,7 @@ class window.BaseEntity extends Backbone.Model
 			return null
 
 	prepareToSave: ->
+		console.log "prepareToSave"
 		rBy = @get('recordedBy')
 		rDate = new Date().getTime()
 		@set recordedDate: rDate
@@ -164,6 +177,8 @@ class window.BaseEntity extends Backbone.Model
 					val.set recordedBy: rBy
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
+		@trigger "readyToSave", @
+
 
 class window.BaseEntityList extends Backbone.Collection
 	model: BaseEntity
@@ -188,6 +203,7 @@ class window.BaseEntityController extends AbstractFormController
 		unless @model?
 			@model=new BaseEntity()
 		@model.on 'sync', =>
+			console.log "@model sync"
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
@@ -203,9 +219,13 @@ class window.BaseEntityController extends AbstractFormController
 		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
-#	using the code above, triggers amDirty whenever the module is clicked. is this ok? not a problem for primary screen experiment
+
+#	using the code above, triggers amDirty whenever the module is clicked. is this ok?
 
 	render: =>
+		console.log "rendering in base entity controller"
+		unless @model?
+			@model = new BaseEntity()
 		subclass = @model.get('subclass')
 		@$('.bv_shortDescription').html @model.get('shortDescription')
 #		@$('.bv_description').html @model.get('description')
@@ -220,7 +240,7 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCompletionDate().get('dateValue')?
-			@$('.bv_completionDate').val @convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
+			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('stringValue'))
 		if @model.isNew()
@@ -228,12 +248,14 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_save').html("Update")
 		@updateEditable()
+#		@model.on 'readyToSave', @handleFinishSave
+
 
 		@
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/"+@model.get('subclass')+"Metadata/"+@model.get('subclass')+" status"
+		@statusList.url = "/api/dataDict/"+@model.get('subclass')+" metadata/"+@model.get('subclass')+" status"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList
@@ -252,7 +274,7 @@ class window.BaseEntityController extends AbstractFormController
 		@handleNameChanged()
 
 	handleShortDescriptionChanged: =>
-		trimmedDesc = @getTrimmedInput('.bv_shortDescription')
+		trimmedDesc = UtilityFunctions::getTrimmedInput @$('.bv_shortDescription')
 		if trimmedDesc != ""
 			@model.set shortDescription: trimmedDesc
 		else
@@ -260,17 +282,17 @@ class window.BaseEntityController extends AbstractFormController
 
 	handleDescriptionChanged: =>
 		@model.getDescription().set
-			clobValue: @getTrimmedInput('.bv_description')
+			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_description')
 			recordedBy: @model.get('recordedBy')
 
 	handleCommentsChanged: =>
 		@model.getComments().set
-			clobValue: @getTrimmedInput('.bv_comments')
+			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_comments')
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
 		subclass = @model.get('subclass')
-		newName = @getTrimmedInput('.bv_'+subclass+'Name')
+		newName = UtilityFunctions::getTrimmedInput @$('.bv_'+subclass+'Name')
 		@model.get('lsLabels').setBestName new Label
 			lsKind: subclass+" name"
 			labelText: newName
@@ -279,16 +301,16 @@ class window.BaseEntityController extends AbstractFormController
 		@model.trigger 'change'
 
 	handleDateChanged: =>
-		@model.getCompletionDate().set dateValue: @convertYMDDateToMs(@getTrimmedInput('.bv_completionDate'))
+		@model.getCompletionDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" );
 
 	handleNotebookChanged: =>
-		@model.getNotebook().set stringValue: @getTrimmedInput('.bv_notebook')
+		@model.getNotebook().set stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
 
 	handleStatusChanged: =>
-		@model.getStatus().set stringValue: @$('.bv_status').val()
+		@model.getStatus().set stringValue: @statusListController.getSelectedCode()
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
 
@@ -307,12 +329,25 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_status').removeAttr("disabled")
 
+	beginSave: => #TODO: add original prepareToSave so that base protocol/expt can be saved still too
+		console.log "beginSave in base controller"
+		@tagListController.handleTagsChanged()
+		if @model.checkForNewPickListOptions?
+			@model.checkForNewPickListOptions()
+		else
+#			@model.prepareToSave() #TODO: have module controller call prepareToSaveAnalysisParameters - DONE
+			@trigger "noEditablePickLists"
+
+#		@model.prepareToSave()
+
 	handleSaveClicked: =>
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
 		if @model.isNew()
+			console.log "model is new"
 			@$('.bv_updateComplete').html "Save Complete"
 		else
+			console.log "model is not new"
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_saving').show()
 		@model.save()
@@ -320,8 +355,9 @@ class window.BaseEntityController extends AbstractFormController
 	validationError: =>
 		super()
 		@$('.bv_save').attr('disabled', 'disabled')
+		console.log "validation error in base entity"
 
 	clearValidationErrorStyles: =>
 		super()
 		@$('.bv_save').removeAttr('disabled')
-
+		console.log "clear validation error styles in base entity"

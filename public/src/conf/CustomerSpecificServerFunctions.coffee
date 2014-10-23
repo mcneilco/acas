@@ -7,6 +7,8 @@
 exports.logUsage = (action, data, username) ->
 	# no ACAS logging service yet
 	console.log "would have logged: "+action+" with data: "+data+" and user: "+username
+	# logger = require "../../../routes/Logger"
+	global.logger.writeToLog("info", "logUsage", action, data, username, null)
 
 
 exports.getConfServiceVars = (sysEnv, callback) ->
@@ -178,3 +180,22 @@ exports.makeServiceRequestHeaders = (user) ->
 
 	headers =
 		"From": username
+
+exports.getCustomerMolecularTargetCodes = (resp) ->
+	customerMolecularTargetCodeTable = 	exports.customerMolecularTargetCodeTable = [
+		active: true
+		code: "test1"
+		description: "test1 description"
+		isDefault: false
+		name: "Test1"
+		version: 1
+	,
+		active: true
+		code: "test2"
+		description: "test2 description"
+		isDefault: false
+		name: "Test2"
+		version: 1
+	]
+
+	resp.end JSON.stringify customerMolecularTargetCodeTable

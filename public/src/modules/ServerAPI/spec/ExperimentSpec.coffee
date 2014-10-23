@@ -140,7 +140,14 @@ describe "Experiment module testing", ->
 				it "should have the shortDescription set to the protocols short description", ->
 					expect(@exp.get('shortDescription')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.shortDescription
 				it "should have the description set to the protocols description", ->
-					expect(@exp.get('description')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.description
+					console.log new Protocol window.protocolServiceTestJSON.fullSavedProtocol
+					fullSavedProtocol = new Protocol window.protocolServiceTestJSON.fullSavedProtocol
+					console.log fullSavedProtocol.getDescription().get('clobValue')
+					expect(@exp.getDescription().get('clobValue')).toEqual fullSavedProtocol.getDescription().get('clobValue')
+				it "should have the comments set to the protocols comments", ->
+					fullSavedProtocol = new Protocol window.protocolServiceTestJSON.fullSavedProtocol
+					console.log fullSavedProtocol.getComments().get('clobValue')
+					expect(@exp.getComments().get('clobValue')).toEqual fullSavedProtocol.getComments().get('clobValue')
 				it "should not have the labels copied", ->
 					expect(@exp.get('lsLabels').length).toEqual 0
 				it "should have the states copied", ->
@@ -606,7 +613,6 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_protocolCode option').length > 0
 					, 1000
 					runs ->
-						console.log @ebc.model.getStatus()
 						expect(@ebc.$('.bv_status').val()).toEqual 'created'
 				it "should show the status select disabled", ->
 					expect(@ebc.$('.bv_status').attr('disabled')).toEqual 'disabled'
@@ -662,7 +668,6 @@ describe "Experiment module testing", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@ebc.isValid()).toBeTruthy()
-							console.log @ebc.model.validationError
 					it "save button should be enabled", ->
 						runs ->
 							expect(@ebc.$('.bv_save').attr('disabled')).toBeUndefined()

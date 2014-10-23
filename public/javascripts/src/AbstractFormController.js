@@ -46,9 +46,18 @@
     AbstractFormController.prototype.validationError = function() {
       var errors;
       errors = this.model.validationError;
+      console.log("validation Errors");
+      console.log(errors);
       this.clearValidationErrorStyles();
       _.each(errors, (function(_this) {
         return function(err) {
+          _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
+          _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
+          _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
+          _this.$("[data-toggle=tooltip]").tooltip();
+          _this.$("body").tooltip({
+            selector: '.bv_group_' + err.attribute
+          });
           _this.$('.bv_group_' + err.attribute).addClass('input_error error');
           return _this.trigger('notifyError', {
             owner: _this.errorOwnerName,
@@ -66,6 +75,10 @@
       this.trigger('clearErrors', this.errorOwnerName);
       return _.each(errorElms, (function(_this) {
         return function(ee) {
+          $(ee).removeAttr('data-toggle');
+          $(ee).removeAttr('data-placement');
+          $(ee).removeAttr('title');
+          $(ee).removeAttr('data-original-title');
           return $(ee).removeClass('input_error error');
         };
       })(this));
@@ -82,23 +95,6 @@
       } else {
         return this.trigger('invalid');
       }
-    };
-
-    AbstractFormController.prototype.getTrimmedInput = function(selector) {
-      return $.trim(this.$(selector).val());
-    };
-
-    AbstractFormController.prototype.convertYMDDateToMs = function(inStr) {
-      var dateParts;
-      dateParts = inStr.split('-');
-      return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]).getTime();
-    };
-
-    AbstractFormController.prototype.convertMSToYMDDate = function(ms) {
-      var date, monthNum;
-      date = new Date(ms);
-      monthNum = date.getMonth() + 1;
-      return date.getFullYear() + '-' + ("0" + monthNum).slice(-2) + '-' + ("0" + date.getDate()).slice(-2);
     };
 
     AbstractFormController.prototype.disableAllInputs = function() {

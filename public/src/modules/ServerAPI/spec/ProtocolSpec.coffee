@@ -31,9 +31,10 @@ describe "Protocol module testing", ->
 					expect(new Date(@prot.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				it 'Should have an empty short description with a space as an oracle work-around', ->
 					expect(@prot.get('shortDescription')).toEqual " "
-				it 'Should have an empty assay tree rule', ->
-					expect(@prot.get('assayTreeRule')).toEqual null
 			describe "required states and values", ->
+				it 'Should have an assay tree rule value', ->
+					expect(@prot.getAssayTreeRule() instanceof Value).toBeTruthy()
+					expect(@prot.getAssayTreeRule().get('stringValue')).toEqual ""
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple() instanceof Value).toBeTruthy()
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual ""
@@ -86,7 +87,7 @@ describe "Protocol module testing", ->
 				it "should have states with kind ", ->
 					expect(@prot.get('lsStates').at(0).get('lsKind')).toEqual "protocol controls"
 				it "states should have values", ->
-					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "data analysis parameters"
+					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "tested concentration"
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual "assay principle goes here"
 				it 'Should have a description value', ->
@@ -284,8 +285,10 @@ describe "Protocol module testing", ->
 					expect(@pbc.$('.bv_save').html()).toEqual "Update"
 				it "should fill the short description field", ->
 					expect(@pbc.$('.bv_shortDescription').html()).toEqual "primary analysis"
+				it "should fill the assay tree rule field", ->
+					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "assay tree rule goes here"
 				it "should fill the assay principle field", ->
-					expect(@pbc.$('.bv_assayPrinciple').html()).toEqual "assay principle goes here"
+					expect(@pbc.$('.bv_assayPrinciple').val()).toEqual "assay principle goes here"
 				it "should fill the long description field", ->
 					expect(@pbc.$('.bv_description').html()).toEqual "long description goes here"
 				it "should fill the comments field", ->
@@ -312,8 +315,6 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_status').val()).toEqual "created"
 				it "should show the status select enabled", ->
 					expect(@pbc.$('.bv_status').attr('disabled')).toBeUndefined()
-				it "should fill the assay tree rule",  ->
-					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "example assay tree rule"
 			describe "Protocol status behavior", ->
 				it "should disable all fields if protocol is finalized", ->
 					waitsFor ->
@@ -356,6 +357,15 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_shortDescription').val("")
 					@pbc.$('.bv_shortDescription').change()
 					expect(@pbc.model.get 'shortDescription').toEqual " "
+				it "should update model when assay tree rule changed", ->
+					@pbc.$('.bv_assayTreeRule').val(" Updated assay tree rule  ")
+					@pbc.$('.bv_assayTreeRule').change()
+					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
+					expect(states.length).toEqual 1
+					values = states[0].getValuesByTypeAndKind("stringValue", "assay tree rule")
+					desc = values[0].get('stringValue')
+					expect(desc).toEqual "Updated assay tree rule"
+					expect(@pbc.model.getAssayTreeRule().get('stringValue')).toEqual "Updated assay tree rule"
 				it "should update model when assay principle is changed", ->
 					@pbc.$('.bv_assayPrinciple').val(" New assay principle   ")
 					@pbc.$('.bv_assayPrinciple').change()
@@ -368,7 +378,7 @@ describe "Protocol module testing", ->
 				it "should update model when description is changed", ->
 					@pbc.$('.bv_description').val(" New long description   ")
 					@pbc.$('.bv_description').change()
-					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
+					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "description")
 					desc = values[0].get('clobValue')
@@ -409,11 +419,6 @@ describe "Protocol module testing", ->
 						@pbc.$('.bv_status').val('complete')
 						@pbc.$('.bv_status').change()
 						expect(@pbc.model.getStatus().get('stringValue')).toEqual 'complete'
-				it "should update model when assay tree rule changed", ->
-					@pbc.$('.bv_assayTreeRule').val(" Updated assay tree rule  ")
-					@pbc.$('.bv_assayTreeRule').change()
-					expect(@pbc.model.get('assayTreeRule')).toEqual "Updated assay tree rule"
-
 		describe "When created from a new protocol", ->
 			beforeEach ->
 				@prot = new Protocol()

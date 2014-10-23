@@ -42,7 +42,9 @@ class window.ModuleLauncherMenuController extends Backbone.View
 		if @model.get('isDirty')
 			@$('.bv_isDirty').show()
 			window.conf.leaveACASMessage = "WARNING: There are unsaved changes."
-		else @$('.bv_isDirty').hide()
+		else
+			@$('.bv_isDirty').hide()
+			window.conf.leaveACASMessage = "There are no unsaved changes."
 
 		if @model.has 'requireUserRoles'
 			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @model.get('requireUserRoles')

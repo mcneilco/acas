@@ -12,12 +12,6 @@
 
     Protocol.prototype.urlRoot = "/api/protocols";
 
-    Protocol.prototype.defaults = function() {
-      return _(Protocol.__super__.defaults.call(this)).extend({
-        assayTreeRule: null
-      });
-    };
-
     Protocol.prototype.initialize = function() {
       this.set({
         subclass: "protocol"
@@ -25,10 +19,21 @@
       return Protocol.__super__.initialize.call(this);
     };
 
+    Protocol.prototype.getAssayTreeRule = function() {
+      var assayTreeRule;
+      assayTreeRule = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "stringValue", "assay tree rule");
+      if (assayTreeRule.get('stringValue') === void 0) {
+        assayTreeRule.set({
+          stringValue: ""
+        });
+      }
+      return assayTreeRule;
+    };
+
     Protocol.prototype.getAssayPrinciple = function() {
       var assayPrinciple;
       assayPrinciple = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "clobValue", "assay principle");
-      if (assayPrinciple.get('clobValue') === void 0 || assayPrinciple.get('clobValue') === "") {
+      if (assayPrinciple.get('clobValue') === void 0) {
         assayPrinciple.set({
           clobValue: ""
         });
@@ -114,31 +119,90 @@
     __extends(ProtocolBaseController, _super);
 
     function ProtocolBaseController() {
+      this.handleAssayTreeRuleChanged = __bind(this.handleAssayTreeRuleChanged, this);
       this.handleAssayPrincipleChanged = __bind(this.handleAssayPrincipleChanged, this);
-      this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return ProtocolBaseController.__super__.constructor.apply(this, arguments);
     }
 
     ProtocolBaseController.prototype.template = _.template($("#ProtocolBaseView").html());
 
+    ProtocolBaseController.prototype.moduleLaunchName = "protocol_base";
+
     ProtocolBaseController.prototype.events = function() {
       return _(ProtocolBaseController.__super__.events.call(this)).extend({
         "change .bv_protocolName": "handleNameChanged",
-        "change .bv_assayTreeRule": "attributeChanged",
+        "change .bv_assayTreeRule": "handleAssayTreeRuleChanged",
         "change .bv_assayPrinciple": "handleAssayPrincipleChanged"
       });
     };
 
     ProtocolBaseController.prototype.initialize = function() {
+      if (this.model != null) {
+        console.log("model exists");
+        return this.completeInitialization();
+      } else {
+        if (window.AppLaunchParams.moduleLaunchParams != null) {
+          if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
+            return $.ajax({
+              type: 'GET',
+              url: "/api/protocols/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+              dataType: 'json',
+              error: function(err) {
+                alert('Could not get protocol for code in this URL, creating new one');
+                return this.completeInitialization();
+              },
+              success: (function(_this) {
+                return function(json) {
+                  var lsKind, prot;
+                  if (json.length === 0) {
+                    alert('Could not get protocol for code in this URL, creating new one');
+                  } else {
+                    lsKind = json[0].lsKind;
+                    if (lsKind === "default") {
+                      console.log(json[0]);
+                      prot = new Protocol(json[0]);
+                      prot.fixCompositeClasses();
+                      _this.model = prot;
+                      console.log("should have gotten the protocol");
+                    } else {
+                      alert('Could not get protocol for code in this URL. Creating new protocol');
+                    }
+                  }
+                  return _this.completeInitialization();
+                };
+              })(this)
+            });
+          } else {
+            console.log("second to last else");
+            return this.completeInitialization();
+          }
+        } else {
+          console.log("last else");
+          return this.completeInitialization();
+        }
+      }
+    };
+
+    ProtocolBaseController.prototype.completeInitialization = function() {
+      console.log("complete initialization");
       if (this.model == null) {
         this.model = new Protocol();
       }
+      this.errorOwnerName = 'ProtocolBaseController';
+      console.log("setting bindings");
+      this.setBindings();
+      console.log("done setting bindings");
+      $(this.el).empty();
+      console.log("empty el");
+      $(this.el).html(this.template(this.model.attributes));
+      console.log("filling template");
       this.model.on('sync', (function(_this) {
         return function() {
           _this.trigger('amClean');
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
+          _this.$('.bv_save').attr('disabled', 'disabled');
           return _this.render();
         };
       })(this));
@@ -148,33 +212,36 @@
           return _this.$('.bv_updateComplete').hide();
         };
       })(this));
-      this.errorOwnerName = 'ProtocolBaseController';
-      this.setBindings();
-      $(this.el).empty();
-      $(this.el).html(this.template(this.model.attributes));
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
       this.setupTagList();
-      return this.model.getStatus().on('change', this.updateEditable);
+      this.model.getStatus().on('change', this.updateEditable);
+      return this.render();
     };
 
     ProtocolBaseController.prototype.render = function() {
-      this.$('.bv_assayTreeRule').val(this.model.get('assayTreeRule'));
-      this.$('.bv_assayPrinciple').html(this.model.getAssayPrinciple().get('clobValue'));
+      console.log(this);
+      console.log(this.model);
+      if (this.model == null) {
+        this.model = new Protocol();
+        console.log("created new model");
+      }
+      this.$('.bv_assayTreeRule').val(this.model.getAssayTreeRule().get('stringValue'));
+      this.$('.bv_assayPrinciple').val(this.model.getAssayPrinciple().get('clobValue'));
       ProtocolBaseController.__super__.render.call(this);
       return this;
     };
 
-    ProtocolBaseController.prototype.updateModel = function() {
-      return this.model.set({
-        assayTreeRule: this.getTrimmedInput('.bv_assayTreeRule')
+    ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
+      return this.model.getAssayPrinciple().set({
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple')),
+        recordedBy: this.model.get('recordedBy')
       });
     };
 
-    ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
-      return this.model.getAssayPrinciple().set({
-        clobValue: this.getTrimmedInput('.bv_assayPrinciple'),
-        recordedBy: this.model.get('recordedBy')
+    ProtocolBaseController.prototype.handleAssayTreeRuleChanged = function() {
+      return this.model.getAssayTreeRule().set({
+        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayTreeRule'))
       });
     };
 

@@ -7,7 +7,8 @@
 
 (function() {
   exports.logUsage = function(action, data, username) {
-    return console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
+    console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
+    return global.logger.writeToLog("info", "logUsage", action, data, username, null);
   };
 
   exports.getConfServiceVars = function(sysEnv, callback) {
@@ -228,6 +229,28 @@
     return headers = {
       "From": username
     };
+  };
+
+  exports.getCustomerMolecularTargetCodes = function(resp) {
+    var customerMolecularTargetCodeTable;
+    customerMolecularTargetCodeTable = exports.customerMolecularTargetCodeTable = [
+      {
+        active: true,
+        code: "test1",
+        description: "test1 description",
+        isDefault: false,
+        name: "Test1",
+        version: 1
+      }, {
+        active: true,
+        code: "test2",
+        description: "test2 description",
+        isDefault: false,
+        name: "Test2",
+        version: 1
+      }
+    ];
+    return resp.end(JSON.stringify(customerMolecularTargetCodeTable));
   };
 
 }).call(this);

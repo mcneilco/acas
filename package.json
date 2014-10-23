@@ -28,6 +28,9 @@
     "glob": "*",
     "ncp": "*",
     "forever-monitor": "*",
-    "assert": "~1.1.1"
+    "assert": "~1.1.1",
+	  "winston": "*",
+	  "winston-mongodb": "*",
+	  "mongojs": "*"
   }
 }

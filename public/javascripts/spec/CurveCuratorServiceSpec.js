@@ -33,7 +33,7 @@
         return it('should curve stubs with an id', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
-            return expect(this.serviceReturn.curves[0].curveid).toEqual("90807_AG-00000026");
+            return expect(this.serviceReturn.curves[0].curveid).toEqual("AG-00344443_1680");
           });
         });
       });
@@ -70,7 +70,7 @@
         return runs(function() {
           this.syncEvent = false;
           this.testModel = new CurveDetail({
-            id: "AG-00068922_522"
+            id: "AG-00344443_1680"
           });
           this.testModel.on('change', (function(_this) {
             return function() {
@@ -94,7 +94,7 @@
           return this.syncEvent;
         }, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.testModel.get('fitSummary')).toContain('Model fitted');
+          return expect(this.testModel.get('fitSummary')).toContain('Model&nbsp;fitted');
         });
       });
       it('should return curve detail with curveErrors', function() {
@@ -134,8 +134,9 @@
           return this.syncEvent;
         }, 'service did not return', 2000);
         return runs(function() {
-          expect(this.testModel.get('curveAttributes').compoundCode).toEqual("CMPD-0000001-01");
-          return expect(this.testModel.get('curveAttributes').EC50).toEqual(0.700852529214898);
+          expect(this.testModel.get('curveAttributes').compoundCode).toEqual("CMPD-0000001-01A");
+          console.log(this.testModel.get('curveAttributes'));
+          return expect(this.testModel.get('curveAttributes').EC50).toEqual(0.614351982526937);
         });
       });
       it('should return curve detail with plotData', function() {
@@ -144,9 +145,10 @@
         }, 'service did not return', 2000);
         return runs(function() {
           expect(this.testModel.get('plotData').plotWindow.length).toEqual(4);
-          expect(this.testModel.get('plotData').points.dose.length).toBeGreaterThan(5);
-          expect(this.testModel.get('plotData').points.response.length).toBeGreaterThan(5);
-          return expect(this.testModel.get('plotData').curve.ec50).toEqual(0.7008525);
+          expect(this.testModel.get('plotData').points.length).toBeGreaterThan(5);
+          console.log((this.testModel.get('plotData').points[0].dose).toBeDefined);
+          console.log((this.testModel.get('plotData').points[0].response).toBeDefined);
+          return expect(this.testModel.get('plotData').curve.ec50).toEqual(0.614351982526937);
         });
       });
       return it('should return curve detail with fitSettings', function() {
@@ -154,7 +156,7 @@
           return this.syncEvent;
         }, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.testModel.get('fitSettings').max.limitType).toEqual('pin');
+          return expect(this.testModel.get('fitSettings').get('max').get('limitType')).toEqual('none');
         });
       });
     });
@@ -183,8 +185,8 @@
         var self;
         self = this;
         return $.ajax({
-          type: 'POST',
-          url: "api/curve/fit",
+          type: 'PUT',
+          url: "/api/curve/detail/something",
           data: goodDataRequest,
           success: function(json) {
             return self.serviceReturn = json;
@@ -199,6 +201,7 @@
       it('should return curve detail with reportedValues', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
+          console.log(this.serviceReturn);
           return expect(this.serviceReturn.reportedValues).tobeDefined;
         });
       });

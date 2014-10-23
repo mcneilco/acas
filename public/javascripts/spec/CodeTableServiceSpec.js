@@ -10,7 +10,7 @@
         return runs(function() {
           return $.ajax({
             type: 'GET',
-            url: "api/dataDict/experimentMetadata/algorithm well flags",
+            url: "api/dataDict/experiment metadata/experiment status",
             success: (function(_this) {
               return function(json) {
                 return _this.serviceReturn = json;

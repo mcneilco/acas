@@ -1,13 +1,16 @@
 (function() {
-  exports.setupAPIRoutes = function(app, loginRoutes) {
-    return app.get('/api/protocols/codename/:code', exports.protocolByCodename);
+  exports.setupAPIRoutes = function(app) {
+    app.get('/api/protocols/codename/:code', exports.protocolByCodename);
+    app.get('/api/protocols/:id', exports.protocolById);
+    app.post('/api/protocols', exports.postProtocol);
+    return app.put('/api/protocols/:id', exports.putProtocol);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/protocols/codename/:code', loginRoutes.ensureAuthenticated, exports.protocolByCodename);
     app.get('/api/protocols/:id', loginRoutes.ensureAuthenticated, exports.protocolById);
     app.post('/api/protocols', loginRoutes.ensureAuthenticated, exports.postProtocol);
-    app.put('/api/protocols', loginRoutes.ensureAuthenticated, exports.putProtocol);
+    app.put('/api/protocols/:id', loginRoutes.ensureAuthenticated, exports.putProtocol);
     app.get('/api/protocollabels', loginRoutes.ensureAuthenticated, exports.lsLabels);
     app.get('/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList);
     return app.get('/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList);
@@ -27,6 +30,7 @@
       }
       return resp.json(prot);
     } else {
+      console.log("getting protocol by codename");
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codename/" + req.params.code;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -49,10 +53,10 @@
   };
 
   exports.postProtocol = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, request;
+    var baseurl, config, protocolServiceTestJSON, request;
     if (global.specRunnerTestmode) {
-      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
+      protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
+      return resp.end(JSON.stringify(protocolServiceTestJSON.fullSavedProtocol));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols";
@@ -79,13 +83,14 @@
   };
 
   exports.putProtocol = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, request;
+    var baseurl, config, protocolServiceTestJSON, putId, request;
     if (global.specRunnerTestmode) {
-      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
+      protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
+      return resp.end(JSON.stringify(protocolServiceTestJSON.fullSavedProtocol));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "protocols";
+      putId = req.body.id;
+      baseurl = config.all.client.service.persistence.fullpath + "protocols/" + putId;
       request = require('request');
       return request({
         method: 'PUT',
@@ -94,7 +99,7 @@
         json: true
       }, (function(_this) {
         return function(error, response, json) {
-          if (!error && response.statusCode === 201) {
+          if (!error && response.statusCode === 200) {
             console.log(JSON.stringify(json));
             return resp.end(JSON.stringify(json));
           } else {

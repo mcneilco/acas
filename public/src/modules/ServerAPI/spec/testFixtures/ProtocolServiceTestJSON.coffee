@@ -29,65 +29,6 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_protocol controls"
 			lsValues: [
-				clobValue: '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "concentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 250753.77,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "assayVolume": 24, "transferVolume": 12, "dilutionFactor": 21, "volumeType": "dilution", "instrumentReader": "flipr", "signalDirectionRule": "increasing signal (highest = 100%)", "aggregateBy1": "compound batch concentration", "aggregateBy2": "median", "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd", "autoHitSelection": true, "readName": "fluorescence"}'
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				id: 333
-				ignored: false
-				lsKind: "data analysis parameters"
-				lsTransaction: 12
-				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_data analysis parameters"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: null
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				id: 80471
-				ignored: false
-				lsTransaction:
-					comments: "primary analysis protocol transactions"
-					id: 87
-					recordedDate: 1363388477000
-					version: 0
-
-				modifiedDate: null
-				numericValue: null
-				publicData: true
-				recordedDate: 1363388477000
-				sigFigs: null
-				stringValue: "negative control"
-				uncertainty: null
-				urlValue: null
-				lsKind: "control type"
-				valueOperator: null
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_control type"
-				valueUnit: null
-				version: 0
-			,
 				clobValue: null
 				codeValue: null
 				comments: null
@@ -158,6 +99,33 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_protocol metadata"
 			lsValues: [
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 804691241456999912
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 823
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: "assay tree rule goes here"
+				uncertainty: null
+				urlValue: null
+				lsKind: "assay tree rule"
+				valueOperator: null
+				lsType: "stringValue"
+				lsTypeAndKind: "stringValue_assay tree rule"
+				valueUnit: null
+				version: 0
+			,
 				clobValue: "assay principle goes here"
 				codeValue: null
 				comments: null
@@ -185,34 +153,7 @@
 				valueUnit: null
 				version: 0
 			,
-				clobValue: "long description goes here"
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				id: 804699999
-				ignored: false
-				lsTransaction:
-					comments: "primary analysis protocol transactions"
-					id: 87
-					recordedDate: 1363388477000
-					version: 0
-				modifiedDate: null
-				numericValue: null
-				publicData: true
-				recordedDate: 1363388477000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				urlValue: null
-				lsKind: "description"
-				valueOperator: null
-				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_description"
-				valueUnit: null
-				version: 0
-			,
-				clobValue: "comments go here"
+				clobValue: "protocol comments go here"
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -673,34 +614,34 @@
 			recordedDate: 1375141485000
 			version: 0
 		,
-			comments: null
-			id: 15
-			ignored: false
-			lsKind: "protocol controls"
-			lsTransaction: 1
-			lsType: "metadata"
-			lsTypeAndKind: "metadata_protocol controls"
-			lsValues: []
-			modifiedBy: null
-			modifiedDate: null
-			recordedBy: "userName"
-			recordedDate: 1375141470000
-			version: 0
-		,
-			comments: null
-			id: 16
-			ignored: false
-			lsKind: "protocol controls"
-			lsTransaction: 1
-			lsType: "metadata"
-			lsTypeAndKind: "metadata_protocol controls"
-			lsValues: []
-			modifiedBy: null
-			modifiedDate: null
-			recordedBy: "userName"
-			recordedDate: 1375141466000
-			version: 0
-		,
+#			comments: null
+#			id: 15
+#			ignored: false
+#			lsKind: "protocol controls"
+#			lsTransaction: 1
+#			lsType: "metadata"
+#			lsTypeAndKind: "metadata_protocol controls"
+#			lsValues: []
+#			modifiedBy: null
+#			modifiedDate: null
+#			recordedBy: "userName"
+#			recordedDate: 1375141470000
+#			version: 0
+#		,
+#			comments: null
+#			id: 16
+#			ignored: false
+#			lsKind: "protocol controls"
+#			lsTransaction: 1
+#			lsType: "metadata"
+#			lsTypeAndKind: "metadata_protocol controls"
+#			lsValues: []
+#			modifiedBy: null
+#			modifiedDate: null
+#			recordedBy: "userName"
+#			recordedDate: 1375141466000
+#			version: 0
+#		,
 			comments: null
 			id: 2
 			ignored: false
@@ -863,6 +804,37 @@
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_assay principle"
 				valueUnit: null
+				version: 0
+			,
+				clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing","aggregateBy1":"compound batch concentration","aggregateBy2":"median","normalizationRule":"plate order only","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"htsFormat":false,"autoHitSelection":false,"matchReadName":false,"primaryAnalysisReadList":[{"readPosition":11,"readName":"none","activity":false},{"readPosition":12,"readName":"fluorescence","activity":true},{"readPosition":13,"readName":"luminescence","activity":false}],"transformationRuleList":[{"transformationRule":"% efficacy"},{"transformationRule":"sd"},{"transformationRule":"null"}]}'
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 333
+				ignored: false
+				lsKind: "data analysis parameters"
+				lsTransaction: 12
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_data analysis parameters"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
 				version: 0
 			,
 				clobValue: "long description goes here"
@@ -1324,18 +1296,6 @@
 			id: 2
 			tagText: "more stuff"
 		]
-		assayTreeRule: "example assay tree rule"
-		dnsTargetList: true
-		assayActivity: "luminescence"
-		molecularTarget: "target x"
-		targetOrigin: "human"
-		assayType: "cellular assay"
-		assayTechnology: "wizard triple luminescence"
-		cellLine: "cell line y"
-		assayStage: "assay development"
-		maxY: 200
-		minY: 2
-
 
 	exports.stubSavedProtocol = [
 		codeName: "PROT-00000001"

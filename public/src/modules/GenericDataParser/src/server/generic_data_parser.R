@@ -674,8 +674,6 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
                                 "concUnits" = fillerArray, "reshapeText" = fillerArray)
   returnDataFrame$DataColumn <- dataColumns
   returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
-  # This removes "Reported" from all columns
-  returnDataFrame$valueKind <- trim(gsub("Reported","",returnDataFrame$valueKind))
   returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
   returnDataFrame$Conc <- as.numeric(gsub("[^0-9\\.]", "", concAndUnits))
@@ -838,8 +836,10 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   } else {
     valueKinds$stateKind <- stateAssignments$stateKind[match(valueKinds$valueKind, stateAssignments$valueKind)]
     valueKinds$stateType <- stateAssignments$stateType[match(valueKinds$valueKind, stateAssignments$valueKind)]
+    valueKinds[is.na(valueKinds$stateKind), "stateKind"] <- "results"
+    valueKinds[is.na(valueKinds$stateType), "stateType"] <- "data"
   }
- 
+  
   valueKinds$publicData <- !hiddenColumns[notMainCode]
   valueKinds$linkColumn <- linkColumns[notMainCode]
   
@@ -914,39 +914,23 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   longResults$valueKindAndUnit <- valueKinds$DataColumn[matchOrder]
   longResults$uncertaintyType <- valueKinds$uncertaintyType[matchOrder]
   longResults$isComment <- valueKinds$isComment[matchOrder]
-  longResults <- ddply(longResults, c("rowID", "valueKindAndUnit"), function(df) {
-    output <- data.frame(originalMainID = unique(df$originalMainID),
-                         rowID = unique(df$rowID),
-                         linkID = unique(df$linkID),
-                         groupingID = unique(df$groupingID),
-                         groupingID_2 = unique(df$groupingID_2),
-                         valueKindAndUnit = unique(df$valueKindAndUnit),
-                         id = unique(df$id),
-                         batchCode = unique(df$batchCode),
-                         stringsAsFactors= FALSE)
-    if (nrow(df) > 1) {
-      output$UnparsedValue <- df$UnparsedValue[is.na(df$uncertaintyType) & !df$isComment]
-      if (any(!is.na(df$uncertaintyType))) {
-        output$uncertainty <- df$UnparsedValue[!is.na(df$uncertaintyType)]
-        output$uncertaintyType <- df$uncertaintyType[!is.na(df$uncertaintyType)]
-      } else {
-        output$uncertainty <- NA
-        output$uncertaintyType <- NA
-      }
-      
-      if (any(df$isComment)) {
-        output$comments <- df$UnparsedValue[df$isComment]
-      } else {
-        output$comments <- NA
-      }
-    } else {
-      output$UnparsedValue <- df$UnparsedValue
-      output$uncertainty <- NA
-      output$uncertaintyType <- NA
-      output$comments <- NA
-    }
-    return(output)
-  })
+  longResultsDT <- as.data.table(longResults)
+  longResultsDT2 <- longResultsDT[, list(
+    originalMainID = unique(originalMainID),
+    rowID = unique(rowID),
+    linkID = unique(linkID),
+    groupingID = unique(groupingID),
+    groupingID_2 = unique(groupingID_2),
+    valueKindAndUnit = unique(valueKindAndUnit),
+    id = unique(id),
+    batchCode = unique(batchCode), 
+    UnparsedValue = UnparsedValue[is.na(uncertaintyType) & !isComment],
+    uncertainty = if(any(!is.na(uncertaintyType))) {UnparsedValue[!is.na(uncertaintyType)]} else {NA},
+    uncertaintyType = if(any(!is.na(uncertaintyType))) {uncertaintyType[!is.na(uncertaintyType)]} else {NA},
+    comments = if(any(!isComment)) {UnparsedValue[isComment]} else {NA}),
+    keyby="rowID,valueKindAndUnit"]
+  
+  longResults <- as.data.frame(longResultsDT2)
   
   badUncertainty <- !is.na(longResults$uncertainty) & suppressWarnings(is.na(as.numeric(longResults$uncertainty)))
   if (any(badUncertainty)) {
@@ -2147,11 +2131,28 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = formatParameters$lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
+  stateAssignments <- NULL
+  if (inputFormat == "Dose Response") {
+    doseResponseKinds <- c(
+      "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
+      "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+      "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
+      "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
+    )
+    stateAssignments <- data.frame(
+      valueKind = doseResponseKinds,
+      stateType = rep("data", length(doseResponseKinds)), 
+      stateKind = rep("dose response", length(doseResponseKinds)),
+      stringsAsFactors = FALSE
+    )
+  }
+  
   calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
   calculatedResults <- organizeCalculatedResults(
     calculatedResults, inputFormat, formatParameters, mainCode, 
     lockCorpBatchId = formatParameters$lockCorpBatchId, rawOnlyFormat = rawOnlyFormat, 
-    errorEnv = errorEnv, precise = precise, calculateGroupingID = calculateGroupingID)
+    errorEnv = errorEnv, precise = precise, calculateGroupingID = calculateGroupingID,
+    stateAssignments = stateAssignments)
   
   if (!is.null(formatParameters$splitSubjects)) {
     calculatedResults$subjectID <- calculatedResults$groupingID_2
@@ -2854,6 +2855,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
   
   subjectData <- NULL
   treatmentGroupData <- NULL
+  intermedList <- list()
   if (precise) {
     subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
     link <- calculatedResults[calculatedResults$linkColumn, c("rowID", "stringValue")]
@@ -2875,7 +2877,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       #subjectDataKept <- as.data.table(subjectData)
       #subjectDataKept2 <- subjectDataKept[!(rowID %in% removeRowID), createTreatmentGroupData(.SD), by = groupByColumns]
       
-      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = c("test compound treatment", "results", "results"))
       
       intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, keepColumn=keepColumn, errorEnv=errorEnv, formatParameters =  formatParameters)
       subjectData <- intermedList$subjectData
@@ -2908,11 +2910,19 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       subjectData$Col5[1] <- "Text"
       subjectData$Col5[2] <- "flag"
       
-      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = "test compound treatment", "results", "results")
+      stateAssignments <- data.frame(
+        valueKind = c("Dose", "Response", "flag"), 
+        stateType = c("data", "data", "data"), 
+        stateKind = c("test compound treatment", "results", "results"),
+        stringsAsFactors = FALSE
+      )
       
       # list(subjectData, treatmentGroupData)
-      intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL, link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, formatParameters = formatParameters)
-      return(intermedList)
+      intermedList <- organizeSubjectData(
+        subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
+        link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
+        formatParameters = formatParameters)
     }
   }
+  return(intermedList)
 }

@@ -665,6 +665,11 @@
         beforeEach(function() {
           return this.pse2 = new PrimaryScreenExperiment();
         });
+        describe("defaults", function() {
+          return it("should have lsKind set to flipr screening assay", function() {
+            return expect(this.pse2.get('lsKind')).toEqual("flipr screening assay");
+          });
+        });
         return describe("special states", function() {
           it("should be able to get the analysis status", function() {
             return expect(this.pse2.getAnalysisStatus().get('stringValue')).toEqual("not started");
@@ -1261,7 +1266,8 @@
           it("should show error if positiveControl batch is not set", function() {
             this.psapc.$('.bv_positiveControlBatch').val("");
             this.psapc.$('.bv_positiveControlBatch').change();
-            return expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
+            expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
+            return expect(this.psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual("tooltip");
           });
           it("should show error if positiveControl conc is not set", function() {
             this.psapc.$('.bv_positiveControlConc').val("");

@@ -51,21 +51,21 @@
       var errors, limitType;
       errors = [];
       limitType = attrs.min.get('limitType');
-      if ((limitType === "pin" || limitType === "limit") && _.isNaN(attrs.min.get('value'))) {
+      if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.min.get('value')) || attrs.min.get('value') === null)) {
         errors.push({
           attribute: 'min_value',
           message: "Min threshold value must be set when limit type is pin or limit"
         });
       }
       limitType = attrs.max.get('limitType');
-      if ((limitType === "pin" || limitType === "limit") && _.isNaN(attrs.max.get('value'))) {
+      if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.max.get('value')) || attrs.max.get('value') === null)) {
         errors.push({
           attribute: 'max_value',
           message: "Max threshold value must be set when limit type is pin or limit"
         });
       }
       limitType = attrs.slope.get('limitType');
-      if ((limitType === "pin" || limitType === "limit") && _.isNaN(attrs.slope.get('value'))) {
+      if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.slope.get('value')) || attrs.slope.get('value') === null)) {
         errors.push({
           attribute: 'slope_value',
           message: "Slope threshold value must be set when limit type is pin or limit"
@@ -158,20 +158,21 @@
 
     DoseResponseAnalysisParametersController.prototype.updateModel = function() {
       this.model.get('max').set({
-        value: parseFloat(this.getTrimmedInput('.bv_max_value'))
+        value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_max_value')))
       });
       this.model.get('min').set({
-        value: parseFloat(this.getTrimmedInput('.bv_min_value'))
+        value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_min_value')))
       });
       this.model.get('slope').set({
-        value: parseFloat(this.getTrimmedInput('.bv_slope_value'))
+        value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_slope_value')))
       });
       this.model.set({
         inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
       }, {
         silent: true
       });
-      return this.model.trigger('change');
+      this.model.trigger('change');
+      return this.trigger('updateState');
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdChanged = function(event, ui) {
@@ -179,7 +180,7 @@
         'inactiveThreshold': ui.value
       });
       this.updateThresholdDisplay(this.model.get('inactiveThreshold'));
-      return this.attributeChanged;
+      return this.attributeChanged();
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdMoved = function(event, ui) {

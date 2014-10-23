@@ -1,7 +1,7 @@
 ((exports) ->
 	exports.dataDictValues =
 		[
-			type: "protocolMetadata"
+			type: "protocol metadata"
 			kind: "protocol status"
 			codes:
 				[

@@ -7,6 +7,8 @@
     __extends(BaseEntity, _super);
 
     function BaseEntity() {
+      this.getModelFitParameters = __bind(this.getModelFitParameters, this);
+      this.getAnalysisParameters = __bind(this.getAnalysisParameters, this);
       this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       this.parse = __bind(this.parse, this);
       return BaseEntity.__super__.constructor.apply(this, arguments);
@@ -107,9 +109,9 @@
     };
 
     BaseEntity.prototype.getDescription = function() {
-      var description, metadataKind;
-      metadataKind = this.get('subclass') + " metadata";
-      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", "description");
+      var description;
+      console.log("getting description");
+      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "description");
       if (description.get('clobValue') === void 0 || description.get('clobValue') === "") {
         description.set({
           clobValue: ""
@@ -154,16 +156,29 @@
       return status;
     };
 
-    BaseEntity.prototype.getAnalysisStatus = function() {
-      var metadataKind, status;
-      metadataKind = this.get('subclass') + " metadata";
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "stringValue", "analysis status");
-      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
-        status.set({
-          stringValue: "created"
-        });
+    BaseEntity.prototype.getAnalysisParameters = function() {
+      var ap;
+      console.log("calling getAnalysisParameters");
+      console.log(this.get('lsStates'));
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
+      console.log(this);
+      if (ap.get('clobValue') != null) {
+        console.log("used existing clobValue");
+        return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
+      } else {
+        console.log("created completely new analysis parameters");
+        return new PrimaryScreenAnalysisParameters();
       }
-      return status;
+    };
+
+    BaseEntity.prototype.getModelFitParameters = function() {
+      var ap;
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
+      if (ap.get('clobValue') != null) {
+        return $.parseJSON(ap.get('clobValue'));
+      } else {
+        return {};
+      }
     };
 
     BaseEntity.prototype.isEditable = function() {
@@ -239,6 +254,7 @@
 
     BaseEntity.prototype.prepareToSave = function() {
       var rBy, rDate;
+      console.log("prepareToSave");
       rBy = this.get('recordedBy');
       rDate = new Date().getTime();
       this.set({
@@ -256,7 +272,7 @@
           });
         }
       });
-      return this.get('lsStates').each(function(state) {
+      this.get('lsStates').each(function(state) {
         if (state.get('recordedBy') === "") {
           state.set({
             recordedBy: rBy
@@ -280,6 +296,7 @@
           }
         });
       });
+      return this.trigger("readyToSave", this);
     };
 
     return BaseEntity;
@@ -306,6 +323,7 @@
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
+      this.beginSave = __bind(this.beginSave, this);
       this.updateEditable = __bind(this.updateEditable, this);
       this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.handleNotebookChanged = __bind(this.handleNotebookChanged, this);
@@ -343,6 +361,7 @@
       }
       this.model.on('sync', (function(_this) {
         return function() {
+          console.log("@model sync");
           _this.trigger('amClean');
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
@@ -367,6 +386,10 @@
 
     BaseEntityController.prototype.render = function() {
       var bestName, subclass;
+      console.log("rendering in base entity controller");
+      if (this.model == null) {
+        this.model = new BaseEntity();
+      }
       subclass = this.model.get('subclass');
       this.$('.bv_shortDescription').html(this.model.get('shortDescription'));
       bestName = this.model.get('lsLabels').pickBestName();
@@ -381,7 +404,7 @@
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
       if (this.model.getCompletionDate().get('dateValue') != null) {
-        this.$('.bv_completionDate').val(this.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
+        this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
       }
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
       this.$('.bv_status').val(this.model.getStatus().get('stringValue'));
@@ -396,7 +419,7 @@
 
     BaseEntityController.prototype.setupStatusSelect = function() {
       this.statusList = new PickListList();
-      this.statusList.url = "/api/dataDict/" + this.model.get('subclass') + "Metadata/" + this.model.get('subclass') + " status";
+      this.statusList.url = "/api/dataDict/" + this.model.get('subclass') + " metadata/" + this.model.get('subclass') + " status";
       return this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,
@@ -422,7 +445,7 @@
 
     BaseEntityController.prototype.handleShortDescriptionChanged = function() {
       var trimmedDesc;
-      trimmedDesc = this.getTrimmedInput('.bv_shortDescription');
+      trimmedDesc = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_shortDescription'));
       if (trimmedDesc !== "") {
         return this.model.set({
           shortDescription: trimmedDesc
@@ -436,14 +459,14 @@
 
     BaseEntityController.prototype.handleDescriptionChanged = function() {
       return this.model.getDescription().set({
-        clobValue: this.getTrimmedInput('.bv_description'),
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_description')),
         recordedBy: this.model.get('recordedBy')
       });
     };
 
     BaseEntityController.prototype.handleCommentsChanged = function() {
       return this.model.getComments().set({
-        clobValue: this.getTrimmedInput('.bv_comments'),
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_comments')),
         recordedBy: this.model.get('recordedBy')
       });
     };
@@ -451,7 +474,7 @@
     BaseEntityController.prototype.handleNameChanged = function() {
       var newName, subclass;
       subclass = this.model.get('subclass');
-      newName = this.getTrimmedInput('.bv_' + subclass + 'Name');
+      newName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + subclass + 'Name'));
       this.model.get('lsLabels').setBestName(new Label({
         lsKind: subclass + " name",
         labelText: newName,
@@ -462,7 +485,7 @@
 
     BaseEntityController.prototype.handleDateChanged = function() {
       return this.model.getCompletionDate().set({
-        dateValue: this.convertYMDDateToMs(this.getTrimmedInput('.bv_completionDate'))
+        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')))
       });
     };
 
@@ -472,13 +495,13 @@
 
     BaseEntityController.prototype.handleNotebookChanged = function() {
       return this.model.getNotebook().set({
-        stringValue: this.getTrimmedInput('.bv_notebook')
+        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook'))
       });
     };
 
     BaseEntityController.prototype.handleStatusChanged = function() {
       this.model.getStatus().set({
-        stringValue: this.$('.bv_status').val()
+        stringValue: this.statusListController.getSelectedCode()
       });
       return this.updateEditable();
     };
@@ -499,12 +522,24 @@
       }
     };
 
+    BaseEntityController.prototype.beginSave = function() {
+      console.log("beginSave in base controller");
+      this.tagListController.handleTagsChanged();
+      if (this.model.checkForNewPickListOptions != null) {
+        return this.model.checkForNewPickListOptions();
+      } else {
+        return this.trigger("noEditablePickLists");
+      }
+    };
+
     BaseEntityController.prototype.handleSaveClicked = function() {
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
       if (this.model.isNew()) {
+        console.log("model is new");
         this.$('.bv_updateComplete').html("Save Complete");
       } else {
+        console.log("model is not new");
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
@@ -513,12 +548,14 @@
 
     BaseEntityController.prototype.validationError = function() {
       BaseEntityController.__super__.validationError.call(this);
-      return this.$('.bv_save').attr('disabled', 'disabled');
+      this.$('.bv_save').attr('disabled', 'disabled');
+      return console.log("validation error in base entity");
     };
 
     BaseEntityController.prototype.clearValidationErrorStyles = function() {
       BaseEntityController.__super__.clearValidationErrorStyles.call(this);
-      return this.$('.bv_save').removeAttr('disabled');
+      this.$('.bv_save').removeAttr('disabled');
+      return console.log("clear validation error styles in base entity");
     };
 
     return BaseEntityController;

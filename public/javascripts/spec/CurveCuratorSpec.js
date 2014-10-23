@@ -106,10 +106,10 @@
       });
       describe("rendering thumbnail", function() {
         it("should have img src attribute set", function() {
-          return expect(this.csc.$('.bv_thumbnail').attr('src')).toContain("AG-00344438_1717");
+          return expect(this.csc.$('.bv_thumbnail').attr('src')).toContain("AG-00344443_1680");
         });
         return it("should show the compound code", function() {
-          return expect(this.csc.$('.bv_compoundCode').html()).toEqual("CMPD-0000001-01A");
+          return expect(this.csc.$('.bv_compoundCode').html()).toEqual("CMPD-0000007-01A");
         });
       });
       describe("selection", function() {
@@ -120,25 +120,30 @@
       });
       describe("algorithm approved display", function() {
         it("should show not approved when algorithm flagged", function() {
+          this.csc.model.set({
+            flagAlgorithm: "no fit"
+          });
           expect(this.csc.$('.bv_fail')).toBeVisible();
           return expect(this.csc.$('.bv_pass')).toBeHidden();
         });
         return it("should show approved when algorithm not flagged ", function() {
           this.csc.model.set({
-            algorithmFlag: "NA"
+            flagAlgorithm: "NA"
           });
           this.csc.render();
-          expect(this.csc.$('.bv_pass')).toBeHidden();
-          return expect(this.csc.$('.bv_fail')).toBeVisible();
+          expect(this.csc.$('.bv_pass')).toBeVisible();
+          return expect(this.csc.$('.bv_fail')).toBeHidden();
         });
       });
       return describe("user flagged display", function() {
         it("should show thumbs up when user approved", function() {
+          this.csc.model.set({
+            flagUser: "approved"
+          });
           expect(this.csc.$('.bv_thumbsUp')).toBeVisible();
           return expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
         });
         it("should show thumbs down when not user approved", function() {
-          console.log(this.csc);
           this.csc.model.set({
             flagUser: "rejected"
           });
@@ -152,7 +157,8 @@
           });
           this.csc.render();
           expect(this.csc.$('.bv_thumbsUp')).toBeHidden();
-          return expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
+          expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
+          return expect(this.csc.$('.bv_na')).toBeVisible();
         });
       });
     });
@@ -208,15 +214,15 @@
       return describe("sorting", function() {
         it("should show the lowest EC50 when requested", function() {
           this.cslc.sort('EC50', true);
-          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000001-01A");
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000009-01A");
         });
         it("should show the highest EC50 when requested", function() {
           this.cslc.sort('EC50', false);
-          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000008-01A");
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000007-01A");
         });
         return it("should show the first one when no sorting is requested", function() {
           this.cslc.sort('none');
-          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000001-01A");
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000007-01A");
         });
       });
     });
@@ -486,21 +492,21 @@
               this.ccc.$('.bv_sortDirection_descending').prop("checked", true);
               this.ccc.$('.bv_sortDirection_ascending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_descending').click();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000008-01A");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000007-01A");
             });
           });
           it("should update sort when ascending/descending is changed", function() {
             return runs(function() {
               this.ccc.$('.bv_sortBy').val('EC50');
               this.ccc.$('.bv_sortBy').change();
+              this.ccc.$('.bv_sortDirection_descending').prop("checked", false);
+              this.ccc.$('.bv_sortDirection_ascending').prop("checked", true);
+              this.ccc.$('.bv_sortDirection_ascending').click();
+              expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000009-01A");
               this.ccc.$('.bv_sortDirection_descending').prop("checked", true);
               this.ccc.$('.bv_sortDirection_ascending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_descending').click();
-              expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000008-01A");
-              this.ccc.$('.bv_sortDirection_ascending').prop("checked", true);
-              this.ccc.$('.bv_sortDirection_descending').prop("checked", false);
-              this.ccc.$('.bv_sortDirection_ascending').click();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000001-01A");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000007-01A");
             });
           });
           it("should add the 'none' option if no sortBy options are received from the server", function() {

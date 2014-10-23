@@ -18,18 +18,13 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "DoseResponseFitWorkflowController"
 	,
 		isHeader: false
-		menuName: "Base entity"
-		mainControllerClassName: "BaseEntityController"
-		autoLaunchName:"base_entity"
-	,
-		isHeader: false
 		menuName: "Protocol Base"
 		mainControllerClassName: "ProtocolBaseController"
 		autoLaunchName:"protocol_base"
 	,
 		isHeader: false
 		menuName: "Primary Screen Protocol"
-		mainControllerClassName: "PrimaryScreenProtocolController"
+		mainControllerClassName: "PrimaryScreenProtocolModuleController"
 		autoLaunchName:"primary_screen_protocol"
 	,
 		isHeader: false
@@ -63,5 +58,11 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: false, menuName: "Experiment Browser"
 		mainControllerClassName: "ExperimentBrowserController"
+	,
+		isHeader: true
+		menuName: "Admin"
+	,
+		isHeader: false, menuName: "Logging"
+		mainControllerClassName: "LoggingController"
 	]
 

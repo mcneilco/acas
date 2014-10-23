@@ -393,6 +393,9 @@ describe "Primary Screen Experiment module testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
 				@pse2 = new PrimaryScreenExperiment()
+			describe "defaults", ->
+				it "should have lsKind set to flipr screening assay", ->
+					expect(@pse2.get('lsKind')).toEqual "flipr screening assay"
 			describe "special states", ->
 				it "should be able to get the analysis status", ->
 					expect(@pse2.getAnalysisStatus().get('stringValue')).toEqual "not started"
@@ -842,6 +845,7 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_positiveControlBatch').val ""
 					@psapc.$('.bv_positiveControlBatch').change()
 					expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
+					expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
 				it "should show error if positiveControl conc is not set", ->
 					@psapc.$('.bv_positiveControlConc').val ""
 					@psapc.$('.bv_positiveControlConc').change()

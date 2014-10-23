@@ -62,7 +62,7 @@ renderCurve <- function(getParams) {
     showAxes <- as.logical(getParams$showAxes)
   }
   if(is.null(getParams$showGrid)) {
-    showGrid <- TRUE
+    showGrid <- !inTable
   } else {
     showGrid <- as.logical(getParams$showGrid)
   }
