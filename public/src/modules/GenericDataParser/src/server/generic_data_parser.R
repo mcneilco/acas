@@ -914,39 +914,23 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   longResults$valueKindAndUnit <- valueKinds$DataColumn[matchOrder]
   longResults$uncertaintyType <- valueKinds$uncertaintyType[matchOrder]
   longResults$isComment <- valueKinds$isComment[matchOrder]
-  longResults <- ddply(longResults, c("rowID", "valueKindAndUnit"), function(df) {
-    output <- data.frame(originalMainID = unique(df$originalMainID),
-                         rowID = unique(df$rowID),
-                         linkID = unique(df$linkID),
-                         groupingID = unique(df$groupingID),
-                         groupingID_2 = unique(df$groupingID_2),
-                         valueKindAndUnit = unique(df$valueKindAndUnit),
-                         id = unique(df$id),
-                         batchCode = unique(df$batchCode),
-                         stringsAsFactors= FALSE)
-    if (nrow(df) > 1) {
-      output$UnparsedValue <- df$UnparsedValue[is.na(df$uncertaintyType) & !df$isComment]
-      if (any(!is.na(df$uncertaintyType))) {
-        output$uncertainty <- df$UnparsedValue[!is.na(df$uncertaintyType)]
-        output$uncertaintyType <- df$uncertaintyType[!is.na(df$uncertaintyType)]
-      } else {
-        output$uncertainty <- NA
-        output$uncertaintyType <- NA
-      }
-      
-      if (any(df$isComment)) {
-        output$comments <- df$UnparsedValue[df$isComment]
-      } else {
-        output$comments <- NA
-      }
-    } else {
-      output$UnparsedValue <- df$UnparsedValue
-      output$uncertainty <- NA
-      output$uncertaintyType <- NA
-      output$comments <- NA
-    }
-    return(output)
-  })
+  longResultsDT <- as.data.table(longResults)
+  longResultsDT2 <- longResultsDT[, list(
+    originalMainID = unique(originalMainID),
+    rowID = unique(rowID),
+    linkID = unique(linkID),
+    groupingID = unique(groupingID),
+    groupingID_2 = unique(groupingID_2),
+    valueKindAndUnit = unique(valueKindAndUnit),
+    id = unique(id),
+    batchCode = unique(batchCode), 
+    UnparsedValue = UnparsedValue[is.na(uncertaintyType) & !isComment],
+    uncertainty = if(any(!is.na(uncertaintyType))) {UnparsedValue[!is.na(uncertaintyType)]} else {NA},
+    uncertaintyType = if(any(!is.na(uncertaintyType))) {uncertaintyType[!is.na(uncertaintyType)]} else {NA},
+    comments = if(any(!isComment)) {UnparsedValue[isComment]} else {NA}),
+    keyby="rowID,valueKindAndUnit"]
+  
+  longResults <- as.data.frame(longResultsDT2)
   
   badUncertainty <- !is.na(longResults$uncertainty) & suppressWarnings(is.na(as.numeric(longResults$uncertainty)))
   if (any(badUncertainty)) {
