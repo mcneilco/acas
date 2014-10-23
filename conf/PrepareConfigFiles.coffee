@@ -134,12 +134,6 @@ getApacheCompileOptions = ->
 				compileOptions.push(option)
 	console.log apacheVersion
 	compileOptions.push(option: 'ApacheVersion', value: apacheVersion)
-
-#	if apacheType == "Darwin"
-#		modulesPath = 'libexec/apache2/'
-#	else
-#		modulesPath = 'modules/'
-#	compileOptions.push(option: 'modulesPath', value: modulesPath)
 	compileOptions
 
 getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
@@ -166,7 +160,6 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).output.replace('\n','')  )
 	confs.push('Listen ' + config.all.server.rapache.listen + ':' + config.all.client.service.rapache.port)
 	confs.push('PidFile ' + acasHome + '/bin/apache.pid')
-	confs.push('LockFile ' + acasHome + '/bin/apache.lock')
 	confs.push('StartServers ' + _.findWhere(apacheHardCodedConfigs, {directive: 'StartServers'}).value)
 	confs.push('ServerSignature ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerSignature'}).value)
 	confs.push('ServerRoot ' + serverRoot)
@@ -178,6 +171,10 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	if apacheVersion in ['Redhat', 'Darwin']
 		confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
 		confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
+	if apacheVersion == 'Darwin'
+		confs.push('Mutex default:/Users/bbolt/Documents/mcneilco/acas/bin')
+		confs.push("LoadModule unixd_module " + modulesDir + "mod_unixd.so")
+		confs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
 	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
 	confs.push('ErrorLog ' + config.all.server.log.path + '/racas.log')
 	confs.push('LogLevel ' + config.all.server.log.level.toLowerCase())
