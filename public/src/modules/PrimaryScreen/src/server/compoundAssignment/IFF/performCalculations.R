@@ -1,13 +1,14 @@
 performCalculations <- function(resultTable, parameters) {
   # IFF
-  resultTable$activity <- computeActivity(resultTable, parameters$transformationRule)
+  resultTable[ , activity := computeActivity(resultTable, parameters$transformationRule)]
   
+  # This assumes that there is only one normalization rule passed through the GUI
   resultTable <- normalizeData(resultTable, parameters$normalizationRule)
   
   flaglessResults <- resultTable[is.na(flag)]
   meanValue <- mean(flaglessResults$normalizedActivity[flaglessResults$wellType == "test"])
   sdValue <- sd(flaglessResults$normalizedActivity[flaglessResults$wellType == "test"])
-  resultTable$transformed_sd <- computeSDScore(resultTable$normalizedActivity, meanValue, sdValue)
+  resultTable$transformed_sd <- computeSDScore(resultTable[is.na(flag)]$normalizedActivity, meanValue, sdValue)
   
   #maxTime is the point used by the stat1/2 files, overallMaxTime includes points outside of that range
   resultTable[, index:=1:nrow(resultTable)]
@@ -48,9 +49,9 @@ computeSDScore <- function(dataVector, meanValue, sdValue) {
 computeActivity <- function(mainData, transformation) {
   #TODO switch on transformation
   if (transformation == "(maximum-minimum)/minimum") {
-    return( (mainData$Maximum-mainData$Minimum)/mainData$Minimum )
+    return( (mainData[is.na(flag)]$Maximum-mainData[is.na(flag)]$Minimum)/mainData[is.na(flag)]$Minimum )
   } else {
-    return ( (mainData$Maximum-mainData$Minimum)/mainData$Minimum )
+    return ( (mainData[is.na(flag)]$Maximum-mainData[is.na(flag)]$Minimum)/mainData[is.na(flag)]$Minimum )
   }	
 }
 
