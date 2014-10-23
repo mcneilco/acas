@@ -95,7 +95,10 @@ class window.ProtocolBaseController extends BaseEntityController
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								prot = new PrimaryScreenProtocol json
+								console.log "got json"
+								console.log json[0]
 								lsKind = json[0].lsKind
+								console.log lsKind
 								if lsKind is "default"
 									console.log json[0]
 									prot = new Protocol json[0]

@@ -145,10 +145,10 @@
     }
 
     PrimaryScreenProtocol.prototype.initialize = function() {
-      this.set({
+      PrimaryScreenProtocol.__super__.initialize.call(this);
+      return this.set({
         lsKind: "flipr screening assay"
       });
-      return PrimaryScreenProtocol.__super__.initialize.call(this);
     };
 
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
@@ -161,8 +161,6 @@
       psAnalysisParametersErrors = psAnalysisParameters.validate(psAnalysisParameters.attributes);
       errors.push.apply(errors, psAnalysisParametersErrors);
       psModelFitParameters = new DoseResponseAnalysisParameters(this.getModelFitParameters());
-      console.log("psModelFitParameters");
-      console.log(psModelFitParameters);
       psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes);
       errors.push.apply(errors, psModelFitParametersErrors);
       bestName = attrs.lsLabels.pickBestName();
@@ -595,8 +593,6 @@
                       prot.fixCompositeClasses();
                       console.log(prot);
                       _this.model = prot;
-                      console.log(prot);
-                      console.log(_this.model);
                     } else {
                       alert('Could not get primary screen protocol for code in this URL. Creating new primary screen protocol');
                     }

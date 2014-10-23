@@ -54,17 +54,11 @@ exports.redirectToEditor = (req, resp) ->
 				prefixKeyIndex +=1
 
 		if queryPrefix != null
-			isStub = controllerRedirectConf[queryPrefix]["stub"] #true if getting entity returns a stub
 			request
 				json: true
 				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #get protocol
 			, (error, response, body) =>
-				#TODO: fetch lsKind?
-				if isStub
-					stub = response.body[0]
-					kind = stub.lsKind
-				else
-					kind = response.body.lsKind
+				kind = response.body[0].lsKind
 				deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
 				resp.redirect "/"+deepLink+"/codeName/"+req.params.code
 

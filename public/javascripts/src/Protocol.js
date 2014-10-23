@@ -158,7 +158,10 @@
                   if (json.length === 0) {
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
+                    console.log("got json");
+                    console.log(json[0]);
                     lsKind = json[0].lsKind;
+                    console.log(lsKind);
                     if (lsKind === "default") {
                       console.log(json[0]);
                       prot = new Protocol(json[0]);

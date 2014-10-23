@@ -110,7 +110,6 @@
 
     BaseEntity.prototype.getDescription = function() {
       var description;
-      console.log("getting description");
       description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "description");
       if (description.get('clobValue') === void 0 || description.get('clobValue') === "") {
         description.set({
@@ -158,15 +157,10 @@
 
     BaseEntity.prototype.getAnalysisParameters = function() {
       var ap;
-      console.log("calling getAnalysisParameters");
-      console.log(this.get('lsStates'));
       ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
-      console.log(this);
       if (ap.get('clobValue') != null) {
-        console.log("used existing clobValue");
         return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
       } else {
-        console.log("created completely new analysis parameters");
         return new PrimaryScreenAnalysisParameters();
       }
     };
@@ -365,6 +359,7 @@
           _this.trigger('amClean');
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
+          _this.$('.bv_save').attr('disabled', 'disabled');
           return _this.render();
         };
       })(this));
@@ -386,7 +381,6 @@
 
     BaseEntityController.prototype.render = function() {
       var bestName, subclass;
-      console.log("rendering in base entity controller");
       if (this.model == null) {
         this.model = new BaseEntity();
       }
@@ -543,19 +537,18 @@
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
+      console.log(this.model.get('lsKind'));
       return this.model.save();
     };
 
     BaseEntityController.prototype.validationError = function() {
       BaseEntityController.__super__.validationError.call(this);
-      this.$('.bv_save').attr('disabled', 'disabled');
-      return console.log("validation error in base entity");
+      return this.$('.bv_save').attr('disabled', 'disabled');
     };
 
     BaseEntityController.prototype.clearValidationErrorStyles = function() {
       BaseEntityController.__super__.clearValidationErrorStyles.call(this);
-      this.$('.bv_save').removeAttr('disabled');
-      return console.log("clear validation error styles in base entity");
+      return this.$('.bv_save').removeAttr('disabled');
     };
 
     return BaseEntityController;

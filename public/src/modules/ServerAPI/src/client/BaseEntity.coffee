@@ -53,7 +53,6 @@ class window.BaseEntity extends Backbone.Model
 			@trigger 'change'
 
 	getDescription: ->
-		console.log "getting description"
 #		metadataKind = @.get('subclass') + " metadata"
 		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
 		if description.get('clobValue') is undefined or description.get('clobValue') is ""
@@ -89,16 +88,11 @@ class window.BaseEntity extends Backbone.Model
 		status
 
 	getAnalysisParameters: =>
-		console.log "calling getAnalysisParameters"
 #		metadataKind = @.get('subclass') + " metadata"
-		console.log @.get('lsStates')
 		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
-		console.log @
 		if ap.get('clobValue')?
-			console.log "used existing clobValue"
 			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
 		else
-			console.log "created completely new analysis parameters"
 			return new PrimaryScreenAnalysisParameters()
 
 	getModelFitParameters: =>
@@ -207,6 +201,7 @@ class window.BaseEntityController extends AbstractFormController
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
+			@$('.bv_save').attr('disabled', 'disabled')
 			@render()
 		@model.on 'change', =>
 			@trigger 'amDirty'
@@ -223,7 +218,6 @@ class window.BaseEntityController extends AbstractFormController
 #	using the code above, triggers amDirty whenever the module is clicked. is this ok?
 
 	render: =>
-		console.log "rendering in base entity controller"
 		unless @model?
 			@model = new BaseEntity()
 		subclass = @model.get('subclass')
@@ -350,14 +344,13 @@ class window.BaseEntityController extends AbstractFormController
 			console.log "model is not new"
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_saving').show()
+		console.log @model.get('lsKind')
 		@model.save()
 
 	validationError: =>
 		super()
 		@$('.bv_save').attr('disabled', 'disabled')
-		console.log "validation error in base entity"
 
 	clearValidationErrorStyles: =>
 		super()
 		@$('.bv_save').removeAttr('disabled')
-		console.log "clear validation error styles in base entity"

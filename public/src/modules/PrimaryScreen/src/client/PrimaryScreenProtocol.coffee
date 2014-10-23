@@ -93,8 +93,8 @@ class window.PrimaryScreenProtocolParameters extends State
 
 class window.PrimaryScreenProtocol extends Protocol
 	initialize: ->
-		@.set lsKind: "flipr screening assay"
 		super()
+		@.set lsKind: "flipr screening assay"
 
 	validate: (attrs) ->
 		errors = []
@@ -107,8 +107,6 @@ class window.PrimaryScreenProtocol extends Protocol
 #		psAnalysisParametersErrors = psAnalysisParameters.validationError
 		errors.push psAnalysisParametersErrors...
 		psModelFitParameters = new DoseResponseAnalysisParameters @getModelFitParameters()
-		console.log "psModelFitParameters"
-		console.log psModelFitParameters
 		psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes)
 		errors.push psModelFitParametersErrors...
 
@@ -460,8 +458,6 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 									prot.fixCompositeClasses()
 									console.log prot # TODO: figure out why this does not have the data anymore
 									@model = prot
-									console.log prot
-									console.log @model
 								else
 									alert 'Could not get primary screen protocol for code in this URL. Creating new primary screen protocol'
 							@completeInitialization()

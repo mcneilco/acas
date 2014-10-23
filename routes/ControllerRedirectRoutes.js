@@ -65,19 +65,13 @@
         }
       }
       if (queryPrefix !== null) {
-        isStub = controllerRedirectConf[queryPrefix]["stub"];
         return request({
           json: true,
           url: "http://localhost:" + config.all.server.nodeapi.port + "/api/" + controllerRedirectConf[queryPrefix]["entityName"] + "/codename/" + req.params.code
         }, (function(_this) {
           return function(error, response, body) {
-            var deepLink, kind, stub;
-            if (isStub) {
-              stub = response.body[0];
-              kind = stub.lsKind;
-            } else {
-              kind = response.body.lsKind;
-            }
+            var deepLink, kind;
+            kind = response.body[0].lsKind;
             deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"];
             return resp.redirect("/" + deepLink + "/codeName/" + req.params.code);
           };

@@ -258,6 +258,8 @@
 
     ExperimentBaseController.prototype.template = _.template($("#ExperimentBaseView").html());
 
+    ExperimentBaseController.prototype.moduleLaunchName = "experiment_base";
+
     ExperimentBaseController.prototype.events = function() {
       return _(ExperimentBaseController.__super__.events.call(this)).extend({
         "change .bv_experimentName": "handleNameChanged",
@@ -268,14 +270,86 @@
     };
 
     ExperimentBaseController.prototype.initialize = function() {
-      ExperimentBaseController.__super__.initialize.call(this);
+      if (this.model != null) {
+        return this.completeInitialization();
+      } else {
+        if (window.AppLaunchParams.moduleLaunchParams != null) {
+          if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
+            return $.ajax({
+              type: 'GET',
+              url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+              dataType: 'json',
+              error: function(err) {
+                alert('Could not get experiment for code in this URL, creating new one');
+                return this.completeInitialization();
+              },
+              success: (function(_this) {
+                return function(json) {
+                  var expt, lsKind;
+                  if (json.length === 0) {
+                    alert('Could not get experiment for code in this URL, creating new one');
+                  } else {
+                    lsKind = json[0].lsKind;
+                    if (lsKind === "default") {
+                      console.log(json[0]);
+                      expt = new Experiment(json[0]);
+                      expt.fixCompositeClasses();
+                      _this.model = expt;
+                    } else {
+                      alert('Could not get experiment for code in this URL. Creating new experiment');
+                    }
+                  }
+                  return _this.completeInitialization();
+                };
+              })(this)
+            });
+          } else {
+            console.log("second to last else");
+            return this.completeInitialization();
+          }
+        } else {
+          console.log("last else");
+          return this.completeInitialization();
+        }
+      }
+    };
+
+    ExperimentBaseController.prototype.completeInitialization = function() {
+      if (this.model == null) {
+        this.model = new Experiment();
+      }
       this.errorOwnerName = 'ExperimentBaseController';
       this.setBindings();
+      $(this.el).empty();
+      $(this.el).html(this.template(this.model.attributes));
+      this.model.on('sync', (function(_this) {
+        return function() {
+          _this.trigger('amClean');
+          _this.$('.bv_saving').hide();
+          _this.$('.bv_updateComplete').show();
+          _this.$('.bv_save').attr('disabled', 'disabled');
+          return _this.render();
+        };
+      })(this));
+      this.model.on('change', (function(_this) {
+        return function() {
+          _this.trigger('amDirty');
+          return _this.$('.bv_updateComplete').hide();
+        };
+      })(this));
+      this.$('.bv_save').attr('disabled', 'disabled');
+      this.setupStatusSelect();
+      this.setupTagList();
+      this.model.getStatus().on('change', this.updateEditable);
       this.setupProtocolSelect(this.options.protocolFilter);
-      return this.setupProjectSelect();
+      this.setupProjectSelect();
+      return this.render();
     };
 
     ExperimentBaseController.prototype.render = function() {
+      if (this.model == null) {
+        this.model = new Experiment();
+      }
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
@@ -287,6 +361,11 @@
 
     ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter) {
       var protocolCode, protocolKindFilter;
+      console.log("setup protocol select");
+      console.log(protocolFilter);
+      if (protocolFilter == null) {
+        protocolFilter = "";
+      }
       if (typeof protocolKindFilter === "undefined" || protocolKindFilter === null) {
         protocolKindFilter = "";
       }

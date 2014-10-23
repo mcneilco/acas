@@ -96,8 +96,6 @@
 
     PrimaryAnalysisReadList.prototype.validateCollection = function(matchReadName) {
       var currentReadName, error, index, indivModelErrors, model, modelErrors, usedReadNames, _i, _j, _len, _ref;
-      console.log("validating read collection");
-      console.log(this);
       modelErrors = [];
       usedReadNames = {};
       if (this.length !== 0) {
@@ -149,8 +147,6 @@
 
     TransformationRuleList.prototype.validateCollection = function() {
       var currentRule, error, index, indivModelErrors, model, modelErrors, usedRules, _i, _j, _len, _ref;
-      console.log("validating transformation collection");
-      console.log(this);
       modelErrors = [];
       usedRules = {};
       if (this.length !== 0) {
@@ -303,7 +299,6 @@
       readErrors = this.get('primaryAnalysisReadList').validateCollection(attrs.matchReadName);
       errors.push.apply(errors, readErrors);
       transformationErrors = this.get('transformationRuleList').validateCollection();
-      console.log(transformationErrors);
       errors.push.apply(errors, transformationErrors);
       positiveControl = this.get('positiveControl').get('batchCode');
       if (positiveControl === "" || positiveControl === void 0) {
@@ -456,10 +451,11 @@
     }
 
     PrimaryScreenExperiment.prototype.initialize = function() {
+      PrimaryScreenExperiment.__super__.initialize.call(this);
       this.set({
         lsKind: "flipr screening assay"
       });
-      return PrimaryScreenExperiment.__super__.initialize.call(this);
+      return console.log(this.get('lsKind'));
     };
 
     PrimaryScreenExperiment.prototype.getAnalysisParameters = function() {
@@ -1468,6 +1464,9 @@
                     alert('Could not get experiment for code in this URL, creating new one');
                   } else {
                     lsKind = json[0].lsKind;
+                    console.log(json[0]);
+                    console.log("lsKind");
+                    console.log(lsKind);
                     if (lsKind === "flipr screening assay") {
                       exp = new PrimaryScreenExperiment(json[0]);
                       exp.fixCompositeClasses();

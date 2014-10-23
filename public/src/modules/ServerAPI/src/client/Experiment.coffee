@@ -146,6 +146,7 @@ class window.ExperimentList extends Backbone.Collection
 
 class window.ExperimentBaseController extends BaseEntityController
 	template: _.template($("#ExperimentBaseView").html())
+	moduleLaunchName: "experiment_base"
 
 	events: ->
 		_(super()).extend(
@@ -156,13 +157,68 @@ class window.ExperimentBaseController extends BaseEntityController
 		)
 
 	initialize: ->
-		super()
+		if @model?
+			@completeInitialization()
+		else
+			if window.AppLaunchParams.moduleLaunchParams?
+				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+					$.ajax
+						type: 'GET'
+						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+						dataType: 'json'
+						error: (err) ->
+							alert 'Could not get experiment for code in this URL, creating new one'
+							@completeInitialization()
+						success: (json) =>
+							if json.length == 0
+								alert 'Could not get experiment for code in this URL, creating new one'
+							else
+								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#								prot = new PrimaryScreenProtocol json
+								lsKind = json[0].lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
+								if lsKind is "default"
+									console.log json[0]
+									expt = new Experiment json[0]
+									expt.fixCompositeClasses()
+									@model = expt
+								else
+									alert 'Could not get experiment for code in this URL. Creating new experiment'
+							@completeInitialization()
+				else
+					console.log "second to last else"
+					@completeInitialization()
+			else
+				console.log "last else"
+				@completeInitialization()
+
+	completeInitialization: ->
+		unless @model?
+			@model = new Experiment()
 		@errorOwnerName = 'ExperimentBaseController'
 		@setBindings()
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@model.on 'sync', =>
+			@trigger 'amClean'
+			@$('.bv_saving').hide()
+			@$('.bv_updateComplete').show()
+			@$('.bv_save').attr('disabled', 'disabled')
+			@render()
+		@model.on 'change', =>
+			@trigger 'amDirty'
+			@$('.bv_updateComplete').hide()
+		@$('.bv_save').attr('disabled', 'disabled')
+		@setupStatusSelect()
+		@setupTagList()
+		@model.getStatus().on 'change', @updateEditable
 		@setupProtocolSelect(@options.protocolFilter)
 		@setupProjectSelect()
+		@render()
+
 
 	render: =>
+		unless @model?
+			@model = new Experiment()
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
 		@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
@@ -171,6 +227,10 @@ class window.ExperimentBaseController extends BaseEntityController
 		@
 
 	setupProtocolSelect: (protocolFilter) ->
+		console.log "setup protocol select"
+		console.log protocolFilter
+		unless protocolFilter?
+			protocolFilter = ""
 		unless protocolKindFilter?
 			protocolKindFilter = ""
 		if @model.get('protocol') != null

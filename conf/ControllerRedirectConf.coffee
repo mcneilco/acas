@@ -3,7 +3,7 @@
 		{
 			PROT:
 				entityName: "protocols"
-				stub: true #route will return a stub
+				stub: true #route will return a stub. this is only used for stubsMode testing
 				default:
 					deepLink: "protocol_base"
 				"flipr screening assay":

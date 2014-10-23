@@ -29,8 +29,6 @@ class window.AbstractFormController extends Backbone.View
 
 	validationError: =>
 		errors = @model.validationError
-		console.log "validation Errors"
-		console.log errors
 		@clearValidationErrorStyles()
 
 		_.each errors, (err) =>

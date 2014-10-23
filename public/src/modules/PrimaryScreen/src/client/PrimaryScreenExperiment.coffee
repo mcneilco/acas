@@ -46,8 +46,6 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
 
 	validateCollection: (matchReadName) =>
-		console.log "validating read collection"
-		console.log @
 		modelErrors = []
 		usedReadNames = {}
 		if @.length != 0
@@ -78,8 +76,6 @@ class window.TransformationRuleList extends Backbone.Collection
 
 
 	validateCollection: =>
-		console.log "validating transformation collection"
-		console.log @
 		modelErrors = []
 		usedRules ={}
 		if @.length != 0
@@ -169,7 +165,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
 		errors.push readErrors...
 		transformationErrors = @get('transformationRuleList').validateCollection()
-		console.log transformationErrors
 		errors.push transformationErrors...
 		positiveControl = @get('positiveControl').get('batchCode')
 		if positiveControl is "" or positiveControl is undefined
@@ -270,9 +265,11 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 
 
 class window.PrimaryScreenExperiment extends Experiment
+
 	initialize: ->
-		@.set lsKind: "flipr screening assay"
 		super()
+		@.set lsKind: "flipr screening assay"
+		console.log @get('lsKind')
 
 	getAnalysisParameters: ->
 		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
@@ -948,6 +945,9 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								exp = new PrimaryScreenExperiment json
 								lsKind = json[0].lsKind
+								console.log json[0]
+								console.log "lsKind"
+								console.log lsKind
 								if lsKind is "flipr screening assay"
 									exp = new PrimaryScreenExperiment json[0]
 									exp.fixCompositeClasses()
