@@ -424,7 +424,7 @@ class window.CurveEditorController extends Backbone.View
 		flagUser = @model.get 'flagUser'
 		flagAlgorithm = @model.get 'flagAlgorithm'
 		dirty = @model.get 'dirty'
-		@trigger 'curveDetailUpdated', curveid, flagUser, flagAlgorithm, dirty
+		@trigger 'curveDetailUpdated', curveid, dirty
 
 class window.Curve extends Backbone.Model
 
@@ -460,6 +460,7 @@ class window.CurveList extends Backbone.Collection
 			category: category
 
 	updateCurveFlagUser: (curveid, dirty) =>
+		console.log dirty
 		curve = @getCurveByID(curveid)
 		curve.set
 			dirty: dirty
@@ -581,8 +582,6 @@ class window.CurveSummaryListController extends Backbone.View
 		@firstRun = true
 		if @options.selectedCurve?
 			@initiallySelectedCurveID = @options.selectedCurve
-		else
-			@initiallySelectedCurveID = "NA"
 
 	render: =>
 		@$el.empty()
@@ -614,16 +613,17 @@ class window.CurveSummaryListController extends Backbone.View
 			if @firstRun && @initiallySelectedCurveID?
 				if @initiallySelectedCurveID == cs.get 'curveid'
 					@selectedcid = cs.cid
-			if @selectedcid?
-				if csController.model.cid == @selectedcid
-					if !@firstRun
-						csController.styleSelected()
-					else
-						csController.setSelected()
+				if @selectedcid?
+					if csController.model.cid == @selectedcid
+						if @firstRun
+							csController.setSelected()
+						else
+							csController.styleSelected()
 			else
 				if @firstRun && i==1
 					@selectedcid = cs.id
 					csController.setSelected()
+			i = 2
 
 		if @toRender.length > 0
 			@firstRun = false
@@ -708,11 +708,6 @@ class window.CurveCuratorController extends Backbone.View
 				@$('.bv_sortDirection_descending').attr( "checked", true );
 
 			@handleSortChanged()
-#			indexOfRequestedCurve = @curveListController.collection.getIndexByCurveID(requestedCurveIDToSelect)
-#			if indexOfRequestedCurve == -1
-#				indexOfRequestedCurve = 0
-#			@$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click()
-
 		@
 
 	handleCurveDetailSaved: (oldID, newID, dirty, category, flagUser, flagAlgorithm) =>

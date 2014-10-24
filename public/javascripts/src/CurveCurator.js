@@ -639,7 +639,7 @@
       flagUser = this.model.get('flagUser');
       flagAlgorithm = this.model.get('flagAlgorithm');
       dirty = this.model.get('dirty');
-      return this.trigger('curveDetailUpdated', curveid, flagUser, flagAlgorithm, dirty);
+      return this.trigger('curveDetailUpdated', curveid, dirty);
     };
 
     return CurveEditorController;
@@ -712,6 +712,7 @@
 
     CurveList.prototype.updateCurveFlagUser = function(curveid, dirty) {
       var curve;
+      console.log(dirty);
       curve = this.getCurveByID(curveid);
       return curve.set({
         dirty: dirty
@@ -931,8 +932,6 @@
       this.firstRun = true;
       if (this.options.selectedCurve != null) {
         return this.initiallySelectedCurveID = this.options.selectedCurve;
-      } else {
-        return this.initiallySelectedCurveID = "NA";
       }
     };
 
@@ -980,21 +979,22 @@
             if (_this.initiallySelectedCurveID === cs.get('curveid')) {
               _this.selectedcid = cs.cid;
             }
-          }
-          if (_this.selectedcid != null) {
-            if (csController.model.cid === _this.selectedcid) {
-              if (!_this.firstRun) {
-                return csController.styleSelected();
-              } else {
-                return csController.setSelected();
+            if (_this.selectedcid != null) {
+              if (csController.model.cid === _this.selectedcid) {
+                if (_this.firstRun) {
+                  csController.setSelected();
+                } else {
+                  csController.styleSelected();
+                }
               }
             }
           } else {
             if (_this.firstRun && i === 1) {
               _this.selectedcid = cs.id;
-              return csController.setSelected();
+              csController.setSelected();
             }
           }
+          return i = 2;
         };
       })(this));
       if (this.toRender.length > 0) {
