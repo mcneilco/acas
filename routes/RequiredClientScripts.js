@@ -56,6 +56,7 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
+	"/javascripts/src/ProtocolBrowser.js",
 	"/javascripts/src/TagList.js"
 ];
 
@@ -132,6 +133,7 @@ exports.specScripts = [
 	"/javascripts/spec/PrimaryScreenExperimentSpec.js",
 	"/javascripts/spec/PrimaryScreenProtocolSpec.js",
 	"/javascripts/spec/ProjectsServiceSpec.js",
+	"/javascripts/spec/ProtocolBrowserSpec.js",
 	"/javascripts/spec/ProtocolServiceSpec.js",
 	"/javascripts/spec/ProtocolSpec.js",
 	"/javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js",
