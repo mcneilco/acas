@@ -23,12 +23,18 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, re
   plateAssociationDT <- generateIniFile(filePath, tempFilePath, instrument)
   
   # keep this in this part of the code so that warnings can be relayed to user before uploading data
-  userInputReadTable <- formatUserInputActivityColumns(readsTable=readsTable, activityColNames=unique(plateAssociationDT$dataTitle), tempFilePath=tempFilePath, matchNames=matchNames)
+  userInputReadTable <- formatUserInputActivityColumns(readsTable=readsTable, 
+                                                       activityColNames=unique(plateAssociationDT$dataTitle), 
+                                                       tempFilePath=tempFilePath, matchNames=matchNames)
   
   ## TODO: dryRun should return "summaryInfo" here?
 
   assayData <- data.frame()
-  assayData <- plateAssociationDT[ , parseAssayPlateFiles(file.path(filePath,assayFileName), unique(instrumentType), unique(plateAssociationDT$dataTitle), tempFilePath=tempFilePath), by=list(assayFileName, assayBarcode, plateOrder)]
+  assayData <- plateAssociationDT[ , parseAssayPlateFiles(file.path(filePath,assayFileName), 
+                                                          unique(instrumentType), 
+                                                          unique(plateAssociationDT$dataTitle), 
+                                                          tempFilePath=tempFilePath), 
+                                  by=list(assayFileName, assayBarcode, plateOrder)]
   
   assayData <- adjustColumnsToUserInput(inputColumnTable=userInputReadTable, inputDataTable=assayData, tempFilePath=tempFilePath)
   

@@ -1363,7 +1363,7 @@ saveInputParameters <- function(inputParameters, experiment, lsTransaction, reco
   metadataState <- getOrCreateExperimentState(experiment, "metadata", "experiment metadata", recordedBy, lsTransaction)
   
   inputParamValue <- updateOrCreateStateValue(
-    "experiment", metadataState, lsType = "clobValue",
+    "experiment", lsType = "clobValue",
     lsKind = "data analysis parameters",
     clobValue = inputParameters,
     lsState = metadataState,
@@ -1653,9 +1653,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # GREEN (instrument-specific)
   instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
   
+  # TODO: Test structure
+  clientName <- "DNS"
+  # END: Test structure
   
-  source(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",
-                   instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
+  #   source(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",
+  #                    instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
+  source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
+                   clientName,"specificDataPreProcessor.R"))
   
   instrumentData <- specificDataPreProcessor(parameters=parameters, 
                                              folderToParse=folderToParse, 
@@ -1667,10 +1672,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   # RED (client-specific)
   # getCompoundAssignments
-  
-  # TODO: Test structure
-  clientName <- "DNS"
-  # END: Test structure
   
   source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"getCompoundAssignments.R"))
