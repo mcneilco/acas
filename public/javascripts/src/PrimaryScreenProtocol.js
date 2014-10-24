@@ -590,8 +590,8 @@
                   } else {
                     lsKind = json[0].lsKind;
                     if (lsKind === "flipr screening assay") {
-                      prot = new PrimaryScreenProtocol(json[0]);
                       console.log(json[0]);
+                      prot = new PrimaryScreenProtocol(json[0]);
                       prot.fixCompositeClasses();
                       console.log(prot);
                       _this.model = prot;
@@ -709,6 +709,7 @@
         };
       })(this));
       this.primaryScreenAnalysisParametersController.on('updateState', this.updateAnalysisClobValue);
+      console.log("render ps analysis parameters controller");
       return this.primaryScreenAnalysisParametersController.render();
     };
 

@@ -455,8 +455,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 #								prot = new PrimaryScreenProtocol json
 								lsKind = json[0].lsKind
 								if lsKind is "flipr screening assay"
-									prot = new PrimaryScreenProtocol json[0]
 									console.log json[0] #TODO: has all of the correct data
+									prot = new PrimaryScreenProtocol json[0]
 									prot.fixCompositeClasses()
 									console.log prot # TODO: figure out why this does not have the data anymore
 									@model = prot
@@ -566,6 +566,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController.on 'amClean', =>
 			@trigger 'amClean'
 		@primaryScreenAnalysisParametersController.on 'updateState', @updateAnalysisClobValue
+		console.log "render ps analysis parameters controller"
 		@primaryScreenAnalysisParametersController.render()
 
 	setupPrimaryScreenModelFitParametersController: =>

@@ -56,7 +56,7 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 				indivModelErrors = model.validate(model.attributes) # note: can't call model.isValid() because if invalid, the function will trigger validationError, which adds the class "error" to the invalid attributes
 				if indivModelErrors != null
 					for error in indivModelErrors
-						unless matchReadName and error.attribute == 'readPosition'
+						unless (matchReadName and error.attribute == 'readPosition')
 								modelErrors.push
 									attribute: error.attribute+':eq('+index+')'
 									message: error.message
@@ -430,18 +430,19 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		@collection.each (read) =>
 			@addOneRead(read)
 		if @collection.length == 0
-			@addNewRead()
+			@addNewRead(true)
 		@checkActivity()
 
 		@
 
-	addNewRead: =>
+	addNewRead: (skipAmDirtyTrigger) =>
 		newModel = new PrimaryAnalysisRead()
 		@collection.add newModel
 		@addOneRead(newModel)
 		if @collection.length ==1
 			@checkActivity()
-		newModel.triggerAmDirty()
+		unless skipAmDirtyTrigger?
+			newModel.triggerAmDirty()
 
 	addOneRead: (read) ->
 		parc = new PrimaryAnalysisReadController
@@ -454,14 +455,19 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 	matchReadNameChanged: (matchReadName) =>
 		@matchReadNameChecked = matchReadName
 		if @matchReadNameChecked
+			console.log "match read name is checked"
 			@$('.bv_readPosition').val('')
 			@$('.bv_readPosition').attr('disabled','disabled')
+			console.log "disabled read position"
 			@collection.each (read) =>
 				read.set readPosition: ''
+			console.log "cleared read positions"
 		else
+			console.log "match read name is not checked"
 			@$('.bv_readPosition').removeAttr('disabled')
 
 	checkActivity: => #check that at least one activity is set
+		console.log "starting to check activity"
 		index = @collection.length-1
 		activitySet = false
 		while index >= 0 and activitySet == false
@@ -469,7 +475,10 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 				activitySet = true
 			if index == 0
 				@$('.bv_activity:eq(0)').click()
+				@$('.bv_activity:eq(0)').attr('checked','checked')
+				@collection.at(index).set activity: true
 			index = index - 1
+		console.log "checked activity"
 
 
 class window.TransformationRuleListController extends AbstractFormController
@@ -484,20 +493,22 @@ class window.TransformationRuleListController extends AbstractFormController
 
 
 	render: =>
+		console.log "starting render of transform rule list controller"
 		$(@el).empty()
 		$(@el).html @template()
 		@collection.each (rule) =>
 			@addOneRule(rule)
 		if @collection.length == 0
-			@addNewRule()
-
+			@addNewRule(true)
+		console.log "finished render of transform rule list controller"
 		@
 
-	addNewRule: =>
+	addNewRule: (skipAmDirtyTrigger)=>
 		newModel = new TransformationRule()
 		@collection.add newModel
 		@addOneRule(newModel)
-		newModel.triggerAmDirty()
+		unless skipAmDirtyTrigger?
+			newModel.triggerAmDirty()
 
 
 	addOneRule: (rule) ->
@@ -560,6 +571,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 
 	render: =>
+		console.log "starting render of ps analysis params controller"
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
 		@setupInstrumentReaderSelect()
@@ -567,10 +579,13 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupAggregateBy1Select()
 		@setupAggregateBy2Select()
 		@setupNormalizationSelect()
-		@handleAutoHitSelectionChanged()
+		@handleAutoHitSelectionChanged(true)
+		console.log "about to set up read list controller"
 		@setupReadListController()
+		console.log "about to set up trans rule list controller"
 		@setupTransformationRuleListController()
-		@handleMatchReadNameChanged()
+		@handleMatchReadNameChanged(true)
+		console.log "finished rendering analysis params controller"
 
 		@
 
@@ -722,14 +737,15 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_hitSDThreshold').removeAttr('disabled')
 		@attributeChanged()
 
-	handleAutoHitSelectionChanged: =>
+	handleAutoHitSelectionChanged: (skipUpdate) =>
 		autoHitSelection = @$('.bv_autoHitSelection').is(":checked")
 		@model.set autoHitSelection: autoHitSelection
 		if autoHitSelection
 			@$('.bv_thresholdControls').show()
 		else
 			@$('.bv_thresholdControls').hide()
-		@attributeChanged()
+		unless skipUpdate?
+			@attributeChanged()
 
 	handleVolumeTypeChanged: =>
 		volumeType = @$("input[name='bv_volumeType']:checked").val()
@@ -744,11 +760,14 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@handleDilutionFactorChanged()
 		@attributeChanged()
 
-	handleMatchReadNameChanged: =>
+	handleMatchReadNameChanged: (skipUpdate) =>
+		console.log "handleMatchReadNameChanged"
 		matchReadName = @$('.bv_matchReadName').is(":checked")
 		@model.set matchReadName: matchReadName
+		console.log "set model's match read name"
 		@readListController.matchReadNameChanged(matchReadName)
-		@attributeChanged()
+		unless skipUpdate?
+			@attributeChanged()
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 #	See UploadAndRunPrimaryAnalsysisController for example required initialization function

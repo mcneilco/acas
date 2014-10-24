@@ -707,13 +707,13 @@
         };
       })(this));
       if (this.collection.length === 0) {
-        this.addNewRead();
+        this.addNewRead(true);
       }
       this.checkActivity();
       return this;
     };
 
-    PrimaryAnalysisReadListController.prototype.addNewRead = function() {
+    PrimaryAnalysisReadListController.prototype.addNewRead = function(skipAmDirtyTrigger) {
       var newModel;
       newModel = new PrimaryAnalysisRead();
       this.collection.add(newModel);
@@ -721,7 +721,9 @@
       if (this.collection.length === 1) {
         this.checkActivity();
       }
-      return newModel.triggerAmDirty();
+      if (skipAmDirtyTrigger == null) {
+        return newModel.triggerAmDirty();
+      }
     };
 
     PrimaryAnalysisReadListController.prototype.addOneRead = function(read) {
@@ -741,35 +743,43 @@
     PrimaryAnalysisReadListController.prototype.matchReadNameChanged = function(matchReadName) {
       this.matchReadNameChecked = matchReadName;
       if (this.matchReadNameChecked) {
+        console.log("match read name is checked");
         this.$('.bv_readPosition').val('');
         this.$('.bv_readPosition').attr('disabled', 'disabled');
-        return this.collection.each((function(_this) {
+        console.log("disabled read position");
+        this.collection.each((function(_this) {
           return function(read) {
             return read.set({
               readPosition: ''
             });
           };
         })(this));
+        return console.log("cleared read positions");
       } else {
+        console.log("match read name is not checked");
         return this.$('.bv_readPosition').removeAttr('disabled');
       }
     };
 
     PrimaryAnalysisReadListController.prototype.checkActivity = function() {
-      var activitySet, index, _results;
+      var activitySet, index;
+      console.log("starting to check activity");
       index = this.collection.length - 1;
       activitySet = false;
-      _results = [];
       while (index >= 0 && activitySet === false) {
         if (this.collection.at(index).get('activity') === true) {
           activitySet = true;
         }
         if (index === 0) {
           this.$('.bv_activity:eq(0)').click();
+          this.$('.bv_activity:eq(0)').attr('checked', 'checked');
+          this.collection.at(index).set({
+            activity: true
+          });
         }
-        _results.push(index = index - 1);
+        index = index - 1;
       }
-      return _results;
+      return console.log("checked activity");
     };
 
     return PrimaryAnalysisReadListController;
@@ -808,6 +818,7 @@
     };
 
     TransformationRuleListController.prototype.render = function() {
+      console.log("starting render of transform rule list controller");
       $(this.el).empty();
       $(this.el).html(this.template());
       this.collection.each((function(_this) {
@@ -816,17 +827,20 @@
         };
       })(this));
       if (this.collection.length === 0) {
-        this.addNewRule();
+        this.addNewRule(true);
       }
+      console.log("finished render of transform rule list controller");
       return this;
     };
 
-    TransformationRuleListController.prototype.addNewRule = function() {
+    TransformationRuleListController.prototype.addNewRule = function(skipAmDirtyTrigger) {
       var newModel;
       newModel = new TransformationRule();
       this.collection.add(newModel);
       this.addOneRule(newModel);
-      return newModel.triggerAmDirty();
+      if (skipAmDirtyTrigger == null) {
+        return newModel.triggerAmDirty();
+      }
     };
 
     TransformationRuleListController.prototype.addOneRule = function(rule) {
@@ -915,6 +929,7 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
+      console.log("starting render of ps analysis params controller");
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
       this.setupInstrumentReaderSelect();
@@ -922,10 +937,13 @@
       this.setupAggregateBy1Select();
       this.setupAggregateBy2Select();
       this.setupNormalizationSelect();
-      this.handleAutoHitSelectionChanged();
+      this.handleAutoHitSelectionChanged(true);
+      console.log("about to set up read list controller");
       this.setupReadListController();
+      console.log("about to set up trans rule list controller");
       this.setupTransformationRuleListController();
-      this.handleMatchReadNameChanged();
+      this.handleMatchReadNameChanged(true);
+      console.log("finished rendering analysis params controller");
       return this;
     };
 
@@ -1127,7 +1145,7 @@
       return this.attributeChanged();
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.handleAutoHitSelectionChanged = function() {
+    PrimaryScreenAnalysisParametersController.prototype.handleAutoHitSelectionChanged = function(skipUpdate) {
       var autoHitSelection;
       autoHitSelection = this.$('.bv_autoHitSelection').is(":checked");
       this.model.set({
@@ -1138,7 +1156,9 @@
       } else {
         this.$('.bv_thresholdControls').hide();
       }
-      return this.attributeChanged();
+      if (skipUpdate == null) {
+        return this.attributeChanged();
+      }
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleVolumeTypeChanged = function() {
@@ -1160,14 +1180,18 @@
       return this.attributeChanged();
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function() {
+    PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function(skipUpdate) {
       var matchReadName;
+      console.log("handleMatchReadNameChanged");
       matchReadName = this.$('.bv_matchReadName').is(":checked");
       this.model.set({
         matchReadName: matchReadName
       });
+      console.log("set model's match read name");
       this.readListController.matchReadNameChanged(matchReadName);
-      return this.attributeChanged();
+      if (skipUpdate == null) {
+        return this.attributeChanged();
+      }
     };
 
     return PrimaryScreenAnalysisParametersController;

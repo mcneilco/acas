@@ -34,6 +34,7 @@ class window.BaseEntity extends Backbone.Model
 
 
 	fixCompositeClasses: =>
+		console.log "fix composite classes"
 		if @has('lsLabels')
 			if @get('lsLabels') not instanceof LabelList
 				@set lsLabels: new LabelList(@get('lsLabels'))

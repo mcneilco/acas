@@ -67,6 +67,7 @@
     };
 
     BaseEntity.prototype.fixCompositeClasses = function() {
+      console.log("fix composite classes");
       if (this.has('lsLabels')) {
         if (!(this.get('lsLabels') instanceof LabelList)) {
           this.set({
