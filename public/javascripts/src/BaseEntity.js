@@ -24,12 +24,13 @@
         recordedBy: "",
         recordedDate: new Date().getTime(),
         shortDescription: " ",
-        lsLabels: new LabelList(),
-        lsStates: new StateList()
+        lsLabels: [],
+        lsStates: []
       };
     };
 
     BaseEntity.prototype.initialize = function() {
+      this.set;
       this.fixCompositeClasses();
       return this.setupCompositeChangeTriggers();
     };
@@ -549,14 +550,12 @@
 
     BaseEntityController.prototype.validationError = function() {
       BaseEntityController.__super__.validationError.call(this);
-      this.$('.bv_save').attr('disabled', 'disabled');
-      return console.log("validation error in base entity");
+      return this.$('.bv_save').attr('disabled', 'disabled');
     };
 
     BaseEntityController.prototype.clearValidationErrorStyles = function() {
       BaseEntityController.__super__.clearValidationErrorStyles.call(this);
-      this.$('.bv_save').removeAttr('disabled');
-      return console.log("clear validation error styles in base entity");
+      return this.$('.bv_save').removeAttr('disabled');
     };
 
     return BaseEntityController;

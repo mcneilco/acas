@@ -96,8 +96,6 @@
 
     PrimaryAnalysisReadList.prototype.validateCollection = function(matchReadName) {
       var currentReadName, error, index, indivModelErrors, model, modelErrors, usedReadNames, _i, _j, _len, _ref;
-      console.log("validating read collection");
-      console.log(this);
       modelErrors = [];
       usedReadNames = {};
       if (this.length !== 0) {
@@ -207,17 +205,17 @@
       dilutionFactor: null,
       hitEfficacyThreshold: null,
       hitSDThreshold: null,
-      positiveControl: new Backbone.Model(),
-      negativeControl: new Backbone.Model(),
-      vehicleControl: new Backbone.Model(),
-      agonistControl: new Backbone.Model(),
+      positiveControl: {},
+      negativeControl: {},
+      vehicleControl: {},
+      agonistControl: {},
       thresholdType: "sd",
       volumeType: "dilution",
       htsFormat: false,
       autoHitSelection: false,
       matchReadName: true,
-      primaryAnalysisReadList: new PrimaryAnalysisReadList(),
-      transformationRuleList: new TransformationRuleList()
+      primaryAnalysisReadList: {},
+      transformationRuleList: {}
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
@@ -335,7 +333,7 @@
       }
       agonistControl = this.get('agonistControl').get('batchCode');
       agonistControlConc = this.get('agonistControl').get('concentration');
-      if (agonistControl !== "" || agonistControlConc !== "") {
+      if ((agonistControl !== "" && agonistControl !== void 0) || (agonistControlConc !== "" && agonistControlConc !== void 0)) {
         if (agonistControl === "" || agonistControl === void 0) {
           errors.push({
             attribute: 'agonistControlBatch',
@@ -715,14 +713,17 @@
 
     PrimaryAnalysisReadListController.prototype.addNewRead = function(skipAmDirtyTrigger) {
       var newModel;
+      console.log("addNewRead");
+      console.log(skipAmDirtyTrigger);
       newModel = new PrimaryAnalysisRead();
       this.collection.add(newModel);
       this.addOneRead(newModel);
       if (this.collection.length === 1) {
         this.checkActivity();
       }
-      if (skipAmDirtyTrigger == null) {
-        return newModel.triggerAmDirty();
+      if (skipAmDirtyTrigger !== true) {
+        newModel.triggerAmDirty();
+        return console.log("should trigger am dirty");
       }
     };
 
@@ -771,7 +772,6 @@
           activitySet = true;
         }
         if (index === 0) {
-          this.$('.bv_activity:eq(0)').click();
           this.$('.bv_activity:eq(0)').attr('checked', 'checked');
           this.collection.at(index).set({
             activity: true
@@ -838,7 +838,7 @@
       newModel = new TransformationRule();
       this.collection.add(newModel);
       this.addOneRule(newModel);
-      if (skipAmDirtyTrigger == null) {
+      if (skipAmDirtyTrigger !== true) {
         return newModel.triggerAmDirty();
       }
     };
@@ -1156,7 +1156,7 @@
       } else {
         this.$('.bv_thresholdControls').hide();
       }
-      if (skipUpdate == null) {
+      if (skipUpdate !== true) {
         return this.attributeChanged();
       }
     };
@@ -1189,7 +1189,7 @@
       });
       console.log("set model's match read name");
       this.readListController.matchReadNameChanged(matchReadName);
-      if (skipUpdate == null) {
+      if (skipUpdate !== true) {
         return this.attributeChanged();
       }
     };

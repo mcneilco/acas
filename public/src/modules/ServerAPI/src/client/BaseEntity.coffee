@@ -8,10 +8,12 @@ class window.BaseEntity extends Backbone.Model
 		recordedBy: ""
 		recordedDate: new Date().getTime()
 		shortDescription: " "
-		lsLabels: new LabelList()
-		lsStates: new StateList()
+#		lsLabels: new LabelList()
+		lsLabels: [] # will be converted into a new LabelList()
+		lsStates: [] # will be converted into a new StateList()
 
 	initialize: ->
+		@.set
 		@fixCompositeClasses()
 		@setupCompositeChangeTriggers()
 
@@ -356,9 +358,7 @@ class window.BaseEntityController extends AbstractFormController
 	validationError: =>
 		super()
 		@$('.bv_save').attr('disabled', 'disabled')
-		console.log "validation error in base entity"
 
 	clearValidationErrorStyles: =>
 		super()
 		@$('.bv_save').removeAttr('disabled')
-		console.log "clear validation error styles in base entity"

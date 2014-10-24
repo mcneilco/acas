@@ -68,6 +68,7 @@ class window.PrimaryScreenProtocolParameters extends State
 #		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", parameterName
 		parameter = @.getOrCreateValueByTypeAndKind "codeValue", parameterName
 		parameter.set codeType: "protocolMetadata"
+		parameter.set codeKind: parameterName
 		if parameter.get('codeValue') is undefined or parameter.get('codeValue') is ""
 			parameter.set codeValue: "unassigned"
 		if parameter.get('codeOrigin') is undefined or parameter.get('codeOrigin') is ""
@@ -107,8 +108,6 @@ class window.PrimaryScreenProtocol extends Protocol
 #		psAnalysisParametersErrors = psAnalysisParameters.validationError
 		errors.push psAnalysisParametersErrors...
 		psModelFitParameters = new DoseResponseAnalysisParameters @getModelFitParameters()
-		console.log "psModelFitParameters"
-		console.log psModelFitParameters
 		psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes)
 		errors.push psModelFitParametersErrors...
 
@@ -525,6 +524,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@$('.bv_saveModule').html("Save")
 		else
 			@$('.bv_saveModule').html("Update")
+		console.log "at end of complete initialization"
+		console.log @model
 
 
 	handleProtocolSaved: =>
@@ -626,6 +627,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@$('.bv_updateModuleComplete').html "Update Complete"
 
 		@$('.bv_saveModule').attr('disabled', 'disabled')
+		console.log "saving model"
+		console.log @model
 		@model.save()
 		console.log "model saved"
 

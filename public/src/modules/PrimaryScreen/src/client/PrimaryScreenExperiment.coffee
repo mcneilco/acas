@@ -46,8 +46,6 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
 
 	validateCollection: (matchReadName) =>
-		console.log "validating read collection"
-		console.log @
 		modelErrors = []
 		usedReadNames = {}
 		if @.length != 0
@@ -116,17 +114,17 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
-		positiveControl: new Backbone.Model()
-		negativeControl: new Backbone.Model()
-		vehicleControl: new Backbone.Model()
-		agonistControl: new Backbone.Model()
+		positiveControl: {} # will be converted into a new Backbone.Model()
+		negativeControl: {} # will be converted into a new Backbone.Model()
+		vehicleControl: {} # will be converted into a new Backbone.Model()
+		agonistControl: {} # will be converted into a new Backbone.Model()
 		thresholdType: "sd"
 		volumeType: "dilution"
 		htsFormat: false
 		autoHitSelection: false
 		matchReadName: true
-		primaryAnalysisReadList: new PrimaryAnalysisReadList()
-		transformationRuleList: new TransformationRuleList()
+		primaryAnalysisReadList: {} # will be converted into a new PrimaryAnalysisReadList()
+		transformationRuleList: {} # will be converted into a new TransformationRuleList()
 
 
 	initialize: ->
@@ -194,7 +192,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
-		if agonistControl !="" or agonistControlConc != "" # at least one of the agonist control fields is filled
+		if (agonistControl !="" and agonistControl != undefined) or (agonistControlConc != "" and agonistControlConc != undefined) # at least one of the agonist control fields is filled
 			if agonistControl is "" or agonistControl is undefined
 				errors.push
 					attribute: 'agonistControlBatch'
@@ -436,13 +434,16 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		@
 
 	addNewRead: (skipAmDirtyTrigger) =>
+		console.log "addNewRead"
+		console.log skipAmDirtyTrigger
 		newModel = new PrimaryAnalysisRead()
 		@collection.add newModel
 		@addOneRead(newModel)
 		if @collection.length ==1
 			@checkActivity()
-		unless skipAmDirtyTrigger?
+		unless skipAmDirtyTrigger is true
 			newModel.triggerAmDirty()
+			console.log "should trigger am dirty"
 
 	addOneRead: (read) ->
 		parc = new PrimaryAnalysisReadController
@@ -474,7 +475,7 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			if @collection.at(index).get('activity') == true
 				activitySet = true
 			if index == 0
-				@$('.bv_activity:eq(0)').click()
+#				@$('.bv_activity:eq(0)').click()
 				@$('.bv_activity:eq(0)').attr('checked','checked')
 				@collection.at(index).set activity: true
 			index = index - 1
@@ -507,7 +508,7 @@ class window.TransformationRuleListController extends AbstractFormController
 		newModel = new TransformationRule()
 		@collection.add newModel
 		@addOneRule(newModel)
-		unless skipAmDirtyTrigger?
+		unless skipAmDirtyTrigger is true
 			newModel.triggerAmDirty()
 
 
@@ -744,7 +745,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_thresholdControls').show()
 		else
 			@$('.bv_thresholdControls').hide()
-		unless skipUpdate?
+		unless skipUpdate is true
 			@attributeChanged()
 
 	handleVolumeTypeChanged: =>
@@ -766,7 +767,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@model.set matchReadName: matchReadName
 		console.log "set model's match read name"
 		@readListController.matchReadNameChanged(matchReadName)
-		unless skipUpdate?
+		unless skipUpdate is true
 			@attributeChanged()
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController

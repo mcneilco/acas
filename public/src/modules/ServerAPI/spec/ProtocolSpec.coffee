@@ -292,7 +292,7 @@ describe "Protocol module testing", ->
 				it "should fill the long description field", ->
 					expect(@pbc.$('.bv_description').html()).toEqual "long description goes here"
 				it "should fill the comments field", ->
-					expect(@pbc.$('.bv_comments').html()).toEqual "comments go here"
+					expect(@pbc.$('.bv_comments').html()).toEqual "protocol comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
 				# then setting model attribites changes the hash
 				xit "should fill the protocol name field", ->

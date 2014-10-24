@@ -3,8 +3,8 @@ class window.AnalysisGroup extends Backbone.Model
 		kind: ""
 		recordedBy: ""
 		recordedDate: null
-		lsLabels: new LabelList()
-		lsStates: new StateList()
+		lsLabels: [] # will be converted into a LabelList()
+		lsStates: [] # will be converted into a StateList()
 
 	initialize: ->
 		@fixCompositeClasses()

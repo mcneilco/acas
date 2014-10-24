@@ -17,7 +17,7 @@
     Experiment.prototype.defaults = function() {
       return _(Experiment.__super__.defaults.call(this)).extend({
         protocol: null,
-        analysisGroups: new AnalysisGroupList()
+        analysisGroups: {}
       });
     };
 

@@ -101,6 +101,9 @@
       parameter.set({
         codeType: "protocolMetadata"
       });
+      parameter.set({
+        codeKind: parameterName
+      });
       if (parameter.get('codeValue') === void 0 || parameter.get('codeValue') === "") {
         parameter.set({
           codeValue: "unassigned"
@@ -161,8 +164,6 @@
       psAnalysisParametersErrors = psAnalysisParameters.validate(psAnalysisParameters.attributes);
       errors.push.apply(errors, psAnalysisParametersErrors);
       psModelFitParameters = new DoseResponseAnalysisParameters(this.getModelFitParameters());
-      console.log("psModelFitParameters");
-      console.log(psModelFitParameters);
       psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes);
       errors.push.apply(errors, psModelFitParametersErrors);
       bestName = attrs.lsLabels.pickBestName();
@@ -651,10 +652,12 @@
       this.$('.bv_save').hide();
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
-        return this.$('.bv_saveModule').html("Save");
+        this.$('.bv_saveModule').html("Save");
       } else {
-        return this.$('.bv_saveModule').html("Update");
+        this.$('.bv_saveModule').html("Update");
       }
+      console.log("at end of complete initialization");
+      return console.log(this.model);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleProtocolSaved = function() {
@@ -786,6 +789,8 @@
         this.$('.bv_updateModuleComplete').html("Update Complete");
       }
       this.$('.bv_saveModule').attr('disabled', 'disabled');
+      console.log("saving model");
+      console.log(this.model);
       this.model.save();
       return console.log("model saved");
     };

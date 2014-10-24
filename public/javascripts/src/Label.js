@@ -179,25 +179,14 @@
     }
 
     State.prototype.defaults = {
-      lsValues: new ValueList(),
+      lsValues: {},
       ignored: false,
       recordedDate: null,
       recordedBy: ""
     };
 
     State.prototype.initialize = function() {
-      if (this.has('lsValues')) {
-        if (!(this.get('lsValues') instanceof ValueList)) {
-          this.set({
-            lsValues: new ValueList(this.get('lsValues'))
-          });
-        }
-      }
-      return this.get('lsValues').on('change', (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
+      return this.set(this.parse(this.attributes));
     };
 
     State.prototype.parse = function(resp) {

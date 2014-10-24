@@ -156,6 +156,9 @@ class window.ProtocolBaseController extends BaseEntityController
 		@model.getAssayPrinciple().set
 			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
 			recordedBy: @model.get('recordedBy')
+		console.log "handleAssayPrincipleChanged"
+		console.log @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", "assay principle"
+		console.log @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "assay principle"
 
 	handleAssayTreeRuleChanged: =>
 		@model.getAssayTreeRule().set

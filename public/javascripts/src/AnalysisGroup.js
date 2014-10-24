@@ -15,8 +15,8 @@
       kind: "",
       recordedBy: "",
       recordedDate: null,
-      lsLabels: new LabelList(),
-      lsStates: new StateList()
+      lsLabels: [],
+      lsStates: []
     };
 
     AnalysisGroup.prototype.initialize = function() {

@@ -3,7 +3,7 @@ class window.Experiment extends BaseEntity
 	defaults: ->
 		_(super()).extend(
 			protocol: null
-			analysisGroups: new AnalysisGroupList()
+			analysisGroups: {} # will be converted into a new AnalysisGroupList()
 		)
 
 	initialize: ->

@@ -439,7 +439,7 @@
             return expect(this.pbc.$('.bv_description').html()).toEqual("long description goes here");
           });
           it("should fill the comments field", function() {
-            return expect(this.pbc.$('.bv_comments').html()).toEqual("comments go here");
+            return expect(this.pbc.$('.bv_comments').html()).toEqual("protocol comments go here");
           });
           xit("should fill the protocol name field", function() {
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("FLIPR target A biochemical");

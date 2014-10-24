@@ -20,6 +20,7 @@
             return expect(this.exp.get('lsKind')).toEqual("default");
           });
           it('Should have an empty label list', function() {
+            console.log(this.exp.get('lsLabels'));
             expect(this.exp.get('lsLabels').length).toEqual(0);
             return expect(this.exp.get('lsLabels') instanceof LabelList).toBeTruthy();
           });
