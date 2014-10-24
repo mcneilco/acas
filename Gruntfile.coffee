@@ -19,6 +19,13 @@ module.exports = (grunt) ->
 						dest: "public/javascripts/src/"
 						ext: '.js'
 					]
+			serverOnlyModules:
+				files: [
+						expand: true
+						flatten: false
+						src: ["serverOnlyModules/**/*.coffee"]
+						ext: '.js'
+					]
 			spec:
 				files: [
 					expand: true
@@ -235,6 +242,9 @@ module.exports = (grunt) ->
 			coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
 				tasks: 'coffee:app'
+			compileServerOnlyModules:
+				files: 'serverOnlyModules/**/*.coffee'
+				tasks: 'coffee:serverOnlyModules'
 			compileSpec:
 				files: "public/src/modules/**/spec/*.coffee"
 				tasks: "coffee:spec"
