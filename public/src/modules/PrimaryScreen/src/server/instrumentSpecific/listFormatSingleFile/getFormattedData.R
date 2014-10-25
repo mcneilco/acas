@@ -19,7 +19,8 @@ getFormattedData <- function(fileName, sepChar, begRow, endRow, headerExists, te
     skip=begRow - 1,
     nrows=endRow - begRow,
     header=headerExists, 
-    fill=NA
+    fill=NA,
+    check.names=FALSE
   )
   
   assayData <- as.data.table(assayData)
@@ -40,6 +41,8 @@ getFormattedData <- function(fileName, sepChar, begRow, endRow, headerExists, te
   if(!is.null(assayData$X)) {
     assayData[ , c("X") := NULL]
   }
+  
+  suppressWarnings(assayData$"" <- NULL)
   
   getWellReferenceData(assayData, tempFilePath=tempFilePath)
   

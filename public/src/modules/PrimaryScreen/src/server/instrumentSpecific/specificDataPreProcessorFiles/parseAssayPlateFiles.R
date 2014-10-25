@@ -9,7 +9,7 @@
 #######################################################################################
 
 
-parseAssayPlateFiles <- function(assayFileName = "assayFileName", instrumentType = "microBeta", titleVector, readOrder, tempFilePath){
+parseAssayPlateFiles <- function(assayFileName = "assayFileName", instrumentType = "microBeta", titleVector, tempFilePath){
 # Args:
 #   assayFileName:                assay file name
 #   instrumentType:               instrument type to parse
@@ -25,6 +25,8 @@ parseAssayPlateFiles <- function(assayFileName = "assayFileName", instrumentType
   # returns a list of the params
   instrumentParams <- loadInstrumentReadParameters(instrumentType=instrumentType)
   
-  parseInstrumentPlateData(fileName=assayFileName, parseParams=instrumentParams, titleVector, tempFilePath=tempFilePath)
+  parseInstrumentPlateData(fileName=assayFileName, 
+                           parseParams=instrumentParams, 
+                           titleVector, tempFilePath=tempFilePath)
     
 }

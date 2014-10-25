@@ -203,7 +203,7 @@ createGGHeatmap <- function(name, plate, margins=c(1,1,1,1)) {
   plate$x <- as.numeric(gsub("\\D*","",plate$well))
   plate$y <- as.character(gsub("\\d*","",plate$well))
   
-  plateHeatmap <- ggplot(plate,aes(x=x,y=y,fill=transformedValues)) +
+  plateHeatmap <- ggplot(plate,aes(x=x,y=y,fill=normalizedValues)) +
     scale_x_continuous(expand=c(0,0),breaks=1:24) + 
     geom_tile() + scale_y_discrete(limits=rev(LETTERS[1:16])) +
     xlab("") +

@@ -6,8 +6,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
   for(instrumentType in instruments) {
     instrumentExists <- TRUE
     
-    # viewLuxDetectionLine     <- ";-"
-    # thermalMeltDetectionLine <- "^Wells \t Tm Boltzmann"
+    
     if (instrumentType == "acumen") {
       detectionLine  <- "^.*: .*: .*?, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12|^.*: .*?, ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12"
       paramList <- list(headerRowSearchString = "Ratio .*,1,2,3,4,",
@@ -80,6 +79,24 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
                         beginDataColNumber    = NA,
                         dataTitleIdentifier   = NA,
                         dataFormat            = "stat1stat2seq1")
+    } else if (instrumentType == "thermalMelt"){
+      detectionLine <- "^Wells \t Tm Boltzmann"
+      paramList <- list(headerRowSearchString = "^Wells \t Tm Boltzmann",
+                        dataRowSearchString   = "^[A-Z]{1,2}[0-9]{1,2} \t",
+                        sepChar               = "\t",
+                        headerExists          = TRUE,
+                        beginDataColNumber    = 1,
+                        dataTitleIdentifier   = NA,
+                        dataFormat            = "listFormatSingleFile")
+    } else if (instrumentType == "viewLux") {
+      detectionLine     <- ";-"
+      paramList <- list(headerRowSearchString = "Plate\tRepeat\tWell\tType",
+                        dataRowSearchString   = "^[0-9]*\t[0-9]*\t[A-Z]{1,2}",
+                        sepChar               = "\t",
+                        headerExists          = TRUE,
+                        beginDataColNumber    = 1,
+                        dataTitleIdentifier   = NA,
+                        dataFormat            = "listFormatSingleFile")
     } else {
       instrumentExists <- FALSE
       warning(paste0("Instrument (",instrumentType,") has not been defined in helper function."))
@@ -90,10 +107,10 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
         dir.create(file.path(filePath,instrumentType))
       }
       
-      setwd(file.path(filePath,instrumentType))
-      write.table(toJSON(list(instrumentType=instrumentType)), file="instrumentType.json", quote=FALSE, row.names=FALSE, col.names=FALSE)
-      write.table(toJSON(list(detectionLine=detectionLine)), file="detectionLine.json", quote=FALSE, row.names=FALSE, col.names=FALSE)
-      write.table(toJSON(list(paramList=paramList)), file="paramList.json", quote=FALSE, row.names=FALSE, col.names=FALSE)
+      #       setwd(file.path(filePath,instrumentType))
+      write.table(toJSON(list(instrumentType=instrumentType)), file=file.path(filePath, instrumentType, "instrumentType.json"), quote=FALSE, row.names=FALSE, col.names=FALSE)
+      write.table(toJSON(list(detectionLine=detectionLine)), file=file.path(filePath, instrumentType, "detectionLine.json"), quote=FALSE, row.names=FALSE, col.names=FALSE)
+      write.table(toJSON(list(paramList=paramList)), file=file.path(filePath, instrumentType, "paramList.json"), quote=FALSE, row.names=FALSE, col.names=FALSE)
       #     save(instrumentType, file="instrumentType.Rda")
       #     save(detectionLine, file="detectionLine.Rda")
       #     save(paramList, file="paramList.Rda")

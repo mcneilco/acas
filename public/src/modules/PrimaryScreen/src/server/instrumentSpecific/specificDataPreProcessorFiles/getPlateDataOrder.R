@@ -13,7 +13,7 @@ getPlateDataOrder <- function(filePath, instrument, tempFilePath) {
   assayBarcodeDT <- assayBarcodeDT[ , getAssayFileName(assayBarcode, filePath=filePath, tempFilePath=tempFilePath), by=assayBarcode]
   plateAssociationDT <- merge(plateAssociationDT, assayBarcodeDT, by="assayBarcode")
   
-  if(length(assayBarcodeDT$assayFileName) != length(list.files(path=filePath, pattern=".txt"))) {
+  if(length(assayBarcodeDT$assayFileName) != length(list.files(path=filePath, pattern=".txt", ignore.case=TRUE))) {
     stopUser("Not all assay files in file path are found in plate association.")
   }
   

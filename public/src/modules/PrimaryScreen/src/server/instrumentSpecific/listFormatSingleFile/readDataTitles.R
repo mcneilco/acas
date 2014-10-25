@@ -8,7 +8,9 @@ readDataTitles <- function(fileName, parseParams, headerRowVector, tempFilePath)
     dataTitles <- data.table(dataTitle=setdiff(colnames(read.table(fileName, 
                                                                    sep=parseParams$sepChar, 
                                                                    skip=headerRowVector-1, 
-                                                                   nrows=1, header=TRUE)), c("Well", "X")))
+                                                                   nrows=1, header=TRUE,
+                                                                   check.names=FALSE, fill=NA)), 
+                                               c("Well", "X")))[dataTitle!=""]
     dataTitles$readOrder <- 1:nrow(dataTitles) 
   } else {
     stopUser("Unknown error in readDataTitles function.")

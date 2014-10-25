@@ -32,7 +32,7 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, re
   assayData <- data.frame()
   assayData <- plateAssociationDT[ , parseAssayPlateFiles(file.path(filePath,assayFileName), 
                                                           unique(instrumentType), 
-                                                          unique(plateAssociationDT$dataTitle), 
+                                                          unique(dataTitle), 
                                                           tempFilePath=tempFilePath), 
                                   by=list(assayFileName, assayBarcode, plateOrder)]
   
