@@ -32,7 +32,7 @@
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
 # newest experimentID: 75191, 9036, 11203
 # request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
-
+# request <- structure(list(fileToParse = "Archive.zip", reportFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"primaryAnalysisReads\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}", primaryAnalysisExperimentId = 203528, testMode = "true"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
 getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
   
   if(is.null(flaggedWells)) {
@@ -1619,58 +1619,36 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   batchDataTable <- resultTable[is.na(flag)]
   
   #   if(!useRdap) {
+  
+  # was "across plates"
+  if (parameters$aggregateBy1 == "compound batch concentration") {
+    groupBy <- c("batchCode", "wellType")
+  } else if (parameters$aggregateBy1 == "within plates") {
+    groupBy <- c("batchCode", "wellType", "assayBarcode")
+  } else {
+    groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
+  }
+  
+  treatmentGroupBy <- c(groupBy, "cmpdConc")
+  batchDataTable[, parentId:=.GRP, by=treatmentGroupBy]
+  
+  treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
+  treatmentGroupData[, parentId:=.GRP, by=groupBy]
+  analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
+  analysisGroupData[, parentId:=experimentId]
+
+  ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'
+  
+  
+  #     getAnalysisGroupData <- function(treatmentGroupData) {
+  #       
+  #       
+  #       analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
+  #       analysisGroupData[, analysisGroupId := treatmentGroupId]
+  #       
+  #       return(analysisGroupData)
+  #     }
   if(FALSE) {
-    getTreatmentGroupData <- function(batchDataTable, parameters) {
-      #IFF
-      ##### TODO: Sam Fix
-      if (parameters$aggregateReplicates == "across plates") {
-        treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
-                                                    stDev = sd(values), n=length(values), 
-                                                    sdScore = mean(sdScore), 
-                                                    threshold = ifelse(all(threshold), "yes", "no"),
-                                                    latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
-                                             by=list(batchName,fluorescent,concUnit,hasAgonist, wellType)]
-      } else if (parameters$aggregateReplicates == "within plates") {
-        treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
-                                                    stDev = sd(values), 
-                                                    n=length(values),
-                                                    sdScore = mean(sdScore),
-                                                    threshold = ifelse(all(threshold), "yes", "no"),
-                                                    latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
-                                             by=list(batchName,fluorescent,barcode,concUnit,hasAgonist, wellType)]
-      } else {
-        treatmentGroupData <- batchDataTable[, list(batchName = batchName, 
-                                                    fluorescent = fluorescent, 
-                                                    wellType = wellType, 
-                                                    groupMean = values, 
-                                                    stDev = NA, 
-                                                    n = 1, 
-                                                    sdScore = sdScore,
-                                                    maxTime = maxTime,
-                                                    overallMaxTime = overallMaxTime,
-                                                    threshold = ifelse(threshold, "yes", "no"),
-                                                    hasAgonist = hasAgonist)]
-      }
-      treatmentGroupData$treatmentGroupId <- 1:nrow(treatmentGroupData)
-      ##### TODO: End Sam Fix
-      
-      return(treatmentGroupData)
-    }
-    
-    treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters)
-    
-    getAnalysisGroupData <- function(treatmentGroupData) {
-      # IFF
-      
-      ##### TODO: Write function that will correctly assign analyisGroupIDs for 'dose response' or other
-      analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
-      analysisGroupData[, analysisGroupId := treatmentGroupId]
-      
-      return(analysisGroupData)
-    }
-    
-    analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
-    
     # add a "userHit" column to the table
     userHitList <- getUserHits(analysisGroupData, flaggedWells, resultTable, parameters$aggregateReplicates, experiment, flaggingStage)
     analysisGroupData <- userHitList$analysisGroupData
@@ -1826,7 +1804,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   # This runs on dryRun and save, could be split to save different values
-  
   if (!testMode) {
     lsTransaction <- createLsTransaction()$id
     saveInputParameters(inputParameters, experiment, lsTransaction, user)
@@ -2581,7 +2558,93 @@ formatColumnNameChangeDT <- function(colDataTable) {
   
   return(list(computerToHuman=computerToHuman, humanToComputer=humanToComputer))
 }
-
+getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
+  # Parameters will be used later, not sure which ones yet
+  ##### TODO: Sam Fix
+  meanTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
+                  "activity", "normalizedActivity",
+                  grep("^transformed_", names(batchDataTable), value=TRUE)
+  )
+  yesNoSometimesTarget <- c("") # Text transformations... should these be in meanTarget, and key on class?
+  allRequiredTarget <- c("") # Same problem # Used when all booleans must be true for aggregate to be true
+  sdTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
+                "activity", "normalizedActivity",
+                grep("^transformed_", names(batchDataTable), value=TRUE)
+  )
+  
+  aggregateTreatmentData <- function(DT, meanTarget, sdTarget) {
+    outputMeans <- lapply(meanTarget, function(x) {
+      mean(as.numeric(DT[, x, with=FALSE][[1]]))
+    })
+    names(outputMeans) <- meanTarget
+    
+    outputSDs <- lapply(sdTarget, function(x) {
+      sd(as.numeric(DT[, x, with=FALSE][[1]]))
+    })
+    names(outputSDs) <- paste0("standardDeviation_", sdTarget)
+    
+    return(c(outputMeans, outputSDs))
+  }
+  
+  treatmentData <- batchDataTable[, aggregateTreatmentData(.SD, meanTarget, sdTarget), 
+                                  by=groupBy] #concUnit,hasAgonist,?
+  return(treatmentData)
+}
+getAnalysisGroupData <- function(treatmentGroupData) {
+  # columns to be saved as analysis group data
+  #analysisGroupTarget <- grep("^transformed_", names(treatmentGroupData), value=TRUE)
+  
+  # Replaces data with a curve id if there are more than 3 points
+  aggregateCurveData <- function(DT, newID) {
+    if(length(unique(DT[, cmpdConc])) > 3) {
+      output <- DT[NA]
+      output[, curveId:=newID]
+      return(output)
+    } else {
+      return(DT)
+    }
+  }
+  
+  preCurveData <- copy(treatmentGroupData)
+  preCurveData[, curveId:=NA_integer_]
+  curveData <- preCurveData[, aggregateCurveData(.SD, .GRP), by=parentId]
+  
+  return(curveData)
+  
+  # TODO: bring hasAgonist back in, or put in a config
+  
+  #       if (parameters$aggregateReplicates == "across plates") {
+  #         treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
+  #                                                     stDev = sd(values), n=length(values), 
+  #                                                     sdScore = mean(sdScore), 
+  #                                                     threshold = ifelse(all(threshold), "yes", "no"),
+  #                                                     latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
+  #                                              by=list(batchName,fluorescent,concUnit,hasAgonist, wellType)]
+  #       } else if (parameters$aggregateReplicates == "within plates") {
+  #         treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
+  #                                                     stDev = sd(values), 
+  #                                                     n=length(values),
+  #                                                     sdScore = mean(sdScore),
+  #                                                     threshold = ifelse(all(threshold), "yes", "no"),
+  #                                                     latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
+  #                                              by=list(batchName,fluorescent,barcode,concUnit,hasAgonist, wellType)]
+  #       } else {
+  #         treatmentGroupData <- batchDataTable[, list(batchName = batchName, 
+  #                                                     fluorescent = fluorescent, 
+  #                                                     wellType = wellType, 
+  #                                                     groupMean = values, 
+  #                                                     stDev = NA, 
+  #                                                     n = 1, 
+  #                                                     sdScore = sdScore,
+  #                                                     maxTime = maxTime,
+  #                                                     overallMaxTime = overallMaxTime,
+  #                                                     threshold = ifelse(threshold, "yes", "no"),
+  #                                                     hasAgonist = hasAgonist)]
+  #       }
+  #       treatmentGroupData$treatmentGroupId <- 1:nrow(treatmentGroupData)
+  ##### TODO: End Sam Fix
+  
+}
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
   library('racas')
