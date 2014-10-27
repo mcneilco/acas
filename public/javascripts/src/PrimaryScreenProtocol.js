@@ -593,7 +593,7 @@
                     if (lsKind === "flipr screening assay") {
                       console.log(json[0]);
                       prot = new PrimaryScreenProtocol(json[0]);
-                      prot.fixCompositeClasses();
+                      prot.set(prot.parse(prot.attributes));
                       console.log(prot);
                       _this.model = prot;
                       console.log(prot);

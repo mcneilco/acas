@@ -190,7 +190,7 @@
     __extends(PrimaryScreenAnalysisParameters, _super);
 
     function PrimaryScreenAnalysisParameters() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      this.parse = __bind(this.parse, this);
       return PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -205,94 +205,95 @@
       dilutionFactor: null,
       hitEfficacyThreshold: null,
       hitSDThreshold: null,
-      positiveControl: {},
-      negativeControl: {},
-      vehicleControl: {},
-      agonistControl: {},
+      positiveControl: [],
+      negativeControl: [],
+      vehicleControl: [],
+      agonistControl: [],
       thresholdType: "sd",
       volumeType: "dilution",
       htsFormat: false,
       autoHitSelection: false,
       matchReadName: true,
-      primaryAnalysisReadList: {},
-      transformationRuleList: {}
+      primaryAnalysisReadList: [],
+      transformationRuleList: []
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
-      return this.fixCompositeClasses();
+      return this.set(this.parse(this.attributes));
     };
 
-    PrimaryScreenAnalysisParameters.prototype.fixCompositeClasses = function() {
-      if (!(this.get('positiveControl') instanceof Backbone.Model)) {
-        this.set({
-          positiveControl: new Backbone.Model(this.get('positiveControl'))
-        });
+    PrimaryScreenAnalysisParameters.prototype.parse = function(resp) {
+      if (resp.positiveControl != null) {
+        if (!(resp.positiveControl instanceof Backbone.Model)) {
+          resp.positiveControl = new Backbone.Model(resp.positiveControl);
+          resp.positiveControl.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
       }
-      this.get('positiveControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('negativeControl') instanceof Backbone.Model)) {
-        this.set({
-          negativeControl: new Backbone.Model(this.get('negativeControl'))
-        });
+      if (resp.negativeControl != null) {
+        if (!(resp.negativeControl instanceof Backbone.Model)) {
+          resp.negativeControl = new Backbone.Model(resp.negativeControl);
+          resp.negativeControl.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
       }
-      this.get('negativeControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('vehicleControl') instanceof Backbone.Model)) {
-        this.set({
-          vehicleControl: new Backbone.Model(this.get('vehicleControl'))
-        });
+      if (resp.vehicleControl != null) {
+        if (!(resp.vehicleControl instanceof Backbone.Model)) {
+          resp.vehicleControl = new Backbone.Model(resp.vehicleControl);
+          resp.vehicleControl.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
       }
-      this.get('vehicleControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('agonistControl') instanceof Backbone.Model)) {
-        this.set({
-          agonistControl: new Backbone.Model(this.get('agonistControl'))
-        });
+      if (resp.agonistControl != null) {
+        if (!(resp.agonistControl instanceof Backbone.Model)) {
+          resp.agonistControl = new Backbone.Model(resp.agonistControl);
+          resp.agonistControl.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
       }
-      this.get('agonistControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList)) {
-        this.set({
-          primaryAnalysisReadList: new PrimaryAnalysisReadList(this.get('primaryAnalysisReadList'))
-        });
+      if (resp.primaryAnalysisReadList != null) {
+        if (!(resp.primaryAnalysisReadList instanceof PrimaryAnalysisReadList)) {
+          resp.primaryAnalysisReadList = new PrimaryAnalysisReadList(resp.primaryAnalysisReadList);
+          resp.primaryAnalysisReadList.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+          resp.primaryAnalysisReadList.on('amDirty', (function(_this) {
+            return function() {
+              return _this.trigger('amDirty');
+            };
+          })(this));
+        }
       }
-      this.get('primaryAnalysisReadList').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      this.get('primaryAnalysisReadList').on("amDirty", (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
-      if (!(this.get('transformationRuleList') instanceof TransformationRuleList)) {
-        this.set({
-          transformationRuleList: new TransformationRuleList(this.get('transformationRuleList'))
-        });
+      if (resp.transformationRuleList != null) {
+        if (!(resp.transformationRuleList instanceof TransformationRuleList)) {
+          resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList);
+          resp.transformationRuleList.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+          resp.transformationRuleList.on('amDirty', (function(_this) {
+            return function() {
+              return _this.trigger('amDirty');
+            };
+          })(this));
+        }
       }
-      this.get('transformationRuleList').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      return this.get('transformationRuleList').on("amDirty", (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
+      return resp;
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
@@ -1494,7 +1495,7 @@
                     lsKind = json[0].lsKind;
                     if (lsKind === "flipr screening assay") {
                       exp = new PrimaryScreenExperiment(json[0]);
-                      exp.fixCompositeClasses();
+                      exp.set(exp.parse(exp.attributes));
                       _this.model = exp;
                     } else {
                       alert('Could not get primary screen experiment for code in this URL. Creating new primary screen experiment');

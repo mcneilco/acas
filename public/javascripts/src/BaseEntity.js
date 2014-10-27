@@ -9,7 +9,6 @@
     function BaseEntity() {
       this.getModelFitParameters = __bind(this.getModelFitParameters, this);
       this.getAnalysisParameters = __bind(this.getAnalysisParameters, this);
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       this.parse = __bind(this.parse, this);
       return BaseEntity.__super__.constructor.apply(this, arguments);
     }
@@ -30,9 +29,7 @@
     };
 
     BaseEntity.prototype.initialize = function() {
-      this.set;
-      this.fixCompositeClasses();
-      return this.setupCompositeChangeTriggers();
+      return this.set(this.parse(this.attributes));
     };
 
     BaseEntity.prototype.parse = function(resp) {
@@ -65,49 +62,6 @@
         })(this));
       }
       return resp;
-    };
-
-    BaseEntity.prototype.fixCompositeClasses = function() {
-      console.log("fix composite classes");
-      if (this.has('lsLabels')) {
-        if (!(this.get('lsLabels') instanceof LabelList)) {
-          this.set({
-            lsLabels: new LabelList(this.get('lsLabels'))
-          });
-        }
-      }
-      if (this.has('lsStates')) {
-        if (!(this.get('lsStates') instanceof StateList)) {
-          this.set({
-            lsStates: new StateList(this.get('lsStates'))
-          });
-        }
-      }
-      if (this.get('lsTags') !== null) {
-        if (!(this.get('lsTags') instanceof TagList)) {
-          return this.set({
-            lsTags: new TagList(this.get('lsTags'))
-          });
-        }
-      }
-    };
-
-    BaseEntity.prototype.setupCompositeChangeTriggers = function() {
-      this.get('lsLabels').on('change', (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      this.get('lsStates').on('change', (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      return this.get('lsTags').on('change', (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
     };
 
     BaseEntity.prototype.getDescription = function() {

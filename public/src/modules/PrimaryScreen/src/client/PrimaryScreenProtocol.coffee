@@ -456,7 +456,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 								if lsKind is "flipr screening assay"
 									console.log json[0] #TODO: has all of the correct data
 									prot = new PrimaryScreenProtocol json[0]
-									prot.fixCompositeClasses()
+									prot.set prot.parse(prot.attributes)
+#									prot.fixCompositeClasses()
 									console.log prot # TODO: figure out why this does not have the data anymore
 									@model = prot
 									console.log prot

@@ -288,10 +288,12 @@ class window.CurveDetail extends Backbone.Model
 	url: ->
 		return "/api/curve/detail/" + @id
 	initialize: ->
-		@fixCompositeClasses()
-	fixCompositeClasses: =>
-		if @get('fitSettings') not instanceof DoseResponseAnalysisParameters
-			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
+#		@fixCompositeClasses()
+		@.set @parse(@.attributes)
+
+#	fixCompositeClasses: =>
+#		if @get('fitSettings') not instanceof DoseResponseAnalysisParameters
+#			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
 	parse: (resp) =>
 		if resp.fitSettings not instanceof DoseResponseAnalysisParameters
 			resp.fitSettings = new DoseResponseAnalysisParameters(resp.fitSettings)

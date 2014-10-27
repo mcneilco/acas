@@ -99,7 +99,7 @@ class window.ProtocolBaseController extends BaseEntityController
 								if lsKind is "default"
 									console.log json[0]
 									prot = new Protocol json[0]
-									prot.fixCompositeClasses()
+									prot.set prot.parse(prot.attributes)
 									@model = prot
 									console.log "should have gotten the protocol"
 								else

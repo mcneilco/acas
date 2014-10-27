@@ -7,7 +7,6 @@
     __extends(Experiment, _super);
 
     function Experiment() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       this.parse = __bind(this.parse, this);
       return Experiment.__super__.constructor.apply(this, arguments);
     }
@@ -17,7 +16,7 @@
     Experiment.prototype.defaults = function() {
       return _(Experiment.__super__.defaults.call(this)).extend({
         protocol: null,
-        analysisGroups: {}
+        analysisGroups: []
       });
     };
 
@@ -70,24 +69,6 @@
       return resp;
     };
 
-    Experiment.prototype.fixCompositeClasses = function() {
-      Experiment.__super__.fixCompositeClasses.call(this);
-      if (this.has('analysisGroups')) {
-        if (!(this.get('analysisGroups') instanceof AnalysisGroupList)) {
-          this.set({
-            analysisGroups: new AnalysisGroupList(this.get('analysisGroups'))
-          });
-        }
-      }
-      if (this.get('protocol') !== null) {
-        if (!(this.get('protocol') instanceof Backbone.Model)) {
-          return this.set({
-            protocol: new Protocol(this.get('protocol'))
-          });
-        }
-      }
-    };
-
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
       var completionDate, estates, notebook, project, pstates;
       notebook = this.getNotebook().get('stringValue');
@@ -132,7 +113,6 @@
       this.getProjectCode().set({
         codeValue: project
       });
-      this.setupCompositeChangeTriggers();
       this.trigger('change');
       this.trigger("protocol_attributes_copied");
     };

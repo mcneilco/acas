@@ -13,9 +13,9 @@ class window.BaseEntity extends Backbone.Model
 		lsStates: [] # will be converted into a new StateList()
 
 	initialize: ->
-		@.set
-		@fixCompositeClasses()
-		@setupCompositeChangeTriggers()
+		@.set @parse(@.attributes)
+#		@fixCompositeClasses()
+#		@setupCompositeChangeTriggers()
 
 	parse: (resp) =>
 		if resp.lsLabels?
@@ -35,25 +35,25 @@ class window.BaseEntity extends Backbone.Model
 		resp
 
 
-	fixCompositeClasses: =>
-		console.log "fix composite classes"
-		if @has('lsLabels')
-			if @get('lsLabels') not instanceof LabelList
-				@set lsLabels: new LabelList(@get('lsLabels'))
-		if @has('lsStates')
-			if @get('lsStates') not instanceof StateList
-				@set lsStates: new StateList(@get('lsStates'))
-		if @get('lsTags') != null
-			if @get('lsTags') not instanceof TagList
-				@set lsTags: new TagList(@get('lsTags'))
-
-	setupCompositeChangeTriggers: ->
-		@get('lsLabels').on 'change', =>
-			@trigger 'change'
-		@get('lsStates').on 'change', =>
-			@trigger 'change'
-		@get('lsTags').on 'change', =>
-			@trigger 'change'
+#	fixCompositeClasses: =>
+#		console.log "fix composite classes"
+#		if @has('lsLabels')
+#			if @get('lsLabels') not instanceof LabelList
+#				@set lsLabels: new LabelList(@get('lsLabels'))
+#		if @has('lsStates')
+#			if @get('lsStates') not instanceof StateList
+#				@set lsStates: new StateList(@get('lsStates'))
+#		if @get('lsTags') != null
+#			if @get('lsTags') not instanceof TagList
+#				@set lsTags: new TagList(@get('lsTags'))
+#
+#	setupCompositeChangeTriggers: ->
+#		@get('lsLabels').on 'change', =>
+#			@trigger 'change'
+#		@get('lsStates').on 'change', =>
+#			@trigger 'change'
+#		@get('lsTags').on 'change', =>
+#			@trigger 'change'
 
 	getDescription: ->
 		console.log "getting description"

@@ -415,7 +415,6 @@
 
     function CurveDetail() {
       this.parse = __bind(this.parse, this);
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       return CurveDetail.__super__.constructor.apply(this, arguments);
     }
 
@@ -424,15 +423,7 @@
     };
 
     CurveDetail.prototype.initialize = function() {
-      return this.fixCompositeClasses();
-    };
-
-    CurveDetail.prototype.fixCompositeClasses = function() {
-      if (!(this.get('fitSettings') instanceof DoseResponseAnalysisParameters)) {
-        return this.set({
-          fitSettings: new DoseResponseAnalysisParameters(this.get('fitSettings'))
-        });
-      }
+      return this.set(this.parse(this.attributes));
     };
 
     CurveDetail.prototype.parse = function(resp) {

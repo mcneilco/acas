@@ -93,7 +93,7 @@ describe "Protocol module testing", ->
 				it 'Should have a description value', ->
 					expect(@prot.getDescription().get('clobValue')).toEqual "long description goes here"
 				it 'Should have a comments value', ->
-					expect(@prot.getComments().get('clobValue')).toEqual "comments go here"
+					expect(@prot.getComments().get('clobValue')).toEqual "protocol comments go here"
 				it 'Should have a notebook value', ->
 					expect(@prot.getNotebook().get('stringValue')).toEqual "912"
 				it 'Should have a completionDate value', ->

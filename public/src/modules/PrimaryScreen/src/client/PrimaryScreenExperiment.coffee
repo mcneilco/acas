@@ -114,52 +114,89 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
-		positiveControl: {} # will be converted into a new Backbone.Model()
-		negativeControl: {} # will be converted into a new Backbone.Model()
-		vehicleControl: {} # will be converted into a new Backbone.Model()
-		agonistControl: {} # will be converted into a new Backbone.Model()
+		positiveControl: [] # will be converted into a new Backbone.Model()
+		negativeControl: [] # will be converted into a new Backbone.Model()
+		vehicleControl: [] # will be converted into a new Backbone.Model()
+		agonistControl: [] # will be converted into a new Backbone.Model()
 		thresholdType: "sd"
 		volumeType: "dilution"
 		htsFormat: false
 		autoHitSelection: false
 		matchReadName: true
-		primaryAnalysisReadList: {} # will be converted into a new PrimaryAnalysisReadList()
-		transformationRuleList: {} # will be converted into a new TransformationRuleList()
+		primaryAnalysisReadList: [] # will be converted into a new PrimaryAnalysisReadList()
+		transformationRuleList: [] # will be converted into a new TransformationRuleList()
 
 
 	initialize: ->
-		@fixCompositeClasses()
+#		@fixCompositeClasses()
+		@.set @parse(@.attributes)
 
+	parse: (resp) =>
+		if resp.positiveControl?
+			if resp.positiveControl not instanceof Backbone.Model
+				resp.positiveControl = new Backbone.Model(resp.positiveControl)
+				resp.positiveControl.on 'change', =>
+					@trigger 'change'
+		if resp.negativeControl?
+			if resp.negativeControl not instanceof Backbone.Model
+				resp.negativeControl = new Backbone.Model(resp.negativeControl)
+				resp.negativeControl.on 'change', =>
+					@trigger 'change'
+		if resp.vehicleControl?
+			if resp.vehicleControl not instanceof Backbone.Model
+				resp.vehicleControl = new Backbone.Model(resp.vehicleControl)
+				resp.vehicleControl.on 'change', =>
+					@trigger 'change'
+		if resp.agonistControl?
+			if resp.agonistControl not instanceof Backbone.Model
+				resp.agonistControl = new Backbone.Model(resp.agonistControl)
+				resp.agonistControl.on 'change', =>
+					@trigger 'change'
+		if resp.primaryAnalysisReadList?
+			if resp.primaryAnalysisReadList not instanceof PrimaryAnalysisReadList
+				resp.primaryAnalysisReadList = new PrimaryAnalysisReadList(resp.primaryAnalysisReadList)
+				resp.primaryAnalysisReadList.on 'change', =>
+					@trigger 'change'
+				resp.primaryAnalysisReadList.on 'amDirty', =>
+					@trigger 'amDirty'
+		if resp.transformationRuleList?
+			if resp.transformationRuleList not instanceof TransformationRuleList
+				resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList)
+				resp.transformationRuleList.on 'change', =>
+					@trigger 'change'
+				resp.transformationRuleList.on 'amDirty', =>
+					@trigger 'amDirty'
+		resp
 
-	fixCompositeClasses: =>
-		if @get('positiveControl') not instanceof Backbone.Model
-			@set positiveControl: new Backbone.Model(@get('positiveControl'))
-		@get('positiveControl').on "change", =>
-			@trigger 'change'
-		if @get('negativeControl') not instanceof Backbone.Model
-			@set negativeControl: new Backbone.Model(@get('negativeControl'))
-		@get('negativeControl').on "change", =>
-			@trigger 'change'
-		if @get('vehicleControl') not instanceof Backbone.Model
-			@set vehicleControl: new Backbone.Model(@get('vehicleControl'))
-		@get('vehicleControl').on "change", =>
-			@trigger 'change'
-		if @get('agonistControl') not instanceof Backbone.Model
-			@set agonistControl: new Backbone.Model(@get('agonistControl'))
-		@get('agonistControl').on "change", =>
-			@trigger 'change'
-		if @get('primaryAnalysisReadList') not instanceof PrimaryAnalysisReadList
-			@set primaryAnalysisReadList: new PrimaryAnalysisReadList(@get('primaryAnalysisReadList'))
-		@get('primaryAnalysisReadList').on "change", =>
-			@trigger 'change'
-		@get('primaryAnalysisReadList').on "amDirty", =>
-			@trigger 'amDirty'
-		if @get('transformationRuleList') not instanceof TransformationRuleList
-			@set transformationRuleList: new TransformationRuleList(@get('transformationRuleList'))
-		@get('transformationRuleList').on "change", =>
-			@trigger 'change'
-		@get('transformationRuleList').on "amDirty", =>
-			@trigger 'amDirty'
+#	fixCompositeClasses: =>
+#		if @get('positiveControl') not instanceof Backbone.Model
+#			@set positiveControl: new Backbone.Model(@get('positiveControl'))
+#		@get('positiveControl').on "change", =>
+#			@trigger 'change'
+#		if @get('negativeControl') not instanceof Backbone.Model
+#			@set negativeControl: new Backbone.Model(@get('negativeControl'))
+#		@get('negativeControl').on "change", =>
+#			@trigger 'change'
+#		if @get('vehicleControl') not instanceof Backbone.Model
+#			@set vehicleControl: new Backbone.Model(@get('vehicleControl'))
+#		@get('vehicleControl').on "change", =>
+#			@trigger 'change'
+#		if @get('agonistControl') not instanceof Backbone.Model
+#			@set agonistControl: new Backbone.Model(@get('agonistControl'))
+#		@get('agonistControl').on "change", =>
+#			@trigger 'change'
+#		if @get('primaryAnalysisReadList') not instanceof PrimaryAnalysisReadList
+#			@set primaryAnalysisReadList: new PrimaryAnalysisReadList(@get('primaryAnalysisReadList'))
+#		@get('primaryAnalysisReadList').on "change", =>
+#			@trigger 'change'
+#		@get('primaryAnalysisReadList').on "amDirty", =>
+#			@trigger 'amDirty'
+#		if @get('transformationRuleList') not instanceof TransformationRuleList
+#			@set transformationRuleList: new TransformationRuleList(@get('transformationRuleList'))
+#		@get('transformationRuleList').on "change", =>
+#			@trigger 'change'
+#		@get('transformationRuleList').on "amDirty", =>
+#			@trigger 'amDirty'
 
 
 	validate: (attrs) ->
@@ -970,7 +1007,8 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								lsKind = json[0].lsKind
 								if lsKind is "flipr screening assay"
 									exp = new PrimaryScreenExperiment json[0]
-									exp.fixCompositeClasses()
+									exp.set exp.parse(exp.attributes)
+#									exp.fixCompositeClasses()
 									@model = exp
 								else
 									alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
