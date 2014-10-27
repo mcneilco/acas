@@ -55,7 +55,8 @@ class window.PrimaryScreenAppController extends Backbone.View
 	existingExperiment: (expId) =>
 		exp = new PrimaryScreenExperiment id: expId
 		exp.fetch success: =>
-			exp.fixCompositeClasses()
+			exp.set exp.parse(exp.attributes)
+#			exp.fixCompositeClasses()
 			@primaryScreenExperimentController = new PrimaryScreenExperimentController
         model: exp
         el: $('.bv_primaryScreenExperimentController')

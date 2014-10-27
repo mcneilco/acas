@@ -165,7 +165,7 @@
                     if (lsKind === "default") {
                       console.log(json[0]);
                       prot = new Protocol(json[0]);
-                      prot.fixCompositeClasses();
+                      prot.set(prot.parse(prot.attributes));
                       _this.model = prot;
                       console.log("should have gotten the protocol");
                     } else {
@@ -236,10 +236,13 @@
     };
 
     ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
-      return this.model.getAssayPrinciple().set({
+      this.model.getAssayPrinciple().set({
         clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple')),
         recordedBy: this.model.get('recordedBy')
       });
+      console.log("handleAssayPrincipleChanged");
+      console.log(this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "clobValue", "assay principle"));
+      return console.log(this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "assay principle"));
     };
 
     ProtocolBaseController.prototype.handleAssayTreeRuleChanged = function() {

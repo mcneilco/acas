@@ -3,7 +3,7 @@ class window.Experiment extends BaseEntity
 	defaults: ->
 		_(super()).extend(
 			protocol: null
-			analysisGroups: new AnalysisGroupList()
+			analysisGroups: [] # will be converted into a new AnalysisGroupList()
 		)
 
 	initialize: ->
@@ -33,14 +33,14 @@ class window.Experiment extends BaseEntity
 				@trigger 'change'
 		resp
 
-	fixCompositeClasses: =>
-		super()
-		if @has('analysisGroups')
-			if @get('analysisGroups') not instanceof AnalysisGroupList
-				@set analysisGroups: new AnalysisGroupList(@get('analysisGroups'))
-		if @get('protocol') != null
-			if @get('protocol') not instanceof Backbone.Model
-				@set protocol: new Protocol(@get('protocol'))
+#	fixCompositeClasses: =>
+#		super()
+#		if @has('analysisGroups')
+#			if @get('analysisGroups') not instanceof AnalysisGroupList
+#				@set analysisGroups: new AnalysisGroupList(@get('analysisGroups'))
+#		if @get('protocol') != null
+#			if @get('protocol') not instanceof Backbone.Model
+#				@set protocol: new Protocol(@get('protocol'))
 
 	copyProtocolAttributes: (protocol) ->
 		#cache values I don't want to overwrite
@@ -73,7 +73,7 @@ class window.Experiment extends BaseEntity
 		@getNotebook().set stringValue: notebook
 		@getCompletionDate().set dateValue: completionDate
 		@getProjectCode().set codeValue: project
-		@setupCompositeChangeTriggers()
+#		@setupCompositeChangeTriggers()
 		@trigger 'change'
 		@trigger "protocol_attributes_copied"
 		return

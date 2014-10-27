@@ -101,6 +101,9 @@
       parameter.set({
         codeType: "protocolMetadata"
       });
+      parameter.set({
+        codeKind: parameterName
+      });
       if (parameter.get('codeValue') === void 0 || parameter.get('codeValue') === "") {
         parameter.set({
           codeValue: "unassigned"
@@ -588,9 +591,9 @@
                   } else {
                     lsKind = json[0].lsKind;
                     if (lsKind === "flipr screening assay") {
-                      prot = new PrimaryScreenProtocol(json[0]);
                       console.log(json[0]);
-                      prot.fixCompositeClasses();
+                      prot = new PrimaryScreenProtocol(json[0]);
+                      prot.set(prot.parse(prot.attributes));
                       console.log(prot);
                       _this.model = prot;
                     } else {
@@ -647,10 +650,12 @@
       this.$('.bv_save').hide();
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
-        return this.$('.bv_saveModule').html("Save");
+        this.$('.bv_saveModule').html("Save");
       } else {
-        return this.$('.bv_saveModule').html("Update");
+        this.$('.bv_saveModule').html("Update");
       }
+      console.log("at end of complete initialization");
+      return console.log(this.model);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleProtocolSaved = function() {
@@ -705,6 +710,7 @@
         };
       })(this));
       this.primaryScreenAnalysisParametersController.on('updateState', this.updateAnalysisClobValue);
+      console.log("render ps analysis parameters controller");
       return this.primaryScreenAnalysisParametersController.render();
     };
 
@@ -781,6 +787,8 @@
         this.$('.bv_updateModuleComplete').html("Update Complete");
       }
       this.$('.bv_saveModule').attr('disabled', 'disabled');
+      console.log("saving model");
+      console.log(this.model);
       this.model.save();
       return console.log("model saved");
     };

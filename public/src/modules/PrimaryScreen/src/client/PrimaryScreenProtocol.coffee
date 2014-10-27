@@ -68,6 +68,7 @@ class window.PrimaryScreenProtocolParameters extends State
 #		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", parameterName
 		parameter = @.getOrCreateValueByTypeAndKind "codeValue", parameterName
 		parameter.set codeType: "protocolMetadata"
+		parameter.set codeKind: parameterName
 		if parameter.get('codeValue') is undefined or parameter.get('codeValue') is ""
 			parameter.set codeValue: "unassigned"
 		if parameter.get('codeOrigin') is undefined or parameter.get('codeOrigin') is ""
@@ -453,9 +454,10 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 #								prot = new PrimaryScreenProtocol json
 								lsKind = json[0].lsKind
 								if lsKind is "flipr screening assay"
-									prot = new PrimaryScreenProtocol json[0]
 									console.log json[0] #TODO: has all of the correct data
-									prot.fixCompositeClasses()
+									prot = new PrimaryScreenProtocol json[0]
+									prot.set prot.parse(prot.attributes)
+#									prot.fixCompositeClasses()
 									console.log prot # TODO: figure out why this does not have the data anymore
 									@model = prot
 								else
@@ -521,6 +523,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@$('.bv_saveModule').html("Save")
 		else
 			@$('.bv_saveModule').html("Update")
+		console.log "at end of complete initialization"
+		console.log @model
 
 
 	handleProtocolSaved: =>
@@ -562,6 +566,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController.on 'amClean', =>
 			@trigger 'amClean'
 		@primaryScreenAnalysisParametersController.on 'updateState', @updateAnalysisClobValue
+		console.log "render ps analysis parameters controller"
 		@primaryScreenAnalysisParametersController.render()
 
 	setupPrimaryScreenModelFitParametersController: =>
@@ -621,6 +626,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@$('.bv_updateModuleComplete').html "Update Complete"
 
 		@$('.bv_saveModule').attr('disabled', 'disabled')
+		console.log "saving model"
+		console.log @model
 		@model.save()
 		console.log "model saved"
 

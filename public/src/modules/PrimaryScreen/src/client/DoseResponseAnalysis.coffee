@@ -7,15 +7,34 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 		slope: new Backbone.Model limitType: 'none'
 
 	initialize: ->
-		@fixCompositeClasses()
+#		@fixCompositeClasses()
+		@.set @parse(@.attributes)
 
-	fixCompositeClasses: =>
-		if @get('max') not instanceof Backbone.Model
-			@set max: new Backbone.Model(@get('max'))
-		if @get('min') not instanceof Backbone.Model
-			@set min: new Backbone.Model(@get('min'))
-		if @get('slope') not instanceof Backbone.Model
-			@set slope: new Backbone.Model(@get('slope'))
+#	fixCompositeClasses: =>
+#		if @get('max') not instanceof Backbone.Model
+#			@set max: new Backbone.Model(@get('max'))
+#		if @get('min') not instanceof Backbone.Model
+#			@set min: new Backbone.Model(@get('min'))
+#		if @get('slope') not instanceof Backbone.Model
+#			@set slope: new Backbone.Model(@get('slope'))
+
+	parse: (resp) =>
+		if resp.max?
+			if resp.max not instanceof Backbone.Model
+				resp.max = new Backbone.Model(resp.max)
+				resp.max.on 'change', =>
+					@trigger 'change'
+		if resp.min?
+			if resp.min not instanceof Backbone.Model
+				resp.min = new Backbone.Model(resp.min)
+				resp.min.on 'change', =>
+					@trigger 'change'
+		if resp.slope?
+			if resp.slope not instanceof Backbone.Model
+				resp.slope = new Backbone.Model(resp.slope)
+				resp.slope.on 'change', =>
+					@trigger 'change'
+		resp
 
 
 	validate: (attrs) ->

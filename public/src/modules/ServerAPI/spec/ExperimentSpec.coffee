@@ -15,6 +15,7 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsType')).toEqual "default"
 					expect(@exp.get('lsKind')).toEqual "default"
 				it 'Should have an empty label list', ->
+					console.log(@exp.get('lsLabels'))
 					expect(@exp.get('lsLabels').length).toEqual 0
 					expect(@exp.get('lsLabels') instanceof LabelList).toBeTruthy()
 				it 'Should have an empty tags list', ->

@@ -188,7 +188,7 @@
     __extends(PrimaryScreenAnalysisParameters, _super);
 
     function PrimaryScreenAnalysisParameters() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      this.parse = __bind(this.parse, this);
       return PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -203,94 +203,95 @@
       dilutionFactor: null,
       hitEfficacyThreshold: null,
       hitSDThreshold: null,
-      positiveControl: new Backbone.Model(),
-      negativeControl: new Backbone.Model(),
-      vehicleControl: new Backbone.Model(),
-      agonistControl: new Backbone.Model(),
+      positiveControl: [],
+      negativeControl: [],
+      vehicleControl: [],
+      agonistControl: [],
       thresholdType: "sd",
       volumeType: "dilution",
       htsFormat: false,
       autoHitSelection: false,
       matchReadName: true,
-      primaryAnalysisReadList: new PrimaryAnalysisReadList(),
-      transformationRuleList: new TransformationRuleList()
+      primaryAnalysisReadList: [],
+      transformationRuleList: []
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
-      return this.fixCompositeClasses();
+      return this.set(this.parse(this.attributes));
     };
 
-    PrimaryScreenAnalysisParameters.prototype.fixCompositeClasses = function() {
-      if (!(this.get('positiveControl') instanceof Backbone.Model)) {
-        this.set({
-          positiveControl: new Backbone.Model(this.get('positiveControl'))
-        });
+    PrimaryScreenAnalysisParameters.prototype.parse = function(resp) {
+      if (resp.positiveControl != null) {
+        if (!(resp.positiveControl instanceof Backbone.Model)) {
+          resp.positiveControl = new Backbone.Model(resp.positiveControl);
+          resp.positiveControl.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
       }
-      this.get('positiveControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('negativeControl') instanceof Backbone.Model)) {
-        this.set({
-          negativeControl: new Backbone.Model(this.get('negativeControl'))
-        });
+      if (resp.negativeControl != null) {
+        if (!(resp.negativeControl instanceof Backbone.Model)) {
+          resp.negativeControl = new Backbone.Model(resp.negativeControl);
+          resp.negativeControl.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
       }
-      this.get('negativeControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('vehicleControl') instanceof Backbone.Model)) {
-        this.set({
-          vehicleControl: new Backbone.Model(this.get('vehicleControl'))
-        });
+      if (resp.vehicleControl != null) {
+        if (!(resp.vehicleControl instanceof Backbone.Model)) {
+          resp.vehicleControl = new Backbone.Model(resp.vehicleControl);
+          resp.vehicleControl.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
       }
-      this.get('vehicleControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('agonistControl') instanceof Backbone.Model)) {
-        this.set({
-          agonistControl: new Backbone.Model(this.get('agonistControl'))
-        });
+      if (resp.agonistControl != null) {
+        if (!(resp.agonistControl instanceof Backbone.Model)) {
+          resp.agonistControl = new Backbone.Model(resp.agonistControl);
+          resp.agonistControl.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
       }
-      this.get('agonistControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList)) {
-        this.set({
-          primaryAnalysisReadList: new PrimaryAnalysisReadList(this.get('primaryAnalysisReadList'))
-        });
+      if (resp.primaryAnalysisReadList != null) {
+        if (!(resp.primaryAnalysisReadList instanceof PrimaryAnalysisReadList)) {
+          resp.primaryAnalysisReadList = new PrimaryAnalysisReadList(resp.primaryAnalysisReadList);
+          resp.primaryAnalysisReadList.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+          resp.primaryAnalysisReadList.on('amDirty', (function(_this) {
+            return function() {
+              return _this.trigger('amDirty');
+            };
+          })(this));
+        }
       }
-      this.get('primaryAnalysisReadList').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      this.get('primaryAnalysisReadList').on("amDirty", (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
-      if (!(this.get('transformationRuleList') instanceof TransformationRuleList)) {
-        this.set({
-          transformationRuleList: new TransformationRuleList(this.get('transformationRuleList'))
-        });
+      if (resp.transformationRuleList != null) {
+        if (!(resp.transformationRuleList instanceof TransformationRuleList)) {
+          resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList);
+          resp.transformationRuleList.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+          resp.transformationRuleList.on('amDirty', (function(_this) {
+            return function() {
+              return _this.trigger('amDirty');
+            };
+          })(this));
+        }
       }
-      this.get('transformationRuleList').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      return this.get('transformationRuleList').on("amDirty", (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
+      return resp;
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
@@ -330,7 +331,7 @@
       }
       agonistControl = this.get('agonistControl').get('batchCode');
       agonistControlConc = this.get('agonistControl').get('concentration');
-      if (agonistControl !== "" || agonistControlConc !== "") {
+      if ((agonistControl !== "" && agonistControl !== void 0) || (agonistControlConc !== "" && agonistControlConc !== void 0)) {
         if (agonistControl === "" || agonistControl === void 0) {
           errors.push({
             attribute: 'agonistControlBatch',
@@ -703,21 +704,26 @@
         };
       })(this));
       if (this.collection.length === 0) {
-        this.addNewRead();
+        this.addNewRead(true);
       }
       this.checkActivity();
       return this;
     };
 
-    PrimaryAnalysisReadListController.prototype.addNewRead = function() {
+    PrimaryAnalysisReadListController.prototype.addNewRead = function(skipAmDirtyTrigger) {
       var newModel;
+      console.log("addNewRead");
+      console.log(skipAmDirtyTrigger);
       newModel = new PrimaryAnalysisRead();
       this.collection.add(newModel);
       this.addOneRead(newModel);
       if (this.collection.length === 1) {
         this.checkActivity();
       }
-      return newModel.triggerAmDirty();
+      if (skipAmDirtyTrigger !== true) {
+        newModel.triggerAmDirty();
+        return console.log("should trigger am dirty");
+      }
     };
 
     PrimaryAnalysisReadListController.prototype.addOneRead = function(read) {
@@ -737,35 +743,42 @@
     PrimaryAnalysisReadListController.prototype.matchReadNameChanged = function(matchReadName) {
       this.matchReadNameChecked = matchReadName;
       if (this.matchReadNameChecked) {
+        console.log("match read name is checked");
         this.$('.bv_readPosition').val('');
         this.$('.bv_readPosition').attr('disabled', 'disabled');
-        return this.collection.each((function(_this) {
+        console.log("disabled read position");
+        this.collection.each((function(_this) {
           return function(read) {
             return read.set({
               readPosition: ''
             });
           };
         })(this));
+        return console.log("cleared read positions");
       } else {
+        console.log("match read name is not checked");
         return this.$('.bv_readPosition').removeAttr('disabled');
       }
     };
 
     PrimaryAnalysisReadListController.prototype.checkActivity = function() {
-      var activitySet, index, _results;
+      var activitySet, index;
+      console.log("starting to check activity");
       index = this.collection.length - 1;
       activitySet = false;
-      _results = [];
       while (index >= 0 && activitySet === false) {
         if (this.collection.at(index).get('activity') === true) {
           activitySet = true;
         }
         if (index === 0) {
-          this.$('.bv_activity:eq(0)').click();
+          this.$('.bv_activity:eq(0)').attr('checked', 'checked');
+          this.collection.at(index).set({
+            activity: true
+          });
         }
-        _results.push(index = index - 1);
+        index = index - 1;
       }
-      return _results;
+      return console.log("checked activity");
     };
 
     return PrimaryAnalysisReadListController;
@@ -804,6 +817,7 @@
     };
 
     TransformationRuleListController.prototype.render = function() {
+      console.log("starting render of transform rule list controller");
       $(this.el).empty();
       $(this.el).html(this.template());
       this.collection.each((function(_this) {
@@ -812,17 +826,20 @@
         };
       })(this));
       if (this.collection.length === 0) {
-        this.addNewRule();
+        this.addNewRule(true);
       }
+      console.log("finished render of transform rule list controller");
       return this;
     };
 
-    TransformationRuleListController.prototype.addNewRule = function() {
+    TransformationRuleListController.prototype.addNewRule = function(skipAmDirtyTrigger) {
       var newModel;
       newModel = new TransformationRule();
       this.collection.add(newModel);
       this.addOneRule(newModel);
-      return newModel.triggerAmDirty();
+      if (skipAmDirtyTrigger !== true) {
+        return newModel.triggerAmDirty();
+      }
     };
 
     TransformationRuleListController.prototype.addOneRule = function(rule) {
@@ -911,6 +928,7 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
+      console.log("starting render of ps analysis params controller");
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
       this.setupInstrumentReaderSelect();
@@ -918,10 +936,13 @@
       this.setupAggregateBy1Select();
       this.setupAggregateBy2Select();
       this.setupNormalizationSelect();
-      this.handleAutoHitSelectionChanged();
+      this.handleAutoHitSelectionChanged(true);
+      console.log("about to set up read list controller");
       this.setupReadListController();
+      console.log("about to set up trans rule list controller");
       this.setupTransformationRuleListController();
-      this.handleMatchReadNameChanged();
+      this.handleMatchReadNameChanged(true);
+      console.log("finished rendering analysis params controller");
       return this;
     };
 
@@ -1123,7 +1144,7 @@
       return this.attributeChanged();
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.handleAutoHitSelectionChanged = function() {
+    PrimaryScreenAnalysisParametersController.prototype.handleAutoHitSelectionChanged = function(skipUpdate) {
       var autoHitSelection;
       autoHitSelection = this.$('.bv_autoHitSelection').is(":checked");
       this.model.set({
@@ -1134,7 +1155,9 @@
       } else {
         this.$('.bv_thresholdControls').hide();
       }
-      return this.attributeChanged();
+      if (skipUpdate !== true) {
+        return this.attributeChanged();
+      }
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleVolumeTypeChanged = function() {
@@ -1156,14 +1179,18 @@
       return this.attributeChanged();
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function() {
+    PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function(skipUpdate) {
       var matchReadName;
+      console.log("handleMatchReadNameChanged");
       matchReadName = this.$('.bv_matchReadName').is(":checked");
       this.model.set({
         matchReadName: matchReadName
       });
+      console.log("set model's match read name");
       this.readListController.matchReadNameChanged(matchReadName);
-      return this.attributeChanged();
+      if (skipUpdate !== true) {
+        return this.attributeChanged();
+      }
     };
 
     return PrimaryScreenAnalysisParametersController;
@@ -1469,7 +1496,7 @@
                     console.log(lsKind);
                     if (lsKind === "flipr screening assay") {
                       exp = new PrimaryScreenExperiment(json[0]);
-                      exp.fixCompositeClasses();
+                      exp.set(exp.parse(exp.attributes));
                       _this.model = exp;
                     } else {
                       alert('Could not get primary screen experiment for code in this URL. Creating new primary screen experiment');

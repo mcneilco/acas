@@ -56,6 +56,7 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
+	"/javascripts/src/ProtocolBrowser.js",
 	"/javascripts/src/TagList.js"
 ];
 

@@ -54,7 +54,7 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 				indivModelErrors = model.validate(model.attributes) # note: can't call model.isValid() because if invalid, the function will trigger validationError, which adds the class "error" to the invalid attributes
 				if indivModelErrors != null
 					for error in indivModelErrors
-						unless matchReadName and error.attribute == 'readPosition'
+						unless (matchReadName and error.attribute == 'readPosition')
 								modelErrors.push
 									attribute: error.attribute+':eq('+index+')'
 									message: error.message
@@ -112,52 +112,89 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
-		positiveControl: new Backbone.Model()
-		negativeControl: new Backbone.Model()
-		vehicleControl: new Backbone.Model()
-		agonistControl: new Backbone.Model()
+		positiveControl: [] # will be converted into a new Backbone.Model()
+		negativeControl: [] # will be converted into a new Backbone.Model()
+		vehicleControl: [] # will be converted into a new Backbone.Model()
+		agonistControl: [] # will be converted into a new Backbone.Model()
 		thresholdType: "sd"
 		volumeType: "dilution"
 		htsFormat: false
 		autoHitSelection: false
 		matchReadName: true
-		primaryAnalysisReadList: new PrimaryAnalysisReadList()
-		transformationRuleList: new TransformationRuleList()
+		primaryAnalysisReadList: [] # will be converted into a new PrimaryAnalysisReadList()
+		transformationRuleList: [] # will be converted into a new TransformationRuleList()
 
 
 	initialize: ->
-		@fixCompositeClasses()
+#		@fixCompositeClasses()
+		@.set @parse(@.attributes)
 
+	parse: (resp) =>
+		if resp.positiveControl?
+			if resp.positiveControl not instanceof Backbone.Model
+				resp.positiveControl = new Backbone.Model(resp.positiveControl)
+				resp.positiveControl.on 'change', =>
+					@trigger 'change'
+		if resp.negativeControl?
+			if resp.negativeControl not instanceof Backbone.Model
+				resp.negativeControl = new Backbone.Model(resp.negativeControl)
+				resp.negativeControl.on 'change', =>
+					@trigger 'change'
+		if resp.vehicleControl?
+			if resp.vehicleControl not instanceof Backbone.Model
+				resp.vehicleControl = new Backbone.Model(resp.vehicleControl)
+				resp.vehicleControl.on 'change', =>
+					@trigger 'change'
+		if resp.agonistControl?
+			if resp.agonistControl not instanceof Backbone.Model
+				resp.agonistControl = new Backbone.Model(resp.agonistControl)
+				resp.agonistControl.on 'change', =>
+					@trigger 'change'
+		if resp.primaryAnalysisReadList?
+			if resp.primaryAnalysisReadList not instanceof PrimaryAnalysisReadList
+				resp.primaryAnalysisReadList = new PrimaryAnalysisReadList(resp.primaryAnalysisReadList)
+				resp.primaryAnalysisReadList.on 'change', =>
+					@trigger 'change'
+				resp.primaryAnalysisReadList.on 'amDirty', =>
+					@trigger 'amDirty'
+		if resp.transformationRuleList?
+			if resp.transformationRuleList not instanceof TransformationRuleList
+				resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList)
+				resp.transformationRuleList.on 'change', =>
+					@trigger 'change'
+				resp.transformationRuleList.on 'amDirty', =>
+					@trigger 'amDirty'
+		resp
 
-	fixCompositeClasses: =>
-		if @get('positiveControl') not instanceof Backbone.Model
-			@set positiveControl: new Backbone.Model(@get('positiveControl'))
-		@get('positiveControl').on "change", =>
-			@trigger 'change'
-		if @get('negativeControl') not instanceof Backbone.Model
-			@set negativeControl: new Backbone.Model(@get('negativeControl'))
-		@get('negativeControl').on "change", =>
-			@trigger 'change'
-		if @get('vehicleControl') not instanceof Backbone.Model
-			@set vehicleControl: new Backbone.Model(@get('vehicleControl'))
-		@get('vehicleControl').on "change", =>
-			@trigger 'change'
-		if @get('agonistControl') not instanceof Backbone.Model
-			@set agonistControl: new Backbone.Model(@get('agonistControl'))
-		@get('agonistControl').on "change", =>
-			@trigger 'change'
-		if @get('primaryAnalysisReadList') not instanceof PrimaryAnalysisReadList
-			@set primaryAnalysisReadList: new PrimaryAnalysisReadList(@get('primaryAnalysisReadList'))
-		@get('primaryAnalysisReadList').on "change", =>
-			@trigger 'change'
-		@get('primaryAnalysisReadList').on "amDirty", =>
-			@trigger 'amDirty'
-		if @get('transformationRuleList') not instanceof TransformationRuleList
-			@set transformationRuleList: new TransformationRuleList(@get('transformationRuleList'))
-		@get('transformationRuleList').on "change", =>
-			@trigger 'change'
-		@get('transformationRuleList').on "amDirty", =>
-			@trigger 'amDirty'
+#	fixCompositeClasses: =>
+#		if @get('positiveControl') not instanceof Backbone.Model
+#			@set positiveControl: new Backbone.Model(@get('positiveControl'))
+#		@get('positiveControl').on "change", =>
+#			@trigger 'change'
+#		if @get('negativeControl') not instanceof Backbone.Model
+#			@set negativeControl: new Backbone.Model(@get('negativeControl'))
+#		@get('negativeControl').on "change", =>
+#			@trigger 'change'
+#		if @get('vehicleControl') not instanceof Backbone.Model
+#			@set vehicleControl: new Backbone.Model(@get('vehicleControl'))
+#		@get('vehicleControl').on "change", =>
+#			@trigger 'change'
+#		if @get('agonistControl') not instanceof Backbone.Model
+#			@set agonistControl: new Backbone.Model(@get('agonistControl'))
+#		@get('agonistControl').on "change", =>
+#			@trigger 'change'
+#		if @get('primaryAnalysisReadList') not instanceof PrimaryAnalysisReadList
+#			@set primaryAnalysisReadList: new PrimaryAnalysisReadList(@get('primaryAnalysisReadList'))
+#		@get('primaryAnalysisReadList').on "change", =>
+#			@trigger 'change'
+#		@get('primaryAnalysisReadList').on "amDirty", =>
+#			@trigger 'amDirty'
+#		if @get('transformationRuleList') not instanceof TransformationRuleList
+#			@set transformationRuleList: new TransformationRuleList(@get('transformationRuleList'))
+#		@get('transformationRuleList').on "change", =>
+#			@trigger 'change'
+#		@get('transformationRuleList').on "amDirty", =>
+#			@trigger 'amDirty'
 
 
 	validate: (attrs) ->
@@ -189,7 +226,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
-		if agonistControl !="" or agonistControlConc != "" # at least one of the agonist control fields is filled
+		if (agonistControl !="" and agonistControl != undefined) or (agonistControlConc != "" and agonistControlConc != undefined) # at least one of the agonist control fields is filled
 			if agonistControl is "" or agonistControl is undefined
 				errors.push
 					attribute: 'agonistControlBatch'
@@ -427,18 +464,22 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		@collection.each (read) =>
 			@addOneRead(read)
 		if @collection.length == 0
-			@addNewRead()
+			@addNewRead(true)
 		@checkActivity()
 
 		@
 
-	addNewRead: =>
+	addNewRead: (skipAmDirtyTrigger) =>
+		console.log "addNewRead"
+		console.log skipAmDirtyTrigger
 		newModel = new PrimaryAnalysisRead()
 		@collection.add newModel
 		@addOneRead(newModel)
 		if @collection.length ==1
 			@checkActivity()
-		newModel.triggerAmDirty()
+		unless skipAmDirtyTrigger is true
+			newModel.triggerAmDirty()
+			console.log "should trigger am dirty"
 
 	addOneRead: (read) ->
 		parc = new PrimaryAnalysisReadController
@@ -451,22 +492,30 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 	matchReadNameChanged: (matchReadName) =>
 		@matchReadNameChecked = matchReadName
 		if @matchReadNameChecked
+			console.log "match read name is checked"
 			@$('.bv_readPosition').val('')
 			@$('.bv_readPosition').attr('disabled','disabled')
+			console.log "disabled read position"
 			@collection.each (read) =>
 				read.set readPosition: ''
+			console.log "cleared read positions"
 		else
+			console.log "match read name is not checked"
 			@$('.bv_readPosition').removeAttr('disabled')
 
 	checkActivity: => #check that at least one activity is set
+		console.log "starting to check activity"
 		index = @collection.length-1
 		activitySet = false
 		while index >= 0 and activitySet == false
 			if @collection.at(index).get('activity') == true
 				activitySet = true
 			if index == 0
-				@$('.bv_activity:eq(0)').click()
+#				@$('.bv_activity:eq(0)').click()
+				@$('.bv_activity:eq(0)').attr('checked','checked')
+				@collection.at(index).set activity: true
 			index = index - 1
+		console.log "checked activity"
 
 
 class window.TransformationRuleListController extends AbstractFormController
@@ -481,20 +530,22 @@ class window.TransformationRuleListController extends AbstractFormController
 
 
 	render: =>
+		console.log "starting render of transform rule list controller"
 		$(@el).empty()
 		$(@el).html @template()
 		@collection.each (rule) =>
 			@addOneRule(rule)
 		if @collection.length == 0
-			@addNewRule()
-
+			@addNewRule(true)
+		console.log "finished render of transform rule list controller"
 		@
 
-	addNewRule: =>
+	addNewRule: (skipAmDirtyTrigger)=>
 		newModel = new TransformationRule()
 		@collection.add newModel
 		@addOneRule(newModel)
-		newModel.triggerAmDirty()
+		unless skipAmDirtyTrigger is true
+			newModel.triggerAmDirty()
 
 
 	addOneRule: (rule) ->
@@ -557,6 +608,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 
 	render: =>
+		console.log "starting render of ps analysis params controller"
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
 		@setupInstrumentReaderSelect()
@@ -564,10 +616,13 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupAggregateBy1Select()
 		@setupAggregateBy2Select()
 		@setupNormalizationSelect()
-		@handleAutoHitSelectionChanged()
+		@handleAutoHitSelectionChanged(true)
+		console.log "about to set up read list controller"
 		@setupReadListController()
+		console.log "about to set up trans rule list controller"
 		@setupTransformationRuleListController()
-		@handleMatchReadNameChanged()
+		@handleMatchReadNameChanged(true)
+		console.log "finished rendering analysis params controller"
 
 		@
 
@@ -719,14 +774,15 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_hitSDThreshold').removeAttr('disabled')
 		@attributeChanged()
 
-	handleAutoHitSelectionChanged: =>
+	handleAutoHitSelectionChanged: (skipUpdate) =>
 		autoHitSelection = @$('.bv_autoHitSelection').is(":checked")
 		@model.set autoHitSelection: autoHitSelection
 		if autoHitSelection
 			@$('.bv_thresholdControls').show()
 		else
 			@$('.bv_thresholdControls').hide()
-		@attributeChanged()
+		unless skipUpdate is true
+			@attributeChanged()
 
 	handleVolumeTypeChanged: =>
 		volumeType = @$("input[name='bv_volumeType']:checked").val()
@@ -741,11 +797,14 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@handleDilutionFactorChanged()
 		@attributeChanged()
 
-	handleMatchReadNameChanged: =>
+	handleMatchReadNameChanged: (skipUpdate) =>
+		console.log "handleMatchReadNameChanged"
 		matchReadName = @$('.bv_matchReadName').is(":checked")
 		@model.set matchReadName: matchReadName
+		console.log "set model's match read name"
 		@readListController.matchReadNameChanged(matchReadName)
-		@attributeChanged()
+		unless skipUpdate is true
+			@attributeChanged()
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 #	See UploadAndRunPrimaryAnalsysisController for example required initialization function
@@ -950,7 +1009,8 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								console.log lsKind
 								if lsKind is "flipr screening assay"
 									exp = new PrimaryScreenExperiment json[0]
-									exp.fixCompositeClasses()
+									exp.set exp.parse(exp.attributes)
+#									exp.fixCompositeClasses()
 									@model = exp
 								else
 									alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
