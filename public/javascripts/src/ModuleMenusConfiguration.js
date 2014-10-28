@@ -10,7 +10,7 @@
       autoLaunchName: "generic_data_parser"
     }, {
       isHeader: false,
-      menuName: "Load Experiment",
+      menuName: "Load Experiment (permission test)",
       mainControllerClassName: "GenericDataParserController",
       requireUserRoles: ["admin", "loadData"]
     }, {
