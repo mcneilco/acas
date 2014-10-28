@@ -130,10 +130,10 @@
             return expect(this.prot.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
           });
           it("should have states with kind ", function() {
-            return expect(this.prot.get('lsStates').at(0).get('lsKind')).toEqual("protocol controls");
+            return expect(this.prot.get('lsStates').at(0).get('lsKind')).toEqual("protocol metadata");
           });
           it("states should have values", function() {
-            return expect(this.prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual("tested concentration");
+            return expect(this.prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual("assay tree rule");
           });
           it('Should have an assay principle value', function() {
             return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("assay principle goes here");

@@ -47,14 +47,10 @@
 
     PrimaryScreenProtocolParameters.prototype.getCustomerMolecularTargetCodeOrigin = function() {
       var molecularTarget;
-      console.log(this);
       molecularTarget = this.getPrimaryScreenProtocolParameterCodeValue('molecular target');
-      console.log(molecularTarget);
       if (molecularTarget.get('codeOrigin') === "customer ddict") {
-        console.log("molecular target origin is customer");
         return true;
       } else {
-        console.log("molecular target origin is acas ");
         return false;
       }
     };
@@ -223,7 +219,6 @@
     };
 
     PrimaryScreenProtocol.prototype.checkForNewPickListOptions = function() {
-      console.log("checkForNewPickListOptions");
       return this.trigger("checkForNewPickListOptions");
     };
 
@@ -373,12 +368,10 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupCustomerMolecularTargetDDictChkbx = function() {
       var checked;
-      console.log("set up checkbox");
       this.molecularTargetList = new PickListList();
       checked = this.model.getCustomerMolecularTargetCodeOrigin();
       if (checked) {
         this.$('.bv_customerMolecularTargetDDictChkbx').attr("checked", "checked");
-        console.log("checked");
         this.molecularTargetList.url = "/api/customerMolecularTargetCodeTable";
       } else {
         this.molecularTargetList.url = "/api/dataDict/protocol metadata/molecular target";
@@ -526,14 +519,12 @@
     };
 
     PrimaryScreenProtocolController.prototype.handleSaveClicked = function() {
-      console.log("handle save clicked");
       return this.protocolBaseController.beginSave();
     };
 
     PrimaryScreenProtocolController.prototype.handleCheckForNewPickListOptions = function() {
       return this.primaryScreenProtocolParametersController.saveNewPickListOptions((function(_this) {
         return function() {
-          console.log("done saving new picklist options");
           return _this.trigger("prepareToSaveToDatabase");
         };
       })(this));
@@ -591,10 +582,8 @@
                   } else {
                     lsKind = json[0].lsKind;
                     if (lsKind === "flipr screening assay") {
-                      console.log(json[0]);
                       prot = new PrimaryScreenProtocol(json[0]);
                       prot.set(prot.parse(prot.attributes));
-                      console.log(prot);
                       _this.model = prot;
                     } else {
                       alert('Could not get primary screen protocol for code in this URL. Creating new primary screen protocol');
@@ -614,11 +603,8 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.completeInitialization = function() {
-      console.log("complet initialization in ps protocol");
-      console.log(this.model);
       if (this.model == null) {
         this.model = new PrimaryScreenProtocol();
-        console.log("created new protocol");
       }
       $(this.el).html(this.template());
       this.model.on('sync', (function(_this) {
@@ -626,8 +612,7 @@
           _this.trigger('amClean');
           _this.$('.bv_savingModule').hide();
           _this.$('.bv_updateModuleComplete').show();
-          _this.$('.bv_saveModule').attr('disabled', 'disabled');
-          return console.log("should show update complete in complete initialization");
+          return _this.$('.bv_saveModule').attr('disabled', 'disabled');
         };
       })(this));
       if (this.model.isNew()) {
@@ -650,20 +635,16 @@
       this.$('.bv_save').hide();
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
-        this.$('.bv_saveModule').html("Save");
+        return this.$('.bv_saveModule').html("Save");
       } else {
-        this.$('.bv_saveModule').html("Update");
+        return this.$('.bv_saveModule').html("Update");
       }
-      console.log("at end of complete initialization");
-      return console.log(this.model);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleProtocolSaved = function() {
       this.trigger('amClean');
-      console.log("handle Protocol Saved");
       this.$('.bv_savingModule').hide();
       this.$('.bv_updateModuleComplete').show();
-      console.log("should show update complete");
       if (this.model.isNew()) {
         return this.$('.bv_saveModule').html("Save");
       } else {
@@ -672,8 +653,6 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenProtocolController = function() {
-      console.log("setup ps protocol controller");
-      console.log(this.model);
       this.primaryScreenProtocolController = new PrimaryScreenProtocolController({
         model: this.model,
         el: this.$('.bv_primaryScreenProtocolGeneralInfoWrapper')
@@ -693,8 +672,6 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenAnalysisParametersController = function() {
-      console.log("setup ps analysis parameters controller");
-      console.log(this.model.getAnalysisParameters());
       this.primaryScreenAnalysisParametersController = new PrimaryScreenAnalysisParametersController({
         model: this.model.getAnalysisParameters(),
         el: this.$('.bv_primaryScreenAnalysisParameters')
@@ -710,7 +687,6 @@
         };
       })(this));
       this.primaryScreenAnalysisParametersController.on('updateState', this.updateAnalysisClobValue);
-      console.log("render ps analysis parameters controller");
       return this.primaryScreenAnalysisParametersController.render();
     };
 
@@ -721,7 +697,6 @@
       });
       this.primaryScreenModelFitParametersController.on('amDirty', (function(_this) {
         return function() {
-          console.log("model fit controller is dirty, trigger amDirty");
           return _this.trigger('amDirty');
         };
       })(this));
@@ -737,71 +712,46 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.updateAnalysisClobValue = function() {
       var ap;
-      console.log("updating analysis clob");
-      console.log(this.model);
       ap = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
-      console.log("updating Analyiss clob value");
-      console.log(this.primaryScreenAnalysisParametersController.model);
-      console.log(ap);
-      console.log(JSON.stringify(this.primaryScreenAnalysisParametersController.model.attributes));
-      ap.set({
+      return ap.set({
         clobValue: JSON.stringify(this.primaryScreenAnalysisParametersController.model.attributes)
       });
-      console.log(ap);
-      return console.log(this.model);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.updateModelFitClobValue = function() {
       var mfp;
-      console.log("updating model fit clob");
-      console.log(this.model);
       mfp = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
-      console.log("updating Model Fit clob value");
-      console.log(this.primaryScreenModelFitParametersController.model);
-      console.log(mfp);
-      console.log(JSON.stringify(this.primaryScreenModelFitParametersController.model.attributes));
-      mfp.set({
+      return mfp.set({
         clobValue: JSON.stringify(this.primaryScreenModelFitParametersController.model.attributes)
       });
-      console.log(mfp);
-      return console.log(this.model);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleSaveModule = function() {
-      console.log("handle save");
-      console.log(this.model);
       this.$('.bv_savingModule').show();
       return this.primaryScreenProtocolController.handleSaveClicked();
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.prepareToSaveToDatabase = function() {
-      console.log("prepareToSaveToDatabase");
       return this.model.prepareToSave();
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleFinishSave = function() {
-      console.log("handleFinishSave in module controller");
       if (this.model.isNew()) {
         this.$('.bv_updateModuleComplete').html("Save Complete");
       } else {
         this.$('.bv_updateModuleComplete').html("Update Complete");
       }
       this.$('.bv_saveModule').attr('disabled', 'disabled');
-      console.log("saving model");
-      console.log(this.model);
-      this.model.save();
-      return console.log("model saved");
+      return this.model.save();
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.validationError = function() {
-      console.log("validationError in module");
       AbstractPrimaryScreenProtocolModuleController.__super__.validationError.call(this);
       return this.$('.bv_saveModule').attr('disabled', 'disabled');
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.clearValidationErrorStyles = function() {
       AbstractPrimaryScreenProtocolModuleController.__super__.clearValidationErrorStyles.call(this);
-      console.log("clearing validationErrorStyles");
       return this.$('.bv_saveModule').removeAttr('disabled');
     };
 

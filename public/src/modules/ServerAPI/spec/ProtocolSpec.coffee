@@ -85,9 +85,9 @@ describe "Protocol module testing", ->
 				it "should have states ", ->
 					expect(@prot.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
 				it "should have states with kind ", ->
-					expect(@prot.get('lsStates').at(0).get('lsKind')).toEqual "protocol controls"
+					expect(@prot.get('lsStates').at(0).get('lsKind')).toEqual "protocol metadata"
 				it "states should have values", ->
-					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "tested concentration"
+					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "assay tree rule"
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual "assay principle goes here"
 				it 'Should have a description value', ->

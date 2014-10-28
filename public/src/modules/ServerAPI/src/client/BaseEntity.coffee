@@ -9,13 +9,12 @@ class window.BaseEntity extends Backbone.Model
 		recordedDate: new Date().getTime()
 		shortDescription: " "
 #		lsLabels: new LabelList()
+#		lsStates: new StateList()
 		lsLabels: [] # will be converted into a new LabelList()
 		lsStates: [] # will be converted into a new StateList()
 
 	initialize: ->
 		@.set @parse(@.attributes)
-#		@fixCompositeClasses()
-#		@setupCompositeChangeTriggers()
 
 	parse: (resp) =>
 		if resp.lsLabels?
@@ -35,28 +34,7 @@ class window.BaseEntity extends Backbone.Model
 		resp
 
 
-#	fixCompositeClasses: =>
-#		console.log "fix composite classes"
-#		if @has('lsLabels')
-#			if @get('lsLabels') not instanceof LabelList
-#				@set lsLabels: new LabelList(@get('lsLabels'))
-#		if @has('lsStates')
-#			if @get('lsStates') not instanceof StateList
-#				@set lsStates: new StateList(@get('lsStates'))
-#		if @get('lsTags') != null
-#			if @get('lsTags') not instanceof TagList
-#				@set lsTags: new TagList(@get('lsTags'))
-#
-#	setupCompositeChangeTriggers: ->
-#		@get('lsLabels').on 'change', =>
-#			@trigger 'change'
-#		@get('lsStates').on 'change', =>
-#			@trigger 'change'
-#		@get('lsTags').on 'change', =>
-#			@trigger 'change'
-
 	getDescription: ->
-#		metadataKind = @.get('subclass') + " metadata"
 		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
 		if description.get('clobValue') is undefined or description.get('clobValue') is ""
 			description.set clobValue: ""
@@ -79,19 +57,16 @@ class window.BaseEntity extends Backbone.Model
 	getNotebook: ->
 		metadataKind = @.get('subclass') + " metadata"
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook"
-#		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
 
 	getStatus: ->
 		metadataKind = @.get('subclass') + " metadata"
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "status"
-#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "status"
 		if status.get('stringValue') is undefined or status.get('stringValue') is ""
 			status.set stringValue: "created"
 
 		status
 
 	getAnalysisParameters: =>
-#		metadataKind = @.get('subclass') + " metadata"
 		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
 		if ap.get('clobValue')?
 			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
@@ -99,7 +74,6 @@ class window.BaseEntity extends Backbone.Model
 			return new PrimaryScreenAnalysisParameters()
 
 	getModelFitParameters: =>
-#		metadataKind = @.get('subclass') + " metadata"
 		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
 		if ap.get('clobValue')?
 			return $.parseJSON(ap.get('clobValue'))
@@ -155,7 +129,6 @@ class window.BaseEntity extends Backbone.Model
 			return null
 
 	prepareToSave: ->
-		console.log "prepareToSave"
 		rBy = @get('recordedBy')
 		rDate = new Date().getTime()
 		@set recordedDate: rDate
@@ -200,7 +173,6 @@ class window.BaseEntityController extends AbstractFormController
 		unless @model?
 			@model=new BaseEntity()
 		@model.on 'sync', =>
-			console.log "@model sync"
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
@@ -218,14 +190,11 @@ class window.BaseEntityController extends AbstractFormController
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 
-#	using the code above, triggers amDirty whenever the module is clicked. is this ok?
-
 	render: =>
 		unless @model?
 			@model = new BaseEntity()
 		subclass = @model.get('subclass')
 		@$('.bv_shortDescription').html @model.get('shortDescription')
-#		@$('.bv_description').html @model.get('description')
 		bestName = @model.get('lsLabels').pickBestName()
 		if bestName?
 			@$('.bv_'+subclass+'Name').val bestName.get('labelText')
@@ -245,8 +214,6 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_save').html("Update")
 		@updateEditable()
-#		@model.on 'readyToSave', @handleFinishSave
-
 
 		@
 
@@ -299,12 +266,15 @@ class window.BaseEntityController extends AbstractFormController
 
 	handleDateChanged: =>
 		@model.getCompletionDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
+		@model.trigger 'change'
+
 
 	handleCompletionDateIconClicked: =>
-		@$( ".bv_completionDate" ).datepicker( "show" );
+		@$( ".bv_completionDate" ).datepicker( "show" )
 
 	handleNotebookChanged: =>
 		@model.getNotebook().set stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
+		@model.trigger 'change'
 
 	handleStatusChanged: =>
 		@model.getStatus().set stringValue: @statusListController.getSelectedCode()
@@ -326,28 +296,21 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_status').removeAttr("disabled")
 
-	beginSave: => #TODO: add original prepareToSave so that base protocol/expt can be saved still too
-		console.log "beginSave in base controller"
+	beginSave: =>
 		@tagListController.handleTagsChanged()
 		if @model.checkForNewPickListOptions?
 			@model.checkForNewPickListOptions()
 		else
-#			@model.prepareToSave() #TODO: have module controller call prepareToSaveAnalysisParameters - DONE
 			@trigger "noEditablePickLists"
-
-#		@model.prepareToSave()
 
 	handleSaveClicked: =>
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
 		if @model.isNew()
-			console.log "model is new"
 			@$('.bv_updateComplete').html "Save Complete"
 		else
-			console.log "model is not new"
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_saving').show()
-		console.log @model.get('lsKind')
 		@model.save()
 
 	validationError: =>

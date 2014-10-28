@@ -4,6 +4,7 @@ class window.Experiment extends BaseEntity
 		_(super()).extend(
 			protocol: null
 			analysisGroups: [] # will be converted into a new AnalysisGroupList()
+#			analysisGroups: new AnalysisGroupList() # will be converted into a new AnalysisGroupList()
 		)
 
 	initialize: ->
@@ -24,6 +25,8 @@ class window.Experiment extends BaseEntity
 		if resp.analysisGroups?
 			if resp.analysisGroups not instanceof AnalysisGroupList
 				resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups)
+				resp.analysisGroups.on 'change', =>
+					@trigger 'change'
 		if resp.protocol?
 			if resp.protocol not instanceof Protocol
 				resp.protocol = new Protocol(resp.protocol)
@@ -33,21 +36,11 @@ class window.Experiment extends BaseEntity
 				@trigger 'change'
 		resp
 
-#	fixCompositeClasses: =>
-#		super()
-#		if @has('analysisGroups')
-#			if @get('analysisGroups') not instanceof AnalysisGroupList
-#				@set analysisGroups: new AnalysisGroupList(@get('analysisGroups'))
-#		if @get('protocol') != null
-#			if @get('protocol') not instanceof Backbone.Model
-#				@set protocol: new Protocol(@get('protocol'))
-
 	copyProtocolAttributes: (protocol) ->
 		#cache values I don't want to overwrite
 		notebook = @getNotebook().get('stringValue')
 		completionDate = @getCompletionDate().get('dateValue')
 		project = @getProjectCode().get('codeValue')
-
 		estates = new StateList()
 		pstates = protocol.get('lsStates')
 		pstates.each (st) ->
@@ -73,6 +66,7 @@ class window.Experiment extends BaseEntity
 		@getNotebook().set stringValue: notebook
 		@getCompletionDate().set dateValue: completionDate
 		@getProjectCode().set codeValue: project
+		@getComments().set clobValue: protocol.getComments().get('clobValue')
 #		@setupCompositeChangeTriggers()
 		@trigger 'change'
 		@trigger "protocol_attributes_copied"
@@ -174,21 +168,18 @@ class window.ExperimentBaseController extends BaseEntityController
 								alert 'Could not get experiment for code in this URL, creating new one'
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								prot = new PrimaryScreenProtocol json
+#								expt = new Experiment json
 								lsKind = json[0].lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
 								if lsKind is "default"
-									console.log json[0]
 									expt = new Experiment json[0]
-									expt.fixCompositeClasses()
+									expt.set expt.parse(expt.attributes)
 									@model = expt
 								else
 									alert 'Could not get experiment for code in this URL. Creating new experiment'
 							@completeInitialization()
 				else
-					console.log "second to last else"
 					@completeInitialization()
 			else
-				console.log "last else"
 				@completeInitialization()
 
 	completeInitialization: ->
@@ -211,7 +202,7 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupStatusSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
-		@setupProtocolSelect(@options.protocolFilter)
+		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
 		@setupProjectSelect()
 		@render()
 
@@ -226,19 +217,19 @@ class window.ExperimentBaseController extends BaseEntityController
 		super()
 		@
 
-	setupProtocolSelect: (protocolFilter) ->
-		console.log "setup protocol select"
-		console.log protocolFilter
-		unless protocolFilter?
-			protocolFilter = ""
-		unless protocolKindFilter?
-			protocolKindFilter = ""
+	setupProtocolSelect: (protocolFilter, protocolKindFilter) ->
 		if @model.get('protocol') != null
 			protocolCode = @model.get('protocol').get('codeName')
 		else
 			protocolCode = "unassigned"
 		@protocolList = new PickListList()
-		@protocolList.url = "/api/protocolCodes/"+protocolFilter
+		if protocolFilter?
+			@protocolList.url = "/api/protocolCodes/"+protocolFilter
+		else if protocolKindFilter?
+			@protocolList.url = "/api/protocolCodes/"+protocolKindFilter
+		else
+			@protocolList.url = "/api/protocolCodes/?protocolKind=default"
+
 		@protocolListController = new PickListSelectController
 			el: @$('.bv_protocolCode')
 			collection: @protocolList
@@ -314,10 +305,10 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	handleProjectCodeChanged: =>
 		@model.getProjectCode().set codeValue: @projectListController.getSelectedCode()
+		@model.trigger 'change'
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
-		@model.getComments().set clobValue: @model.get('protocol').getComments().get('clobValue')
 		@render()
 
 	updateEditable: =>

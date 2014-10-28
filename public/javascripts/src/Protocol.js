@@ -139,7 +139,6 @@
 
     ProtocolBaseController.prototype.initialize = function() {
       if (this.model != null) {
-        console.log("model exists");
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
@@ -158,16 +157,11 @@
                   if (json.length === 0) {
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
-                    console.log("got json");
-                    console.log(json[0]);
                     lsKind = json[0].lsKind;
-                    console.log(lsKind);
                     if (lsKind === "default") {
-                      console.log(json[0]);
                       prot = new Protocol(json[0]);
                       prot.set(prot.parse(prot.attributes));
                       _this.model = prot;
-                      console.log("should have gotten the protocol");
                     } else {
                       alert('Could not get protocol for code in this URL. Creating new protocol');
                     }
@@ -177,29 +171,22 @@
               })(this)
             });
           } else {
-            console.log("second to last else");
             return this.completeInitialization();
           }
         } else {
-          console.log("last else");
           return this.completeInitialization();
         }
       }
     };
 
     ProtocolBaseController.prototype.completeInitialization = function() {
-      console.log("complete initialization");
       if (this.model == null) {
         this.model = new Protocol();
       }
       this.errorOwnerName = 'ProtocolBaseController';
-      console.log("setting bindings");
       this.setBindings();
-      console.log("done setting bindings");
       $(this.el).empty();
-      console.log("empty el");
       $(this.el).html(this.template(this.model.attributes));
-      console.log("filling template");
       this.model.on('sync', (function(_this) {
         return function() {
           _this.trigger('amClean');
@@ -223,11 +210,8 @@
     };
 
     ProtocolBaseController.prototype.render = function() {
-      console.log(this);
-      console.log(this.model);
       if (this.model == null) {
         this.model = new Protocol();
-        console.log("created new model");
       }
       this.$('.bv_assayTreeRule').val(this.model.getAssayTreeRule().get('stringValue'));
       this.$('.bv_assayPrinciple').val(this.model.getAssayPrinciple().get('clobValue'));
@@ -236,13 +220,10 @@
     };
 
     ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
-      this.model.getAssayPrinciple().set({
+      return this.model.getAssayPrinciple().set({
         clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple')),
         recordedBy: this.model.get('recordedBy')
       });
-      console.log("handleAssayPrincipleChanged");
-      console.log(this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "clobValue", "assay principle"));
-      return console.log(this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "assay principle"));
     };
 
     ProtocolBaseController.prototype.handleAssayTreeRuleChanged = function() {

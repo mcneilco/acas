@@ -204,7 +204,6 @@
 
     BaseEntity.prototype.prepareToSave = function() {
       var rBy, rDate;
-      console.log("prepareToSave");
       rBy = this.get('recordedBy');
       rDate = new Date().getTime();
       this.set({
@@ -311,7 +310,6 @@
       }
       this.model.on('sync', (function(_this) {
         return function() {
-          console.log("@model sync");
           _this.trigger('amClean');
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
@@ -434,9 +432,10 @@
     };
 
     BaseEntityController.prototype.handleDateChanged = function() {
-      return this.model.getCompletionDate().set({
+      this.model.getCompletionDate().set({
         dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')))
       });
+      return this.model.trigger('change');
     };
 
     BaseEntityController.prototype.handleCompletionDateIconClicked = function() {
@@ -444,9 +443,10 @@
     };
 
     BaseEntityController.prototype.handleNotebookChanged = function() {
-      return this.model.getNotebook().set({
+      this.model.getNotebook().set({
         stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook'))
       });
+      return this.model.trigger('change');
     };
 
     BaseEntityController.prototype.handleStatusChanged = function() {
@@ -473,7 +473,6 @@
     };
 
     BaseEntityController.prototype.beginSave = function() {
-      console.log("beginSave in base controller");
       this.tagListController.handleTagsChanged();
       if (this.model.checkForNewPickListOptions != null) {
         return this.model.checkForNewPickListOptions();
@@ -486,14 +485,11 @@
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
       if (this.model.isNew()) {
-        console.log("model is new");
         this.$('.bv_updateComplete').html("Save Complete");
       } else {
-        console.log("model is not new");
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
-      console.log(this.model.get('lsKind'));
       return this.model.save();
     };
 

@@ -238,12 +238,6 @@
           it("should have the states copied", function() {
             return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
           });
-          it('Should have a description value', function() {
-            return expect(this.exp.getDescription().get('clobValue')).toEqual("long description goes here");
-          });
-          it('Should have a comments value', function() {
-            return expect(this.exp.getComments().get('clobValue')).toEqual("comments go here");
-          });
           it('Should not override set notebook value', function() {
             return expect(this.exp.getNotebook().get('stringValue')).toEqual("spec test NB");
           });
@@ -608,7 +602,7 @@
             return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
           });
           it("should fill the comments field", function() {
-            return expect(this.ebc.$('.bv_comments').html()).toEqual("comments go here");
+            return expect(this.ebc.$('.bv_comments').html()).toEqual("protocol comments go here");
           });
           return it("should not fill the notebook field", function() {
             return expect(this.ebc.$('.bv_notebook').val()).toEqual("");

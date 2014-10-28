@@ -453,10 +453,9 @@
 
     PrimaryScreenExperiment.prototype.initialize = function() {
       PrimaryScreenExperiment.__super__.initialize.call(this);
-      this.set({
+      return this.set({
         lsKind: "flipr screening assay"
       });
-      return console.log(this.get('lsKind'));
     };
 
     PrimaryScreenExperiment.prototype.getAnalysisParameters = function() {
@@ -712,8 +711,6 @@
 
     PrimaryAnalysisReadListController.prototype.addNewRead = function(skipAmDirtyTrigger) {
       var newModel;
-      console.log("addNewRead");
-      console.log(skipAmDirtyTrigger);
       newModel = new PrimaryAnalysisRead();
       this.collection.add(newModel);
       this.addOneRead(newModel);
@@ -721,8 +718,7 @@
         this.checkActivity();
       }
       if (skipAmDirtyTrigger !== true) {
-        newModel.triggerAmDirty();
-        return console.log("should trigger am dirty");
+        return newModel.triggerAmDirty();
       }
     };
 
@@ -743,29 +739,25 @@
     PrimaryAnalysisReadListController.prototype.matchReadNameChanged = function(matchReadName) {
       this.matchReadNameChecked = matchReadName;
       if (this.matchReadNameChecked) {
-        console.log("match read name is checked");
         this.$('.bv_readPosition').val('');
         this.$('.bv_readPosition').attr('disabled', 'disabled');
-        console.log("disabled read position");
-        this.collection.each((function(_this) {
+        return this.collection.each((function(_this) {
           return function(read) {
             return read.set({
               readPosition: ''
             });
           };
         })(this));
-        return console.log("cleared read positions");
       } else {
-        console.log("match read name is not checked");
         return this.$('.bv_readPosition').removeAttr('disabled');
       }
     };
 
     PrimaryAnalysisReadListController.prototype.checkActivity = function() {
-      var activitySet, index;
-      console.log("starting to check activity");
+      var activitySet, index, _results;
       index = this.collection.length - 1;
       activitySet = false;
+      _results = [];
       while (index >= 0 && activitySet === false) {
         if (this.collection.at(index).get('activity') === true) {
           activitySet = true;
@@ -776,9 +768,9 @@
             activity: true
           });
         }
-        index = index - 1;
+        _results.push(index = index - 1);
       }
-      return console.log("checked activity");
+      return _results;
     };
 
     return PrimaryAnalysisReadListController;
@@ -817,7 +809,6 @@
     };
 
     TransformationRuleListController.prototype.render = function() {
-      console.log("starting render of transform rule list controller");
       $(this.el).empty();
       $(this.el).html(this.template());
       this.collection.each((function(_this) {
@@ -828,7 +819,6 @@
       if (this.collection.length === 0) {
         this.addNewRule(true);
       }
-      console.log("finished render of transform rule list controller");
       return this;
     };
 
@@ -928,7 +918,6 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
-      console.log("starting render of ps analysis params controller");
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
       this.setupInstrumentReaderSelect();
@@ -937,12 +926,9 @@
       this.setupAggregateBy2Select();
       this.setupNormalizationSelect();
       this.handleAutoHitSelectionChanged(true);
-      console.log("about to set up read list controller");
       this.setupReadListController();
-      console.log("about to set up trans rule list controller");
       this.setupTransformationRuleListController();
       this.handleMatchReadNameChanged(true);
-      console.log("finished rendering analysis params controller");
       return this;
     };
 
@@ -1094,10 +1080,7 @@
           concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlConc')))
         });
       }
-      console.log("updating primary screen analysis parameters model");
-      console.log(this.model);
-      this.trigger('updateState');
-      return console.log("triggered updateState");
+      return this.trigger('updateState');
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleAssayVolumeChanged = function() {
@@ -1181,12 +1164,10 @@
 
     PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function(skipUpdate) {
       var matchReadName;
-      console.log("handleMatchReadNameChanged");
       matchReadName = this.$('.bv_matchReadName').is(":checked");
       this.model.set({
         matchReadName: matchReadName
       });
-      console.log("set model's match read name");
       this.readListController.matchReadNameChanged(matchReadName);
       if (skipUpdate !== true) {
         return this.attributeChanged();
@@ -1491,9 +1472,6 @@
                     alert('Could not get experiment for code in this URL, creating new one');
                   } else {
                     lsKind = json[0].lsKind;
-                    console.log(json[0]);
-                    console.log("lsKind");
-                    console.log(lsKind);
                     if (lsKind === "flipr screening assay") {
                       exp = new PrimaryScreenExperiment(json[0]);
                       exp.set(exp.parse(exp.attributes));
@@ -1524,7 +1502,8 @@
       this.experimentBaseController = new ExperimentBaseController({
         model: this.model,
         el: this.$('.bv_experimentBase'),
-        protocolFilter: this.protocolFilter
+        protocolFilter: this.protocolFilter,
+        protocolKindFilter: this.protocolKindFilter
       });
       this.experimentBaseController.on('amDirty', (function(_this) {
         return function() {
@@ -1599,6 +1578,8 @@
     PrimaryScreenExperimentController.prototype.modelFitControllerName = "DoseResponseAnalysisController";
 
     PrimaryScreenExperimentController.prototype.protocolFilter = "?protocolName=FLIPR";
+
+    PrimaryScreenExperimentController.prototype.protocolKindFilter = "?protocolKind=flipr screening assay";
 
     PrimaryScreenExperimentController.prototype.moduleLaunchName = "flipr_screening_assay";
 

@@ -179,7 +179,7 @@
     }
 
     State.prototype.defaults = {
-      lsValues: {},
+      lsValues: [],
       ignored: false,
       recordedDate: null,
       recordedBy: ""

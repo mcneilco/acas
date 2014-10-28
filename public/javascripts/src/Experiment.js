@@ -51,6 +51,11 @@
       if (resp.analysisGroups != null) {
         if (!(resp.analysisGroups instanceof AnalysisGroupList)) {
           resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups);
+          resp.analysisGroups.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
       }
       if (resp.protocol != null) {
@@ -112,6 +117,9 @@
       });
       this.getProjectCode().set({
         codeValue: project
+      });
+      this.getComments().set({
+        clobValue: protocol.getComments().get('clobValue')
       });
       this.trigger('change');
       this.trigger("protocol_attributes_copied");
@@ -271,9 +279,8 @@
                   } else {
                     lsKind = json[0].lsKind;
                     if (lsKind === "default") {
-                      console.log(json[0]);
                       expt = new Experiment(json[0]);
-                      expt.fixCompositeClasses();
+                      expt.set(expt.parse(expt.attributes));
                       _this.model = expt;
                     } else {
                       alert('Could not get experiment for code in this URL. Creating new experiment');
@@ -284,11 +291,9 @@
               })(this)
             });
           } else {
-            console.log("second to last else");
             return this.completeInitialization();
           }
         } else {
-          console.log("last else");
           return this.completeInitialization();
         }
       }
@@ -321,7 +326,7 @@
       this.setupStatusSelect();
       this.setupTagList();
       this.model.getStatus().on('change', this.updateEditable);
-      this.setupProtocolSelect(this.options.protocolFilter);
+      this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
       return this.render();
     };
@@ -339,23 +344,21 @@
       return this;
     };
 
-    ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter) {
-      var protocolCode, protocolKindFilter;
-      console.log("setup protocol select");
-      console.log(protocolFilter);
-      if (protocolFilter == null) {
-        protocolFilter = "";
-      }
-      if (typeof protocolKindFilter === "undefined" || protocolKindFilter === null) {
-        protocolKindFilter = "";
-      }
+    ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter, protocolKindFilter) {
+      var protocolCode;
       if (this.model.get('protocol') !== null) {
         protocolCode = this.model.get('protocol').get('codeName');
       } else {
         protocolCode = "unassigned";
       }
       this.protocolList = new PickListList();
-      this.protocolList.url = "/api/protocolCodes/" + protocolFilter;
+      if (protocolFilter != null) {
+        this.protocolList.url = "/api/protocolCodes/" + protocolFilter;
+      } else if (protocolKindFilter != null) {
+        this.protocolList.url = "/api/protocolCodes/" + protocolKindFilter;
+      } else {
+        this.protocolList.url = "/api/protocolCodes/?protocolKind=default";
+      }
       return this.protocolListController = new PickListSelectController({
         el: this.$('.bv_protocolCode'),
         collection: this.protocolList,
@@ -465,16 +468,14 @@
     };
 
     ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
-      return this.model.getProjectCode().set({
+      this.model.getProjectCode().set({
         codeValue: this.projectListController.getSelectedCode()
       });
+      return this.model.trigger('change');
     };
 
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
       this.model.copyProtocolAttributes(this.model.get('protocol'));
-      this.model.getComments().set({
-        clobValue: this.model.get('protocol').getComments().get('clobValue')
-      });
       return this.render();
     };
 

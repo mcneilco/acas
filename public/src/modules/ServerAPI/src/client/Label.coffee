@@ -82,12 +82,17 @@ class window.ValueList extends Backbone.Collection
 
 class window.State extends Backbone.Model
 	defaults:
-		lsValues: {} # will be converted into a ValueList()
+		lsValues: [] # will be converted into a ValueList()
 		ignored: false
 		recordedDate: null
 		recordedBy: ""
 
 	initialize: ->
+#		if @has('lsValues')
+#			if @get('lsValues') not instanceof ValueList
+#				@set lsValues: new ValueList(@get('lsValues'))
+#		@get('lsValues').on 'change', =>
+#			@trigger 'change'
 		@.set @parse(@.attributes)
 
 	parse: (resp) ->

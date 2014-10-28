@@ -126,7 +126,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 
 
 	initialize: ->
-#		@fixCompositeClasses()
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>
@@ -165,36 +164,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				resp.transformationRuleList.on 'amDirty', =>
 					@trigger 'amDirty'
 		resp
-
-#	fixCompositeClasses: =>
-#		if @get('positiveControl') not instanceof Backbone.Model
-#			@set positiveControl: new Backbone.Model(@get('positiveControl'))
-#		@get('positiveControl').on "change", =>
-#			@trigger 'change'
-#		if @get('negativeControl') not instanceof Backbone.Model
-#			@set negativeControl: new Backbone.Model(@get('negativeControl'))
-#		@get('negativeControl').on "change", =>
-#			@trigger 'change'
-#		if @get('vehicleControl') not instanceof Backbone.Model
-#			@set vehicleControl: new Backbone.Model(@get('vehicleControl'))
-#		@get('vehicleControl').on "change", =>
-#			@trigger 'change'
-#		if @get('agonistControl') not instanceof Backbone.Model
-#			@set agonistControl: new Backbone.Model(@get('agonistControl'))
-#		@get('agonistControl').on "change", =>
-#			@trigger 'change'
-#		if @get('primaryAnalysisReadList') not instanceof PrimaryAnalysisReadList
-#			@set primaryAnalysisReadList: new PrimaryAnalysisReadList(@get('primaryAnalysisReadList'))
-#		@get('primaryAnalysisReadList').on "change", =>
-#			@trigger 'change'
-#		@get('primaryAnalysisReadList').on "amDirty", =>
-#			@trigger 'amDirty'
-#		if @get('transformationRuleList') not instanceof TransformationRuleList
-#			@set transformationRuleList: new TransformationRuleList(@get('transformationRuleList'))
-#		@get('transformationRuleList').on "change", =>
-#			@trigger 'change'
-#		@get('transformationRuleList').on "amDirty", =>
-#			@trigger 'amDirty'
 
 
 	validate: (attrs) ->
@@ -306,7 +275,6 @@ class window.PrimaryScreenExperiment extends Experiment
 	initialize: ->
 		super()
 		@.set lsKind: "flipr screening assay"
-		console.log @get('lsKind')
 
 	getAnalysisParameters: ->
 		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
@@ -470,8 +438,6 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		@
 
 	addNewRead: (skipAmDirtyTrigger) =>
-		console.log "addNewRead"
-		console.log skipAmDirtyTrigger
 		newModel = new PrimaryAnalysisRead()
 		@collection.add newModel
 		@addOneRead(newModel)
@@ -479,7 +445,6 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			@checkActivity()
 		unless skipAmDirtyTrigger is true
 			newModel.triggerAmDirty()
-			console.log "should trigger am dirty"
 
 	addOneRead: (read) ->
 		parc = new PrimaryAnalysisReadController
@@ -492,30 +457,23 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 	matchReadNameChanged: (matchReadName) =>
 		@matchReadNameChecked = matchReadName
 		if @matchReadNameChecked
-			console.log "match read name is checked"
 			@$('.bv_readPosition').val('')
 			@$('.bv_readPosition').attr('disabled','disabled')
-			console.log "disabled read position"
 			@collection.each (read) =>
 				read.set readPosition: ''
-			console.log "cleared read positions"
 		else
-			console.log "match read name is not checked"
 			@$('.bv_readPosition').removeAttr('disabled')
 
 	checkActivity: => #check that at least one activity is set
-		console.log "starting to check activity"
 		index = @collection.length-1
 		activitySet = false
 		while index >= 0 and activitySet == false
 			if @collection.at(index).get('activity') == true
 				activitySet = true
 			if index == 0
-#				@$('.bv_activity:eq(0)').click()
 				@$('.bv_activity:eq(0)').attr('checked','checked')
 				@collection.at(index).set activity: true
 			index = index - 1
-		console.log "checked activity"
 
 
 class window.TransformationRuleListController extends AbstractFormController
@@ -530,14 +488,12 @@ class window.TransformationRuleListController extends AbstractFormController
 
 
 	render: =>
-		console.log "starting render of transform rule list controller"
 		$(@el).empty()
 		$(@el).html @template()
 		@collection.each (rule) =>
 			@addOneRule(rule)
 		if @collection.length == 0
 			@addNewRule(true)
-		console.log "finished render of transform rule list controller"
 		@
 
 	addNewRule: (skipAmDirtyTrigger)=>
@@ -608,7 +564,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 
 	render: =>
-		console.log "starting render of ps analysis params controller"
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
 		@setupInstrumentReaderSelect()
@@ -617,12 +572,9 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupAggregateBy2Select()
 		@setupNormalizationSelect()
 		@handleAutoHitSelectionChanged(true)
-		console.log "about to set up read list controller"
 		@setupReadListController()
-		console.log "about to set up trans rule list controller"
 		@setupTransformationRuleListController()
 		@handleMatchReadNameChanged(true)
-		console.log "finished rendering analysis params controller"
 
 		@
 
@@ -735,11 +687,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		if @model.get('agonistControl').get('concentration') != ""
 			@model.get('agonistControl').set
 				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
-		console.log "updating primary screen analysis parameters model"
-		console.log @model
 		@trigger 'updateState'
-		console.log "triggered updateState"
-
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
@@ -798,10 +746,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@attributeChanged()
 
 	handleMatchReadNameChanged: (skipUpdate) =>
-		console.log "handleMatchReadNameChanged"
 		matchReadName = @$('.bv_matchReadName').is(":checked")
 		@model.set matchReadName: matchReadName
-		console.log "set model's match read name"
 		@readListController.matchReadNameChanged(matchReadName)
 		unless skipUpdate is true
 			@attributeChanged()
@@ -1004,13 +950,9 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								exp = new PrimaryScreenExperiment json
 								lsKind = json[0].lsKind
-								console.log json[0]
-								console.log "lsKind"
-								console.log lsKind
 								if lsKind is "flipr screening assay"
 									exp = new PrimaryScreenExperiment json[0]
 									exp.set exp.parse(exp.attributes)
-#									exp.fixCompositeClasses()
 									@model = exp
 								else
 									alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
@@ -1030,6 +972,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			model: @model
 			el: @$('.bv_experimentBase')
 			protocolFilter: @protocolFilter
+			protocolKindFilter: @protocolKindFilter
 		@experimentBaseController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@experimentBaseController.on 'amClean', =>
@@ -1070,6 +1013,7 @@ class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExpe
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 	modelFitControllerName: "DoseResponseAnalysisController"
 	protocolFilter: "?protocolName=FLIPR"
+	protocolKindFilter: "?protocolKind=flipr screening assay"
 	moduleLaunchName: "flipr_screening_assay"
 
 
