@@ -101,7 +101,7 @@ class window.TransformationRuleList extends Backbone.Collection
 
 
 class window.PrimaryScreenAnalysisParameters extends Backbone.Model
-	defaults:
+	defaults: ->
 		instrumentReader: "unassigned"
 		signalDirectionRule: "unassigned"
 		aggregateBy1: "unassigned"
@@ -112,17 +112,17 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
-		positiveControl: [] # will be converted into a new Backbone.Model()
-		negativeControl: [] # will be converted into a new Backbone.Model()
-		vehicleControl: [] # will be converted into a new Backbone.Model()
-		agonistControl: [] # will be converted into a new Backbone.Model()
+		positiveControl: new Backbone.Model() # will be converted into a new Backbone.Model()
+		negativeControl: new Backbone.Model() # will be converted into a new Backbone.Model()
+		vehicleControl: new Backbone.Model() # will be converted into a new Backbone.Model()
+		agonistControl: new Backbone.Model() # will be converted into a new Backbone.Model()
 		thresholdType: "sd"
 		volumeType: "dilution"
 		htsFormat: false
 		autoHitSelection: false
 		matchReadName: true
-		primaryAnalysisReadList: [] # will be converted into a new PrimaryAnalysisReadList()
-		transformationRuleList: [] # will be converted into a new TransformationRuleList()
+		primaryAnalysisReadList: new PrimaryAnalysisReadList() # will be converted into a new PrimaryAnalysisReadList()
+		transformationRuleList: new TransformationRuleList() # will be converted into a new TransformationRuleList()
 
 
 	initialize: ->
@@ -132,37 +132,37 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		if resp.positiveControl?
 			if resp.positiveControl not instanceof Backbone.Model
 				resp.positiveControl = new Backbone.Model(resp.positiveControl)
-				resp.positiveControl.on 'change', =>
-					@trigger 'change'
+			resp.positiveControl.on 'change', =>
+				@trigger 'change'
 		if resp.negativeControl?
 			if resp.negativeControl not instanceof Backbone.Model
 				resp.negativeControl = new Backbone.Model(resp.negativeControl)
-				resp.negativeControl.on 'change', =>
-					@trigger 'change'
+			resp.negativeControl.on 'change', =>
+				@trigger 'change'
 		if resp.vehicleControl?
 			if resp.vehicleControl not instanceof Backbone.Model
 				resp.vehicleControl = new Backbone.Model(resp.vehicleControl)
-				resp.vehicleControl.on 'change', =>
-					@trigger 'change'
+			resp.vehicleControl.on 'change', =>
+				@trigger 'change'
 		if resp.agonistControl?
 			if resp.agonistControl not instanceof Backbone.Model
 				resp.agonistControl = new Backbone.Model(resp.agonistControl)
-				resp.agonistControl.on 'change', =>
-					@trigger 'change'
+			resp.agonistControl.on 'change', =>
+				@trigger 'change'
 		if resp.primaryAnalysisReadList?
 			if resp.primaryAnalysisReadList not instanceof PrimaryAnalysisReadList
 				resp.primaryAnalysisReadList = new PrimaryAnalysisReadList(resp.primaryAnalysisReadList)
-				resp.primaryAnalysisReadList.on 'change', =>
-					@trigger 'change'
-				resp.primaryAnalysisReadList.on 'amDirty', =>
-					@trigger 'amDirty'
+			resp.primaryAnalysisReadList.on 'change', =>
+				@trigger 'change'
+			resp.primaryAnalysisReadList.on 'amDirty', =>
+				@trigger 'amDirty'
 		if resp.transformationRuleList?
 			if resp.transformationRuleList not instanceof TransformationRuleList
 				resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList)
-				resp.transformationRuleList.on 'change', =>
-					@trigger 'change'
-				resp.transformationRuleList.on 'amDirty', =>
-					@trigger 'amDirty'
+			resp.transformationRuleList.on 'change', =>
+				@trigger 'change'
+			resp.transformationRuleList.on 'amDirty', =>
+				@trigger 'amDirty'
 		resp
 
 

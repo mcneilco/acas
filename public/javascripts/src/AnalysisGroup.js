@@ -11,12 +11,14 @@
       return AnalysisGroup.__super__.constructor.apply(this, arguments);
     }
 
-    AnalysisGroup.prototype.defaults = {
-      kind: "",
-      recordedBy: "",
-      recordedDate: null,
-      lsLabels: [],
-      lsStates: []
+    AnalysisGroup.prototype.defaults = function() {
+      return {
+        kind: "",
+        recordedBy: "",
+        recordedDate: null,
+        lsLabels: new LabelList(),
+        lsStates: new StateList()
+      };
     };
 
     AnalysisGroup.prototype.initialize = function() {
@@ -27,22 +29,22 @@
       if (resp.lsLabels != null) {
         if (!(resp.lsLabels instanceof LabelList)) {
           resp.lsLabels = new LabelList(resp.lsLabels);
-          resp.lsLabels.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.lsLabels.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.lsStates != null) {
         if (!(resp.lsStates instanceof StateList)) {
           resp.lsStates = new StateList(resp.lsStates);
-          resp.lsStates.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.lsStates.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       return resp;
     };

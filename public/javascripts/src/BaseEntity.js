@@ -23,8 +23,8 @@
         recordedBy: "",
         recordedDate: new Date().getTime(),
         shortDescription: " ",
-        lsLabels: [],
-        lsStates: []
+        lsLabels: new LabelList(),
+        lsStates: new StateList()
       };
     };
 
@@ -36,22 +36,22 @@
       if (resp.lsLabels != null) {
         if (!(resp.lsLabels instanceof LabelList)) {
           resp.lsLabels = new LabelList(resp.lsLabels);
-          resp.lsLabels.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.lsLabels.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.lsStates != null) {
         if (!(resp.lsStates instanceof StateList)) {
           resp.lsStates = new StateList(resp.lsStates);
-          resp.lsStates.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.lsStates.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (!(resp.lsTags instanceof TagList)) {
         resp.lsTags = new TagList(resp.lsTags);

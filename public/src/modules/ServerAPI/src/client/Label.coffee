@@ -81,26 +81,21 @@ class window.ValueList extends Backbone.Collection
 	model: Value
 
 class window.State extends Backbone.Model
-	defaults:
-		lsValues: [] # will be converted into a ValueList()
+	defaults: ->
+		lsValues: new ValueList()
 		ignored: false
 		recordedDate: null
 		recordedBy: ""
 
 	initialize: ->
-#		if @has('lsValues')
-#			if @get('lsValues') not instanceof ValueList
-#				@set lsValues: new ValueList(@get('lsValues'))
-#		@get('lsValues').on 'change', =>
-#			@trigger 'change'
 		@.set @parse(@.attributes)
 
 	parse: (resp) ->
 		if resp.lsValues?
 			if resp.lsValues not instanceof ValueList
 				resp.lsValues = new ValueList(resp.lsValues)
-				resp.lsValues.on 'change', =>
-					@trigger 'change'
+			resp.lsValues.on 'change', =>
+				@trigger 'change'
 		resp
 
 	getValuesByTypeAndKind: (type, kind) ->

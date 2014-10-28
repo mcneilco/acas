@@ -3,7 +3,7 @@ class window.Experiment extends BaseEntity
 	defaults: ->
 		_(super()).extend(
 			protocol: null
-			analysisGroups: [] # will be converted into a new AnalysisGroupList()
+			analysisGroups: new AnalysisGroupList() # will be converted into a new AnalysisGroupList()
 #			analysisGroups: new AnalysisGroupList() # will be converted into a new AnalysisGroupList()
 		)
 
@@ -15,25 +15,25 @@ class window.Experiment extends BaseEntity
 		if resp.lsLabels?
 			if resp.lsLabels not instanceof LabelList
 				resp.lsLabels = new LabelList(resp.lsLabels)
-				resp.lsLabels.on 'change', =>
-					@trigger 'change'
+			resp.lsLabels.on 'change', =>
+				@trigger 'change'
 		if resp.lsStates?
 			if resp.lsStates not instanceof StateList
 				resp.lsStates = new StateList(resp.lsStates)
-				resp.lsStates.on 'change', =>
-					@trigger 'change'
+			resp.lsStates.on 'change', =>
+				@trigger 'change'
 		if resp.analysisGroups?
 			if resp.analysisGroups not instanceof AnalysisGroupList
 				resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups)
-				resp.analysisGroups.on 'change', =>
-					@trigger 'change'
+			resp.analysisGroups.on 'change', =>
+				@trigger 'change'
 		if resp.protocol?
 			if resp.protocol not instanceof Protocol
 				resp.protocol = new Protocol(resp.protocol)
 		if resp.lsTags not instanceof TagList
 			resp.lsTags = new TagList(resp.lsTags)
-			resp.lsTags.on 'change', =>
-				@trigger 'change'
+		resp.lsTags.on 'change', =>
+			@trigger 'change'
 		resp
 
 	copyProtocolAttributes: (protocol) ->

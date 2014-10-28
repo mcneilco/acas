@@ -178,11 +178,13 @@
       return State.__super__.constructor.apply(this, arguments);
     }
 
-    State.prototype.defaults = {
-      lsValues: [],
-      ignored: false,
-      recordedDate: null,
-      recordedBy: ""
+    State.prototype.defaults = function() {
+      return {
+        lsValues: new ValueList(),
+        ignored: false,
+        recordedDate: null,
+        recordedBy: ""
+      };
     };
 
     State.prototype.initialize = function() {
@@ -193,12 +195,12 @@
       if (resp.lsValues != null) {
         if (!(resp.lsValues instanceof ValueList)) {
           resp.lsValues = new ValueList(resp.lsValues);
-          resp.lsValues.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.lsValues.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       return resp;
     };

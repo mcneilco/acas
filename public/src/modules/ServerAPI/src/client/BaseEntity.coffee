@@ -10,8 +10,8 @@ class window.BaseEntity extends Backbone.Model
 		shortDescription: " "
 #		lsLabels: new LabelList()
 #		lsStates: new StateList()
-		lsLabels: [] # will be converted into a new LabelList()
-		lsStates: [] # will be converted into a new StateList()
+		lsLabels: new LabelList() # will be converted into a new LabelList()
+		lsStates: new StateList() # will be converted into a new StateList()
 
 	initialize: ->
 		@.set @parse(@.attributes)
@@ -20,13 +20,13 @@ class window.BaseEntity extends Backbone.Model
 		if resp.lsLabels?
 			if resp.lsLabels not instanceof LabelList
 				resp.lsLabels = new LabelList(resp.lsLabels)
-				resp.lsLabels.on 'change', =>
-					@trigger 'change'
+			resp.lsLabels.on 'change', =>
+				@trigger 'change'
 		if resp.lsStates?
 			if resp.lsStates not instanceof StateList
 				resp.lsStates = new StateList(resp.lsStates)
-				resp.lsStates.on 'change', =>
-					@trigger 'change'
+			resp.lsStates.on 'change', =>
+				@trigger 'change'
 		if resp.lsTags not instanceof TagList
 			resp.lsTags = new TagList(resp.lsTags)
 			resp.lsTags.on 'change', =>

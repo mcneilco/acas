@@ -192,28 +192,30 @@
       return PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
-    PrimaryScreenAnalysisParameters.prototype.defaults = {
-      instrumentReader: "unassigned",
-      signalDirectionRule: "unassigned",
-      aggregateBy1: "unassigned",
-      aggregateBy2: "unassigned",
-      normalizationRule: "unassigned",
-      assayVolume: null,
-      transferVolume: null,
-      dilutionFactor: null,
-      hitEfficacyThreshold: null,
-      hitSDThreshold: null,
-      positiveControl: [],
-      negativeControl: [],
-      vehicleControl: [],
-      agonistControl: [],
-      thresholdType: "sd",
-      volumeType: "dilution",
-      htsFormat: false,
-      autoHitSelection: false,
-      matchReadName: true,
-      primaryAnalysisReadList: [],
-      transformationRuleList: []
+    PrimaryScreenAnalysisParameters.prototype.defaults = function() {
+      return {
+        instrumentReader: "unassigned",
+        signalDirectionRule: "unassigned",
+        aggregateBy1: "unassigned",
+        aggregateBy2: "unassigned",
+        normalizationRule: "unassigned",
+        assayVolume: null,
+        transferVolume: null,
+        dilutionFactor: null,
+        hitEfficacyThreshold: null,
+        hitSDThreshold: null,
+        positiveControl: new Backbone.Model(),
+        negativeControl: new Backbone.Model(),
+        vehicleControl: new Backbone.Model(),
+        agonistControl: new Backbone.Model(),
+        thresholdType: "sd",
+        volumeType: "dilution",
+        htsFormat: false,
+        autoHitSelection: false,
+        matchReadName: true,
+        primaryAnalysisReadList: new PrimaryAnalysisReadList(),
+        transformationRuleList: new TransformationRuleList()
+      };
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
@@ -224,72 +226,72 @@
       if (resp.positiveControl != null) {
         if (!(resp.positiveControl instanceof Backbone.Model)) {
           resp.positiveControl = new Backbone.Model(resp.positiveControl);
-          resp.positiveControl.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.positiveControl.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.negativeControl != null) {
         if (!(resp.negativeControl instanceof Backbone.Model)) {
           resp.negativeControl = new Backbone.Model(resp.negativeControl);
-          resp.negativeControl.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.negativeControl.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.vehicleControl != null) {
         if (!(resp.vehicleControl instanceof Backbone.Model)) {
           resp.vehicleControl = new Backbone.Model(resp.vehicleControl);
-          resp.vehicleControl.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.vehicleControl.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.agonistControl != null) {
         if (!(resp.agonistControl instanceof Backbone.Model)) {
           resp.agonistControl = new Backbone.Model(resp.agonistControl);
-          resp.agonistControl.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.agonistControl.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.primaryAnalysisReadList != null) {
         if (!(resp.primaryAnalysisReadList instanceof PrimaryAnalysisReadList)) {
           resp.primaryAnalysisReadList = new PrimaryAnalysisReadList(resp.primaryAnalysisReadList);
-          resp.primaryAnalysisReadList.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
-          resp.primaryAnalysisReadList.on('amDirty', (function(_this) {
-            return function() {
-              return _this.trigger('amDirty');
-            };
-          })(this));
         }
+        resp.primaryAnalysisReadList.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
+        resp.primaryAnalysisReadList.on('amDirty', (function(_this) {
+          return function() {
+            return _this.trigger('amDirty');
+          };
+        })(this));
       }
       if (resp.transformationRuleList != null) {
         if (!(resp.transformationRuleList instanceof TransformationRuleList)) {
           resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList);
-          resp.transformationRuleList.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
-          resp.transformationRuleList.on('amDirty', (function(_this) {
-            return function() {
-              return _this.trigger('amDirty');
-            };
-          })(this));
         }
+        resp.transformationRuleList.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
+        resp.transformationRuleList.on('amDirty', (function(_this) {
+          return function() {
+            return _this.trigger('amDirty');
+          };
+        })(this));
       }
       return resp;
     };

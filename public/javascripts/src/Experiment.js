@@ -16,7 +16,7 @@
     Experiment.prototype.defaults = function() {
       return _(Experiment.__super__.defaults.call(this)).extend({
         protocol: null,
-        analysisGroups: []
+        analysisGroups: new AnalysisGroupList()
       });
     };
 
@@ -31,32 +31,32 @@
       if (resp.lsLabels != null) {
         if (!(resp.lsLabels instanceof LabelList)) {
           resp.lsLabels = new LabelList(resp.lsLabels);
-          resp.lsLabels.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.lsLabels.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.lsStates != null) {
         if (!(resp.lsStates instanceof StateList)) {
           resp.lsStates = new StateList(resp.lsStates);
-          resp.lsStates.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.lsStates.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.analysisGroups != null) {
         if (!(resp.analysisGroups instanceof AnalysisGroupList)) {
           resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups);
-          resp.analysisGroups.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.analysisGroups.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.protocol != null) {
         if (!(resp.protocol instanceof Protocol)) {
@@ -65,12 +65,12 @@
       }
       if (!(resp.lsTags instanceof TagList)) {
         resp.lsTags = new TagList(resp.lsTags);
-        resp.lsTags.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
       }
+      resp.lsTags.on('change', (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
       return resp;
     };
 
