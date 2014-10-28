@@ -19,6 +19,21 @@
       mainControllerClassName: "DoseResponseFitWorkflowController"
     }, {
       isHeader: false,
+      menuName: "Protocol Base",
+      mainControllerClassName: "ProtocolBaseController",
+      autoLaunchName: "protocol_base"
+    }, {
+      isHeader: false,
+      menuName: "Primary Screen Protocol",
+      mainControllerClassName: "PrimaryScreenProtocolModuleController",
+      autoLaunchName: "primary_screen_protocol"
+    }, {
+      isHeader: false,
+      menuName: "Experiment Base",
+      mainControllerClassName: "ExperimentBaseController",
+      autoLaunchName: "experiment_base"
+    }, {
+      isHeader: false,
       menuName: "Analyze FLIPR Data",
       mainControllerClassName: "PrimaryScreenExperimentController",
       autoLaunchName: "flipr_screening_assay"

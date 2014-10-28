@@ -499,13 +499,13 @@
           return this.drac.render();
         });
         describe("experiment status change handling", function() {
-          it("Should disable model fit parameter editing if status is Finalized", function() {
+          it("Should disable model fit parameter editing if status is finalized", function() {
             this.drac.model.getStatus().set({
               stringValue: "finalized"
             });
             return expect(this.drac.$('.bv_max_limitType_none').attr('disabled')).toEqual('disabled');
           });
-          it("Should enable analsyis parameter editing if status is Started", function() {
+          it("Should enable analsyis parameter editing if status is started", function() {
             this.drac.model.getStatus().set({
               stringValue: "finalized"
             });
