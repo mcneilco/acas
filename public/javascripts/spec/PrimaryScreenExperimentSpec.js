@@ -665,6 +665,11 @@
         beforeEach(function() {
           return this.pse2 = new PrimaryScreenExperiment();
         });
+        describe("defaults", function() {
+          return it("should have lsKind set to flipr screening assay", function() {
+            return expect(this.pse2.get('lsKind')).toEqual("flipr screening assay");
+          });
+        });
         return describe("special states", function() {
           it("should be able to get the analysis status", function() {
             return expect(this.pse2.getAnalysisStatus().get('stringValue')).toEqual("not started");
