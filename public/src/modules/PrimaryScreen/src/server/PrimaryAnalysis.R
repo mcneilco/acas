@@ -1341,12 +1341,13 @@ loadInstrumentReadParameters <- function(instrumentType) {
   # Input:  instrumentType
   # Output: assay file parameters (list)
   
-  if (!file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType)) || 
+  if (is.null(instrumentType) ||
+        !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType)) || 
         !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"instrumentType.json")) ||
         !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"detectionLine.json")) ||
         !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"paramList.json"))) 
   {
-    stopUser("Configuration error: Instrument not loaded in to system.")
+    stopUser("Configuration error: Instrument not loaded in system.")
   } 
   
   instrument <- fromJSON(readLines(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",
@@ -1505,7 +1506,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   parameters <- getExperimentParameters(inputParameters)
   
   ## TODO: test structure for integration 2014-10-06 kcarr
-  parameters <- parameters$primaryScreenAnalysisParameters
+  #parameters <- parameters$primaryScreenAnalysisParameters
   ## END test structure
     
   # TODO: store this in protocol
