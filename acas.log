@@ -1,0 +1,5 @@
+2014-10-30T21:12:04.444Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-10-30T21:12:04.703Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-10-30T21:15:04.377Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-10-30T21:15:04.630Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-10-30T21:15:15.264Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
