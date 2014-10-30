@@ -9,11 +9,6 @@ window.ModuleMenusConfiguration =
 		autoLaunchName:"generic_data_parser"
 	,
 		isHeader: false
-		menuName: "Load Experiment"
-		mainControllerClassName: "GenericDataParserController"
-		requireUserRoles: ["admin", "loadData"]
-	,
-		isHeader: false
 		menuName: "Dose-Response Fit"
 		mainControllerClassName: "DoseResponseFitWorkflowController"
 	,
@@ -21,11 +16,6 @@ window.ModuleMenusConfiguration =
 		menuName: "Analyze FLIPR Data"
 		mainControllerClassName: "PrimaryScreenExperimentController"
 		autoLaunchName:"flipr_screening_assay"
-	,
-		isHeader: false
-		menuName: "Analyze KD Data"
-		mainControllerClassName: "DNSKDPrimaryScreenExperimentController"
-		autoLaunchName:"dnskd_screening_assay"
 	,
 		isHeader: true
 		menuName: "Inventory"

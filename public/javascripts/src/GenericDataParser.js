@@ -12,6 +12,8 @@
     GenericDataParserController.prototype.initialize = function() {
       this.fileProcessorURL = "/api/genericDataParser";
       this.errorOwnerName = 'GenericDataParser';
+      this.loadReportFile = true;
+      this.loadImagesFile = true;
       GenericDataParserController.__super__.initialize.call(this);
       return this.$('.bv_moduleTitle').html('Simple Experiment Loader');
     };
