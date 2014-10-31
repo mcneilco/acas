@@ -2,7 +2,8 @@
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/curves/stubs/:exptCode', loginRoutes.ensureAuthenticated, exports.getCurveStubs);
     app.get('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail);
-    app.put('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurve);
+    app.put('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurveDetail);
+    app.post('/api/curve/stub/:id', loginRoutes.ensureAuthenticated, exports.updateCurveStub);
     return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
   };
 
@@ -111,7 +112,7 @@
     }
   };
 
-  exports.updateCurve = function(req, resp) {
+  exports.updateCurveDetail = function(req, resp) {
     var baseurl, config, curveCuratorTestData, request;
     if (global.specRunnerTestmode) {
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
@@ -119,6 +120,38 @@
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/curve/detail/";
+      request = require('request');
+      console.log(JSON.stringify(req.body));
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: JSON.stringify(req.body),
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return resp.end(JSON.stringify(json));
+          } else if (!error && response.statusCode === 500) {
+            return resp.send("Could not update curve", 500);
+          } else {
+            console.log('got ajax error trying to refit curve');
+            console.log(error);
+            console.log(json);
+            console.log(response);
+            return resp.send('got ajax error trying to refit curve', 500);
+          }
+        };
+      })(this));
+    }
+  };
+
+  exports.updateCurveStub = function(req, resp) {
+    var baseurl, config, request;
+    if (global.specRunnerTestmode) {
+      return resp.end(JSON.stringify(req.body));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.rapache.fullpath + "/curve/stub/";
       request = require('request');
       console.log(JSON.stringify(req.body));
       return request({

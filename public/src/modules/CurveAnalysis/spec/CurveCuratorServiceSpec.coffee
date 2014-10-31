@@ -161,5 +161,3 @@ describe 'Curve Curator service testing', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn.fitSummary).tobeDefined
-
-
