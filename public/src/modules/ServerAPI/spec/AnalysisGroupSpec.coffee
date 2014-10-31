@@ -30,7 +30,7 @@ describe 'AnalysisGroup CRUD testing', ->
 				@ag = new AnalysisGroup window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups.analysisGroups[0]
 			describe "after initial load", ->
 				it "should have a kind", ->
-					expect(@ag.get('kind')).toEqual "ACAS doc for batches"
+					expect(@ag.get('lsKind')).toEqual "ACAS doc for batches"
 				it "should have a code ", ->
 					expect(@ag.get('codeName')).toEqual "AG-00037424"
 				it "should have labels", ->

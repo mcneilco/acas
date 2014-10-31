@@ -17,22 +17,32 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
 
-exports.experimentByCodename = (request, response) ->
-	console.log request.params.code
-	console.log request.query.testMode
-	if (request.query.testMode is true) or (global.specRunnerTestmode is true)
+exports.experimentByCodename = (req, resp) ->
+	console.log req.params.code
+	console.log req.query.testMode
+	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
-		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+#		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+		expt = JSON.parse(JSON.stringify (experimentServiceTestJSON.fullExperimentFromServer))
+
+		if req.params.code.indexOf("screening") > -1
+			expt.lsKind = "flipr screening assay"
+
+		else
+			expt.lsKind = "default"
+
+		resp.json expt
+
 	else
 		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+request.params.code
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+req.params.code
 		fullObjectFlag = "with=fullobject"
-		if request.query.fullObject
+		if req.query.fullObject
 			baseurl += "?#{fullObjectFlag}"
-			serverUtilityFunctions.getFromACASServer(baseurl, response)
+			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 		else
-			serverUtilityFunctions.getFromACASServer(baseurl, response)
+			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.experimentsByProtocolCodename = (request, response) ->
 	console.log request.params.code
@@ -64,23 +74,24 @@ exports.postExperiment = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
+		console.log "in post experiment"
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments"
 		request = require 'request'
 		request(
-				method: 'POST'
-				url: baseurl
-				body: req.body
-				json: true
-			, (error, response, json) =>
-				if !error && response.statusCode == 201
-					console.log JSON.stringify json
-					resp.end JSON.stringify json
-				else
-					console.log 'got ajax error trying to save new experiment'
-					console.log error
-					console.log json
-					console.log response
+			method: 'POST'
+			url: baseurl
+			body: req.body
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 201
+				console.log JSON.stringify json
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to save new experiment'
+				console.log error
+				console.log json
+				console.log response
 		)
 
 exports.putExperiment = (req, resp) ->
@@ -91,6 +102,8 @@ exports.putExperiment = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		putId = req.body.id
+		console.log "putID"
+		console.log putId
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+putId
 		request = require 'request'
 		request(
@@ -207,7 +220,7 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 									console.log error
 									console.log json
 									console.log response
-							)
+						)
 				else
 					console.log 'got ajax error trying to save new experiment'
 					console.log error

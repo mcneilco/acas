@@ -288,10 +288,8 @@ class window.CurveDetail extends Backbone.Model
 	url: ->
 		return "/api/curve/detail/" + @id
 	initialize: ->
-		@fixCompositeClasses()
-	fixCompositeClasses: =>
-		if @get('fitSettings') not instanceof DoseResponseAnalysisParameters
-			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
+		@.set @parse(@.attributes)
+
 	parse: (resp) =>
 		if resp.fitSettings not instanceof DoseResponseAnalysisParameters
 			resp.fitSettings = new DoseResponseAnalysisParameters(resp.fitSettings)
@@ -466,7 +464,7 @@ class window.CurveList extends Backbone.Collection
 			dirty: dirty
 
 class window.CurveCurationSet extends Backbone.Model
-	defaults:
+	defaults: ->
 		sortOptions: new Backbone.Collection()
 		curves: new CurveList()
 	setExperimentCode: (exptCode) ->
@@ -476,13 +474,13 @@ class window.CurveCurationSet extends Backbone.Model
 		if resp.curves?
 			if resp.curves not instanceof CurveList
 				resp.curves = new CurveList(resp.curves)
-				resp.curves.on 'change', =>
-					@trigger 'change'
+			resp.curves.on 'change', =>
+				@trigger 'change'
 		if resp.sortOptions?
 			if resp.sortOptions not instanceof Backbone.Collection
 				resp.sortOptions = new Backbone.Collection(resp.sortOptions)
-				resp.sortOptions.on 'change', =>
-					@trigger 'change'
+			resp.sortOptions.on 'change', =>
+				@trigger 'change'
 		resp
 
 

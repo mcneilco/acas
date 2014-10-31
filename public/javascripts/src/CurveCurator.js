@@ -415,7 +415,6 @@
 
     function CurveDetail() {
       this.parse = __bind(this.parse, this);
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       return CurveDetail.__super__.constructor.apply(this, arguments);
     }
 
@@ -424,15 +423,7 @@
     };
 
     CurveDetail.prototype.initialize = function() {
-      return this.fixCompositeClasses();
-    };
-
-    CurveDetail.prototype.fixCompositeClasses = function() {
-      if (!(this.get('fitSettings') instanceof DoseResponseAnalysisParameters)) {
-        return this.set({
-          fitSettings: new DoseResponseAnalysisParameters(this.get('fitSettings'))
-        });
-      }
+      return this.set(this.parse(this.attributes));
     };
 
     CurveDetail.prototype.parse = function(resp) {
@@ -731,9 +722,11 @@
       return CurveCurationSet.__super__.constructor.apply(this, arguments);
     }
 
-    CurveCurationSet.prototype.defaults = {
-      sortOptions: new Backbone.Collection(),
-      curves: new CurveList()
+    CurveCurationSet.prototype.defaults = function() {
+      return {
+        sortOptions: new Backbone.Collection(),
+        curves: new CurveList()
+      };
     };
 
     CurveCurationSet.prototype.setExperimentCode = function(exptCode) {
@@ -744,22 +737,22 @@
       if (resp.curves != null) {
         if (!(resp.curves instanceof CurveList)) {
           resp.curves = new CurveList(resp.curves);
-          resp.curves.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.curves.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.sortOptions != null) {
         if (!(resp.sortOptions instanceof Backbone.Collection)) {
           resp.sortOptions = new Backbone.Collection(resp.sortOptions);
-          resp.sortOptions.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.sortOptions.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       return resp;
     };

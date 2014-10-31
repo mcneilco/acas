@@ -214,7 +214,7 @@
         codeName: "EXPT-00000046",
         id: 270,
         ignored: false,
-        kind: null,
+        lsKind: null,
         lsTransaction: {
           comments: "protocol 201 transactions",
           id: 179,
@@ -231,7 +231,7 @@
         codeName: "EXPT-00000047",
         id: 271,
         ignored: false,
-        kind: null,
+        lsKind: null,
         lsTransaction: {
           comments: "protocol 201 transactions",
           id: 180,
@@ -248,7 +248,7 @@
     ];
     exports.experimentToSave = {
       ignored: false,
-      kind: "primary screen experiment",
+      lsKind: "primary screen experiment",
       modifiedBy: null,
       modifiedDate: null,
       recordedBy: "jmcneil",
@@ -1138,7 +1138,7 @@
           lsTypeAndKind: "metadata_experiment metadata",
           lsValues: [
             {
-              clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing signal (highest = 100%)","aggregateBy1":"compound batch concentration","aggregateBy2":"median","normalizationRule":"plate order only","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"htsFormat":false,"autoHitSelection":false,"matchReadName":false,"primaryAnalysisReadList":[{"readPosition":11,"readName":"none","activity":false},{"readPosition":12,"readName":"fluorescence","activity":true},{"readPosition":13,"readName":"luminescence","activity":false}],"transformationRuleList":[{"transformationRule":"% efficacy"},{"transformationRule":"sd"},{"transformationRule":"null"}]}',
+              clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing","aggregateBy1":"compound batch concentration","aggregateBy2":"median","normalizationRule":"plate order only","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"htsFormat":false,"autoHitSelection":false,"matchReadName":false,"primaryAnalysisReadList":[{"readPosition":11,"readName":"none","activity":false},{"readPosition":12,"readName":"fluorescence","activity":true},{"readPosition":13,"readName":"luminescence","activity":false}],"transformationRuleList":[{"transformationRule":"% efficacy"},{"transformationRule":"sd"},{"transformationRule":"null"}]}',
               codeValue: null,
               comments: null,
               dateValue: null,
@@ -1473,6 +1473,34 @@
               valueOperator: null,
               lsType: "clobValue",
               lsTypeAndKind: "clobValue_description",
+              valueUnit: null,
+              version: 0
+            }, {
+              clobValue: "comments go here",
+              codeValue: null,
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 8046999912,
+              ignored: false,
+              lsTransaction: {
+                comments: "",
+                id: 87,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: null,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: null,
+              stringValue: null,
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "comments",
+              valueOperator: null,
+              lsType: "clobValue",
+              lsTypeAndKind: "clobValue_comments",
               valueUnit: null,
               version: 0
             }, {
@@ -2789,6 +2817,34 @@
               valueUnit: null,
               version: 0
             }, {
+              clobValue: "comments go here",
+              codeValue: null,
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 804699999123,
+              ignored: false,
+              lsTransaction: {
+                comments: "",
+                id: 87,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: null,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: null,
+              stringValue: null,
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "comments",
+              valueOperator: null,
+              lsType: "clobValue",
+              lsTypeAndKind: "clobValue_comments",
+              valueUnit: null,
+              version: 0
+            }, {
               clobValue: null,
               codeValue: "project1",
               comments: null,
@@ -3184,6 +3240,34 @@
               lsTypeAndKind: "clobValue_description",
               valueUnit: null,
               version: 0
+            }, {
+              clobValue: "comments go here",
+              codeValue: null,
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 804699912399,
+              ignored: false,
+              lsTransaction: {
+                comments: "",
+                id: 87,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: null,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: null,
+              stringValue: null,
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "comments",
+              valueOperator: null,
+              lsType: "clobValue",
+              lsTypeAndKind: "clobValue_comments",
+              valueUnit: null,
+              version: 0
             }
           ],
           modifiedBy: null,
@@ -3242,7 +3326,7 @@
       ],
       id: 64781,
       ignored: false,
-      kind: "ACAS doc for batches",
+      lsKind: "ACAS doc for batches",
       lsTransaction: {
         comments: "docForBatches upload",
         id: 423,
@@ -3255,7 +3339,7 @@
         codeName: "ACASdocForBatches",
         id: 2403,
         ignored: false,
-        kind: null,
+        lsKind: null,
         lsTransaction: {
           comments: "docForBatches upload",
           id: 38,
@@ -3572,7 +3656,7 @@
           ignored: false,
           recordedBy: "jmcneil",
           recordedDate: 1367455531000,
-          kind: "ACAS doc for batches",
+          lsKind: "ACAS doc for batches",
           lsTransaction: {
             comments: "docForBatches upload",
             id: 423,
