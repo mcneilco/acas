@@ -3,7 +3,7 @@
 #
 # Sam Meyer
 # sam@mcneilco.com
-# Copyright 2012 John McNeil & Co. Inc.
+# Copyright 2012-2014 John McNeil & Co. Inc.
 #######################################################################################
 # Runs the analysis of primary screens, confirmation screens, and dose response screens
 #######################################################################################
@@ -32,7 +32,13 @@
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
 # newest experimentID: 75191, 9036, 11203
 # request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
-# request <- structure(list(fileToParse = "Archive.zip", reportFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"primaryAnalysisReads\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}", primaryAnalysisExperimentId = 203528, testMode = "true"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
+############ testMode TRUE #############
+# file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/Archive.zip", "privateUploads/")
+# request <- structure(list(fileToParse = "Archive.zip", reportFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}", primaryAnalysisExperimentId = 203528, testMode = "true"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
+############ testMode FALSE ############
+# file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/ArchiveNonTest.zip", "privateUploads/")
+# request <- structure(list(fileToParse = "Archive (7).zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy1\":\"compound batch concentration\",\"aggregateBy2\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1018709", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
+
 getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
   
   if(is.null(flaggedWells)) {
@@ -1580,6 +1586,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   ## Well Flagging Here
   
   resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment)
+  resultTable[, flagType:=NA_character_]
+  resultTable[, flagObservation:=NA_character_]
+  resultTable[, flagReason:=NA_character_]
+  resultTable[, flagComment:=NA_character_]
+  resultTable[, autoFlagType:=NA_character_]
+  resultTable[, autoFlagObservation:=NA_character_]
+  resultTable[, autoFlagReason:=NA_character_]
   
   ## End Well Flagging
   
@@ -1617,7 +1630,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   #                                  concUnit = flaglessTable$concUnit)
   #   }
   
-  batchDataTable <- resultTable[is.na(flag)]
+  
   
   #   if(!useRdap) {
   
@@ -1629,14 +1642,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else {
     groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
   }
-  
   treatmentGroupBy <- c(groupBy, "cmpdConc")
-  batchDataTable[, parentId:=.GRP, by=treatmentGroupBy]
+  
+  resultTable[, tempParentId:=.GRP, by=treatmentGroupBy]
+  batchDataTable <- resultTable[is.na(flag)]
   
   treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
-  treatmentGroupData[, parentId:=.GRP, by=groupBy]
+  treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
-  analysisGroupData[, parentId:=experimentId]
+  analysisGroupData[, tempParentId:=as.numeric(experimentId)]
 
   ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'
   
@@ -1859,12 +1873,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
                                threshold = parameters$hitEfficacyThreshold, experiment, dryRun)
-      
+      summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                           racas::applicationSettings$client.port,
+                                           '/dataFiles/experiments/', experiment$codeName, "/draft/", 
+                                           experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
     }
       
     ## TODO: decide if "resultTable" is the correct object to write
     summaryInfo$dryRunReports <- saveDryRunReports(resultTable, saveLocation=dryRunFileLocation)
-    
+    summaryInfo$info$"Spotfire" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                          racas::applicationSettings$client.port,
+                                          '/dataFiles/', summaryInfo$dryRunReports, '" target="_blank">Spotfire</a>')
+  
   } else { #This section is "If not dry run"
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
@@ -1911,44 +1931,66 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
     } else { # We are using Rdap
       
-      meltStuff <- function(resultTable, resultTypes) {
-        ## this could be done as a data table. Check out http://stackoverflow.com/questions/6902087/proper-fastest-way-to-reshape-a-data-table
-        resultTable <- as.data.frame(resultTable)
+      
+      # TODO: move to correct location
+      # Removes rows that have no compound data
+      analysisGroupData <- analysisGroupData[ analysisGroupData$batchCode != "NA::NA", ]
+      
+      meltStuff <- function(resultTable, resultTypes, includedColumn) {
+        #includedColumn is "saveAsSubject" or "saveAsTreatment" or "saveAsAnalysis"
+        # resultTable is a Data Table!
         
-        longResults <- reshape(resultTable, idvar = c("id"), ids = row.names(resultTable), 
-                               v.names = "UnparsedValue", 
-                               timevar = "valueKind", varying=list(resultTypes$columnName),
-                               direction = "long", times=resultTypes$valueKind, drop="fileName")
+        library(reshape2)
         
-        longResults <- merge(longResults, resultTypes)
+        usedCol <- resultTypes[includedColumn] & resultTypes$columnName %in% names(resultTable)
         
-        for (value in unique(longResults$valueType)) {
-          if(value == 'numericValue') {
-            longResults[[value]] <- NA
-            longResults[[value]][longResults$valueType==value] <- as.numeric(longResults$UnparsedValue[longResults$valueType==value])
-          } else {
-            longResults[[value]] <- NA
-            longResults[[value]][longResults$valueType==value] <- longResults$UnparsedValue[longResults$valueType==value]
-          }
-          
-        }
+        numericResultColumns <- resultTypes[valueType=="numericValue" & usedCol, columnName]
+        codeResultColumns <- resultTypes[valueType=="codeValue" & usedCol, columnName]
+        stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
         
-        return(longResults)  
+        numericResults <- melt(resultTable, id.vars="index", measure.vars=numericResultColumns, variable.name="columnName", value.name="numericValue")
+        codeResults <- melt(resultTable, id.vars="index", measure.vars=codeResultColumns, variable.name="columnName", value.name="codeValue")
+        stringResults <- melt(resultTable, id.vars="index", measure.vars=stringResultColumns, variable.name="columnName", value.name="stringValue", variable.factor = FALSE)
+        
+        longResults <- as.data.table(rbind.fill(numericResults, codeResults, stringResults))
+        
+        fullTable <- merge(longResults, resultTypes, by = "columnName")
+        
+        return(fullTable)  
       }
       
       # transformed and normalized should be included if they are not null
       # resultKinds should include activityColumns, numericValue, data, results
-      resultTypes <- data.frame(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
-                                valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
-                                columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_% efficacy", "transformed_sd"), 
-                                stateType=c("metadata","metadata","metadata", "data", "data", "data"), 
-                                stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
-                                stringsAsFactors=FALSE) 
+      #TODO: get from file
+      #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
+      #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
+      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_% efficacy", "transformed_sd"), 
+      #                                 stateType=c("metadata","metadata","metadata", "data", "data", "data"), 
+      #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
+      #                                 stringsAsFactors=FALSE) 
+      #       
+      resultTypes <- fread("public/src/modules/PrimaryScreen/src/conf/savingSettings.csv")
       
-      analysisGroupData <- meltStuff(resultTable, resultTypes)
+      #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
+      #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
+      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_% efficacy", "transformed_sd"), 
+      #                                 stateType=c("metadata","metadata","metadata", "data", "data", "data"), 
+      #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
+      #                                 publicData=c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE),
+      #                                 stringsAsFactors=FALSE) 
       
-      # Removes rows that have no compound data
-      analysisGroupData <- analysisGroupData[ analysisGroupData$batchCode != "NA::NA", ]
+      
+      
+      subjectDataLong <- meltStuff(resultTable, resultTypes, "saveAsSubject")
+      subjectDataLong[, tempId:=index]
+      
+      treatmentGroupDataLong <- meltStuff(treatmentGroupData, resultTypes, "saveAsTreatment")
+      treatmentGroupData[, tempId:=index]
+      #subjectData[, tempStateId]
+      
+      analysisGroupDataLong <- meltStuff(analysisGroupData, resultTypes, "saveAsAnalysis")
+      analysisGroupDataLong[, tempId:=index]
+      
       
       analysisGroupData$analysisGroupID <- analysisGroupData$index
       
@@ -2574,17 +2616,24 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   )
   
   aggregateTreatmentData <- function(DT, meanTarget, sdTarget) {
+    # get means
     outputMeans <- lapply(meanTarget, function(x) {
       mean(as.numeric(DT[, x, with=FALSE][[1]]))
     })
     names(outputMeans) <- meanTarget
     
+    # get SDs
     outputSDs <- lapply(sdTarget, function(x) {
       sd(as.numeric(DT[, x, with=FALSE][[1]]))
     })
     names(outputSDs) <- paste0("standardDeviation_", sdTarget)
     
-    return(c(outputMeans, outputSDs))
+    # TODO: get numberOfReplicates
+    
+    # Copy tempParentId to tempId, tempParentId should be only one unique number
+    tempId <- list(tempId = DT[1, tempParentId])
+    
+    return(c(outputMeans, outputSDs, tempId))
   }
   
   treatmentData <- batchDataTable[, aggregateTreatmentData(.SD, meanTarget, sdTarget), 
@@ -2594,23 +2643,28 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
 getAnalysisGroupData <- function(treatmentGroupData) {
   # columns to be saved as analysis group data
   #analysisGroupTarget <- grep("^transformed_", names(treatmentGroupData), value=TRUE)
+  library(data.table)
   
   # Replaces data with a curve id if there are more than 3 points
-  aggregateCurveData <- function(DT, newID) {
+  aggregateCurveData <- function(DT, newID, BY) {
+    tempId <- BY$tempParentId
     if(length(unique(DT[, cmpdConc])) > 3) {
       output <- DT[NA]
+      output[, tempId:=tempId]
       output[, curveId:=newID]
       return(output)
     } else {
-      return(DT)
+      output <- copy(DT)
+      output[, tempId:=tempId]
+      return(output)
     }
   }
   
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_integer_]
-  curveData <- preCurveData[, aggregateCurveData(.SD, .GRP), by=parentId]
+  analysisData <- preCurveData[, aggregateCurveData(.SD, .GRP, .BY), by=tempParentId]
   
-  return(curveData)
+  return(analysisData)
   
   # TODO: bring hasAgonist back in, or put in a config
   
