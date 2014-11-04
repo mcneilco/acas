@@ -2,7 +2,7 @@
   (function(exports) {
     return exports.dataDictValues = [
       {
-        type: "experiment metadata",
+        type: "experimentMetadata",
         kind: "instrument reader",
         codes: [
           {
@@ -12,7 +12,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "experimentMetadata",
         kind: "signal direction",
         codes: [
           {
@@ -22,7 +22,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "experimentMetadata",
         kind: "aggregate by1",
         codes: [
           {
@@ -32,7 +32,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "experimentMetadata",
         kind: "aggregate by2",
         codes: [
           {
@@ -46,7 +46,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "experimentMetadata",
         kind: "transformation",
         codes: [
           {
@@ -64,7 +64,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "experimentMetadata",
         kind: "normalization",
         codes: [
           {
@@ -86,7 +86,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "experimentMetadata",
         kind: "read name",
         codes: [
           {

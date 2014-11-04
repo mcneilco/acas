@@ -31,8 +31,7 @@ exports.applicationScripts = [
 	'/javascripts/src/BasicFileValidateAndSave.js',
 	'/javascripts/src/PickList.js',
 	'/javascripts/src/Label.js',
-    '/javascripts/src/BaseEntity.js',
-    '/javascripts/src/AnalysisGroup.js',
+	'/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',
 	'/javascripts/src/Protocol.js',
 	"/javascripts/src/PrimaryScreenExperiment.js"//APPLICATIONSCRIPTS_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES

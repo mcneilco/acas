@@ -100,7 +100,7 @@
       return exp.fetch({
         success: (function(_this) {
           return function() {
-            exp.set(exp.parse(exp.attributes));
+            exp.fixCompositeClasses();
             _this.primaryScreenExperimentController = new PrimaryScreenExperimentController({
               model: exp,
               el: $('.bv_primaryScreenExperimentController')

@@ -7,83 +7,65 @@
     __extends(DoseResponseAnalysisParameters, _super);
 
     function DoseResponseAnalysisParameters() {
-      this.parse = __bind(this.parse, this);
+      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       return DoseResponseAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
-    DoseResponseAnalysisParameters.prototype.defaults = function() {
-      return {
-        inactiveThreshold: 20,
-        inverseAgonistMode: true,
-        max: new Backbone.Model({
-          limitType: 'none'
-        }),
-        min: new Backbone.Model({
-          limitType: 'none'
-        }),
-        slope: new Backbone.Model({
-          limitType: 'none'
-        })
-      };
+    DoseResponseAnalysisParameters.prototype.defaults = {
+      inactiveThreshold: 20,
+      inverseAgonistMode: true,
+      max: new Backbone.Model({
+        limitType: 'none'
+      }),
+      min: new Backbone.Model({
+        limitType: 'none'
+      }),
+      slope: new Backbone.Model({
+        limitType: 'none'
+      })
     };
 
     DoseResponseAnalysisParameters.prototype.initialize = function() {
-      return this.set(this.parse(this.attributes));
+      return this.fixCompositeClasses();
     };
 
-    DoseResponseAnalysisParameters.prototype.parse = function(resp) {
-      if (resp.max != null) {
-        if (!(resp.max instanceof Backbone.Model)) {
-          resp.max = new Backbone.Model(resp.max);
-        }
-        resp.max.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
+    DoseResponseAnalysisParameters.prototype.fixCompositeClasses = function() {
+      if (!(this.get('max') instanceof Backbone.Model)) {
+        this.set({
+          max: new Backbone.Model(this.get('max'))
+        });
       }
-      if (resp.min != null) {
-        if (!(resp.min instanceof Backbone.Model)) {
-          resp.min = new Backbone.Model(resp.min);
-        }
-        resp.min.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
+      if (!(this.get('min') instanceof Backbone.Model)) {
+        this.set({
+          min: new Backbone.Model(this.get('min'))
+        });
       }
-      if (resp.slope != null) {
-        if (!(resp.slope instanceof Backbone.Model)) {
-          resp.slope = new Backbone.Model(resp.slope);
-        }
-        resp.slope.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
+      if (!(this.get('slope') instanceof Backbone.Model)) {
+        return this.set({
+          slope: new Backbone.Model(this.get('slope'))
+        });
       }
-      return resp;
     };
 
     DoseResponseAnalysisParameters.prototype.validate = function(attrs) {
       var errors, limitType;
       errors = [];
       limitType = attrs.min.get('limitType');
-      if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.min.get('value')) || attrs.min.get('value') === null)) {
+      if ((limitType === "pin" || limitType === "limit") && _.isNaN(attrs.min.get('value'))) {
         errors.push({
           attribute: 'min_value',
           message: "Min threshold value must be set when limit type is pin or limit"
         });
       }
       limitType = attrs.max.get('limitType');
-      if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.max.get('value')) || attrs.max.get('value') === null)) {
+      if ((limitType === "pin" || limitType === "limit") && _.isNaN(attrs.max.get('value'))) {
         errors.push({
           attribute: 'max_value',
           message: "Max threshold value must be set when limit type is pin or limit"
         });
       }
       limitType = attrs.slope.get('limitType');
-      if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.slope.get('value')) || attrs.slope.get('value') === null)) {
+      if ((limitType === "pin" || limitType === "limit") && _.isNaN(attrs.slope.get('value'))) {
         errors.push({
           attribute: 'slope_value',
           message: "Slope threshold value must be set when limit type is pin or limit"
@@ -189,8 +171,7 @@
       }, {
         silent: true
       });
-      this.model.trigger('change');
-      return this.trigger('updateState');
+      return this.model.trigger('change');
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdChanged = function(event, ui) {
@@ -198,7 +179,7 @@
         'inactiveThreshold': ui.value
       });
       this.updateThresholdDisplay(this.model.get('inactiveThreshold'));
-      return this.attributeChanged();
+      return this.attributeChanged;
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdMoved = function(event, ui) {
