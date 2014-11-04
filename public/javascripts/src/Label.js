@@ -137,6 +137,31 @@
       }
     };
 
+    LabelList.prototype.getLabelByTypeAndKind = function(type, kind) {
+      return this.filter(function(label) {
+        return (!label.get('ignored')) && (label.get('lsType') === type) && (label.get('lsKind') === kind);
+      });
+    };
+
+    LabelList.prototype.getOrCreateLabelByTypeAndKind = function(type, kind) {
+      var label, labels;
+      labels = this.getLabelByTypeAndKind(type, kind);
+      label = labels[0];
+      if (label == null) {
+        label = new Label({
+          lsType: type,
+          lsKind: kind
+        });
+        this.add(label);
+        label.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
+      }
+      return label;
+    };
+
     return LabelList;
 
   })(Backbone.Collection);

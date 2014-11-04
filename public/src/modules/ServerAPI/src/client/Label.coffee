@@ -71,6 +71,22 @@ class window.LabelList extends Backbone.Collection
 		else
 			@add label
 
+	getLabelByTypeAndKind: (type, kind) ->
+		@filter (label) ->
+			(not label.get('ignored')) and (label.get('lsType')==type) and (label.get('lsKind')==kind)
+
+	getOrCreateLabelByTypeAndKind: (type, kind) ->
+		labels = @getLabelByTypeAndKind type, kind
+		label = labels[0] #TODO should do something smart if there are more than one
+		unless label?
+			label = new Label
+				lsType: type
+				lsKind: kind
+			@.add label
+			label.on 'change', =>
+				@trigger('change')
+		return label
+
 class window.Value extends Backbone.Model
 	defaults:
 		ignored: false

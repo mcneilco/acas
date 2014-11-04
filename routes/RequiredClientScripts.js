@@ -56,7 +56,8 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
-	"/javascripts/src/TagList.js"
+	"/javascripts/src/TagList.js",
+	"/javascripts/src/Thing.js"
 ];
 
 exports.jasmineScripts = [
