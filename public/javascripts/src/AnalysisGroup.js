@@ -7,46 +7,37 @@
     __extends(AnalysisGroup, _super);
 
     function AnalysisGroup() {
-      this.parse = __bind(this.parse, this);
+      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       return AnalysisGroup.__super__.constructor.apply(this, arguments);
     }
 
-    AnalysisGroup.prototype.defaults = function() {
-      return {
-        kind: "",
-        recordedBy: "",
-        recordedDate: null,
-        lsLabels: new LabelList(),
-        lsStates: new StateList()
-      };
+    AnalysisGroup.prototype.defaults = {
+      kind: "",
+      recordedBy: "",
+      recordedDate: null,
+      lsLabels: new LabelList(),
+      lsStates: new StateList()
     };
 
     AnalysisGroup.prototype.initialize = function() {
-      return this.set(this.parse(this.attributes));
+      return this.fixCompositeClasses();
     };
 
-    AnalysisGroup.prototype.parse = function(resp) {
-      if (resp.lsLabels != null) {
-        if (!(resp.lsLabels instanceof LabelList)) {
-          resp.lsLabels = new LabelList(resp.lsLabels);
+    AnalysisGroup.prototype.fixCompositeClasses = function() {
+      if (this.has('lsLabels')) {
+        if (!(this.get('lsLabels') instanceof LabelList)) {
+          this.set({
+            lsLabels: new LabelList(this.get('lsLabels'))
+          });
         }
-        resp.lsLabels.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
       }
-      if (resp.lsStates != null) {
-        if (!(resp.lsStates instanceof StateList)) {
-          resp.lsStates = new StateList(resp.lsStates);
+      if (this.has('lsStates')) {
+        if (!(this.get('lsStates') instanceof StateList)) {
+          return this.set({
+            lsStates: new StateList(this.get('lsStates'))
+          });
         }
-        resp.lsStates.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
       }
-      return resp;
     };
 
     return AnalysisGroup;

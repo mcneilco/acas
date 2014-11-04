@@ -75,7 +75,7 @@ describe 'Protocol CRUD testing', ->
 				self = @
 				$.ajax
 					type: 'PUT'
-					url: "api/protocols/1234"
+					url: "api/protocols"
 					data: window.protocolServiceTestJSON.fullSavedProtocol
 					success: (json) ->
 						self.serviceReturn = json
@@ -228,5 +228,4 @@ describe 'Protocol CRUD testing', ->
 					expect(@serviceReturn[0].code).toBeDefined()
 					expect(@serviceReturn[0].name).toBeDefined()
 					expect(@serviceReturn[0].ignored).toBeDefined()
-
 

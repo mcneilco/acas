@@ -52,7 +52,10 @@
           _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
           _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
           _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
-          _this.$('.bv_group_' + err.attribute).tooltip();
+          _this.$("[data-toggle=tooltip]").tooltip();
+          _this.$("body").tooltip({
+            selector: '.bv_group_' + err.attribute
+          });
           _this.$('.bv_group_' + err.attribute).addClass('input_error error');
           return _this.trigger('notifyError', {
             owner: _this.errorOwnerName,
@@ -70,7 +73,6 @@
       this.trigger('clearErrors', this.errorOwnerName);
       return _.each(errorElms, (function(_this) {
         return function(ee) {
-          $(ee).tooltip('hide');
           $(ee).removeAttr('data-toggle');
           $(ee).removeAttr('data-placement');
           $(ee).removeAttr('title');

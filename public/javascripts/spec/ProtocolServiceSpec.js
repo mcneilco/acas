@@ -100,7 +100,7 @@ See ProtocolServiceTestJSON.coffee for examples
           self = this;
           return $.ajax({
             type: 'PUT',
-            url: "api/protocols/1234",
+            url: "api/protocols",
             data: window.protocolServiceTestJSON.fullSavedProtocol,
             success: function(json) {
               return self.serviceReturn = json;
