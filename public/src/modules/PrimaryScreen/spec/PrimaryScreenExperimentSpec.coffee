@@ -138,7 +138,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('negativeControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('vehicleControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy()
-					expect(@psap.get('thresholdType')).toEqual "sd"
+					expect(@psap.get('thresholdType')).toEqual null
 					expect(@psap.get('autoHitSelection')).toBeFalsy()
 					expect(@psap.get('htsFormat')).toBeFalsy()
 					expect(@psap.get('matchReadName')).toBeTruthy()

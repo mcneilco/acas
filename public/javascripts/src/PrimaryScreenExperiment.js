@@ -208,7 +208,7 @@
         negativeControl: new Backbone.Model(),
         vehicleControl: new Backbone.Model(),
         agonistControl: new Backbone.Model(),
-        thresholdType: "sd",
+        thresholdType: null,
         volumeType: "dilution",
         htsFormat: false,
         autoHitSelection: false,
@@ -371,17 +371,19 @@
           message: "Normalization rule must be assigned"
         });
       }
-      if (attrs.thresholdType === "sd" && _.isNaN(attrs.hitSDThreshold)) {
-        errors.push({
-          attribute: 'hitSDThreshold',
-          message: "SD threshold must be assigned"
-        });
-      }
-      if (attrs.thresholdType === "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)) {
-        errors.push({
-          attribute: 'hitEfficacyThreshold',
-          message: "Efficacy threshold must be assigned"
-        });
+      if (attrs.autoHitSelection) {
+        if (attrs.thresholdType === "sd" && _.isNaN(attrs.hitSDThreshold)) {
+          errors.push({
+            attribute: 'hitSDThreshold',
+            message: "SD threshold must be assigned"
+          });
+        }
+        if (attrs.thresholdType === "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)) {
+          errors.push({
+            attribute: 'hitEfficacyThreshold',
+            message: "Efficacy threshold must be assigned"
+          });
+        }
       }
       if (_.isNaN(attrs.assayVolume)) {
         errors.push({
@@ -460,26 +462,6 @@
       });
     };
 
-    PrimaryScreenExperiment.prototype.getAnalysisParameters = function() {
-      var ap;
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
-      if (ap.get('clobValue') != null) {
-        return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
-      } else {
-        return new PrimaryScreenAnalysisParameters();
-      }
-    };
-
-    PrimaryScreenExperiment.prototype.getModelFitParameters = function() {
-      var ap;
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
-      if (ap.get('clobValue') != null) {
-        return $.parseJSON(ap.get('clobValue'));
-      } else {
-        return {};
-      }
-    };
-
     PrimaryScreenExperiment.prototype.getAnalysisStatus = function() {
       var status;
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
@@ -493,7 +475,10 @@
 
     PrimaryScreenExperiment.prototype.getAnalysisResultHTML = function() {
       var result;
+      console.log("getting analysis result html");
       result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
+      console.log(result);
+      console.log(result.has);
       if (!result.has('clobValue')) {
         result.set({
           clobValue: ""

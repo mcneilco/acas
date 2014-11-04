@@ -91,7 +91,7 @@ describe "Protocol module testing", ->
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual "assay principle goes here"
 				it 'Should have a description value', ->
-					expect(@prot.getDescription().get('clobValue')).toEqual "long description goes here"
+					expect(@prot.getDescription().get('clobValue')).toEqual "protocol details go here"
 				it 'Should have a comments value', ->
 					expect(@prot.getComments().get('clobValue')).toEqual "protocol comments go here"
 				it 'Should have a notebook value', ->
@@ -290,7 +290,7 @@ describe "Protocol module testing", ->
 				it "should fill the assay principle field", ->
 					expect(@pbc.$('.bv_assayPrinciple').val()).toEqual "assay principle goes here"
 				it "should fill the long description field", ->
-					expect(@pbc.$('.bv_description').html()).toEqual "long description goes here"
+					expect(@pbc.$('.bv_description').html()).toEqual "protocol details go here"
 				it "should fill the comments field", ->
 					expect(@pbc.$('.bv_comments').html()).toEqual "protocol comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
@@ -378,7 +378,7 @@ describe "Protocol module testing", ->
 				it "should update model when description is changed", ->
 					@pbc.$('.bv_description').val(" New long description   ")
 					@pbc.$('.bv_description').change()
-					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
+					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "description")
 					desc = values[0].get('clobValue')

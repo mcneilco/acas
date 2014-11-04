@@ -112,17 +112,17 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
-		positiveControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		negativeControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		vehicleControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		agonistControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		thresholdType: "sd"
+		positiveControl: new Backbone.Model()
+		negativeControl: new Backbone.Model()
+		vehicleControl: new Backbone.Model()
+		agonistControl: new Backbone.Model()
+		thresholdType: null
 		volumeType: "dilution"
 		htsFormat: false
 		autoHitSelection: false
 		matchReadName: true
-		primaryAnalysisReadList: new PrimaryAnalysisReadList() # will be converted into a new PrimaryAnalysisReadList()
-		transformationRuleList: new TransformationRuleList() # will be converted into a new TransformationRuleList()
+		primaryAnalysisReadList: new PrimaryAnalysisReadList()
+		transformationRuleList: new TransformationRuleList()
 
 
 	initialize: ->
@@ -220,14 +220,15 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'normalizationRule'
 				message: "Normalization rule must be assigned"
-		if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
-			errors.push
-				attribute: 'hitSDThreshold'
-				message: "SD threshold must be assigned"
-		if attrs.thresholdType == "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)
-			errors.push
-				attribute: 'hitEfficacyThreshold'
-				message: "Efficacy threshold must be assigned"
+		if attrs.autoHitSelection
+			if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
+				errors.push
+					attribute: 'hitSDThreshold'
+					message: "SD threshold must be assigned"
+			if attrs.thresholdType == "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)
+				errors.push
+					attribute: 'hitEfficacyThreshold'
+					message: "Efficacy threshold must be assigned"
 		if _.isNaN(attrs.assayVolume)
 			errors.push
 				attribute: 'assayVolume'
@@ -276,20 +277,6 @@ class window.PrimaryScreenExperiment extends Experiment
 		super()
 		@.set lsKind: "flipr screening assay"
 
-	getAnalysisParameters: ->
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
-		if ap.get('clobValue')?
-			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
-		else
-			return new PrimaryScreenAnalysisParameters()
-
-	getModelFitParameters: ->
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
-		if ap.get('clobValue')?
-			return $.parseJSON(ap.get('clobValue'))
-		else
-			return {}
-
 	getAnalysisStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
 		if !status.has('stringValue')
@@ -298,7 +285,10 @@ class window.PrimaryScreenExperiment extends Experiment
 		status
 
 	getAnalysisResultHTML: ->
+		console.log "getting analysis result html"
 		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
+		console.log result
+		console.log result.has
 		if !result.has('clobValue')
 			result.set clobValue: ""
 

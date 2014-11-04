@@ -65,8 +65,9 @@
     };
 
     BaseEntity.prototype.getDescription = function() {
-      var description;
-      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "description");
+      var description, metadataKind;
+      metadataKind = this.get('subclass') + " metadata";
+      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", "description");
       if (description.get('clobValue') === void 0 || description.get('clobValue') === "") {
         description.set({
           clobValue: ""
@@ -113,7 +114,7 @@
 
     BaseEntity.prototype.getAnalysisParameters = function() {
       var ap;
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "analysis parameters", "clobValue", "data analysis parameters");
       if (ap.get('clobValue') != null) {
         return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
       } else {
@@ -123,7 +124,7 @@
 
     BaseEntity.prototype.getModelFitParameters = function() {
       var ap;
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "analysis parameters", "clobValue", "model fit parameters");
       if (ap.get('clobValue') != null) {
         return $.parseJSON(ap.get('clobValue'));
       } else {
