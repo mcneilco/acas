@@ -421,8 +421,6 @@ class window.CurveEditorController extends Backbone.View
 	handleUpdateSuccess: =>
 		@handleModelSync()
 		curveid = @model.get 'curveid'
-		flagUser = @model.get 'flagUser'
-		flagAlgorithm = @model.get 'flagAlgorithm'
 		dirty = @model.get 'dirty'
 		@trigger 'curveDetailUpdated', curveid, dirty
 
@@ -459,11 +457,16 @@ class window.CurveList extends Backbone.Collection
 			flagAlgorithm: flagAlgorithm
 			category: category
 
-	updateCurveFlagUser: (curveid, dirty) =>
-		console.log dirty
+	updateDirtyFlag: (curveid, dirty) =>
 		curve = @getCurveByID(curveid)
 		curve.set
 			dirty: dirty
+
+	updateFlagUser: (curveid, flagUser) =>
+		curve = @getCurveByID(curveid)
+		curve.set
+			flagUser: flagUser
+
 
 class window.CurveCurationSet extends Backbone.Model
 	defaults:
@@ -515,12 +518,14 @@ class window.CurveSummaryController extends Backbone.View
 	tagName: 'div'
 	className: 'bv_curveSummary'
 	events:
-		'click': 'setSelected'
+		'click .bv_group_thumbnail': 'setSelected'
+		'hover .bv_flagUser': 'approveReject'
 	initialize: ->
 		@model.on 'change', @render
 
 	render: =>
 		@$el.empty()
+		@model.url = '/api/curve/stub/' + @model.get 'curveid'
 		if window.AppLaunchParams.testMode
 			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
@@ -554,8 +559,79 @@ class window.CurveSummaryController extends Backbone.View
 			@$('.bv_dirty').hide()
 
 		@$('.bv_compoundCode').html @model.get('curveAttributes').compoundCode
-		@model.on 'change', @render
+#		@model.on 'change', @render
 		@
+
+	approveReject: (e) =>
+		getLeftLocation = (e) ->
+			relativeMouseWidth = e.pageX - $(window).scrollLeft()
+			absoluteMouseWidth = e.pageX
+			pageWidth = $(window).width()
+			#				menuWidth = $(settings.menuSelector).width()
+			menuWidth = 20
+
+			if relativeMouseWidth + menuWidth > pageWidth and menuWidth < relativeMouseWidth
+				# opening menu would pass the side of the current view of the page
+				return absoluteMouseWidth - menuWidth
+			else
+				return absoluteMouseWidth
+
+		# get top location of the context menu
+		getTopLocation = (e) ->
+			relativeMouseHeight = e.pageY - $(window).scrollTop()
+			absoluteMouseHeight = e.pageY
+			pageHeight = $(window).height()
+			#				menuHeight = $(settings.menuSelector).height()
+			menuHeight = 20
+
+			if relativeMouseHeight + menuHeight > pageHeight and menuHeight < relativeMouseHeight
+				# opening menu would pass the bottom of the current view of the page
+				return absoluteMouseHeight - menuHeight
+			else
+				return absoluteMouseHeight
+
+		@$('.bv_contextMenu').data("invokedOn", @$(e.target)).show().css(
+			position: "absolute"
+			left: getLeftLocation(e) - 10
+			top: getTopLocation(e) - 15
+		).off("click").on("click", (e2) =>
+			if !@model.get 'dirty'
+				@$('.bv_contextMenu').hide()
+				@setUserFlag(e2.target.getAttribute("flag"))
+				e2.stopPropagation()
+			else
+				@trigger 'showCurveEditorDirtyPanel'
+		).on("mouseleave", =>
+			@$('.bv_contextMenu').hide()
+		).on("mousewheel", =>
+			@$('.bv_contextMenu').hide()
+		)
+
+	setUserFlag: (flagUser) =>
+#		UtilityFunctions::showProgressModal $('.bv_curveCuratorDropDown')
+		@disableSummary()
+		@model.save(flagUser: flagUser, user: window.AppLaunchParams.loginUserName, {
+			wait: true,
+			success: =>
+#				UtilityFunctions::hideProgressModal $('.bv_curveCuratorDropDown')
+				@enableSummary()
+				if @$el.hasClass('selected')
+					@trigger 'selected', @
+			error: =>
+				$('.bv_badCurveUpdate').modal
+					backdrop: "static"
+				$('.bv_badCurveUpdate').modal "show"
+		})
+
+	disableSummary: ->
+		@undelegateEvents()
+		@$el.fadeTo(100, 0.2)
+
+
+	enableSummary: ->
+		@delegateEvents()
+		@$el.fadeTo(100, 1)
+
 
 	setSelected: =>
 		if !@$el.hasClass('selected')
@@ -574,7 +650,6 @@ class window.CurveSummaryController extends Backbone.View
 
 class window.CurveSummaryListController extends Backbone.View
 	template: _.template($("#CurveSummaryListView").html())
-
 	initialize: ->
 		@filterKey = 'all'
 		@sortKey = 'none'
@@ -582,6 +657,8 @@ class window.CurveSummaryListController extends Backbone.View
 		@firstRun = true
 		if @options.selectedCurve?
 			@initiallySelectedCurveID = @options.selectedCurve
+		else
+			@initiallySelectedCurveID = "NA"
 
 	render: =>
 		@$el.empty()
@@ -609,21 +686,21 @@ class window.CurveSummaryListController extends Backbone.View
 			csController = new CurveSummaryController(model: cs)
 			@$('.bv_curveSummaries').append(csController.render().el)
 			csController.on 'selected', @selectionUpdated
+			csController.on 'showCurveEditorDirtyPanel', @showCurveEditorDirtyPanel
 			@on 'clearSelected', csController.clearSelected
 			if @firstRun && @initiallySelectedCurveID?
 				if @initiallySelectedCurveID == cs.get 'curveid'
 					@selectedcid = cs.cid
-				if @selectedcid?
-					if csController.model.cid == @selectedcid
-						if @firstRun
-							csController.setSelected()
-						else
-							csController.styleSelected()
+			if @selectedcid?
+				if csController.model.cid == @selectedcid
+					if !@firstRun
+						csController.styleSelected()
+					else
+						csController.setSelected()
 			else
 				if @firstRun && i==1
 					@selectedcid = cs.id
 					csController.setSelected()
-			i = 2
 
 		if @toRender.length > 0
 			@firstRun = false
@@ -641,7 +718,10 @@ class window.CurveSummaryListController extends Backbone.View
 			@trigger 'selectionUpdated', who
 		else
 			who.clearSelected()
-			@curveEditorDirtyPanel.show()
+			@showCurveEditorDirtyPanel()
+
+	showCurveEditorDirtyPanel: =>
+		@curveEditorDirtyPanel.show()
 
 	filter: (key) ->
 		@filterKey = key
@@ -708,13 +788,18 @@ class window.CurveCuratorController extends Backbone.View
 				@$('.bv_sortDirection_descending').attr( "checked", true );
 
 			@handleSortChanged()
+#			indexOfRequestedCurve = @curveListController.collection.getIndexByCurveID(requestedCurveIDToSelect)
+#			if indexOfRequestedCurve == -1
+#				indexOfRequestedCurve = 0
+#			@$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click()
+
 		@
 
 	handleCurveDetailSaved: (oldID, newID, dirty, category, flagUser, flagAlgorithm) =>
 		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, flagUser, flagAlgorithm)
 
 	handleCurveDetailUpdated: (curveid, dirty) =>
-		@curveListController.collection.updateCurveFlagUser(curveid, dirty)
+		@curveListController.collection.updateDirtyFlag(curveid, dirty)
 
 	handleCurveUpdateError: =>
 		@$('.bv_badCurveUpdate').modal
