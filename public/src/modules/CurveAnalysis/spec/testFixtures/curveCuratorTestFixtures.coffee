@@ -23,12 +23,12 @@
 					name: "R^2"
 				}
 				{
-					code: "userApproved"
-					name: "User Approved"
+					code: "flagUser"
+					name: "User Flag"
 				}
 				{
-					code: "algorithmApproved"
-					name: "Algorithm Approved"
+					code: "flagAlgorithm"
+					name: "Algorithm Flag"
 				}
 			]
 			curves: [

@@ -590,23 +590,22 @@ class window.CurveSummaryController extends Backbone.View
 			else
 				return absoluteMouseHeight
 
-		if !@model.get 'dirty'
-			@$('.bv_contextMenu').data("invokedOn", @$(e.target)).show().css(
-				position: "absolute"
-				left: getLeftLocation(e) - 10
-				top: getTopLocation(e) - 15
-			).off("click").on("click", (e2) =>
+		@$('.bv_contextMenu').data("invokedOn", @$(e.target)).show().css(
+			position: "absolute"
+			left: getLeftLocation(e) - 10
+			top: getTopLocation(e) - 15
+		).off("click").on("click", (e2) =>
+			if !@model.get 'dirty'
 				@$('.bv_contextMenu').hide()
 				@setUserFlag(e2.target.getAttribute("flag"))
 				e2.stopPropagation()
-			).on("mouseleave", =>
-				@$('.bv_contextMenu').hide()
-			).on("mousewheel", =>
-				@$('.bv_contextMenu').hide()
-			)
-		else
-			@trigger 'showCurveEditorDirtyPanel'
-
+			else
+				@trigger 'showCurveEditorDirtyPanel'
+		).on("mouseleave", =>
+			@$('.bv_contextMenu').hide()
+		).on("mousewheel", =>
+			@$('.bv_contextMenu').hide()
+		)
 
 	setUserFlag: (flagUser) =>
 #		UtilityFunctions::showProgressModal $('.bv_curveCuratorDropDown')

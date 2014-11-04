@@ -146,8 +146,10 @@
   };
 
   exports.updateCurveStub = function(req, resp) {
-    var baseurl, config, request;
+    var baseurl, config, request, response;
     if (global.specRunnerTestmode) {
+      response = req.body;
+      req.body.curveAttributes.flagUser = req.body.flagUser;
       return resp.end(JSON.stringify(req.body));
     } else {
       config = require('../conf/compiled/conf.js');

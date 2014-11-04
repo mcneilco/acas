@@ -922,29 +922,29 @@
           return absoluteMouseHeight;
         }
       };
-      if (!this.model.get('dirty')) {
-        return this.$('.bv_contextMenu').data("invokedOn", this.$(e.target)).show().css({
-          position: "absolute",
-          left: getLeftLocation(e) - 10,
-          top: getTopLocation(e) - 15
-        }).off("click").on("click", (function(_this) {
-          return function(e2) {
+      return this.$('.bv_contextMenu').data("invokedOn", this.$(e.target)).show().css({
+        position: "absolute",
+        left: getLeftLocation(e) - 10,
+        top: getTopLocation(e) - 15
+      }).off("click").on("click", (function(_this) {
+        return function(e2) {
+          if (!_this.model.get('dirty')) {
             _this.$('.bv_contextMenu').hide();
             _this.setUserFlag(e2.target.getAttribute("flag"));
             return e2.stopPropagation();
-          };
-        })(this)).on("mouseleave", (function(_this) {
-          return function() {
-            return _this.$('.bv_contextMenu').hide();
-          };
-        })(this)).on("mousewheel", (function(_this) {
-          return function() {
-            return _this.$('.bv_contextMenu').hide();
-          };
-        })(this));
-      } else {
-        return this.trigger('showCurveEditorDirtyPanel');
-      }
+          } else {
+            return _this.trigger('showCurveEditorDirtyPanel');
+          }
+        };
+      })(this)).on("mouseleave", (function(_this) {
+        return function() {
+          return _this.$('.bv_contextMenu').hide();
+        };
+      })(this)).on("mousewheel", (function(_this) {
+        return function() {
+          return _this.$('.bv_contextMenu').hide();
+        };
+      })(this));
     };
 
     CurveSummaryController.prototype.setUserFlag = function(flagUser) {

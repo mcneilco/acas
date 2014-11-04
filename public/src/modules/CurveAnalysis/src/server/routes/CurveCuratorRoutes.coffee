@@ -120,6 +120,8 @@ exports.updateCurveDetail = (req, resp) ->
 
 exports.updateCurveStub = (req, resp) ->
 	if global.specRunnerTestmode
+		response = req.body
+		req.body.curveAttributes.flagUser = req.body.flagUser
 		resp.end JSON.stringify req.body
 	else
 		config = require '../conf/compiled/conf.js'
