@@ -7,7 +7,6 @@
     __extends(Experiment, _super);
 
     function Experiment() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       this.parse = __bind(this.parse, this);
       return Experiment.__super__.constructor.apply(this, arguments);
     }
@@ -29,62 +28,54 @@
     };
 
     Experiment.prototype.parse = function(resp) {
-      if (resp.lsLabels != null) {
-        if (!(resp.lsLabels instanceof LabelList)) {
-          resp.lsLabels = new LabelList(resp.lsLabels);
+      if (resp === "not unique experiment name") {
+        this.trigger('saveFailed');
+        return resp;
+      } else {
+        if (resp.lsLabels != null) {
+          if (!(resp.lsLabels instanceof LabelList)) {
+            resp.lsLabels = new LabelList(resp.lsLabels);
+          }
           resp.lsLabels.on('change', (function(_this) {
             return function() {
               return _this.trigger('change');
             };
           })(this));
         }
-      }
-      if (resp.lsStates != null) {
-        if (!(resp.lsStates instanceof StateList)) {
-          resp.lsStates = new StateList(resp.lsStates);
+        if (resp.lsStates != null) {
+          if (!(resp.lsStates instanceof StateList)) {
+            resp.lsStates = new StateList(resp.lsStates);
+          }
           resp.lsStates.on('change', (function(_this) {
             return function() {
               return _this.trigger('change');
             };
           })(this));
         }
-      }
-      if (resp.analysisGroups != null) {
-        if (!(resp.analysisGroups instanceof AnalysisGroupList)) {
-          resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups);
+        if (resp.analysisGroups != null) {
+          if (!(resp.analysisGroups instanceof AnalysisGroupList)) {
+            resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups);
+          }
+          resp.analysisGroups.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
-      }
-      if (resp.protocol != null) {
-        if (!(resp.protocol instanceof Protocol)) {
-          resp.protocol = new Protocol(resp.protocol);
+        if (resp.protocol != null) {
+          if (!(resp.protocol instanceof Protocol)) {
+            resp.protocol = new Protocol(resp.protocol);
+          }
         }
-      }
-      if (!(resp.lsTags instanceof TagList)) {
-        resp.lsTags = new TagList(resp.lsTags);
+        if (!(resp.lsTags instanceof TagList)) {
+          resp.lsTags = new TagList(resp.lsTags);
+        }
         resp.lsTags.on('change', (function(_this) {
           return function() {
             return _this.trigger('change');
           };
         })(this));
-      }
-      return resp;
-    };
-
-    Experiment.prototype.fixCompositeClasses = function() {
-      Experiment.__super__.fixCompositeClasses.call(this);
-      if (this.has('analysisGroups')) {
-        if (!(this.get('analysisGroups') instanceof AnalysisGroupList)) {
-          this.set({
-            analysisGroups: new AnalysisGroupList(this.get('analysisGroups'))
-          });
-        }
-      }
-      if (this.get('protocol') !== null) {
-        if (!(this.get('protocol') instanceof Backbone.Model)) {
-          return this.set({
-            protocol: new Protocol(this.get('protocol'))
-          });
-        }
+        return resp;
       }
     };
 
@@ -97,25 +88,27 @@
       pstates = protocol.get('lsStates');
       pstates.each(function(st) {
         var estate, evals, svals;
-        estate = new State(_.clone(st.attributes));
-        estate.unset('id');
-        estate.unset('lsTransaction');
-        estate.unset('lsValues');
-        evals = new ValueList();
-        svals = st.get('lsValues');
-        svals.each(function(sv) {
-          var evalue;
-          if (!(sv.get('lsKind') === "notebook" || sv.get('lsKind') === "project" || sv.get('lsKind') === "completion date")) {
-            evalue = new Value(sv.attributes);
-            evalue.unset('id');
-            evalue.unset('lsTransaction');
-            return evals.add(evalue);
-          }
-        });
-        estate.set({
-          lsValues: evals
-        });
-        return estates.add(estate);
+        if (st.get('lsKind') === "analysis parameters") {
+          estate = new State(_.clone(st.attributes));
+          estate.unset('id');
+          estate.unset('lsTransaction');
+          estate.unset('lsValues');
+          evals = new ValueList();
+          svals = st.get('lsValues');
+          svals.each(function(sv) {
+            var evalue;
+            if (!(sv.get('lsKind') === "notebook" || sv.get('lsKind') === "project" || sv.get('lsKind') === "completion date")) {
+              evalue = new Value(sv.attributes);
+              evalue.unset('id');
+              evalue.unset('lsTransaction');
+              return evals.add(evalue);
+            }
+          });
+          estate.set({
+            lsValues: evals
+          });
+          return estates.add(estate);
+        }
       });
       this.set({
         lsKind: protocol.get('lsKind'),
@@ -132,7 +125,12 @@
       this.getProjectCode().set({
         codeValue: project
       });
-      this.setupCompositeChangeTriggers();
+      this.getComments().set({
+        clobValue: protocol.getComments().get('clobValue')
+      });
+      this.getDescription().set({
+        clobValue: protocol.getDescription().get('clobValue')
+      });
       this.trigger('change');
       this.trigger("protocol_attributes_copied");
     };
@@ -210,6 +208,15 @@
         projectCodeValue.set({
           codeValue: "unassigned"
         });
+        projectCodeValue.set({
+          codeType: "project"
+        });
+        projectCodeValue.set({
+          codeKind: "project"
+        });
+        projectCodeValue.set({
+          codeOrigin: "acas ddict"
+        });
       }
       return projectCodeValue;
     };
@@ -258,6 +265,8 @@
 
     ExperimentBaseController.prototype.template = _.template($("#ExperimentBaseView").html());
 
+    ExperimentBaseController.prototype.moduleLaunchName = "experiment_base";
+
     ExperimentBaseController.prototype.events = function() {
       return _(ExperimentBaseController.__super__.events.call(this)).extend({
         "change .bv_experimentName": "handleNameChanged",
@@ -268,14 +277,97 @@
     };
 
     ExperimentBaseController.prototype.initialize = function() {
-      ExperimentBaseController.__super__.initialize.call(this);
+      if (this.model != null) {
+        return this.completeInitialization();
+      } else {
+        if (window.AppLaunchParams.moduleLaunchParams != null) {
+          if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
+            return $.ajax({
+              type: 'GET',
+              url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+              dataType: 'json',
+              error: function(err) {
+                alert('Could not get experiment for code in this URL, creating new one');
+                return this.completeInitialization();
+              },
+              success: (function(_this) {
+                return function(json) {
+                  var expt, lsKind;
+                  if (json.length === 0) {
+                    alert('Could not get experiment for code in this URL, creating new one');
+                  } else {
+                    lsKind = json[0].lsKind;
+                    if (lsKind === "default") {
+                      expt = new Experiment(json[0]);
+                      expt.set(expt.parse(expt.attributes));
+                      _this.model = expt;
+                    } else {
+                      alert('Could not get experiment for code in this URL. Creating new experiment');
+                    }
+                  }
+                  return _this.completeInitialization();
+                };
+              })(this)
+            });
+          } else {
+            return this.completeInitialization();
+          }
+        } else {
+          return this.completeInitialization();
+        }
+      }
+    };
+
+    ExperimentBaseController.prototype.completeInitialization = function() {
+      if (this.model == null) {
+        this.model = new Experiment();
+      }
       this.errorOwnerName = 'ExperimentBaseController';
       this.setBindings();
-      this.setupProtocolSelect(this.options.protocolFilter);
-      return this.setupProjectSelect();
+      $(this.el).empty();
+      $(this.el).html(this.template(this.model.attributes));
+      this.model.on('saveFailed', (function(_this) {
+        return function() {
+          _this.$('.bv_experimentSaveFailed').modal('show');
+          _this.$('.bv_saveFailed').show();
+          return _this.$('.bv_experimentSaveFailed').on('hide.bs.modal', function() {
+            return _this.$('.bv_saveFailed').hide();
+          });
+        };
+      })(this));
+      this.model.on('sync', (function(_this) {
+        return function() {
+          _this.$('.bv_saving').hide();
+          _this.$('.bv_save').attr('disabled', 'disabled');
+          if (_this.$('.bv_saveFailed').is(":visible")) {
+            _this.$('.bv_updateComplete').hide();
+            _this.trigger('amDirty');
+          } else {
+            _this.$('.bv_updateComplete').show();
+            _this.trigger('amClean');
+          }
+          return _this.render();
+        };
+      })(this));
+      this.model.on('change', (function(_this) {
+        return function() {
+          _this.trigger('amDirty');
+          return _this.$('.bv_updateComplete').hide();
+        };
+      })(this));
+      this.$('.bv_save').attr('disabled', 'disabled');
+      this.setupStatusSelect();
+      this.setupTagList();
+      this.model.getStatus().on('change', this.updateEditable);
+      this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
+      this.setupProjectSelect();
+      return this.render();
     };
 
     ExperimentBaseController.prototype.render = function() {
+      if (this.model == null) {
+        this.model = new Experiment();
+      }
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
@@ -285,18 +377,21 @@
       return this;
     };
 
-    ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter) {
-      var protocolCode, protocolKindFilter;
-      if (typeof protocolKindFilter === "undefined" || protocolKindFilter === null) {
-        protocolKindFilter = "";
-      }
+    ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter, protocolKindFilter) {
+      var protocolCode;
       if (this.model.get('protocol') !== null) {
         protocolCode = this.model.get('protocol').get('codeName');
       } else {
         protocolCode = "unassigned";
       }
       this.protocolList = new PickListList();
-      this.protocolList.url = "/api/protocolCodes/" + protocolFilter;
+      if (protocolFilter != null) {
+        this.protocolList.url = "/api/protocolCodes/" + protocolFilter;
+      } else if (protocolKindFilter != null) {
+        this.protocolList.url = "/api/protocolCodes/" + protocolKindFilter;
+      } else {
+        this.protocolList.url = "/api/protocolCodes/?protocolKind=default";
+      }
       return this.protocolListController = new PickListSelectController({
         el: this.$('.bv_protocolCode'),
         collection: this.protocolList,
@@ -406,16 +501,14 @@
     };
 
     ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
-      return this.model.getProjectCode().set({
+      this.model.getProjectCode().set({
         codeValue: this.projectListController.getSelectedCode()
       });
+      return this.model.trigger('change');
     };
 
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
       this.model.copyProtocolAttributes(this.model.get('protocol'));
-      this.model.getComments().set({
-        clobValue: this.model.get('protocol').getComments().get('clobValue')
-      });
       return this.render();
     };
 

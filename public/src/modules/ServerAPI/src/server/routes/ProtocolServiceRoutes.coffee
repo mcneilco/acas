@@ -150,6 +150,8 @@ exports.protocolCodeList = (req, resp) ->
 
 		if shouldFilterByName
 			baseurl += "/?protocolName="+filterString
+			console.log "hello"
+			console.log baseurl
 		else if shouldFilterByKind
 			#baseurl += "/?protocolKind="+filterString
 			baseurl += "?lskind="+filterString

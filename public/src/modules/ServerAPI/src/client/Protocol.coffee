@@ -77,7 +77,6 @@ class window.ProtocolBaseController extends BaseEntityController
 
 	initialize: ->
 		if @model?
-			console.log "model exists"
 			@completeInitialization()
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
@@ -94,36 +93,26 @@ class window.ProtocolBaseController extends BaseEntityController
 								alert 'Could not get protocol for code in this URL, creating new one'
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								prot = new PrimaryScreenProtocol json
 								lsKind = json[0].lsKind
 								if lsKind is "default"
-									console.log json[0]
 									prot = new Protocol json[0]
-									prot.fixCompositeClasses()
+									prot.set prot.parse(prot.attributes)
 									@model = prot
-									console.log "should have gotten the protocol"
 								else
 									alert 'Could not get protocol for code in this URL. Creating new protocol'
 							@completeInitialization()
 				else
-					console.log "second to last else"
 					@completeInitialization()
 			else
-				console.log "last else"
 				@completeInitialization()
 
 	completeInitialization: ->
-		console.log "complete initialization"
 		unless @model?
 			@model = new Protocol()
 		@errorOwnerName = 'ProtocolBaseController'
-		console.log "setting bindings"
 		@setBindings()
-		console.log "done setting bindings"
 		$(@el).empty()
-		console.log "empty el"
 		$(@el).html @template(@model.attributes)
-		console.log "filling template"
 		@model.on 'sync', =>
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
@@ -141,11 +130,8 @@ class window.ProtocolBaseController extends BaseEntityController
 		@render()
 
 	render: =>
-		console.log @
-		console.log @model
 		unless @model?
 			@model = new Protocol()
-			console.log "created new model"
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
 		super()

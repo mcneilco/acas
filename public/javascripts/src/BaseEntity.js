@@ -9,7 +9,6 @@
     function BaseEntity() {
       this.getModelFitParameters = __bind(this.getModelFitParameters, this);
       this.getAnalysisParameters = __bind(this.getAnalysisParameters, this);
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       this.parse = __bind(this.parse, this);
       return BaseEntity.__super__.constructor.apply(this, arguments);
     }
@@ -30,30 +29,29 @@
     };
 
     BaseEntity.prototype.initialize = function() {
-      this.fixCompositeClasses();
-      return this.setupCompositeChangeTriggers();
+      return this.set(this.parse(this.attributes));
     };
 
     BaseEntity.prototype.parse = function(resp) {
       if (resp.lsLabels != null) {
         if (!(resp.lsLabels instanceof LabelList)) {
           resp.lsLabels = new LabelList(resp.lsLabels);
-          resp.lsLabels.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.lsLabels.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (resp.lsStates != null) {
         if (!(resp.lsStates instanceof StateList)) {
           resp.lsStates = new StateList(resp.lsStates);
-          resp.lsStates.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
         }
+        resp.lsStates.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
       if (!(resp.lsTags instanceof TagList)) {
         resp.lsTags = new TagList(resp.lsTags);
@@ -66,52 +64,10 @@
       return resp;
     };
 
-    BaseEntity.prototype.fixCompositeClasses = function() {
-      if (this.has('lsLabels')) {
-        if (!(this.get('lsLabels') instanceof LabelList)) {
-          this.set({
-            lsLabels: new LabelList(this.get('lsLabels'))
-          });
-        }
-      }
-      if (this.has('lsStates')) {
-        if (!(this.get('lsStates') instanceof StateList)) {
-          this.set({
-            lsStates: new StateList(this.get('lsStates'))
-          });
-        }
-      }
-      if (this.get('lsTags') !== null) {
-        if (!(this.get('lsTags') instanceof TagList)) {
-          return this.set({
-            lsTags: new TagList(this.get('lsTags'))
-          });
-        }
-      }
-    };
-
-    BaseEntity.prototype.setupCompositeChangeTriggers = function() {
-      this.get('lsLabels').on('change', (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      this.get('lsStates').on('change', (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      return this.get('lsTags').on('change', (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-    };
-
     BaseEntity.prototype.getDescription = function() {
-      var description;
-      console.log("getting description");
-      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "description");
+      var description, metadataKind;
+      metadataKind = this.get('subclass') + " metadata";
+      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", "description");
       if (description.get('clobValue') === void 0 || description.get('clobValue') === "") {
         description.set({
           clobValue: ""
@@ -158,22 +114,17 @@
 
     BaseEntity.prototype.getAnalysisParameters = function() {
       var ap;
-      console.log("calling getAnalysisParameters");
-      console.log(this.get('lsStates'));
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
-      console.log(this);
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "analysis parameters", "clobValue", "data analysis parameters");
       if (ap.get('clobValue') != null) {
-        console.log("used existing clobValue");
         return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
       } else {
-        console.log("created completely new analysis parameters");
         return new PrimaryScreenAnalysisParameters();
       }
     };
 
     BaseEntity.prototype.getModelFitParameters = function() {
       var ap;
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "analysis parameters", "clobValue", "model fit parameters");
       if (ap.get('clobValue') != null) {
         return $.parseJSON(ap.get('clobValue'));
       } else {
@@ -254,7 +205,6 @@
 
     BaseEntity.prototype.prepareToSave = function() {
       var rBy, rDate;
-      console.log("prepareToSave");
       rBy = this.get('recordedBy');
       rDate = new Date().getTime();
       this.set({
@@ -361,10 +311,10 @@
       }
       this.model.on('sync', (function(_this) {
         return function() {
-          console.log("@model sync");
           _this.trigger('amClean');
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
+          _this.$('.bv_save').attr('disabled', 'disabled');
           return _this.render();
         };
       })(this));
@@ -386,7 +336,6 @@
 
     BaseEntityController.prototype.render = function() {
       var bestName, subclass;
-      console.log("rendering in base entity controller");
       if (this.model == null) {
         this.model = new BaseEntity();
       }
@@ -484,9 +433,10 @@
     };
 
     BaseEntityController.prototype.handleDateChanged = function() {
-      return this.model.getCompletionDate().set({
+      this.model.getCompletionDate().set({
         dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')))
       });
+      return this.model.trigger('change');
     };
 
     BaseEntityController.prototype.handleCompletionDateIconClicked = function() {
@@ -494,9 +444,10 @@
     };
 
     BaseEntityController.prototype.handleNotebookChanged = function() {
-      return this.model.getNotebook().set({
+      this.model.getNotebook().set({
         stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook'))
       });
+      return this.model.trigger('change');
     };
 
     BaseEntityController.prototype.handleStatusChanged = function() {
@@ -523,7 +474,6 @@
     };
 
     BaseEntityController.prototype.beginSave = function() {
-      console.log("beginSave in base controller");
       this.tagListController.handleTagsChanged();
       if (this.model.checkForNewPickListOptions != null) {
         return this.model.checkForNewPickListOptions();
@@ -536,10 +486,8 @@
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
       if (this.model.isNew()) {
-        console.log("model is new");
         this.$('.bv_updateComplete').html("Save Complete");
       } else {
-        console.log("model is not new");
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
@@ -548,14 +496,12 @@
 
     BaseEntityController.prototype.validationError = function() {
       BaseEntityController.__super__.validationError.call(this);
-      this.$('.bv_save').attr('disabled', 'disabled');
-      return console.log("validation error in base entity");
+      return this.$('.bv_save').attr('disabled', 'disabled');
     };
 
     BaseEntityController.prototype.clearValidationErrorStyles = function() {
       BaseEntityController.__super__.clearValidationErrorStyles.call(this);
-      this.$('.bv_save').removeAttr('disabled');
-      return console.log("clear validation error styles in base entity");
+      return this.$('.bv_save').removeAttr('disabled');
     };
 
     return BaseEntityController;

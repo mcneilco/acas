@@ -27,29 +27,21 @@ class window.PrimaryScreenProtocolParameters extends State
 
 	getCustomerMolecularTargetCodeOrigin: =>
 	#returns true if molecular target's codeOrigin is not acas ddict
-		console.log @
-#		molecularTarget = @getOrCreateValueByTypeAndKind "codeValue", "molecular target"
 		molecularTarget = @getPrimaryScreenProtocolParameterCodeValue('molecular target')
-		console.log molecularTarget
 		if molecularTarget.get('codeOrigin') is "customer ddict"
-			console.log "molecular target origin is customer"
 			return true
 		else
-			console.log "molecular target origin is acas "
 			return false
 
 	setCustomerMolecularTargetCodeOrigin: (customerCodeOrigin) ->
 	# customerCodeOrigin is boolean. If true, codeOrigin for molecular target is not acas ddict
-#		molecularTarget = @getOrCreateValueByTypeAndKind "codeValue", "molecular target"
 		molecularTarget = @getPrimaryScreenProtocolParameterCodeValue('molecular target')
 		if customerCodeOrigin
-#		molecularTarget = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", "molecular target"
 			molecularTarget.set codeOrigin: "customer ddict"
 		else
 			molecularTarget.set codeOrigin: "acas ddict"
 
 	getCurveDisplayMin: ->
-#		minY = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display min"
 		minY = @.getOrCreateValueByTypeAndKind "numericValue", "curve display min"
 		if minY.get('numericValue') is undefined or minY.get('numericValue') is ""
 			minY.set numericValue: 0.0
@@ -57,7 +49,6 @@ class window.PrimaryScreenProtocolParameters extends State
 		minY
 
 	getCurveDisplayMax: ->
-#		maxY = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "numericValue", "curve display max"
 		maxY = @.getOrCreateValueByTypeAndKind "numericValue", "curve display max"
 		if maxY.get('numericValue') is undefined or maxY.get('numericValue') is ""
 			maxY.set numericValue: 100.0
@@ -65,9 +56,9 @@ class window.PrimaryScreenProtocolParameters extends State
 		maxY
 
 	getPrimaryScreenProtocolParameterCodeValue: (parameterName) ->
-#		parameter = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "screening assay", "codeValue", parameterName
 		parameter = @.getOrCreateValueByTypeAndKind "codeValue", parameterName
 		parameter.set codeType: "protocolMetadata"
+		parameter.set codeKind: parameterName
 		if parameter.get('codeValue') is undefined or parameter.get('codeValue') is ""
 			parameter.set codeValue: "unassigned"
 		if parameter.get('codeOrigin') is undefined or parameter.get('codeOrigin') is ""
@@ -76,7 +67,6 @@ class window.PrimaryScreenProtocolParameters extends State
 		parameter
 
 	getOrCreateValueByTypeAndKind: (vType, vKind) ->
-#		metaState = @getOrCreateStateByTypeAndKind sType, sKind
 		descVals = @getValuesByTypeAndKind vType, vKind
 		descVal = descVals[0] #TODO should do something smart if there are more than one
 		unless descVal?
@@ -93,8 +83,8 @@ class window.PrimaryScreenProtocolParameters extends State
 
 class window.PrimaryScreenProtocol extends Protocol
 	initialize: ->
-		@.set lsKind: "flipr screening assay"
 		super()
+		@.set lsKind: "flipr screening assay"
 
 	validate: (attrs) ->
 		errors = []
@@ -102,13 +92,9 @@ class window.PrimaryScreenProtocol extends Protocol
 		psProtocolParametersErrors = psProtocolParameters.validate()
 		errors.push psProtocolParametersErrors...
 		psAnalysisParameters = @getAnalysisParameters()
-#		console.log psAnalysisParameters
 		psAnalysisParametersErrors = psAnalysisParameters.validate(psAnalysisParameters.attributes)
-#		psAnalysisParametersErrors = psAnalysisParameters.validationError
 		errors.push psAnalysisParametersErrors...
 		psModelFitParameters = new DoseResponseAnalysisParameters @getModelFitParameters()
-		console.log "psModelFitParameters"
-		console.log psModelFitParameters
 		psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes)
 		errors.push psModelFitParametersErrors...
 
@@ -154,7 +140,6 @@ class window.PrimaryScreenProtocol extends Protocol
 		new PrimaryScreenProtocolParameters pspp.attributes
 
 	checkForNewPickListOptions: ->
-		console.log "checkForNewPickListOptions"
 		@trigger "checkForNewPickListOptions"
 
 
@@ -216,18 +201,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			roles: ["admin"]
 		@assayActivityListController.render()
 
-#	setupMolecularTargetSelect: ->
-#		@molecularTargetList = new PickListList()
-#		@molecularTargetList.url = "/api/dataDict/protocolMetadata/molecular target"
-#		@molecularTargetListController = new EditablePickListSelectController
-#			el: @$('.bv_molecularTarget')
-#			collection: @molecularTargetList
-#			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')
-#			parameter: "molecularTarget"
-#			codeType: "protocolMetadata"
-#			roles: ["admin"]
-#		@molecularTargetListController.render()
-#
 	setupTargetOriginSelect: ->
 		@targetOriginList = new PickListList()
 		@targetOriginList.url = "/api/dataDict/protocol metadata/target origin"
@@ -289,12 +262,10 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')
 
 	setupCustomerMolecularTargetDDictChkbx: ->
-		console.log "set up checkbox"
 		@molecularTargetList = new PickListList()
 		checked = @model.getCustomerMolecularTargetCodeOrigin()
 		if checked
 			@$('.bv_customerMolecularTargetDDictChkbx').attr("checked", "checked")
-			console.log "checked"
 			@molecularTargetList.url = "/api/customerMolecularTargetCodeTable"
 		else
 			@molecularTargetList.url = "/api/dataDict/protocol metadata/molecular target"
@@ -310,8 +281,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			@molecularTargetListController.hideAddOptionButton()
 		else
 			@molecularTargetListController.showAddOptionButton()
-#			@model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set
-#				codeValue: @molecularTargetListController.getSelectedCode()
 
 	updateModel: =>
 		@model.getPrimaryScreenProtocolParameterCodeValue('assay activity').set
@@ -329,7 +298,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@model.getPrimaryScreenProtocolParameterCodeValue('assay stage').set
 			codeValue: @assayStageListController.getSelectedCode()
 		@model.getCurveDisplayMax().set
-			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_maxY')) #TODO: trim - will do after merge so can use utility function
+			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_maxY'))
 		@model.getCurveDisplayMin().set
 			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_minY'))
 
@@ -348,28 +317,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 
 		@attributeChanged()
 
-#	setupMolecularTargetSelect: ->
-#		@molecularTargetList = new PickListList()
-#		customerDDict = @$('.bv_customerMolecularTargetDDictChkbx').is(":checked")
-#		@model.setCustomerMolecularTargetCodeOrigin(customerDDict)
-#		if customerDDict
-#			@molecularTargetList.url = "/api/dataDict/protocolMetadata/molecular target"
-#		else
-#			@molecularTargetList.url = "/api/dataDict/protocolMetadata/molecular target"
-#		@molecularTargetListController = new EditablePickListSelectController
-#			el: @$('.bv_molecularTarget')
-#			collection: @molecularTargetList
-#			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')
-#			parameter: "molecularTarget"
-#			codeType: "protocolMetadata"
-#			roles: ["admin"]
-#		@molecularTargetListController.render()
-#		if customerDDict
-#			@molecularTargetListController.hideAddOptionButton()
-#		else
-#			@molecularTargetListController.showAddOptionButton()
-#
-#
 
 	saveNewPickListOptions: (callback) =>
 		@assayActivityListController.saveNewOption =>
@@ -407,7 +354,6 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 	setupPrimaryScreenProtocolParametersController: =>
 		@primaryScreenProtocolParametersController= new PrimaryScreenProtocolParametersController
 			model: @model.getPrimaryScreenProtocolParameters()
-#			model: @model.get('primaryScreenProtocolParameters')
 			el: @$('.bv_primaryScreenProtocolAutofillSection')
 		@primaryScreenProtocolParametersController.on 'amDirty', =>
 			@trigger 'amDirty'
@@ -416,13 +362,10 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		@primaryScreenProtocolParametersController.render()
 
 	handleSaveClicked: =>
-		console.log "handle save clicked"
 		@protocolBaseController.beginSave()
 
 	handleCheckForNewPickListOptions: =>
 		@primaryScreenProtocolParametersController.saveNewPickListOptions =>
-			console.log "done saving new picklist options"
-#			@protocolBaseController.model.prepareToSave()
 			@trigger "prepareToSaveToDatabase"
 
 
@@ -456,12 +399,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 								lsKind = json[0].lsKind
 								if lsKind is "flipr screening assay"
 									prot = new PrimaryScreenProtocol json[0]
-									console.log json[0] #TODO: has all of the correct data
-									prot.fixCompositeClasses()
-									console.log prot # TODO: figure out why this does not have the data anymore
+									prot.set prot.parse(prot.attributes)
 									@model = prot
-									console.log prot
-									console.log @model
 								else
 									alert 'Could not get primary screen protocol for code in this URL. Creating new primary screen protocol'
 							@completeInitialization()
@@ -470,35 +409,15 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			else
 				@completeInitialization()
 
-#	render: =>
-#		console.log "rendering module"
-#		console.log @
-#		console.log @.model
-#		TODO: why is the controller's model undefined??
-#		unless @model?
-#			@model = new PrimaryScreenProtocol()
-#			console.log "created new model"
-#		if @model.isNew()
-#			@$('.bv_saveModule').html("Save")
-#		else
-#			@$('.bv_saveModule').html("Update")
-#		@
-
-
-
 	completeInitialization: =>
-		console.log "complet initialization in ps protocol"
-		console.log @model
 		unless @model?
 			@model = new PrimaryScreenProtocol()
-			console.log "created new protocol"
 		$(@el).html @template()
 		@model.on 'sync', =>
 			@trigger 'amClean'
 			@$('.bv_savingModule').hide()
 			@$('.bv_updateModuleComplete').show()
 			@$('.bv_saveModule').attr('disabled', 'disabled')
-			console.log "should show update complete in complete initialization"
 		if @model.isNew()
 			@$('.bv_saveModule').html("Save")
 		else
@@ -520,31 +439,22 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@$('.bv_save').hide()
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 
-#		@render()
 		if @model.isNew()
 			@$('.bv_saveModule').html("Save")
 		else
 			@$('.bv_saveModule').html("Update")
-
 
 	handleProtocolSaved: =>
-#		@primaryScreenAnalysisParametersController.render()
 		@trigger 'amClean'
-		console.log "handle Protocol Saved"
 		@$('.bv_savingModule').hide()
 		@$('.bv_updateModuleComplete').show()
-		console.log "should show update complete"
-#		@render()
 		if @model.isNew()
 			@$('.bv_saveModule').html("Save")
 		else
 			@$('.bv_saveModule').html("Update")
-
 
 
 	setupPrimaryScreenProtocolController: =>
-		console.log "setup ps protocol controller"
-		console.log @model
 		@primaryScreenProtocolController = new PrimaryScreenProtocolController
 			model: @model
 			el: @$('.bv_primaryScreenProtocolGeneralInfoWrapper')
@@ -556,8 +466,6 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenProtocolController.on 'prepareToSaveToDatabase', @prepareToSaveToDatabase
 
 	setupPrimaryScreenAnalysisParametersController: =>
-		console.log "setup ps analysis parameters controller"
-		console.log @model.getAnalysisParameters()
 		@primaryScreenAnalysisParametersController = new PrimaryScreenAnalysisParametersController
 			model: @model.getAnalysisParameters()
 			el: @$('.bv_primaryScreenAnalysisParameters')
@@ -573,7 +481,6 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			model: new DoseResponseAnalysisParameters @model.getModelFitParameters()
 			el: @$('.bv_doseResponseAnalysisParameters')
 		@primaryScreenModelFitParametersController.on 'amDirty', =>
-			console.log "model fit controller is dirty, trigger amDirty"
 			@trigger 'amDirty'
 		@primaryScreenModelFitParametersController.on 'amClean', =>
 			@trigger 'amClean'
@@ -582,43 +489,22 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenModelFitParametersController.render()
 
 	updateAnalysisClobValue: =>
-		console.log "updating analysis clob"
-		console.log @model
-		ap = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
-		console.log "updating Analyiss clob value"
-		console.log @primaryScreenAnalysisParametersController.model
-		console.log ap
-		console.log JSON.stringify @primaryScreenAnalysisParametersController.model.attributes
-		ap.set clobValue: JSON.stringify @primaryScreenAnalysisParametersController.model.attributes #TODO: save model's attributes
-		console.log ap
-		console.log @model
+		ap = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "analysis parameters", "clobValue", "data analysis parameters"
+		ap.set clobValue: JSON.stringify @primaryScreenAnalysisParametersController.model.attributes
 
 	updateModelFitClobValue: =>
-		console.log "updating model fit clob"
-		console.log @model
-		mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
-		console.log "updating Model Fit clob value"
-		console.log @primaryScreenModelFitParametersController.model
-		console.log mfp
-		console.log JSON.stringify @primaryScreenModelFitParametersController.model.attributes
-		mfp.set clobValue: JSON.stringify @primaryScreenModelFitParametersController.model.attributes #TODO: save model's attributes
-		console.log mfp
-		console.log @model
-
+		mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "analysis parameters", "clobValue", "model fit parameters"
+		mfp.set clobValue: JSON.stringify @primaryScreenModelFitParametersController.model.attributes
 
 	handleSaveModule: =>
-		console.log "handle save"
-		console.log @model
 		@$('.bv_savingModule').show()
 		@primaryScreenProtocolController.handleSaveClicked()
 
 	prepareToSaveToDatabase: =>
-		console.log "prepareToSaveToDatabase"
 		@model.prepareToSave()
 
 
 	handleFinishSave: =>
-		console.log "handleFinishSave in module controller"
 		if @model.isNew()
 			@$('.bv_updateModuleComplete').html "Save Complete"
 		else
@@ -626,42 +512,15 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 		@model.save()
-		console.log "model saved"
 
 
 	validationError: =>
-		console.log "validationError in module"
 		super()
-#		console.log @model.validationError
-#		console.log @primaryScreenProtocolController.model.validationError
-#		console.log @primaryScreenAnalysisParametersController.model.validationError
-#		console.log @primaryScreenModelFitParametersController.model.validationError
-#		errors = []
-#		errors.push @primaryScreenProtocolController.model.validationError...
-#		errors.push @primaryScreenAnalysisParametersController.model.validationError...
-#		errors.push @primaryScreenModelFitParametersController.model.validationError...
-#		@clearValidationErrorStyles()
-#
-#		_.each errors, (err) =>
-#			@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
-#			@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
-#			@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-#			@$("[data-toggle=tooltip]").tooltip();
-#			@$("body").tooltip selector: '.bv_group_'+err.attribute
-#			@$('.bv_group_'+err.attribute).addClass 'input_error error'
-#			@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
-#		@trigger 'invalid'
-#
-#		console.log errors
-
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 
 	clearValidationErrorStyles: =>
 		super()
-		console.log "clearing validationErrorStyles"
 		@$('.bv_saveModule').removeAttr('disabled')
 
 class window.PrimaryScreenProtocolModuleController extends AbstractPrimaryScreenProtocolModuleController
-#	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
-#	modelFitControllerName: "DoseResponseAnalysisController"
 	moduleLaunchName: "primary_screen_protocol"

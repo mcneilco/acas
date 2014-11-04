@@ -205,7 +205,7 @@
             expect(this.psap.get('negativeControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('vehicleControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy();
-            expect(this.psap.get('thresholdType')).toEqual("sd");
+            expect(this.psap.get('thresholdType')).toEqual(null);
             expect(this.psap.get('autoHitSelection')).toBeFalsy();
             expect(this.psap.get('htsFormat')).toBeFalsy();
             expect(this.psap.get('matchReadName')).toBeTruthy();

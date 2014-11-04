@@ -7,44 +7,62 @@
     __extends(DoseResponseAnalysisParameters, _super);
 
     function DoseResponseAnalysisParameters() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      this.parse = __bind(this.parse, this);
       return DoseResponseAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
-    DoseResponseAnalysisParameters.prototype.defaults = {
-      inactiveThreshold: 20,
-      inverseAgonistMode: true,
-      max: new Backbone.Model({
-        limitType: 'none'
-      }),
-      min: new Backbone.Model({
-        limitType: 'none'
-      }),
-      slope: new Backbone.Model({
-        limitType: 'none'
-      })
+    DoseResponseAnalysisParameters.prototype.defaults = function() {
+      return {
+        inactiveThreshold: 20,
+        inverseAgonistMode: true,
+        max: new Backbone.Model({
+          limitType: 'none'
+        }),
+        min: new Backbone.Model({
+          limitType: 'none'
+        }),
+        slope: new Backbone.Model({
+          limitType: 'none'
+        })
+      };
     };
 
     DoseResponseAnalysisParameters.prototype.initialize = function() {
-      return this.fixCompositeClasses();
+      return this.set(this.parse(this.attributes));
     };
 
-    DoseResponseAnalysisParameters.prototype.fixCompositeClasses = function() {
-      if (!(this.get('max') instanceof Backbone.Model)) {
-        this.set({
-          max: new Backbone.Model(this.get('max'))
-        });
+    DoseResponseAnalysisParameters.prototype.parse = function(resp) {
+      if (resp.max != null) {
+        if (!(resp.max instanceof Backbone.Model)) {
+          resp.max = new Backbone.Model(resp.max);
+        }
+        resp.max.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
-      if (!(this.get('min') instanceof Backbone.Model)) {
-        this.set({
-          min: new Backbone.Model(this.get('min'))
-        });
+      if (resp.min != null) {
+        if (!(resp.min instanceof Backbone.Model)) {
+          resp.min = new Backbone.Model(resp.min);
+        }
+        resp.min.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
-      if (!(this.get('slope') instanceof Backbone.Model)) {
-        return this.set({
-          slope: new Backbone.Model(this.get('slope'))
-        });
+      if (resp.slope != null) {
+        if (!(resp.slope instanceof Backbone.Model)) {
+          resp.slope = new Backbone.Model(resp.slope);
+        }
+        resp.slope.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
+      return resp;
     };
 
     DoseResponseAnalysisParameters.prototype.validate = function(attrs) {

@@ -169,6 +169,8 @@
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codetable";
       if (shouldFilterByName) {
         baseurl += "/?protocolName=" + filterString;
+        console.log("hello");
+        console.log(baseurl);
       } else if (shouldFilterByKind) {
         baseurl += "?lskind=" + filterString;
       }

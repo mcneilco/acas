@@ -96,8 +96,6 @@
 
     PrimaryAnalysisReadList.prototype.validateCollection = function(matchReadName) {
       var currentReadName, error, index, indivModelErrors, model, modelErrors, usedReadNames, _i, _j, _len, _ref;
-      console.log("validating read collection");
-      console.log(this);
       modelErrors = [];
       usedReadNames = {};
       if (this.length !== 0) {
@@ -149,8 +147,6 @@
 
     TransformationRuleList.prototype.validateCollection = function() {
       var currentRule, error, index, indivModelErrors, model, modelErrors, usedRules, _i, _j, _len, _ref;
-      console.log("validating transformation collection");
-      console.log(this);
       modelErrors = [];
       usedRules = {};
       if (this.length !== 0) {
@@ -192,109 +188,112 @@
     __extends(PrimaryScreenAnalysisParameters, _super);
 
     function PrimaryScreenAnalysisParameters() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      this.parse = __bind(this.parse, this);
       return PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
-    PrimaryScreenAnalysisParameters.prototype.defaults = {
-      instrumentReader: "unassigned",
-      signalDirectionRule: "unassigned",
-      aggregateBy1: "unassigned",
-      aggregateBy2: "unassigned",
-      normalizationRule: "unassigned",
-      assayVolume: null,
-      transferVolume: null,
-      dilutionFactor: null,
-      hitEfficacyThreshold: null,
-      hitSDThreshold: null,
-      positiveControl: new Backbone.Model(),
-      negativeControl: new Backbone.Model(),
-      vehicleControl: new Backbone.Model(),
-      agonistControl: new Backbone.Model(),
-      thresholdType: "sd",
-      volumeType: "dilution",
-      htsFormat: false,
-      autoHitSelection: false,
-      matchReadName: true,
-      primaryAnalysisReadList: new PrimaryAnalysisReadList(),
-      transformationRuleList: new TransformationRuleList()
+    PrimaryScreenAnalysisParameters.prototype.defaults = function() {
+      return {
+        instrumentReader: "unassigned",
+        signalDirectionRule: "unassigned",
+        aggregateBy1: "unassigned",
+        aggregateBy2: "unassigned",
+        normalizationRule: "unassigned",
+        assayVolume: null,
+        transferVolume: null,
+        dilutionFactor: null,
+        hitEfficacyThreshold: null,
+        hitSDThreshold: null,
+        positiveControl: new Backbone.Model(),
+        negativeControl: new Backbone.Model(),
+        vehicleControl: new Backbone.Model(),
+        agonistControl: new Backbone.Model(),
+        thresholdType: null,
+        volumeType: "dilution",
+        htsFormat: false,
+        autoHitSelection: false,
+        matchReadName: true,
+        primaryAnalysisReadList: new PrimaryAnalysisReadList(),
+        transformationRuleList: new TransformationRuleList()
+      };
     };
 
     PrimaryScreenAnalysisParameters.prototype.initialize = function() {
-      return this.fixCompositeClasses();
+      return this.set(this.parse(this.attributes));
     };
 
-    PrimaryScreenAnalysisParameters.prototype.fixCompositeClasses = function() {
-      if (!(this.get('positiveControl') instanceof Backbone.Model)) {
-        this.set({
-          positiveControl: new Backbone.Model(this.get('positiveControl'))
-        });
+    PrimaryScreenAnalysisParameters.prototype.parse = function(resp) {
+      if (resp.positiveControl != null) {
+        if (!(resp.positiveControl instanceof Backbone.Model)) {
+          resp.positiveControl = new Backbone.Model(resp.positiveControl);
+        }
+        resp.positiveControl.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
-      this.get('positiveControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('negativeControl') instanceof Backbone.Model)) {
-        this.set({
-          negativeControl: new Backbone.Model(this.get('negativeControl'))
-        });
+      if (resp.negativeControl != null) {
+        if (!(resp.negativeControl instanceof Backbone.Model)) {
+          resp.negativeControl = new Backbone.Model(resp.negativeControl);
+        }
+        resp.negativeControl.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
-      this.get('negativeControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('vehicleControl') instanceof Backbone.Model)) {
-        this.set({
-          vehicleControl: new Backbone.Model(this.get('vehicleControl'))
-        });
+      if (resp.vehicleControl != null) {
+        if (!(resp.vehicleControl instanceof Backbone.Model)) {
+          resp.vehicleControl = new Backbone.Model(resp.vehicleControl);
+        }
+        resp.vehicleControl.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
-      this.get('vehicleControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('agonistControl') instanceof Backbone.Model)) {
-        this.set({
-          agonistControl: new Backbone.Model(this.get('agonistControl'))
-        });
+      if (resp.agonistControl != null) {
+        if (!(resp.agonistControl instanceof Backbone.Model)) {
+          resp.agonistControl = new Backbone.Model(resp.agonistControl);
+        }
+        resp.agonistControl.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
       }
-      this.get('agonistControl').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      if (!(this.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList)) {
-        this.set({
-          primaryAnalysisReadList: new PrimaryAnalysisReadList(this.get('primaryAnalysisReadList'))
-        });
+      if (resp.primaryAnalysisReadList != null) {
+        if (!(resp.primaryAnalysisReadList instanceof PrimaryAnalysisReadList)) {
+          resp.primaryAnalysisReadList = new PrimaryAnalysisReadList(resp.primaryAnalysisReadList);
+        }
+        resp.primaryAnalysisReadList.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
+        resp.primaryAnalysisReadList.on('amDirty', (function(_this) {
+          return function() {
+            return _this.trigger('amDirty');
+          };
+        })(this));
       }
-      this.get('primaryAnalysisReadList').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      this.get('primaryAnalysisReadList').on("amDirty", (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
-      if (!(this.get('transformationRuleList') instanceof TransformationRuleList)) {
-        this.set({
-          transformationRuleList: new TransformationRuleList(this.get('transformationRuleList'))
-        });
+      if (resp.transformationRuleList != null) {
+        if (!(resp.transformationRuleList instanceof TransformationRuleList)) {
+          resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList);
+        }
+        resp.transformationRuleList.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
+        resp.transformationRuleList.on('amDirty', (function(_this) {
+          return function() {
+            return _this.trigger('amDirty');
+          };
+        })(this));
       }
-      this.get('transformationRuleList').on("change", (function(_this) {
-        return function() {
-          return _this.trigger('change');
-        };
-      })(this));
-      return this.get('transformationRuleList').on("amDirty", (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
+      return resp;
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
@@ -303,7 +302,6 @@
       readErrors = this.get('primaryAnalysisReadList').validateCollection(attrs.matchReadName);
       errors.push.apply(errors, readErrors);
       transformationErrors = this.get('transformationRuleList').validateCollection();
-      console.log(transformationErrors);
       errors.push.apply(errors, transformationErrors);
       positiveControl = this.get('positiveControl').get('batchCode');
       if (positiveControl === "" || positiveControl === void 0) {
@@ -335,7 +333,7 @@
       }
       agonistControl = this.get('agonistControl').get('batchCode');
       agonistControlConc = this.get('agonistControl').get('concentration');
-      if (agonistControl !== "" || agonistControlConc !== "") {
+      if ((agonistControl !== "" && agonistControl !== void 0) || (agonistControlConc !== "" && agonistControlConc !== void 0)) {
         if (agonistControl === "" || agonistControl === void 0) {
           errors.push({
             attribute: 'agonistControlBatch',
@@ -373,17 +371,19 @@
           message: "Normalization rule must be assigned"
         });
       }
-      if (attrs.thresholdType === "sd" && _.isNaN(attrs.hitSDThreshold)) {
-        errors.push({
-          attribute: 'hitSDThreshold',
-          message: "SD threshold must be assigned"
-        });
-      }
-      if (attrs.thresholdType === "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)) {
-        errors.push({
-          attribute: 'hitEfficacyThreshold',
-          message: "Efficacy threshold must be assigned"
-        });
+      if (attrs.autoHitSelection) {
+        if (attrs.thresholdType === "sd" && _.isNaN(attrs.hitSDThreshold)) {
+          errors.push({
+            attribute: 'hitSDThreshold',
+            message: "SD threshold must be assigned"
+          });
+        }
+        if (attrs.thresholdType === "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)) {
+          errors.push({
+            attribute: 'hitEfficacyThreshold',
+            message: "Efficacy threshold must be assigned"
+          });
+        }
       }
       if (_.isNaN(attrs.assayVolume)) {
         errors.push({
@@ -456,30 +456,10 @@
     }
 
     PrimaryScreenExperiment.prototype.initialize = function() {
-      this.set({
+      PrimaryScreenExperiment.__super__.initialize.call(this);
+      return this.set({
         lsKind: "flipr screening assay"
       });
-      return PrimaryScreenExperiment.__super__.initialize.call(this);
-    };
-
-    PrimaryScreenExperiment.prototype.getAnalysisParameters = function() {
-      var ap;
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
-      if (ap.get('clobValue') != null) {
-        return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
-      } else {
-        return new PrimaryScreenAnalysisParameters();
-      }
-    };
-
-    PrimaryScreenExperiment.prototype.getModelFitParameters = function() {
-      var ap;
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
-      if (ap.get('clobValue') != null) {
-        return $.parseJSON(ap.get('clobValue'));
-      } else {
-        return {};
-      }
     };
 
     PrimaryScreenExperiment.prototype.getAnalysisStatus = function() {
@@ -495,7 +475,10 @@
 
     PrimaryScreenExperiment.prototype.getAnalysisResultHTML = function() {
       var result;
+      console.log("getting analysis result html");
       result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
+      console.log(result);
+      console.log(result.has);
       if (!result.has('clobValue')) {
         result.set({
           clobValue: ""
@@ -707,13 +690,13 @@
         };
       })(this));
       if (this.collection.length === 0) {
-        this.addNewRead();
+        this.addNewRead(true);
       }
       this.checkActivity();
       return this;
     };
 
-    PrimaryAnalysisReadListController.prototype.addNewRead = function() {
+    PrimaryAnalysisReadListController.prototype.addNewRead = function(skipAmDirtyTrigger) {
       var newModel;
       newModel = new PrimaryAnalysisRead();
       this.collection.add(newModel);
@@ -721,7 +704,9 @@
       if (this.collection.length === 1) {
         this.checkActivity();
       }
-      return newModel.triggerAmDirty();
+      if (skipAmDirtyTrigger !== true) {
+        return newModel.triggerAmDirty();
+      }
     };
 
     PrimaryAnalysisReadListController.prototype.addOneRead = function(read) {
@@ -765,7 +750,10 @@
           activitySet = true;
         }
         if (index === 0) {
-          this.$('.bv_activity:eq(0)').click();
+          this.$('.bv_activity:eq(0)').attr('checked', 'checked');
+          this.collection.at(index).set({
+            activity: true
+          });
         }
         _results.push(index = index - 1);
       }
@@ -816,17 +804,19 @@
         };
       })(this));
       if (this.collection.length === 0) {
-        this.addNewRule();
+        this.addNewRule(true);
       }
       return this;
     };
 
-    TransformationRuleListController.prototype.addNewRule = function() {
+    TransformationRuleListController.prototype.addNewRule = function(skipAmDirtyTrigger) {
       var newModel;
       newModel = new TransformationRule();
       this.collection.add(newModel);
       this.addOneRule(newModel);
-      return newModel.triggerAmDirty();
+      if (skipAmDirtyTrigger !== true) {
+        return newModel.triggerAmDirty();
+      }
     };
 
     TransformationRuleListController.prototype.addOneRule = function(rule) {
@@ -922,10 +912,10 @@
       this.setupAggregateBy1Select();
       this.setupAggregateBy2Select();
       this.setupNormalizationSelect();
-      this.handleAutoHitSelectionChanged();
+      this.handleAutoHitSelectionChanged(true);
       this.setupReadListController();
       this.setupTransformationRuleListController();
-      this.handleMatchReadNameChanged();
+      this.handleMatchReadNameChanged(true);
       return this;
     };
 
@@ -1077,10 +1067,7 @@
           concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlConc')))
         });
       }
-      console.log("updating primary screen analysis parameters model");
-      console.log(this.model);
-      this.trigger('updateState');
-      return console.log("triggered updateState");
+      return this.trigger('updateState');
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleAssayVolumeChanged = function() {
@@ -1127,7 +1114,7 @@
       return this.attributeChanged();
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.handleAutoHitSelectionChanged = function() {
+    PrimaryScreenAnalysisParametersController.prototype.handleAutoHitSelectionChanged = function(skipUpdate) {
       var autoHitSelection;
       autoHitSelection = this.$('.bv_autoHitSelection').is(":checked");
       this.model.set({
@@ -1138,7 +1125,9 @@
       } else {
         this.$('.bv_thresholdControls').hide();
       }
-      return this.attributeChanged();
+      if (skipUpdate !== true) {
+        return this.attributeChanged();
+      }
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleVolumeTypeChanged = function() {
@@ -1160,14 +1149,16 @@
       return this.attributeChanged();
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function() {
+    PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function(skipUpdate) {
       var matchReadName;
       matchReadName = this.$('.bv_matchReadName').is(":checked");
       this.model.set({
         matchReadName: matchReadName
       });
       this.readListController.matchReadNameChanged(matchReadName);
-      return this.attributeChanged();
+      if (skipUpdate !== true) {
+        return this.attributeChanged();
+      }
     };
 
     return PrimaryScreenAnalysisParametersController;
@@ -1470,7 +1461,7 @@
                     lsKind = json[0].lsKind;
                     if (lsKind === "flipr screening assay") {
                       exp = new PrimaryScreenExperiment(json[0]);
-                      exp.fixCompositeClasses();
+                      exp.set(exp.parse(exp.attributes));
                       _this.model = exp;
                     } else {
                       alert('Could not get primary screen experiment for code in this URL. Creating new primary screen experiment');
@@ -1498,7 +1489,8 @@
       this.experimentBaseController = new ExperimentBaseController({
         model: this.model,
         el: this.$('.bv_experimentBase'),
-        protocolFilter: this.protocolFilter
+        protocolFilter: this.protocolFilter,
+        protocolKindFilter: this.protocolKindFilter
       });
       this.experimentBaseController.on('amDirty', (function(_this) {
         return function() {
@@ -1573,6 +1565,8 @@
     PrimaryScreenExperimentController.prototype.modelFitControllerName = "DoseResponseAnalysisController";
 
     PrimaryScreenExperimentController.prototype.protocolFilter = "?protocolName=FLIPR";
+
+    PrimaryScreenExperimentController.prototype.protocolKindFilter = "?protocolKind=flipr screening assay";
 
     PrimaryScreenExperimentController.prototype.moduleLaunchName = "flipr_screening_assay";
 

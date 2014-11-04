@@ -55,6 +55,7 @@
       });
     });
     describe("experiment redirect", function() {
+      console.log("yay");
       describe("When user enters in generic experiment", function() {
         before(function(done) {
           return request("http://localhost:" + config.all.server.nodeapi.port + "/entity/edit/codeName/EXPT-generic", (function(_this) {

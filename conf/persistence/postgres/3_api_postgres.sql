@@ -3,6 +3,7 @@
 -----------------------------
 --TODO: make into proper ddl
 --drop (ordered by dependency)
+DROP VIEW api_system_statistics;
 DROP VIEW API_SUBJECT_CONTAINER_RESULTS;
 DROP VIEW API_SUBJECT_RESULTS;
 drop view api_container_contents;
@@ -688,3 +689,27 @@ FROM api_protocol p
 	JOIN analysis_group ag on eag.analysis_group_id = ag.id
 	JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
 	JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind = 'batch code';
+
+CREATE OR REPLACE VIEW api_system_statistics AS
+SELECT
+	api_protocol.code_name AS protocol_code,
+	api_protocol.label_text AS protocol_name,
+	api_experiment.code_name AS experiment_code,
+	api_experiment.label_text AS experiment_name,
+	api_experiment.recorded_date AS experiment_date,
+	COUNT(DISTINCT api_analysis_group_results.ag_id) AS analysis_groups,
+	COUNT(DISTINCT api_subject_results.subject_code_name) AS subjects,
+	COUNT(DISTINCT api_subject_results.sv_id) AS raw_data_points
+FROM api_protocol
+	LEFT JOIN api_experiment
+		ON api_protocol.protocol_id = api_experiment.protocol_id
+	LEFT JOIN api_analysis_group_results
+		ON api_experiment.id = api_analysis_group_results.experiment_id
+	LEFT JOIN api_subject_results
+		ON api_analysis_group_results.ag_code_name = api_subject_results.analysis_group_code_name
+GROUP BY
+	api_protocol.code_name,
+	api_experiment.recorded_date,
+	api_protocol.label_text,
+	api_experiment.code_name,
+	api_experiment.label_text;

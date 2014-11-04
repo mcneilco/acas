@@ -10,7 +10,7 @@
       autoLaunchName: "generic_data_parser"
     }, {
       isHeader: false,
-      menuName: "Load Experiment",
+      menuName: "Load Experiment (permission test)",
       mainControllerClassName: "GenericDataParserController",
       requireUserRoles: ["admin", "loadData"]
     }, {
@@ -19,9 +19,9 @@
       mainControllerClassName: "DoseResponseFitWorkflowController"
     }, {
       isHeader: false,
-      menuName: "Analyze FLIPR Data",
-      mainControllerClassName: "PrimaryScreenExperimentController",
-      autoLaunchName: "flipr_screening_assay"
+      menuName: "Protocol Base",
+      mainControllerClassName: "ProtocolBaseController",
+      autoLaunchName: "protocol_base"
     }, {
       isHeader: false,
       menuName: "Primary Screen Protocol",
@@ -29,9 +29,14 @@
       autoLaunchName: "primary_screen_protocol"
     }, {
       isHeader: false,
-      menuName: "Protocol Base",
-      mainControllerClassName: "ProtocolBaseController",
-      autoLaunchName: "protocol_base"
+      menuName: "Experiment Base",
+      mainControllerClassName: "ExperimentBaseController",
+      autoLaunchName: "experiment_base"
+    }, {
+      isHeader: false,
+      menuName: "Analyze FLIPR Data",
+      mainControllerClassName: "PrimaryScreenExperimentController",
+      autoLaunchName: "flipr_screening_assay"
     }, {
       isHeader: false,
       menuName: "Analyze KD Data",

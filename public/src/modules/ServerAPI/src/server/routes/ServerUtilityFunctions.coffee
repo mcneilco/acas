@@ -85,6 +85,23 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 						catch error
 							console.log error
 
+exports.runRScript = (rScript) ->
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	rScriptCommand = config.all.server.rscript
+	if config.all.server.rscript?
+		rScriptCommand = config.all.server.rscript
+	else
+		rScriptCommand = "Rscript"
+
+	exec = require('child_process').exec
+	command = "export R_LIBS=r_libs && "+ rScriptCommand + " " + rScript + " 2> /dev/null"
+	console.log "About to call R script using command: "+command
+	child = exec command,  (error, stdout, stderr) ->
+		console.log "stderr: " + stderr
+		console.log "stdout: " + stdout
+
+
 ### To allow following test routes to work, install this Module
 	# ServerUtility function testing routes
 	serverUtilityFunctions = require './public/src/modules/02_serverAPI/src/server/routes/ServerUtilityFunctions.js'

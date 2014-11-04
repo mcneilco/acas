@@ -20,6 +20,7 @@
             return expect(this.exp.get('lsKind')).toEqual("default");
           });
           it('Should have an empty label list', function() {
+            console.log(this.exp.get('lsLabels'));
             expect(this.exp.get('lsLabels').length).toEqual(0);
             return expect(this.exp.get('lsLabels') instanceof LabelList).toBeTruthy();
           });
@@ -234,14 +235,27 @@
           it("should not have the labels copied", function() {
             return expect(this.exp.get('lsLabels').length).toEqual(0);
           });
-          it("should have the states copied", function() {
-            return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
+          it("should have the analysis parameters state", function() {
+            var filtState;
+            console.log(this.exp.get('lsStates'));
+            filtState = this.exp.get('lsStates').filter(function(state) {
+              return state.get('lsKind') === 'analysis parameters';
+            });
+            return expect(filtState.length).toBeGreaterThan(0);
           });
-          it('Should have a description value', function() {
-            return expect(this.exp.getDescription().get('clobValue')).toEqual("long description goes here");
+          it("should not have the protocol metadata state nor the screening assay state", function() {
+            var filtState;
+            filtState = this.exp.get('lsStates').filter(function(state) {
+              return state.get('lsKind') === 'protocol metadata';
+            });
+            return expect(filtState.length).toEqual(0);
           });
-          it('Should have a comments value', function() {
-            return expect(this.exp.getComments().get('clobValue')).toEqual("comments go here");
+          it("should not have the screening assay state", function() {
+            var filtState;
+            filtState = this.exp.get('lsStates').filter(function(state) {
+              return state.get('lsKind') === 'screening assay';
+            });
+            return expect(filtState.length).toEqual(0);
           });
           it('Should not override set notebook value', function() {
             return expect(this.exp.getNotebook().get('stringValue')).toEqual("spec test NB");
@@ -604,10 +618,10 @@
             return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
           });
           it("should fill the description field", function() {
-            return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
+            return expect(this.ebc.$('.bv_description').html()).toEqual("protocol details go here");
           });
           it("should fill the comments field", function() {
-            return expect(this.ebc.$('.bv_comments').html()).toEqual("comments go here");
+            return expect(this.ebc.$('.bv_comments').html()).toEqual("protocol comments go here");
           });
           return it("should not fill the notebook field", function() {
             return expect(this.ebc.$('.bv_notebook').val()).toEqual("");
