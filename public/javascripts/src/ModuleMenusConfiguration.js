@@ -58,6 +58,10 @@
       menuName: "Search and Edit"
     }, {
       isHeader: false,
+      menuName: "Protocol Browser",
+      mainControllerClassName: "ProtocolBrowserController"
+    }, {
+      isHeader: false,
       menuName: "Experiment Browser",
       mainControllerClassName: "ExperimentBrowserController"
     }, {

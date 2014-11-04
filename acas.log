@@ -1535,3 +1535,6 @@
 2014-11-04T22:46:35.257Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2014-11-04T22:46:35.513Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2014-11-04T22:46:38.910Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2014-11-04T23:12:05.492Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-11-04T23:12:05.755Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-11-04T23:13:09.774Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
