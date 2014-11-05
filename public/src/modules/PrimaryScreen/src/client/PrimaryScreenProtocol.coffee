@@ -368,6 +368,8 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		@primaryScreenProtocolParametersController.saveNewPickListOptions =>
 			@trigger "prepareToSaveToDatabase"
 
+	displayInReadOnlyMode: =>
+		@protocolBaseController.displayInReadOnlyMode()
 
 # This wraps all the tabs
 class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormController
@@ -443,6 +445,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@$('.bv_saveModule').html("Save")
 		else
 			@$('.bv_saveModule').html("Update")
+
+		@trigger 'amClean' #so that module starts off clean when initialized
 
 	handleProtocolSaved: =>
 		@trigger 'amClean'

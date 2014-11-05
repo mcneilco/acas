@@ -464,6 +464,7 @@
     __extends(PrimaryScreenProtocolController, _super);
 
     function PrimaryScreenProtocolController() {
+      this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.handleCheckForNewPickListOptions = __bind(this.handleCheckForNewPickListOptions, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
       this.setupPrimaryScreenProtocolParametersController = __bind(this.setupPrimaryScreenProtocolParametersController, this);
@@ -528,6 +529,10 @@
           return _this.trigger("prepareToSaveToDatabase");
         };
       })(this));
+    };
+
+    PrimaryScreenProtocolController.prototype.displayInReadOnlyMode = function() {
+      return this.protocolBaseController.displayInReadOnlyMode();
     };
 
     return PrimaryScreenProtocolController;
@@ -635,10 +640,11 @@
       this.$('.bv_save').hide();
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
-        return this.$('.bv_saveModule').html("Save");
+        this.$('.bv_saveModule').html("Save");
       } else {
-        return this.$('.bv_saveModule').html("Update");
+        this.$('.bv_saveModule').html("Update");
       }
+      return this.trigger('amClean');
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleProtocolSaved = function() {

@@ -270,6 +270,7 @@
     __extends(BaseEntityController, _super);
 
     function BaseEntityController() {
+      this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
@@ -502,6 +503,11 @@
     BaseEntityController.prototype.clearValidationErrorStyles = function() {
       BaseEntityController.__super__.clearValidationErrorStyles.call(this);
       return this.$('.bv_save').removeAttr('disabled');
+    };
+
+    BaseEntityController.prototype.displayInReadOnlyMode = function() {
+      this.$(".bv_save").addClass("hide");
+      return this.disableAllInputs();
     };
 
     return BaseEntityController;

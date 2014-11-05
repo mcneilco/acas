@@ -206,7 +206,8 @@
       this.setupStatusSelect();
       this.setupTagList();
       this.model.getStatus().on('change', this.updateEditable);
-      return this.render();
+      this.render();
+      return this.trigger('amClean');
     };
 
     ProtocolBaseController.prototype.render = function() {

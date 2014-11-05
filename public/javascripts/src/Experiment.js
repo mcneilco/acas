@@ -254,7 +254,6 @@
     __extends(ExperimentBaseController, _super);
 
     function ExperimentBaseController() {
-      this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.updateEditable = __bind(this.updateEditable, this);
       this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
       this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
@@ -519,11 +518,6 @@
       } else {
         return this.$('.bv_protocolCode').attr("disabled", "disabled");
       }
-    };
-
-    ExperimentBaseController.prototype.displayInReadOnlyMode = function() {
-      this.$(".bv_save").addClass("hide");
-      return this.disableAllInputs();
     };
 
     return ExperimentBaseController;

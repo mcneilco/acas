@@ -319,3 +319,7 @@ class window.BaseEntityController extends AbstractFormController
 	clearValidationErrorStyles: =>
 		super()
 		@$('.bv_save').removeAttr('disabled')
+
+	displayInReadOnlyMode: =>
+		@$(".bv_save").addClass "hide"
+		@disableAllInputs()

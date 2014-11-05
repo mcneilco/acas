@@ -128,6 +128,7 @@ class window.ProtocolBaseController extends BaseEntityController
 		@model.getStatus().on 'change', @updateEditable
 
 		@render()
+		@trigger 'amClean' #so that module starts off clean when initialized
 
 	render: =>
 		unless @model?

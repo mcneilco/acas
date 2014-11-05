@@ -339,6 +339,6 @@ class window.ExperimentBaseController extends BaseEntityController
 		else
 			@$('.bv_protocolCode').attr("disabled", "disabled")
 
-	displayInReadOnlyMode: =>
-		@$(".bv_save").addClass "hide"
-		@disableAllInputs()
+#	displayInReadOnlyMode: =>
+#		@$(".bv_save").addClass "hide"
+#		@disableAllInputs()
