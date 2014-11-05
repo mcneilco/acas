@@ -1483,6 +1483,19 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   
   return(inputDataTable)
 }
+unzipDataFolder <- function (zipFile, targetFolder, experiment) {
+  if(!grepl("\\.zip$", zipFile)) {
+    stopUser("The file provided must be a zip file or a directory")
+  }
+  
+  dir.create(targetFolder, showWarnings = FALSE)
+  oldFiles <- as.list(paste0(targetFolder,"/",list.files(targetFolder)))
+  
+  do.call(unlink, list(oldFiles, recursive=T))
+  
+  unzip(zipfile = zipFile, exdir = targetFolder)
+  return(targetFolder)
+}
 
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
@@ -1524,28 +1537,16 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   # If the folderToParse is actually a zip file
   zipFile <- NULL
+  experimentFolderPath <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName)
+  
+  targetLocation <- file.path(experimentFolderPath, "rawData")
+  dryRunFileLocation <- file.path(experimentFolderPath, "dryRun")
+  specDataPrepFileLocation <- file.path(experimentFolderPath, "parseLogs")
+  dir.create(dryRunFileLocation, showWarnings = FALSE)
+  dir.create(specDataPrepFileLocation, showWarnings = FALSE)
+  
   if (!file.info(folderToParse)$isdir) {
-    if(!grepl("\\.zip$", folderToParse)) {
-      stopUser("The file provided must be a zip file or a directory")
-    }
-    zipFile <- folderToParse
-    
-    experimentFolderPath <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName)
-    
-    filesLocation <- file.path(experimentFolderPath, "rawData")
-    dryRunFileLocation <- file.path(experimentFolderPath,"dryRun")
-    specDataPrepFileLocation <- file.path(experimentFolderPath, "parseLogs")
-    
-    dir.create(filesLocation, showWarnings = FALSE)
-    dir.create(dryRunFileLocation, showWarnings = FALSE)
-    dir.create(specDataPrepFileLocation, showWarnings = FALSE)
-    
-    oldFiles <- as.list(paste0(filesLocation,"/",list.files(filesLocation)))
-    
-    do.call(unlink, list(oldFiles, recursive=T))
-    
-    unzip(zipfile=folderToParse, exdir=paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName, "/rawData"))
-    folderToParse <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName, "rawData")
+    folderToParse <- unzipDataFolder(folderToParse, targetLocation, experiment)
   } 
   
   # GREEN (instrument-specific)
@@ -1603,37 +1604,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   resultTable <- performCalculations(resultTable, parameters)
   
-  
-  ###### Rdap Refactor stopped here 2014-10-10
-  
-  # Omit the flagged results when calculating treatment group data
-  #   flaglessTable <- resultTable[is.na(flag)]
-  #   if(useRdap) {
-  #     ## this section can likely be gotten rid of
-  #     batchDataTable <- data.table(values = flaglessTable$normalizedActivity, 
-  #                                  batchName = flaglessTable$batchName,
-  #                                  wellType = flaglessTable$wellType,
-  #                                  barcode = flaglessTable$barcode)
-  #   } else {
-  #     batchDataTable <- data.table(values = flaglessTable$normalizedActivity, 
-  #                                  batchName = flaglessTable$batchName,
-  #                                  fluorescent = flaglessTable$fluorescent,
-  #                                  sdScore = flaglessTable$tranformed_sd,
-  #                                  wellType = flaglessTable$wellType,
-  #                                  barcode = flaglessTable$barcode,
-  #                                  maxTime = flaglessTable$maxTime,
-  #                                  overallMaxTime = flaglessTable$overallMaxTime,
-  #                                  threshold = flaglessTable$threshold,
-  #                                  hasAgonist = flaglessTable$hasAgonist,
-  #                                  latePeak = flaglessTable$latePeak,
-  #                                  concentration = flaglessTable$concentration,
-  #                                  concUnit = flaglessTable$concUnit)
-  #   }
-  
-  
-  
-  #   if(!useRdap) {
-  
   # was "across plates"
   if (parameters$aggregateBy1 == "compound batch concentration") {
     groupBy <- c("batchCode", "wellType")
@@ -1651,17 +1621,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
 
-  ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'
-  
-  
-  #     getAnalysisGroupData <- function(treatmentGroupData) {
-  #       
-  #       
-  #       analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
-  #       analysisGroupData[, analysisGroupId := treatmentGroupId]
-  #       
-  #       return(analysisGroupData)
-  #     }
+  ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'     
+  # e.g.      analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
   if(FALSE) {
     # add a "userHit" column to the table
     userHitList <- getUserHits(analysisGroupData, flaggedWells, resultTable, parameters$aggregateReplicates, experiment, flaggingStage)
@@ -1795,19 +1756,19 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     names(userOverrideFrame) <- c("Experiment Meta Data", rep("", length(userOverrideFrame) - 1))
   } else { #This section is "if(useRdap)"
     library('RCurl')
-    protocol <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "protocols/", experiment$protocol$id)))
+    protocol <- getProtocolById(experiment$protocol$id)
     protocolName <- protocol$lsLabels[[1]]$labelText
     
     summaryInfo <- list(
       info = list(
         "Sweetener" = parameters$agonist$batchCode,
-        "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
-        "Compounds analyzed" = length(unique(resultTable$batchName)),
+        "Plates analyzed" = paste0(length(unique(resultTable$assayBarcode)), " plates:\n  ", paste(unique(resultTable$assayBarcode), collapse = "\n  ")),
+        "Compounds analyzed" = length(unique(resultTable$batchCode)),
         # "Hits" = sum(analysisGroupData$threshold),
         # "Threshold" = signif(efficacyThreshold, 3),
         # "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
-        "Fluorescent wells" = sum(resultTable$fluorescent),
-        "Flagged wells" = sum(!is.na(resultTable$flag)),
+        # "Fluorescent wells" = sum(resultTable$fluorescent),
+        # "Flagged wells" = sum(!is.na(resultTable$flag)),
         # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
@@ -1824,7 +1785,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else {
     lsTransaction <- 1345
   }
-  if (dryRun) {
+  if (dryRun && !testMode) {
     saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
@@ -1832,7 +1793,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   if (dryRun) {
     lsTransaction <- NULL
-    dryRunLocation <- racas::getUploadedFilePath(paste0("experiments/", experiment$codeName, "/draft"))
+    dryRunLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "draft"))
     dir.create(dryRunLocation, showWarnings = FALSE)
     
     source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
@@ -2420,8 +2381,10 @@ runPrimaryAnalysis <- function(request) {
     loadResult$value <- NULL
   } else if (sum(class(loadResult$value)=="SQLException") > 0) {
     errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
-                                         configList$server.database.host,configList$server.database.port, ":", 
-                                         as.character(loadResult$value), ". Please contact your system administrator.")))
+                                         racas::applicationSettings$server.database.host, 
+                                         racas::applicationSettings$server.database.port, ":", 
+                                         as.character(loadResult$value), 
+                                         ". Please contact your system administrator.")))
     loadResult$value <- NULL
   } else if (sum(class(loadResult$value)=="simpleError") > 0) {
     errorList <- c(errorList, list(paste0("The system has encountered an internal error: ", 
