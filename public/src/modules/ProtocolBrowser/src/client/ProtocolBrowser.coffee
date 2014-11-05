@@ -8,16 +8,8 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 	codeNameSearchUrl: "/api/protocols/codename/"
 
 	initialize: ->
-		@includeDuplicateAndEdit = @options.includeDuplicateAndEdit
-		@searchUrl = ""
-		("@includeDuplicateAndEdit")
-		console.log @includeDuplicateAndEdit
-		if @includeDuplicateAndEdit
-			@searchUrl = @genericSearchUrl
-		else
-			@searchUrl = @codeNameSearchUrl
+		@searchUrl = @genericSearchUrl
 		console.log @searchUrl
-
 
 	events:
 		'keyup .bv_protocolSearchTerm': 'updateProtocolSearchTerm'
@@ -139,7 +131,6 @@ class window.ProtocolSummaryTableController extends Backbone.View
 
 class window.ProtocolBrowserController extends Backbone.View
 	#template: _.template($("#ProtocolBrowserView").html())
-	includeDuplicateAndEdit: true
 	events:
 		"click .bv_deleteProtocol": "handleDeleteProtocolClicked"
 		"click .bv_editProtocol": "handleEditProtocolClicked"
@@ -148,13 +139,12 @@ class window.ProtocolBrowserController extends Backbone.View
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 
 	initialize: ->
-		template = _.template( $("#ProtocolBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
+		template = _.template( $("#ProtocolBrowserView").html() );
 		$(@el).empty()
 		$(@el).html template
 		@searchController = new ProtocolSimpleSearchController
 			model: new ProtocolSearch()
 			el: @$('.bv_protocolSearchController')
-			includeDuplicateAndEdit: @includeDuplicateAndEdit
 		@searchController.render()
 		@searchController.on "searchReturned", @setupProtocolSummaryTable
 		@searchController.on "resetSearch", @destroyProtocolSummaryTable
@@ -177,14 +167,6 @@ class window.ProtocolBrowserController extends Backbone.View
 			$(".bv_protocolTableController").html @protocolSummaryTable.render().el
 
 
-
-			unless @includeDuplicateAndEdit
-#				if protocols[0].get('lsKind') is "flipr screening assay"
-#					console.log "is ps prot"
-#					@selectedProtocolUpdated new PrimaryScreenProtocol protocols[0]
-#				else
-#					console.log "is base prot"
-				@selectedProtocolUpdated new Protocol protocols[0]
 
 	selectedProtocolUpdated: (protocol) =>
 		@trigger "selectedProtocolUpdated"

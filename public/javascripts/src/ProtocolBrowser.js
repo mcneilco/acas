@@ -36,15 +36,7 @@
     ProtocolSimpleSearchController.prototype.codeNameSearchUrl = "/api/protocols/codename/";
 
     ProtocolSimpleSearchController.prototype.initialize = function() {
-      this.includeDuplicateAndEdit = this.options.includeDuplicateAndEdit;
-      this.searchUrl = "";
-      "@includeDuplicateAndEdit";
-      console.log(this.includeDuplicateAndEdit);
-      if (this.includeDuplicateAndEdit) {
-        this.searchUrl = this.genericSearchUrl;
-      } else {
-        this.searchUrl = this.codeNameSearchUrl;
-      }
+      this.searchUrl = this.genericSearchUrl;
       return console.log(this.searchUrl);
     };
 
@@ -235,8 +227,6 @@
       return ProtocolBrowserController.__super__.constructor.apply(this, arguments);
     }
 
-    ProtocolBrowserController.prototype.includeDuplicateAndEdit = true;
-
     ProtocolBrowserController.prototype.events = {
       "click .bv_deleteProtocol": "handleDeleteProtocolClicked",
       "click .bv_editProtocol": "handleEditProtocolClicked",
@@ -247,15 +237,12 @@
 
     ProtocolBrowserController.prototype.initialize = function() {
       var template;
-      template = _.template($("#ProtocolBrowserView").html(), {
-        includeDuplicateAndEdit: this.includeDuplicateAndEdit
-      });
+      template = _.template($("#ProtocolBrowserView").html());
       $(this.el).empty();
       $(this.el).html(template);
       this.searchController = new ProtocolSimpleSearchController({
         model: new ProtocolSearch(),
-        el: this.$('.bv_protocolSearchController'),
-        includeDuplicateAndEdit: this.includeDuplicateAndEdit
+        el: this.$('.bv_protocolSearchController')
       });
       this.searchController.render();
       this.searchController.on("searchReturned", this.setupProtocolSummaryTable);
@@ -276,10 +263,7 @@
           collection: new ProtocolList(protocols)
         });
         this.protocolSummaryTable.on("selectedRowUpdated", this.selectedProtocolUpdated);
-        $(".bv_protocolTableController").html(this.protocolSummaryTable.render().el);
-        if (!this.includeDuplicateAndEdit) {
-          return this.selectedProtocolUpdated(new Protocol(protocols[0]));
-        }
+        return $(".bv_protocolTableController").html(this.protocolSummaryTable.render().el);
       }
     };
 
