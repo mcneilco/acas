@@ -120,7 +120,7 @@ describe 'Curve Curator service testing', ->
 			, 'service did not return'
 			, 2000
 			runs ->
-				expect(@testModel.get('fitSettings').get('max').get('limitType')).toEqual 'none'
+				expect(@testModel.get('fitSettings').get('max').get('limitType')).toEqual 'pin'
 
 
 	goodDataRequest =
@@ -161,5 +161,3 @@ describe 'Curve Curator service testing', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn.fitSummary).tobeDefined
-
-
