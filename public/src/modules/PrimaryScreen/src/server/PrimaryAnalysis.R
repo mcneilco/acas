@@ -1650,7 +1650,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
   treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
-  analysisGroupData[, tempParentId:=as.numeric(experimentId)]
 
   ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'
   
@@ -1906,7 +1905,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       return(response)
     }
     
-    deleteExperimentAnalysisGroups(experiment)
+    # TODO: bring this back in after roo route is completed
+    #deleteExperimentAnalysisGroups(experiment)
     
     #     if (!useRdap) {
     if (FALSE) {
@@ -1961,29 +1961,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       resultTable[, tempId:=index]
       subjectDataLong <- meltKnownTypes(resultTable, resultTypes, "saveAsSubject")
-      #subjectDataLong[, tempId:=index]
       
       treatmentGroupDataLong <- meltKnownTypes(treatmentGroupData, resultTypes, "saveAsTreatment")
-      #treatmentGroupData[, tempId:=index]
-      #subjectData[, tempStateId]
       
       analysisGroupDataLong <- meltKnownTypes(analysisGroupData, resultTypes, "saveAsAnalysis")
       analysisGroupDataLong[, parentId:=experimentId]
       
+      # Removes blank rows, be careful when Save HTS is checked, this will need to be updated
+      analysisGroupDataLong <- analysisGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
       
-      #analysisGroupData$analysisGroupID <- analysisGroupData$index
-      
-      ## TODO Fix racas bugs, then remove
-      # analysisGroupData$stateGroupIndex <- 1 #meltBatchcodes
-      # analysisGroupData$publicData <- TRUE #meltBatchCodes
-      # analysisGroupData$time <- NA #meltTimes
-      # meltConcentrations fix to do other than treatmentGroup
-      # add in acasEntityHierarchySpace
-      # acasEntityHierarchySpace <- c("protocol", "experiment", "analysis group", "treatment group", "subject")
-      ## End fix racas
-      
-      #analysisGroupData$experimentID <- experimentId
-      lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, #treatmentGroupData=treatmentGroupDataLong,
+      lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
+                                  subjectData=subjectDataLong,
                                   recordedBy=user, lsTransaction=lsTransaction)
       
       #analysisGroupData$experimentVersion <- experiment$version
@@ -2032,355 +2020,45 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   return(summaryInfo)
 }
 
-meltConcentrations <- function(entityData, entityKind = "treatmentGroup") {
-  parentEntityKind <- parentAcasEntity(entityKind, "camel")
-  parentEntityID <- paste0(parentEntityKind, "ID")
-  
-  createConcentrationRows <- function(entityData) {
-    if(any(is.na(entityData$concentration))) {
-      return(data.frame())
-    } else {
-      output <- data.frame(batchCode = entityData$batchCode[1], 
-                           valueKind = "tested concentration", 
-                           valueType = "numericValue",
-                           numericValue = entityData$concentration[1],
-                           valueUnit = entityData$concentrationUnit[1],
-                           stateID = entityData$stateID[1],
-                           stateGroupIndex = entityData$stateGroupIndex[1],
-                           stateType = entityData$stateType[1],
-                           stateKind = entityData$stateKind[1],
-                           publicData = entityData$publicData[1],
-                           resultTypeAndUnit = paste("INTERNAL---tested concentration", 
-                                                     entityData$concentration[1], 
-                                                     entityData$concentrationUnit[1], 
-                                                     entityData$time[1], 
-                                                     entityData$timeUnit[1]),
-                           stringsAsFactors = FALSE)
-      if(!is.null(entityData[[parentEntityID]]) && !is.na(entityData[[parentEntityID]])) {
-        output[[parentEntityID]] <- entityData[[parentEntityID]][1]
-      }
-      return(output)
-    }
+
+validateValueKinds <- function(valueKinds, valueTypes, createNew=TRUE) {
+  # valueKinds a vector of valueKinds
+  # valueTypes a vector of matching valueTypes
+  # createNew a boolean marking to cerate new valueKinds rather than just validating
+  currentValueKindsList <- getAllValueKinds()
+  if (length(currentValueKindsList) == 0) {
+    stopUser("Setup error: valueKinds are missing")
   }
-  output <- ddply(.data=entityData, .variables = c("stateID"), .fun = createConcentrationRows)
-  return(output)
-}
-saveFullEntityData <- function(entityData, entityKind) {
+  currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
+  matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
   
-  ### local names
-  # entityData[[paste0(entityKind, "ID")]] must be numeric
-  acasEntity <- changeEntityMode(entityKind, "camel", "lowercase")
-  entityID <- paste0(entityKind, "ID")
-  tempIds <- c()
+  newValueKinds <- setdiff(valueKinds, currentValueKinds)
+  oldValueKinds <- intersect(valueKinds, currentValueKinds)
   
-  ### Error checking
-  if (!(entityID %in% names(entityData))) {
-    stop(paste0("Internal Error: Column ", entityID, " is not a missing from entityData"))
+  # Check that the value kinds that have been entered before have the correct Datatype (valueType)
+  oldValueKindTypes <- valueTypes[match(oldValueKinds, valueKinds)]
+  currentValueKindTypeFrame <- data.frame(currentValueKinds, matchingValueTypes, stringsAsFactors=FALSE)
+  oldValueKindTypeFrame <- data.frame(oldValueKinds, oldValueKindTypes, stringsAsFactors=FALSE)
+  
+  comparisonFrame <- merge(oldValueKindTypeFrame, currentValueKindTypeFrame, 
+                           by.x = "oldValueKinds", by.y = "currentValueKinds")
+  wrongValueTypes <- comparisonFrame$oldValueKindTypes != comparisonFrame$matchingValueTypes
+  
+  if (any(wrongValueTypes)) {
+    stopUser("Invalid value types")
   }
   
-  ### main code
-  thingTypeAndKind <- paste0("document_", changeEntityMode(entityKind, "camel", "space"))
-  entityCodeNameList <- unlist(getAutoLabels(thingTypeAndKind=thingTypeAndKind, 
-                                             labelTypeAndKind="id_codeName", 
-                                             numberOfLabels=max(entityData[[entityID]], na.rm=TRUE)),
-                               use.names=FALSE)
-  
-  entityData$analysisGroupCodeName <- entityCodeNameList[entityData[[entityID]]]
-  
-  createEntity <- function(codeName, lsType, lsKind, recordedBy, lsTransaction) {
-    return(list(
-      codeName=codeName,
-      lsType=lsType,
-      lsKind=lsKind,
-      recordedBy=recordedBy,
-      lsTransaction=lsTransaction))
+  if (createNew) {
+    # Create the new valueKinds, using the correct valueType
+    newValueKindTypes <- valueTypes[match(newValueKinds, valueKinds)]
+    
+    saveValueKinds(newValueKinds, newValueKindTypes)
   }
   
-  createEntityFromDF <- function(dfData, currentEntity) {
-    entity <- createEntity(
-      lsType = "default",
-      lsKind = "default",
-      codeName=dfData[[paste0(currentEntity, "CodeName")]][1],
-      recordedBy=dfData$recordedBy[1],
-      lsTransaction=dfData$lsTransaction[1])
-    upperAcasEntity <- acasEntityHierarchyCamel[which(currentEntity == acasEntityHierarchyCamel) - 1]
-    if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stop("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data")
-    }
-    if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stop("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data")
-    }
-    entity[[upperAcasEntity]] <- list(id=dfData[[paste0(upperAcasEntity, "ID")]][1],
-                                      version=dfData[[paste0(upperAcasEntity, "Version")]][1])
-    return(entity)
-  }
-  
-  entities <- dlply(.data=entityData, .variables = paste0(entityKind, "ID"), createEntityFromDF, currentEntity=entityKind)
-  
-  tempIds <- as.numeric(names(entities))
-  
-  names(entities) <- NULL
-  savedEntities <- saveAcasEntities(entities, paste0(acasEntity, "s"))
-  
-  if (length(savedEntities) != length(entities)) {
-    stop(paste0("Internal Error: roo server did not respond with the same number of ", acasEntity, "s after a post"))
-  }
-  
-  entityIds <- sapply(savedEntities, getElement, "id")
-  entityVersions <- sapply(savedEntities, getElement, "version")
-  
-  entityData[[entityID]] <- entityIds[match(entityData[[entityID]], tempIds)]
-  
-  ###### entity States #######
-  
-  stateAndVersion <- saveStatesFromExplicitFormat(entityData, entityKind)
-  entityData$stateID <- stateAndVersion$entityStateId
-  entityData$stateVersion <- stateAndVersion$entityStateVersion
-  
-  ### entity Values ======================================================================= 
-  
-  savedEntityValues <- saveValuesFromExplicitFormat(entityData, entityKind)
-  #
-  
-  return(data.frame(tempID = tempIds, entityID = entityIds, entityVersion = entityVersions))
+  return(NULL)
 }
 
-saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE) {
-  #TODO: should allow containers or interactions
-  idColumn = "stateID"
-  entityID = paste0(entityKind, "ID")
-  entityVersion = paste0(entityKind, "Version")
-  
-  acasServerEntity <- changeEntityMode(entityKind, "camel", "lowercase")
-  
-  
-  # If no version given, assume version 0
-  if (!(entityVersion %in% names(entityData))) {
-    entityData[[entityVersion]] <- 0
-  }
-  
-  if (!(idColumn %in% names(entityData))) {
-    stop(paste0("Internal Error: ", idColumn, " must be a column in entityData"))
-  }
-  
-  if (!(entityKind %in% racas::acasEntityHierarchyCamel)) {
-    stop("Internal Error: entityKind must be in racas::acasEntityHierarchyCamel")
-  }
-  
-  if (!(entityID %in% names(entityData))) {
-    stop("Internal Error: ", entityID, " must be included in entityData")
-  }
-  
-  createExplicitLsState <- function(entityData, entityKind) {
-    # TODO: add stateType and StateKind to meltBatchCodes
-    lsType <- entityData$stateType[1]
-    lsKind <- entityData$stateKind[1]
-    lsState <- list(lsType = entityData$stateType[1],
-                    lsKind = entityData$stateKind[1],
-                    recordedBy = entityData$recordedBy[1],
-                    lsTransaction = entityData$lsTransaction[1])
-    # e.g. lsState$analysisGroup <- list(id=entityData$analysisGroupID[1], version=0)
-    lsState[[entityKind]] <- list(id = entityData[[entityID]][1], version = entityData[[entityVersion]][1])
-    return(lsState)
-  }
-  
-  lsStates <- dlply(.data=entityData, .variables=idColumn, .fun=createExplicitLsState, entityKind=entityKind)
-  originalStateIds <- names(lsStates)
-  names(lsStates) <- NULL
-  if (testMode) {
-    lsStates <- lapply(lsStates, function(x) {x$recordedDate <- 1381939115000; return (x)})
-    return(toJSON(lsStates))
-  } else {
-    savedLsStates <- saveAcasEntities(lsStates, paste0(acasServerEntity, "states"))
-  }
-  
-  lsStateIds <- sapply(savedLsStates, getElement, "id")
-  lsStateVersions <- sapply(savedLsStates, getElement, "version")
-  entityStateTranslation <- data.frame(entityStateId = lsStateIds, 
-                                       originalStateId = originalStateIds, 
-                                       entityStateVersion = lsStateVersions)
-  stateIdAndVersion <- entityStateTranslation[match(entityData[[idColumn]], 
-                                                    entityStateTranslation$originalStateId),
-                                              c("entityStateId", "entityStateVersion")]
-  return(stateIdAndVersion)
-}
 
-saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE) {
-  ### static variables
-  #TODO: should allow containers or interactions
-  idColumn = "stateID"
-  acasServerEntity <- changeEntityMode(entityKind, "camel", "lowercase")
-  
-  #create a uniqueID to split on
-  entityData$uniqueID <- 1:(nrow(entityData))
-  
-  optionalColumns <- c("fileValue", "urlValue", "codeValue", "numericValue", "dateValue",
-                       "valueOperator", "valueUnit", "clobValue", "blobValue", "numberOfReplicates",
-                       "uncertainty", "uncertaintyType", "comments")
-  missingOptionalColumns <- Filter(function(x) !(x %in% names(entityData)),
-                                   optionalColumns)
-  entityData[missingOptionalColumns] <- NA
-  
-  ### Error Checking
-  requiredColumns <- c("valueType", "valueKind", "publicData", "stateVersion", "stateID")
-  if (any(!(requiredColumns %in% names(entityData)))) {
-    stop("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", "))
-  }
-  
-  # Turns factors to character
-  factorColumns <- vapply(entityData, is.factor, c(TRUE))
-  entityData[factorColumns] <- lapply(entityData[factorColumns], as.character)
-  
-  if (is.character(entityData$dateValue)) {
-    entityData$dateValue[entityData$dateValue == ""] <- NA
-    entityData$dateValue <- as.numeric(format(as.Date(entityData$dateValue,origin="1970-01-01"), "%s"))*1000
-  } else if (is.numeric(entityData$dateValue)) {
-    # No change
-  } else if (is.null(entityData$dateValue) || all(is.na(entityData$dateValue))) {
-    entityData$dateValue <- as.character(NA)
-  } else {
-    stop("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue))
-  }
-  
-  
-  
-  ### Helper function
-  createLocalStateValue <- function(valueData) {
-    stateValue <- with(valueData, {
-      createStateValue(
-        lsState = list(id = stateID, version = stateVersion),
-        lsType = if (valueType %in% c("stringValue", "fileValue", "urlValue", "dateValue", "clobValue", "blobValue", "numericValue", "codeValue")) {
-          valueType
-        } else {"numericValue"},
-        lsKind = valueKind,
-        stringValue = if (is.character(stringValue) && !is.na(stringValue)) {stringValue} else {NULL},
-        dateValue = if(is.numeric(stringValue)) {dateValue} else {NULL},
-        clobValue = if(is.character(clobValue) && !is.na(clobValue)) {clobValue} else {NULL},
-        blobValue = if(!is.null(blobValue) && !is.na(blobValue)) {blobValue} else {NULL},
-        codeValue = if(is.character(codeValue) && !is.na(codeValue)) {codeValue} else {NULL},
-        fileValue = if(is.character(fileValue) && !is.na(fileValue)) {fileValue} else {NULL},
-        urlValue = if(is.character(urlValue) && !is.na(urlValue)) {urlValue} else {NULL},
-        valueOperator = if(is.character(valueOperator) && !is.na(valueOperator)) {valueOperator} else {NULL},
-        operatorType = if(is.character(operatorType) && !is.na(operatorType)) {operatorType} else {NULL},
-        numericValue = if(is.numeric(numericValue) && !is.na(numericValue)) {numericValue} else {NULL},
-        valueUnit = if(is.character(valueUnit) && !is.na(valueUnit)) {valueUnit} else {NULL},
-        unitType = if(is.character(unitType) && !is.na(unitType)) {unitType} else {NULL},
-        publicData = publicData,
-        lsTransaction = lsTransaction,
-        numberOfReplicates = if(is.numeric(numberOfReplicates) && !is.na(numberOfReplicates)) {numberOfReplicates} else {NULL},
-        uncertainty = if(is.numeric(uncertainty) && !is.na(uncertainty)) {uncertainty} else {NULL},
-        uncertaintyType = if(is.character(uncertaintyType) && !is.na(uncertaintyType)) {uncertaintyType} else {NULL},
-        recordedBy = recordedBy,
-        comments = if(is.character(comments) && !is.na(comments)) {comments} else {NULL}
-      )
-    })
-    return(stateValue)
-  }
-  entityValues <- plyr::dlply(.data = entityData, 
-                              .variables = .(uniqueID), 
-                              .fun = createLocalStateValue)
-  
-  names(entityValues) <- NULL
-  
-  if (testMode) {
-    entityValues <- lapply(entityValues, function(x) {x$recordedDate <- 42; return (x)})
-    return(toJSON(entityValues))
-  } else {
-    savedEntityValues <- saveAcasEntities(entityValues, paste0(acasServerEntity, "values"))
-    return(savedEntityValues)
-  }
-}
-
-# saveAcasEntities <- function(entities, acasCategory, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
-#   binSize <- 1000
-#   if (length(entities) > binSize) {
-#     numberOfSplits <- ceiling(length(entities)/binSize)
-#     remainderEntities <- length(entities) %% binSize
-#     allSaves <- list()
-#     i <- 1
-#     for (i in 1:numberOfSplits){
-#       output <- NULL
-#       if (i == 1){
-#         entityStart <- 1
-#         entityEnd <- binSize
-#       } else {
-#         entityStart <- (i * binSize) + 1
-#         entityEnd <- (i+1) * binSize
-#         if (entityEnd > length(entities)){
-#           entityEnd <- length(entities) 
-#         }
-#       }
-#             print(i) #7 7
-#       ## start debug 
-#              entityStart <- 1
-#              entityEnd <- 2
-#              if (entityEnd > length(entities)){
-#                entityEnd <- length(entities) 
-#              }
-#       ## end debug
-#       output <- saveAcasEntitiesInternal(entities[entityStart:entityEnd], acasCategory, lsServerURL)
-#       allSaves[[i]] <- output
-#     }
-#     #     output <- saveAcasEntitiesInternal(entities[1:1000], acasCategory, lsServerURL)
-#     #     otherSaves <- saveAcasEntities(entities[1001:2000], acasCategory, lsServerURL)
-#     #     otherSaves <- saveAcasEntities(entities[1001:length(entities)], acasCategory, lsServerURL)
-#     #     return(c(output, otherSaves))
-#     return(allSaves)
-#   } else {
-#     return(saveAcasEntitiesInternal(entities, acasCategory, lsServerURL))
-#   }
-# }
-# 
-# saveAcasEntitiesInternal <- function(entities, acasCategory, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
-#   # If you have trouble, make sure the acasCategory is all lowercase, has no spaces, and is plural
-#   logName = "com.acas.racas.saveAcasEntitiesInternal"
-#   logFileName = file.path(racas::applicationSettings$server.log.path, "racas.log")
-# 
-#   h = basicTextGatherer()
-#   
-#   message <- toJSON(entities)
-#   response <- getURL(
-#     paste0(lsServerURL, acasCategory, "/jsonArray"),
-#     customrequest='POST',
-#     httpheader=c('Content-Type'='application/json'),
-#     postfields=message,
-#     headerfunction = h$update)
-#   responseHeader <- as.list(parseHTTPHeader(h$value()))
-#   statusCode <- as.numeric(responseHeader$status)
-#   if (statusCode >= 400) {
-#     myLogger <- createLogger(logName = logName, logFileName = logFileName)
-#     errorMessage <- paste0("Request to ", lsServerURL, acasCategory, "/jsonArray with method 'POST' failed with status '",
-#                            statusCode, " ", responseHeader$statusMessage, "' when sent the following JSON: \n", 
-#                            message, "\nHeader was \n", h$value())
-#     myLogger$error(errorMessage)
-#     stop (paste0("Internal Error: The loader was unable to save your ", acasCategory, ". Check the log ", 
-#                  logFileName, " at ", Sys.time()))
-#   } else if (grepl("^<",response)) {
-#     myLogger <- createLogger(logName = logName, logFileName = logFileName)
-#     myLogger$error(response)
-#     stop (paste0("Internal Error: The loader was unable to save your ", acasCategory, ". Check the logs at ", Sys.time()))
-#   } else if (grepl("^\\s*$", response)) {
-#     return(list())
-#   }
-#   response <- fromJSON(response)
-#   return(response)
-# }
-
-changeEntityMode <- function(entityKind, currentMode, desiredMode) {
-  entityKindIndex <- switch(
-    currentMode,
-    lowercase = which(entityKind == acasEntityHierarchy),
-    camel = which(entityKind == acasEntityHierarchyCamel),
-    space = which(entityKind == acasEntityHierarchySpace),
-    stop(paste0("Internal error: ", currentMode, " is not a valid mode")))
-  
-  return(switch(
-    desiredMode,
-    lowercase = acasEntityHierarchy[entityKindIndex],
-    camel = acasEntityHierarchyCamel[entityKindIndex],
-    space = acasEntityHierarchySpace[entityKindIndex],
-    stop(paste0("Internal error: ", desiredMode, " is not a valid mode"))))
-}
 
 uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=NULL,subjectData=NULL,
                        recordedBy) {
@@ -2403,15 +2081,20 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   
   library('plyr')
   
+  valueKindDF <- unique(data.frame(
+    valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
+    valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
+  ))
+  validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
+  
   if(is.null(lsTransaction)) {
     lsTransaction <- createLsTransaction()$id
   }
   
   ### Analysis Group Data
   # Not all of these will be filled
-  analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex, "-", 
-                                      analysisGroupData$concentration, "-", analysisGroupData$concentrationUnit, "-",
-                                      analysisGroupData$time, "-", analysisGroupData$timeUnit, "-", analysisGroupData$stateKind)))
+  analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-", 
+                                      analysisGroupData$stateKind)))
   
   if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
     analysisGroupData$publicData <- TRUE
@@ -2435,34 +2118,25 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
     ### TreatmentGroup Data
     treatmentGroupData$lsTransaction <- lsTransaction
     treatmentGroupData$recordedBy <- recordedBy
-    treatmentGroupData$tempStateId <- as.numeric(as.factor(paste0(treatmentGroupData$treatmentGroupID, "-", treatmentGroupData$stateGroupIndex, "-", 
-                                         treatmentGroupData$concentration, "-", treatmentGroupData$concentrationUnit, "-",
-                                         treatmentGroupData$time, "-", treatmentGroupData$timeUnit, "-", treatmentGroupData$stateKind)))
+    treatmentGroupData$tempStateId <- as.numeric(as.factor(paste0(treatmentGroupData$tempId, "-", treatmentGroupData$stateGroupIndex, "-", 
+                                         treatmentGroupData$stateKind)))
     
     treatmentGroupData$lsType <- "default"
     treatmentGroupData$lsKind <- "default"
     
   }
-  saveAllViaTsv(analysisGroupData, treatmentGroupData, NULL)
-    
-#     ### subject Data
-#     subjectData$lsTransaction <- lsTransaction
-#     subjectData$recordedBy <- recordedBy
-#     
-#     matchingID <- match(subjectData$treatmentGroupID, treatmentGroupIDandVersion$tempID)
-#     subjectData$treatmentGroupID <- treatmentGroupIDandVersion$entityID[matchingID]
-#     subjectData$treatmentGroupVersion <- treatmentGroupIDandVersion$entityVersion[matchingID]
-#     
-#     subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
-#                                   subjectData$concentration, "-", subjectData$concentrationUnit, "-",
-#                                   subjectData$time, "-", subjectData$timeUnit, "-", subjectData$stateKind)
-#     
-#     subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
-#     subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
-#     subjectData <- rbind.fill(subjectData, meltBatchCodes(subjectData, 0, optionalColumns = "subjectID"))
-#     
-#     subjectIDandVersion <- saveFullEntityData(subjectData, "subject")
-#   }
+  
+  if(!is.null(subjectData)) {
+    ### subject Data
+    subjectData$lsTransaction <- lsTransaction
+    subjectData$recordedBy <- recordedBy
+    subjectData$tempStateId <- as.numeric(as.factor(paste0(subjectData$tempId, "-", subjectData$stateGroupIndex, "-", 
+                                  subjectData$stateKind)))
+    subjectData$lsType <- "default"
+    subjectData$lsKind <- "default"
+  }
+  
+  saveAllViaTsv(analysisGroupData, treatmentGroupData, subjectData)  
   
   return (lsTransaction)
 }
@@ -2624,23 +2298,26 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   
   # Replaces data with a curve id if there are more than 3 points
   aggregateCurveData <- function(DT, newID, BY) {
-    tempId <- BY$tempParentId
+    newTempId <- BY$tempParentId
     if(length(unique(DT[, cmpdConc])) > 3) {
       output <- DT[NA]
-      output[, tempId:=tempId]
-      output[, curveId:=newID]
+      output[, tempId:=newTempId]
+      output[, curveId:=as.character(newID)]
+      output[, batchCode:=DT[1, batchCode]]
+      output[, renderingHint:="4 parameter D-R"]
       return(output)
     } else {
       output <- copy(DT)
-      output[, tempId:=tempId]
+      output[, tempId:=newTempId]
       return(output)
     }
   }
   
   preCurveData <- copy(treatmentGroupData)
-  preCurveData[, curveId:=NA_integer_]
+  preCurveData[, curveId:=NA_character_]
+  preCurveData[, renderingHint:=NA_character_]
   analysisData <- preCurveData[, aggregateCurveData(.SD, .GRP, .BY), by=tempParentId]
-  
+  analysisData[, tempParentId:=NULL]
   return(analysisData)
   
   # TODO: bring hasAgonist back in, or put in a config
@@ -2678,10 +2355,16 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   
 }
 meltKnownTypes <- function(resultTable, resultTypes, includedColumn) {
-  #includedColumn is "saveAsSubject" or "saveAsTreatment" or "saveAsAnalysis"
-  # resultTable is a Data Table!
+  # includedColumn is "saveAsSubject" or "saveAsTreatment" or "saveAsAnalysis"
+  # resultTable is a Data Table, tempId is a required column, tempParentId is optional
+  # resultTypes is a data table with information about each valueKind/columnHeader
   
   library(reshape2)
+  
+  idVars <- "tempId"
+  if ("tempParentId" %in% names(resultTable)) {
+    idVars <- c(idVars, "tempParentId")
+  }
   
   usedCol <- resultTypes[, includedColumn, with=F][[1]] & resultTypes$columnName %in% names(resultTable)
   
@@ -2689,9 +2372,9 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn) {
   codeResultColumns <- resultTypes[valueType=="codeValue" & usedCol, columnName]
   stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
   
-  numericResults <- melt(resultTable, id.vars="tempId", measure.vars=numericResultColumns, variable.name="columnName", value.name="numericValue")
-  codeResults <- melt(resultTable, id.vars="tempId", measure.vars=codeResultColumns, variable.name="columnName", value.name="codeValue")
-  stringResults <- melt(resultTable, id.vars="tempId", measure.vars=stringResultColumns, variable.name="columnName", value.name="stringValue", variable.factor = FALSE)
+  numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, variable.name="columnName", value.name="numericValue")
+  codeResults <- melt(resultTable, id.vars=idVars, measure.vars=codeResultColumns, variable.name="columnName", value.name="codeValue")
+  stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, variable.name="columnName", value.name="stringValue", variable.factor = FALSE)
   
   longResults <- as.data.table(rbind.fill(numericResults, codeResults, stringResults))
   
