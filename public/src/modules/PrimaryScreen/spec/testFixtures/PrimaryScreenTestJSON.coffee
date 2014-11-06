@@ -40,8 +40,8 @@
 			concentrationUnits: null
 		instrumentReader: "flipr"
 		signalDirectionRule: "increasing"
-		aggregateBy1: "compound batch concentration"
-		aggregateBy2: "median"
+		aggregateBy: "compound batch concentration"
+		aggregationMethod: "median"
 		normalizationRule: "plate order only"
 		hitEfficacyThreshold: 42
 		hitSDThreshold: 5.0

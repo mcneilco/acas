@@ -104,8 +104,8 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 	defaults: ->
 		instrumentReader: "unassigned"
 		signalDirectionRule: "unassigned"
-		aggregateBy1: "unassigned"
-		aggregateBy2: "unassigned"
+		aggregateBy: "unassigned"
+		aggregationMethod: "unassigned"
 		normalizationRule: "unassigned"
 		assayVolume: null
 		transferVolume: null
@@ -208,14 +208,14 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'signalDirectionRule'
 				message: "Signal Direction Rule must be assigned"
-		if attrs.aggregateBy1 is "unassigned" or attrs.aggregateBy1 is ""
+		if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is ""
 			errors.push
-				attribute: 'aggregateBy1'
-				message: "Aggregate By1 must be assigned"
-		if attrs.aggregateBy2 is "unassigned" or attrs.aggregateBy2 is ""
+				attribute: 'aggregateBy'
+				message: "Aggregate By must be assigned"
+		if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is ""
 			errors.push
-				attribute: 'aggregateBy2'
-				message: "Aggregate By2 must be assigned"
+				attribute: 'aggregationMethod'
+				message: "Aggregation method must be assigned"
 		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is ""
 			errors.push
 				attribute: 'normalizationRule'
@@ -514,8 +514,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	events:
 		"change .bv_instrumentReader": "attributeChanged"
 		"change .bv_signalDirectionRule": "attributeChanged"
-		"change .bv_aggregateBy1": "attributeChanged"
-		"change .bv_aggregateBy2": "attributeChanged"
+		"change .bv_aggregateBy": "attributeChanged"
+		"change .bv_aggregationMethod": "attributeChanged"
 		"change .bv_normalizationRule": "attributeChanged"
 		"change .bv_assayVolume": "handleAssayVolumeChanged"
 		"change .bv_dilutionFactor": "handleDilutionFactorChanged"
@@ -546,8 +546,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@model.bind 'amDirty', => @trigger 'amDirty', @
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
-		@setupAggregateBy1Select()
-		@setupAggregateBy2Select()
+		@setupAggregateBySelect()
+		@setupAggregationMethodSelect()
 		@setupNormalizationSelect()
 
 
@@ -558,8 +558,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
-		@setupAggregateBy1Select()
-		@setupAggregateBy2Select()
+		@setupAggregateBySelect()
+		@setupAggregationMethodSelect()
 		@setupNormalizationSelect()
 		@handleAutoHitSelectionChanged(true)
 		@setupReadListController()
@@ -591,27 +591,27 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				name: "Select Signal Direction"
 			selectedCode: @model.get('signalDirectionRule')
 
-	setupAggregateBy1Select: ->
-		@aggregateBy1List = new PickListList()
-		@aggregateBy1List.url = "/api/dataDict/experiment metadata/aggregate by1"
-		@aggregateBy1ListController = new PickListSelectController
-			el: @$('.bv_aggregateBy1')
-			collection: @aggregateBy1List
+	setupAggregateBySelect: ->
+		@aggregateByList = new PickListList()
+		@aggregateByList.url = "/api/dataDict/experiment metadata/aggregate by"
+		@aggregateByListController = new PickListSelectController
+			el: @$('.bv_aggregateBy')
+			collection: @aggregateByList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select"
-			selectedCode: @model.get('aggregateBy1')
+			selectedCode: @model.get('aggregateBy')
 
-	setupAggregateBy2Select: ->
-		@aggregateBy2List = new PickListList()
-		@aggregateBy2List.url = "/api/dataDict/experiment metadata/aggregate by2"
-		@aggregateBy2ListController = new PickListSelectController
-			el: @$('.bv_aggregateBy2')
-			collection: @aggregateBy2List
+	setupAggregationMethodSelect: ->
+		@aggregationMethodList = new PickListList()
+		@aggregationMethodList.url = "/api/dataDict/experiment metadata/aggregation method"
+		@aggregationMethodListController = new PickListSelectController
+			el: @$('.bv_aggregationMethod')
+			collection: @aggregationMethodList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select"
-			selectedCode: @model.get('aggregateBy2')
+			selectedCode: @model.get('aggregationMethod')
 
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
@@ -647,8 +647,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@model.set
 			instrumentReader: @instrumentListController.getSelectedCode()
 			signalDirectionRule: @signalDirectionListController.getSelectedCode()
-			aggregateBy1: @aggregateBy1ListController.getSelectedCode()
-			aggregateBy2: @aggregateBy2ListController.getSelectedCode()
+			aggregateBy: @aggregateByListController.getSelectedCode()
+			aggregationMethod: @aggregationMethodListController.getSelectedCode()
 			normalizationRule: @normalizationListController.getSelectedCode()
 			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
 			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))
