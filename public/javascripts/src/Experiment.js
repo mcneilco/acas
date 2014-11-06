@@ -185,7 +185,7 @@
         });
       }
       cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "") {
+      if (cDate === void 0 || cDate === "" || cDate === null) {
         cDate = "fred";
       }
       if (isNaN(cDate)) {
@@ -299,7 +299,11 @@
                     if (lsKind === "default") {
                       expt = new Experiment(json[0]);
                       expt.set(expt.parse(expt.attributes));
-                      _this.model = expt;
+                      if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                        _this.model = expt.duplicateEntity();
+                      } else {
+                        _this.model = expt;
+                      }
                     } else {
                       alert('Could not get experiment for code in this URL. Creating new experiment');
                     }

@@ -117,7 +117,7 @@ class window.PrimaryScreenProtocol extends Protocol
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
 		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" then cDate = "fred"
+		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 		if isNaN(cDate)
 			errors.push
 				attribute: 'completionDate'
@@ -402,7 +402,10 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 								if lsKind is "flipr screening assay"
 									prot = new PrimaryScreenProtocol json[0]
 									prot.set prot.parse(prot.attributes)
-									@model = prot
+									if window.AppLaunchParams.moduleLaunchParams.copy
+										@model = prot.duplicateEntity()
+									else
+										@model = prot
 								else
 									alert 'Could not get primary screen protocol for code in this URL. Creating new primary screen protocol'
 							@completeInitialization()

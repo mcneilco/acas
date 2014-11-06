@@ -36,8 +36,7 @@
     ProtocolSimpleSearchController.prototype.codeNameSearchUrl = "/api/protocols/codename/";
 
     ProtocolSimpleSearchController.prototype.initialize = function() {
-      this.searchUrl = this.genericSearchUrl;
-      return console.log(this.searchUrl);
+      return this.searchUrl = this.genericSearchUrl;
     };
 
     ProtocolSimpleSearchController.prototype.events = {
@@ -97,8 +96,6 @@
     ProtocolSimpleSearchController.prototype.doSearch = function(protocolSearchTerm) {
       this.trigger('find');
       if (protocolSearchTerm !== "") {
-        console.log("doGenericProtocolSearch");
-        console.log(protocolSearchTerm);
         return $.ajax({
           type: 'GET',
           url: this.searchUrl + protocolSearchTerm,
@@ -203,6 +200,11 @@
             return _this.$("tbody").append(prsc.render().el);
           };
         })(this));
+        this.$("table").dataTable({
+          oLanguage: {
+            sSearch: "Filter results: "
+          }
+        });
       }
       return this;
     };
@@ -333,7 +335,13 @@
     };
 
     ProtocolBrowserController.prototype.handleDuplicateProtocolClicked = function() {
-      return window.open("/api/protocols/duplicate/" + (this.protocolController.model.get("codeName")), '_blank');
+      var protocolKind;
+      protocolKind = this.protocolController.model.get('lsKind');
+      if (protocolKind === "flipr screening assay") {
+        return window.open("/entity/copy/primary_screen_protocol/" + (this.protocolController.model.get("codeName")), '_blank');
+      } else {
+        return window.open("/entity/copy/protocol_base/" + (this.protocolController.model.get("codeName")), '_blank');
+      }
     };
 
     ProtocolBrowserController.prototype.destroyProtocolSummaryTable = function() {

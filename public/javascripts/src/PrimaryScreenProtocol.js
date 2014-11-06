@@ -189,7 +189,7 @@
         });
       }
       cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "") {
+      if (cDate === void 0 || cDate === "" || cDate === null) {
         cDate = "fred";
       }
       if (isNaN(cDate)) {
@@ -589,7 +589,11 @@
                     if (lsKind === "flipr screening assay") {
                       prot = new PrimaryScreenProtocol(json[0]);
                       prot.set(prot.parse(prot.attributes));
-                      _this.model = prot;
+                      if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                        _this.model = prot.duplicateEntity();
+                      } else {
+                        _this.model = prot;
+                      }
                     } else {
                       alert('Could not get primary screen protocol for code in this URL. Creating new primary screen protocol');
                     }

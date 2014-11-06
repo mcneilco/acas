@@ -95,6 +95,7 @@
 
     AbstractFormController.prototype.disableAllInputs = function() {
       this.$('input').attr('disabled', 'disabled');
+      this.$('button').attr('disabled', 'disabled');
       this.$('select').attr('disabled', 'disabled');
       this.$("textarea").attr('disabled', 'disabled');
       this.$(".bv_experimentCode").css("background-color", "#eeeeee");

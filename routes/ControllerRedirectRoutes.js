@@ -5,10 +5,6 @@
 
   request = require('request');
 
-  exports.setupAPIRoutes = function(app, loginRoutes) {
-    return app.get('/entity/edit/codeName/:code', exports.redirectToEditor);
-  };
-
   exports.setupRoutes = function(app, loginRoutes) {
     return app.get('/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor);
   };

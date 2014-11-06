@@ -301,7 +301,7 @@
           return expect(state.get('recordedDate')).toBeGreaterThan(1);
         });
       });
-      return describe("model composite component conversion", function() {
+      describe("model composite component conversion", function() {
         beforeEach(function() {
           runs(function() {
             this.saveSucessful = false;
@@ -346,6 +346,61 @@
           return runs(function() {
             return expect(this.bem.get('lsTags') instanceof TagList).toBeTruthy();
           });
+        });
+      });
+      return describe("duplicated entity", function() {
+        beforeEach(function() {
+          this.bem = new BaseEntity(window.baseEntityServiceTestJSON.fullExperimentFromServer);
+          this.bem.set({
+            subclass: "experiment"
+          });
+          return this.copiedEntity = this.bem.duplicateEntity(this.bem);
+        });
+        it("should have the same lsType as the original entity", function() {
+          return expect(this.copiedEntity.get('lsType')).toEqual(this.bem.get('lsType'));
+        });
+        it("should have the same lsKind as the original entity", function() {
+          return expect(this.copiedEntity.get('lsType')).toEqual(this.bem.get('lsKind'));
+        });
+        it("should have the status set to created", function() {
+          return expect(this.copiedEntity.getStatus().get('stringValue')).toEqual("created");
+        });
+        it("should have the code name be autofill when saved", function() {
+          return expect(this.copiedEntity.get('codeName')).toEqual("autofill when saved");
+        });
+        it("should have the entity name be empty", function() {
+          expect(this.copiedEntity.get('lsLabels').length).toEqual(0);
+          return expect(this.copiedEntity.get('lsLabels') instanceof LabelList).toBeTruthy();
+        });
+        it("should have the scientist be empty", function() {
+          return expect(this.copiedEntity.get('recordedBy')).toEqual("");
+        });
+        it("should have the recorded date be set to now", function() {
+          return expect(new Date(this.copiedEntity.get('recordedDate')).getHours()).toEqual(new Date().getHours());
+        });
+        it("should have the completion date be empty", function() {
+          return expect(this.copiedEntity.getCompletionDate().get('dateValue')).toEqual(null);
+        });
+        it("should have the protocol be duplicated when the entity is an experiment", function() {
+          return expect(this.copiedEntity.get('protocol')).toEqual(this.bem.get('protocol'));
+        });
+        xit("should have the same project as the original entity", function() {
+          return expect(this.copiedEntity.getProjectCode()).toEqual(this.bem.getProjectCode());
+        });
+        it("should have the notebook be empty", function() {
+          return expect(this.copiedEntity.getNotebook().get('stringValue')).toEqual("");
+        });
+        it("should have the same lsTags", function() {
+          return expect(this.copiedEntity.get('lsTags')).toEqual(this.bem.get('lsTags'));
+        });
+        it("should have the same short description", function() {
+          return expect(this.copiedEntity.get('shortDescription')).toEqual(this.bem.get('shortDescription'));
+        });
+        it("should have the same description", function() {
+          return expect(this.copiedEntity.getDescription().get('clobValue')).toEqual(this.bem.getDescription().get('clobValue'));
+        });
+        return it("should have the same comments", function() {
+          return expect(this.copiedEntity.getComments().get('clobValue')).toEqual(this.bem.getComments().get('clobValue'));
         });
       });
     });

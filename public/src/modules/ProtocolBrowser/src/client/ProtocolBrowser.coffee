@@ -9,7 +9,6 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 
 	initialize: ->
 		@searchUrl = @genericSearchUrl
-		console.log @searchUrl
 
 	events:
 		'keyup .bv_protocolSearchTerm': 'updateProtocolSearchTerm'
@@ -63,8 +62,6 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 		#$(".bv_protocolTableController").html "Searching..."
 
 		unless protocolSearchTerm is ""
-			console.log "doGenericProtocolSearch"
-			console.log protocolSearchTerm
 			$.ajax
 				type: 'GET'
 				url: @searchUrl + protocolSearchTerm
@@ -127,6 +124,8 @@ class window.ProtocolSummaryTableController extends Backbone.View
 				prsc.on "gotClick", @selectedRowChanged
 
 				@$("tbody").append prsc.render().el
+			@$("table").dataTable oLanguage:
+				sSearch: "Filter results: " #rename summary table's search bar
 		@
 
 class window.ProtocolBrowserController extends Backbone.View
@@ -222,7 +221,12 @@ class window.ProtocolBrowserController extends Backbone.View
 		window.open("/entity/edit/codeName/#{@protocolController.model.get("codeName")}",'_blank');
 
 	handleDuplicateProtocolClicked: =>
-		window.open("/api/protocols/duplicate/#{@protocolController.model.get("codeName")}",'_blank');
+#		window.open("/api/protocols/duplicate/#{@protocolController.model.get("codeName")}",'_blank');
+		protocolKind = @protocolController.model.get('lsKind')
+		if protocolKind is "flipr screening assay"
+			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
+		else
+			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
 
 	destroyProtocolSummaryTable: =>
 		if @protocolSummaryTable?

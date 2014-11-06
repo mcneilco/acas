@@ -233,6 +233,44 @@ describe "Base Entity testing", ->
 				runs ->
 					expect(@bem.get('lsTags')  instanceof TagList).toBeTruthy()
 
+		describe "duplicated entity", ->
+			beforeEach ->
+				@bem = new BaseEntity window.baseEntityServiceTestJSON.fullExperimentFromServer
+				#				@bem.set urlRoot: "/api/experiments"
+				@bem.set subclass: "experiment"
+				@copiedEntity = @bem.duplicateEntity(@bem)
+			it "should have the same lsType as the original entity", ->
+				expect(@copiedEntity.get('lsType')).toEqual @bem.get('lsType')
+			it "should have the same lsKind as the original entity", ->
+				expect(@copiedEntity.get('lsType')).toEqual @bem.get('lsKind')
+			it "should have the status set to created", ->
+				expect(@copiedEntity.getStatus().get('stringValue')).toEqual "created"
+			it "should have the code name be autofill when saved", ->
+				expect(@copiedEntity.get('codeName')).toEqual "autofill when saved"
+			it "should have the entity name be empty", ->
+				expect(@copiedEntity.get('lsLabels').length).toEqual 0
+				expect(@copiedEntity.get('lsLabels') instanceof LabelList).toBeTruthy()
+			it "should have the scientist be empty", ->
+				expect(@copiedEntity.get('recordedBy')).toEqual ""
+			it "should have the recorded date be set to now", ->
+				expect(new Date(@copiedEntity.get('recordedDate')).getHours()).toEqual new Date().getHours()
+			it "should have the completion date be empty", ->
+				expect(@copiedEntity.getCompletionDate().get('dateValue')).toEqual null
+			it "should have the protocol be duplicated when the entity is an experiment", ->
+				expect(@copiedEntity.get('protocol')).toEqual @bem.get('protocol')
+			xit "should have the same project as the original entity", ->
+				expect(@copiedEntity.getProjectCode()).toEqual @bem.getProjectCode()
+			it "should have the notebook be empty", ->
+				expect(@copiedEntity.getNotebook().get('stringValue')).toEqual ""
+			it "should have the same lsTags", ->
+				expect(@copiedEntity.get('lsTags')).toEqual @bem.get('lsTags')
+			it "should have the same short description", ->
+				expect(@copiedEntity.get('shortDescription')).toEqual @bem.get('shortDescription')
+			it "should have the same description", ->
+				expect(@copiedEntity.getDescription().get('clobValue')).toEqual @bem.getDescription().get('clobValue')
+			it "should have the same comments", ->
+				expect(@copiedEntity.getComments().get('clobValue')).toEqual @bem.getComments().get('clobValue')
+
 	describe "Base Entity List testing", ->
 		beforeEach ->
 			@el = new BaseEntityList()

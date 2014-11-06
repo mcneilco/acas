@@ -41,7 +41,7 @@ class window.Protocol extends BaseEntity
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
 		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" then cDate = "fred"
+		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 		if isNaN(cDate)
 			errors.push
 				attribute: 'completionDate'
@@ -97,7 +97,10 @@ class window.ProtocolBaseController extends BaseEntityController
 								if lsKind is "default"
 									prot = new Protocol json[0]
 									prot.set prot.parse(prot.attributes)
-									@model = prot
+									if window.AppLaunchParams.moduleLaunchParams.copy
+										@model = prot.duplicateEntity()
+									else
+										@model = prot
 								else
 									alert 'Could not get protocol for code in this URL. Creating new protocol'
 							@completeInitialization()
