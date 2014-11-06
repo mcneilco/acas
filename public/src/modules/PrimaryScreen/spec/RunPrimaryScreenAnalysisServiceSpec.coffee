@@ -165,13 +165,13 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					expect(@serviceReturn[0].ignored).toBeDefined()
 
-	describe "aggregateBy1 code", ->
-		describe 'when aggregateBy1 code service called', ->
+	describe "aggregateBy code", ->
+		describe 'when aggregateBy code service called', ->
 			beforeEach ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/aggregate by1"
+						url: "api/dataDict/experiment metadata/aggregate by"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -179,7 +179,7 @@ describe 'Run primary analysis service testing', ->
 							@serviceReturn = null
 						dataType: 'json'
 
-			it 'should return an array of aggregateBy1  codes', ->
+			it 'should return an array of aggregateBy  codes', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn.length).toBeGreaterThan 0
@@ -196,13 +196,13 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					expect(@serviceReturn[0].ignored).toBeDefined()
 
-	describe "aggregateBy2 code", ->
-		describe 'when aggregateBy2 code service called', ->
+	describe "aggregationMethod code", ->
+		describe 'when aggregationMethod code service called', ->
 			beforeEach ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/aggregate by2"
+						url: "api/dataDict/experiment metadata/aggregation method"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -210,7 +210,7 @@ describe 'Run primary analysis service testing', ->
 							@serviceReturn = null
 						dataType: 'json'
 
-			it 'should return an array of aggregateBy2  codes', ->
+			it 'should return an array of aggregation method  codes', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn.length).toBeGreaterThan 0

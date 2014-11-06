@@ -489,11 +489,11 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenModelFitParametersController.render()
 
 	updateAnalysisClobValue: =>
-		ap = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
+		ap = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "analysis parameters", "clobValue", "data analysis parameters"
 		ap.set clobValue: JSON.stringify @primaryScreenAnalysisParametersController.model.attributes
 
 	updateModelFitClobValue: =>
-		mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
+		mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "analysis parameters", "clobValue", "model fit parameters"
 		mfp.set clobValue: JSON.stringify @primaryScreenModelFitParametersController.model.attributes
 
 	handleSaveModule: =>

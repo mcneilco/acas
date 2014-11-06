@@ -552,10 +552,10 @@
                 this.pspmc.$('.bv_readName').change();
                 this.pspmc.$('.bv_signalDirectionRule').val("increasing");
                 this.pspmc.$('.bv_signalDirectionRule').change();
-                this.pspmc.$('.bv_aggregateBy1').val("compound batch concentration");
-                this.pspmc.$('.bv_aggregateBy1').change();
-                this.pspmc.$('.bv_aggregateBy2').val("mean");
-                this.pspmc.$('.bv_aggregateBy2').change();
+                this.pspmc.$('.bv_aggregateBy').val("compound batch concentration");
+                this.pspmc.$('.bv_aggregateBy').change();
+                this.pspmc.$('.bv_aggregationMethod').val("mean");
+                this.pspmc.$('.bv_aggregationMethod').change();
                 this.pspmc.$('.bv_normalizationRule').val("plate order only");
                 this.pspmc.$('.bv_normalizationRule').change();
                 this.pspmc.$('.bv_transformationRule').val("sd");
@@ -575,7 +575,7 @@
                 return expect(this.pspmc.model.isValid()).toBeTruthy();
               });
             });
-            return it("should update protocol code", function() {
+            return xit("should update protocol code", function() {
               runs(function() {
                 return this.pspmc.$('.bv_saveModule').click();
               });
@@ -645,10 +645,10 @@
                 this.pspmc.$('.bv_readName').change();
                 this.pspmc.$('.bv_signalDirectionRule').val("increasing");
                 this.pspmc.$('.bv_signalDirectionRule').change();
-                this.pspmc.$('.bv_aggregateBy1').val("compound batch concentration");
-                this.pspmc.$('.bv_aggregateBy1').change();
-                this.pspmc.$('.bv_aggregateBy2').val("mean");
-                this.pspmc.$('.bv_aggregateBy2').change();
+                this.pspmc.$('.bv_aggregateBy').val("compound batch concentration");
+                this.pspmc.$('.bv_aggregateBy').change();
+                this.pspmc.$('.bv_aggregationMethod').val("mean");
+                this.pspmc.$('.bv_aggregationMethod').change();
                 this.pspmc.$('.bv_normalizationRule').val("plate order only");
                 this.pspmc.$('.bv_normalizationRule').change();
                 this.pspmc.$('.bv_transformationRule').val("sd");

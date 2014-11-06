@@ -20,7 +20,7 @@
 				]
 		,
 			type: "experiment metadata"
-			kind: "aggregate by1"
+			kind: "aggregate by"
 			codes:
 				[
 					code: "compound batch concentration"
@@ -29,7 +29,7 @@
 				]
 		,
 			type: "experiment metadata"
-			kind: "aggregate by2"
+			kind: "aggregation method"
 			codes:
 				[
 					code: "median"

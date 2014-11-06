@@ -3,8 +3,7 @@ class window.Experiment extends BaseEntity
 	defaults: ->
 		_(super()).extend(
 			protocol: null
-			analysisGroups: new AnalysisGroupList() # will be converted into a new AnalysisGroupList()
-#			analysisGroups: new AnalysisGroupList() # will be converted into a new AnalysisGroupList()
+			analysisGroups: new AnalysisGroupList()
 		)
 
 	initialize: ->
@@ -12,29 +11,33 @@ class window.Experiment extends BaseEntity
 		super()
 
 	parse: (resp) =>
-		if resp.lsLabels?
-			if resp.lsLabels not instanceof LabelList
-				resp.lsLabels = new LabelList(resp.lsLabels)
-			resp.lsLabels.on 'change', =>
+		if resp is "not unique experiment name"
+			@trigger 'saveFailed'
+			resp
+		else
+			if resp.lsLabels?
+				if resp.lsLabels not instanceof LabelList
+					resp.lsLabels = new LabelList(resp.lsLabels)
+				resp.lsLabels.on 'change', =>
+					@trigger 'change'
+			if resp.lsStates?
+				if resp.lsStates not instanceof StateList
+					resp.lsStates = new StateList(resp.lsStates)
+				resp.lsStates.on 'change', =>
+					@trigger 'change'
+			if resp.analysisGroups?
+				if resp.analysisGroups not instanceof AnalysisGroupList
+					resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups)
+				resp.analysisGroups.on 'change', =>
+					@trigger 'change'
+			if resp.protocol?
+				if resp.protocol not instanceof Protocol
+					resp.protocol = new Protocol(resp.protocol)
+			if resp.lsTags not instanceof TagList
+				resp.lsTags = new TagList(resp.lsTags)
+			resp.lsTags.on 'change', =>
 				@trigger 'change'
-		if resp.lsStates?
-			if resp.lsStates not instanceof StateList
-				resp.lsStates = new StateList(resp.lsStates)
-			resp.lsStates.on 'change', =>
-				@trigger 'change'
-		if resp.analysisGroups?
-			if resp.analysisGroups not instanceof AnalysisGroupList
-				resp.analysisGroups = new AnalysisGroupList(resp.analysisGroups)
-			resp.analysisGroups.on 'change', =>
-				@trigger 'change'
-		if resp.protocol?
-			if resp.protocol not instanceof Protocol
-				resp.protocol = new Protocol(resp.protocol)
-		if resp.lsTags not instanceof TagList
-			resp.lsTags = new TagList(resp.lsTags)
-		resp.lsTags.on 'change', =>
-			@trigger 'change'
-		resp
+			resp
 
 	copyProtocolAttributes: (protocol) ->
 		#cache values I don't want to overwrite
@@ -44,20 +47,21 @@ class window.Experiment extends BaseEntity
 		estates = new StateList()
 		pstates = protocol.get('lsStates')
 		pstates.each (st) ->
-			estate = new State(_.clone(st.attributes))
-			estate.unset 'id'
-			estate.unset 'lsTransaction'
-			estate.unset 'lsValues'
-			evals = new ValueList()
-			svals = st.get('lsValues')
-			svals.each (sv) ->
-				unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project" || sv.get('lsKind')=="completion date"
-					evalue = new Value(sv.attributes)
-					evalue.unset 'id'
-					evalue.unset 'lsTransaction'
-					evals.add(evalue)
-			estate.set lsValues: evals
-			estates.add(estate)
+			if st.get('lsKind') is "analysis parameters"
+				estate = new State(_.clone(st.attributes))
+				estate.unset 'id'
+				estate.unset 'lsTransaction'
+				estate.unset 'lsValues'
+				evals = new ValueList()
+				svals = st.get('lsValues')
+				svals.each (sv) ->
+					unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project" || sv.get('lsKind')=="completion date"
+						evalue = new Value(sv.attributes)
+						evalue.unset 'id'
+						evalue.unset 'lsTransaction'
+						evals.add(evalue)
+				estate.set lsValues: evals
+				estates.add(estate)
 		@set
 			lsKind: protocol.get('lsKind')
 			protocol: protocol
@@ -67,6 +71,9 @@ class window.Experiment extends BaseEntity
 		@getCompletionDate().set dateValue: completionDate
 		@getProjectCode().set codeValue: project
 		@getComments().set clobValue: protocol.getComments().get('clobValue')
+		@getDescription().set clobValue: protocol.getDescription().get('clobValue')
+		#TODO: after merging DNETRPLC-63 branch (with attach files to protocols/experiments feature and with getDetails instead of getDescription), need to uncomment code below and delete the code above:
+		#@getDetails().set clobValue: protocol.getDetails().get('clobValue')
 #		@setupCompositeChangeTriggers()
 		@trigger 'change'
 		@trigger "protocol_attributes_copied"
@@ -122,6 +129,9 @@ class window.Experiment extends BaseEntity
 		projectCodeValue = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "project"
 		if projectCodeValue.get('codeValue') is undefined or projectCodeValue.get('codeValue') is ""
 			projectCodeValue.set codeValue: "unassigned"
+			projectCodeValue.set codeType: "project"
+			projectCodeValue.set codeKind: "project"
+			projectCodeValue.set codeOrigin: "acas ddict"
 
 		projectCodeValue
 
@@ -189,11 +199,22 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setBindings()
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
+		@model.on 'saveFailed', =>
+#			@$('.bv_exptLink').attr("href", "/api/experiments/experimentName/"+@model.get('lsLabels').pickBestName().get('labelText'))
+			#TODO: redirect user to experiment browser with a list of experiments with same name
+			@$('.bv_experimentSaveFailed').modal('show')
+			@$('.bv_saveFailed').show()
+			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
+				@$('.bv_saveFailed').hide()
 		@model.on 'sync', =>
-			@trigger 'amClean'
 			@$('.bv_saving').hide()
-			@$('.bv_updateComplete').show()
 			@$('.bv_save').attr('disabled', 'disabled')
+			if @$('.bv_saveFailed').is(":visible")
+				@$('.bv_updateComplete').hide()
+				@trigger 'amDirty'
+			else
+				@$('.bv_updateComplete').show()
+				@trigger 'amClean'
 			@render()
 		@model.on 'change', =>
 			@trigger 'amDirty'

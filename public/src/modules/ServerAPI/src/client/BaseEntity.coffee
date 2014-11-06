@@ -8,10 +8,8 @@ class window.BaseEntity extends Backbone.Model
 		recordedBy: ""
 		recordedDate: new Date().getTime()
 		shortDescription: " "
-#		lsLabels: new LabelList()
-#		lsStates: new StateList()
-		lsLabels: new LabelList() # will be converted into a new LabelList()
-		lsStates: new StateList() # will be converted into a new StateList()
+		lsLabels: new LabelList()
+		lsStates: new StateList()
 
 	initialize: ->
 		@.set @parse(@.attributes)
@@ -35,7 +33,8 @@ class window.BaseEntity extends Backbone.Model
 
 
 	getDescription: ->
-		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "description"
+		metadataKind = @.get('subclass') + " metadata"
+		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "description"
 		if description.get('clobValue') is undefined or description.get('clobValue') is ""
 			description.set clobValue: ""
 
@@ -67,14 +66,14 @@ class window.BaseEntity extends Backbone.Model
 		status
 
 	getAnalysisParameters: =>
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "analysis parameters", "clobValue", "data analysis parameters"
 		if ap.get('clobValue')?
 			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
 		else
 			return new PrimaryScreenAnalysisParameters()
 
 	getModelFitParameters: =>
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "analysis parameters", "clobValue", "model fit parameters"
 		if ap.get('clobValue')?
 			return $.parseJSON(ap.get('clobValue'))
 		else

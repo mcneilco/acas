@@ -106,6 +106,8 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 
 	initializeCurveFitController: =>
 		@$('.bv_doseResponseAnalysis').empty()
+		if @modelFitController?
+			@modelFitController.undelegateEvents()
 		@modelFitController = new DoseResponseFitController
 			experimentCode: @drdpc.getNewExperimentCode()
 			el: @$('.bv_doseResponseAnalysis')

@@ -180,6 +180,9 @@
 
     DoseResponseFitWorkflowController.prototype.initializeCurveFitController = function() {
       this.$('.bv_doseResponseAnalysis').empty();
+      if (this.modelFitController != null) {
+        this.modelFitController.undelegateEvents();
+      }
       this.modelFitController = new DoseResponseFitController({
         experimentCode: this.drdpc.getNewExperimentCode(),
         el: this.$('.bv_doseResponseAnalysis')

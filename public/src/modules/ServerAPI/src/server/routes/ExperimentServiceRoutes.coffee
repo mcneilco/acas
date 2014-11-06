@@ -1,5 +1,6 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/experiments/codename/:code', exports.experimentByCodename
+	app.get '/api/experiments/experimentName/:name', exports.experimentByName
 	app.get '/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename
 	app.get '/api/experiments/:id', exports.experimentById
 	app.post '/api/experiments', exports.postExperiment
@@ -8,6 +9,7 @@ exports.setupAPIRoutes = (app) ->
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
+	app.get '/api/experiments/experimentName/:name', loginRoutes.ensureAuthenticated, exports.experimentByName
 	app.get '/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename
 	app.get '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById
 	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
@@ -43,6 +45,26 @@ exports.experimentByCodename = (req, resp) ->
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 		else
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.experimentByName = (req, resp) ->
+	console.log "exports.experiment by name"
+	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		#		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+
+	else
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"api/v1/experiments?findByName&name="+req.params.name
+		console.log baseurl
+#		fullObjectFlag = "with=fullobject"
+#		if req.query.fullObject
+#			baseurl += "?#{fullObjectFlag}"
+#			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+#		else
+#			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.experimentsByProtocolCodename = (request, response) ->
 	console.log request.params.code
@@ -89,9 +111,17 @@ exports.postExperiment = (req, resp) ->
 				resp.end JSON.stringify json
 			else
 				console.log 'got ajax error trying to save new experiment'
-				console.log error
-				console.log json
+				console.log "response"
 				console.log response
+				console.log response.body
+				console.log response.body[0]
+				console.log response.body[0].message
+				if response.body[0].message is "not unique experiment name"
+					console.log json
+					console.log "ending resp"
+					resp.end JSON.stringify response.body[0].message
+#				alert response['message']
+#				console.log response
 		)
 
 exports.putExperiment = (req, resp) ->

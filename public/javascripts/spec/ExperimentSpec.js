@@ -235,8 +235,27 @@
           it("should not have the labels copied", function() {
             return expect(this.exp.get('lsLabels').length).toEqual(0);
           });
-          it("should have the states copied", function() {
-            return expect(this.exp.get('lsStates').length).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length);
+          it("should have the analysis parameters state", function() {
+            var filtState;
+            console.log(this.exp.get('lsStates'));
+            filtState = this.exp.get('lsStates').filter(function(state) {
+              return state.get('lsKind') === 'analysis parameters';
+            });
+            return expect(filtState.length).toBeGreaterThan(0);
+          });
+          it("should not have the protocol metadata state nor the screening assay state", function() {
+            var filtState;
+            filtState = this.exp.get('lsStates').filter(function(state) {
+              return state.get('lsKind') === 'protocol metadata';
+            });
+            return expect(filtState.length).toEqual(0);
+          });
+          it("should not have the screening assay state", function() {
+            var filtState;
+            filtState = this.exp.get('lsStates').filter(function(state) {
+              return state.get('lsKind') === 'screening assay';
+            });
+            return expect(filtState.length).toEqual(0);
           });
           it('Should not override set notebook value', function() {
             return expect(this.exp.getNotebook().get('stringValue')).toEqual("spec test NB");
@@ -599,7 +618,7 @@
             return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
           });
           it("should fill the description field", function() {
-            return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
+            return expect(this.ebc.$('.bv_description').html()).toEqual("protocol details go here");
           });
           it("should fill the comments field", function() {
             return expect(this.ebc.$('.bv_comments').html()).toEqual("protocol comments go here");

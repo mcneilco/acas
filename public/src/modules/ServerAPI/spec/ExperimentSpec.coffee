@@ -151,9 +151,20 @@ describe "Experiment module testing", ->
 					expect(@exp.getComments().get('clobValue')).toEqual fullSavedProtocol.getComments().get('clobValue')
 				it "should not have the labels copied", ->
 					expect(@exp.get('lsLabels').length).toEqual 0
-				it "should have the states copied", ->
-					expect(@exp.get('lsStates').length).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsStates.length
-#				it 'Should have a description value', ->
+				it "should have the analysis parameters state", ->
+					console.log @exp.get('lsStates')
+					filtState = @exp.get('lsStates').filter (state) ->
+						state.get('lsKind')=='analysis parameters'
+					expect(filtState.length).toBeGreaterThan 0
+				it "should not have the protocol metadata state nor the screening assay state", ->
+					filtState = @exp.get('lsStates').filter (state) ->
+						state.get('lsKind')=='protocol metadata'
+					expect(filtState.length).toEqual 0
+				it "should not have the screening assay state", ->
+					filtState = @exp.get('lsStates').filter (state) ->
+						state.get('lsKind')=='screening assay'
+					expect(filtState.length).toEqual 0
+				#				it 'Should have a description value', ->
 #					expect(@exp.getDescription().get('clobValue')).toEqual "long description goes here"
 #				it 'Should have a comments value', ->
 #					expect(@exp.getComments().get('clobValue')).toEqual "comments go here"
@@ -395,7 +406,7 @@ describe "Experiment module testing", ->
 					runs ->
 				it "should show status options after loading them from server", ->
 					expect(@ebc.$('.bv_status option').length).toBeGreaterThan 0
-				it "should default to created", ->
+				it "should default to created", ->\
 					expect(@ebc.$('.bv_status').val()).toEqual "created"
 			describe "populated fields", ->
 				it "should show the protocol code", ->
@@ -407,7 +418,7 @@ describe "Experiment module testing", ->
 				it "should fill the short description field", ->
 					expect(@ebc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 				it "should fill the description field", ->
-					expect(@ebc.$('.bv_description').html()).toEqual "long description goes here"
+					expect(@ebc.$('.bv_description').html()).toEqual "protocol details go here"
 				it "should fill the comments field", ->
 					expect(@ebc.$('.bv_comments').html()).toEqual "protocol comments go here"
 				it "should not fill the notebook field", ->

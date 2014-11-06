@@ -104,25 +104,25 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 	defaults: ->
 		instrumentReader: "unassigned"
 		signalDirectionRule: "unassigned"
-		aggregateBy1: "unassigned"
-		aggregateBy2: "unassigned"
+		aggregateBy: "unassigned"
+		aggregationMethod: "unassigned"
 		normalizationRule: "unassigned"
 		assayVolume: null
 		transferVolume: null
 		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
-		positiveControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		negativeControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		vehicleControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		agonistControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		thresholdType: "sd"
+		positiveControl: new Backbone.Model()
+		negativeControl: new Backbone.Model()
+		vehicleControl: new Backbone.Model()
+		agonistControl: new Backbone.Model()
+		thresholdType: null
 		volumeType: "dilution"
 		htsFormat: false
 		autoHitSelection: false
 		matchReadName: true
-		primaryAnalysisReadList: new PrimaryAnalysisReadList() # will be converted into a new PrimaryAnalysisReadList()
-		transformationRuleList: new TransformationRuleList() # will be converted into a new TransformationRuleList()
+		primaryAnalysisReadList: new PrimaryAnalysisReadList()
+		transformationRuleList: new TransformationRuleList()
 
 
 	initialize: ->
@@ -208,26 +208,27 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'signalDirectionRule'
 				message: "Signal Direction Rule must be assigned"
-		if attrs.aggregateBy1 is "unassigned" or attrs.aggregateBy1 is ""
+		if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is ""
 			errors.push
-				attribute: 'aggregateBy1'
-				message: "Aggregate By1 must be assigned"
-		if attrs.aggregateBy2 is "unassigned" or attrs.aggregateBy2 is ""
+				attribute: 'aggregateBy'
+				message: "Aggregate By must be assigned"
+		if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is ""
 			errors.push
-				attribute: 'aggregateBy2'
-				message: "Aggregate By2 must be assigned"
+				attribute: 'aggregationMethod'
+				message: "Aggregation method must be assigned"
 		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is ""
 			errors.push
 				attribute: 'normalizationRule'
 				message: "Normalization rule must be assigned"
-		if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
-			errors.push
-				attribute: 'hitSDThreshold'
-				message: "SD threshold must be assigned"
-		if attrs.thresholdType == "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)
-			errors.push
-				attribute: 'hitEfficacyThreshold'
-				message: "Efficacy threshold must be assigned"
+		if attrs.autoHitSelection
+			if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
+				errors.push
+					attribute: 'hitSDThreshold'
+					message: "SD threshold must be assigned"
+			if attrs.thresholdType == "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)
+				errors.push
+					attribute: 'hitEfficacyThreshold'
+					message: "Efficacy threshold must be assigned"
 		if _.isNaN(attrs.assayVolume)
 			errors.push
 				attribute: 'assayVolume'
@@ -276,20 +277,6 @@ class window.PrimaryScreenExperiment extends Experiment
 		super()
 		@.set lsKind: "flipr screening assay"
 
-	getAnalysisParameters: ->
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
-		if ap.get('clobValue')?
-			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
-		else
-			return new PrimaryScreenAnalysisParameters()
-
-	getModelFitParameters: ->
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
-		if ap.get('clobValue')?
-			return $.parseJSON(ap.get('clobValue'))
-		else
-			return {}
-
 	getAnalysisStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
 		if !status.has('stringValue')
@@ -298,7 +285,10 @@ class window.PrimaryScreenExperiment extends Experiment
 		status
 
 	getAnalysisResultHTML: ->
+		console.log "getting analysis result html"
 		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
+		console.log result
+		console.log result.has
 		if !result.has('clobValue')
 			result.set clobValue: ""
 
@@ -524,8 +514,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	events:
 		"change .bv_instrumentReader": "attributeChanged"
 		"change .bv_signalDirectionRule": "attributeChanged"
-		"change .bv_aggregateBy1": "attributeChanged"
-		"change .bv_aggregateBy2": "attributeChanged"
+		"change .bv_aggregateBy": "attributeChanged"
+		"change .bv_aggregationMethod": "attributeChanged"
 		"change .bv_normalizationRule": "attributeChanged"
 		"change .bv_assayVolume": "handleAssayVolumeChanged"
 		"change .bv_dilutionFactor": "handleDilutionFactorChanged"
@@ -556,8 +546,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@model.bind 'amDirty', => @trigger 'amDirty', @
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
-		@setupAggregateBy1Select()
-		@setupAggregateBy2Select()
+		@setupAggregateBySelect()
+		@setupAggregationMethodSelect()
 		@setupNormalizationSelect()
 
 
@@ -568,8 +558,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
-		@setupAggregateBy1Select()
-		@setupAggregateBy2Select()
+		@setupAggregateBySelect()
+		@setupAggregationMethodSelect()
 		@setupNormalizationSelect()
 		@handleAutoHitSelectionChanged(true)
 		@setupReadListController()
@@ -601,27 +591,27 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				name: "Select Signal Direction"
 			selectedCode: @model.get('signalDirectionRule')
 
-	setupAggregateBy1Select: ->
-		@aggregateBy1List = new PickListList()
-		@aggregateBy1List.url = "/api/dataDict/experiment metadata/aggregate by1"
-		@aggregateBy1ListController = new PickListSelectController
-			el: @$('.bv_aggregateBy1')
-			collection: @aggregateBy1List
+	setupAggregateBySelect: ->
+		@aggregateByList = new PickListList()
+		@aggregateByList.url = "/api/dataDict/experiment metadata/aggregate by"
+		@aggregateByListController = new PickListSelectController
+			el: @$('.bv_aggregateBy')
+			collection: @aggregateByList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select"
-			selectedCode: @model.get('aggregateBy1')
+			selectedCode: @model.get('aggregateBy')
 
-	setupAggregateBy2Select: ->
-		@aggregateBy2List = new PickListList()
-		@aggregateBy2List.url = "/api/dataDict/experiment metadata/aggregate by2"
-		@aggregateBy2ListController = new PickListSelectController
-			el: @$('.bv_aggregateBy2')
-			collection: @aggregateBy2List
+	setupAggregationMethodSelect: ->
+		@aggregationMethodList = new PickListList()
+		@aggregationMethodList.url = "/api/dataDict/experiment metadata/aggregation method"
+		@aggregationMethodListController = new PickListSelectController
+			el: @$('.bv_aggregationMethod')
+			collection: @aggregationMethodList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select"
-			selectedCode: @model.get('aggregateBy2')
+			selectedCode: @model.get('aggregationMethod')
 
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
@@ -657,8 +647,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@model.set
 			instrumentReader: @instrumentListController.getSelectedCode()
 			signalDirectionRule: @signalDirectionListController.getSelectedCode()
-			aggregateBy1: @aggregateBy1ListController.getSelectedCode()
-			aggregateBy2: @aggregateBy2ListController.getSelectedCode()
+			aggregateBy: @aggregateByListController.getSelectedCode()
+			aggregationMethod: @aggregationMethodListController.getSelectedCode()
 			normalizationRule: @normalizationListController.getSelectedCode()
 			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
 			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))

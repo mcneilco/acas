@@ -139,7 +139,7 @@
             return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("assay principle goes here");
           });
           it('Should have a description value', function() {
-            return expect(this.prot.getDescription().get('clobValue')).toEqual("long description goes here");
+            return expect(this.prot.getDescription().get('clobValue')).toEqual("protocol details go here");
           });
           it('Should have a comments value', function() {
             return expect(this.prot.getComments().get('clobValue')).toEqual("protocol comments go here");
@@ -436,7 +436,7 @@
             return expect(this.pbc.$('.bv_assayPrinciple').val()).toEqual("assay principle goes here");
           });
           it("should fill the long description field", function() {
-            return expect(this.pbc.$('.bv_description').html()).toEqual("long description goes here");
+            return expect(this.pbc.$('.bv_description').html()).toEqual("protocol details go here");
           });
           it("should fill the comments field", function() {
             return expect(this.pbc.$('.bv_comments').html()).toEqual("protocol comments go here");
@@ -549,7 +549,7 @@
             var desc, states, values;
             this.pbc.$('.bv_description').val(" New long description   ");
             this.pbc.$('.bv_description').change();
-            states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
+            states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
             expect(states.length).toEqual(1);
             values = states[0].getValuesByTypeAndKind("clobValue", "description");
             desc = values[0].get('clobValue');

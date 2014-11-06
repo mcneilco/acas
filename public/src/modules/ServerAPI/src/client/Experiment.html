@@ -108,6 +108,33 @@
         <button type="button" class="btn bv_save pull-left" style="margin-right:10px;">Save</button>
         <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;"></div>
         <div class="bv_saving hide" style="padding-top:5px;color:red;">Saving...</div>
+        <div class="bv_saveFailed hide" style="padding-top:5px;color:red;">Save Failed</div>
     </div>
+
+
+
+    <div class="modal fade bv_experimentSaveFailed" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                    <h4 class="modal-title bv_saveErrorTitle" style="color:red;">Error: Experiment Not Saved</h4>
+                </div>
+                <div class="modal-body" style="padding-left:0px;">
+                    <label style="margin-left:30px;">The entered experiment name is already used by another experiment. Please enter in a new experiment name.</label>
+                    <!--<label style="margin-left:30px;margin-top:20px;">To view the experiment(s) with the same name, click-->
+                    <!--<a class="bv_exptLink" href="http://localhost:3000">here</a> </label>-->
+                    <!--<span>The experiment could not be saved because the entered experiment name is already used by another experiment. Please enter in a new experiment name.</span>-->
+                </div>
+                <!--<div class="modal-footer">-->
+                    <!--<button type="button" class="btn bv_ok" disabled="disabled">Add</button>-->
+                <!--</div>-->
+            </div>
+        </div>
+    </div>
+
+
+
+
 
 </script>
