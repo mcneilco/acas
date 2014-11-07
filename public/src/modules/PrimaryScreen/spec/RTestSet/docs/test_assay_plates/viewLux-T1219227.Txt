@@ -1,0 +1,1783 @@
+;--------------------------------------------------------------------------------
+;1 Protocol Description
+;--------------------------------------------------------------------------------
+
+Protocol name ............................. LANCE 1536
+Protocol number ........................... 4
+Protocol ID ............................... 1014
+Protocol version .......................... 1
+Repeat count .............................. No repeats
+Detector orientation ...................... Above
+Run count ................................. 1510
+Calibrated ................................ Yes
+Calibration time .......................... 10/9/2009 5:43:53 PM
+Measurement height offset ................. 0mm
+
+Plate type
+  Plate name .............................. 1536 corning plate
+  Number of rows .......................... 32
+  Number of columns ....................... 48
+  Plate height ............................ 10mm
+  Measurement height ...................... 5mm
+Printer output ............................ No
+File output ............................... Yes
+File output file name ..................... S:\Departments\Leads Discovery\Jasmine\SSTR4\SSTR4 Lance cAMP\SSTR4 Lance 11-06-13\<IdBarcode>
+Application start ......................... No
+
+;Label 1
+Label name ................................ Lance 615/665
+Label ID .................................. 15
+Technology ID ............................. 256
+Calibrated ................................ Yes
+Calibration time .......................... 3/21/2012 4:28:12 PM
+Calculation formula ....................... LANCE
+
+;Exposure 1
+Exposure index ............................ 1
+Exposure time ............................. 60.00s
+Exposure type ............................. 2
+Excitation energy ......................... 3000000
+Window time ............................... 354탎
+Delay time ................................ 50탎
+Excitation mirrors ........................ 2
+Readout speed ............................. 5.0탎
+Readout gain .............................. 23.0X
+Image binning ............................. Not binned
+Transmission path ......................... Reflect
+Converter plate ........................... No
+Grid adjust light ......................... Off
+Calibration method ........................ Flatfield
+Calibrated ................................ Yes
+Calibration time .......................... 3/21/2012 4:28:11 PM
+Excitation filter
+  Filter name ............................. DUG 11 (UMB,AMC)
+  Filter ID ............................... 7
+  Slot .................................... 4
+  Slide ................................... A
+  Type .................................... 1
+  Transmission ............................ 1
+Emission filter
+  Filter name ............................. 618 / 8 (Eu)
+  Filter ID ............................... 4
+  Slot .................................... 3
+  Slide ................................... B
+  Type .................................... 2
+  Transmission ............................ 1
+Image operations
+  Median filter ........................... Off
+  Two exposures ........................... Off
+  Cosmic ray detection .................... On
+  Bias correction ......................... On
+  Bias structure correction ............... On
+  Excitation energy compensation .......... On
+  Adjust using adjustment points .......... Off
+  Adjust using sample areas in image ...... Off
+  Grid calibration ........................ On
+  Calculate results ....................... On
+  Store image to database ................. On
+
+;Exposure 2
+Exposure index ............................ 2
+Exposure time ............................. 60.00s
+Exposure type ............................. 2
+Excitation energy ......................... 3000000
+Window time ............................... 354탎
+Delay time ................................ 50탎
+Excitation mirrors ........................ 2
+Readout speed ............................. 5.0탎
+Readout gain .............................. 23.0X
+Image binning ............................. Not binned
+Transmission path ......................... Reflect
+Converter plate ........................... No
+Grid adjust light ......................... Off
+Calibration method ........................ Flatfield
+Calibrated ................................ Yes
+Calibration time .......................... 3/21/2012 4:28:12 PM
+Excitation filter
+  Filter name ............................. DUG 11 (UMB,AMC)
+  Filter ID ............................... 7
+  Slot .................................... 4
+  Slide ................................... A
+  Type .................................... 1
+  Transmission ............................ 1
+Emission filter
+  Filter name ............................. 671 / 8 (LANCE)
+  Filter ID ............................... 5
+  Slot .................................... 4
+  Slide ................................... B
+  Type .................................... 2
+  Transmission ............................ 1
+Image operations
+  Median filter ........................... Off
+  Two exposures ........................... Off
+  Cosmic ray detection .................... On
+  Bias correction ......................... On
+  Bias structure correction ............... On
+  Excitation energy compensation .......... On
+  Adjust using adjustment points .......... Off
+  Adjust using sample areas in image ...... Off
+  Grid calibration ........................ On
+  Calculate results ....................... On
+  Store image to database ................. On
+
+
+;Plate	1
+    1   3   5   7   9  11  13  15  17  19  21  23  25  27  29  31  33  35  37  39  41  43  45  47  
+ A| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ B| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ C| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ D| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ E| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ F| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ G| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ H| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ I| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ J| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ K| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ L| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ M| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ N| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ O| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ P| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ Q| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ R| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ S| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ T| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ U| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ V| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ W| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ X| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ Y| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+ Z| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+AA| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+AB| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+AC| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+AD| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+AE| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+AF| M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M M 
+
+;--------------------------------------------------------------------------------
+;4 Results in list format
+;--------------------------------------------------------------------------------
+
+Plate	Repeat	Well	Type	Lance 615/665	Donor	Acceptor	
+1	1	 A01	M	N/A	572	261
+1	1	 A02	M	N/A	582	264
+1	1	 A03	M	N/A	595	277
+1	1	 A04	M	N/A	614	311
+1	1	 A05	M	N/A	618	305
+1	1	 A06	M	N/A	620	311
+1	1	 A07	M	N/A	676	301
+1	1	 A08	M	N/A	644	337
+1	1	 A09	M	N/A	635	309
+1	1	 A10	M	N/A	637	310
+1	1	 A11	M	N/A	640	301
+1	1	 A12	M	N/A	546	271
+1	1	 A13	M	N/A	644	305
+1	1	 A14	M	N/A	651	331
+1	1	 A15	M	N/A	633	284
+1	1	 A16	M	N/A	637	309
+1	1	 A17	M	N/A	651	325
+1	1	 A18	M	N/A	656	338
+1	1	 A19	M	N/A	619	308
+1	1	 A20	M	N/A	656	323
+1	1	 A21	M	N/A	650	322
+1	1	 A22	M	N/A	658	323
+1	1	 A23	M	N/A	660	343
+1	1	 A24	M	N/A	653	336
+1	1	 A25	M	N/A	667	357
+1	1	 A26	M	N/A	672	340
+1	1	 A27	M	N/A	674	346
+1	1	 A28	M	N/A	681	354
+1	1	 A29	M	N/A	674	356
+1	1	 A30	M	N/A	662	340
+1	1	 A31	M	N/A	680	350
+1	1	 A32	M	N/A	666	342
+1	1	 A33	M	N/A	573	303
+1	1	 A34	M	N/A	684	365
+1	1	 A35	M	N/A	673	322
+1	1	 A36	M	N/A	673	337
+1	1	 A37	M	N/A	667	356
+1	1	 A38	M	N/A	673	333
+1	1	 A39	M	N/A	665	325
+1	1	 A40	M	N/A	667	327
+1	1	 A41	M	N/A	681	343
+1	1	 A42	M	N/A	681	340
+1	1	 A43	M	N/A	691	329
+1	1	 A44	M	N/A	683	351
+1	1	 A45	M	N/A	653	276
+1	1	 A46	M	N/A	666	281
+1	1	 A47	M	N/A	591	79
+1	1	 A48	M	N/A	576	67
+1	1	 B01	M	N/A	593	298
+1	1	 B02	M	N/A	589	269
+1	1	 B03	M	N/A	610	286
+1	1	 B04	M	N/A	637	318
+1	1	 B05	M	N/A	630	301
+1	1	 B06	M	N/A	638	313
+1	1	 B07	M	N/A	681	345
+1	1	 B08	M	N/A	650	329
+1	1	 B09	M	N/A	644	315
+1	1	 B10	M	N/A	661	336
+1	1	 B11	M	N/A	652	330
+1	1	 B12	M	N/A	660	332
+1	1	 B13	M	N/A	664	324
+1	1	 B14	M	N/A	664	334
+1	1	 B15	M	N/A	660	315
+1	1	 B16	M	N/A	658	319
+1	1	 B17	M	N/A	669	346
+1	1	 B18	M	N/A	664	328
+1	1	 B19	M	N/A	662	330
+1	1	 B20	M	N/A	672	334
+1	1	 B21	M	N/A	654	316
+1	1	 B22	M	N/A	676	343
+1	1	 B23	M	N/A	682	364
+1	1	 B24	M	N/A	678	361
+1	1	 B25	M	N/A	683	357
+1	1	 B26	M	N/A	681	360
+1	1	 B27	M	N/A	677	351
+1	1	 B28	M	N/A	682	352
+1	1	 B29	M	N/A	668	329
+1	1	 B30	M	N/A	685	348
+1	1	 B31	M	N/A	684	358
+1	1	 B32	M	N/A	674	342
+1	1	 B33	M	N/A	674	341
+1	1	 B34	M	N/A	663	330
+1	1	 B35	M	N/A	678	355
+1	1	 B36	M	N/A	681	353
+1	1	 B37	M	N/A	684	357
+1	1	 B38	M	N/A	666	336
+1	1	 B39	M	N/A	671	348
+1	1	 B40	M	N/A	664	353
+1	1	 B41	M	N/A	701	338
+1	1	 B42	M	N/A	661	343
+1	1	 B43	M	N/A	654	336
+1	1	 B44	M	N/A	646	324
+1	1	 B45	M	N/A	646	310
+1	1	 B46	M	N/A	656	310
+1	1	 B47	M	N/A	555	80
+1	1	 B48	M	N/A	522	69
+1	1	 C01	M	N/A	584	294
+1	1	 C02	M	N/A	612	307
+1	1	 C03	M	N/A	628	320
+1	1	 C04	M	N/A	632	305
+1	1	 C05	M	N/A	639	317
+1	1	 C06	M	N/A	644	331
+1	1	 C07	M	N/A	655	329
+1	1	 C08	M	N/A	651	331
+1	1	 C09	M	N/A	646	320
+1	1	 C10	M	N/A	639	305
+1	1	 C11	M	N/A	650	329
+1	1	 C12	M	N/A	659	340
+1	1	 C13	M	N/A	654	326
+1	1	 C14	M	N/A	645	312
+1	1	 C15	M	N/A	654	316
+1	1	 C16	M	N/A	653	330
+1	1	 C17	M	N/A	663	331
+1	1	 C18	M	N/A	669	333
+1	1	 C19	M	N/A	662	338
+1	1	 C20	M	N/A	664	334
+1	1	 C21	M	N/A	662	334
+1	1	 C22	M	N/A	658	331
+1	1	 C23	M	N/A	674	357
+1	1	 C24	M	N/A	680	360
+1	1	 C25	M	N/A	675	358
+1	1	 C26	M	N/A	677	364
+1	1	 C27	M	N/A	672	346
+1	1	 C28	M	N/A	681	364
+1	1	 C29	M	N/A	671	351
+1	1	 C30	M	N/A	680	347
+1	1	 C31	M	N/A	679	346
+1	1	 C32	M	N/A	673	357
+1	1	 C33	M	N/A	676	351
+1	1	 C34	M	N/A	660	349
+1	1	 C35	M	N/A	672	351
+1	1	 C36	M	N/A	659	328
+1	1	 C37	M	N/A	665	355
+1	1	 C38	M	N/A	675	346
+1	1	 C39	M	N/A	667	356
+1	1	 C40	M	N/A	652	342
+1	1	 C41	M	N/A	670	345
+1	1	 C42	M	N/A	656	335
+1	1	 C43	M	N/A	653	340
+1	1	 C44	M	N/A	654	353
+1	1	 C45	M	N/A	546	87
+1	1	 C46	M	N/A	548	86
+1	1	 C47	M	N/A	619	279
+1	1	 C48	M	N/A	595	273
+1	1	 D01	M	N/A	603	304
+1	1	 D02	M	N/A	619	303
+1	1	 D03	M	N/A	617	278
+1	1	 D04	M	N/A	641	318
+1	1	 D05	M	N/A	642	313
+1	1	 D06	M	N/A	647	320
+1	1	 D07	M	N/A	660	330
+1	1	 D08	M	N/A	662	345
+1	1	 D09	M	N/A	645	327
+1	1	 D10	M	N/A	658	333
+1	1	 D11	M	N/A	656	335
+1	1	 D12	M	N/A	661	329
+1	1	 D13	M	N/A	670	348
+1	1	 D14	M	N/A	663	339
+1	1	 D15	M	N/A	660	317
+1	1	 D16	M	N/A	655	323
+1	1	 D17	M	N/A	665	335
+1	1	 D18	M	N/A	675	352
+1	1	 D19	M	N/A	667	340
+1	1	 D20	M	N/A	683	362
+1	1	 D21	M	N/A	668	345
+1	1	 D22	M	N/A	670	349
+1	1	 D23	M	N/A	685	354
+1	1	 D24	M	N/A	680	356
+1	1	 D25	M	N/A	691	378
+1	1	 D26	M	N/A	683	357
+1	1	 D27	M	N/A	680	361
+1	1	 D28	M	N/A	682	349
+1	1	 D29	M	N/A	683	360
+1	1	 D30	M	N/A	690	368
+1	1	 D31	M	N/A	684	350
+1	1	 D32	M	N/A	685	371
+1	1	 D33	M	N/A	694	362
+1	1	 D34	M	N/A	673	361
+1	1	 D35	M	N/A	684	355
+1	1	 D36	M	N/A	679	354
+1	1	 D37	M	N/A	677	369
+1	1	 D38	M	N/A	682	359
+1	1	 D39	M	N/A	675	352
+1	1	 D40	M	N/A	665	347
+1	1	 D41	M	N/A	686	365
+1	1	 D42	M	N/A	676	369
+1	1	 D43	M	N/A	680	381
+1	1	 D44	M	N/A	666	353
+1	1	 D45	M	N/A	549	86
+1	1	 D46	M	N/A	551	83
+1	1	 D47	M	N/A	641	304
+1	1	 D48	M	N/A	614	293
+1	1	 E01	M	N/A	596	286
+1	1	 E02	M	N/A	616	285
+1	1	 E03	M	N/A	630	299
+1	1	 E04	M	N/A	649	334
+1	1	 E05	M	N/A	640	315
+1	1	 E06	M	N/A	644	326
+1	1	 E07	M	N/A	644	315
+1	1	 E08	M	N/A	637	304
+1	1	 E09	M	N/A	645	312
+1	1	 E10	M	N/A	646	313
+1	1	 E11	M	N/A	648	320
+1	1	 E12	M	N/A	651	322
+1	1	 E13	M	N/A	639	287
+1	1	 E14	M	N/A	643	304
+1	1	 E15	M	N/A	642	300
+1	1	 E16	M	N/A	656	329
+1	1	 E17	M	N/A	654	318
+1	1	 E18	M	N/A	658	316
+1	1	 E19	M	N/A	657	331
+1	1	 E20	M	N/A	662	335
+1	1	 E21	M	N/A	644	300
+1	1	 E22	M	N/A	653	316
+1	1	 E23	M	N/A	666	336
+1	1	 E24	M	N/A	663	332
+1	1	 E25	M	N/A	667	331
+1	1	 E26	M	N/A	669	348
+1	1	 E27	M	N/A	664	339
+1	1	 E28	M	N/A	673	350
+1	1	 E29	M	N/A	666	340
+1	1	 E30	M	N/A	674	330
+1	1	 E31	M	N/A	657	310
+1	1	 E32	M	N/A	664	342
+1	1	 E33	M	N/A	674	331
+1	1	 E34	M	N/A	662	351
+1	1	 E35	M	N/A	667	347
+1	1	 E36	M	N/A	662	345
+1	1	 E37	M	N/A	667	350
+1	1	 E38	M	N/A	666	341
+1	1	 E39	M	N/A	652	314
+1	1	 E40	M	N/A	644	312
+1	1	 E41	M	N/A	663	332
+1	1	 E42	M	N/A	657	339
+1	1	 E43	M	N/A	653	337
+1	1	 E44	M	N/A	647	331
+1	1	 E45	M	N/A	645	312
+1	1	 E46	M	N/A	642	304
+1	1	 E47	M	N/A	541	78
+1	1	 E48	M	N/A	524	73
+1	1	 F01	M	N/A	587	270
+1	1	 F02	M	N/A	604	275
+1	1	 F03	M	N/A	625	294
+1	1	 F04	M	N/A	626	299
+1	1	 F05	M	N/A	627	296
+1	1	 F06	M	N/A	630	304
+1	1	 F07	M	N/A	640	307
+1	1	 F08	M	N/A	639	307
+1	1	 F09	M	N/A	645	314
+1	1	 F10	M	N/A	638	310
+1	1	 F11	M	N/A	650	323
+1	1	 F12	M	N/A	649	322
+1	1	 F13	M	N/A	642	315
+1	1	 F14	M	N/A	642	310
+1	1	 F15	M	N/A	641	303
+1	1	 F16	M	N/A	641	301
+1	1	 F17	M	N/A	652	324
+1	1	 F18	M	N/A	647	308
+1	1	 F19	M	N/A	645	308
+1	1	 F20	M	N/A	652	324
+1	1	 F21	M	N/A	655	334
+1	1	 F22	M	N/A	641	304
+1	1	 F23	M	N/A	658	333
+1	1	 F24	M	N/A	661	339
+1	1	 F25	M	N/A	661	338
+1	1	 F26	M	N/A	664	336
+1	1	 F27	M	N/A	667	346
+1	1	 F28	M	N/A	664	327
+1	1	 F29	M	N/A	669	352
+1	1	 F30	M	N/A	678	356
+1	1	 F31	M	N/A	668	354
+1	1	 F32	M	N/A	653	329
+1	1	 F33	M	N/A	672	347
+1	1	 F34	M	N/A	649	330
+1	1	 F35	M	N/A	671	346
+1	1	 F36	M	N/A	674	358
+1	1	 F37	M	N/A	663	364
+1	1	 F38	M	N/A	672	350
+1	1	 F39	M	N/A	656	326
+1	1	 F40	M	N/A	650	324
+1	1	 F41	M	N/A	674	346
+1	1	 F42	M	N/A	657	343
+1	1	 F43	M	N/A	656	346
+1	1	 F44	M	N/A	655	353
+1	1	 F45	M	N/A	626	297
+1	1	 F46	M	N/A	625	289
+1	1	 F47	M	N/A	533	79
+1	1	 F48	M	N/A	515	69
+1	1	 G01	M	N/A	556	184
+1	1	 G02	M	N/A	566	165
+1	1	 G03	M	N/A	625	271
+1	1	 G04	M	N/A	643	303
+1	1	 G05	M	N/A	642	296
+1	1	 G06	M	N/A	645	311
+1	1	 G07	M	N/A	646	304
+1	1	 G08	M	N/A	657	312
+1	1	 G09	M	N/A	663	338
+1	1	 G10	M	N/A	657	320
+1	1	 G11	M	N/A	660	333
+1	1	 G12	M	N/A	659	325
+1	1	 G13	M	N/A	655	317
+1	1	 G14	M	N/A	651	309
+1	1	 G15	M	N/A	663	324
+1	1	 G16	M	N/A	655	320
+1	1	 G17	M	N/A	673	343
+1	1	 G18	M	N/A	667	328
+1	1	 G19	M	N/A	676	347
+1	1	 G20	M	N/A	672	331
+1	1	 G21	M	N/A	660	323
+1	1	 G22	M	N/A	665	320
+1	1	 G23	M	N/A	633	319
+1	1	 G24	M	N/A	669	341
+1	1	 G25	M	N/A	686	355
+1	1	 G26	M	N/A	683	355
+1	1	 G27	M	N/A	681	355
+1	1	 G28	M	N/A	685	352
+1	1	 G29	M	N/A	695	364
+1	1	 G30	M	N/A	689	356
+1	1	 G31	M	N/A	698	385
+1	1	 G32	M	N/A	681	357
+1	1	 G33	M	N/A	686	358
+1	1	 G34	M	N/A	671	348
+1	1	 G35	M	N/A	679	334
+1	1	 G36	M	N/A	691	363
+1	1	 G37	M	N/A	679	360
+1	1	 G38	M	N/A	691	363
+1	1	 G39	M	N/A	689	358
+1	1	 G40	M	N/A	673	347
+1	1	 G41	M	N/A	696	368
+1	1	 G42	M	N/A	674	340
+1	1	 G43	M	N/A	677	345
+1	1	 G44	M	N/A	677	350
+1	1	 G45	M	N/A	561	84
+1	1	 G46	M	N/A	555	81
+1	1	 G47	M	N/A	638	290
+1	1	 G48	M	N/A	611	278
+1	1	 H01	M	N/A	559	186
+1	1	 H02	M	N/A	589	222
+1	1	 H03	M	N/A	598	254
+1	1	 H04	M	N/A	603	265
+1	1	 H05	M	N/A	620	296
+1	1	 H06	M	N/A	634	300
+1	1	 H07	M	N/A	637	293
+1	1	 H08	M	N/A	650	326
+1	1	 H09	M	N/A	652	334
+1	1	 H10	M	N/A	650	316
+1	1	 H11	M	N/A	641	302
+1	1	 H12	M	N/A	656	323
+1	1	 H13	M	N/A	654	323
+1	1	 H14	M	N/A	649	311
+1	1	 H15	M	N/A	652	318
+1	1	 H16	M	N/A	653	318
+1	1	 H17	M	N/A	663	338
+1	1	 H18	M	N/A	669	346
+1	1	 H19	M	N/A	660	334
+1	1	 H20	M	N/A	681	317
+1	1	 H21	M	N/A	658	320
+1	1	 H22	M	N/A	660	330
+1	1	 H23	M	N/A	659	339
+1	1	 H24	M	N/A	673	365
+1	1	 H25	M	N/A	678	358
+1	1	 H26	M	N/A	674	354
+1	1	 H27	M	N/A	673	350
+1	1	 H28	M	N/A	685	342
+1	1	 H29	M	N/A	668	344
+1	1	 H30	M	N/A	677	346
+1	1	 H31	M	N/A	675	354
+1	1	 H32	M	N/A	660	346
+1	1	 H33	M	N/A	684	368
+1	1	 H34	M	N/A	676	360
+1	1	 H35	M	N/A	679	351
+1	1	 H36	M	N/A	675	346
+1	1	 H37	M	N/A	670	352
+1	1	 H38	M	N/A	673	339
+1	1	 H39	M	N/A	681	356
+1	1	 H40	M	N/A	663	348
+1	1	 H41	M	N/A	682	361
+1	1	 H42	M	N/A	681	365
+1	1	 H43	M	N/A	676	370
+1	1	 H44	M	N/A	667	358
+1	1	 H45	M	N/A	545	92
+1	1	 H46	M	N/A	551	81
+1	1	 H47	M	N/A	631	293
+1	1	 H48	M	N/A	606	281
+1	1	 I01	M	N/A	583	285
+1	1	 I02	M	N/A	609	292
+1	1	 I03	M	N/A	622	301
+1	1	 I04	M	N/A	621	301
+1	1	 I05	M	N/A	636	311
+1	1	 I06	M	N/A	613	292
+1	1	 I07	M	N/A	630	316
+1	1	 I08	M	N/A	631	318
+1	1	 I09	M	N/A	638	315
+1	1	 I10	M	N/A	644	314
+1	1	 I11	M	N/A	644	320
+1	1	 I12	M	N/A	647	323
+1	1	 I13	M	N/A	642	308
+1	1	 I14	M	N/A	655	338
+1	1	 I15	M	N/A	652	325
+1	1	 I16	M	N/A	649	315
+1	1	 I17	M	N/A	659	329
+1	1	 I18	M	N/A	663	340
+1	1	 I19	M	N/A	650	316
+1	1	 I20	M	N/A	651	316
+1	1	 I21	M	N/A	651	317
+1	1	 I22	M	N/A	659	334
+1	1	 I23	M	N/A	661	341
+1	1	 I24	M	N/A	663	345
+1	1	 I25	M	N/A	661	339
+1	1	 I26	M	N/A	652	319
+1	1	 I27	M	N/A	670	356
+1	1	 I28	M	N/A	660	328
+1	1	 I29	M	N/A	659	333
+1	1	 I30	M	N/A	678	356
+1	1	 I31	M	N/A	668	347
+1	1	 I32	M	N/A	662	342
+1	1	 I33	M	N/A	675	350
+1	1	 I34	M	N/A	663	348
+1	1	 I35	M	N/A	672	363
+1	1	 I36	M	N/A	666	341
+1	1	 I37	M	N/A	659	344
+1	1	 I38	M	N/A	658	326
+1	1	 I39	M	N/A	668	354
+1	1	 I40	M	N/A	653	344
+1	1	 I41	M	N/A	678	371
+1	1	 I42	M	N/A	662	353
+1	1	 I43	M	N/A	667	356
+1	1	 I44	M	N/A	656	346
+1	1	 I45	M	N/A	640	311
+1	1	 I46	M	N/A	628	299
+1	1	 I47	M	N/A	539	81
+1	1	 I48	M	N/A	519	70
+1	1	 J01	M	N/A	602	303
+1	1	 J02	M	N/A	618	292
+1	1	 J03	M	N/A	620	280
+1	1	 J04	M	N/A	645	310
+1	1	 J05	M	N/A	627	279
+1	1	 J06	M	N/A	637	309
+1	1	 J07	M	N/A	643	317
+1	1	 J08	M	N/A	654	321
+1	1	 J09	M	N/A	648	309
+1	1	 J10	M	N/A	652	318
+1	1	 J11	M	N/A	646	310
+1	1	 J12	M	N/A	661	328
+1	1	 J13	M	N/A	656	317
+1	1	 J14	M	N/A	662	333
+1	1	 J15	M	N/A	663	327
+1	1	 J16	M	N/A	660	321
+1	1	 J17	M	N/A	671	342
+1	1	 J18	M	N/A	652	304
+1	1	 J19	M	N/A	664	324
+1	1	 J20	M	N/A	659	309
+1	1	 J21	M	N/A	659	318
+1	1	 J22	M	N/A	654	305
+1	1	 J23	M	N/A	672	353
+1	1	 J24	M	N/A	668	329
+1	1	 J25	M	N/A	681	349
+1	1	 J26	M	N/A	682	358
+1	1	 J27	M	N/A	674	349
+1	1	 J28	M	N/A	677	349
+1	1	 J29	M	N/A	674	351
+1	1	 J30	M	N/A	680	355
+1	1	 J31	M	N/A	693	383
+1	1	 J32	M	N/A	676	366
+1	1	 J33	M	N/A	694	373
+1	1	 J34	M	N/A	683	372
+1	1	 J35	M	N/A	676	356
+1	1	 J36	M	N/A	675	365
+1	1	 J37	M	N/A	668	348
+1	1	 J38	M	N/A	679	364
+1	1	 J39	M	N/A	670	332
+1	1	 J40	M	N/A	677	369
+1	1	 J41	M	N/A	683	362
+1	1	 J42	M	N/A	675	354
+1	1	 J43	M	N/A	676	364
+1	1	 J44	M	N/A	665	344
+1	1	 J45	M	N/A	645	307
+1	1	 J46	M	N/A	657	312
+1	1	 J47	M	N/A	547	86
+1	1	 J48	M	N/A	528	70
+1	1	 K01	M	N/A	584	281
+1	1	 K02	M	N/A	618	307
+1	1	 K03	M	N/A	635	304
+1	1	 K04	M	N/A	632	302
+1	1	 K05	M	N/A	640	304
+1	1	 K06	M	N/A	648	319
+1	1	 K07	M	N/A	645	314
+1	1	 K08	M	N/A	655	330
+1	1	 K09	M	N/A	651	328
+1	1	 K10	M	N/A	643	304
+1	1	 K11	M	N/A	638	313
+1	1	 K12	M	N/A	646	318
+1	1	 K13	M	N/A	648	316
+1	1	 K14	M	N/A	641	304
+1	1	 K15	M	N/A	633	273
+1	1	 K16	M	N/A	660	322
+1	1	 K17	M	N/A	674	354
+1	1	 K18	M	N/A	645	294
+1	1	 K19	M	N/A	641	295
+1	1	 K20	M	N/A	661	327
+1	1	 K21	M	N/A	658	330
+1	1	 K22	M	N/A	652	309
+1	1	 K23	M	N/A	657	322
+1	1	 K24	M	N/A	660	332
+1	1	 K25	M	N/A	670	344
+1	1	 K26	M	N/A	673	353
+1	1	 K27	M	N/A	676	356
+1	1	 K28	M	N/A	670	338
+1	1	 K29	M	N/A	674	352
+1	1	 K30	M	N/A	673	350
+1	1	 K31	M	N/A	673	364
+1	1	 K32	M	N/A	667	351
+1	1	 K33	M	N/A	683	360
+1	1	 K34	M	N/A	661	349
+1	1	 K35	M	N/A	670	357
+1	1	 K36	M	N/A	655	336
+1	1	 K37	M	N/A	665	358
+1	1	 K38	M	N/A	665	336
+1	1	 K39	M	N/A	672	359
+1	1	 K40	M	N/A	656	341
+1	1	 K41	M	N/A	667	348
+1	1	 K42	M	N/A	658	334
+1	1	 K43	M	N/A	671	367
+1	1	 K44	M	N/A	654	336
+1	1	 K45	M	N/A	554	81
+1	1	 K46	M	N/A	551	80
+1	1	 K47	M	N/A	619	274
+1	1	 K48	M	N/A	602	271
+1	1	 L01	M	N/A	585	280
+1	1	 L02	M	N/A	601	292
+1	1	 L03	M	N/A	618	298
+1	1	 L04	M	N/A	621	288
+1	1	 L05	M	N/A	628	296
+1	1	 L06	M	N/A	633	311
+1	1	 L07	M	N/A	619	277
+1	1	 L08	M	N/A	626	298
+1	1	 L09	M	N/A	624	302
+1	1	 L10	M	N/A	634	310
+1	1	 L11	M	N/A	594	302
+1	1	 L12	M	N/A	616	298
+1	1	 L13	M	N/A	644	324
+1	1	 L14	M	N/A	632	313
+1	1	 L15	M	N/A	640	322
+1	1	 L16	M	N/A	637	304
+1	1	 L17	M	N/A	646	318
+1	1	 L18	M	N/A	642	302
+1	1	 L19	M	N/A	647	324
+1	1	 L20	M	N/A	649	320
+1	1	 L21	M	N/A	643	310
+1	1	 L22	M	N/A	650	319
+1	1	 L23	M	N/A	660	340
+1	1	 L24	M	N/A	658	350
+1	1	 L25	M	N/A	656	339
+1	1	 L26	M	N/A	670	359
+1	1	 L27	M	N/A	659	341
+1	1	 L28	M	N/A	655	321
+1	1	 L29	M	N/A	656	344
+1	1	 L30	M	N/A	665	355
+1	1	 L31	M	N/A	660	345
+1	1	 L32	M	N/A	642	330
+1	1	 L33	M	N/A	670	350
+1	1	 L34	M	N/A	642	322
+1	1	 L35	M	N/A	656	340
+1	1	 L36	M	N/A	652	348
+1	1	 L37	M	N/A	654	351
+1	1	 L38	M	N/A	654	341
+1	1	 L39	M	N/A	648	326
+1	1	 L40	M	N/A	648	339
+1	1	 L41	M	N/A	647	327
+1	1	 L42	M	N/A	643	337
+1	1	 L43	M	N/A	649	347
+1	1	 L44	M	N/A	647	329
+1	1	 L45	M	N/A	535	79
+1	1	 L46	M	N/A	543	81
+1	1	 L47	M	N/A	619	284
+1	1	 L48	M	N/A	591	279
+1	1	 M01	M	N/A	592	286
+1	1	 M02	M	N/A	615	288
+1	1	 M03	M	N/A	636	313
+1	1	 M04	M	N/A	632	293
+1	1	 M05	M	N/A	640	299
+1	1	 M06	M	N/A	648	322
+1	1	 M07	M	N/A	643	310
+1	1	 M08	M	N/A	647	316
+1	1	 M09	M	N/A	632	301
+1	1	 M10	M	N/A	638	306
+1	1	 M11	M	N/A	642	318
+1	1	 M12	M	N/A	646	310
+1	1	 M13	M	N/A	644	310
+1	1	 M14	M	N/A	643	306
+1	1	 M15	M	N/A	653	324
+1	1	 M16	M	N/A	636	289
+1	1	 M17	M	N/A	649	312
+1	1	 M18	M	N/A	652	317
+1	1	 M19	M	N/A	640	304
+1	1	 M20	M	N/A	642	314
+1	1	 M21	M	N/A	648	312
+1	1	 M22	M	N/A	645	299
+1	1	 M23	M	N/A	665	344
+1	1	 M24	M	N/A	660	332
+1	1	 M25	M	N/A	654	327
+1	1	 M26	M	N/A	669	344
+1	1	 M27	M	N/A	672	343
+1	1	 M28	M	N/A	658	313
+1	1	 M29	M	N/A	668	344
+1	1	 M30	M	N/A	663	334
+1	1	 M31	M	N/A	666	339
+1	1	 M32	M	N/A	661	341
+1	1	 M33	M	N/A	669	337
+1	1	 M34	M	N/A	659	334
+1	1	 M35	M	N/A	661	333
+1	1	 M36	M	N/A	668	354
+1	1	 M37	M	N/A	659	342
+1	1	 M38	M	N/A	664	337
+1	1	 M39	M	N/A	664	333
+1	1	 M40	M	N/A	653	334
+1	1	 M41	M	N/A	645	322
+1	1	 M42	M	N/A	649	343
+1	1	 M43	M	N/A	662	360
+1	1	 M44	M	N/A	649	334
+1	1	 M45	M	N/A	639	307
+1	1	 M46	M	N/A	645	303
+1	1	 M47	M	N/A	548	79
+1	1	 M48	M	N/A	527	73
+1	1	 N01	M	N/A	578	270
+1	1	 N02	M	N/A	602	277
+1	1	 N03	M	N/A	610	293
+1	1	 N04	M	N/A	625	297
+1	1	 N05	M	N/A	625	299
+1	1	 N06	M	N/A	637	327
+1	1	 N07	M	N/A	625	311
+1	1	 N08	M	N/A	623	303
+1	1	 N09	M	N/A	618	296
+1	1	 N10	M	N/A	628	301
+1	1	 N11	M	N/A	636	307
+1	1	 N12	M	N/A	627	298
+1	1	 N13	M	N/A	633	306
+1	1	 N14	M	N/A	641	308
+1	1	 N15	M	N/A	641	317
+1	1	 N16	M	N/A	641	312
+1	1	 N17	M	N/A	642	306
+1	1	 N18	M	N/A	645	308
+1	1	 N19	M	N/A	642	312
+1	1	 N20	M	N/A	633	309
+1	1	 N21	M	N/A	643	306
+1	1	 N22	M	N/A	646	318
+1	1	 N23	M	N/A	651	320
+1	1	 N24	M	N/A	656	339
+1	1	 N25	M	N/A	654	337
+1	1	 N26	M	N/A	658	335
+1	1	 N27	M	N/A	653	314
+1	1	 N28	M	N/A	661	331
+1	1	 N29	M	N/A	656	337
+1	1	 N30	M	N/A	659	332
+1	1	 N31	M	N/A	652	318
+1	1	 N32	M	N/A	647	326
+1	1	 N33	M	N/A	652	323
+1	1	 N34	M	N/A	643	332
+1	1	 N35	M	N/A	662	354
+1	1	 N36	M	N/A	653	342
+1	1	 N37	M	N/A	652	351
+1	1	 N38	M	N/A	657	342
+1	1	 N39	M	N/A	650	330
+1	1	 N40	M	N/A	647	344
+1	1	 N41	M	N/A	651	340
+1	1	 N42	M	N/A	636	326
+1	1	 N43	M	N/A	652	349
+1	1	 N44	M	N/A	635	323
+1	1	 N45	M	N/A	626	298
+1	1	 N46	M	N/A	626	289
+1	1	 N47	M	N/A	532	80
+1	1	 N48	M	N/A	508	71
+1	1	 O01	M	N/A	573	282
+1	1	 O02	M	N/A	594	283
+1	1	 O03	M	N/A	609	299
+1	1	 O04	M	N/A	610	292
+1	1	 O05	M	N/A	626	312
+1	1	 O06	M	N/A	636	315
+1	1	 O07	M	N/A	625	314
+1	1	 O08	M	N/A	631	322
+1	1	 O09	M	N/A	618	309
+1	1	 O10	M	N/A	627	307
+1	1	 O11	M	N/A	622	307
+1	1	 O12	M	N/A	618	296
+1	1	 O13	M	N/A	630	310
+1	1	 O14	M	N/A	620	294
+1	1	 O15	M	N/A	639	325
+1	1	 O16	M	N/A	630	307
+1	1	 O17	M	N/A	640	330
+1	1	 O18	M	N/A	629	295
+1	1	 O19	M	N/A	625	288
+1	1	 O20	M	N/A	635	310
+1	1	 O21	M	N/A	641	323
+1	1	 O22	M	N/A	635	310
+1	1	 O23	M	N/A	637	323
+1	1	 O24	M	N/A	631	327
+1	1	 O25	M	N/A	631	319
+1	1	 O26	M	N/A	639	322
+1	1	 O27	M	N/A	635	322
+1	1	 O28	M	N/A	648	328
+1	1	 O29	M	N/A	631	301
+1	1	 O30	M	N/A	641	314
+1	1	 O31	M	N/A	646	325
+1	1	 O32	M	N/A	633	327
+1	1	 O33	M	N/A	633	313
+1	1	 O34	M	N/A	636	336
+1	1	 O35	M	N/A	628	300
+1	1	 O36	M	N/A	639	338
+1	1	 O37	M	N/A	633	339
+1	1	 O38	M	N/A	636	332
+1	1	 O39	M	N/A	630	316
+1	1	 O40	M	N/A	634	350
+1	1	 O41	M	N/A	636	337
+1	1	 O42	M	N/A	617	315
+1	1	 O43	M	N/A	640	335
+1	1	 O44	M	N/A	637	331
+1	1	 O45	M	N/A	528	81
+1	1	 O46	M	N/A	528	78
+1	1	 O47	M	N/A	605	286
+1	1	 O48	M	N/A	591	288
+1	1	 P01	M	N/A	578	275
+1	1	 P02	M	N/A	605	297
+1	1	 P03	M	N/A	617	315
+1	1	 P04	M	N/A	623	316
+1	1	 P05	M	N/A	642	333
+1	1	 P06	M	N/A	629	305
+1	1	 P07	M	N/A	621	295
+1	1	 P08	M	N/A	634	309
+1	1	 P09	M	N/A	640	336
+1	1	 P10	M	N/A	634	314
+1	1	 P11	M	N/A	635	316
+1	1	 P12	M	N/A	632	308
+1	1	 P13	M	N/A	625	295
+1	1	 P14	M	N/A	644	316
+1	1	 P15	M	N/A	633	295
+1	1	 P16	M	N/A	642	314
+1	1	 P17	M	N/A	647	304
+1	1	 P18	M	N/A	644	324
+1	1	 P19	M	N/A	638	312
+1	1	 P20	M	N/A	643	303
+1	1	 P21	M	N/A	654	324
+1	1	 P22	M	N/A	674	314
+1	1	 P23	M	N/A	649	337
+1	1	 P24	M	N/A	647	333
+1	1	 P25	M	N/A	645	324
+1	1	 P26	M	N/A	651	338
+1	1	 P27	M	N/A	647	333
+1	1	 P28	M	N/A	656	336
+1	1	 P29	M	N/A	655	337
+1	1	 P30	M	N/A	662	339
+1	1	 P31	M	N/A	658	335
+1	1	 P32	M	N/A	648	339
+1	1	 P33	M	N/A	657	335
+1	1	 P34	M	N/A	648	336
+1	1	 P35	M	N/A	647	324
+1	1	 P36	M	N/A	645	326
+1	1	 P37	M	N/A	657	361
+1	1	 P38	M	N/A	644	329
+1	1	 P39	M	N/A	654	337
+1	1	 P40	M	N/A	646	340
+1	1	 P41	M	N/A	663	354
+1	1	 P42	M	N/A	645	350
+1	1	 P43	M	N/A	658	359
+1	1	 P44	M	N/A	634	302
+1	1	 P45	M	N/A	538	86
+1	1	 P46	M	N/A	545	80
+1	1	 P47	M	N/A	612	279
+1	1	 P48	M	N/A	590	277
+1	1	 Q01	M	N/A	557	245
+1	1	 Q02	M	N/A	595	287
+1	1	 Q03	M	N/A	615	310
+1	1	 Q04	M	N/A	627	312
+1	1	 Q05	M	N/A	625	311
+1	1	 Q06	M	N/A	616	290
+1	1	 Q07	M	N/A	627	321
+1	1	 Q08	M	N/A	628	323
+1	1	 Q09	M	N/A	620	292
+1	1	 Q10	M	N/A	606	278
+1	1	 Q11	M	N/A	631	321
+1	1	 Q12	M	N/A	628	317
+1	1	 Q13	M	N/A	625	300
+1	1	 Q14	M	N/A	626	298
+1	1	 Q15	M	N/A	630	304
+1	1	 Q16	M	N/A	644	307
+1	1	 Q17	M	N/A	623	292
+1	1	 Q18	M	N/A	632	307
+1	1	 Q19	M	N/A	631	298
+1	1	 Q20	M	N/A	632	300
+1	1	 Q21	M	N/A	636	298
+1	1	 Q22	M	N/A	640	314
+1	1	 Q23	M	N/A	628	310
+1	1	 Q24	M	N/A	648	330
+1	1	 Q25	M	N/A	634	326
+1	1	 Q26	M	N/A	649	343
+1	1	 Q27	M	N/A	648	342
+1	1	 Q28	M	N/A	650	355
+1	1	 Q29	M	N/A	650	326
+1	1	 Q30	M	N/A	642	329
+1	1	 Q31	M	N/A	639	334
+1	1	 Q32	M	N/A	647	343
+1	1	 Q33	M	N/A	639	336
+1	1	 Q34	M	N/A	630	332
+1	1	 Q35	M	N/A	638	315
+1	1	 Q36	M	N/A	632	346
+1	1	 Q37	M	N/A	633	331
+1	1	 Q38	M	N/A	636	347
+1	1	 Q39	M	N/A	628	319
+1	1	 Q40	M	N/A	635	320
+1	1	 Q41	M	N/A	627	314
+1	1	 Q42	M	N/A	629	325
+1	1	 Q43	M	N/A	639	324
+1	1	 Q44	M	N/A	636	325
+1	1	 Q45	M	N/A	612	288
+1	1	 Q46	M	N/A	621	281
+1	1	 Q47	M	N/A	515	76
+1	1	 Q48	M	N/A	499	68
+1	1	 R01	M	N/A	602	293
+1	1	 R02	M	N/A	612	292
+1	1	 R03	M	N/A	625	301
+1	1	 R04	M	N/A	635	305
+1	1	 R05	M	N/A	632	299
+1	1	 R06	M	N/A	635	291
+1	1	 R07	M	N/A	641	313
+1	1	 R08	M	N/A	644	320
+1	1	 R09	M	N/A	637	305
+1	1	 R10	M	N/A	645	317
+1	1	 R11	M	N/A	642	322
+1	1	 R12	M	N/A	628	285
+1	1	 R13	M	N/A	643	308
+1	1	 R14	M	N/A	636	287
+1	1	 R15	M	N/A	622	280
+1	1	 R16	M	N/A	649	320
+1	1	 R17	M	N/A	644	315
+1	1	 R18	M	N/A	658	328
+1	1	 R19	M	N/A	654	311
+1	1	 R20	M	N/A	651	311
+1	1	 R21	M	N/A	659	317
+1	1	 R22	M	N/A	655	321
+1	1	 R23	M	N/A	658	336
+1	1	 R24	M	N/A	657	313
+1	1	 R25	M	N/A	647	319
+1	1	 R26	M	N/A	669	350
+1	1	 R27	M	N/A	666	340
+1	1	 R28	M	N/A	660	333
+1	1	 R29	M	N/A	670	341
+1	1	 R30	M	N/A	658	322
+1	1	 R31	M	N/A	665	345
+1	1	 R32	M	N/A	661	340
+1	1	 R33	M	N/A	663	348
+1	1	 R34	M	N/A	659	334
+1	1	 R35	M	N/A	655	312
+1	1	 R36	M	N/A	657	346
+1	1	 R37	M	N/A	673	359
+1	1	 R38	M	N/A	652	331
+1	1	 R39	M	N/A	650	323
+1	1	 R40	M	N/A	671	348
+1	1	 R41	M	N/A	662	345
+1	1	 R42	M	N/A	656	340
+1	1	 R43	M	N/A	665	338
+1	1	 R44	M	N/A	654	327
+1	1	 R45	M	N/A	641	312
+1	1	 R46	M	N/A	637	280
+1	1	 R47	M	N/A	539	79
+1	1	 R48	M	N/A	519	68
+1	1	 S01	M	N/A	517	60
+1	1	 S02	M	N/A	527	62
+1	1	 S03	M	N/A	536	72
+1	1	 S04	M	N/A	532	77
+1	1	 S05	M	N/A	557	108
+1	1	 S06	M	N/A	555	112
+1	1	 S07	M	N/A	587	199
+1	1	 S08	M	N/A	585	190
+1	1	 S09	M	N/A	617	256
+1	1	 S10	M	N/A	614	265
+1	1	 S11	M	N/A	646	323
+1	1	 S12	M	N/A	621	292
+1	1	 S13	M	N/A	635	308
+1	1	 S14	M	N/A	648	316
+1	1	 S15	M	N/A	631	307
+1	1	 S16	M	N/A	636	307
+1	1	 S17	M	N/A	644	329
+1	1	 S18	M	N/A	644	305
+1	1	 S19	M	N/A	660	327
+1	1	 S20	M	N/A	652	308
+1	1	 S21	M	N/A	655	318
+1	1	 S22	M	N/A	648	309
+1	1	 S23	M	N/A	666	358
+1	1	 S24	M	N/A	662	335
+1	1	 S25	M	N/A	650	316
+1	1	 S26	M	N/A	673	367
+1	1	 S27	M	N/A	661	341
+1	1	 S28	M	N/A	646	320
+1	1	 S29	M	N/A	667	345
+1	1	 S30	M	N/A	654	322
+1	1	 S31	M	N/A	644	322
+1	1	 S32	M	N/A	666	360
+1	1	 S33	M	N/A	647	318
+1	1	 S34	M	N/A	655	334
+1	1	 S35	M	N/A	670	347
+1	1	 S36	M	N/A	650	332
+1	1	 S37	M	N/A	661	342
+1	1	 S38	M	N/A	650	325
+1	1	 S39	M	N/A	639	316
+1	1	 S40	M	N/A	664	337
+1	1	 S41	M	N/A	657	342
+1	1	 S42	M	N/A	652	339
+1	1	 S43	M	N/A	673	366
+1	1	 S44	M	N/A	637	309
+1	1	 S45	M	N/A	542	80
+1	1	 S46	M	N/A	545	80
+1	1	 S47	M	N/A	613	264
+1	1	 S48	M	N/A	611	276
+1	1	 T01	M	N/A	514	54
+1	1	 T02	M	N/A	524	57
+1	1	 T03	M	N/A	531	71
+1	1	 T04	M	N/A	535	76
+1	1	 T05	M	N/A	541	110
+1	1	 T06	M	N/A	551	119
+1	1	 T07	M	N/A	585	201
+1	1	 T08	M	N/A	589	214
+1	1	 T09	M	N/A	612	267
+1	1	 T10	M	N/A	623	293
+1	1	 T11	M	N/A	628	305
+1	1	 T12	M	N/A	621	295
+1	1	 T13	M	N/A	637	319
+1	1	 T14	M	N/A	648	335
+1	1	 T15	M	N/A	622	316
+1	1	 T16	M	N/A	605	301
+1	1	 T17	M	N/A	641	325
+1	1	 T18	M	N/A	641	321
+1	1	 T19	M	N/A	653	332
+1	1	 T20	M	N/A	638	320
+1	1	 T21	M	N/A	642	320
+1	1	 T22	M	N/A	652	328
+1	1	 T23	M	N/A	659	340
+1	1	 T24	M	N/A	654	340
+1	1	 T25	M	N/A	642	315
+1	1	 T26	M	N/A	657	343
+1	1	 T27	M	N/A	662	352
+1	1	 T28	M	N/A	648	337
+1	1	 T29	M	N/A	663	348
+1	1	 T30	M	N/A	654	344
+1	1	 T31	M	N/A	648	332
+1	1	 T32	M	N/A	646	337
+1	1	 T33	M	N/A	648	326
+1	1	 T34	M	N/A	650	335
+1	1	 T35	M	N/A	660	336
+1	1	 T36	M	N/A	640	331
+1	1	 T37	M	N/A	652	332
+1	1	 T38	M	N/A	655	343
+1	1	 T39	M	N/A	635	325
+1	1	 T40	M	N/A	669	344
+1	1	 T41	M	N/A	646	331
+1	1	 T42	M	N/A	645	347
+1	1	 T43	M	N/A	644	312
+1	1	 T44	M	N/A	640	321
+1	1	 T45	M	N/A	533	81
+1	1	 T46	M	N/A	544	82
+1	1	 T47	M	N/A	617	289
+1	1	 T48	M	N/A	593	270
+1	1	 U01	M	N/A	533	102
+1	1	 U02	M	N/A	540	88
+1	1	 U03	M	N/A	612	241
+1	1	 U04	M	N/A	606	237
+1	1	 U05	M	N/A	641	288
+1	1	 U06	M	N/A	652	307
+1	1	 U07	M	N/A	646	313
+1	1	 U08	M	N/A	657	336
+1	1	 U09	M	N/A	656	319
+1	1	 U10	M	N/A	663	337
+1	1	 U11	M	N/A	655	322
+1	1	 U12	M	N/A	664	336
+1	1	 U13	M	N/A	650	311
+1	1	 U14	M	N/A	654	322
+1	1	 U15	M	N/A	644	314
+1	1	 U16	M	N/A	670	333
+1	1	 U17	M	N/A	652	307
+1	1	 U18	M	N/A	667	320
+1	1	 U19	M	N/A	663	318
+1	1	 U20	M	N/A	664	324
+1	1	 U21	M	N/A	669	328
+1	1	 U22	M	N/A	670	336
+1	1	 U23	M	N/A	678	349
+1	1	 U24	M	N/A	680	349
+1	1	 U25	M	N/A	668	340
+1	1	 U26	M	N/A	682	362
+1	1	 U27	M	N/A	669	339
+1	1	 U28	M	N/A	650	339
+1	1	 U29	M	N/A	681	361
+1	1	 U30	M	N/A	670	341
+1	1	 U31	M	N/A	683	358
+1	1	 U32	M	N/A	679	351
+1	1	 U33	M	N/A	678	340
+1	1	 U34	M	N/A	682	352
+1	1	 U35	M	N/A	681	341
+1	1	 U36	M	N/A	679	358
+1	1	 U37	M	N/A	675	335
+1	1	 U38	M	N/A	664	312
+1	1	 U39	M	N/A	680	357
+1	1	 U40	M	N/A	691	368
+1	1	 U41	M	N/A	668	358
+1	1	 U42	M	N/A	660	342
+1	1	 U43	M	N/A	679	361
+1	1	 U44	M	N/A	663	341
+1	1	 U45	M	N/A	659	327
+1	1	 U46	M	N/A	643	284
+1	1	 U47	M	N/A	549	82
+1	1	 U48	M	N/A	529	73
+1	1	 V01	M	N/A	518	88
+1	1	 V02	M	N/A	535	95
+1	1	 V03	M	N/A	591	215
+1	1	 V04	M	N/A	604	244
+1	1	 V05	M	N/A	649	328
+1	1	 V06	M	N/A	647	326
+1	1	 V07	M	N/A	650	339
+1	1	 V08	M	N/A	650	316
+1	1	 V09	M	N/A	640	304
+1	1	 V10	M	N/A	648	323
+1	1	 V11	M	N/A	651	331
+1	1	 V12	M	N/A	643	313
+1	1	 V13	M	N/A	644	319
+1	1	 V14	M	N/A	651	324
+1	1	 V15	M	N/A	636	319
+1	1	 V16	M	N/A	654	329
+1	1	 V17	M	N/A	634	307
+1	1	 V18	M	N/A	654	317
+1	1	 V19	M	N/A	656	312
+1	1	 V20	M	N/A	661	331
+1	1	 V21	M	N/A	654	318
+1	1	 V22	M	N/A	651	300
+1	1	 V23	M	N/A	661	334
+1	1	 V24	M	N/A	671	349
+1	1	 V25	M	N/A	665	355
+1	1	 V26	M	N/A	666	351
+1	1	 V27	M	N/A	670	348
+1	1	 V28	M	N/A	661	352
+1	1	 V29	M	N/A	665	336
+1	1	 V30	M	N/A	660	345
+1	1	 V31	M	N/A	665	345
+1	1	 V32	M	N/A	677	359
+1	1	 V33	M	N/A	674	348
+1	1	 V34	M	N/A	667	348
+1	1	 V35	M	N/A	684	355
+1	1	 V36	M	N/A	667	349
+1	1	 V37	M	N/A	664	330
+1	1	 V38	M	N/A	672	358
+1	1	 V39	M	N/A	661	350
+1	1	 V40	M	N/A	675	358
+1	1	 V41	M	N/A	651	334
+1	1	 V42	M	N/A	646	326
+1	1	 V43	M	N/A	662	339
+1	1	 V44	M	N/A	665	348
+1	1	 V45	M	N/A	639	312
+1	1	 V46	M	N/A	636	290
+1	1	 V47	M	N/A	543	81
+1	1	 V48	M	N/A	517	72
+1	1	 W01	M	N/A	515	105
+1	1	 W02	M	N/A	533	108
+1	1	 W03	M	N/A	574	173
+1	1	 W04	M	N/A	563	156
+1	1	 W05	M	N/A	621	278
+1	1	 W06	M	N/A	586	251
+1	1	 W07	M	N/A	628	291
+1	1	 W08	M	N/A	642	321
+1	1	 W09	M	N/A	644	331
+1	1	 W10	M	N/A	631	304
+1	1	 W11	M	N/A	639	310
+1	1	 W12	M	N/A	648	328
+1	1	 W13	M	N/A	648	333
+1	1	 W14	M	N/A	628	292
+1	1	 W15	M	N/A	643	318
+1	1	 W16	M	N/A	642	320
+1	1	 W17	M	N/A	635	313
+1	1	 W18	M	N/A	647	329
+1	1	 W19	M	N/A	655	329
+1	1	 W20	M	N/A	637	302
+1	1	 W21	M	N/A	652	316
+1	1	 W22	M	N/A	656	323
+1	1	 W23	M	N/A	661	346
+1	1	 W24	M	N/A	673	360
+1	1	 W25	M	N/A	656	345
+1	1	 W26	M	N/A	648	330
+1	1	 W27	M	N/A	655	327
+1	1	 W28	M	N/A	654	341
+1	1	 W29	M	N/A	673	361
+1	1	 W30	M	N/A	658	343
+1	1	 W31	M	N/A	635	309
+1	1	 W32	M	N/A	668	356
+1	1	 W33	M	N/A	660	348
+1	1	 W34	M	N/A	655	349
+1	1	 W35	M	N/A	663	352
+1	1	 W36	M	N/A	654	347
+1	1	 W37	M	N/A	658	344
+1	1	 W38	M	N/A	641	326
+1	1	 W39	M	N/A	645	341
+1	1	 W40	M	N/A	662	352
+1	1	 W41	M	N/A	653	350
+1	1	 W42	M	N/A	647	333
+1	1	 W43	M	N/A	660	335
+1	1	 W44	M	N/A	646	332
+1	1	 W45	M	N/A	539	83
+1	1	 W46	M	N/A	540	76
+1	1	 W47	M	N/A	620	278
+1	1	 W48	M	N/A	593	267
+1	1	 X01	M	N/A	487	121
+1	1	 X02	M	N/A	553	111
+1	1	 X03	M	N/A	568	148
+1	1	 X04	M	N/A	575	156
+1	1	 X05	M	N/A	617	242
+1	1	 X06	M	N/A	618	245
+1	1	 X07	M	N/A	642	299
+1	1	 X08	M	N/A	656	327
+1	1	 X09	M	N/A	663	338
+1	1	 X10	M	N/A	652	319
+1	1	 X11	M	N/A	656	333
+1	1	 X12	M	N/A	646	310
+1	1	 X13	M	N/A	626	312
+1	1	 X14	M	N/A	635	308
+1	1	 X15	M	N/A	626	315
+1	1	 X16	M	N/A	652	325
+1	1	 X17	M	N/A	655	324
+1	1	 X18	M	N/A	657	322
+1	1	 X19	M	N/A	654	310
+1	1	 X20	M	N/A	652	309
+1	1	 X21	M	N/A	665	327
+1	1	 X22	M	N/A	679	361
+1	1	 X23	M	N/A	710	369
+1	1	 X24	M	N/A	666	333
+1	1	 X25	M	N/A	675	350
+1	1	 X26	M	N/A	667	344
+1	1	 X27	M	N/A	678	356
+1	1	 X28	M	N/A	671	355
+1	1	 X29	M	N/A	672	352
+1	1	 X30	M	N/A	673	342
+1	1	 X31	M	N/A	677	335
+1	1	 X32	M	N/A	677	362
+1	1	 X33	M	N/A	677	360
+1	1	 X34	M	N/A	666	345
+1	1	 X35	M	N/A	681	363
+1	1	 X36	M	N/A	671	361
+1	1	 X37	M	N/A	676	355
+1	1	 X38	M	N/A	668	356
+1	1	 X39	M	N/A	660	353
+1	1	 X40	M	N/A	671	355
+1	1	 X41	M	N/A	666	350
+1	1	 X42	M	N/A	660	341
+1	1	 X43	M	N/A	668	340
+1	1	 X44	M	N/A	661	337
+1	1	 X45	M	N/A	553	86
+1	1	 X46	M	N/A	556	85
+1	1	 X47	M	N/A	636	291
+1	1	 X48	M	N/A	601	263
+1	1	 Y01	M	N/A	512	78
+1	1	 Y02	M	N/A	530	80
+1	1	 Y03	M	N/A	537	86
+1	1	 Y04	M	N/A	539	85
+1	1	 Y05	M	N/A	560	130
+1	1	 Y06	M	N/A	563	132
+1	1	 Y07	M	N/A	602	224
+1	1	 Y08	M	N/A	610	228
+1	1	 Y09	M	N/A	640	315
+1	1	 Y10	M	N/A	629	302
+1	1	 Y11	M	N/A	641	324
+1	1	 Y12	M	N/A	646	323
+1	1	 Y13	M	N/A	664	351
+1	1	 Y14	M	N/A	643	328
+1	1	 Y15	M	N/A	640	338
+1	1	 Y16	M	N/A	646	331
+1	1	 Y17	M	N/A	658	347
+1	1	 Y18	M	N/A	658	331
+1	1	 Y19	M	N/A	664	347
+1	1	 Y20	M	N/A	667	349
+1	1	 Y21	M	N/A	651	336
+1	1	 Y22	M	N/A	659	337
+1	1	 Y23	M	N/A	666	367
+1	1	 Y24	M	N/A	668	361
+1	1	 Y25	M	N/A	661	353
+1	1	 Y26	M	N/A	676	370
+1	1	 Y27	M	N/A	667	354
+1	1	 Y28	M	N/A	655	348
+1	1	 Y29	M	N/A	665	353
+1	1	 Y30	M	N/A	668	352
+1	1	 Y31	M	N/A	672	368
+1	1	 Y32	M	N/A	676	369
+1	1	 Y33	M	N/A	673	362
+1	1	 Y34	M	N/A	666	360
+1	1	 Y35	M	N/A	674	362
+1	1	 Y36	M	N/A	663	359
+1	1	 Y37	M	N/A	660	342
+1	1	 Y38	M	N/A	667	350
+1	1	 Y39	M	N/A	648	345
+1	1	 Y40	M	N/A	661	351
+1	1	 Y41	M	N/A	658	348
+1	1	 Y42	M	N/A	658	348
+1	1	 Y43	M	N/A	662	348
+1	1	 Y44	M	N/A	658	348
+1	1	 Y45	M	N/A	639	314
+1	1	 Y46	M	N/A	628	293
+1	1	 Y47	M	N/A	539	82
+1	1	 Y48	M	N/A	520	69
+1	1	 Z01	M	N/A	511	85
+1	1	 Z02	M	N/A	525	87
+1	1	 Z03	M	N/A	533	98
+1	1	 Z04	M	N/A	535	100
+1	1	 Z05	M	N/A	547	124
+1	1	 Z06	M	N/A	565	159
+1	1	 Z07	M	N/A	587	209
+1	1	 Z08	M	N/A	595	226
+1	1	 Z09	M	N/A	632	304
+1	1	 Z10	M	N/A	622	301
+1	1	 Z11	M	N/A	621	301
+1	1	 Z12	M	N/A	645	327
+1	1	 Z13	M	N/A	631	312
+1	1	 Z14	M	N/A	641	325
+1	1	 Z15	M	N/A	620	328
+1	1	 Z16	M	N/A	632	321
+1	1	 Z17	M	N/A	650	348
+1	1	 Z18	M	N/A	638	319
+1	1	 Z19	M	N/A	646	330
+1	1	 Z20	M	N/A	646	333
+1	1	 Z21	M	N/A	651	351
+1	1	 Z22	M	N/A	642	328
+1	1	 Z23	M	N/A	654	350
+1	1	 Z24	M	N/A	666	376
+1	1	 Z25	M	N/A	654	353
+1	1	 Z26	M	N/A	657	360
+1	1	 Z27	M	N/A	652	349
+1	1	 Z28	M	N/A	644	341
+1	1	 Z29	M	N/A	661	368
+1	1	 Z30	M	N/A	664	368
+1	1	 Z31	M	N/A	661	365
+1	1	 Z32	M	N/A	662	371
+1	1	 Z33	M	N/A	658	353
+1	1	 Z34	M	N/A	652	350
+1	1	 Z35	M	N/A	669	367
+1	1	 Z36	M	N/A	653	346
+1	1	 Z37	M	N/A	662	360
+1	1	 Z38	M	N/A	649	358
+1	1	 Z39	M	N/A	650	368
+1	1	 Z40	M	N/A	654	366
+1	1	 Z41	M	N/A	653	356
+1	1	 Z42	M	N/A	654	335
+1	1	 Z43	M	N/A	654	346
+1	1	 Z44	M	N/A	638	331
+1	1	 Z45	M	N/A	619	300
+1	1	 Z46	M	N/A	626	292
+1	1	 Z47	M	N/A	529	86
+1	1	 Z48	M	N/A	506	78
+1	1	AA01	M	N/A	636	349
+1	1	AA02	M	N/A	651	361
+1	1	AA03	M	N/A	660	354
+1	1	AA04	M	N/A	660	349
+1	1	AA05	M	N/A	671	368
+1	1	AA06	M	N/A	666	347
+1	1	AA07	M	N/A	666	343
+1	1	AA08	M	N/A	666	354
+1	1	AA09	M	N/A	658	353
+1	1	AA10	M	N/A	659	363
+1	1	AA11	M	N/A	668	365
+1	1	AA12	M	N/A	681	384
+1	1	AA13	M	N/A	670	366
+1	1	AA14	M	N/A	682	382
+1	1	AA15	M	N/A	647	352
+1	1	AA16	M	N/A	653	347
+1	1	AA17	M	N/A	676	372
+1	1	AA18	M	N/A	667	351
+1	1	AA19	M	N/A	675	370
+1	1	AA20	M	N/A	673	358
+1	1	AA21	M	N/A	665	347
+1	1	AA22	M	N/A	668	356
+1	1	AA23	M	N/A	683	378
+1	1	AA24	M	N/A	674	360
+1	1	AA25	M	N/A	667	353
+1	1	AA26	M	N/A	684	369
+1	1	AA27	M	N/A	670	373
+1	1	AA28	M	N/A	670	367
+1	1	AA29	M	N/A	684	378
+1	1	AA30	M	N/A	681	371
+1	1	AA31	M	N/A	668	350
+1	1	AA32	M	N/A	685	373
+1	1	AA33	M	N/A	682	376
+1	1	AA34	M	N/A	664	360
+1	1	AA35	M	N/A	683	380
+1	1	AA36	M	N/A	685	382
+1	1	AA37	M	N/A	679	369
+1	1	AA38	M	N/A	666	359
+1	1	AA39	M	N/A	662	359
+1	1	AA40	M	N/A	668	358
+1	1	AA41	M	N/A	666	358
+1	1	AA42	M	N/A	668	371
+1	1	AA43	M	N/A	670	371
+1	1	AA44	M	N/A	655	331
+1	1	AA45	M	N/A	547	86
+1	1	AA46	M	N/A	547	87
+1	1	AA47	M	N/A	638	312
+1	1	AA48	M	N/A	609	302
+1	1	AB01	M	N/A	630	342
+1	1	AB02	M	N/A	638	348
+1	1	AB03	M	N/A	646	345
+1	1	AB04	M	N/A	781	377
+1	1	AB05	M	N/A	671	376
+1	1	AB06	M	N/A	657	365
+1	1	AB07	M	N/A	656	354
+1	1	AB08	M	N/A	667	373
+1	1	AB09	M	N/A	655	364
+1	1	AB10	M	N/A	654	363
+1	1	AB11	M	N/A	643	341
+1	1	AB12	M	N/A	660	368
+1	1	AB13	M	N/A	676	383
+1	1	AB14	M	N/A	665	364
+1	1	AB15	M	N/A	659	359
+1	1	AB16	M	N/A	659	360
+1	1	AB17	M	N/A	662	361
+1	1	AB18	M	N/A	660	357
+1	1	AB19	M	N/A	662	372
+1	1	AB20	M	N/A	654	356
+1	1	AB21	M	N/A	656	361
+1	1	AB22	M	N/A	671	378
+1	1	AB23	M	N/A	663	366
+1	1	AB24	M	N/A	664	369
+1	1	AB25	M	N/A	656	351
+1	1	AB26	M	N/A	661	354
+1	1	AB27	M	N/A	662	365
+1	1	AB28	M	N/A	665	373
+1	1	AB29	M	N/A	669	365
+1	1	AB30	M	N/A	653	339
+1	1	AB31	M	N/A	663	364
+1	1	AB32	M	N/A	661	354
+1	1	AB33	M	N/A	676	388
+1	1	AB34	M	N/A	667	369
+1	1	AB35	M	N/A	665	366
+1	1	AB36	M	N/A	660	362
+1	1	AB37	M	N/A	663	368
+1	1	AB38	M	N/A	654	356
+1	1	AB39	M	N/A	648	356
+1	1	AB40	M	N/A	662	358
+1	1	AB41	M	N/A	667	366
+1	1	AB42	M	N/A	660	366
+1	1	AB43	M	N/A	666	360
+1	1	AB44	M	N/A	658	348
+1	1	AB45	M	N/A	532	87
+1	1	AB46	M	N/A	540	86
+1	1	AB47	M	N/A	624	305
+1	1	AB48	M	N/A	589	284
+1	1	AC01	M	N/A	613	340
+1	1	AC02	M	N/A	624	327
+1	1	AC03	M	N/A	642	351
+1	1	AC04	M	N/A	648	359
+1	1	AC05	M	N/A	645	348
+1	1	AC06	M	N/A	655	369
+1	1	AC07	M	N/A	640	350
+1	1	AC08	M	N/A	645	356
+1	1	AC09	M	N/A	639	336
+1	1	AC10	M	N/A	641	349
+1	1	AC11	M	N/A	649	362
+1	1	AC12	M	N/A	649	355
+1	1	AC13	M	N/A	647	350
+1	1	AC14	M	N/A	657	364
+1	1	AC15	M	N/A	646	345
+1	1	AC16	M	N/A	646	350
+1	1	AC17	M	N/A	652	358
+1	1	AC18	M	N/A	660	361
+1	1	AC19	M	N/A	654	351
+1	1	AC20	M	N/A	656	358
+1	1	AC21	M	N/A	645	337
+1	1	AC22	M	N/A	653	354
+1	1	AC23	M	N/A	647	342
+1	1	AC24	M	N/A	655	350
+1	1	AC25	M	N/A	651	350
+1	1	AC26	M	N/A	652	352
+1	1	AC27	M	N/A	648	348
+1	1	AC28	M	N/A	655	370
+1	1	AC29	M	N/A	665	370
+1	1	AC30	M	N/A	649	349
+1	1	AC31	M	N/A	644	341
+1	1	AC32	M	N/A	662	361
+1	1	AC33	M	N/A	664	363
+1	1	AC34	M	N/A	652	354
+1	1	AC35	M	N/A	647	336
+1	1	AC36	M	N/A	646	345
+1	1	AC37	M	N/A	645	343
+1	1	AC38	M	N/A	642	348
+1	1	AC39	M	N/A	643	346
+1	1	AC40	M	N/A	641	349
+1	1	AC41	M	N/A	648	346
+1	1	AC42	M	N/A	638	323
+1	1	AC43	M	N/A	649	342
+1	1	AC44	M	N/A	640	346
+1	1	AC45	M	N/A	626	307
+1	1	AC46	M	N/A	615	290
+1	1	AC47	M	N/A	525	81
+1	1	AC48	M	N/A	501	71
+1	1	AD01	M	N/A	640	352
+1	1	AD02	M	N/A	656	368
+1	1	AD03	M	N/A	655	371
+1	1	AD04	M	N/A	663	368
+1	1	AD05	M	N/A	667	370
+1	1	AD06	M	N/A	670	379
+1	1	AD07	M	N/A	667	377
+1	1	AD08	M	N/A	663	367
+1	1	AD09	M	N/A	666	373
+1	1	AD10	M	N/A	664	366
+1	1	AD11	M	N/A	662	356
+1	1	AD12	M	N/A	664	363
+1	1	AD13	M	N/A	670	360
+1	1	AD14	M	N/A	662	367
+1	1	AD15	M	N/A	672	358
+1	1	AD16	M	N/A	671	366
+1	1	AD17	M	N/A	668	360
+1	1	AD18	M	N/A	653	338
+1	1	AD19	M	N/A	668	360
+1	1	AD20	M	N/A	673	372
+1	1	AD21	M	N/A	669	369
+1	1	AD22	M	N/A	660	349
+1	1	AD23	M	N/A	667	366
+1	1	AD24	M	N/A	670	362
+1	1	AD25	M	N/A	673	372
+1	1	AD26	M	N/A	673	376
+1	1	AD27	M	N/A	662	359
+1	1	AD28	M	N/A	664	355
+1	1	AD29	M	N/A	683	383
+1	1	AD30	M	N/A	679	377
+1	1	AD31	M	N/A	667	349
+1	1	AD32	M	N/A	674	351
+1	1	AD33	M	N/A	667	345
+1	1	AD34	M	N/A	669	363
+1	1	AD35	M	N/A	671	345
+1	1	AD36	M	N/A	668	370
+1	1	AD37	M	N/A	665	355
+1	1	AD38	M	N/A	665	366
+1	1	AD39	M	N/A	644	337
+1	1	AD40	M	N/A	662	359
+1	1	AD41	M	N/A	655	348
+1	1	AD42	M	N/A	666	374
+1	1	AD43	M	N/A	663	354
+1	1	AD44	M	N/A	661	346
+1	1	AD45	M	N/A	632	307
+1	1	AD46	M	N/A	635	305
+1	1	AD47	M	N/A	538	84
+1	1	AD48	M	N/A	509	70
+1	1	AE01	M	N/A	614	329
+1	1	AE02	M	N/A	648	377
+1	1	AE03	M	N/A	644	355
+1	1	AE04	M	N/A	647	356
+1	1	AE05	M	N/A	646	363
+1	1	AE06	M	N/A	651	368
+1	1	AE07	M	N/A	647	353
+1	1	AE08	M	N/A	645	353
+1	1	AE09	M	N/A	640	350
+1	1	AE10	M	N/A	652	377
+1	1	AE11	M	N/A	656	369
+1	1	AE12	M	N/A	648	352
+1	1	AE13	M	N/A	648	356
+1	1	AE14	M	N/A	648	352
+1	1	AE15	M	N/A	658	366
+1	1	AE16	M	N/A	655	356
+1	1	AE17	M	N/A	648	343
+1	1	AE18	M	N/A	650	337
+1	1	AE19	M	N/A	660	359
+1	1	AE20	M	N/A	659	368
+1	1	AE21	M	N/A	649	345
+1	1	AE22	M	N/A	661	361
+1	1	AE23	M	N/A	647	341
+1	1	AE24	M	N/A	665	370
+1	1	AE25	M	N/A	645	334
+1	1	AE26	M	N/A	644	340
+1	1	AE27	M	N/A	650	350
+1	1	AE28	M	N/A	652	354
+1	1	AE29	M	N/A	664	363
+1	1	AE30	M	N/A	657	355
+1	1	AE31	M	N/A	654	354
+1	1	AE32	M	N/A	653	341
+1	1	AE33	M	N/A	671	370
+1	1	AE34	M	N/A	657	352
+1	1	AE35	M	N/A	654	339
+1	1	AE36	M	N/A	659	377
+1	1	AE37	M	N/A	644	328
+1	1	AE38	M	N/A	646	352
+1	1	AE39	M	N/A	639	348
+1	1	AE40	M	N/A	644	355
+1	1	AE41	M	N/A	635	334
+1	1	AE42	M	N/A	635	344
+1	1	AE43	M	N/A	637	343
+1	1	AE44	M	N/A	639	345
+1	1	AE45	M	N/A	532	87
+1	1	AE46	M	N/A	527	85
+1	1	AE47	M	N/A	603	280
+1	1	AE48	M	N/A	587	281
+1	1	AF01	M	N/A	606	321
+1	1	AF02	M	N/A	623	342
+1	1	AF03	M	N/A	620	355
+1	1	AF04	M	N/A	618	342
+1	1	AF05	M	N/A	618	348
+1	1	AF06	M	N/A	625	356
+1	1	AF07	M	N/A	626	361
+1	1	AF08	M	N/A	627	354
+1	1	AF09	M	N/A	623	337
+1	1	AF10	M	N/A	627	347
+1	1	AF11	M	N/A	617	329
+1	1	AF12	M	N/A	640	350
+1	1	AF13	M	N/A	636	344
+1	1	AF14	M	N/A	645	358
+1	1	AF15	M	N/A	639	350
+1	1	AF16	M	N/A	629	330
+1	1	AF17	M	N/A	633	335
+1	1	AF18	M	N/A	649	360
+1	1	AF19	M	N/A	652	367
+1	1	AF20	M	N/A	645	346
+1	1	AF21	M	N/A	646	351
+1	1	AF22	M	N/A	635	322
+1	1	AF23	M	N/A	649	350
+1	1	AF24	M	N/A	648	344
+1	1	AF25	M	N/A	642	353
+1	1	AF26	M	N/A	655	359
+1	1	AF27	M	N/A	650	362
+1	1	AF28	M	N/A	640	336
+1	1	AF29	M	N/A	646	353
+1	1	AF30	M	N/A	642	355
+1	1	AF31	M	N/A	613	322
+1	1	AF32	M	N/A	641	354
+1	1	AF33	M	N/A	645	340
+1	1	AF34	M	N/A	646	339
+1	1	AF35	M	N/A	646	336
+1	1	AF36	M	N/A	637	345
+1	1	AF37	M	N/A	628	321
+1	1	AF38	M	N/A	635	346
+1	1	AF39	M	N/A	620	322
+1	1	AF40	M	N/A	624	346
+1	1	AF41	M	N/A	611	329
+1	1	AF42	M	N/A	611	327
+1	1	AF43	M	N/A	609	317
+1	1	AF44	M	N/A	610	328
+1	1	AF45	M	N/A	508	78
+1	1	AF46	M	N/A	509	72
+1	1	AF47	M	N/A	606	301
+1	1	AF48	M	N/A	581	273
+
+;--------------------------------------------------------------------------------
+;5 Results in plate format
+;--------------------------------------------------------------------------------
+
+;Plate	1
+Identification barcode .................... T1219227
+Measurement start time .................... 11/6/2013 3:49:15 PM
+Interior temperature ...................... N/A캜
+
+;Repeat	1
+Measurement start time .................... 11/6/2013 3:49:15 PM
+Interior temperature ...................... N/A캜
+
+;Label	1	Lance 615/665
+
+;Donor
+572	582	595	614	618	620	676	644	635	637	640	546	644	651	633	637	651	656	619	656	650	658	660	653	667	672	674	681	674	662	680	666	573	684	673	673	667	673	665	667	681	681	691	683	653	666	591	576	
+593	589	610	637	630	638	681	650	644	661	652	660	664	664	660	658	669	664	662	672	654	676	682	678	683	681	677	682	668	685	684	674	674	663	678	681	684	666	671	664	701	661	654	646	646	656	555	522	
+584	612	628	632	639	644	655	651	646	639	650	659	654	645	654	653	663	669	662	664	662	658	674	680	675	677	672	681	671	680	679	673	676	660	672	659	665	675	667	652	670	656	653	654	546	548	619	595	
+603	619	617	641	642	647	660	662	645	658	656	661	670	663	660	655	665	675	667	683	668	670	685	680	691	683	680	682	683	690	684	685	694	673	684	679	677	682	675	665	686	676	680	666	549	551	641	614	
+596	616	630	649	640	644	644	637	645	646	648	651	639	643	642	656	654	658	657	662	644	653	666	663	667	669	664	673	666	674	657	664	674	662	667	662	667	666	652	644	663	657	653	647	645	642	541	524	
+587	604	625	626	627	630	640	639	645	638	650	649	642	642	641	641	652	647	645	652	655	641	658	661	661	664	667	664	669	678	668	653	672	649	671	674	663	672	656	650	674	657	656	655	626	625	533	515	
+556	566	625	643	642	645	646	657	663	657	660	659	655	651	663	655	673	667	676	672	660	665	633	669	686	683	681	685	695	689	698	681	686	671	679	691	679	691	689	673	696	674	677	677	561	555	638	611	
+559	589	598	603	620	634	637	650	652	650	641	656	654	649	652	653	663	669	660	681	658	660	659	673	678	674	673	685	668	677	675	660	684	676	679	675	670	673	681	663	682	681	676	667	545	551	631	606	
+583	609	622	621	636	613	630	631	638	644	644	647	642	655	652	649	659	663	650	651	651	659	661	663	661	652	670	660	659	678	668	662	675	663	672	666	659	658	668	653	678	662	667	656	640	628	539	519	
+602	618	620	645	627	637	643	654	648	652	646	661	656	662	663	660	671	652	664	659	659	654	672	668	681	682	674	677	674	680	693	676	694	683	676	675	668	679	670	677	683	675	676	665	645	657	547	528	
+584	618	635	632	640	648	645	655	651	643	638	646	648	641	633	660	674	645	641	661	658	652	657	660	670	673	676	670	674	673	673	667	683	661	670	655	665	665	672	656	667	658	671	654	554	551	619	602	
+585	601	618	621	628	633	619	626	624	634	594	616	644	632	640	637	646	642	647	649	643	650	660	658	656	670	659	655	656	665	660	642	670	642	656	652	654	654	648	648	647	643	649	647	535	543	619	591	
+592	615	636	632	640	648	643	647	632	638	642	646	644	643	653	636	649	652	640	642	648	645	665	660	654	669	672	658	668	663	666	661	669	659	661	668	659	664	664	653	645	649	662	649	639	645	548	527	
+578	602	610	625	625	637	625	623	618	628	636	627	633	641	641	641	642	645	642	633	643	646	651	656	654	658	653	661	656	659	652	647	652	643	662	653	652	657	650	647	651	636	652	635	626	626	532	508	
+573	594	609	610	626	636	625	631	618	627	622	618	630	620	639	630	640	629	625	635	641	635	637	631	631	639	635	648	631	641	646	633	633	636	628	639	633	636	630	634	636	617	640	637	528	528	605	591	
+578	605	617	623	642	629	621	634	640	634	635	632	625	644	633	642	647	644	638	643	654	674	649	647	645	651	647	656	655	662	658	648	657	648	647	645	657	644	654	646	663	645	658	634	538	545	612	590	
+557	595	615	627	625	616	627	628	620	606	631	628	625	626	630	644	623	632	631	632	636	640	628	648	634	649	648	650	650	642	639	647	639	630	638	632	633	636	628	635	627	629	639	636	612	621	515	499	
+602	612	625	635	632	635	641	644	637	645	642	628	643	636	622	649	644	658	654	651	659	655	658	657	647	669	666	660	670	658	665	661	663	659	655	657	673	652	650	671	662	656	665	654	641	637	539	519	
+517	527	536	532	557	555	587	585	617	614	646	621	635	648	631	636	644	644	660	652	655	648	666	662	650	673	661	646	667	654	644	666	647	655	670	650	661	650	639	664	657	652	673	637	542	545	613	611	
+514	524	531	535	541	551	585	589	612	623	628	621	637	648	622	605	641	641	653	638	642	652	659	654	642	657	662	648	663	654	648	646	648	650	660	640	652	655	635	669	646	645	644	640	533	544	617	593	
+533	540	612	606	641	652	646	657	656	663	655	664	650	654	644	670	652	667	663	664	669	670	678	680	668	682	669	650	681	670	683	679	678	682	681	679	675	664	680	691	668	660	679	663	659	643	549	529	
+518	535	591	604	649	647	650	650	640	648	651	643	644	651	636	654	634	654	656	661	654	651	661	671	665	666	670	661	665	660	665	677	674	667	684	667	664	672	661	675	651	646	662	665	639	636	543	517	
+515	533	574	563	621	586	628	642	644	631	639	648	648	628	643	642	635	647	655	637	652	656	661	673	656	648	655	654	673	658	635	668	660	655	663	654	658	641	645	662	653	647	660	646	539	540	620	593	
+487	553	568	575	617	618	642	656	663	652	656	646	626	635	626	652	655	657	654	652	665	679	710	666	675	667	678	671	672	673	677	677	677	666	681	671	676	668	660	671	666	660	668	661	553	556	636	601	
+512	530	537	539	560	563	602	610	640	629	641	646	664	643	640	646	658	658	664	667	651	659	666	668	661	676	667	655	665	668	672	676	673	666	674	663	660	667	648	661	658	658	662	658	639	628	539	520	
+511	525	533	535	547	565	587	595	632	622	621	645	631	641	620	632	650	638	646	646	651	642	654	666	654	657	652	644	661	664	661	662	658	652	669	653	662	649	650	654	653	654	654	638	619	626	529	506	
+636	651	660	660	671	666	666	666	658	659	668	681	670	682	647	653	676	667	675	673	665	668	683	674	667	684	670	670	684	681	668	685	682	664	683	685	679	666	662	668	666	668	670	655	547	547	638	609	
+630	638	646	781	671	657	656	667	655	654	643	660	676	665	659	659	662	660	662	654	656	671	663	664	656	661	662	665	669	653	663	661	676	667	665	660	663	654	648	662	667	660	666	658	532	540	624	589	
+613	624	642	648	645	655	640	645	639	641	649	649	647	657	646	646	652	660	654	656	645	653	647	655	651	652	648	655	665	649	644	662	664	652	647	646	645	642	643	641	648	638	649	640	626	615	525	501	
+640	656	655	663	667	670	667	663	666	664	662	664	670	662	672	671	668	653	668	673	669	660	667	670	673	673	662	664	683	679	667	674	667	669	671	668	665	665	644	662	655	666	663	661	632	635	538	509	
+614	648	644	647	646	651	647	645	640	652	656	648	648	648	658	655	648	650	660	659	649	661	647	665	645	644	650	652	664	657	654	653	671	657	654	659	644	646	639	644	635	635	637	639	532	527	603	587	
+606	623	620	618	618	625	626	627	623	627	617	640	636	645	639	629	633	649	652	645	646	635	649	648	642	655	650	640	646	642	613	641	645	646	646	637	628	635	620	624	611	611	609	610	508	509	606	581	
+
+;Acceptor
+261	264	277	311	305	311	301	337	309	310	301	271	305	331	284	309	325	338	308	323	322	323	343	336	357	340	346	354	356	340	350	342	303	365	322	337	356	333	325	327	343	340	329	351	276	281	79	67	
+298	269	286	318	301	313	345	329	315	336	330	332	324	334	315	319	346	328	330	334	316	343	364	361	357	360	351	352	329	348	358	342	341	330	355	353	357	336	348	353	338	343	336	324	310	310	80	69	
+294	307	320	305	317	331	329	331	320	305	329	340	326	312	316	330	331	333	338	334	334	331	357	360	358	364	346	364	351	347	346	357	351	349	351	328	355	346	356	342	345	335	340	353	87	86	279	273	
+304	303	278	318	313	320	330	345	327	333	335	329	348	339	317	323	335	352	340	362	345	349	354	356	378	357	361	349	360	368	350	371	362	361	355	354	369	359	352	347	365	369	381	353	86	83	304	293	
+286	285	299	334	315	326	315	304	312	313	320	322	287	304	300	329	318	316	331	335	300	316	336	332	331	348	339	350	340	330	310	342	331	351	347	345	350	341	314	312	332	339	337	331	312	304	78	73	
+270	275	294	299	296	304	307	307	314	310	323	322	315	310	303	301	324	308	308	324	334	304	333	339	338	336	346	327	352	356	354	329	347	330	346	358	364	350	326	324	346	343	346	353	297	289	79	69	
+184	165	271	303	296	311	304	312	338	320	333	325	317	309	324	320	343	328	347	331	323	320	319	341	355	355	355	352	364	356	385	357	358	348	334	363	360	363	358	347	368	340	345	350	84	81	290	278	
+186	222	254	265	296	300	293	326	334	316	302	323	323	311	318	318	338	346	334	317	320	330	339	365	358	354	350	342	344	346	354	346	368	360	351	346	352	339	356	348	361	365	370	358	92	81	293	281	
+285	292	301	301	311	292	316	318	315	314	320	323	308	338	325	315	329	340	316	316	317	334	341	345	339	319	356	328	333	356	347	342	350	348	363	341	344	326	354	344	371	353	356	346	311	299	81	70	
+303	292	280	310	279	309	317	321	309	318	310	328	317	333	327	321	342	304	324	309	318	305	353	329	349	358	349	349	351	355	383	366	373	372	356	365	348	364	332	369	362	354	364	344	307	312	86	70	
+281	307	304	302	304	319	314	330	328	304	313	318	316	304	273	322	354	294	295	327	330	309	322	332	344	353	356	338	352	350	364	351	360	349	357	336	358	336	359	341	348	334	367	336	81	80	274	271	
+280	292	298	288	296	311	277	298	302	310	302	298	324	313	322	304	318	302	324	320	310	319	340	350	339	359	341	321	344	355	345	330	350	322	340	348	351	341	326	339	327	337	347	329	79	81	284	279	
+286	288	313	293	299	322	310	316	301	306	318	310	310	306	324	289	312	317	304	314	312	299	344	332	327	344	343	313	344	334	339	341	337	334	333	354	342	337	333	334	322	343	360	334	307	303	79	73	
+270	277	293	297	299	327	311	303	296	301	307	298	306	308	317	312	306	308	312	309	306	318	320	339	337	335	314	331	337	332	318	326	323	332	354	342	351	342	330	344	340	326	349	323	298	289	80	71	
+282	283	299	292	312	315	314	322	309	307	307	296	310	294	325	307	330	295	288	310	323	310	323	327	319	322	322	328	301	314	325	327	313	336	300	338	339	332	316	350	337	315	335	331	81	78	286	288	
+275	297	315	316	333	305	295	309	336	314	316	308	295	316	295	314	304	324	312	303	324	314	337	333	324	338	333	336	337	339	335	339	335	336	324	326	361	329	337	340	354	350	359	302	86	80	279	277	
+245	287	310	312	311	290	321	323	292	278	321	317	300	298	304	307	292	307	298	300	298	314	310	330	326	343	342	355	326	329	334	343	336	332	315	346	331	347	319	320	314	325	324	325	288	281	76	68	
+293	292	301	305	299	291	313	320	305	317	322	285	308	287	280	320	315	328	311	311	317	321	336	313	319	350	340	333	341	322	345	340	348	334	312	346	359	331	323	348	345	340	338	327	312	280	79	68	
+60	62	72	77	108	112	199	190	256	265	323	292	308	316	307	307	329	305	327	308	318	309	358	335	316	367	341	320	345	322	322	360	318	334	347	332	342	325	316	337	342	339	366	309	80	80	264	276	
+54	57	71	76	110	119	201	214	267	293	305	295	319	335	316	301	325	321	332	320	320	328	340	340	315	343	352	337	348	344	332	337	326	335	336	331	332	343	325	344	331	347	312	321	81	82	289	270	
+102	88	241	237	288	307	313	336	319	337	322	336	311	322	314	333	307	320	318	324	328	336	349	349	340	362	339	339	361	341	358	351	340	352	341	358	335	312	357	368	358	342	361	341	327	284	82	73	
+88	95	215	244	328	326	339	316	304	323	331	313	319	324	319	329	307	317	312	331	318	300	334	349	355	351	348	352	336	345	345	359	348	348	355	349	330	358	350	358	334	326	339	348	312	290	81	72	
+105	108	173	156	278	251	291	321	331	304	310	328	333	292	318	320	313	329	329	302	316	323	346	360	345	330	327	341	361	343	309	356	348	349	352	347	344	326	341	352	350	333	335	332	83	76	278	267	
+121	111	148	156	242	245	299	327	338	319	333	310	312	308	315	325	324	322	310	309	327	361	369	333	350	344	356	355	352	342	335	362	360	345	363	361	355	356	353	355	350	341	340	337	86	85	291	263	
+78	80	86	85	130	132	224	228	315	302	324	323	351	328	338	331	347	331	347	349	336	337	367	361	353	370	354	348	353	352	368	369	362	360	362	359	342	350	345	351	348	348	348	348	314	293	82	69	
+85	87	98	100	124	159	209	226	304	301	301	327	312	325	328	321	348	319	330	333	351	328	350	376	353	360	349	341	368	368	365	371	353	350	367	346	360	358	368	366	356	335	346	331	300	292	86	78	
+349	361	354	349	368	347	343	354	353	363	365	384	366	382	352	347	372	351	370	358	347	356	378	360	353	369	373	367	378	371	350	373	376	360	380	382	369	359	359	358	358	371	371	331	86	87	312	302	
+342	348	345	377	376	365	354	373	364	363	341	368	383	364	359	360	361	357	372	356	361	378	366	369	351	354	365	373	365	339	364	354	388	369	366	362	368	356	356	358	366	366	360	348	87	86	305	284	
+340	327	351	359	348	369	350	356	336	349	362	355	350	364	345	350	358	361	351	358	337	354	342	350	350	352	348	370	370	349	341	361	363	354	336	345	343	348	346	349	346	323	342	346	307	290	81	71	
+352	368	371	368	370	379	377	367	373	366	356	363	360	367	358	366	360	338	360	372	369	349	366	362	372	376	359	355	383	377	349	351	345	363	345	370	355	366	337	359	348	374	354	346	307	305	84	70	
+329	377	355	356	363	368	353	353	350	377	369	352	356	352	366	356	343	337	359	368	345	361	341	370	334	340	350	354	363	355	354	341	370	352	339	377	328	352	348	355	334	344	343	345	87	85	280	281	
+321	342	355	342	348	356	361	354	337	347	329	350	344	358	350	330	335	360	367	346	351	322	350	344	353	359	362	336	353	355	322	354	340	339	336	345	321	346	322	346	329	327	317	328	78	72	301	273	
+
