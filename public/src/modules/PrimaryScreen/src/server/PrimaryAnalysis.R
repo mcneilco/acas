@@ -1511,6 +1511,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   require("data.table")
   library(plyr)
   
+  originalFileToParse <- folderToParse
   folderToParse <- racas::getUploadedFilePath(folderToParse)
   
   if (!file.exists(folderToParse)) {
@@ -1789,7 +1790,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   if (dryRun && !testMode) {
     saveAcasFileToExperiment(
-      folderToParse, experiment, 
+      originalFileToParse, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
   }
   
