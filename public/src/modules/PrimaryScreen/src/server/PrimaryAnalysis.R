@@ -37,7 +37,7 @@
 # request <- structure(list(fileToParse = "Archive.zip", reportFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}", primaryAnalysisExperimentId = 203528, testMode = "true"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
 ############ testMode FALSE ############
 # file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/ArchiveNonTest.zip", "privateUploads/")
-# request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1018709", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
+# request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1086654", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
 
 getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
   
@@ -1925,7 +1925,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       treatmentGroupDataLong <- meltKnownTypes(treatmentGroupData, resultTypes, "saveAsTreatment")
       
-      analysisGroupDataLong <- meltKnownTypes(analysisGroupData, resultTypes, "saveAsAnalysis")
+      analysisGroupDataLong <- meltKnownTypes(analysisGroupData, resultTypes, "saveAsAnalysis", 
+                                              forceBatchCodeAdd = TRUE)
       analysisGroupDataLong[, parentId:=experimentId]
       
       # Removes blank rows, be careful when Save HTS is checked, this will need to be updated
@@ -2097,7 +2098,8 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
     subjectData$lsKind <- "default"
   }
   
-  saveAllViaTsv(analysisGroupData, treatmentGroupData, subjectData)  
+  saveAllViaTsv(analysisGroupData, treatmentGroupData, subjectData, 
+                appendCodeName = list(analysisGroup = "curve id"))  
   
   return (lsTransaction)
 }
@@ -2315,10 +2317,11 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   ##### TODO: End Sam Fix
   
 }
-meltKnownTypes <- function(resultTable, resultTypes, includedColumn) {
+meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchCodeAdd = FALSE) {
   # includedColumn is "saveAsSubject" or "saveAsTreatment" or "saveAsAnalysis"
   # resultTable is a Data Table, tempId is a required column, tempParentId is optional
   # resultTypes is a data table with information about each valueKind/columnHeader
+  # forceBatchCodeAdd boolean to decide if batch code state kind is changed to match others
   
   library(reshape2)
   
@@ -2327,7 +2330,7 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn) {
     idVars <- c(idVars, "tempParentId")
   }
   
-  usedCol <- resultTypes[, includedColumn, with=F][[1]] & resultTypes$columnName %in% names(resultTable)
+  usedCol <- (resultTypes[, includedColumn, with=F][[1]]) & (resultTypes$columnName %in% names(resultTable))
   
   numericResultColumns <- resultTypes[valueType=="numericValue" & usedCol, columnName]
   codeResultColumns <- resultTypes[valueType=="codeValue" & usedCol, columnName]
@@ -2341,7 +2344,23 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn) {
   
   fullTable <- merge(longResults, resultTypes, by = "columnName")
   
+  if (forceBatchCodeAdd) {
+    fullTable <- fullTable[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
+    fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
+    fullTable[, stateKind:=matchBatchCodeStateKind(stateKind, valueKind), by=tempId]
+  }
+  
+  
   return(fullTable)  
+}
+matchBatchCodeStateKind <- function(stateKindVect, valueKindVect) {
+  # helper for meltKnownTypes
+  newBatchCodeState <- unique(stateKindVect[valueKindVect!="batch code"])
+  if (length(newBatchCodeState) != 1) {
+    stopUser("Coding Error: unable to find unique stateKind for batch codes")
+  }
+  stateKindVect[valueKindVect=="batch code"] <- newBatchCodeState
+  return(stateKindVect)
 }
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
