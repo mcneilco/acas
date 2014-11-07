@@ -1527,7 +1527,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   parameters <- getExperimentParameters(inputParameters)
   
   ## TODO: test structure for integration 2014-10-06 kcarr
-   parameters <- parameters$primaryScreenAnalysisParameters
+  # parameters <- parameters$primaryScreenAnalysisParameters
   ## END test structure
     
   # TODO: store this in protocol

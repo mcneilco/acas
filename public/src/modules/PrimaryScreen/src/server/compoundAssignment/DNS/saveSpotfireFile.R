@@ -21,11 +21,12 @@ saveSpotfireFile <- function(inputTable, saveLocation) {
   keepColumns <- intersect(newColNames, requiredColumns)
   
   inputTable <- data.table(inputTable)
-  inputTable <- removeColumns(colNamesToCheck=newColNames,
+  # Because we are formatting for spotfire, we don't need to warn user that columns are being added or removed
+  inputTable <- suppressWarnings(removeColumns(colNamesToCheck=newColNames,
                               colNamesToKeep=keepColumns,
-                              inputDataTable=inputTable)
+                              inputDataTable=inputTable))
+  inputTable <- suppressWarnings(addMissingColumns(requiredColNames=requiredColumns, inputTable))
   
-  inputTable <- addMissingColumns(requiredColNames=requiredColumns, inputTable)
   setcolorder(inputTable, requiredColumns)
   
   write.table(inputTable, file=file.path(saveLocation,"spotfire-DRAFT.txt"), quote=FALSE, na="", row.names=FALSE, sep="\t")
