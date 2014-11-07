@@ -1517,9 +1517,16 @@
           return _this.trigger('amClean');
         };
       })(this));
+      this.setupModelFitController(this.modelFitControllerName);
+      this.analysisController.on('analysis-completed', (function(_this) {
+        return function() {
+          return _this.modelFitController.primaryAnalysisCompleted();
+        };
+      })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
       this.experimentBaseController.render();
-      return this.analysisController.render();
+      this.analysisController.render();
+      return this.modelFitController.render();
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupModelFitController = function(modelFitControllerName) {

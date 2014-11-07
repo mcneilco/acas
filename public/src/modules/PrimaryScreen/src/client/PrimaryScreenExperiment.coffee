@@ -975,13 +975,13 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amDirty'
 		@analysisController.on 'amClean', =>
 			@trigger 'amClean'
-		#@setupModelFitController(@modelFitControllerName)
-#		@analysisController.on 'analysis-completed', =>
-#			@modelFitController.primaryAnalysisCompleted()
+		@setupModelFitController(@modelFitControllerName)
+		@analysisController.on 'analysis-completed', =>
+			@modelFitController.primaryAnalysisCompleted()
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@experimentBaseController.render()
 		@analysisController.render()
-		#@modelFitController.render()
+		@modelFitController.render()
 
 	setupModelFitController: (modelFitControllerName) ->
 		newArgs =

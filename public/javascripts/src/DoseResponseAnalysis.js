@@ -342,6 +342,7 @@
         this.setupCurveFitAnalysisParameterController();
       }
       this.$('.bv_fitOptionWrapper').show();
+      this.$('.bv_fitModelButton').show();
       this.$('.bv_analyzeExperimentToFit').hide();
       return this.handleStatusChanged();
     };
