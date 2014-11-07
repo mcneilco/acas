@@ -10,6 +10,13 @@
 #   more than 2 compound columns
 
 getPlateAssociationData <- function(fileName, header=FALSE, tempFilePath) {
+  #
+  # Reads the .csv file and formats it in to a data.table
+  # 
+  # Input:  fileName (name of the plate association .csv)
+  #        tempFilePath (where log files and ini files are saved)
+  # Output: plateAssociationDT (data.table with column names: assayBarcode, compoundBarcode_1, sidecarBarcode (optional))
+  
   
   # runlog
   write.table(paste0(Sys.time(), "\tbegin getPlateAssociationData\tfileName=",fileName), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
@@ -19,7 +26,8 @@ getPlateAssociationData <- function(fileName, header=FALSE, tempFilePath) {
   if (ncol(plateAssociationData) == 3) {
     compoundColumns <- c("sidecarBarcode", paste0("compoundBarcode_", 1:(ncol(plateAssociationData)-2)))
     
-    # This might make compound barcodes break
+    # In some cases with multiple compound barcodes, the second column is blank but the 
+    # third is not. This is adjusted by moving the third value in to the second column.
     for(i in 1:nrow(plateAssociationData)) {
       if(plateAssociationData[i, 2] == "") {
         warnUser("Blank sidecar Barcode")

@@ -3,7 +3,22 @@
 #require(rdap)
 
 
-getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, readsTable, testMode=TRUE, errorEnv, tempFilePath=NULL, dryRun=TRUE, matchNames=FALSE) {
+getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, readsTable, testMode=TRUE, 
+                                      errorEnv, tempFilePath=NULL, dryRun=TRUE, matchNames=FALSE) {
+  #
+  # Parses the raw instrument files. Folder needs to have a plate association 
+  # .csv file, and the assay plate files need to be in .txt files
+  #
+  # Input:  filePath (folder where the raw data files are)
+  #         instrument (instrument type that is being parsed)
+  #         readsTable (data.table from GUI input. Columns: readPosition, readName, activity)
+  #         testMode (boolean)
+  #         errorEnv
+  #         tempFilePath (where log files and ini files are saved)
+  #         dryRun (boolean)
+  #         matchNames (boolean)         
+  # Output: instrumentData (list of two data tables: plateAssociationDT, assayData)
+  
   
   #   originalWD <- getwd()
   #   require(racas)

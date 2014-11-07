@@ -2,6 +2,13 @@
 # includes: assayFileName, number of data sets on plate, plate order
 
 getPlateDataOrder <- function(filePath, instrument, tempFilePath) {
+  #
+  # Reads the .csv file and scans the .txt files to return # of reads, data tiles, and plate order
+  #
+  # Input:  filePath (folder where the raw data files are)
+  #         instrument (instrument type that is being parsed)
+  #         tempFilePath (where log files and ini files are saved)
+  # Output: plateData (data.table with column names)
   
   # runlog
   write.table(paste0(Sys.time(), "\tbegin getPlateDataOrder\tfilePath=",filePath,"\tinstrument=",instrument), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
@@ -9,6 +16,7 @@ getPlateDataOrder <- function(filePath, instrument, tempFilePath) {
   csvFile     					<- getCsvFileName(filePath, tempFilePath=tempFilePath)
   plateAssociationDT 		<- getPlateAssociationData(fileName=file.path(filePath, csvFile), tempFilePath=tempFilePath)
   
+  # Get the assay file names in to the plate association DT
   assayBarcodeDT <- data.table(assayBarcode=plateAssociationDT$assayBarcode)
   assayBarcodeDT <- assayBarcodeDT[ , getAssayFileName(assayBarcode, filePath=filePath, tempFilePath=tempFilePath), by=assayBarcode]
   plateAssociationDT <- merge(plateAssociationDT, assayBarcodeDT, by="assayBarcode")

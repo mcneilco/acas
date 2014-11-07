@@ -1,9 +1,24 @@
 
 
-specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, dryRun, instrumentClass, testMode, tempFilePath) {
-  # DNS 
-  fileList <- c(list.files(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE),
-                list.files(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/", instrumentClass), full.names=TRUE))
+specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, 
+                                      dryRun, instrumentClass, testMode, tempFilePath) {
+  ##### DNS #####
+  # 
+  # This function sources the functions that parse the instrument files
+  #
+  # Input:  parameters (list of GUI parameters)
+  #         folderToParse (folder where the raw data files are)
+  #         errorEnv
+  #         dryRun (boolean)
+  #         instrumentClass
+  #         testMode (boolean)
+  #         tempFilePath (where log files and ini files are saved)
+  # Output: instrumentData (list of two data tables: plateAssociationDT, assayData)
+  
+  instrumentSpecificFolder <- "public/src/modules/PrimaryScreen/src/server/instrumentSpecific/"
+  
+  fileList <- c(list.files(file.path(instrumentSpecificFolder, "/specificDataPreProcessorFiles/"), full.names=TRUE),
+                list.files(file.path(instrumentSpecificFolder, instrumentClass), full.names=TRUE))
   lapply(fileList, source)
   
   readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)

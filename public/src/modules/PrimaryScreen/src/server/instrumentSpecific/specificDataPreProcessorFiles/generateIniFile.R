@@ -4,6 +4,13 @@
 # Output: .ini file
 
 generateIniFile <- function(filePath, tempFilePath, instrument) {
+  #
+  # Runs the function to get the plate data and writes it to defaultlog.ini in analysis folder
+  # 
+  # Input:  filePath (folder where the raw data files are)
+  #         tempFilePath (where log files and ini files are saved)
+  #         instrument
+  # Output: plateData
   
   #   setwd(filePath)
   

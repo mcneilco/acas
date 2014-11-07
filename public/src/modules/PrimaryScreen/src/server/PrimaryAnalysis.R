@@ -1347,8 +1347,9 @@ loadInstrumentReadParameters <- function(instrumentType) {
   # Input:  instrumentType
   # Output: assay file parameters (list)
   
-  if (is.null(instrumentType) ||
-        !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType)) || 
+  # Checks to make sure that all of the required files have been loaded in to the correct folder
+  if (is.null(instrumentType) || 
+	!file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType)) || 
         !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"instrumentType.json")) ||
         !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"detectionLine.json")) ||
         !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"paramList.json"))) 
@@ -1356,6 +1357,7 @@ loadInstrumentReadParameters <- function(instrumentType) {
     stopUser("Configuration error: Instrument not loaded in system.")
   } 
   
+  # Doublechecks to make sure that the instrument type matches 
   instrument <- fromJSON(readLines(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",
                                              instrumentType,"instrumentType.json")))$instrumentType
   if(instrumentType != instrument) {
@@ -1380,7 +1382,7 @@ getReadOrderTable <- function(readList) {
   readsTable <- data.table(ldply(readList, data.frame))
   
   if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
-    warnUser("Some reads have the same name.")
+    stopUser("Some reads have the same name.")
   }
   
   if(length(unique(readsTable$activity)) != 2 && !unique(readsTable$activity)) {
@@ -1525,7 +1527,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   parameters <- getExperimentParameters(inputParameters)
   
   ## TODO: test structure for integration 2014-10-06 kcarr
-  #parameters <- parameters$primaryScreenAnalysisParameters
+   parameters <- parameters$primaryScreenAnalysisParameters
   ## END test structure
     
   # TODO: store this in protocol
