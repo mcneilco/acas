@@ -387,6 +387,11 @@
             return _this.$("tbody").append(ersc.render().el);
           };
         })(this));
+        this.$("table").dataTable({
+          oLanguage: {
+            sSearch: "Filter results: "
+          }
+        });
       }
       return this;
     };

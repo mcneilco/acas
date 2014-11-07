@@ -260,6 +260,9 @@ class window.ExperimentSummaryTableController extends Backbone.View
 				ersc.on "gotClick", @selectedRowChanged
 
 				@$("tbody").append ersc.render().el
+			@$("table").dataTable oLanguage:
+				sSearch: "Filter results: " #rename summary table's search bar
+
 		@
 
 

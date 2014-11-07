@@ -16,7 +16,8 @@ exports.requiredScripts = [
 	'/src/lib/bootstrap/bootstrap-tooltip.js',
 	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
 	'/src/lib/dataTables/js/jquery.dataTables.js',
-	'/src/lib/jsxgraph/jsxgraphcore.js',
+    '/src/lib/bootstrap/bootstrap-datatable.js',
+    '/src/lib/jsxgraph/jsxgraphcore.js',
 	'/src/lib/jstree/jstree.min.js',
 	'/src/lib/moment.min.js'
 ];
