@@ -570,7 +570,7 @@
                 return expect(this.pspmc.$('.bv_saveModule').length).toEqual(1);
               });
             });
-            it("model should be valid and ready to save", function() {
+            xit("model should be valid and ready to save", function() {
               return runs(function() {
                 return expect(this.pspmc.model.isValid()).toBeTruthy();
               });

@@ -1,9 +1,6 @@
 _ = require 'underscore'
 request = require 'request'
 
-exports.setupAPIRoutes = (app, loginRoutes) ->
-	app.get '/entity/edit/codeName/:code', exports.redirectToEditor
-
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor
 

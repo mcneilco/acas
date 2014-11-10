@@ -426,9 +426,10 @@ describe "Experiment module testing", ->
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
 					expect(@ebc.model.get 'recordedBy').toEqual ""
-					@ebc.$('.bv_recordedBy').val("nxm7557")
+					@ebc.$('.bv_recordedBy').val("jmcneil")
 					@ebc.$('.bv_recordedBy').change()
-					expect(@ebc.model.get 'recordedBy').toEqual "nxm7557"
+					console.log @ebc.model.get('recordedBy')
+					expect(@ebc.model.get 'recordedBy').toEqual "jmcneil"
 				it "should update model when shortDescription is changed", ->
 					@ebc.$('.bv_shortDescription').val(" New short description   ")
 					@ebc.$('.bv_shortDescription').change()

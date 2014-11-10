@@ -386,9 +386,12 @@
     };
 
     BaseEntityController.prototype.handleRecordedByChanged = function() {
+      console.log("recordedBy changed");
+      console.log(this.$('.bv_recordedBy').val());
       this.model.set({
         recordedBy: this.$('.bv_recordedBy').val()
       });
+      console.log(this.model.get('recordedBy'));
       return this.handleNameChanged();
     };
 
@@ -429,6 +432,7 @@
         labelText: newName,
         recordedBy: this.model.get('recordedBy')
       }));
+      console.log(this.model.get('recordedBy'));
       return this.model.trigger('change');
     };
 

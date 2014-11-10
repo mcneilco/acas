@@ -233,7 +233,10 @@ class window.BaseEntityController extends AbstractFormController
 
 
 	handleRecordedByChanged: =>
+		console.log "recordedBy changed"
+		console.log @$('.bv_recordedBy').val()
 		@model.set recordedBy: @$('.bv_recordedBy').val()
+		console.log @model.get('recordedBy')
 		@handleNameChanged()
 
 	handleShortDescriptionChanged: =>
@@ -261,6 +264,7 @@ class window.BaseEntityController extends AbstractFormController
 			labelText: newName
 			recordedBy: @model.get('recordedBy')
 		#TODO label change propagation isn't really working, so this is the work-around
+		console.log @model.get('recordedBy')
 		@model.trigger 'change'
 
 	handleDateChanged: =>
