@@ -475,10 +475,7 @@
 
     PrimaryScreenExperiment.prototype.getAnalysisResultHTML = function() {
       var result;
-      console.log("getting analysis result html");
       result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "analysis result html");
-      console.log(result);
-      console.log(result.has);
       if (!result.has('clobValue')) {
         result.set({
           clobValue: ""

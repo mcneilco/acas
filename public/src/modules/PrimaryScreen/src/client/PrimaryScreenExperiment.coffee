@@ -285,10 +285,7 @@ class window.PrimaryScreenExperiment extends Experiment
 		status
 
 	getAnalysisResultHTML: ->
-		console.log "getting analysis result html"
 		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
-		console.log result
-		console.log result.has
 		if !result.has('clobValue')
 			result.set clobValue: ""
 
