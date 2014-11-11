@@ -17,7 +17,8 @@ exports.requiredScripts = [
     '/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
     '/src/lib/dataTables/js/jquery.dataTables.js',
 	'/src/lib/jsxgraph/jsxgraphcore.js',
-	'/src/lib/jstree/jstree.min.js'
+	'/src/lib/jstree/jstree.min.js',
+	'/src/lib/moment.min.js'
 ];
 
 exports.applicationScripts = [
@@ -54,7 +55,8 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenus.js",
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
-	"/javascripts/src/TagList.js"
+	"/javascripts/src/TagList.js",
+	"/javascripts/src/Thing.js"
 ];
 
 exports.jasmineScripts = [
