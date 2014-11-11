@@ -612,7 +612,14 @@
           _this.trigger('amClean');
           _this.$('.bv_savingModule').hide();
           _this.$('.bv_updateModuleComplete').show();
-          return _this.$('.bv_saveModule').attr('disabled', 'disabled');
+          _this.$('.bv_saveModule').attr('disabled', 'disabled');
+          if (_this.model.isNew()) {
+            _this.$('.bv_saveModule').html("Save");
+            return _this.$('.bv_saveInstructions').show();
+          } else {
+            _this.$('.bv_saveModule').html("Update");
+            return _this.$('.bv_saveInstructions').hide();
+          }
         };
       })(this));
       if (this.model.isNew()) {
@@ -635,9 +642,11 @@
       this.$('.bv_save').hide();
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
-        return this.$('.bv_saveModule').html("Save");
+        this.$('.bv_saveModule').html("Save");
+        return this.$('.bv_saveInstructions').show();
       } else {
-        return this.$('.bv_saveModule').html("Update");
+        this.$('.bv_saveModule').html("Update");
+        return this.$('.bv_saveInstructions').hide();
       }
     };
 
@@ -752,7 +761,8 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.clearValidationErrorStyles = function() {
       AbstractPrimaryScreenProtocolModuleController.__super__.clearValidationErrorStyles.call(this);
-      return this.$('.bv_saveModule').removeAttr('disabled');
+      this.$('.bv_saveModule').removeAttr('disabled');
+      return this.$('.bv_saveInstructions').hide();
     };
 
     return AbstractPrimaryScreenProtocolModuleController;

@@ -359,8 +359,10 @@
       this.$('.bv_status').val(this.model.getStatus().get('stringValue'));
       if (this.model.isNew()) {
         this.$('.bv_save').html("Save");
+        console.log("model is new");
       } else {
         this.$('.bv_save').html("Update");
+        console.log("model is not new");
       }
       this.updateEditable();
       return this;

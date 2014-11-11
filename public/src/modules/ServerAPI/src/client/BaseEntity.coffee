@@ -210,8 +210,10 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_status').val(@model.getStatus().get('stringValue'))
 		if @model.isNew()
 			@$('.bv_save').html("Save")
+			console.log "model is new"
 		else
 			@$('.bv_save').html("Update")
+			console.log "model is not new"
 		@updateEditable()
 
 		@

@@ -418,6 +418,13 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@$('.bv_savingModule').hide()
 			@$('.bv_updateModuleComplete').show()
 			@$('.bv_saveModule').attr('disabled', 'disabled')
+			if @model.isNew()
+				@$('.bv_saveModule').html("Save")
+				@$('.bv_saveInstructions').show()
+			else
+				@$('.bv_saveModule').html("Update")
+				@$('.bv_saveInstructions').hide()
+
 		if @model.isNew()
 			@$('.bv_saveModule').html("Save")
 		else
@@ -441,8 +448,10 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 
 		if @model.isNew()
 			@$('.bv_saveModule').html("Save")
+			@$('.bv_saveInstructions').show()
 		else
 			@$('.bv_saveModule').html("Update")
+			@$('.bv_saveInstructions').hide()
 
 	handleProtocolSaved: =>
 		@trigger 'amClean'
@@ -521,6 +530,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 	clearValidationErrorStyles: =>
 		super()
 		@$('.bv_saveModule').removeAttr('disabled')
+		@$('.bv_saveInstructions').hide()
 
 class window.PrimaryScreenProtocolModuleController extends AbstractPrimaryScreenProtocolModuleController
 	moduleLaunchName: "primary_screen_protocol"
