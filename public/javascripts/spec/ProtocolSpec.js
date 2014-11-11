@@ -49,6 +49,13 @@
             expect(this.prot.getAssayTreeRule() instanceof Value).toBeTruthy();
             return expect(this.prot.getAssayTreeRule().get('stringValue')).toEqual("");
           });
+          it('Should have an assay stage value', function() {
+            expect(this.prot.getAssayStage() instanceof Value).toBeTruthy();
+            expect(this.prot.getAssayStage().get('codeValue')).toEqual("unassigned");
+            expect(this.prot.getAssayStage().get('codeOrigin')).toEqual("acas ddict");
+            expect(this.prot.getAssayStage().get('codeType')).toEqual("protocolMetadata");
+            return expect(this.prot.getAssayStage().get('codeKind')).toEqual("assay stage");
+          });
           it('Should have an assay principle value', function() {
             expect(this.prot.getAssayPrinciple() instanceof Value).toBeTruthy();
             return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("");
@@ -432,6 +439,14 @@
           it("should fill the assay tree rule field", function() {
             return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("assay tree rule goes here");
           });
+          it("should fill the assay stage field", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayStage option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayStage').val()).toEqual("assay development");
+            });
+          });
           it("should fill the assay principle field", function() {
             return expect(this.pbc.$('.bv_assayPrinciple').val()).toEqual("assay principle goes here");
           });
@@ -533,6 +548,11 @@
             desc = values[0].get('stringValue');
             expect(desc).toEqual("Updated assay tree rule");
             return expect(this.pbc.model.getAssayTreeRule().get('stringValue')).toEqual("Updated assay tree rule");
+          });
+          it("should update model when assay stage is changed", function() {
+            this.pbc.$('.bv_assayStage').val("unassigned");
+            this.pbc.$('.bv_assayStage').change();
+            return expect(this.pbc.model.getAssayStage().get('codeValue')).toEqual("unassigned");
           });
           it("should update model when assay principle is changed", function() {
             var desc, states, values;
@@ -638,8 +658,16 @@
               return expect(this.pbc.$('.bv_status').val()).toEqual('created');
             });
           });
-          return it("should have the assay tree rule be empty", function() {
+          it("should have the assay tree rule be empty", function() {
             return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("");
+          });
+          return it("should have the assay stage be empty", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayStage option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayStage').val()).toEqual("unassigned");
+            });
           });
         });
         return describe("controller validation rules", function() {

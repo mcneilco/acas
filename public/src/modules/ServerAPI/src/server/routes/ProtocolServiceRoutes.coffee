@@ -14,6 +14,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList
 	app.get '/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList
 	app.get '/api/protocols/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericProtocolSearch
+	app.delete '/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol
+
 
 exports.protocolByCodename = (req, resp) ->
 	console.log "protocolByCodename"
@@ -220,5 +222,25 @@ exports.genericProtocolSearch = (req, res) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, res)
 
-#		json = {message: "genericExperimentSearch not implemented yet"}
-#		res.end JSON.stringify json
+exports.deleteProtocol = (req, res) ->
+	config = require '../conf/compiled/conf.js'
+	protocolID = req.params.id
+	baseurl = config.all.client.service.persistence.fullpath+"/api/v1/protocols/browser/"+protocolID
+	console.log "baseurl"
+	console.log baseurl
+	request = require 'request'
+
+	request(
+		method: 'DELETE'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			console.log JSON.stringify json
+			res.end JSON.stringify json
+		else
+			console.log 'got ajax error trying to delete protocol'
+			console.log error
+			console.log response
+	)

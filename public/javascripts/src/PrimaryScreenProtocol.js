@@ -243,7 +243,6 @@
 
     PrimaryScreenProtocolParametersController.prototype.events = {
       "click .bv_customerMolecularTargetDDictChkbx": "handleMolecularTargetDDictChanged",
-      "change .bv_assayStage": "attributeChanged",
       "change .bv_maxY": "attributeChanged",
       "change .bv_minY": "attributeChanged",
       "change .bv_assayActivity": "attributeChanged",
@@ -262,8 +261,7 @@
       this.setupTargetOriginSelect();
       this.setupAssayTypeSelect();
       this.setupAssayTechnologySelect();
-      this.setupCellLineSelect();
-      return this.setUpAssayStageSelect();
+      return this.setupCellLineSelect();
     };
 
     PrimaryScreenProtocolParametersController.prototype.render = function() {
@@ -273,7 +271,6 @@
       this.$('.bv_minY').val(this.model.getCurveDisplayMin().get('numericValue'));
       this.setupAssayActivitySelect();
       this.setupTargetOriginSelect();
-      this.setUpAssayStageSelect();
       this.setupAssayTypeSelect();
       this.setupAssayTechnologySelect();
       this.setupCellLineSelect();
@@ -352,20 +349,6 @@
       return this.cellLineListController.render();
     };
 
-    PrimaryScreenProtocolParametersController.prototype.setUpAssayStageSelect = function() {
-      this.assayStageList = new PickListList();
-      this.assayStageList.url = "/api/dataDict/protocol metadata/assay stage";
-      return this.assayStageListController = new PickListSelectController({
-        el: this.$('.bv_assayStage'),
-        collection: this.assayStageList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select assay stage"
-        }),
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')
-      });
-    };
-
     PrimaryScreenProtocolParametersController.prototype.setupCustomerMolecularTargetDDictChkbx = function() {
       var checked;
       this.molecularTargetList = new PickListList();
@@ -410,9 +393,6 @@
       });
       this.model.getPrimaryScreenProtocolParameterCodeValue('cell line').set({
         codeValue: this.cellLineListController.getSelectedCode()
-      });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').set({
-        codeValue: this.assayStageListController.getSelectedCode()
       });
       this.model.getCurveDisplayMax().set({
         numericValue: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_maxY')))

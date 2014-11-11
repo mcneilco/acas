@@ -67,8 +67,14 @@
         it("should show the protocol kind", function() {
           return expect(this.prsc.$('.bv_protocolKind').html()).toEqual("default");
         });
-        return it("should show the scientist", function() {
+        it("should show the scientist", function() {
           return expect(this.prsc.$('.bv_recordedBy').html()).toEqual("nxm7557");
+        });
+        it("should show the status", function() {
+          return expect(this.prsc.$('.bv_status').html()).toEqual("created");
+        });
+        return it("should show the assay stage", function() {
+          return expect(this.prsc.$('.bv_assayStage').html()).toEqual("assay development");
         });
       });
       return describe("basic behavior", function() {

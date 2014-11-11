@@ -155,6 +155,7 @@
         protocolCode: this.model.get('codeName'),
         protocolKind: this.model.get('lsKind'),
         recordedBy: this.model.get('recordedBy'),
+        assayStage: this.model.getAssayStage().get("codeValue"),
         status: this.model.getStatus().get("stringValue"),
         recordedDate: this.model.get("recordedDate")
       };
@@ -306,7 +307,7 @@
       this.$(".bv_deletingStatusIndicator").removeClass("hide");
       this.$(".bv_deleteButtons").addClass("hide");
       return $.ajax({
-        url: "api/protocols/" + (this.protocolController.model.get("id")),
+        url: "api/protocols/browser/" + (this.protocolController.model.get("id")),
         type: 'DELETE',
         success: (function(_this) {
           return function(result) {

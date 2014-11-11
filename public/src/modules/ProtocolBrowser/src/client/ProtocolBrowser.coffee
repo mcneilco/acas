@@ -95,7 +95,8 @@ class window.ProtocolRowSummaryController extends Backbone.View
 			protocolCode: @model.get('codeName')
 			protocolKind: @model.get('lsKind')
 			recordedBy: @model.get('recordedBy')
-			status: @model.getStatus().get("stringValue")
+			assayStage: @model.getAssayStage().get("codeValue") #TODO: returned stub doesn't have the stage, so will always be set to "unassigned"
+			status: @model.getStatus().get("stringValue") #TODO: returned stub doesn't have the status, so will always be set to "created"
 #			analysisStatus: @model.getAnalysisStatus().get("stringValue")
 			recordedDate: @model.get("recordedDate")
 		$(@el).html(@template(toDisplay))
@@ -200,7 +201,7 @@ class window.ProtocolBrowserController extends Backbone.View
 		@$(".bv_deletingStatusIndicator").removeClass "hide"
 		@$(".bv_deleteButtons").addClass "hide"
 		$.ajax(
-			url: "api/protocols/#{@protocolController.model.get("id")}",
+			url: "api/protocols/browser/#{@protocolController.model.get("id")}",
 			type: 'DELETE',
 			success: (result) =>
 				@$(".bv_okayButton").removeClass "hide"

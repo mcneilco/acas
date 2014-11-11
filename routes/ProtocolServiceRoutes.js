@@ -14,7 +14,8 @@
     app.get('/api/protocollabels', loginRoutes.ensureAuthenticated, exports.lsLabels);
     app.get('/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList);
     app.get('/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList);
-    return app.get('/api/protocols/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericProtocolSearch);
+    app.get('/api/protocols/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericProtocolSearch);
+    return app["delete"]('/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol);
   };
 
   exports.protocolByCodename = function(req, resp) {
@@ -254,6 +255,33 @@
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, res);
     }
+  };
+
+  exports.deleteProtocol = function(req, res) {
+    var baseurl, config, protocolID, request;
+    config = require('../conf/compiled/conf.js');
+    protocolID = req.params.id;
+    baseurl = config.all.client.service.persistence.fullpath + "/api/v1/protocols/browser/" + protocolID;
+    console.log("baseurl");
+    console.log(baseurl);
+    request = require('request');
+    return request({
+      method: 'DELETE',
+      url: baseurl,
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        console.log(response.statusCode);
+        if (!error && response.statusCode === 200) {
+          console.log(JSON.stringify(json));
+          return res.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to delete protocol');
+          console.log(error);
+          return console.log(response);
+        }
+      };
+    })(this));
   };
 
 }).call(this);

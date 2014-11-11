@@ -56,6 +56,36 @@
 				valueUnit: null
 				version: 0
 			,
+				clobValue: null
+				codeType: "protocolMetadata"
+				codeValue: "assay development"
+				codeOrigin: "acas ddict"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80489
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 872
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 100.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "assay stage"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_assay stage"
+				valueUnit: null
+				version: 0
+			,
 				clobValue: "assay principle goes here"
 				codeValue: null
 				comments: null
