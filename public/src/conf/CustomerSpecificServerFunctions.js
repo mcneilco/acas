@@ -115,7 +115,7 @@
     var config, request;
     console.log("getting user");
     config = require('../../../conf/compiled/conf.js');
-    if (config.all.server.roologin.login && !global.specRunnerTestmode) {
+    if (config.all.server.roologin.getUserLink && !global.specRunnerTestmode) {
       console.log("getting user from server");
       request = require('request');
       return request({
