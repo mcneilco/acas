@@ -196,8 +196,8 @@
       return {
         instrumentReader: "unassigned",
         signalDirectionRule: "unassigned",
-        aggregateBy1: "unassigned",
-        aggregateBy2: "unassigned",
+        aggregateBy: "unassigned",
+        aggregationMethod: "unassigned",
         normalizationRule: "unassigned",
         assayVolume: null,
         transferVolume: null,
@@ -353,16 +353,16 @@
           message: "Signal Direction Rule must be assigned"
         });
       }
-      if (attrs.aggregateBy1 === "unassigned" || attrs.aggregateBy1 === "") {
+      if (attrs.aggregateBy === "unassigned" || attrs.aggregateBy === "") {
         errors.push({
-          attribute: 'aggregateBy1',
-          message: "Aggregate By1 must be assigned"
+          attribute: 'aggregateBy',
+          message: "Aggregate By must be assigned"
         });
       }
-      if (attrs.aggregateBy2 === "unassigned" || attrs.aggregateBy2 === "") {
+      if (attrs.aggregationMethod === "unassigned" || attrs.aggregationMethod === "") {
         errors.push({
-          attribute: 'aggregateBy2',
-          message: "Aggregate By2 must be assigned"
+          attribute: 'aggregationMethod',
+          message: "Aggregation method must be assigned"
         });
       }
       if (attrs.normalizationRule === "unassigned" || attrs.normalizationRule === "") {
@@ -862,8 +862,8 @@
     PrimaryScreenAnalysisParametersController.prototype.events = {
       "change .bv_instrumentReader": "attributeChanged",
       "change .bv_signalDirectionRule": "attributeChanged",
-      "change .bv_aggregateBy1": "attributeChanged",
-      "change .bv_aggregateBy2": "attributeChanged",
+      "change .bv_aggregateBy": "attributeChanged",
+      "change .bv_aggregationMethod": "attributeChanged",
       "change .bv_normalizationRule": "attributeChanged",
       "change .bv_assayVolume": "handleAssayVolumeChanged",
       "change .bv_dilutionFactor": "handleDilutionFactorChanged",
@@ -896,8 +896,8 @@
       })(this));
       this.setupInstrumentReaderSelect();
       this.setupSignalDirectionSelect();
-      this.setupAggregateBy1Select();
-      this.setupAggregateBy2Select();
+      this.setupAggregateBySelect();
+      this.setupAggregationMethodSelect();
       return this.setupNormalizationSelect();
     };
 
@@ -906,8 +906,8 @@
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
       this.setupInstrumentReaderSelect();
       this.setupSignalDirectionSelect();
-      this.setupAggregateBy1Select();
-      this.setupAggregateBy2Select();
+      this.setupAggregateBySelect();
+      this.setupAggregationMethodSelect();
       this.setupNormalizationSelect();
       this.handleAutoHitSelectionChanged(true);
       this.setupReadListController();
@@ -944,31 +944,31 @@
       });
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.setupAggregateBy1Select = function() {
-      this.aggregateBy1List = new PickListList();
-      this.aggregateBy1List.url = "/api/dataDict/experiment metadata/aggregate by1";
-      return this.aggregateBy1ListController = new PickListSelectController({
-        el: this.$('.bv_aggregateBy1'),
-        collection: this.aggregateBy1List,
+    PrimaryScreenAnalysisParametersController.prototype.setupAggregateBySelect = function() {
+      this.aggregateByList = new PickListList();
+      this.aggregateByList.url = "/api/dataDict/experiment metadata/aggregate by";
+      return this.aggregateByListController = new PickListSelectController({
+        el: this.$('.bv_aggregateBy'),
+        collection: this.aggregateByList,
         insertFirstOption: new PickList({
           code: "unassigned",
           name: "Select"
         }),
-        selectedCode: this.model.get('aggregateBy1')
+        selectedCode: this.model.get('aggregateBy')
       });
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.setupAggregateBy2Select = function() {
-      this.aggregateBy2List = new PickListList();
-      this.aggregateBy2List.url = "/api/dataDict/experiment metadata/aggregate by2";
-      return this.aggregateBy2ListController = new PickListSelectController({
-        el: this.$('.bv_aggregateBy2'),
-        collection: this.aggregateBy2List,
+    PrimaryScreenAnalysisParametersController.prototype.setupAggregationMethodSelect = function() {
+      this.aggregationMethodList = new PickListList();
+      this.aggregationMethodList.url = "/api/dataDict/experiment metadata/aggregation method";
+      return this.aggregationMethodListController = new PickListSelectController({
+        el: this.$('.bv_aggregationMethod'),
+        collection: this.aggregationMethodList,
         insertFirstOption: new PickList({
           code: "unassigned",
           name: "Select"
         }),
-        selectedCode: this.model.get('aggregateBy2')
+        selectedCode: this.model.get('aggregationMethod')
       });
     };
 
@@ -1018,8 +1018,8 @@
       this.model.set({
         instrumentReader: this.instrumentListController.getSelectedCode(),
         signalDirectionRule: this.signalDirectionListController.getSelectedCode(),
-        aggregateBy1: this.aggregateBy1ListController.getSelectedCode(),
-        aggregateBy2: this.aggregateBy2ListController.getSelectedCode(),
+        aggregateBy: this.aggregateByListController.getSelectedCode(),
+        aggregationMethod: this.aggregationMethodListController.getSelectedCode(),
         normalizationRule: this.normalizationListController.getSelectedCode(),
         hitEfficacyThreshold: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_hitEfficacyThreshold'))),
         hitSDThreshold: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_hitSDThreshold'))),
@@ -1518,9 +1518,16 @@
           return _this.trigger('amClean');
         };
       })(this));
+      this.setupModelFitController(this.modelFitControllerName);
+      this.analysisController.on('analysis-completed', (function(_this) {
+        return function() {
+          return _this.modelFitController.primaryAnalysisCompleted();
+        };
+      })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
       this.experimentBaseController.render();
-      return this.analysisController.render();
+      this.analysisController.render();
+      return this.modelFitController.render();
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupModelFitController = function(modelFitControllerName) {

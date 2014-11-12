@@ -630,9 +630,10 @@
         return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
             expect(this.ebc.model.get('recordedBy')).toEqual("");
-            this.ebc.$('.bv_recordedBy').val("nxm7557");
+            this.ebc.$('.bv_recordedBy').val("jmcneil");
             this.ebc.$('.bv_recordedBy').change();
-            return expect(this.ebc.model.get('recordedBy')).toEqual("nxm7557");
+            console.log(this.ebc.model.get('recordedBy'));
+            return expect(this.ebc.model.get('recordedBy')).toEqual("jmcneil");
           });
           it("should update model when shortDescription is changed", function() {
             this.ebc.$('.bv_shortDescription').val(" New short description   ");

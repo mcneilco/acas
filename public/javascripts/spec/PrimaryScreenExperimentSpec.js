@@ -196,8 +196,8 @@
             expect(this.psap.get('volumeType')).toEqual("dilution");
             expect(this.psap.get('instrumentReader')).toEqual("unassigned");
             expect(this.psap.get('signalDirectionRule')).toEqual("unassigned");
-            expect(this.psap.get('aggregateBy1')).toEqual("unassigned");
-            expect(this.psap.get('aggregateBy2')).toEqual("unassigned");
+            expect(this.psap.get('aggregateBy')).toEqual("unassigned");
+            expect(this.psap.get('aggregationMethod')).toEqual("unassigned");
             expect(this.psap.get('normalizationRule')).toEqual("unassigned");
             expect(this.psap.get('hitEfficacyThreshold')).toBeNull();
             expect(this.psap.get('hitSDThreshold')).toBeNull();
@@ -385,25 +385,25 @@
             });
             return expect(filtErrors.length).toEqual(0);
           });
-          it("should be invalid when aggregate by1 is unassigned", function() {
+          it("should be invalid when aggregate by is unassigned", function() {
             var filtErrors;
             this.psap.set({
-              aggregateBy1: "unassigned"
+              aggregateBy: "unassigned"
             });
             expect(this.psap.isValid()).toBeFalsy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
-              return err.attribute === 'aggregateBy1';
+              return err.attribute === 'aggregateBy';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when aggregate by2 is unassigned", function() {
+          it("should be invalid when aggregatation method is unassigned", function() {
             var filtErrors;
             this.psap.set({
-              aggregateBy2: "unassigned"
+              aggregationMethod: "unassigned"
             });
             expect(this.psap.isValid()).toBeFalsy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
-              return err.attribute === 'aggregateBy2';
+              return err.attribute === 'aggregationMethod';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -994,20 +994,20 @@
               return expect(this.psapc.$('.bv_signalDirectionRule').val()).toEqual("increasing");
             });
           });
-          it('should show the aggregateBy1', function() {
+          it('should show the aggregateBy', function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy1 option').length > 0;
+              return this.psapc.$('.bv_aggregateBy option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.psapc.$('.bv_aggregateBy1').val()).toEqual("compound batch concentration");
+              return expect(this.psapc.$('.bv_aggregateBy').val()).toEqual("compound batch concentration");
             });
           });
-          it('should show the aggregateBy2', function() {
+          it('should show the aggregationMethod', function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy2 option').length > 0;
+              return this.psapc.$('.bv_aggregationMethod option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.psapc.$('.bv_aggregateBy2').val()).toEqual("median");
+              return expect(this.psapc.$('.bv_aggregationMethod').val()).toEqual("median");
             });
           });
           it('should show the normalization rule', function() {
@@ -1097,24 +1097,24 @@
               return expect(this.psapc.model.get('signalDirectionRule')).toEqual("unassigned");
             });
           });
-          it("should update the aggregateBy1", function() {
+          it("should update the aggregateBy", function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy1 option').length > 0;
+              return this.psapc.$('.bv_aggregateBy option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psapc.$('.bv_aggregateBy1').val('unassigned');
-              this.psapc.$('.bv_aggregateBy1').change();
-              return expect(this.psapc.model.get('aggregateBy1')).toEqual("unassigned");
+              this.psapc.$('.bv_aggregateBy').val('unassigned');
+              this.psapc.$('.bv_aggregateBy').change();
+              return expect(this.psapc.model.get('aggregateBy')).toEqual("unassigned");
             });
           });
-          it("should update the bv_aggregateBy2", function() {
+          it("should update the bv_aggregationMethod", function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy2 option').length > 0;
+              return this.psapc.$('.bv_aggregationMethod option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psapc.$('.bv_aggregateBy2').val('unassigned');
-              this.psapc.$('.bv_aggregateBy2').change();
-              return expect(this.psapc.model.get('aggregateBy2')).toEqual("unassigned");
+              this.psapc.$('.bv_aggregationMethod').val('unassigned');
+              this.psapc.$('.bv_aggregationMethod').change();
+              return expect(this.psapc.model.get('aggregationMethod')).toEqual("unassigned");
             });
           });
           it("should update the normalizationRule rule", function() {
@@ -1341,24 +1341,24 @@
               return expect(this.psapc.$('.bv_group_signalDirectionRule').hasClass("error")).toBeTruthy();
             });
           });
-          it("should show error if aggregateBy1 is unassigned", function() {
+          it("should show error if aggregateBy is unassigned", function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy1 option').length > 0;
+              return this.psapc.$('.bv_aggregateBy option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psapc.$('.bv_aggregateBy1').val("unassigned");
-              this.psapc.$('.bv_aggregateBy1').change();
-              return expect(this.psapc.$('.bv_group_aggregateBy1').hasClass("error")).toBeTruthy();
+              this.psapc.$('.bv_aggregateBy').val("unassigned");
+              this.psapc.$('.bv_aggregateBy').change();
+              return expect(this.psapc.$('.bv_group_aggregateBy').hasClass("error")).toBeTruthy();
             });
           });
-          it("should show error if aggregateBy2 is unassigned", function() {
+          it("should show error if aggregationMethod is unassigned", function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy2 option').length > 0;
+              return this.psapc.$('.bv_aggregationMethod option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psapc.$('.bv_aggregateBy2').val("unassigned");
-              this.psapc.$('.bv_aggregateBy2').change();
-              return expect(this.psapc.$('.bv_group_aggregateBy2').hasClass("error")).toBeTruthy();
+              this.psapc.$('.bv_aggregationMethod').val("unassigned");
+              this.psapc.$('.bv_aggregationMethod').change();
+              return expect(this.psapc.$('.bv_group_aggregationMethod').hasClass("error")).toBeTruthy();
             });
           });
           it("should show error if normalizationRule is unassigned", function() {
@@ -1372,12 +1372,14 @@
             });
           });
           it("should show error if threshold type is efficacy and efficacy threshold not a number", function() {
+            this.psapc.$('.bv_autoHitSelection').click();
             this.psapc.$('.bv_thresholdTypeEfficacy').click();
             this.psapc.$('.bv_hitEfficacyThreshold').val("");
             this.psapc.$('.bv_hitEfficacyThreshold').change();
             return expect(this.psapc.$('.bv_group_hitEfficacyThreshold').hasClass("error")).toBeTruthy();
           });
           it("should show error if threshold type is sd and sd threshold not a number", function() {
+            this.psapc.$('.bv_autoHitSelection').click();
             this.psapc.$('.bv_thresholdTypeSD').click();
             this.psapc.$('.bv_hitSDThreshold').val("");
             this.psapc.$('.bv_hitSDThreshold').change();

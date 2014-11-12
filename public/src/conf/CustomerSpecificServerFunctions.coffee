@@ -90,7 +90,7 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 exports.getUser = (username, callback) ->
 	console.log "getting user"
 	config = require '../../../conf/compiled/conf.js'
-	if config.all.server.roologin.login and !global.specRunnerTestmode
+	if config.all.server.roologin.getUserLink and !global.specRunnerTestmode
 		console.log "getting user from server"
 
 		request = require 'request'
