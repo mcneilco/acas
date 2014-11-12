@@ -245,8 +245,8 @@ describe "Base Entity testing", ->
 				expect(@copiedEntity.get('lsType')).toEqual @bem.get('lsKind')
 			it "should have the status set to created", ->
 				expect(@copiedEntity.getStatus().get('stringValue')).toEqual "created"
-			it "should have the code name be autofill when saved", ->
-				expect(@copiedEntity.get('codeName')).toEqual "autofill when saved"
+			it "should have the code name be undefined", ->
+				expect(@copiedEntity.get('codeName')).toBeUndefined()
 			it "should have the entity name be empty", ->
 				expect(@copiedEntity.get('lsLabels').length).toEqual 0
 				expect(@copiedEntity.get('lsLabels') instanceof LabelList).toBeTruthy()
