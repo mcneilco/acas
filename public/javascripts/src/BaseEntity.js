@@ -115,7 +115,7 @@
 
     BaseEntity.prototype.getAnalysisParameters = function() {
       var ap;
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "analysis parameters", "clobValue", "data analysis parameters");
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
       if (ap.get('clobValue') != null) {
         return new PrimaryScreenAnalysisParameters($.parseJSON(ap.get('clobValue')));
       } else {
@@ -125,7 +125,7 @@
 
     BaseEntity.prototype.getModelFitParameters = function() {
       var ap;
-      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "analysis parameters", "clobValue", "model fit parameters");
+      ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
       if (ap.get('clobValue') != null) {
         return $.parseJSON(ap.get('clobValue'));
       } else {
@@ -409,10 +409,8 @@
       this.$('.bv_status').val(this.model.getStatus().get('stringValue'));
       if (this.model.isNew()) {
         this.$('.bv_save').html("Save");
-        console.log("model is new");
       } else {
         this.$('.bv_save').html("Update");
-        console.log("model is not new");
       }
       this.updateEditable();
       return this;
@@ -438,12 +436,9 @@
     };
 
     BaseEntityController.prototype.handleRecordedByChanged = function() {
-      console.log("recordedBy changed");
-      console.log(this.$('.bv_recordedBy').val());
       this.model.set({
         recordedBy: this.$('.bv_recordedBy').val()
       });
-      console.log(this.model.get('recordedBy'));
       return this.handleNameChanged();
     };
 
@@ -484,7 +479,6 @@
         labelText: newName,
         recordedBy: this.model.get('recordedBy')
       }));
-      console.log(this.model.get('recordedBy'));
       return this.model.trigger('change');
     };
 

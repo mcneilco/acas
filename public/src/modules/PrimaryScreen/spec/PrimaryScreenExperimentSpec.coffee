@@ -253,13 +253,13 @@ describe "Primary Screen Experiment module testing", ->
 					@psap.set aggregateBy: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter @psap.validationError, (err) ->
-						err.attribute=='aggregateBy'
+						err.attribute=='aggregateByGroup'
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when aggregatation method is unassigned", ->
 					@psap.set aggregationMethod: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter @psap.validationError, (err) ->
-						err.attribute=='aggregationMethod'
+						err.attribute=='aggregateByGroup'
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when signal direction rule is unassigned", ->
 					@psap.set signalDirectionRule: "unassigned"
@@ -913,7 +913,7 @@ describe "Primary Screen Experiment module testing", ->
 					runs ->
 						@psapc.$('.bv_aggregateBy').val "unassigned"
 						@psapc.$('.bv_aggregateBy').change()
-						expect(@psapc.$('.bv_group_aggregateBy').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_aggregateByGroup').hasClass("error")).toBeTruthy()
 				it "should show error if aggregationMethod is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_aggregationMethod option').length > 0
@@ -921,7 +921,7 @@ describe "Primary Screen Experiment module testing", ->
 					runs ->
 						@psapc.$('.bv_aggregationMethod').val "unassigned"
 						@psapc.$('.bv_aggregationMethod').change()
-						expect(@psapc.$('.bv_group_aggregationMethod').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_aggregateByGroup').hasClass("error")).toBeTruthy()
 				it "should show error if normalizationRule is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_normalizationRule option').length > 0

@@ -138,23 +138,22 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsKind')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.lsKind
 				it "should have the protocol set ", ->
 					expect(@exp.get('protocol').get('codeName')).toEqual "PROT-00000001"
-				it "should have the shortDescription set to the protocols short description", ->
-					expect(@exp.get('shortDescription')).toEqual window.protocolServiceTestJSON.fullSavedProtocol.shortDescription
-				it "should have the description set to the protocols description", ->
-					console.log new Protocol window.protocolServiceTestJSON.fullSavedProtocol
-					fullSavedProtocol = new Protocol window.protocolServiceTestJSON.fullSavedProtocol
-					console.log fullSavedProtocol.getDescription().get('clobValue')
-					expect(@exp.getDescription().get('clobValue')).toEqual fullSavedProtocol.getDescription().get('clobValue')
-				it "should have the comments set to the protocols comments", ->
-					fullSavedProtocol = new Protocol window.protocolServiceTestJSON.fullSavedProtocol
-					console.log fullSavedProtocol.getComments().get('clobValue')
-					expect(@exp.getComments().get('clobValue')).toEqual fullSavedProtocol.getComments().get('clobValue')
+				it "should have the shortDescription be an empty string", ->
+					expect(@exp.get('shortDescription')).toEqual " "
+				it "should have the description be an empty string", ->
+#					console.log new Protocol window.protocolServiceTestJSON.fullSavedProtocol
+#					fullSavedProtocol = new Protocol window.protocolServiceTestJSON.fullSavedProtocol
+#					console.log fullSavedProtocol.getDescription().get('clobValue')
+					expect(@exp.getDescription().get('clobValue')).toEqual ""
+				it "should have the comments be an empty string", ->
+#					fullSavedProtocol = new Protocol window.protocolServiceTestJSON.fullSavedProtocol
+#					console.log fullSavedProtocol.getComments().get('clobValue')
+					expect(@exp.getComments().get('clobValue')).toEqual ""
 				it "should not have the labels copied", ->
 					expect(@exp.get('lsLabels').length).toEqual 0
-				it "should have the analysis parameters state", ->
-					console.log @exp.get('lsStates')
+				it "should have the experiment metadata state", ->
 					filtState = @exp.get('lsStates').filter (state) ->
-						state.get('lsKind')=='analysis parameters'
+						state.get('lsKind')=='experiment metadata'
 					expect(filtState.length).toBeGreaterThan 0
 				it "should not have the protocol metadata state nor the screening assay state", ->
 					filtState = @exp.get('lsStates').filter (state) ->
@@ -415,12 +414,12 @@ describe "Experiment module testing", ->
 					, 1000
 					runs ->
 						expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
-				it "should fill the short description field", ->
-					expect(@ebc.$('.bv_shortDescription').html()).toEqual "primary analysis"
-				it "should fill the description field", ->
-					expect(@ebc.$('.bv_description').html()).toEqual "protocol details go here"
-				it "should fill the comments field", ->
-					expect(@ebc.$('.bv_comments').html()).toEqual "protocol comments go here"
+				it "should not fill the short description field", ->
+					expect(@ebc.$('.bv_shortDescription').html()).toEqual " "
+				it "should not fill the description field", ->
+					expect(@ebc.$('.bv_description').html()).toEqual ""
+				it "should not fill the comments field", ->
+					expect(@ebc.$('.bv_comments').html()).toEqual ""
 				it "should not fill the notebook field", ->
 					expect(@ebc.$('.bv_notebook').val()).toEqual ""
 			describe "User edits fields", ->
@@ -641,7 +640,7 @@ describe "Experiment module testing", ->
 							expect(@ebc.model.get('protocol').get('codeName')).toEqual "PROT-00000001"
 					it "should fill the short description field because the protocol attrobutes are automatically copied", ->
 						runs ->
-							expect(@ebc.$('.bv_shortDescription').html()).toEqual "primary analysis"
+							expect(@ebc.$('.bv_shortDescription').html()).toEqual " "
 					it "should enable use protocol params", ->
 						runs ->
 							expect(@ebc.$('.bv_useProtocolParameters').attr("disabled")).toBeUndefined()

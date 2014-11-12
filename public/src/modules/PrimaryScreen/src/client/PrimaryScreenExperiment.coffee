@@ -208,14 +208,19 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'signalDirectionRule'
 				message: "Signal Direction Rule must be assigned"
-		if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is ""
+		if (attrs.aggregateBy is "unassigned" or attrs.aggregateBy is "") and (attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is "")
 			errors.push
-				attribute: 'aggregateBy'
-				message: "Aggregate By must be assigned"
-		if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is ""
-			errors.push
-				attribute: 'aggregationMethod'
-				message: "Aggregation method must be assigned"
+				attribute: 'aggregateByGroup'
+				message: "Aggregate By and Aggregation Method must be assigned"
+		else
+			if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is ""
+				errors.push
+					attribute: 'aggregateByGroup'
+					message: "Aggregate By must be assigned"
+			if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is ""
+				errors.push
+					attribute: 'aggregateByGroup'
+					message: "Aggregation method must be assigned"
 		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is ""
 			errors.push
 				attribute: 'normalizationRule'
