@@ -12,6 +12,16 @@ class window.Protocol extends BaseEntity
 
 		assayTreeRule
 
+	getAssayStage: ->
+		assayStage = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "assay stage"
+		if assayStage.get('codeValue') is undefined or assayStage.get('codeValue') is "" or assayStage.get('codeValue') is null
+			assayStage.set codeValue: "unassigned"
+			assayStage.set codeType: "protocolMetadata"
+			assayStage.set codeKind: "assay stage"
+			assayStage.set codeOrigin: "acas ddict"
+
+		assayStage
+
 	getAssayPrinciple: ->
 		assayPrinciple = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "clobValue", "assay principle"
 		if assayPrinciple.get('clobValue') is undefined
@@ -41,7 +51,7 @@ class window.Protocol extends BaseEntity
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
 		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" then cDate = "fred"
+		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 		if isNaN(cDate)
 			errors.push
 				attribute: 'completionDate'
@@ -71,6 +81,7 @@ class window.ProtocolBaseController extends BaseEntityController
 		_(super()).extend(
 			"change .bv_protocolName": "handleNameChanged"
 			"change .bv_assayTreeRule": "handleAssayTreeRuleChanged"
+			"change .bv_assayStage": "handleAssayStageChanged"
 			"change .bv_assayPrinciple": "handleAssayPrincipleChanged"
 
 		)
@@ -97,7 +108,10 @@ class window.ProtocolBaseController extends BaseEntityController
 								if lsKind is "default"
 									prot = new Protocol json[0]
 									prot.set prot.parse(prot.attributes)
-									@model = prot
+									if window.AppLaunchParams.moduleLaunchParams.copy
+										@model = prot.duplicateEntity()
+									else
+										@model = prot
 								else
 									alert 'Could not get protocol for code in this URL. Creating new protocol'
 							@completeInitialization()
@@ -125,18 +139,36 @@ class window.ProtocolBaseController extends BaseEntityController
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupTagList()
+		@setUpAssayStageSelect()
 		@model.getStatus().on 'change', @updateEditable
 
 		@render()
+		@trigger 'amClean' #so that module starts off clean when initialized
 
 	render: =>
 		unless @model?
 			@model = new Protocol()
+		@setUpAssayStageSelect()
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
 		super()
 		@
 
+	setUpAssayStageSelect: ->
+		@assayStageList = new PickListList()
+		@assayStageList.url = "/api/dataDict/protocol metadata/assay stage"
+		@assayStageListController = new PickListSelectController
+			el: @$('.bv_assayStage')
+			collection: @assayStageList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select assay stage"
+			selectedCode: @model.getAssayStage().get('codeValue')
+
+	handleAssayStageChanged: =>
+		@model.getAssayStage().set
+			codeValue: @assayStageListController.getSelectedCode()
+		@trigger 'change'
 
 	handleAssayPrincipleChanged: =>
 		@model.getAssayPrinciple().set

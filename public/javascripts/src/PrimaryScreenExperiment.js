@@ -1459,7 +1459,11 @@
                     if (lsKind === "flipr screening assay") {
                       exp = new PrimaryScreenExperiment(json[0]);
                       exp.set(exp.parse(exp.attributes));
-                      _this.model = exp;
+                      if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                        _this.model = exp.duplicateEntity();
+                      } else {
+                        _this.model = exp;
+                      }
                     } else {
                       alert('Could not get primary screen experiment for code in this URL. Creating new primary screen experiment');
                     }

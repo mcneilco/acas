@@ -117,7 +117,7 @@ class window.PrimaryScreenProtocol extends Protocol
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
 		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" then cDate = "fred"
+		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 		if isNaN(cDate)
 			errors.push
 				attribute: 'completionDate'
@@ -149,7 +149,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 
 	events:
 		"click .bv_customerMolecularTargetDDictChkbx": "handleMolecularTargetDDictChanged"
-		"change .bv_assayStage": "attributeChanged"
 		"change .bv_maxY": "attributeChanged"
 		"change .bv_minY": "attributeChanged"
 		"change .bv_assayActivity": "attributeChanged"
@@ -169,7 +168,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@setupAssayTypeSelect()
 		@setupAssayTechnologySelect()
 		@setupCellLineSelect()
-		@setUpAssayStageSelect()
 
 
 
@@ -180,7 +178,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@$('.bv_minY').val(@model.getCurveDisplayMin().get('numericValue'))
 		@setupAssayActivitySelect()
 		@setupTargetOriginSelect()
-		@setUpAssayStageSelect()
 		@setupAssayTypeSelect()
 		@setupAssayTechnologySelect()
 		@setupCellLineSelect()
@@ -250,17 +247,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@cellLineListController.render()
 
 
-	setUpAssayStageSelect: ->
-		@assayStageList = new PickListList()
-		@assayStageList.url = "/api/dataDict/protocol metadata/assay stage"
-		@assayStageListController = new PickListSelectController
-			el: @$('.bv_assayStage')
-			collection: @assayStageList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select assay stage"
-			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')
-
 	setupCustomerMolecularTargetDDictChkbx: ->
 		@molecularTargetList = new PickListList()
 		checked = @model.getCustomerMolecularTargetCodeOrigin()
@@ -295,8 +281,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			codeValue: @assayTechnologyListController.getSelectedCode()
 		@model.getPrimaryScreenProtocolParameterCodeValue('cell line').set
 			codeValue: @cellLineListController.getSelectedCode()
-		@model.getPrimaryScreenProtocolParameterCodeValue('assay stage').set
-			codeValue: @assayStageListController.getSelectedCode()
 		@model.getCurveDisplayMax().set
 			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_maxY'))
 		@model.getCurveDisplayMin().set
@@ -368,6 +352,8 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		@primaryScreenProtocolParametersController.saveNewPickListOptions =>
 			@trigger "prepareToSaveToDatabase"
 
+	displayInReadOnlyMode: =>
+		@protocolBaseController.displayInReadOnlyMode()
 
 # This wraps all the tabs
 class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormController
@@ -400,7 +386,10 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 								if lsKind is "flipr screening assay"
 									prot = new PrimaryScreenProtocol json[0]
 									prot.set prot.parse(prot.attributes)
-									@model = prot
+									if window.AppLaunchParams.moduleLaunchParams.copy
+										@model = prot.duplicateEntity()
+									else
+										@model = prot
 								else
 									alert 'Could not get primary screen protocol for code in this URL. Creating new primary screen protocol'
 							@completeInitialization()
@@ -452,6 +441,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		else
 			@$('.bv_saveModule').html("Update")
 			@$('.bv_saveInstructions').hide()
+
+		@trigger 'amClean' #so that module starts off clean when initialized
 
 	handleProtocolSaved: =>
 		@trigger 'amClean'

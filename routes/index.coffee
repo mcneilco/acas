@@ -5,6 +5,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	if config.all.client.require.login
 		app.get '/', loginRoutes.ensureAuthenticated, exports.index
 		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode
+		app.get '/entity/copy/:moduleName/:code', loginRoutes.ensureAuthenticated, exports.copyAndLaunchWithCode
 	else
 	app.get '/:moduleName/codeName/:code', exports.autoLaunchWithCode
 	app.get '/', exports.index
@@ -18,6 +19,14 @@ exports.autoLaunchWithCode = (req, res) ->
 	moduleLaunchParams =
 		moduleName: req.params.moduleName
 		code: req.params.code
+		copy: false
+	exports.index req, res, moduleLaunchParams
+
+exports.copyAndLaunchWithCode = (req, res) ->
+	moduleLaunchParams =
+		moduleName: req.params.moduleName
+		code: req.params.code
+		copy: true
 	exports.index req, res, moduleLaunchParams
 
 exports.index = (req, res, moduleLaunchParams) ->

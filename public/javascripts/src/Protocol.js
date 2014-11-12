@@ -30,6 +30,26 @@
       return assayTreeRule;
     };
 
+    Protocol.prototype.getAssayStage = function() {
+      var assayStage;
+      assayStage = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "codeValue", "assay stage");
+      if (assayStage.get('codeValue') === void 0 || assayStage.get('codeValue') === "" || assayStage.get('codeValue') === null) {
+        assayStage.set({
+          codeValue: "unassigned"
+        });
+        assayStage.set({
+          codeType: "protocolMetadata"
+        });
+        assayStage.set({
+          codeKind: "assay stage"
+        });
+        assayStage.set({
+          codeOrigin: "acas ddict"
+        });
+      }
+      return assayStage;
+    };
+
     Protocol.prototype.getAssayPrinciple = function() {
       var assayPrinciple;
       assayPrinciple = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "clobValue", "assay principle");
@@ -71,7 +91,7 @@
         });
       }
       cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "") {
+      if (cDate === void 0 || cDate === "" || cDate === null) {
         cDate = "fred";
       }
       if (isNaN(cDate)) {
@@ -121,6 +141,7 @@
     function ProtocolBaseController() {
       this.handleAssayTreeRuleChanged = __bind(this.handleAssayTreeRuleChanged, this);
       this.handleAssayPrincipleChanged = __bind(this.handleAssayPrincipleChanged, this);
+      this.handleAssayStageChanged = __bind(this.handleAssayStageChanged, this);
       this.render = __bind(this.render, this);
       return ProtocolBaseController.__super__.constructor.apply(this, arguments);
     }
@@ -133,6 +154,7 @@
       return _(ProtocolBaseController.__super__.events.call(this)).extend({
         "change .bv_protocolName": "handleNameChanged",
         "change .bv_assayTreeRule": "handleAssayTreeRuleChanged",
+        "change .bv_assayStage": "handleAssayStageChanged",
         "change .bv_assayPrinciple": "handleAssayPrincipleChanged"
       });
     };
@@ -161,7 +183,11 @@
                     if (lsKind === "default") {
                       prot = new Protocol(json[0]);
                       prot.set(prot.parse(prot.attributes));
-                      _this.model = prot;
+                      if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                        _this.model = prot.duplicateEntity();
+                      } else {
+                        _this.model = prot;
+                      }
                     } else {
                       alert('Could not get protocol for code in this URL. Creating new protocol');
                     }
@@ -205,18 +231,42 @@
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
       this.setupTagList();
+      this.setUpAssayStageSelect();
       this.model.getStatus().on('change', this.updateEditable);
-      return this.render();
+      this.render();
+      return this.trigger('amClean');
     };
 
     ProtocolBaseController.prototype.render = function() {
       if (this.model == null) {
         this.model = new Protocol();
       }
+      this.setUpAssayStageSelect();
       this.$('.bv_assayTreeRule').val(this.model.getAssayTreeRule().get('stringValue'));
       this.$('.bv_assayPrinciple').val(this.model.getAssayPrinciple().get('clobValue'));
       ProtocolBaseController.__super__.render.call(this);
       return this;
+    };
+
+    ProtocolBaseController.prototype.setUpAssayStageSelect = function() {
+      this.assayStageList = new PickListList();
+      this.assayStageList.url = "/api/dataDict/protocol metadata/assay stage";
+      return this.assayStageListController = new PickListSelectController({
+        el: this.$('.bv_assayStage'),
+        collection: this.assayStageList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select assay stage"
+        }),
+        selectedCode: this.model.getAssayStage().get('codeValue')
+      });
+    };
+
+    ProtocolBaseController.prototype.handleAssayStageChanged = function() {
+      this.model.getAssayStage().set({
+        codeValue: this.assayStageListController.getSelectedCode()
+      });
+      return this.trigger('change');
     };
 
     ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {

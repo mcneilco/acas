@@ -35,6 +35,12 @@ describe "Protocol module testing", ->
 				it 'Should have an assay tree rule value', ->
 					expect(@prot.getAssayTreeRule() instanceof Value).toBeTruthy()
 					expect(@prot.getAssayTreeRule().get('stringValue')).toEqual ""
+				it 'Should have an assay stage value', ->
+					expect(@prot.getAssayStage() instanceof Value).toBeTruthy()
+					expect(@prot.getAssayStage().get('codeValue')).toEqual "unassigned"
+					expect(@prot.getAssayStage().get('codeOrigin')).toEqual "acas ddict"
+					expect(@prot.getAssayStage().get('codeType')).toEqual "protocolMetadata"
+					expect(@prot.getAssayStage().get('codeKind')).toEqual "assay stage"
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple() instanceof Value).toBeTruthy()
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual ""
@@ -287,6 +293,12 @@ describe "Protocol module testing", ->
 					expect(@pbc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 				it "should fill the assay tree rule field", ->
 					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "assay tree rule goes here"
+				it "should fill the assay stage field", ->
+					waitsFor ->
+						@pbc.$('.bv_assayStage option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_assayStage').val()).toEqual "assay development"
 				it "should fill the assay principle field", ->
 					expect(@pbc.$('.bv_assayPrinciple').val()).toEqual "assay principle goes here"
 				it "should fill the long description field", ->
@@ -366,6 +378,10 @@ describe "Protocol module testing", ->
 					desc = values[0].get('stringValue')
 					expect(desc).toEqual "Updated assay tree rule"
 					expect(@pbc.model.getAssayTreeRule().get('stringValue')).toEqual "Updated assay tree rule"
+				it "should update model when assay stage is changed", ->
+					@pbc.$('.bv_assayStage').val("unassigned")
+					@pbc.$('.bv_assayStage').change()
+					expect(@pbc.model.getAssayStage().get('codeValue')).toEqual "unassigned"
 				it "should update model when assay principle is changed", ->
 					@pbc.$('.bv_assayPrinciple').val(" New assay principle   ")
 					@pbc.$('.bv_assayPrinciple').change()
@@ -448,6 +464,12 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_status').val()).toEqual 'created'
 				it "should have the assay tree rule be empty", ->
 					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual ""
+				it "should have the assay stage be empty", ->
+					waitsFor ->
+						@pbc.$('.bv_assayStage option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_assayStage').val()).toEqual "unassigned"
 			describe "controller validation rules", ->
 				beforeEach ->
 					@pbc.$('.bv_recordedBy').val("nxm7557")

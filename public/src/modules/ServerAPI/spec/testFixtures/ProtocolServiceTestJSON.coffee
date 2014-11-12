@@ -1,6 +1,7 @@
 ((exports) ->
 	exports.fullSavedProtocol =
 		codeName: "PROT-00000001"
+		experimentCount: 12
 		id: 1
 		ignored: false
 		lsKind: "default"
@@ -53,6 +54,36 @@
 				valueOperator: null
 				lsType: "stringValue"
 				lsTypeAndKind: "stringValue_assay tree rule"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeType: "protocolMetadata"
+				codeValue: "assay development"
+				codeOrigin: "acas ddict"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 80489
+				ignored: false
+				lsTransaction:
+					comments: "primary analysis protocol transactions"
+					id: 872
+					recordedDate: 1363388477000
+					version: 0
+
+				modifiedDate: null
+				numericValue: 100.0
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: 2
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "assay stage"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_assay stage"
 				valueUnit: null
 				version: 0
 			,
@@ -358,6 +389,7 @@
 
 	exports.stubSavedProtocol = [
 		codeName: "PROT-00000001"
+		experimentCount: 12
 		id: 14325
 		ignored: false
 		lsKind: null #changed from kind to lsKind
@@ -376,6 +408,7 @@
 	]
 	exports.protocolToSave = [
 		codeName: "PROT-00000066"
+		experimentCount: 12
 		ignored: false
 		lsKind: null #changed from kind to lsKind
 		lsLabels: [

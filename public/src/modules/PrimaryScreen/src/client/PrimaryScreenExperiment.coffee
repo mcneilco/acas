@@ -940,7 +940,10 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								if lsKind is "flipr screening assay"
 									exp = new PrimaryScreenExperiment json[0]
 									exp.set exp.parse(exp.attributes)
-									@model = exp
+									if window.AppLaunchParams.moduleLaunchParams.copy
+										@model = exp.duplicateEntity()
+									else
+										@model = exp
 								else
 									alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
 							@completeInitialization()

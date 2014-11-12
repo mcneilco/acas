@@ -7,6 +7,7 @@
     __extends(BaseEntity, _super);
 
     function BaseEntity() {
+      this.duplicateEntity = __bind(this.duplicateEntity, this);
       this.getModelFitParameters = __bind(this.getModelFitParameters, this);
       this.getAnalysisParameters = __bind(this.getAnalysisParameters, this);
       this.parse = __bind(this.parse, this);
@@ -180,7 +181,7 @@
         });
       }
       cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "") {
+      if (cDate === void 0 || cDate === "" || cDate === null) {
         cDate = "fred";
       }
       if (isNaN(cDate)) {
@@ -249,6 +250,54 @@
       return this.trigger("readyToSave", this);
     };
 
+    BaseEntity.prototype.duplicateEntity = function() {
+      var copiedEntity, copiedStates, origStates;
+      copiedEntity = this.clone();
+      copiedEntity.unset('lsLabels');
+      copiedEntity.unset('lsStates');
+      copiedEntity.unset('id');
+      copiedEntity.unset('codeName');
+      copiedStates = new StateList();
+      origStates = this.get('lsStates');
+      origStates.each(function(st) {
+        var copiedState, copiedValues, origValues;
+        copiedState = new State(_.clone(st.attributes));
+        copiedState.unset('id');
+        copiedState.unset('lsTransactions');
+        copiedState.unset('lsValues');
+        copiedValues = new ValueList();
+        origValues = st.get('lsValues');
+        origValues.each(function(sv) {
+          var copiedVal;
+          copiedVal = new Value(sv.attributes);
+          copiedVal.unset('id');
+          copiedVal.unset('lsTransaction');
+          return copiedValues.add(copiedVal);
+        });
+        copiedState.set({
+          lsValues: copiedValues
+        });
+        return copiedStates.add(copiedState);
+      });
+      copiedEntity.set({
+        lsLabels: new LabelList(),
+        lsStates: copiedStates,
+        recordedBy: "",
+        recordedDate: new Date().getTime(),
+        version: 0
+      });
+      copiedEntity.getStatus().set({
+        stringValue: "created"
+      });
+      copiedEntity.getCompletionDate().set({
+        dateValue: null
+      });
+      copiedEntity.getNotebook().set({
+        stringValue: ""
+      });
+      return copiedEntity;
+    };
+
     return BaseEntity;
 
   })(Backbone.Model);
@@ -270,6 +319,7 @@
     __extends(BaseEntityController, _super);
 
     function BaseEntityController() {
+      this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
@@ -508,6 +558,11 @@
     BaseEntityController.prototype.clearValidationErrorStyles = function() {
       BaseEntityController.__super__.clearValidationErrorStyles.call(this);
       return this.$('.bv_save').removeAttr('disabled');
+    };
+
+    BaseEntityController.prototype.displayInReadOnlyMode = function() {
+      this.$(".bv_save").addClass("hide");
+      return this.disableAllInputs();
     };
 
     return BaseEntityController;

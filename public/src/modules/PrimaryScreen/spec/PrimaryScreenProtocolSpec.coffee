@@ -54,12 +54,6 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeOrigin')).toEqual "acas ddict"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeType')).toEqual "protocolMetadata"
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeKind')).toEqual "cell line"
-				it "should have an assay stage value", ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage') instanceof Value).toBeTruthy()
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "unassigned"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeOrigin')).toEqual "acas ddict"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeType')).toEqual "protocolMetadata"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeKind')).toEqual "assay stage"
 
 		describe "When loaded from existing", ->
 			beforeEach ->
@@ -85,8 +79,6 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "wizard triple luminescence"
 				it 'Should have an targetOrigin value', ->
 					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "cell line y"
-				it 'Should have an assay stage value', ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "assay development"
 
 		describe "model validation", ->
 			beforeEach ->
@@ -201,13 +193,6 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "unassigned"
 						expect(@psppc.cellLineListController.getSelectedCode()).toEqual "unassigned"
-				it "should show the assay stage as unassigned", ->
-					waitsFor ->
-						@psppc.$('.bv_assayStage option').length > 0
-					, 1000
-					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "unassigned"
-						expect(@psppc.assayStageListController.getSelectedCode()).toEqual "unassigned"
 				it "should have the customer molecular target ddict checkbox ", ->
 					expect(@psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toBeUndefined()
 				it "should show the curve display max", ->
@@ -272,13 +257,6 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "cell line y"
 						expect(@psppc.cellLineListController.getSelectedCode()).toEqual "cell line y"
-				it "should have the assay stage set", ->
-					waitsFor ->
-						@psppc.$('.bv_assayStage option').length > 0
-					, 1000
-					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "assay development"
-						expect(@psppc.assayStageListController.getSelectedCode()).toEqual "assay development"
 				it "should have the customer molecular target ddict checkbox checked ", ->
 					expect(@psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toEqual "checked"
 				it 'should show the maxY', ->
@@ -343,14 +321,6 @@ describe "Primary Screen Protocol module testing", ->
 					@psppc.$('.bv_minY').val(" 13 ")
 					@psppc.$('.bv_minY').change()
 					expect(@psppc.model.getCurveDisplayMin().get('numericValue')).toEqual 13
-				it "should update model when assay stage changed", ->
-					waitsFor ->
-						@psppc.$('.bv_assayStage option').length > 0
-					, 1000
-					runs ->
-						@psppc.$('.bv_assayStage').val('unassigned')
-						@psppc.$('.bv_assayStage').change()
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual "unassigned"
 			describe "behavior", ->
 				it "should hide the Molecular Target's add button when the customer molecular target ddict checkbox is checked", ->
 					@psppc.$('.bv_customerMolecularTargetDDictChkbx').click()

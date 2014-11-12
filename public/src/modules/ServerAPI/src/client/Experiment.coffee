@@ -114,7 +114,7 @@ class window.Experiment extends BaseEntity
 				attribute: 'projectCode'
 				message: "Project must be set"
 		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" then cDate = "fred"
+		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 		if isNaN(cDate)
 			errors.push
 				attribute: 'completionDate'
@@ -183,7 +183,10 @@ class window.ExperimentBaseController extends BaseEntityController
 								if lsKind is "default"
 									expt = new Experiment json[0]
 									expt.set expt.parse(expt.attributes)
-									@model = expt
+									if window.AppLaunchParams.moduleLaunchParams.copy
+										@model = expt.duplicateEntity()
+									else
+										@model = expt
 								else
 									alert 'Could not get experiment for code in this URL. Creating new experiment'
 							@completeInitialization()
@@ -339,6 +342,6 @@ class window.ExperimentBaseController extends BaseEntityController
 		else
 			@$('.bv_protocolCode').attr("disabled", "disabled")
 
-	displayInReadOnlyMode: =>
-		@$(".bv_save").addClass "hide"
-		@disableAllInputs()
+#	displayInReadOnlyMode: =>
+#		@$(".bv_save").addClass "hide"
+#		@disableAllInputs()

@@ -60,19 +60,12 @@
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeType')).toEqual("protocolMetadata");
             return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeKind')).toEqual("assay technology");
           });
-          it("should have a cell line value", function() {
+          return it("should have a cell line value", function() {
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line') instanceof Value).toBeTruthy();
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("unassigned");
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeOrigin')).toEqual("acas ddict");
             expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeType')).toEqual("protocolMetadata");
             return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeKind')).toEqual("cell line");
-          });
-          return it("should have an assay stage value", function() {
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage') instanceof Value).toBeTruthy();
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeOrigin')).toEqual("acas ddict");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeType')).toEqual("protocolMetadata");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeKind')).toEqual("assay stage");
           });
         });
       });
@@ -108,11 +101,8 @@
           it('Should have a molecularTarget value with code origin set to dns target list', function() {
             return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("wizard triple luminescence");
           });
-          it('Should have an targetOrigin value', function() {
+          return it('Should have an targetOrigin value', function() {
             return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("cell line y");
-          });
-          return it('Should have an assay stage value', function() {
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("assay development");
           });
         });
       });
@@ -255,15 +245,6 @@
               return expect(this.psppc.cellLineListController.getSelectedCode()).toEqual("unassigned");
             });
           });
-          it("should show the assay stage as unassigned", function() {
-            waitsFor(function() {
-              return this.psppc.$('.bv_assayStage option').length > 0;
-            }, 1000);
-            return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
-              return expect(this.psppc.assayStageListController.getSelectedCode()).toEqual("unassigned");
-            });
-          });
           it("should have the customer molecular target ddict checkbox ", function() {
             return expect(this.psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toBeUndefined();
           });
@@ -349,15 +330,6 @@
               return expect(this.psppc.cellLineListController.getSelectedCode()).toEqual("cell line y");
             });
           });
-          it("should have the assay stage set", function() {
-            waitsFor(function() {
-              return this.psppc.$('.bv_assayStage option').length > 0;
-            }, 1000);
-            return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("assay development");
-              return expect(this.psppc.assayStageListController.getSelectedCode()).toEqual("assay development");
-            });
-          });
           it("should have the customer molecular target ddict checkbox checked ", function() {
             return expect(this.psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toEqual("checked");
           });
@@ -434,20 +406,10 @@
             this.psppc.$('.bv_maxY').change();
             return expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual(130);
           });
-          it("should update the curve display min", function() {
+          return it("should update the curve display min", function() {
             this.psppc.$('.bv_minY').val(" 13 ");
             this.psppc.$('.bv_minY').change();
             return expect(this.psppc.model.getCurveDisplayMin().get('numericValue')).toEqual(13);
-          });
-          return it("should update model when assay stage changed", function() {
-            waitsFor(function() {
-              return this.psppc.$('.bv_assayStage option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.psppc.$('.bv_assayStage').val('unassigned');
-              this.psppc.$('.bv_assayStage').change();
-              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')).toEqual("unassigned");
-            });
           });
         });
         describe("behavior", function() {

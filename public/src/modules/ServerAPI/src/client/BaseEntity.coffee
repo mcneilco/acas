@@ -111,7 +111,7 @@ class window.BaseEntity extends Backbone.Model
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
 		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" then cDate = "fred"
+		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 		if isNaN(cDate)
 			errors.push
 				attribute: 'completionDate'
@@ -148,6 +148,39 @@ class window.BaseEntity extends Backbone.Model
 					val.set recordedDate: rDate
 		@trigger "readyToSave", @
 
+	duplicateEntity: =>
+		copiedEntity = @.clone()
+		copiedEntity.unset 'lsLabels'
+		copiedEntity.unset 'lsStates'
+		copiedEntity.unset 'id'
+		copiedEntity.unset 'codeName'
+		copiedStates = new StateList()
+		origStates = @get('lsStates')
+		origStates.each (st) ->
+			copiedState = new State(_.clone(st.attributes))
+			copiedState.unset 'id'
+			copiedState.unset 'lsTransactions'
+			copiedState.unset 'lsValues'
+			copiedValues = new ValueList()
+			origValues = st.get('lsValues')
+			origValues.each (sv) ->
+				copiedVal = new Value(sv.attributes)
+				copiedVal.unset 'id'
+				copiedVal.unset 'lsTransaction'
+				copiedValues.add(copiedVal)
+			copiedState.set lsValues: copiedValues
+			copiedStates.add(copiedState)
+		copiedEntity.set
+			lsLabels: new LabelList()
+			lsStates: copiedStates
+			recordedBy: ""
+			recordedDate: new Date().getTime()
+			version: 0
+		copiedEntity.getStatus().set stringValue: "created"
+		copiedEntity.getCompletionDate().set dateValue: null
+		copiedEntity.getNotebook().set stringValue: ""
+
+		copiedEntity
 
 class window.BaseEntityList extends Backbone.Collection
 	model: BaseEntity
@@ -325,3 +358,8 @@ class window.BaseEntityController extends AbstractFormController
 	clearValidationErrorStyles: =>
 		super()
 		@$('.bv_save').removeAttr('disabled')
+
+	displayInReadOnlyMode: =>
+		@$(".bv_save").addClass "hide"
+		@disableAllInputs()
+
