@@ -146,22 +146,15 @@ describe "Experiment Browser module testing", ->
 					expect(@clickTriggered).toBeTruthy()
 
 			it "should display a message alerting the user that no matching experiments were found if the search returns no experiments", ->
-				@searchReturned = false
-				@searchController = new ExperimentSimpleSearchController
-					model: new ExperimentSearch()
-					el: @fixture
-				@searchController.on "searchReturned", =>
-					@searchReturned = true
-				$(".bv_experimentSearchTerm").val "no-match"
-				runs =>
-					@searchController.doSearch("no-match")
-				#$(".bv_doSearch").click()
-				waitsFor ->
-					@searchReturned
-				, 300
-				runs ->
-					expect($(".bv_matchingExperimentsHeader").hasClass("hide")).toBeFalsy()
-					expect($(".bv_matchingExperimentsHeader").html()).toContain("No Matching Experiments Found")
+				estc = new ExperimentBrowserController()
+				$("#fixture").html estc.render().el
+
+				estc.setupExperimentSummaryTable([])
+				#waits(1000)
+				console.log '$(".bv_noMatchesFoundMessage").html()'
+				console.log $(".bv_noMatchesFoundMessage").html()
+				expect($(".bv_noMatchesFoundMessage").hasClass("hide")).toBeFalsy()
+				expect($(".bv_noMatchesFoundMessage").html()).toContain("No Matching Experiments Found")
 
 
 	describe "ExperimentBrowserController tests", ->
@@ -176,7 +169,7 @@ describe "Experiment Browser module testing", ->
 				expect(@ebc.$('.bv_experimentSearchController').length).toEqual 1
 		describe "Startup", ->
 			it "should initialize the search controller", ->
-				expect(@ebc.$('.bv_find').length).toEqual 1
+				expect(@ebc.$('.bv_doSearch').length).toEqual 1
 
 	describe "Experiment Browser Services", ->
 		beforeEach ->

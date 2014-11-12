@@ -208,29 +208,14 @@
           });
         });
         return it("should display a message alerting the user that no matching experiments were found if the search returns no experiments", function() {
-          this.searchReturned = false;
-          this.searchController = new ExperimentSimpleSearchController({
-            model: new ExperimentSearch(),
-            el: this.fixture
-          });
-          this.searchController.on("searchReturned", (function(_this) {
-            return function() {
-              return _this.searchReturned = true;
-            };
-          })(this));
-          $(".bv_experimentSearchTerm").val("no-match");
-          runs((function(_this) {
-            return function() {
-              return _this.searchController.doSearch("no-match");
-            };
-          })(this));
-          waitsFor(function() {
-            return this.searchReturned;
-          }, 300);
-          return runs(function() {
-            expect($(".bv_matchingExperimentsHeader").hasClass("hide")).toBeFalsy();
-            return expect($(".bv_matchingExperimentsHeader").html()).toContain("No Matching Experiments Found");
-          });
+          var estc;
+          estc = new ExperimentBrowserController();
+          $("#fixture").html(estc.render().el);
+          estc.setupExperimentSummaryTable([]);
+          console.log('$(".bv_noMatchesFoundMessage").html()');
+          console.log($(".bv_noMatchesFoundMessage").html());
+          expect($(".bv_noMatchesFoundMessage").hasClass("hide")).toBeFalsy();
+          return expect($(".bv_noMatchesFoundMessage").html()).toContain("No Matching Experiments Found");
         });
       });
     });
@@ -251,7 +236,7 @@
       });
       return describe("Startup", function() {
         return it("should initialize the search controller", function() {
-          return expect(this.ebc.$('.bv_find').length).toEqual(1);
+          return expect(this.ebc.$('.bv_doSearch').length).toEqual(1);
         });
       });
     });
