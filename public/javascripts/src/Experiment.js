@@ -88,7 +88,7 @@
       pstates = protocol.get('lsStates');
       pstates.each(function(st) {
         var estate, evals, svals;
-        if (st.get('lsKind') === "analysis parameters") {
+        if (st.get('lsKind') === "experiment metadata") {
           estate = new State(_.clone(st.attributes));
           estate.unset('id');
           estate.unset('lsTransaction');
@@ -113,7 +113,6 @@
       this.set({
         lsKind: protocol.get('lsKind'),
         protocol: protocol,
-        shortDescription: protocol.get('shortDescription'),
         lsStates: estates
       });
       this.getNotebook().set({
@@ -124,12 +123,6 @@
       });
       this.getProjectCode().set({
         codeValue: project
-      });
-      this.getComments().set({
-        clobValue: protocol.getComments().get('clobValue')
-      });
-      this.getDescription().set({
-        clobValue: protocol.getDescription().get('clobValue')
       });
       this.trigger('change');
       this.trigger("protocol_attributes_copied");

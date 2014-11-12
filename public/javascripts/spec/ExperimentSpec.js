@@ -216,30 +216,22 @@
           it("should have the protocol set ", function() {
             return expect(this.exp.get('protocol').get('codeName')).toEqual("PROT-00000001");
           });
-          it("should have the shortDescription set to the protocols short description", function() {
-            return expect(this.exp.get('shortDescription')).toEqual(window.protocolServiceTestJSON.fullSavedProtocol.shortDescription);
+          it("should have the shortDescription be an empty string", function() {
+            return expect(this.exp.get('shortDescription')).toEqual(" ");
           });
-          it("should have the description set to the protocols description", function() {
-            var fullSavedProtocol;
-            console.log(new Protocol(window.protocolServiceTestJSON.fullSavedProtocol));
-            fullSavedProtocol = new Protocol(window.protocolServiceTestJSON.fullSavedProtocol);
-            console.log(fullSavedProtocol.getDescription().get('clobValue'));
-            return expect(this.exp.getDescription().get('clobValue')).toEqual(fullSavedProtocol.getDescription().get('clobValue'));
+          it("should have the description be an empty string", function() {
+            return expect(this.exp.getDescription().get('clobValue')).toEqual("");
           });
-          it("should have the comments set to the protocols comments", function() {
-            var fullSavedProtocol;
-            fullSavedProtocol = new Protocol(window.protocolServiceTestJSON.fullSavedProtocol);
-            console.log(fullSavedProtocol.getComments().get('clobValue'));
-            return expect(this.exp.getComments().get('clobValue')).toEqual(fullSavedProtocol.getComments().get('clobValue'));
+          it("should have the comments be an empty string", function() {
+            return expect(this.exp.getComments().get('clobValue')).toEqual("");
           });
           it("should not have the labels copied", function() {
             return expect(this.exp.get('lsLabels').length).toEqual(0);
           });
-          it("should have the analysis parameters state", function() {
+          it("should have the experiment metadata state", function() {
             var filtState;
-            console.log(this.exp.get('lsStates'));
             filtState = this.exp.get('lsStates').filter(function(state) {
-              return state.get('lsKind') === 'analysis parameters';
+              return state.get('lsKind') === 'experiment metadata';
             });
             return expect(filtState.length).toBeGreaterThan(0);
           });
@@ -614,14 +606,14 @@
               return expect(this.ebc.$('.bv_protocolCode').val()).toEqual("PROT-00000001");
             });
           });
-          it("should fill the short description field", function() {
-            return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
+          it("should not fill the short description field", function() {
+            return expect(this.ebc.$('.bv_shortDescription').html()).toEqual(" ");
           });
-          it("should fill the description field", function() {
-            return expect(this.ebc.$('.bv_description').html()).toEqual("protocol details go here");
+          it("should not fill the description field", function() {
+            return expect(this.ebc.$('.bv_description').html()).toEqual("");
           });
-          it("should fill the comments field", function() {
-            return expect(this.ebc.$('.bv_comments').html()).toEqual("protocol comments go here");
+          it("should not fill the comments field", function() {
+            return expect(this.ebc.$('.bv_comments').html()).toEqual("");
           });
           return it("should not fill the notebook field", function() {
             return expect(this.ebc.$('.bv_notebook').val()).toEqual("");
@@ -912,7 +904,7 @@
             });
             it("should fill the short description field because the protocol attrobutes are automatically copied", function() {
               return runs(function() {
-                return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("primary analysis");
+                return expect(this.ebc.$('.bv_shortDescription').html()).toEqual(" ");
               });
             });
             return it("should enable use protocol params", function() {

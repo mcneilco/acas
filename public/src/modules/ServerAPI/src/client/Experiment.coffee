@@ -47,7 +47,7 @@ class window.Experiment extends BaseEntity
 		estates = new StateList()
 		pstates = protocol.get('lsStates')
 		pstates.each (st) ->
-			if st.get('lsKind') is "analysis parameters"
+			if st.get('lsKind') is "experiment metadata"
 				estate = new State(_.clone(st.attributes))
 				estate.unset 'id'
 				estate.unset 'lsTransaction'
@@ -65,13 +65,13 @@ class window.Experiment extends BaseEntity
 		@set
 			lsKind: protocol.get('lsKind')
 			protocol: protocol
-			shortDescription: protocol.get('shortDescription')
+#			shortDescription: protocol.get('shortDescription')
 			lsStates: estates
 		@getNotebook().set stringValue: notebook
 		@getCompletionDate().set dateValue: completionDate
 		@getProjectCode().set codeValue: project
-		@getComments().set clobValue: protocol.getComments().get('clobValue')
-		@getDescription().set clobValue: protocol.getDescription().get('clobValue')
+#		@getComments().set clobValue: protocol.getComments().get('clobValue')
+#		@getDescription().set clobValue: protocol.getDescription().get('clobValue')
 		#TODO: after merging DNETRPLC-63 branch (with attach files to protocols/experiments feature and with getDetails instead of getDescription), need to uncomment code below and delete the code above:
 		#@getDetails().set clobValue: protocol.getDetails().get('clobValue')
 #		@setupCompositeChangeTriggers()

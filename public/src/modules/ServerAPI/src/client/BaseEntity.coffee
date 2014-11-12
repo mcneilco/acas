@@ -66,14 +66,14 @@ class window.BaseEntity extends Backbone.Model
 		status
 
 	getAnalysisParameters: =>
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "analysis parameters", "clobValue", "data analysis parameters"
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
 		if ap.get('clobValue')?
 			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
 		else
 			return new PrimaryScreenAnalysisParameters()
 
 	getModelFitParameters: =>
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "analysis parameters", "clobValue", "model fit parameters"
+		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
 		if ap.get('clobValue')?
 			return $.parseJSON(ap.get('clobValue'))
 		else
@@ -243,10 +243,8 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_status').val(@model.getStatus().get('stringValue'))
 		if @model.isNew()
 			@$('.bv_save').html("Save")
-			console.log "model is new"
 		else
 			@$('.bv_save').html("Update")
-			console.log "model is not new"
 		@updateEditable()
 
 		@
@@ -268,10 +266,7 @@ class window.BaseEntityController extends AbstractFormController
 
 
 	handleRecordedByChanged: =>
-		console.log "recordedBy changed"
-		console.log @$('.bv_recordedBy').val()
 		@model.set recordedBy: @$('.bv_recordedBy').val()
-		console.log @model.get('recordedBy')
 		@handleNameChanged()
 
 	handleShortDescriptionChanged: =>
@@ -299,7 +294,6 @@ class window.BaseEntityController extends AbstractFormController
 			labelText: newName
 			recordedBy: @model.get('recordedBy')
 		#TODO label change propagation isn't really working, so this is the work-around
-		console.log @model.get('recordedBy')
 		@model.trigger 'change'
 
 	handleDateChanged: =>

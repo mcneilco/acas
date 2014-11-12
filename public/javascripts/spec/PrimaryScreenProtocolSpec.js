@@ -161,13 +161,34 @@
           });
         });
         return describe("special getters", function() {
-          return describe("primary screen protocol parameters", function() {
+          describe("primary screen protocol parameters", function() {
             it('Should be able to get primary screen protocol parameters', function() {
               return expect(this.psp.getPrimaryScreenProtocolParameters() instanceof PrimaryScreenProtocolParameters).toBeTruthy();
             });
             return it('Should parse primary screen protocol parameters', function() {
               expect(this.psp.getPrimaryScreenProtocolParameters().getCurveDisplayMax().get('numericValue')).toEqual(200.0);
               return expect(this.psp.getPrimaryScreenProtocolParameters().getCurveDisplayMin().get('numericValue')).toEqual(10.0);
+            });
+          });
+          return describe("analysis parameters", function() {
+            it('Should be able to get analysis parameters', function() {
+              return expect(this.psp.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy();
+            });
+            it('Should parse analysis parameters', function() {
+              expect(this.psp.getAnalysisParameters().get('hitSDThreshold')).toEqual(5);
+              return expect(this.psp.getAnalysisParameters().get('dilutionFactor')).toEqual(21);
+            });
+            it('Should parse pos control into backbone models', function() {
+              return expect(this.psp.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual("CMPD-12345678-01");
+            });
+            it('Should parse neg control into backbone models', function() {
+              return expect(this.psp.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual("CMPD-87654321-01");
+            });
+            it('Should parse veh control into backbone models', function() {
+              return expect(this.psp.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual("CMPD-00000001-01");
+            });
+            return it('Should parse agonist control into backbone models', function() {
+              return expect(this.psp.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual("CMPD-87654399-01");
             });
           });
         });

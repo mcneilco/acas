@@ -353,17 +353,24 @@
           message: "Signal Direction Rule must be assigned"
         });
       }
-      if (attrs.aggregateBy === "unassigned" || attrs.aggregateBy === "") {
+      if ((attrs.aggregateBy === "unassigned" || attrs.aggregateBy === "") && (attrs.aggregationMethod === "unassigned" || attrs.aggregationMethod === "")) {
         errors.push({
-          attribute: 'aggregateBy',
-          message: "Aggregate By must be assigned"
+          attribute: 'aggregateByGroup',
+          message: "Aggregate By and Aggregation Method must be assigned"
         });
-      }
-      if (attrs.aggregationMethod === "unassigned" || attrs.aggregationMethod === "") {
-        errors.push({
-          attribute: 'aggregationMethod',
-          message: "Aggregation method must be assigned"
-        });
+      } else {
+        if (attrs.aggregateBy === "unassigned" || attrs.aggregateBy === "") {
+          errors.push({
+            attribute: 'aggregateByGroup',
+            message: "Aggregate By must be assigned"
+          });
+        }
+        if (attrs.aggregationMethod === "unassigned" || attrs.aggregationMethod === "") {
+          errors.push({
+            attribute: 'aggregateByGroup',
+            message: "Aggregation method must be assigned"
+          });
+        }
       }
       if (attrs.normalizationRule === "unassigned" || attrs.normalizationRule === "") {
         errors.push({

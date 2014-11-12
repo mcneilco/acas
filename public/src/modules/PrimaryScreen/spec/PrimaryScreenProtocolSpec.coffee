@@ -123,20 +123,20 @@ describe "Primary Screen Protocol module testing", ->
 					it 'Should parse primary screen protocol parameters', ->
 						expect(@psp.getPrimaryScreenProtocolParameters().getCurveDisplayMax().get('numericValue')).toEqual 200.0
 						expect(@psp.getPrimaryScreenProtocolParameters().getCurveDisplayMin().get('numericValue')).toEqual 10.0
-#				describe "analysis parameters", -> #TODO: Uncomment and check later
-#					it 'Should be able to get analysis parameters', ->
-#						expect(@pse.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy()
-#					it 'Should parse analysis parameters', ->
-#						expect(@pse.getAnalysisParameters().get('hitSDThreshold')).toEqual 5
-#						expect(@pse.getAnalysisParameters().get('dilutionFactor')).toEqual 21
-#					it 'Should parse pos control into backbone models', ->
-#						expect(@pse.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual "CMPD-12345678-01"
-#					it 'Should parse neg control into backbone models', ->
-#						expect(@pse.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual "CMPD-87654321-01"
-#					it 'Should parse veh control into backbone models', ->
-#						expect(@pse.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
-#					it 'Should parse agonist control into backbone models', ->
-#						expect(@pse.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual "CMPD-87654399-01"
+				describe "analysis parameters", -> #TODO: Uncomment and check later
+					it 'Should be able to get analysis parameters', ->
+						expect(@psp.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy()
+					it 'Should parse analysis parameters', ->
+						expect(@psp.getAnalysisParameters().get('hitSDThreshold')).toEqual 5
+						expect(@psp.getAnalysisParameters().get('dilutionFactor')).toEqual 21
+					it 'Should parse pos control into backbone models', ->
+						expect(@psp.getAnalysisParameters().get('positiveControl').get('batchCode')).toEqual "CMPD-12345678-01"
+					it 'Should parse neg control into backbone models', ->
+						expect(@psp.getAnalysisParameters().get('negativeControl').get('batchCode')).toEqual "CMPD-87654321-01"
+					it 'Should parse veh control into backbone models', ->
+						expect(@psp.getAnalysisParameters().get('vehicleControl').get('batchCode')).toEqual "CMPD-00000001-01"
+					it 'Should parse agonist control into backbone models', ->
+						expect(@psp.getAnalysisParameters().get('agonistControl').get('batchCode')).toEqual "CMPD-87654399-01"
 
 	describe "PrimaryScreenProtocolParametersController", ->
 		describe "when instantiated with no data", ->
