@@ -50,6 +50,8 @@ describe "Protocol Browser module testing", ->
 				expect(@prsc.$('.bv_status').html()).toEqual "created"
 			it "should show the assay stage", ->
 				expect(@prsc.$('.bv_assayStage').html()).toEqual "assay development"
+			it "should show the number of experiments", ->
+				expect(@prsc.$('.bv_experimentCount').html()).toEqual "12"
 		describe "basic behavior", ->
 			it "should trigger gotClick when the row is clicked", ->
 				@clickTriggered = false

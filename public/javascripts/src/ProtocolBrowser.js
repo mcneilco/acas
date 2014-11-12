@@ -157,6 +157,7 @@
         recordedBy: this.model.get('recordedBy'),
         assayStage: this.model.getAssayStage().get("codeValue"),
         status: this.model.getStatus().get("stringValue"),
+        experimentCount: this.model.get('experimentCount'),
         recordedDate: this.model.get("recordedDate")
       };
       $(this.el).html(this.template(toDisplay));

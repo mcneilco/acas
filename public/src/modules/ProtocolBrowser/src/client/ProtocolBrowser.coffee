@@ -95,8 +95,9 @@ class window.ProtocolRowSummaryController extends Backbone.View
 			protocolCode: @model.get('codeName')
 			protocolKind: @model.get('lsKind')
 			recordedBy: @model.get('recordedBy')
-			assayStage: @model.getAssayStage().get("codeValue") #TODO: returned stub doesn't have the stage, so will always be set to "unassigned"
-			status: @model.getStatus().get("stringValue") #TODO: returned stub doesn't have the status, so will always be set to "created"
+			assayStage: @model.getAssayStage().get("codeValue")
+			status: @model.getStatus().get("stringValue")
+			experimentCount: @model.get('experimentCount')
 #			analysisStatus: @model.getAnalysisStatus().get("stringValue")
 			recordedDate: @model.get("recordedDate")
 		$(@el).html(@template(toDisplay))

@@ -1,6 +1,7 @@
 ((exports) ->
 	exports.fullSavedProtocol =
 		codeName: "PROT-00000001"
+		experimentCount: 12
 		id: 1
 		ignored: false
 		lsKind: "default"
@@ -388,6 +389,7 @@
 
 	exports.stubSavedProtocol = [
 		codeName: "PROT-00000001"
+		experimentCount: 12
 		id: 14325
 		ignored: false
 		lsKind: null #changed from kind to lsKind
@@ -406,6 +408,7 @@
 	]
 	exports.protocolToSave = [
 		codeName: "PROT-00000066"
+		experimentCount: 12
 		ignored: false
 		lsKind: null #changed from kind to lsKind
 		lsLabels: [

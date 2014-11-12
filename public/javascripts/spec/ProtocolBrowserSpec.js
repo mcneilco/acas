@@ -73,8 +73,11 @@
         it("should show the status", function() {
           return expect(this.prsc.$('.bv_status').html()).toEqual("created");
         });
-        return it("should show the assay stage", function() {
+        it("should show the assay stage", function() {
           return expect(this.prsc.$('.bv_assayStage').html()).toEqual("assay development");
+        });
+        return it("should show the number of experiments", function() {
+          return expect(this.prsc.$('.bv_experimentCount').html()).toEqual("12");
         });
       });
       return describe("basic behavior", function() {
