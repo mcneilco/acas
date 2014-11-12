@@ -365,8 +365,8 @@
         it("should have the status set to created", function() {
           return expect(this.copiedEntity.getStatus().get('stringValue')).toEqual("created");
         });
-        it("should have the code name be autofill when saved", function() {
-          return expect(this.copiedEntity.get('codeName')).toEqual("autofill when saved");
+        it("should have the code name be undefined", function() {
+          return expect(this.copiedEntity.get('codeName')).toBeUndefined();
         });
         it("should have the entity name be empty", function() {
           expect(this.copiedEntity.get('lsLabels').length).toEqual(0);
