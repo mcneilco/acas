@@ -1,5 +1,5 @@
 (function() {
-  var csUtilities;
+  var config, csUtilities;
 
   exports.setupAPIRoutes = function(app) {
     return app.get('/api/users/:username', exports.getUsers);
@@ -24,8 +24,10 @@
 
   csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
 
+  config = require('../conf/compiled/conf.js');
+
   exports.loginPage = function(req, res) {
-    var error, errorMsg, user;
+    var error, errorMsg, resetPasswordOption, user;
     user = null;
     if (req.user != null) {
       user = req.user;
@@ -35,11 +37,17 @@
     if (error.length > 0) {
       errorMsg = error[0];
     }
+    if (config.all.server.security.authstrategy === "database") {
+      resetPasswordOption = true;
+    } else {
+      resetPasswordOption = false;
+    }
     return res.render('login', {
       title: "ACAS Login",
       scripts: [],
       user: user,
-      message: errorMsg
+      message: errorMsg,
+      resetPasswordOption: resetPasswordOption
     });
   };
 
@@ -171,12 +179,17 @@
     if (error.length > 0) {
       errorMsg = error[0];
     }
-    return res.render('passwordReset', {
-      title: "ACAS reset",
-      scripts: [],
-      user: user,
-      message: errorMsg
-    });
+    console.log("trying to reset pass");
+    if (config.all.server.security.authstrategy === "database") {
+      return res.render('passwordReset', {
+        title: "ACAS reset",
+        scripts: [],
+        user: user,
+        message: errorMsg
+      });
+    } else {
+      return res.redirect('/login');
+    }
   };
 
   exports.changePage = function(req, res) {
