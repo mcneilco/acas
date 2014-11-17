@@ -23,7 +23,8 @@ block content
                         div.control-group
                             div.controls
                                 input.btn.btn-primary(type="submit", value="Submit")
-                                a.forgotPasswordLink(href="/passwordReset") Forgot your password?
+                                - if (resetPasswordOption)
+                                    a.forgotPasswordLink(href="/passwordReset") Forgot your password?
         - if (message =="Your new password is set.")
             div.span7.offset1.alert.alert-success.loginError #{message}
         - else if (message != "")

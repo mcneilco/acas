@@ -21,6 +21,7 @@ exports.setupRoutes = (app, passport) ->
 	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
 
 csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+config = require '../conf/compiled/conf.js'
 
 exports.loginPage = (req, res) ->
 	user = null
@@ -31,12 +32,17 @@ exports.loginPage = (req, res) ->
 	error = req.flash('error')
 	if error.length > 0
 		errorMsg = error[0]
+	if config.all.server.security.authstrategy is "database"
+		resetPasswordOption = true
+	else
+		resetPasswordOption = false
 
 	res.render 'login',
 		title: "ACAS Login"
 		scripts: []
 		user: user
 		message: errorMsg
+		resetPasswordOption: resetPasswordOption
 
 exports.resetPost = (req, res) ->
 	console.log req.session
@@ -140,11 +146,14 @@ exports.resetpage = (req, res) ->
 	error = req.flash('error')
 	if error.length > 0
 		errorMsg = error[0]
-	res.render 'passwordReset',
-		title: "ACAS reset"
-		scripts: []
-		user: user
-		message: errorMsg
+	if config.all.server.security.authstrategy is "database"
+		res.render 'passwordReset',
+			title: "ACAS reset"
+			scripts: []
+			user: user
+			message: errorMsg
+	else
+		res.redirect '/login'
 
 exports.changePage = (req, res) ->
 	user = null
