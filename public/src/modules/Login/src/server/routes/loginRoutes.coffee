@@ -99,10 +99,10 @@ exports.resetAuthenticationService = (req, resp) ->
 	callback = (results) ->
 		console.log results
 		if results.indexOf("Your new password is sent to your email address")>=0
-			req.flash 'error','Your new password is sent to your email address'
+			req.flash 'error','Your new password has been sent to your email address.'
 			resp.redirect '/passwordReset'
 		else if results.indexOf("connection_error")>=0
-			req.flash 'error','Cannot connect to authentication service. Please contact an administrator'
+			req.flash 'error','Cannot connect to authentication service. Please contact an administrator.'
 			resp.redirect '/passwordReset'
 		else
 			req.flash 'error','Invalid Email or Username'
@@ -117,13 +117,13 @@ exports.changeAuthenticationService = (req, resp) ->
 	callback = (results) ->
 		console.log results
 		if results.indexOf("You password has been successfully been changed")>=0
-			req.flash 'error','Your new password is set'
+			req.flash 'error','Your new password is set.'
 			resp.redirect '/login'
 		else if results.indexOf("connection_error")>=0
-			req.flash 'error','Cannot connect to authentication service. Please contact an administrator'
+			req.flash 'error','Cannot connect to authentication service. Please contact an administrator.'
 			resp.redirect '/passwordChange'
 		else
-			req.flash 'error','Invalid password or new password does not match'
+			req.flash 'error','Invalid password or new password does not match.'
 			resp.redirect '/passwordChange'
 
 	if global.specRunnerTestmode

@@ -1851,3 +1851,10 @@
 2014-11-12T21:45:30.622Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2014-11-12T21:46:02.927Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
 2014-11-12T21:46:33.376Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-11-17T17:33:34.775Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-11-17T17:33:35.091Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-11-17T17:34:17.664Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-11-17T17:34:49.200Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-11-17T17:35:19.621Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-11-17T17:35:41.676Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2014-11-17T17:35:50.792Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
