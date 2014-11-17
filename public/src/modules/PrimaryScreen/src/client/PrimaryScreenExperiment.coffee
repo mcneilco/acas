@@ -282,6 +282,24 @@ class window.PrimaryScreenExperiment extends Experiment
 		super()
 		@.set lsKind: "flipr screening assay"
 
+	getDryRunStatus: ->
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "dry run status"
+		if !status.has('codeValue')
+			status.set codeValue: "not started"
+			status.set codeType: "dry run"
+			status.set codeKind: "status"
+			status.set codeOrigin: "acas ddict"
+
+		status
+
+	getDryRunResultHTML: ->
+		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "dry run result html"
+		if !result.has('clobValue')
+			console.log "no clobValue"
+			result.set clobValue: ""
+
+		result
+
 	getAnalysisStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
 		if !status.has('stringValue')

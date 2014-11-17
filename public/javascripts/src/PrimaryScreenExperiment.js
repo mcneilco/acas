@@ -469,6 +469,38 @@
       });
     };
 
+    PrimaryScreenExperiment.prototype.getDryRunStatus = function() {
+      var status;
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "dry run status");
+      if (!status.has('codeValue')) {
+        status.set({
+          codeValue: "not started"
+        });
+        status.set({
+          codeType: "dry run"
+        });
+        status.set({
+          codeKind: "status"
+        });
+        status.set({
+          codeOrigin: "acas ddict"
+        });
+      }
+      return status;
+    };
+
+    PrimaryScreenExperiment.prototype.getDryRunResultHTML = function() {
+      var result;
+      result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "dry run result html");
+      if (!result.has('clobValue')) {
+        console.log("no clobValue");
+        result.set({
+          clobValue: ""
+        });
+      }
+      return result;
+    };
+
     PrimaryScreenExperiment.prototype.getAnalysisStatus = function() {
       var status;
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");

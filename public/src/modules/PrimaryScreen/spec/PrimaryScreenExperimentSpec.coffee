@@ -382,6 +382,10 @@ describe "Primary Screen Experiment module testing", ->
 						# this is not hydrated into a specific model type at this level, it is passed to the specific curve fit class for that
 						expect(@pse.getModelFitParameters().inverseAgonistMode ).toBeTruthy()
 				describe "special states", ->
+					it "should be able to get the dry run status", ->
+						expect(@pse.getDryRunStatus().get('codeValue')).toEqual "not started"
+					it "should be able to get the dry run result html", ->
+						expect(@pse.getDryRunResultHTML().get('clobValue')).toEqual "<p>Dry Run not started</p>"
 					it "should be able to get the analysis status", ->
 						expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
 					it "should be able to get the analysis result html", ->
@@ -397,6 +401,10 @@ describe "Primary Screen Experiment module testing", ->
 				it "should have lsKind set to flipr screening assay", ->
 					expect(@pse2.get('lsKind')).toEqual "flipr screening assay"
 			describe "special states", ->
+				it "should be able to get the dry run status", ->
+					expect(@pse2.getDryRunStatus().get('codeValue')).toEqual "not started"
+				it "should be able to get the dry run result html", ->
+					expect(@pse2.getDryRunResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the analysis status", ->
 					expect(@pse2.getAnalysisStatus().get('stringValue')).toEqual "not started"
 				it "should be able to get the analysis result html", ->

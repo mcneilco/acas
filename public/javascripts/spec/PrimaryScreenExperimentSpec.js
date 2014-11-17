@@ -646,6 +646,12 @@
             });
           });
           return describe("special states", function() {
+            it("should be able to get the dry run status", function() {
+              return expect(this.pse.getDryRunStatus().get('codeValue')).toEqual("not started");
+            });
+            it("should be able to get the dry run result html", function() {
+              return expect(this.pse.getDryRunResultHTML().get('clobValue')).toEqual("<p>Dry Run not started</p>");
+            });
             it("should be able to get the analysis status", function() {
               return expect(this.pse.getAnalysisStatus().get('stringValue')).toEqual("not started");
             });
@@ -671,6 +677,12 @@
           });
         });
         return describe("special states", function() {
+          it("should be able to get the dry run status", function() {
+            return expect(this.pse2.getDryRunStatus().get('codeValue')).toEqual("not started");
+          });
+          it("should be able to get the dry run result html", function() {
+            return expect(this.pse2.getDryRunResultHTML().get('clobValue')).toEqual("");
+          });
           it("should be able to get the analysis status", function() {
             return expect(this.pse2.getAnalysisStatus().get('stringValue')).toEqual("not started");
           });

@@ -1159,6 +1159,37 @@
 				urlValue: null
 				version: 0
 			,
+				clobValue: "<p>Dry Run not started</p>"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 4212
+				ignored: false
+				lsKind: "dry run result html"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_dry run result html"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
 				clobValue: "<p>Model fit not yet completed</p>"
 #				clobValue: "<p>Model fit completed</p>"
 				codeValue: null
@@ -1171,6 +1202,39 @@
 				lsTransaction: 2
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_model fit result html"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: null
+				codeType: "dry run"
+				codeKind: "status"
+				codeValue: "not started"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 42213
+				ignored: false
+				lsKind: "dry run status"
+				lsTransaction: 2
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_dry run status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -2501,6 +2565,37 @@
 				urlValue: null
 				version: 0
 			,
+				clobValue: "<p>Dry Run not started</p>"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 412
+				ignored: false
+				lsKind: "dry run html"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_dry run result html"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
 				clobValue: "<p>Analysis not yet completed</p>"
 				codeValue: null
 				comments: null
@@ -2544,6 +2639,39 @@
 				lsTransaction: 2
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_model fit result html"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: null
+				codeType: "dry run"
+				codeKind: "status"
+				codeValue: "not started"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 42213
+				ignored: false
+				lsKind: "dry run status"
+				lsTransaction: 2
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_dry run status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -2945,6 +3073,37 @@
 				recordedDate: 1375889487000
 				sigFigs: null
 				stringValue: "12"
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: "<p>Dry Run not started</p>"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 412
+				ignored: false
+				lsKind: "dry run html"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_dry run result html"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
