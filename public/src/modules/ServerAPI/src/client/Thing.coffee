@@ -6,14 +6,15 @@ class window.Thing extends Backbone.Model
 	defaults: () =>
 		#attrs =
 		@set lsType: "thing"
-		@set lsKind: 'class of instance' #TODO figure out instance classname and replace
+		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
 		@set corpName: ""
 		@set recordedBy: ""
 		@set recordedDate: null
 		@set shortDescription: " "
 		@set lsLabels: new LabelList() # will be converted into a new LabelList()
 		@set lsStates: new StateList() # will be converted into a new StateList()
-
+		console.log "this.className"
+		console.log this.className
 		@createDefaultLabels() # attrs
 		@createDefaultStates() # attrs
 
@@ -28,9 +29,15 @@ class window.Thing extends Backbone.Model
 		# The good thing about making all the defaults is i never need to use getOrCreate, just get becuase I know the value was made at initializtion
 
 	parse: ->
-
+		@createDefaultLabels()
+		@createDefaultStates()
 
 	sync: ->
+		for dLabel in @defaultLabels
+			@unset dLabel.key
+
+		for dValue in @defaultValues
+			@unset dValue.key
 		#@set
 			#recordedDate: new Date().getTime()
 			#recordedBy: #logged in user
@@ -38,7 +45,7 @@ class window.Thing extends Backbone.Model
 
 
 	createDefaultLabels: =>
-		#loop over defaultLabels
+		# loop over defaultLabels
 		# getorCreateLabel
 		# add key as attribute of model
 		for dLabel in @defaultLabels
@@ -46,17 +53,19 @@ class window.Thing extends Backbone.Model
 			@set dLabel.key, newLabel
 
 
-	createDefaultStates: ->
-		#loop over defaultValues
-		# getOrCreateValue of class speccfied
-		# add as attribute of model with key specified
-		#loop over defaultValueArrays
-		#loop over valueArrays
-		# getOrCreateState
-		# add array as attribute of model with key specified
-		# Do I do something to help add a value to the state of the correct class and defualts
+	createDefaultStates: =>
+		# loop over defaultLabels
+		# getorCreateLabel
+		# add key as attribute of model
+		for dValue in @defaultValues
+			newState = @get('lsStates').getOrCreateStateByTypeAndKind dValue.type, dValue.kind
+			console.log "newState"
+			console.log newState
+			@set dValue.key, newState
+
 
 class window.AviditySiRNA extends Thing
+	className: "AviditySiRNA"
 	defaultLabels: [
 		key: 'name'
 		type: 'name'
