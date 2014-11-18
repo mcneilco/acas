@@ -711,7 +711,7 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.updateAnalysisClobValue = function() {
       var ap;
-      ap = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "analysis parameters", "clobValue", "data analysis parameters");
+      ap = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
       return ap.set({
         clobValue: JSON.stringify(this.primaryScreenAnalysisParametersController.model.attributes)
       });
@@ -719,7 +719,7 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.updateModelFitClobValue = function() {
       var mfp;
-      mfp = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "analysis parameters", "clobValue", "model fit parameters");
+      mfp = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
       return mfp.set({
         clobValue: JSON.stringify(this.primaryScreenModelFitParametersController.model.attributes)
       });
