@@ -283,7 +283,8 @@
               dash: 3,
               strokeColor: color
             });
-            brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), plotWindow[2]]], {
+            console.log(plotWindow[2]);
+            brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), 0]], {
               fixed: true,
               straightFirst: false,
               straightLast: false,

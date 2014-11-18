@@ -203,9 +203,11 @@ class window.DoseResponsePlotController extends AbstractFormController
 						color = '#ff0000'
 					else
 						color = '#808080'
-
+#				Horizontal Line
 					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),plotWindow[2]]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
+#				Vertical Line
+					console.log plotWindow[2]
+					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
 
 		getMouseCoords = (e) ->
 			cPos = brd.getCoordsTopLeftCorner(e)
