@@ -746,7 +746,8 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.validationError = function() {
       AbstractPrimaryScreenProtocolModuleController.__super__.validationError.call(this);
-      return this.$('.bv_saveModule').attr('disabled', 'disabled');
+      this.$('.bv_saveModule').attr('disabled', 'disabled');
+      return this.$('.bv_saveInstructions').show();
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.clearValidationErrorStyles = function() {

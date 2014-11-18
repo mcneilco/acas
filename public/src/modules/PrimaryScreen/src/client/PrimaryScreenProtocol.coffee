@@ -517,6 +517,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 	validationError: =>
 		super()
 		@$('.bv_saveModule').attr('disabled', 'disabled')
+		@$('.bv_saveInstructions').show()
 
 	clearValidationErrorStyles: =>
 		super()

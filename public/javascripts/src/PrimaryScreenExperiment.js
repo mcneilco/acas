@@ -493,7 +493,6 @@
       var result;
       result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "dry run result html");
       if (!result.has('clobValue')) {
-        console.log("no clobValue");
         result.set({
           clobValue: ""
         });
