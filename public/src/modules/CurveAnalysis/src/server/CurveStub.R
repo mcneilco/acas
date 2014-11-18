@@ -18,11 +18,10 @@ handle_response <- function(http_response_code, response) {
 }
 
 update_curve_stub <- function() {
-  saveSession("~/Desktop/infun")
   postData <- rawToChar(receiveBin())
   POST <- jsonlite::fromJSON(postData)
   myMessenger$logger$debug(paste0('updating curve stub with postData: ', postData))
-  myMessenger$capture_output("detail <- racas::api_doseResponse_update_flag(POST)")
+  myMessenger$capture_output(detail <- racas::api_doseResponse_update_flag(POST))
 
   if(myMessenger$hasErrors()) {
       return(handle_response(HTTP_INTERNAL_SERVER_ERROR, myMessenger$toJSON()))
