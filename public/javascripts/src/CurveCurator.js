@@ -1083,22 +1083,21 @@
           if (_this.selectedcid != null) {
             if (csController.model.cid === _this.selectedcid) {
               if (!_this.firstRun) {
-                return csController.styleSelected();
+                csController.styleSelected();
               } else {
-                return csController.setSelected();
+                csController.setSelected();
               }
             }
           } else {
             if (_this.firstRun && i === 1) {
               _this.selectedcid = cs.id;
-              return csController.setSelected();
+              csController.setSelected();
             }
           }
+          return i = 2;
         };
       })(this));
-      if (this.toRender.length > 0) {
-        this.firstRun = false;
-      }
+      this.firstRun = false;
       return this;
     };
 

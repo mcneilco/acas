@@ -701,9 +701,9 @@ class window.CurveSummaryListController extends Backbone.View
 				if @firstRun && i==1
 					@selectedcid = cs.id
 					csController.setSelected()
+			i = 2
 
-		if @toRender.length > 0
-			@firstRun = false
+		@firstRun = false
 		@
 
 	anyDirty: =>
