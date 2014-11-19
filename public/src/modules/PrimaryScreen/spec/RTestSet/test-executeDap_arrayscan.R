@@ -1,6 +1,5 @@
 library(testthat)
 library(compare)
-library(rdap)
 
 context("Testing the function getting the Dap data (arrayScan)")
 
@@ -26,17 +25,25 @@ test_that("executeDap functionality (arrayScan)", {
   tempFilePath <- tempdir()
   
   originalWD <- Sys.getenv("ACAS_HOME")
-  fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
-                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS"), full.names=TRUE))
+  source(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R"))
+  basePath <- "public/src/modules/PrimaryScreen/src/server/"
+  fileList <- c(fileList <- c(list.files(file.path(originalWD,basePath,"instrumentSpecific/","plateFormatSingleFile"), full.names=TRUE),
+                              list.files(file.path(originalWD,basePath,"instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
+                              list.files(file.path(originalWD,basePath,"compoundAssignment/DNS"), full.names=TRUE)))
   lapply(fileList, source)
   
   testFilePath <- file.path(originalWD, "public/src/modules/PrimaryScreen/spec/RTestSet/docs/test_raw_data_arrayscan/EXPT00AS01/Raw_data")
   
   readOrder <- list(1,2,3,4,5,6,7,8) 
   readNames <- list("ValidNeuronCount","NeuriteTotalLengthPerNeuronCh2","ValidFieldCount","NeuriteTotalLengthPerNeuriteCh2","NeuriteTotalCountPerNeuronCh2","BranchPointTotalCountPerNeuronCh2","BranchPointCountPerNeuriteLengthCh2","Chamber CO2 Percent")
-  readsTable <- data.table(readOrder=readOrder, readNames=readNames, activityCol=c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)) 
+  readsTable <- data.table(readPosition=readOrder, readName=readNames, activity=c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE)) 
   
-  instrumentSpecData <- getInstrumentSpecificData(filePath=normalizePath(testFilePath, winslash = "\\", mustWork=NA), instrument="arrayScan", testMode=TRUE, tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
+  instrumentSpecData <- getInstrumentSpecificData(filePath=normalizePath(testFilePath, winslash = "\\", mustWork=NA), 
+                                                  instrument="arrayScan", 
+                                                  testMode=TRUE, 
+                                                  tempFilePath=tempFilePath, 
+                                                  readsTable=readsTable, 
+                                                  matchNames=FALSE)
   getAssayCompoundData(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
 
   testFile <- normalizePath(file.path(tempdir(), "output_well_data.srf"))

@@ -1,6 +1,5 @@
 library(testthat)
 library(compare)
-library(rdap)
 
 context("Testing the function getting the Dap data (flipr)")
 
@@ -26,13 +25,16 @@ test_that("executeDap functionality (flipr)", {
   tempFilePath <- tempdir()
   
   originalWD <- Sys.getenv("ACAS_HOME")
-  fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
-                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS"), full.names=TRUE))
+  source(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R"))
+  basePath <- "public/src/modules/PrimaryScreen/src/server/"
+  fileList <- c(fileList <- c(list.files(file.path(originalWD,basePath,"instrumentSpecific/","plateFormatSingleFile"), full.names=TRUE),
+                              list.files(file.path(originalWD,basePath,"instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
+                              list.files(file.path(originalWD,basePath,"compoundAssignment/DNS"), full.names=TRUE)))
   lapply(fileList, source)
   
   testFilePath <- file.path(originalWD, "public/src/modules/PrimaryScreen/spec/RTestSet/docs/test_raw_data_flipr/EXPT00FL01/Raw_data")
   
-  readsTable <- data.table(readOrder=1, readNames="R1", activityCol=TRUE) 
+  readsTable <- data.table(readPosition=1, readName="R1", activity=TRUE) 
   
   instrumentSpecData <- getInstrumentSpecificData(filePath=normalizePath(testFilePath, winslash = "\\", mustWork=NA), instrument="flipr", testMode=TRUE, tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
   getAssayCompoundData(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)

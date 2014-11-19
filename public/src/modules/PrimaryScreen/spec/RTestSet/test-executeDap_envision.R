@@ -1,6 +1,5 @@
 library(testthat)
 library(compare)
-library(rdap)
 
 context("Testing the function getting the Dap data (envision)")
 
@@ -26,15 +25,18 @@ test_that("executeDap functionality (envision)", {
   tempFilePath <- tempdir()
   
   originalWD <- Sys.getenv("ACAS_HOME")
-  fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
-                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS"), full.names=TRUE))
+  source(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R"))
+  basePath <- "public/src/modules/PrimaryScreen/src/server/"
+  fileList <- c(fileList <- c(list.files(file.path(originalWD,basePath,"instrumentSpecific/","plateFormatSingleFile"), full.names=TRUE),
+                              list.files(file.path(originalWD,basePath,"instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
+                              list.files(file.path(originalWD,basePath,"compoundAssignment/DNS"), full.names=TRUE)))
   lapply(fileList, source)
   
   testFilePath <- file.path(originalWD, "public/src/modules/PrimaryScreen/spec/RTestSet/docs/test_raw_data_envision/EXPT00EV01/Raw_data")
   
   readOrder <- list(1,2)
   readNames <- list("R1","R2")
-  readsTable <- data.table(readOrder=readOrder, readNames=readNames, activityCol=c(TRUE, FALSE)) 
+  readsTable <- data.table(readPosition=readOrder, readName=readNames, activity=c(TRUE, FALSE)) 
   
   instrumentSpecData <- getInstrumentSpecificData(filePath=normalizePath(testFilePath, winslash = "\\", mustWork=NA), instrument="envision", testMode=TRUE, tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
   getAssayCompoundData(filePath=testFilePath, plateData=instrumentSpecData$plateAssociationDT, testMode=TRUE, tempFilePath=tempFilePath, assayData=instrumentSpecData$assayData)
