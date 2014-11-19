@@ -1335,7 +1335,7 @@
       this.maxFileSize = 200000000;
       this.loadReportFile = false;
       UploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
-      this.$('.bv_moduleTitle').html("Upload Data and Analyze");
+      this.$('.bv_moduleTitle').hide();
       this.analysisParameterController = new PrimaryScreenAnalysisParametersController({
         model: this.options.paramsFromExperiment,
         el: this.$('.bv_additionalValuesForm')
@@ -1380,24 +1380,74 @@
     };
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
-      var analysisStatus, res, resultValue;
+      var analysisStatus, dryRunStatus, resultHTML, resultStatus;
+      console.log("showing existing results");
+      dryRunStatus = this.model.getDryRunStatus();
+      if (dryRunStatus !== null) {
+        dryRunStatus = dryRunStatus.get('codeValue');
+      } else {
+        dryRunStatus = "not started";
+      }
       analysisStatus = this.model.getAnalysisStatus();
       if (analysisStatus !== null) {
         analysisStatus = analysisStatus.get('stringValue');
       } else {
         analysisStatus = "not started";
       }
-      this.$('.bv_analysisStatus').html(analysisStatus);
-      resultValue = this.model.getAnalysisResultHTML();
-      if (resultValue !== null) {
-        res = resultValue.get('clobValue');
-        if (res === "") {
-          return this.$('.bv_resultsContainer').hide();
+      if (dryRunStatus === "running") {
+        if (analysisStatus === "running") {
+          console.log("warning message");
+          resultStatus = "An error has occurred. Dry Run: running. Analysis: running.";
+          resultHTML = "";
         } else {
-          this.$('.bv_analysisResultsHTML').html(res);
-          return this.$('.bv_resultsContainer').show();
+          console.log("validate status drop down modal progress bar");
+          this.$('.bv_progressBar').modal({
+            backdrop: "static"
+          });
+          this.$('.bv_progressBar').modal("show");
+          console.log("progress bar shown");
+          resultStatus = "Dry Run Results: Dry run in progress.";
+          resultHTML = "";
+        }
+      } else if (analysisStatus === "running") {
+        if (dryRunStatus === "not started") {
+          console.log("warning message");
+          resultStatus = "An error has occurred. Dry Run: not started. Analysis: running.";
+          resultHTML = "";
+        } else {
+          console.log("save status drop down modal progress bar");
+          this.$('.bv_saveStatusDropDown').modal({
+            backdrop: "static"
+          });
+          this.$('.bv_saveStatusDropDown').modal("show");
+          resultStatus = "Analysis Results: Analysis in progress.";
+          resultHTML = "";
+        }
+      } else if (analysisStatus === "complete") {
+        console.log("saved data page, fill bv_htmlSummary with analysis result html clobValue, show re-analyze button");
+        resultStatus = "Analysis Results: Analysis successful.";
+        resultHTML = this.model.getDryRunResultHTML().get('clobValue');
+      } else if (analysisStatus === "failed") {
+        console.log("failed page, fill bv_htmlSummary with analyisis clob, show back button");
+        resultStatus = "Analysis Results: Analysis failed.";
+        resultHTML = this.model.getAnalysisResultHTML().get('clobValue');
+      } else {
+        if (dryRunStatus === "not started") {
+          console.log("upload data page - hide bv_htmlSummary, csvPreviewContainer, bv_saveControlContainer, bv_completeControlContainer");
+          resultStatus = "Dry Run Results: Dry run not started.";
+          resultHTML = "";
+        } else {
+          console.log("update bv_resultStatus with the dryRun status, fill bv_htmlSummary with dry run result html");
+          if (dryRunStatus === "complete") {
+            resultStatus = "Dry Run Results: Dry Run Successful.";
+          } else {
+            resultStatus = "Dry Run Results: Dry Run Failed";
+          }
+          resultHTML = this.model.getDryRunResultHTML().get('clobValue');
         }
       }
+      this.$('.bv_resultStatus').html(resultStatus);
+      return this.$('.bv_htmlSummary').html(resultHTML);
     };
 
     PrimaryScreenAnalysisController.prototype.setExperimentNotSaved = function() {

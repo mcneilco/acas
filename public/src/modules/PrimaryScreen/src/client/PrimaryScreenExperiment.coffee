@@ -852,7 +852,8 @@ class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRun
 		@maxFileSize = 200000000
 		@loadReportFile = false
 		super()
-		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+#		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+		@$('.bv_moduleTitle').hide()
 		@analysisParameterController = new PrimaryScreenAnalysisParametersController
 			model: @options.paramsFromExperiment
 			el: @$('.bv_additionalValuesForm')
@@ -878,20 +879,78 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@showExistingResults()
 
 	showExistingResults: ->
+		console.log "showing existing results"
+		dryRunStatus = @model.getDryRunStatus()
+		if dryRunStatus != null
+			dryRunStatus = dryRunStatus.get('codeValue')
+		else
+			dryRunStatus = "not started"
 		analysisStatus = @model.getAnalysisStatus()
 		if analysisStatus != null
 			analysisStatus = analysisStatus.get('stringValue')
 		else
 			analysisStatus = "not started"
-		@$('.bv_analysisStatus').html(analysisStatus)
-		resultValue = @model.getAnalysisResultHTML()
-		if resultValue != null
-			res = resultValue.get('clobValue')
-			if res == ""
-				@$('.bv_resultsContainer').hide()
+#		@$('.bv_analysisStatus').html(analysisStatus)
+
+
+		#running statuses
+		if dryRunStatus is "running"
+			if analysisStatus is "running" # invalid state
+				console.log "warning message"
+				resultStatus = "An error has occurred. Dry Run: running. Analysis: running."
+				resultHTML = "" #TODO: ask Sam if there will be anything in the result clobValues
 			else
-				@$('.bv_analysisResultsHTML').html(res)
-				@$('.bv_resultsContainer').show()
+				console.log "validate status drop down modal progress bar"
+				@$('.bv_progressBar').modal
+					backdrop: "static"
+				@$('.bv_progressBar').modal "show"
+				console.log "progress bar shown"
+				resultStatus = "Dry Run Results: Dry run in progress."
+				resultHTML = ""
+		else if analysisStatus is "running"
+			if dryRunStatus is "not started" # invalid state
+				console.log "warning message"
+				resultStatus = "An error has occurred. Dry Run: not started. Analysis: running."
+				resultHTML = "" #TODO: ask Sam if there will be anything in the result clobValues
+			else #valid
+				console.log "save status drop down modal progress bar"
+				@$('.bv_saveStatusDropDown').modal
+					backdrop: "static"
+				@$('.bv_saveStatusDropDown').modal("show")
+				resultStatus = "Analysis Results: Analysis in progress." #TODO: need to have this?
+				resultHTML = ""
+
+			#show analysis result clob
+		else if analysisStatus is "complete"
+			console.log "saved data page, fill bv_htmlSummary with analysis result html clobValue, show re-analyze button"
+			resultStatus = "Analysis Results: Analysis successful."
+			resultHTML = @model.getDryRunResultHTML().get('clobValue')
+		else if analysisStatus is "failed"
+			console.log "failed page, fill bv_htmlSummary with analyisis clob, show back button"
+			resultStatus = "Analysis Results: Analysis failed."
+			resultHTML = @model.getAnalysisResultHTML().get('clobValue')
+
+		#if analysisStatus is not started
+		else
+			if dryRunStatus is "not started"
+				console.log "upload data page - hide bv_htmlSummary, csvPreviewContainer, bv_saveControlContainer, bv_completeControlContainer"
+				resultStatus = "Dry Run Results: Dry run not started."
+				resultHTML = ""
+			else
+				console.log "update bv_resultStatus with the dryRun status, fill bv_htmlSummary with dry run result html"
+				if dryRunStatus is "complete"
+					resultStatus = "Dry Run Results: Dry Run Successful."
+				else
+					resultStatus = "Dry Run Results: Dry Run Failed"
+				resultHTML = @model.getDryRunResultHTML().get('clobValue')
+
+		@$('.bv_resultStatus').html(resultStatus)
+		@$('.bv_htmlSummary').html(resultHTML)
+#		if resultHTML == ""
+#			@$('.bv_resultsContainer').hide()
+#		else
+#			@$('.bv_analysisResultsHTML').html(res)
+#			@$('.bv_resultsContainer').show()
 
 	setExperimentNotSaved: ->
 		@$('.bv_fileUploadWrapper').hide()
