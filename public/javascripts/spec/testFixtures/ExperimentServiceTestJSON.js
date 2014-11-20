@@ -1200,7 +1200,7 @@
               urlValue: null,
               version: 0
             }, {
-              clobValue: "<p>Dry Run not started</p>",
+              clobValue: "<p>Dry Run complete</p>",
               codeValue: null,
               comments: null,
               dateValue: null,
@@ -2636,7 +2636,7 @@
               urlValue: null,
               version: 0
             }, {
-              clobValue: "<p>Dry Run not started</p>",
+              clobValue: "<p>Dry Run complete</p>",
               codeValue: null,
               comments: null,
               dateValue: null,
@@ -2732,7 +2732,7 @@
               clobValue: null,
               codeType: "dry run",
               codeKind: "status",
-              codeValue: "not started",
+              codeValue: "complete",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -3158,7 +3158,7 @@
               urlValue: null,
               version: 0
             }, {
-              clobValue: "<p>Dry Run not started</p>",
+              clobValue: "<p>Dry Run complete</p>",
               codeValue: null,
               comments: null,
               dateValue: null,

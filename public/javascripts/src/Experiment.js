@@ -214,6 +214,18 @@
       return projectCodeValue;
     };
 
+    Experiment.prototype.getAnalysisStatus = function() {
+      var metadataKind, status;
+      metadataKind = this.get('subclass') + " metadata";
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "stringValue", "analysis status");
+      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
+        status.set({
+          stringValue: "created"
+        });
+      }
+      return status;
+    };
+
     return Experiment;
 
   })(BaseEntity);

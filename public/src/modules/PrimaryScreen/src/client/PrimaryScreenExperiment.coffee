@@ -782,7 +782,7 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@analyzedPreviously = @options.analyzedPreviously
 		@analysisParameterController.render()
 		if @analyzedPreviously
-			@$('.bv_save').html("Re-Analyze")
+			@$('.bv_loadAnother').html("Re-Analyze")
 		@handleMSFormInvalid() #start invalid since file won't be loaded
 
 	handleMSFormValid: =>
@@ -796,14 +796,15 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		if @analysisParameterController.isValid()
 			super()
 
-	parseAndSave: =>
-		if @analyzedPreviously
-			if !confirm("Re-analyzing the data will delete the previously saved results")
-				return
-		super()
-
 	handleValidationReturnSuccess: (json) =>
 		super(json)
+		if @$('.bv_resultStatus').html().indexOf "Success"
+			resultStatus = "Dry Run Results: Success"
+			if @$('.bv_resultStatus').html().indexOf "warnings"
+				resultStatus += " but with warnings"
+		else
+			resultStatus = "Dry Run Results: Failed"
+		@$('.bv_resultStatus').html(resultStatus)
 		@analysisParameterController.disableAllInputs()
 
 	handleSaveReturnSuccess: (json) =>
@@ -811,8 +812,22 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@$('.bv_loadAnother').html("Re-Analyze")
 		@trigger 'analysis-completed'
 
+	backToUpload: =>
+		super()
+		@$('.bv_resultStatus').html("Upload Data and Analyze")
+		@$('.bv_resultStatus').show()
+
+	loadAnother: =>
+		if @analyzedPreviously
+			if !confirm("Re-analyzing the data will delete the previously saved results.")
+				return
+		super()
+		@$('.bv_resultStatus').html("Upload Data and Analyze")
+		@$('.bv_resultStatus').show()
+
 	showFileSelectPhase: ->
 		super()
+		@$('.bv_resultStatus').show()
 		if @analysisParameterController?
 			@analysisParameterController.enableAllInputs()
 
@@ -871,15 +886,14 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		if @model.isNew()
 			@setExperimentNotSaved()
 		else
-			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 			@setExperimentSaved()
+			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 
 
 	render: =>
 		@showExistingResults()
 
 	showExistingResults: ->
-		console.log "showing existing results"
 		dryRunStatus = @model.getDryRunStatus()
 		if dryRunStatus != null
 			dryRunStatus = dryRunStatus.get('codeValue')
@@ -899,14 +913,13 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 				console.log "warning message"
 				resultStatus = "An error has occurred. Dry Run: running. Analysis: running."
 				resultHTML = "" #TODO: ask Sam if there will be anything in the result clobValues
+				@trigger "warning"
 			else
 				console.log "validate status drop down modal progress bar"
-				@$('.bv_progressBar').modal
-					backdrop: "static"
-				@$('.bv_progressBar').modal "show"
 				console.log "progress bar shown"
 				resultStatus = "Dry Run Results: Dry run in progress."
 				resultHTML = ""
+				@trigger "dryRunRunning"
 		else if analysisStatus is "running"
 			if dryRunStatus is "not started" # invalid state
 				console.log "warning message"
@@ -914,35 +927,44 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 				resultHTML = "" #TODO: ask Sam if there will be anything in the result clobValues
 			else #valid
 				console.log "save status drop down modal progress bar"
-				@$('.bv_saveStatusDropDown').modal
-					backdrop: "static"
-				@$('.bv_saveStatusDropDown').modal("show")
-				resultStatus = "Analysis Results: Analysis in progress." #TODO: need to have this?
+				resultStatus = "Upload Results: Upload in progress." #TODO: need to have this?
 				resultHTML = ""
+				@trigger 'analysisRunning'
 
-			#show analysis result clob
-		else if analysisStatus is "complete"
-			console.log "saved data page, fill bv_htmlSummary with analysis result html clobValue, show re-analyze button"
-			resultStatus = "Analysis Results: Analysis successful."
-			resultHTML = @model.getDryRunResultHTML().get('clobValue')
-		else if analysisStatus is "failed"
-			console.log "failed page, fill bv_htmlSummary with analyisis clob, show back button"
-			resultStatus = "Analysis Results: Analysis failed."
+		#show analysis result clob
+		else if analysisStatus is "complete" or analysisStatus is "failed"
+			if analysisStatus is "complete"
+				console.log "saved data page, fill bv_htmlSummary with analysis result html clobValue, show re-analyze button"
+				resultStatus = "Upload Results: Success"
+			else
+				console.log "failed page, fill bv_htmlSummary with analyisis clob, show back button"
+				resultStatus = "Upload Results: Failed due to errors"
+
 			resultHTML = @model.getAnalysisResultHTML().get('clobValue')
+			if @dataAnalysisController?
+				@dataAnalysisController.showFileUploadCompletePhase()
+
 
 		#if analysisStatus is not started
 		else
-			if dryRunStatus is "not started"
+			if dryRunStatus is "not started" #TODO: check if needed.
 				console.log "upload data page - hide bv_htmlSummary, csvPreviewContainer, bv_saveControlContainer, bv_completeControlContainer"
-				resultStatus = "Dry Run Results: Dry run not started."
+				resultStatus = "Upload Data and Analyze"
 				resultHTML = ""
 			else
 				console.log "update bv_resultStatus with the dryRun status, fill bv_htmlSummary with dry run result html"
 				if dryRunStatus is "complete"
-					resultStatus = "Dry Run Results: Dry Run Successful."
+					resultStatus = "Dry Run Results: Success" #warnings are not stored so status will just be successful even if there are warnings
+#					if @dataAnalysisController?
+#						@dataAnalysisController.handleValidationReturnSuccess()
 				else
-					resultStatus = "Dry Run Results: Dry Run Failed"
+					resultStatus = "Dry Run Results: Failed"
 				resultHTML = @model.getDryRunResultHTML().get('clobValue')
+				if @dataAnalysisController?
+					@dataAnalysisController.parseFileUploaded = true
+					@dataAnalysisController.filePassedValidation = true
+					@dataAnalysisController.showFileUploadPhase()
+					@dataAnalysisController.handleFormValid()
 
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
@@ -962,10 +984,10 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_fileUploadWrapper').show()
 
 	handleExperimentSaved: =>
+		@setExperimentSaved()
 		unless @dataAnalysisController?
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 		@model.getStatus().on 'change', @handleStatusChanged
-		@setExperimentSaved()
 
 	handleAnalysisComplete: =>
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
@@ -992,6 +1014,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@trigger 'amDirty'
 		@dataAnalysisController.on 'amClean', =>
 			@trigger 'amClean'
+		@showExistingResults()
 
 
 # This wraps all the tabs
@@ -1056,6 +1079,12 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amDirty'
 		@analysisController.on 'amClean', =>
 			@trigger 'amClean'
+		@analysisController.on 'warning', =>
+			@showWarning()
+		@analysisController.on 'dryRunRunning', =>
+			@showValidateProgressBar()
+		@analysisController.on 'analysisRunning', =>
+			@showSaveProgressBar()
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
 			@modelFitController.primaryAnalysisCompleted()
@@ -1079,6 +1108,41 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 	handleProtocolAttributesCopied: =>
 		@analysisController.render()
+
+	showWarning: ->
+		console.log "should show warning message"
+		@$('a[href="#tab3"]').tab('show')
+		dryRunStatus = @model.getDryRunStatus().get('codeValue')
+		dryRunResult = @model.getDryRunResultHTML().get('clobValue')
+		analysisStatus = @model.getAnalysisStatus().get('stringValue')
+		analysisResult = @model.getAnalysisResultHTML().get('clobValue')
+		console.log dryRunStatus
+		console.log analysisStatus
+		@$('.bv_dryRunStatus').html("Dry Run Status: "+dryRunStatus)
+		@$('.bv_dryRunResult').html("Dry Run Result HTML: "+dryRunResult)
+		@$('.bv_analysisStatus').html("Analysis Status: "+analysisStatus)
+		@$('.bv_analysisResult').html("Analysis Result HTML: "+analysisResult)
+		@$('.bv_invalidAnalysisStates').modal
+			backdrop: "static"
+		@$('.bv_invalidAnalysisStates').modal("show")
+		@$('.bv_fileUploadWrapper .bv_fileUploadWrapper').hide()
+		@$('.bv_fileUploadWrapper .bv_flowControl').hide()
+
+
+
+	showValidateProgressBar: ->
+		console.log "should show validate progress bar"
+		@$('a[href="#tab3"]').tab('show')
+		@$('.bv_validateStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_validateStatusDropDown').modal("show")
+
+	showSaveProgressBar: ->
+		console.log "should show save progress bar"
+		@$('a[href="#tab3"]').tab('show')
+		@$('.bv_saveStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_saveStatusDropDown').modal("show")
 
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"

@@ -135,6 +135,14 @@ class window.Experiment extends BaseEntity
 
 		projectCodeValue
 
+	getAnalysisStatus: ->
+		metadataKind = @.get('subclass') + " metadata"
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "analysis status"
+		#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
+		if status.get('stringValue') is undefined or status.get('stringValue') is ""
+			status.set stringValue: "created"
+
+		status
 
 
 class window.ExperimentList extends Backbone.Collection

@@ -1159,7 +1159,8 @@
 				urlValue: null
 				version: 0
 			,
-				clobValue: "<p>Dry Run not started</p>"
+#				clobValue: "<p>Dry Run not started</p>"
+				clobValue: "<p>Dry Run complete</p>"
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -1226,6 +1227,7 @@
 				codeType: "dry run"
 				codeKind: "status"
 				codeValue: "not started"
+#				codeValue: "running"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -1277,7 +1279,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-#				stringValue: "complete"
+#				stringValue: "running"
 				stringValue: "not started"
 				uncertainty: null
 				uncertaintyType: null
@@ -2565,7 +2567,8 @@
 				urlValue: null
 				version: 0
 			,
-				clobValue: "<p>Dry Run not started</p>"
+#				clobValue: "<p>Dry Run not started</p>"
+				clobValue: "<p>Dry Run complete</p>"
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -2662,7 +2665,8 @@
 				clobValue: null
 				codeType: "dry run"
 				codeKind: "status"
-				codeValue: "not started"
+#				codeValue: "not started"
+				codeValue: "complete"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -3081,7 +3085,8 @@
 				urlValue: null
 				version: 0
 			,
-				clobValue: "<p>Dry Run not started</p>"
+#				clobValue: "<p>Dry Run not started</p>"
+				clobValue: "<p>Dry Run complete</p>"
 				codeValue: null
 				comments: null
 				dateValue: null
