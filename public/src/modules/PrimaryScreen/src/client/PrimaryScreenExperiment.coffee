@@ -176,34 +176,34 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		if positiveControl is "" or positiveControl is undefined
 			errors.push
 				attribute: 'positiveControlBatch'
-				message: "Positive control batch much be set"
+				message: "Positive control batch muct be set"
 		positiveControlConc = @get('positiveControl').get('concentration')
 		if _.isNaN(positiveControlConc) or positiveControlConc is undefined or positiveControlConc is null or positiveControlConc is ""
 			errors.push
 				attribute: 'positiveControlConc'
-				message: "Positive control conc much be set"
+				message: "Positive control conc must be set"
 		negativeControl = @get('negativeControl').get('batchCode')
 		if negativeControl is "" or negativeControl is undefined
 			errors.push
 				attribute: 'negativeControlBatch'
-				message: "Negative control batch much be set"
+				message: "Negative control batch must be set"
 		negativeControlConc = @get('negativeControl').get('concentration')
 		if _.isNaN(negativeControlConc) || negativeControlConc is undefined || negativeControlConc is null or negativeControlConc is ""
 			errors.push
 				attribute: 'negativeControlConc'
-				message: "Negative control conc much be set"
+				message: "Negative control conc must be set"
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
 		if (agonistControl !="" and agonistControl != undefined) or (agonistControlConc != "" and agonistControlConc != undefined) # at least one of the agonist control fields is filled
-			if agonistControl is "" or agonistControl is undefined
+			if agonistControl is "" or agonistControl is undefined or agonistControl is null
 				errors.push
 					attribute: 'agonistControlBatch'
-					message: "Agonist control batch much be set"
-			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is ""
+					message: "Agonist control batch must be set"
+			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is "" || agonistControlConc is null
 				errors.push
 					attribute: 'agonistControlConc'
-					message: "Agonist control conc much be set"
+					message: "Agonist control conc must be set"
 		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
 			errors.push
 				attribute: 'signalDirectionRule'
