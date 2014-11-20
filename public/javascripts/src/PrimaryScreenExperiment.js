@@ -333,8 +333,6 @@
       }
       agonistControl = this.get('agonistControl').get('batchCode');
       agonistControlConc = this.get('agonistControl').get('concentration');
-      console.log(agonistControl);
-      console.log(agonistControlConc);
       if ((agonistControl !== "" && agonistControl !== void 0) || (agonistControlConc !== "" && agonistControlConc !== void 0)) {
         if (agonistControl === "" || agonistControl === void 0 || agonistControl === null) {
           errors.push({
@@ -1415,6 +1413,8 @@
       } else {
         analysisStatus = "not started";
       }
+      console.log(dryRunStatus);
+      console.log(analysisStatus);
       if (dryRunStatus === "running") {
         if (analysisStatus === "running") {
           console.log("warning message");
@@ -1426,6 +1426,7 @@
           console.log("progress bar shown");
           resultStatus = "Dry Run Results: Dry run in progress.";
           resultHTML = "";
+          this.checkDryRunStatus();
           this.trigger("dryRunRunning");
         }
       } else if (analysisStatus === "running") {
@@ -1474,6 +1475,42 @@
       }
       this.$('.bv_resultStatus').html(resultStatus);
       return this.$('.bv_htmlSummary').html(resultHTML);
+    };
+
+    PrimaryScreenAnalysisController.prototype.checkDryRunStatus = function() {
+      var stateId;
+      console.log("checking dry run status");
+      stateId = (this.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata"))[0].id;
+      console.log(stateId);
+      return $.ajax({
+        type: 'GET',
+        url: "/api/experiments/state/" + stateId,
+        dataType: 'json',
+        error: function(err) {
+          return alert('Error - Could not get requested experiment metadata state.');
+        },
+        success: (function(_this) {
+          return function(json) {
+            var dryRunStatus, exp;
+            if (json.length === 0) {
+              return alert('Success but could not get requested experiment metadata state.');
+            } else {
+              dryRunStatus = json[0].getValuesByTypeAndKind();
+              if (lsKind === "flipr screening assay") {
+                exp = new PrimaryScreenExperiment(json[0]);
+                exp.set(exp.parse(exp.attributes));
+                if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                  return _this.model = exp.duplicateEntity();
+                } else {
+                  return _this.model = exp;
+                }
+              } else {
+                return alert('Could not get primary screen experiment for code in this URL. Creating new primary screen experiment');
+              }
+            }
+          };
+        })(this)
+      });
     };
 
     PrimaryScreenAnalysisController.prototype.setExperimentNotSaved = function() {

@@ -1265,7 +1265,7 @@
               clobValue: null,
               codeType: "dry run",
               codeKind: "status",
-              codeValue: "not started",
+              codeValue: "running",
               comments: null,
               dateValue: null,
               fileValue: null,

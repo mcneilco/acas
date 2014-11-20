@@ -18,7 +18,8 @@
     app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
     app.get('/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect);
     app["delete"]('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment);
-    return app.get('/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename);
+    app.get('/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename);
+    return app.get('/api/experiments/state/:stateId', loginRoutes.ensureAuthenticated, exports.experimentStateById);
   };
 
   exports.experimentByCodename = function(req, resp) {
@@ -203,7 +204,6 @@
     config = require('../conf/compiled/conf.js');
     experimentId = req.params.id;
     baseurl = config.all.client.service.persistence.fullpath + "experiments/" + experimentId;
-    console.log("baseurl");
     console.log(baseurl);
     request = require('request');
     return request({
@@ -304,6 +304,20 @@
         resp.statusCode = 500;
         return resp.end("configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist");
       }
+    }
+  };
+
+  exports.experimentStateById = function(req, resp) {
+    var experimentServiceTestJSON, json;
+    console.log(req.params.stateId);
+    if (global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer.lsStates[1]));
+    } else {
+      json = {
+        message: "experiment state by id not implemented yet"
+      };
+      return res.end(JSON.stringify(json));
     }
   };
 

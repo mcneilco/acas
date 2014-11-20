@@ -906,6 +906,8 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			analysisStatus = "not started"
 #		@$('.bv_analysisStatus').html(analysisStatus)
 
+		console.log dryRunStatus
+		console.log analysisStatus
 
 		#running statuses
 		if dryRunStatus is "running"
@@ -919,6 +921,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 				console.log "progress bar shown"
 				resultStatus = "Dry Run Results: Dry run in progress."
 				resultHTML = ""
+				@checkDryRunStatus()
 				@trigger "dryRunRunning"
 		else if analysisStatus is "running"
 			if dryRunStatus is "not started" # invalid state
@@ -973,6 +976,39 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 #		else
 #			@$('.bv_analysisResultsHTML').html(res)
 #			@$('.bv_resultsContainer').show()
+
+	checkDryRunStatus: ->
+		console.log "checking dry run status"
+		stateId = (@model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata")[0].id #get id for experiment metadata state
+		console.log stateId
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/state/"+stateId
+			dataType: 'json'
+			error: (err) ->
+				alert 'Error - Could not get requested experiment metadata state.'
+#				@completeInitialization()
+			success: (json) =>
+				if json.length == 0
+					alert 'Success but could not get requested experiment metadata state.'
+				else
+					#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#								exp = new PrimaryScreenExperiment json
+					dryRunStatus = json[0].getValuesByTypeAndKind()
+					if lsKind is "flipr screening assay"
+						exp = new PrimaryScreenExperiment json[0]
+						exp.set exp.parse(exp.attributes)
+						if window.AppLaunchParams.moduleLaunchParams.copy
+							@model = exp.duplicateEntity()
+						else
+							@model = exp
+					else
+						alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
+#				@completeInitialization()
+#
+#		setTimeout(@checkDryRunStatus, 5000)
+
+
 
 	setExperimentNotSaved: ->
 		@$('.bv_fileUploadWrapper').hide()
