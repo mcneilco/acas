@@ -1375,6 +1375,7 @@
       this.handleAnalysisComplete = __bind(this.handleAnalysisComplete, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.setExperimentSaved = __bind(this.setExperimentSaved, this);
+      this.checkStatus = __bind(this.checkStatus, this);
       this.render = __bind(this.render, this);
       return PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
     }
@@ -1426,7 +1427,7 @@
           console.log("progress bar shown");
           resultStatus = "Dry Run Results: Dry run in progress.";
           resultHTML = "";
-          this.checkDryRunStatus();
+          this.checkStatus("dryRun");
           this.trigger("dryRunRunning");
         }
       } else if (analysisStatus === "running") {
@@ -1477,9 +1478,10 @@
       return this.$('.bv_htmlSummary').html(resultHTML);
     };
 
-    PrimaryScreenAnalysisController.prototype.checkDryRunStatus = function() {
+    PrimaryScreenAnalysisController.prototype.checkStatus = function(statusType) {
       var stateId;
       console.log("checking dry run status");
+      console.log(this.model);
       stateId = (this.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata"))[0].id;
       console.log(stateId);
       return $.ajax({
@@ -1491,21 +1493,26 @@
         },
         success: (function(_this) {
           return function(json) {
-            var dryRunStatus, exp;
+            var expMetadataState, status;
             if (json.length === 0) {
               return alert('Success but could not get requested experiment metadata state.');
             } else {
-              dryRunStatus = json[0].getValuesByTypeAndKind();
-              if (lsKind === "flipr screening assay") {
-                exp = new PrimaryScreenExperiment(json[0]);
-                exp.set(exp.parse(exp.attributes));
-                if (window.AppLaunchParams.moduleLaunchParams.copy) {
-                  return _this.model = exp.duplicateEntity();
-                } else {
-                  return _this.model = exp;
-                }
+              console.log("json");
+              console.log(json);
+              expMetadataState = new State(json);
+              console.log((expMetadataState.getValuesByTypeAndKind("codeValue", "dry run status"))[0]);
+              console.log((expMetadataState.getValuesByTypeAndKind("codeValue", "dry run status"))[0].get('codeValue'));
+              if (statusType === "dryRun") {
+                status = (expMetadataState.getValuesByTypeAndKind("codeValue", "dry run status"))[0].get('codeValue');
               } else {
-                return alert('Could not get primary screen experiment for code in this URL. Creating new primary screen experiment');
+                status = (expMetadataState.getValuesByTypeAndKind("codeValue", "analysis status"))[0].get('codeValue');
+              }
+              console.log(status);
+              if (status === "running") {
+                setTimeout(_this.checkStatus, 5000);
+                return console.log("dry run is still running");
+              } else {
+                return console.log("done running dry run");
               }
             }
           };
