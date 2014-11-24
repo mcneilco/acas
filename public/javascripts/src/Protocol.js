@@ -62,7 +62,7 @@
     };
 
     Protocol.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, nameError, notebook;
+      var assayTreeRule, bestName, cDate, errors, nameError, notebook;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = true;
@@ -106,6 +106,20 @@
           attribute: 'notebook',
           message: "Notebook must be set"
         });
+      }
+      assayTreeRule = this.getAssayTreeRule().get('stringValue');
+      if (!(assayTreeRule === "" || assayTreeRule === void 0 || assayTreeRule === null)) {
+        if (assayTreeRule.charAt([0]) !== "/") {
+          errors.push({
+            attribute: 'assayTreeRule',
+            message: "Assay tree rule must start with '/'"
+          });
+        } else if (assayTreeRule.charAt([assayTreeRule.length - 1]) === "/") {
+          errors.push({
+            attribute: 'assayTreeRule',
+            message: "Assay tree rule should not end with '/'"
+          });
+        }
       }
       if (errors.length > 0) {
         return errors;
