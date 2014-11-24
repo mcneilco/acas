@@ -1869,3 +1869,6 @@
 2014-11-19T01:06:24.044Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2014-11-19T01:06:24.318Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2014-11-19T01:06:34.263Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-11-24T23:00:58.222Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-11-24T23:00:58.522Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-11-24T23:01:01.688Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
