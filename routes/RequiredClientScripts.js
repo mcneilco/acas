@@ -50,6 +50,7 @@ exports.applicationScripts = [
 	"/javascripts/src/ExperimentBrowser.js",
 	"/javascripts/src/GeneDataQueries.js",
 	"/javascripts/src/GenericDataParser.js",
+	"/javascripts/src/InternalizationAgent.js",
 	"/javascripts/src/Logging.js",
 	"/javascripts/src/ModuleLauncher.js",
 	"/javascripts/src/ModuleMenus.js",
@@ -97,7 +98,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
-	"/javascripts/spec/ThingSpec.js",
+	"/javascripts/spec/testFixtures/ThingTestJSON.js",
 	"/javascripts/spec/testFixtures/curveCuratorTestFixtures.js",
 	"/src/modules/DocForBatches/spec/DocForBatchesSpec.js",
 	"/javascripts/spec/AbstractFormControllerSpec.js",
@@ -139,6 +140,8 @@ exports.specScripts = [
 	"/javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js",
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/TagListSpec.js",
+	"/javascripts/spec/ThingServiceSpec.js",
+	"/javascripts/spec/ThingSpec.js",
 	"/javascripts/spec/UtilityFunctionsSpec.js",
 	"/javascripts/spec/dnsAuthenticationServiceSpec.js"
 ]
