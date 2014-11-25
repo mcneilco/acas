@@ -41,11 +41,15 @@
 
 getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
   
-  if(is.null(flaggedWells)) {
-    resultTable[ , flag:= as.character(NA)]
+  if(flaggedWells == "") {
+    resultTable[, flag:= as.character(NA)]
+    resultTable[, flagType:=NA_character_]
+    resultTable[, flagObservation:=NA_character_]
+    resultTable[, flagReason:=NA_character_]
+    resultTable[, flagComment:=NA_character_]
     return(resultTable)
   }
-  
+
   # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
   flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
   
@@ -66,7 +70,7 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
   # Input: flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #        resultTable, a data.table that must contain all of the barcodes and wells for the data set
   #        flaggingStage, a string indicating whether the user intends to modify "wellFlags" or
-  #                       "analysisGroupFlags"
+  #                       "analysisGroupFlags" or spotfire "KOandHit"
   # Returns: a data.table with each barcode, well, and associated flag. All column names are lowercase.
   
   # Extract information from the flag file
@@ -99,7 +103,8 @@ getUserHits <- function(analysisGroupData, flaggedWells, resultTable, replicateT
   #             batchName and well for each test
   #          replicateType, a string that defines an analysis group (ie, "across plate")
   #          experiment, a list that is an experiment, and contains a code name
-  #          flaggingStage, a string indicating whether users want to moidfy "wellFlags" or "analysisGroupFlags"
+  #          flaggingStage, a string indicating whether the user intends to modify "wellFlags" or
+  #                       "analysisGroupFlags" or spotfire "KOandHit"
   # Returns: analysisGroupData: the original table, including a column indicating whether the user specified
   #             an analysis group as a hit or a miss
   #          summaryFlagData: the batchName and userHit columns for every piece of data
@@ -904,8 +909,8 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
   #
   # validatedFlagData: a (validated) table containing information about which wells
   #               (and possibly analysis groups) are flagged
-  # flaggingStage: a string indicating whether the user is modifying "wellFlags"
-  #                or "analysisGroupFlags"
+  # flaggingStage: a string indicating whether the user intends to modify "wellFlags" or
+  #                       "analysisGroupFlags" or spotfire "KOandHit"
   
   if(is.null(validatedFlagData)) {
     #There was no flag file given, so we aren't doing any flagging
@@ -1499,19 +1504,20 @@ unzipDataFolder <- function (zipFile, targetFolder, experiment) {
   return(targetFolder)
 }
 
+
+
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
   # Runs main functions that are inside the tryCatch.W.E
   # flaggedWells: the name of a csv or Excel file that lists each well's barcode, 
   #               well number, and if it's flagged. If NULL, the file did not exist,
   #               and no wells are flagged. Also may include information to flag analysis groups.
-  # flaggingStage: a string indicating whether the user is currently altering "wellFlags" or 
-  #               "analysisGroupFlags"
+  # flaggingStage: a string indicating whether the user intends to modify "wellFlags" or
+  #                       "analysisGroupFlags" or spotfire "KOandHit"
   
   require("data.table")
   library(plyr)
   
-  originalFileToParse <- folderToParse
   folderToParse <- racas::getUploadedFilePath(folderToParse)
   
   if (!file.exists(folderToParse)) {
@@ -1526,6 +1532,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   parameters <- getExperimentParameters(inputParameters)
+
+  if(length(unique(grepl(parameters$thresholdType, parameters$transformationRuleList))) < 2 && 
+       !grepl(parameters$thresholdType, parameters$transformationRuleList)) {
+    stopUser(paste0("Hit selection parameter (", parameters$thresholdType, ") not calculated in transformation section."))
+  }
   
   ## TODO: test structure for integration 2014-10-06 kcarr
   # parameters <- parameters$primaryScreenAnalysisParameters
@@ -1587,18 +1598,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   checkControls(resultTable)
   
-  ## Well Flagging Here
+  ## User Well Flagging Here
   
+  # user well flagging
   resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment)
-  resultTable[, flagType:=NA_character_]
-  resultTable[, flagObservation:=NA_character_]
-  resultTable[, flagReason:=NA_character_]
-  resultTable[, flagComment:=NA_character_]
-  resultTable[, autoFlagType:=NA_character_]
-  resultTable[, autoFlagObservation:=NA_character_]
-  resultTable[, autoFlagReason:=NA_character_]
   
-  ## End Well Flagging
+  ## End User Well Flagging
   
   ## RED SECTION - Client Specific
   #calculations
@@ -1606,6 +1611,35 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                    clientName,"performCalculations.R"))
   
   resultTable <- performCalculations(resultTable, parameters)
+  
+  
+  
+  ## BLUE SECTION - Auto Well Flagging
+  
+  autoFlagWells <- function(resultTable, parameters) {
+    resultTable[, autoFlagType:=NA_character_]
+    resultTable[, autoFlagObservation:=NA_character_]
+    resultTable[, autoFlagReason:=NA_character_]
+    
+    if(parameters$thresholdType == "") {
+      return(resultTable)
+    } else if(parameters$thresholdType == "efficacy") {
+      setnames(resultTable, "transformed_% efficacy","transformed_efficacy")
+      resultTable[transformed_efficacy >= parameters$hitEfficacyThreshold , autoFlagType := "HIT"]
+      setnames(resultTable, "transformed_efficacy","transformed_% efficacy")
+    } else if(parameters$thresholdType == "sd") {
+      resultTable[transformed_sd >= parameters$hitSDThreshold , autoFlagType := "HIT"]
+    }
+    
+    resultTable[autoFlagType == "HIT", autoFlagObservation := paste0()]
+    
+  }
+  
+
+  
+  resultTable <- autoFlagWells(resultTable, parameters)
+  
+  # END Auto Well Flagging
   
   # was "across plates"
   if (parameters$aggregateBy == "compound batch concentration") {
@@ -1790,7 +1824,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   if (dryRun && !testMode) {
     saveAcasFileToExperiment(
-      originalFileToParse, experiment, 
+      folderToParse, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
   }
   
@@ -1939,7 +1973,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                   subjectData=subjectDataLong,
                                   recordedBy=user, lsTransaction=lsTransaction)
       
-      #analysisGroupData$experimentVersion <- experiment$version
+      f#analysisGroupData$experimentVersion <- experiment$version
       
     }
     
@@ -2263,8 +2297,7 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   library(data.table)
   
   # Replaces data with a curve id if there are more than 3 points
-  aggregateCurveData <- function(DT, newID, BY) {
-    newTempId <- BY$tempParentId
+  aggregateCurveData <- function(DT, newID, newTempId) {
     if(length(unique(DT[, cmpdConc])) > 3) {
       output <- DT[NA]
       output[, tempId:=newTempId]
@@ -2282,7 +2315,7 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_character_]
   preCurveData[, renderingHint:=NA_character_]
-  analysisData <- preCurveData[, aggregateCurveData(.SD, .GRP, .BY), by=tempParentId]
+  analysisData <- preCurveData[, aggregateCurveData(.SD, .GRP, tempParentId), by=tempParentId]
   analysisData[, tempParentId:=NULL]
   return(analysisData)
   
@@ -2377,8 +2410,11 @@ runPrimaryAnalysis <- function(request) {
   user <- request$user
   testMode <- request$testMode
   inputParameters <- request$inputParameters
-  flaggedWells <- request$flaggedWells
-  flaggingStage <- ifelse(is.null(request$flaggingStage), "", request$flaggingStage)
+  ## TODO test structure: remove when GUI JSON is fixed
+  request$flaggedFile <- request$reportFile
+  ## TODO end test structure
+  flaggedWells <- request$flaggedFile
+  flaggingStage <- ifelse(is.null(request$flaggingStage), "KOandHit", request$flaggingStage)
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
