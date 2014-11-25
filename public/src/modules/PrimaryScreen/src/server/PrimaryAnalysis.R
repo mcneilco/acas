@@ -1504,7 +1504,32 @@ unzipDataFolder <- function (zipFile, targetFolder, experiment) {
   return(targetFolder)
 }
 
-
+autoFlagWells <- function(resultTable, parameters) {
+  resultTable[, autoFlagType:=NA_character_]
+  resultTable[, autoFlagObservation:=NA_character_]
+  resultTable[, autoFlagReason:=NA_character_]
+  
+  if(parameters$thresholdType == "") {
+    return(resultTable)
+  } else if(parameters$thresholdType == "efficacy") {
+    hitThreshold <- parameters$hitEfficacyThreshold
+    thresholdType <- "% efficacy"
+    
+    setnames(resultTable, "transformed_% efficacy","transformed_efficacy")
+    resultTable[transformed_efficacy > hitThreshold , autoFlagType := "HIT"]
+    setnames(resultTable, "transformed_efficacy","transformed_% efficacy")
+  } else if(parameters$thresholdType == "sd") {
+    hitThreshold <- parameters$hitSDThreshold
+    thresholdType <- "standard deviation"
+    resultTable[transformed_sd > hitThreshold , autoFlagType := "HIT"]
+  }
+  
+  resultTable[autoFlagType == "HIT", autoFlagObservation := paste0(">",hitThreshold)]
+  resultTable[autoFlagType == "HIT", autoFlagReason := paste0("Above ",thresholdType," threshold of ",hitThreshold,".")]
+  
+  return(resultTable)
+  
+}
 
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
@@ -1615,28 +1640,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   
   ## BLUE SECTION - Auto Well Flagging
-  
-  autoFlagWells <- function(resultTable, parameters) {
-    resultTable[, autoFlagType:=NA_character_]
-    resultTable[, autoFlagObservation:=NA_character_]
-    resultTable[, autoFlagReason:=NA_character_]
-    
-    if(parameters$thresholdType == "") {
-      return(resultTable)
-    } else if(parameters$thresholdType == "efficacy") {
-      setnames(resultTable, "transformed_% efficacy","transformed_efficacy")
-      resultTable[transformed_efficacy >= parameters$hitEfficacyThreshold , autoFlagType := "HIT"]
-      setnames(resultTable, "transformed_efficacy","transformed_% efficacy")
-    } else if(parameters$thresholdType == "sd") {
-      resultTable[transformed_sd >= parameters$hitSDThreshold , autoFlagType := "HIT"]
-    }
-    
-    resultTable[autoFlagType == "HIT", autoFlagObservation := paste0()]
-    
-  }
-  
 
-  
   resultTable <- autoFlagWells(resultTable, parameters)
   
   # END Auto Well Flagging
@@ -2402,7 +2406,7 @@ runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
   library('racas')
   options("scipen"=15)
-  #save(request, file="request.Rda")
+  save(request, file="request.Rda")
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse
