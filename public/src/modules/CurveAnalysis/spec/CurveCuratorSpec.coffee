@@ -145,52 +145,33 @@ describe "Curve Curator Module testing", ->
 				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
 				expect(@csc.$('.bv_na')).toBeVisible()
 		describe "user flagged curation", ->
-			it "should show flag user menu moused over", ->
-				@csc.$('.bv_flagUser').mouseover()
-				expect(@csc.$('.bv_contextMenu')).toBeVisible()
-			it "should hide flag user menu moused mouse leave", ->
-				@csc.$('.bv_thumbnail').mouseover()
-				expect(@csc.$('.bv_contextMenu')).toBeHidden()
-			it "should hide flag user user mousewheels", ->
-				@csc.$('.bv_flagUser').mouseover()
-				expect(@csc.$('.bv_contextMenu')).toBeVisible()
-				#some scroll
-				e = jQuery.Event("mousewheel",delta: -650)
-				# trigger an artificial DOMMouseScroll event with delta -650
-				@csc.$('.bv_contextMenu').trigger e
-				expect(@csc.$('.bv_contextMenu')).toBeHidden()
-			it "should hide context menu when user mousewheels", ->
-				@csc.$('.bv_flagUser').mouseover()
-				expect(@csc.$('.bv_contextMenu')).toBeVisible()
-				#some scroll
-				e = jQuery.Event("mousewheel",delta: -650)
-				# trigger an artificial DOMMouseScroll event with delta -650
-				@csc.$('.bv_contextMenu').trigger e
-				expect(@csc.$('.bv_contextMenu')).toBeHidden()
-			it "should update user flag when user selects reject context menu item", ->
+			it "should show flag user menu when flag user button is clicked", ->
+				@csc.$('.bv_flagUser').click()
+				expect(@csc.$('.bv_dropdown')).toBeVisible()
+			it "should update user flag when user selects reject dropdown menu item", ->
 				@csc.model.set
 					flagUser: 'NA'
-				@csc.$('.bv_flagUser').mouseover()
+				@csc.$('.bv_flagUser').click()
 				@csc.$('.bv_userReject').click()
 				waitsFor =>
 					@csc.model.get('flagUser') == "rejected"
 				, 200
 				runs =>
 					expect(@csc.model.get('flagUser')).toEqual("rejected")
-			it "should update user flag when user selects approve context menu item", ->
+			it "should update user flag when user selects approve dropdown menu item", ->
 				@csc.model.set
 					flagUser: 'NA'
-				@csc.$('.bv_flagUser').mouseover()
+				@csc.$('.bv_flagUser').click()
 				@csc.$('.bv_userApprove').click()
 				waitsFor =>
 					@csc.model.get('flagUser') == "approved"
 				, 200
 				runs =>
 					expect(@csc.model.get('flagUser')).toEqual("approved")
-			it "should update user flag when user selects NA context menu item", ->
+			it "should update user flag when user selects NA dropdown menu item", ->
 				@csc.model.set
 					flagUser: 'approved'
-				@csc.$('.bv_flagUser').mouseover()
+				@csc.$('.bv_flagUser').click()
 				@csc.$('.bv_userNA').click()
 				waitsFor =>
 					@csc.model.get('flagUser') == "NA"

@@ -121,7 +121,6 @@
 
     DoseResponseFitController.prototype.fitReturnSuccess = function(json) {
       this.$('.bv_modelFitResultsHTML').html(json.results.htmlSummary);
-      this.$('.bv_modelFitStatus').html(json.results.status);
       this.$('.bv_resultsContainer').show();
       this.$('.bv_fitModelButton').hide();
       this.$('.bv_fitOptionWrapper').hide();

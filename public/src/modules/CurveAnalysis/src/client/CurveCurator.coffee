@@ -206,7 +206,6 @@ class window.DoseResponsePlotController extends AbstractFormController
 #				Horizontal Line
 					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
 #				Vertical Line
-					console.log plotWindow[2]
 					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
 
 		getMouseCoords = (e) ->
@@ -521,7 +520,10 @@ class window.CurveSummaryController extends Backbone.View
 	className: 'bv_curveSummary'
 	events:
 		'click .bv_group_thumbnail': 'setSelected'
-		'hover .bv_flagUser': 'approveReject'
+		'click .bv_userApprove': 'userApprove'
+		'click .bv_userReject': 'userReject'
+		'click .bv_userNA': 'userNA'
+
 	initialize: ->
 		@model.on 'change', @render
 
@@ -546,15 +548,24 @@ class window.CurveSummaryController extends Backbone.View
 			@$('.bv_na').show()
 			@$('.bv_thumbsUp').hide()
 			@$('.bv_thumbsDown').hide()
+			@$('.bv_flagUser').removeClass('btn-success')
+			@$('.bv_flagUser').removeClass('btn-danger')
+			@$('.bv_flagUser').addClass('btn-grey')
 		else
 			if @model.get('flagUser') == 'approved'
 				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').show()
 				@$('.bv_thumbsDown').hide()
+				@$('.bv_flagUser').addClass('btn-success')
+				@$('.bv_flagUser').removeClass('btn-danger')
+				@$('.bv_flagUser').removeClass('btn-grey')
 			else
 				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').hide()
 				@$('.bv_thumbsDown').show()
+				@$('.bv_flagUser').removeClass('btn-success')
+				@$('.bv_flagUser').addClass('btn-danger')
+				@$('.bv_flagUser').removeClass('btn-grey')
 		if @model.get 'dirty'
 			@$('.bv_dirty').show()
 		else
@@ -564,50 +575,20 @@ class window.CurveSummaryController extends Backbone.View
 #		@model.on 'change', @render
 		@
 
-	approveReject: (e) =>
-		getLeftLocation = (e) ->
-			relativeMouseWidth = e.pageX - $(window).scrollLeft()
-			absoluteMouseWidth = e.pageX
-			pageWidth = $(window).width()
-			#				menuWidth = $(settings.menuSelector).width()
-			menuWidth = 20
+	userApprove: ->
+		@approveReject("approved")
 
-			if relativeMouseWidth + menuWidth > pageWidth and menuWidth < relativeMouseWidth
-				# opening menu would pass the side of the current view of the page
-				return absoluteMouseWidth - menuWidth
-			else
-				return absoluteMouseWidth
+	userReject: ->
+		@approveReject("rejected")
 
-		# get top location of the context menu
-		getTopLocation = (e) ->
-			relativeMouseHeight = e.pageY - $(window).scrollTop()
-			absoluteMouseHeight = e.pageY
-			pageHeight = $(window).height()
-			#				menuHeight = $(settings.menuSelector).height()
-			menuHeight = 20
+	userNA: ->
+		@approveReject("NA")
 
-			if relativeMouseHeight + menuHeight > pageHeight and menuHeight < relativeMouseHeight
-				# opening menu would pass the bottom of the current view of the page
-				return absoluteMouseHeight - menuHeight
-			else
-				return absoluteMouseHeight
-
-		@$('.bv_contextMenu').data("invokedOn", @$(e.target)).show().css(
-			position: "absolute"
-			left: getLeftLocation(e) - 10
-			top: getTopLocation(e) - 15
-		).off("click").on("click", (e2) =>
-			if !@model.get 'dirty'
-				@$('.bv_contextMenu').hide()
-				@setUserFlag(e2.target.getAttribute("flag"))
-				e2.stopPropagation()
-			else
-				@trigger 'showCurveEditorDirtyPanel'
-		).on("mouseleave", =>
-			@$('.bv_contextMenu').hide()
-		).on("mousewheel", =>
-			@$('.bv_contextMenu').hide()
-		)
+	approveReject: (decision) ->
+		if !@model.get 'dirty'
+			@setUserFlag(decision)
+		else
+			@trigger 'showCurveEditorDirtyPanel'
 
 	setUserFlag: (flagUser) =>
 #		UtilityFunctions::showProgressModal $('.bv_curveCuratorDropDown')

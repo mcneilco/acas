@@ -283,7 +283,6 @@
               dash: 3,
               strokeColor: color
             });
-            console.log(plotWindow[2]);
             brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), 0]], {
               fixed: true,
               straightFirst: false,
@@ -832,7 +831,6 @@
       this.clearSelected = __bind(this.clearSelected, this);
       this.setSelected = __bind(this.setSelected, this);
       this.setUserFlag = __bind(this.setUserFlag, this);
-      this.approveReject = __bind(this.approveReject, this);
       this.render = __bind(this.render, this);
       return CurveSummaryController.__super__.constructor.apply(this, arguments);
     }
@@ -845,7 +843,9 @@
 
     CurveSummaryController.prototype.events = {
       'click .bv_group_thumbnail': 'setSelected',
-      'hover .bv_flagUser': 'approveReject'
+      'click .bv_userApprove': 'userApprove',
+      'click .bv_userReject': 'userReject',
+      'click .bv_userNA': 'userNA'
     };
 
     CurveSummaryController.prototype.initialize = function() {
@@ -877,15 +877,24 @@
         this.$('.bv_na').show();
         this.$('.bv_thumbsUp').hide();
         this.$('.bv_thumbsDown').hide();
+        this.$('.bv_flagUser').removeClass('btn-success');
+        this.$('.bv_flagUser').removeClass('btn-danger');
+        this.$('.bv_flagUser').addClass('btn-grey');
       } else {
         if (this.model.get('flagUser') === 'approved') {
           this.$('.bv_na').hide();
           this.$('.bv_thumbsUp').show();
           this.$('.bv_thumbsDown').hide();
+          this.$('.bv_flagUser').addClass('btn-success');
+          this.$('.bv_flagUser').removeClass('btn-danger');
+          this.$('.bv_flagUser').removeClass('btn-grey');
         } else {
           this.$('.bv_na').hide();
           this.$('.bv_thumbsUp').hide();
           this.$('.bv_thumbsDown').show();
+          this.$('.bv_flagUser').removeClass('btn-success');
+          this.$('.bv_flagUser').addClass('btn-danger');
+          this.$('.bv_flagUser').removeClass('btn-grey');
         }
       }
       if (this.model.get('dirty')) {
@@ -897,55 +906,24 @@
       return this;
     };
 
-    CurveSummaryController.prototype.approveReject = function(e) {
-      var getLeftLocation, getTopLocation;
-      getLeftLocation = function(e) {
-        var absoluteMouseWidth, menuWidth, pageWidth, relativeMouseWidth;
-        relativeMouseWidth = e.pageX - $(window).scrollLeft();
-        absoluteMouseWidth = e.pageX;
-        pageWidth = $(window).width();
-        menuWidth = 20;
-        if (relativeMouseWidth + menuWidth > pageWidth && menuWidth < relativeMouseWidth) {
-          return absoluteMouseWidth - menuWidth;
-        } else {
-          return absoluteMouseWidth;
-        }
-      };
-      getTopLocation = function(e) {
-        var absoluteMouseHeight, menuHeight, pageHeight, relativeMouseHeight;
-        relativeMouseHeight = e.pageY - $(window).scrollTop();
-        absoluteMouseHeight = e.pageY;
-        pageHeight = $(window).height();
-        menuHeight = 20;
-        if (relativeMouseHeight + menuHeight > pageHeight && menuHeight < relativeMouseHeight) {
-          return absoluteMouseHeight - menuHeight;
-        } else {
-          return absoluteMouseHeight;
-        }
-      };
-      return this.$('.bv_contextMenu').data("invokedOn", this.$(e.target)).show().css({
-        position: "absolute",
-        left: getLeftLocation(e) - 10,
-        top: getTopLocation(e) - 15
-      }).off("click").on("click", (function(_this) {
-        return function(e2) {
-          if (!_this.model.get('dirty')) {
-            _this.$('.bv_contextMenu').hide();
-            _this.setUserFlag(e2.target.getAttribute("flag"));
-            return e2.stopPropagation();
-          } else {
-            return _this.trigger('showCurveEditorDirtyPanel');
-          }
-        };
-      })(this)).on("mouseleave", (function(_this) {
-        return function() {
-          return _this.$('.bv_contextMenu').hide();
-        };
-      })(this)).on("mousewheel", (function(_this) {
-        return function() {
-          return _this.$('.bv_contextMenu').hide();
-        };
-      })(this));
+    CurveSummaryController.prototype.userApprove = function() {
+      return this.approveReject("approved");
+    };
+
+    CurveSummaryController.prototype.userReject = function() {
+      return this.approveReject("rejected");
+    };
+
+    CurveSummaryController.prototype.userNA = function() {
+      return this.approveReject("NA");
+    };
+
+    CurveSummaryController.prototype.approveReject = function(decision) {
+      if (!this.model.get('dirty')) {
+        return this.setUserFlag(decision);
+      } else {
+        return this.trigger('showCurveEditorDirtyPanel');
+      }
     };
 
     CurveSummaryController.prototype.setUserFlag = function(flagUser) {

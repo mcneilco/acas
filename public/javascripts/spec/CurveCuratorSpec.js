@@ -214,39 +214,15 @@
         });
       });
       return describe("user flagged curation", function() {
-        it("should show flag user menu moused over", function() {
-          this.csc.$('.bv_flagUser').mouseover();
-          return expect(this.csc.$('.bv_contextMenu')).toBeVisible();
+        it("should show flag user menu when flag user button is clicked", function() {
+          this.csc.$('.bv_flagUser').click();
+          return expect(this.csc.$('.bv_dropdown')).toBeVisible();
         });
-        it("should hide flag user menu moused mouse leave", function() {
-          this.csc.$('.bv_thumbnail').mouseover();
-          return expect(this.csc.$('.bv_contextMenu')).toBeHidden();
-        });
-        it("should hide flag user user mousewheels", function() {
-          var e;
-          this.csc.$('.bv_flagUser').mouseover();
-          expect(this.csc.$('.bv_contextMenu')).toBeVisible();
-          e = jQuery.Event("mousewheel", {
-            delta: -650
-          });
-          this.csc.$('.bv_contextMenu').trigger(e);
-          return expect(this.csc.$('.bv_contextMenu')).toBeHidden();
-        });
-        it("should hide context menu when user mousewheels", function() {
-          var e;
-          this.csc.$('.bv_flagUser').mouseover();
-          expect(this.csc.$('.bv_contextMenu')).toBeVisible();
-          e = jQuery.Event("mousewheel", {
-            delta: -650
-          });
-          this.csc.$('.bv_contextMenu').trigger(e);
-          return expect(this.csc.$('.bv_contextMenu')).toBeHidden();
-        });
-        it("should update user flag when user selects reject context menu item", function() {
+        it("should update user flag when user selects reject dropdown menu item", function() {
           this.csc.model.set({
             flagUser: 'NA'
           });
-          this.csc.$('.bv_flagUser').mouseover();
+          this.csc.$('.bv_flagUser').click();
           this.csc.$('.bv_userReject').click();
           waitsFor((function(_this) {
             return function() {
@@ -259,11 +235,11 @@
             };
           })(this));
         });
-        it("should update user flag when user selects approve context menu item", function() {
+        it("should update user flag when user selects approve dropdown menu item", function() {
           this.csc.model.set({
             flagUser: 'NA'
           });
-          this.csc.$('.bv_flagUser').mouseover();
+          this.csc.$('.bv_flagUser').click();
           this.csc.$('.bv_userApprove').click();
           waitsFor((function(_this) {
             return function() {
@@ -276,11 +252,11 @@
             };
           })(this));
         });
-        return it("should update user flag when user selects NA context menu item", function() {
+        return it("should update user flag when user selects NA dropdown menu item", function() {
           this.csc.model.set({
             flagUser: 'approved'
           });
-          this.csc.$('.bv_flagUser').mouseover();
+          this.csc.$('.bv_flagUser').click();
           this.csc.$('.bv_userNA').click();
           waitsFor((function(_this) {
             return function() {

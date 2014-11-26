@@ -72,7 +72,6 @@ class window.DoseResponseFitController extends Backbone.View
 
 	fitReturnSuccess: (json) =>
 		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
-		@$('.bv_modelFitStatus').html(json.results.status)
 		@$('.bv_resultsContainer').show()
 		@$('.bv_fitModelButton').hide()
 		@$('.bv_fitOptionWrapper').hide()
