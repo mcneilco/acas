@@ -102,7 +102,6 @@
     };
 
     ExperimentSearchController.prototype.doGenericExperimentSearch = function(searchTerm) {
-      console.log("doGenericExperimentSearch");
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/genericSearch/" + searchTerm,
@@ -270,7 +269,6 @@
     ExperimentSimpleSearchController.prototype.doSearch = function(experimentSearchTerm) {
       this.trigger('find');
       if (experimentSearchTerm !== "") {
-        console.log("doGenericExperimentSearch");
         return $.ajax({
           type: 'GET',
           url: this.searchUrl + experimentSearchTerm,

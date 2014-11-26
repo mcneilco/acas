@@ -62,7 +62,6 @@ class window.ExperimentSearchController extends AbstractFormController
 
 
 	doGenericExperimentSearch: (searchTerm) =>
-		console.log "doGenericExperimentSearch"
 		$.ajax
 			type: 'GET'
 			url: "/api/experiments/genericSearch/#{searchTerm}"
@@ -185,7 +184,6 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 		#$(".bv_experimentTableController").html "Searching..."
 
 		unless experimentSearchTerm is ""
-			console.log "doGenericExperimentSearch"
 			$.ajax
 				type: 'GET'
 				url: @searchUrl + experimentSearchTerm

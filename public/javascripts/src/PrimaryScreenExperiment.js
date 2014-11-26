@@ -991,9 +991,6 @@
     PrimaryScreenAnalysisParametersController.prototype.updateModel = function() {
       var htsFormat;
       htsFormat = this.$('.bv_htsFormat').is(":checked");
-      console.log("testing update model");
-      console.log(this.$('.bv_agonistControlBatch').val());
-      console.log(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlBatch')));
       this.model.set({
         instrumentReader: this.$('.bv_instrumentReader').val(),
         signalDirectionRule: this.$('.bv_signalDirectionRule').val(),

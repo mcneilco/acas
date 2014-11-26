@@ -630,9 +630,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	updateModel: =>
 		htsFormat = @$('.bv_htsFormat').is(":checked")
-		console.log "testing update model"
-		console.log @$('.bv_agonistControlBatch').val()
-		console.log UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
 		@model.set
 			instrumentReader: @$('.bv_instrumentReader').val()
 			signalDirectionRule: @$('.bv_signalDirectionRule').val()

@@ -75,7 +75,6 @@
         })(this),
         error: (function(_this) {
           return function(err) {
-            console.log('got ajax error');
             return _this.serviceReturn = null;
           };
         })(this),
