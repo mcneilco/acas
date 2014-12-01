@@ -290,15 +290,20 @@ class window.ExperimentBrowserController extends Backbone.View
 			@$(".bv_noMatchesFoundMessage").removeClass "hide"
 			@$(".bv_experimentTableController").html ""
 		else
-			@experimentSummaryTable = new ExperimentSummaryTableController
-				collection: new ExperimentList experiments
+			console.log experiments[0].ignored
+			if experiments[0].ignored
+				@$(".bv_deletedExperimentMessage").removeClass "hide"
+				@$(".bv_experimentTableController").html ""
+			else
+				@experimentSummaryTable = new ExperimentSummaryTableController
+					collection: new ExperimentList experiments
 
-			@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
-			$(".bv_experimentTableController").html @experimentSummaryTable.render().el
-			$(".bv_matchingExperimentsHeader").removeClass "hide"
+				@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
+				$(".bv_experimentTableController").html @experimentSummaryTable.render().el
+				$(".bv_matchingExperimentsHeader").removeClass "hide"
 
-			unless @includeDuplicateAndEdit
-				@selectedExperimentUpdated new Experiment experiments[0]
+				unless @includeDuplicateAndEdit
+					@selectedExperimentUpdated new Experiment experiments[0]
 
 	selectedExperimentUpdated: (experiment) =>
 		@trigger "selectedExperimentUpdated"

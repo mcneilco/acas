@@ -440,14 +440,20 @@
         this.$(".bv_noMatchesFoundMessage").removeClass("hide");
         return this.$(".bv_experimentTableController").html("");
       } else {
-        this.experimentSummaryTable = new ExperimentSummaryTableController({
-          collection: new ExperimentList(experiments)
-        });
-        this.experimentSummaryTable.on("selectedRowUpdated", this.selectedExperimentUpdated);
-        $(".bv_experimentTableController").html(this.experimentSummaryTable.render().el);
-        $(".bv_matchingExperimentsHeader").removeClass("hide");
-        if (!this.includeDuplicateAndEdit) {
-          return this.selectedExperimentUpdated(new Experiment(experiments[0]));
+        console.log(experiments[0].ignored);
+        if (experiments[0].ignored) {
+          this.$(".bv_deletedExperimentMessage").removeClass("hide");
+          return this.$(".bv_experimentTableController").html("");
+        } else {
+          this.experimentSummaryTable = new ExperimentSummaryTableController({
+            collection: new ExperimentList(experiments)
+          });
+          this.experimentSummaryTable.on("selectedRowUpdated", this.selectedExperimentUpdated);
+          $(".bv_experimentTableController").html(this.experimentSummaryTable.render().el);
+          $(".bv_matchingExperimentsHeader").removeClass("hide");
+          if (!this.includeDuplicateAndEdit) {
+            return this.selectedExperimentUpdated(new Experiment(experiments[0]));
+          }
         }
       }
     };
