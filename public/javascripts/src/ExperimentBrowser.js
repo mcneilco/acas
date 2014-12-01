@@ -520,11 +520,17 @@
     };
 
     ExperimentBrowserController.prototype.handleEditExperimentClicked = function() {
-      return window.open("/api/experiments/edit/" + (this.experimentController.model.get("codeName")), '_blank');
+      return window.open("/entity/edit/codeName/" + (this.experimentController.model.get("codeName")), '_blank');
     };
 
     ExperimentBrowserController.prototype.handleDuplicateExperimentClicked = function() {
-      return window.open("/api/experiments/duplicate/" + (this.experimentController.model.get("codeName")), '_blank');
+      var experimentKind;
+      experimentKind = this.experimentController.model.get('lsKind');
+      if (experimentKind === "flipr screening assay") {
+        return window.open("/entity/copy/flipr_screening_assay/" + (this.experimentController.model.get("codeName")), '_blank');
+      } else {
+        return window.open("/entity/copy/experiment_base/" + (this.experimentController.model.get("codeName")), '_blank');
+      }
     };
 
     ExperimentBrowserController.prototype.destroyExperimentSummaryTable = function() {
