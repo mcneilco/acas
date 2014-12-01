@@ -229,7 +229,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		toDisplay =
 			experimentName: @model.get('lsLabels').pickBestName().get('labelText')
 			experimentCode: @model.get('codeName')
-			protocolName: @model.get('protocol').get("preferredName")
+			protocolName: @model.get('protocol').get("codeName")
 			recordedBy: @model.get('recordedBy')
 			status: @model.getStatus().get("stringValue")
 			analysisStatus: @model.getAnalysisStatus().get("stringValue")

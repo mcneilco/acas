@@ -339,7 +339,7 @@
       toDisplay = {
         experimentName: this.model.get('lsLabels').pickBestName().get('labelText'),
         experimentCode: this.model.get('codeName'),
-        protocolName: this.model.get('protocol').get("preferredName"),
+        protocolName: this.model.get('protocol').get("codeName"),
         recordedBy: this.model.get('recordedBy'),
         status: this.model.getStatus().get("stringValue"),
         analysisStatus: this.model.getAnalysisStatus().get("stringValue"),
