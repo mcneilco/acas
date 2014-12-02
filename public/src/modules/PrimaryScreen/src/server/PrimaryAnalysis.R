@@ -1262,16 +1262,8 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
 }
 saveInputParameters <- function(inputParameters, experiment, lsTransaction, recordedBy) {
   # input: inputParameters a string that is JSON
-  metadataState <- getOrCreateExperimentState(experiment, "metadata", "experiment metadata", recordedBy, lsTransaction)
-  
-  inputParamValue <- updateOrCreateStateValue(
-    "experiment", lsType = "clobValue",
-    lsKind = "data analysis parameters",
-    clobValue = inputParameters,
-    lsState = metadataState,
-    lsTransaction = lsTransaction,
-    recordedBy = recordedBy)
-  
+  updateValueByTypeAndKind(inputParameters, "experiment", experiment$id, "metadata", 
+                           "experiment metadata", "clobValue", "data analysis parameters")
   return(NULL)
 }
 getExperimentParameters <- function(inputParameters) {
@@ -1315,34 +1307,6 @@ getExperimentParameters <- function(inputParameters) {
   }
   
   return(parameters)
-}
-setAnalysisStatus <- function(status, metadataState) {
-  # Sets the analysis status
-  #
-  # Args:
-  #   status:         A string to set the analysis status
-  #   metadataState:  A list that is a state that has a value of type "analysis status"
-  # Returns:
-  #   NULL
-  
-  valueKinds <- lapply(metadataState$lsValues,getElement,"lsKind")
-  
-  valuesToDelete <- metadataState$lsValues[valueKinds == "analysis status"]
-  
-  tryCatch({
-    lapply(valuesToDelete, deleteExperimentValue)
-    
-    statusValue <- createStateValue(
-      lsType = "stringValue",
-      lsKind = "analysis status",
-      stringValue = status,
-      lsState = metadataState)
-    
-    saveExperimentValues(list(statusValue))
-  }, error = function(e) {
-    stopUser("Could not save the experiment status")
-  })
-  return(NULL)
 }
 
 loadInstrumentReadParameters <- function(instrumentType) {
@@ -2497,12 +2461,12 @@ runPrimaryAnalysis <- function(request) {
   
   tryCatch({
     if(is.null(loadResult$value$experiment)) {
-      experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath,"experiments/",experimentId)))
+      experiment <- getExperimentById(experimentId)
     } else {
       experiment <- loadResult$value$experiment
     }
     if(!dryRun) {
-      htmlSummary <- saveAnalysisResults(experiment, hasError, htmlSummary)
+      htmlSummary <- saveAnalysisResults(experiment, hasError, htmlSummary, user, dryRun)
     }
   }, error= function(e) {
     htmlSummary <- paste(htmlSummary, "<p>Could not get the experiment</p>")  
