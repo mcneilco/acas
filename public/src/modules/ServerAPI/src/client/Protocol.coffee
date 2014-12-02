@@ -46,7 +46,7 @@ class window.Protocol extends BaseEntity
 			errors.push
 				attribute: 'recordedDate'
 				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is ""
+		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
@@ -148,6 +148,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_updateComplete').hide()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
+		@setupRecordedBySelect()
 		@setupTagList()
 		@setUpAssayStageSelect()
 		@model.getStatus().on 'change', @updateEditable

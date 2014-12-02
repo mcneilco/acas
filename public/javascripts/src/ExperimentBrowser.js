@@ -339,7 +339,7 @@
       toDisplay = {
         experimentName: this.model.get('lsLabels').pickBestName().get('labelText'),
         experimentCode: this.model.get('codeName'),
-        protocolName: this.model.get('protocol').get("preferredName"),
+        protocolName: this.model.get('protocol').get("codeName"),
         recordedBy: this.model.get('recordedBy'),
         status: this.model.getStatus().get("stringValue"),
         analysisStatus: this.model.getAnalysisStatus().get("stringValue"),
@@ -377,6 +377,7 @@
         this.$(".bv_noMatchesFoundMessage").removeClass("hide");
       } else {
         this.$(".bv_noMatchesFoundMessage").addClass("hide");
+        console.log(this.collection);
         this.collection.each((function(_this) {
           return function(exp) {
             var ersc;
@@ -472,7 +473,12 @@
       $('.bv_experimentBaseController').html(this.experimentController.render().el);
       this.experimentController.displayInReadOnlyMode();
       $(".bv_experimentBaseController").removeClass("hide");
-      return $(".bv_experimentBaseControllerContainer").removeClass("hide");
+      $(".bv_experimentBaseControllerContainer").removeClass("hide");
+      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
+        return this.$('.bv_deleteExperiment').show();
+      } else {
+        return this.$('.bv_deleteExperiment').hide();
+      }
     };
 
     ExperimentBrowserController.prototype.handleDeleteExperimentClicked = function() {

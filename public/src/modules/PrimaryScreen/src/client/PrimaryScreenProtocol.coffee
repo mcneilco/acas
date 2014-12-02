@@ -112,7 +112,7 @@ class window.PrimaryScreenProtocol extends Protocol
 			errors.push
 				attribute: 'recordedDate'
 				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is ""
+		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"

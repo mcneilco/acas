@@ -1002,8 +1002,11 @@
           });
           describe("when scientist not selected", function() {
             beforeEach(function() {
+              waitsFor(function() {
+                return this.ebc.$('.bv_recordedBy option').length > 0;
+              }, 1000);
               return runs(function() {
-                this.ebc.$('.bv_recordedBy').val("");
+                this.ebc.$('.bv_recordedBy').val("unassigned");
                 return this.ebc.$('.bv_recordedBy').change();
               });
             });

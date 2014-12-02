@@ -707,8 +707,11 @@ describe "Experiment module testing", ->
 							expect(@ebc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
 				describe "when scientist not selected", ->
 					beforeEach ->
+						waitsFor ->
+							@ebc.$('.bv_recordedBy option').length > 0
+						, 1000
 						runs ->
-							@ebc.$('.bv_recordedBy').val("")
+							@ebc.$('.bv_recordedBy').val("unassigned")
 							@ebc.$('.bv_recordedBy').change()
 					it "should show error on scientist dropdown", ->
 						runs ->

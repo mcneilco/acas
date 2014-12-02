@@ -174,7 +174,7 @@
           message: attrs.subclass + " date must be set"
         });
       }
-      if (attrs.recordedBy === "") {
+      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
         errors.push({
           attribute: 'recordedBy',
           message: "Scientist must be set"
@@ -295,6 +295,8 @@
       copiedEntity.getNotebook().set({
         stringValue: ""
       });
+      console.log("copiedEntity");
+      console.log(copiedEntity);
       return copiedEntity;
     };
 
@@ -380,6 +382,7 @@
       $(this.el).html(this.template());
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
+      this.setupRecordedBySelect();
       this.setupTagList();
       return this.model.getStatus().on('change', this.updateEditable);
     };
@@ -426,6 +429,20 @@
       });
     };
 
+    BaseEntityController.prototype.setupRecordedBySelect = function() {
+      this.recordedByList = new PickListList();
+      this.recordedByList.url = "/api/authors";
+      return this.recordedByListController = new PickListSelectController({
+        el: this.$('.bv_recordedBy'),
+        collection: this.recordedByList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Scientist"
+        }),
+        selectedCode: this.model.get('recordedBy')
+      });
+    };
+
     BaseEntityController.prototype.setupTagList = function() {
       this.$('.bv_tags').val("");
       this.tagListController = new TagListController({
@@ -437,7 +454,7 @@
 
     BaseEntityController.prototype.handleRecordedByChanged = function() {
       this.model.set({
-        recordedBy: this.$('.bv_recordedBy').val()
+        recordedBy: this.recordedByListController.getSelectedCode()
       });
       return this.handleNameChanged();
     };

@@ -95,7 +95,7 @@ class window.Experiment extends BaseEntity
 			errors.push
 				attribute: 'recordedDate'
 				message: "Experiment date must be set"
-		if attrs.recordedBy is ""
+		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
@@ -224,6 +224,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_updateComplete').hide()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
+		@setupRecordedBySelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)

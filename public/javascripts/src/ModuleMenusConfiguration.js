@@ -65,6 +65,9 @@
       menuName: "Experiment Browser",
       mainControllerClassName: "ExperimentBrowserController"
     }, {
+      isHeader: false,
+      menuName: "Gene ID Query"
+    }, {
       isHeader: true,
       menuName: "Admin"
     }, {

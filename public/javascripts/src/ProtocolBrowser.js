@@ -285,7 +285,12 @@
       $('.bv_protocolBaseController').html(this.protocolController.render().el);
       this.protocolController.displayInReadOnlyMode();
       $(".bv_protocolBaseController").removeClass("hide");
-      return $(".bv_protocolBaseControllerContainer").removeClass("hide");
+      $(".bv_protocolBaseControllerContainer").removeClass("hide");
+      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
+        return this.$('.bv_deleteProtocol').show();
+      } else {
+        return this.$('.bv_deleteProtocol').hide();
+      }
     };
 
     ProtocolBrowserController.prototype.handleDeleteProtocolClicked = function() {

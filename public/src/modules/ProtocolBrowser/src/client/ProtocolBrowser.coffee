@@ -182,6 +182,12 @@ class window.ProtocolBrowserController extends Backbone.View
 		@protocolController.displayInReadOnlyMode()
 		$(".bv_protocolBaseController").removeClass("hide")
 		$(".bv_protocolBaseControllerContainer").removeClass("hide")
+		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
+			@$('.bv_deleteProtocol').show()
+#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
+#				console.log "user is protocol creator"
+		else
+			@$('.bv_deleteProtocol').hide()
 
 	handleDeleteProtocolClicked: =>
 		@$(".bv_protocolCodeName").html @protocolController.model.get("codeName")

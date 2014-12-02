@@ -106,7 +106,7 @@ class window.BaseEntity extends Backbone.Model
 			errors.push
 				attribute: 'recordedDate'
 				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is ""
+		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
@@ -180,6 +180,8 @@ class window.BaseEntity extends Backbone.Model
 		copiedEntity.getCompletionDate().set dateValue: null
 		copiedEntity.getNotebook().set stringValue: ""
 
+		console.log "copiedEntity"
+		console.log copiedEntity
 		copiedEntity
 
 class window.BaseEntityList extends Backbone.Collection
@@ -219,6 +221,7 @@ class window.BaseEntityController extends AbstractFormController
 		$(@el).html @template()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
+		@setupRecordedBySelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 
@@ -257,6 +260,17 @@ class window.BaseEntityController extends AbstractFormController
 			collection: @statusList
 			selectedCode: @model.getStatus().get 'stringValue'
 
+	setupRecordedBySelect: ->
+		@recordedByList = new PickListList()
+		@recordedByList.url = "/api/authors"
+		@recordedByListController = new PickListSelectController
+			el: @$('.bv_recordedBy')
+			collection: @recordedByList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Scientist"
+			selectedCode: @model.get('recordedBy')
+
 	setupTagList: ->
 		@$('.bv_tags').val ""
 		@tagListController = new TagListController
@@ -266,7 +280,7 @@ class window.BaseEntityController extends AbstractFormController
 
 
 	handleRecordedByChanged: =>
-		@model.set recordedBy: @$('.bv_recordedBy').val()
+		@model.set recordedBy: @recordedByListController.getSelectedCode()
 		@handleNameChanged()
 
 	handleShortDescriptionChanged: =>

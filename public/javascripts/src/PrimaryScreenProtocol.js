@@ -182,7 +182,7 @@
           message: attrs.subclass + " date must be set"
         });
       }
-      if (attrs.recordedBy === "") {
+      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
         errors.push({
           attribute: 'recordedBy',
           message: "Scientist must be set"

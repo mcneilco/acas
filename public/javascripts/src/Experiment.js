@@ -151,7 +151,7 @@
           message: "Experiment date must be set"
         });
       }
-      if (attrs.recordedBy === "") {
+      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
         errors.push({
           attribute: 'recordedBy',
           message: "Scientist must be set"
@@ -353,6 +353,7 @@
       })(this));
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
+      this.setupRecordedBySelect();
       this.setupTagList();
       this.model.getStatus().on('change', this.updateEditable);
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);

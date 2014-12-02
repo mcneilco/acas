@@ -229,7 +229,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		toDisplay =
 			experimentName: @model.get('lsLabels').pickBestName().get('labelText')
 			experimentCode: @model.get('codeName')
-			protocolName: @model.get('protocol').get("preferredName")
+			protocolName: @model.get('protocol').get("codeName")
 			recordedBy: @model.get('recordedBy')
 			status: @model.getStatus().get("stringValue")
 			analysisStatus: @model.getAnalysisStatus().get("stringValue")
@@ -319,6 +319,12 @@ class window.ExperimentBrowserController extends Backbone.View
 		@experimentController.displayInReadOnlyMode()
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
+		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
+			@$('.bv_deleteExperiment').show()
+#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
+#				console.log "user is protocol creator"
+		else
+			@$('.bv_deleteExperiment').hide()
 
 	handleDeleteExperimentClicked: =>
 		@$(".bv_experimentCodeName").html @experimentController.model.get("codeName")
