@@ -124,9 +124,12 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 
 	handleFitComplete: =>
 		@$('.bv_completeControlContainer').show()
+		@drdpc.$('.bv_loadAnother').hide()
 
 	handleFitAnother: =>
 		@drdpc.loadAnother()
+		@$('.bv_doseResponseAnalysis').empty()
+		@$('.bv_doseResponseAnalysis').append "<div class='bv_uploadDataToFit span10'>Data must be uploaded first before fitting.</div>"
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_uploadDataTabLink').click()
 
