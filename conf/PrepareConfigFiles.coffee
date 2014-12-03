@@ -180,7 +180,7 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.push('LogLevel ' + config.all.server.log.level.toLowerCase())
 	confs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so")
 
-	if Boolean(config.all.client.use.ssl)
+	if Boolean(config.all.client.service.rapache.use.ssl)
 		confs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
 		confs.push('SSLEngine On')
 		confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path)
