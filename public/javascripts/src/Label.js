@@ -179,6 +179,17 @@
       recordedBy: ""
     };
 
+    Value.prototype.initialize = function() {
+      return this.on({
+        "change:value": this.setValueType
+      });
+    };
+
+    Value.prototype.setValueType = function() {
+      console.log("value changed, setting value type");
+      return this.set(this.get('lsType'), this.get('value'));
+    };
+
     return Value;
 
   })(Backbone.Model);

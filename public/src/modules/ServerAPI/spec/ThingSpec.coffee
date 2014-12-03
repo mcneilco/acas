@@ -26,26 +26,26 @@ describe 'Thing testing', ->
 #					labelText: ""
 				]
 				defaultValues: [
-					key: 'sequenceValue'
+					key: 'sequence'
 					stateType: 'descriptors'
 					stateKind: 'unique attributes'
 					type: 'stringValue' #used to set the lsValue subclass of the object
 					kind: 'sequence'
-					value: "test"
+#					value: "test"
 				,
-					key: 'massValue'
+					key: 'mass'
 					stateType: 'descriptors'
 					stateKind: 'other attributes'
-					type: 'numberValue'
+					type: 'numericValue'
 					kind: 'mass'
-					units: 'mg'
+					unitKind: 'mg'
 #					value: 42.34
 				,
-					key: 'analysisParameters'
+					key: 'analysis parameters'
 					stateType: 'meta'
 					stateKind: 'experiment meta'
-					type: 'compositeObjectClob'
-					kind: 'AnalysisParameters'
+					type: 'clobValue'
+					kind: 'analysis parameters'
 				]
 				defaultValueArrays: [
 					key: 'temperatureValueArray'
@@ -53,7 +53,7 @@ describe 'Thing testing', ->
 					stateKind: 'stateVsTime'
 					type: 'numberValue'
 					kind: 'temperature'
-					units: 'C'
+					unitKind: 'C'
 #					value: null
 				,
 					key: 'timeValueArray'
@@ -95,7 +95,6 @@ describe 'Thing testing', ->
 			@siRNA.parse()
 			expect(@siRNA.get("corpName")).toBeDefined()
 			expect(@siRNA.get("corpName").get("labelText")).toEqual newLabelText
-			console.log @siRNA
 
 	describe 'Instantiation - defaultStates', ->
 		it 'should create a list of lsStates based on the defaultValues defined in Child Object', ->
@@ -110,43 +109,35 @@ describe 'Thing testing', ->
 			expect(lsValues.length).toEqual 1
 
 		it 'should create model attributes for each element in defaultValues', ->
-			expect(@siRNA.get("sequenceValue")).toBeDefined()
+			expect(@siRNA.get("sequence")).toBeDefined()
 
 		it 'should reference the lsStates model objects stored in lsStates as top level model attributes', ->
-			console.log "sequence value before change"
-			console.log @siRNA.get("sequenceValue")
-			@siRNA.get("sequenceValue").set("value", "newSequenceValue")
-			console.log "after changing sequence value"
-			console.log @siRNA.get('lsStates').getStatesByTypeAndKind("descriptors", "unique attributes")
-			console.log @siRNA.get("lsStates").getStatesByTypeAndKind("descriptors", "unique attributes")
-#			sequenceValueState = @siRNA.get("lsStates").getStatesByTypeAndKind("descriptors", "unique attributes")[0]
-#			console.log "sequnce value state"
-#			console.log sequenceValueState
-#			console.log sequenceValueState.get('value')
-#			console.log @siRNA.get('sequenceValue')
+			@siRNA.get("sequence").set("value", "newsequence")
 			sequenceStateValue = @siRNA.get('lsStates').getStateValueByTypeAndKind "descriptors", "unique attributes", "stringValue", "sequence"
-			console.log "sequenceStateValue"
-			console.log sequenceStateValue
-
-			expect(sequenceStateValue.get("stringValue")).toEqual @siRNA.get("sequenceValue").get("value")
-			console.log @siRNA
-			console.log @siRNA.get("sequenceValue").get("stringValue")
+			expect(sequenceStateValue.get("stringValue")).toEqual @siRNA.get("sequence").get("value")
+			expect(sequenceStateValue.get("stringValue")).toEqual "newsequence"
+			expect(@siRNA.get("sequence").get("value")).toEqual "newsequence"
 
 		it 'should remove the top level lsStates model object references when sync() is called', ->
-			expect(@siRNA.get("sequenceValue")).toBeDefined()
+			expect(@siRNA.get("sequence")).toBeDefined()
 			@siRNA.sync()
-			expect(@siRNA.get("sequenceValue")).toBeUndefined()
-#
+			expect(@siRNA.get("sequence")).toBeUndefined()
+
 		it 'should create top level lsStates model object references when parse() is called / when the object is re-hyrdrated', ->
-			newSequenceValue = "this is a new sequence value"
-			@siRNA.get("sequenceValue").set("value", newSequenceValue)
-			expect(@siRNA.get("sequenceValue")).toBeDefined()
+			newsequence = "this is a new sequence value"
+			@siRNA.get("sequence").set("value", newsequence)
+			expect(@siRNA.get("sequence")).toBeDefined()
 
 			@siRNA.sync()
-			expect(@siRNA.get("sequenceValue")).toBeUndefined()
+			expect(@siRNA.get("sequence")).toBeUndefined()
 			@siRNA.parse()
-			expect(@siRNA.get("sequenceValue")).toBeDefined()
-			expect(@siRNA.get("sequenceValue").get("value")).toEqual newSequenceValue
-			console.log @siRNA
-
-#	describe "When created from existing"
+			expect(@siRNA.get("sequence")).toBeDefined()
+			expect(@siRNA.get("sequence").get("value")).toEqual newsequence
+	describe "When created from existing", ->
+		beforeEach ->
+#			@iaParent = new InternalizationAgentParent()
+			@testsiRNA = new siRNA JSON.parse(JSON.stringify(window.thingTestJSON.siRNA))
+		describe "Existence and Defaults", ->
+			it "should be defined", ->
+				console.log @testsiRNA
+				expect(@testsiRNA).toBeDefined()

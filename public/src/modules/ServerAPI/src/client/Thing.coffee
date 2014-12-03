@@ -23,16 +23,37 @@ class window.Thing extends Backbone.Model
 		#return attrs
 
 	initialize: ->
-		#@set @parse(@.attributes)
+		console.log @
+		@.set @parse(@.attributes)
 		#Problem, if new() overwrites defaults, I will lose my nested value attribute defaults
 		#solution, save labels and values as base attributes. Only use new and fetch, don't use new, passing in attributes
 		#Or, I will have a hamdle on the value pointer both as a base attribute and in the alue array.
 		# If a new value array is passed in on new or parse, I still have a handle on the old one, I juts need to sub
 		# The good thing about making all the defaults is i never need to use getOrCreate, just get becuase I know the value was made at initializtion
 
-	parse: ->
-		@createDefaultLabels()
-		@createDefaultStates()
+	parse: (resp) =>
+		console.log "parse called"
+		console.log @
+		console.log resp
+		if resp?
+			if resp.lsLabels?
+				console.log "passed resp.labels?"
+				if resp.lsLabels not instanceof LabelList
+					resp.lsLabels = new LabelList(resp.lsLabels)
+				resp.lsLabels.on 'change', =>
+					@trigger 'change'
+#			else #TODO: need?
+#				console.log "no resp.lsLabels, creating default labels"
+#				@createDefaultLabels()
+
+			if resp.lsStates?
+				if resp.lsStates not instanceof StateList
+					resp.lsStates = new StateList(resp.lsStates)
+				resp.lsStates.on 'change', =>
+					@trigger 'change'
+		else
+			@createDefaultLabels()
+			@createDefaultStates()
 
 	sync: ->
 		for dLabel in @lsProperties.defaultLabels
@@ -56,44 +77,15 @@ class window.Thing extends Backbone.Model
 
 
 	createDefaultStates: =>
-		# loop over defaultLabels
-		# getorCreateLabel
-		# add key as attribute of model
+		console.log "creating default states function"
 		for dValue in @lsProperties.defaultValues
 			#Adding the new state and value to @
 			newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
 			#setting stringValue to value
 			newValue.set dValue.type, dValue.value
-			#setting value key to equal value stored in stringValue
-			newValue.set "value", newValue.get dValue.type
-			console.log "new newValue"
-			console.log newValue
-			console.log newValue.get dValue.type
-			console.log newValue.get "value"
-
-			#want to set dValue.value to point to the newValue's type (ie stringValue)
-			# set newValue's stringValue to equal value - basically @set newValue.(dValue.type),
-#			@set dValue.value, newValue.stringValue
-
-			#Setting dValue.key attribute in @ to point to the newValue
+#			#Setting dValue.key attribute in @ to point to the newValue
 			@set dValue.key, newValue
-			#Setting dValue.key attribute's value attribute to equal it's stringValue value
-			console.log "@get dValue.key"
-			console.log @get dValue.key
-			console.log @get(dValue.key).get dValue.type
-			console.log @get(dValue.key).get "value"
-			@get(dValue.key).set dValue.type, @get(dValue.key).get "value"
-			@get(dValue.key).set "value", @get(dValue.key).get dValue.type
 
-#			@.on 'change', =>
-#				console.log "@ changed"
-#				@get(dValue.key).set dValue.type, @get(dValue.key).get "value"
-#				@get(dValue.key).set "value", @get(dValue.key).get dValue.type
-#
-
-			console.log @get dValue.key
-			console.log "THIS"
-			console.log @
 
 # moved this example to ThingSpec.coffee
 #

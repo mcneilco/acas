@@ -93,6 +93,13 @@ class window.Value extends Backbone.Model
 		recordedDate: null
 		recordedBy: ""
 
+	initialize: ->
+		@.on "change:value": @setValueType
+
+	setValueType: ->
+		console.log "value changed, setting value type"
+		@.set @get('lsType'), @get('value')
+
 class window.ValueList extends Backbone.Collection
 	model: Value
 

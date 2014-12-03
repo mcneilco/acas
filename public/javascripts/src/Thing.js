@@ -9,6 +9,7 @@
     function Thing() {
       this.createDefaultStates = __bind(this.createDefaultStates, this);
       this.createDefaultLabels = __bind(this.createDefaultLabels, this);
+      this.parse = __bind(this.parse, this);
       this.defaults = __bind(this.defaults, this);
       return Thing.__super__.constructor.apply(this, arguments);
     }
@@ -52,11 +53,41 @@
       return this.createDefaultStates();
     };
 
-    Thing.prototype.initialize = function() {};
+    Thing.prototype.initialize = function() {
+      console.log(this);
+      return this.set(this.parse(this.attributes));
+    };
 
-    Thing.prototype.parse = function() {
-      this.createDefaultLabels();
-      return this.createDefaultStates();
+    Thing.prototype.parse = function(resp) {
+      console.log("parse called");
+      console.log(this);
+      console.log(resp);
+      if (resp != null) {
+        if (resp.lsLabels != null) {
+          console.log("passed resp.labels?");
+          if (!(resp.lsLabels instanceof LabelList)) {
+            resp.lsLabels = new LabelList(resp.lsLabels);
+          }
+          resp.lsLabels.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
+        if (resp.lsStates != null) {
+          if (!(resp.lsStates instanceof StateList)) {
+            resp.lsStates = new StateList(resp.lsStates);
+          }
+          return resp.lsStates.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
+      } else {
+        this.createDefaultLabels();
+        return this.createDefaultStates();
+      }
     };
 
     Thing.prototype.sync = function() {
@@ -89,27 +120,14 @@
 
     Thing.prototype.createDefaultStates = function() {
       var dValue, newValue, _i, _len, _ref, _results;
+      console.log("creating default states function");
       _ref = this.lsProperties.defaultValues;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dValue = _ref[_i];
         newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(dValue.stateType, dValue.stateKind, dValue.type, dValue.kind);
         newValue.set(dValue.type, dValue.value);
-        newValue.set("value", newValue.get(dValue.type));
-        console.log("new newValue");
-        console.log(newValue);
-        console.log(newValue.get(dValue.type));
-        console.log(newValue.get("value"));
-        this.set(dValue.key, newValue);
-        console.log("@get dValue.key");
-        console.log(this.get(dValue.key));
-        console.log(this.get(dValue.key).get(dValue.type));
-        console.log(this.get(dValue.key).get("value"));
-        this.get(dValue.key).set(dValue.type, this.get(dValue.key).get("value"));
-        this.get(dValue.key).set("value", this.get(dValue.key).get(dValue.type));
-        console.log(this.get(dValue.key));
-        console.log("THIS");
-        _results.push(console.log(this));
+        _results.push(this.set(dValue.key, newValue));
       }
       return _results;
     };

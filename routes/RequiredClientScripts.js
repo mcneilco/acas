@@ -31,6 +31,7 @@ exports.applicationScripts = [
 	'/javascripts/src/BasicFileValidateAndSave.js',
 	'/javascripts/src/PickList.js',
 	'/javascripts/src/Label.js',
+    '/javascripts/src/Thing.js',
     '/javascripts/src/BaseEntity.js',
     '/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',
@@ -57,8 +58,7 @@ exports.applicationScripts = [
 	"/javascripts/src/ModuleMenusConfiguration.js",
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
-	"/javascripts/src/TagList.js",
-	"/javascripts/src/Thing.js"
+	"/javascripts/src/TagList.js"
 ];
 
 exports.jasmineScripts = [
@@ -86,6 +86,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/FullPKTestJSON.js",
 	"/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js",
+	"/javascripts/spec/testFixtures/InternalizationAgentTestJSON.js",
 	"/javascripts/spec/testFixtures/LoginTestJSON.js",
 	"/javascripts/spec/testFixtures/MetStabTestJSON.js",
 	"/javascripts/spec/testFixtures/MicroSolTestJSON.js",
@@ -122,6 +123,7 @@ exports.specScripts = [
 	"/javascripts/spec/GeneDataQueriesSpec.js",
 	"/javascripts/spec/GenericDataParserServiceSpec.js",
 	"/javascripts/spec/GenericDataParserSpec.js",
+	"/javascripts/spec/InternalizationAgentSpec.js",
 	"/javascripts/spec/LSErrorNotificationSpec.js",
 	"/javascripts/spec/LSFileChooserSpec.js",
 	"/javascripts/spec/LSFileInputSpec.js",

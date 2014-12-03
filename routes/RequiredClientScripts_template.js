@@ -31,6 +31,7 @@ exports.applicationScripts = [
 	'/javascripts/src/BasicFileValidateAndSave.js',
 	'/javascripts/src/PickList.js',
 	'/javascripts/src/Label.js',
+    '/javascripts/src/Thing.js',
     '/javascripts/src/BaseEntity.js',
     '/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',

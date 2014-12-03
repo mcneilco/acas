@@ -34,25 +34,24 @@
           ],
           defaultValues: [
             {
-              key: 'sequenceValue',
+              key: 'sequence',
               stateType: 'descriptors',
               stateKind: 'unique attributes',
               type: 'stringValue',
-              kind: 'sequence',
-              value: "test"
+              kind: 'sequence'
             }, {
-              key: 'massValue',
+              key: 'mass',
               stateType: 'descriptors',
               stateKind: 'other attributes',
-              type: 'numberValue',
+              type: 'numericValue',
               kind: 'mass',
-              units: 'mg'
+              unitKind: 'mg'
             }, {
-              key: 'analysisParameters',
+              key: 'analysis parameters',
               stateType: 'meta',
               stateKind: 'experiment meta',
-              type: 'compositeObjectClob',
-              kind: 'AnalysisParameters'
+              type: 'clobValue',
+              kind: 'analysis parameters'
             }
           ],
           defaultValueArrays: [
@@ -62,7 +61,7 @@
               stateKind: 'stateVsTime',
               type: 'numberValue',
               kind: 'temperature',
-              units: 'C'
+              unitKind: 'C'
             }, {
               key: 'timeValueArray',
               stateType: 'measurements',
@@ -108,11 +107,10 @@
         expect(this.siRNA.get("corpName")).toBeUndefined();
         this.siRNA.parse();
         expect(this.siRNA.get("corpName")).toBeDefined();
-        expect(this.siRNA.get("corpName").get("labelText")).toEqual(newLabelText);
-        return console.log(this.siRNA);
+        return expect(this.siRNA.get("corpName").get("labelText")).toEqual(newLabelText);
       });
     });
-    return describe('Instantiation - defaultStates', function() {
+    describe('Instantiation - defaultStates', function() {
       it('should create a list of lsStates based on the defaultValues defined in Child Object', function() {
         var lsStates;
         lsStates = this.siRNA.get("lsStates");
@@ -127,39 +125,42 @@
         return expect(lsValues.length).toEqual(1);
       });
       it('should create model attributes for each element in defaultValues', function() {
-        return expect(this.siRNA.get("sequenceValue")).toBeDefined();
+        return expect(this.siRNA.get("sequence")).toBeDefined();
       });
       it('should reference the lsStates model objects stored in lsStates as top level model attributes', function() {
         var sequenceStateValue;
-        console.log("sequence value before change");
-        console.log(this.siRNA.get("sequenceValue"));
-        this.siRNA.get("sequenceValue").set("value", "newSequenceValue");
-        console.log("after changing sequence value");
-        console.log(this.siRNA.get('lsStates').getStatesByTypeAndKind("descriptors", "unique attributes"));
-        console.log(this.siRNA.get("lsStates").getStatesByTypeAndKind("descriptors", "unique attributes"));
+        this.siRNA.get("sequence").set("value", "newsequence");
         sequenceStateValue = this.siRNA.get('lsStates').getStateValueByTypeAndKind("descriptors", "unique attributes", "stringValue", "sequence");
-        console.log("sequenceStateValue");
-        console.log(sequenceStateValue);
-        expect(sequenceStateValue.get("stringValue")).toEqual(this.siRNA.get("sequenceValue").get("value"));
-        console.log(this.siRNA);
-        return console.log(this.siRNA.get("sequenceValue").get("stringValue"));
+        expect(sequenceStateValue.get("stringValue")).toEqual(this.siRNA.get("sequence").get("value"));
+        expect(sequenceStateValue.get("stringValue")).toEqual("newsequence");
+        return expect(this.siRNA.get("sequence").get("value")).toEqual("newsequence");
       });
       it('should remove the top level lsStates model object references when sync() is called', function() {
-        expect(this.siRNA.get("sequenceValue")).toBeDefined();
+        expect(this.siRNA.get("sequence")).toBeDefined();
         this.siRNA.sync();
-        return expect(this.siRNA.get("sequenceValue")).toBeUndefined();
+        return expect(this.siRNA.get("sequence")).toBeUndefined();
       });
       return it('should create top level lsStates model object references when parse() is called / when the object is re-hyrdrated', function() {
-        var newSequenceValue;
-        newSequenceValue = "this is a new sequence value";
-        this.siRNA.get("sequenceValue").set("value", newSequenceValue);
-        expect(this.siRNA.get("sequenceValue")).toBeDefined();
+        var newsequence;
+        newsequence = "this is a new sequence value";
+        this.siRNA.get("sequence").set("value", newsequence);
+        expect(this.siRNA.get("sequence")).toBeDefined();
         this.siRNA.sync();
-        expect(this.siRNA.get("sequenceValue")).toBeUndefined();
+        expect(this.siRNA.get("sequence")).toBeUndefined();
         this.siRNA.parse();
-        expect(this.siRNA.get("sequenceValue")).toBeDefined();
-        expect(this.siRNA.get("sequenceValue").get("value")).toEqual(newSequenceValue);
-        return console.log(this.siRNA);
+        expect(this.siRNA.get("sequence")).toBeDefined();
+        return expect(this.siRNA.get("sequence").get("value")).toEqual(newsequence);
+      });
+    });
+    return describe("When created from existing", function() {
+      beforeEach(function() {
+        return this.testsiRNA = new siRNA(JSON.parse(JSON.stringify(window.thingTestJSON.siRNA)));
+      });
+      return describe("Existence and Defaults", function() {
+        return it("should be defined", function() {
+          console.log(this.testsiRNA);
+          return expect(this.testsiRNA).toBeDefined();
+        });
       });
     });
   });
