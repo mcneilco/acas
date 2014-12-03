@@ -1495,6 +1495,26 @@ autoFlagWells <- function(resultTable, parameters) {
   
 }
 
+getPlateDimensions <- function(numRows=NULL, numCols=NULL) {
+  if(is.null(numRows) && is.null(numCols)) {
+    stopUser("Internal error: unknown plate dimensions")
+  }
+  
+  if(is.null(numRows)) {
+    colDim <- ceiling((numCols / 12)) * 12
+    rowDim <- (colDim / 12) * 8
+  } else if (is.null(numCols)) {
+    rowDim <- ceiling((numRows / 8)) * 8
+    colDim <- (rowDim / 8) * 12
+  } else {
+    baseSize <- max(ceiling((numCols / 12)), ceiling((numRows / 8)))
+    colDim <- baseSize * 12
+    rowDim <- baseSize * 8
+  }
+  return(list(colDim=colDim, rowDim=rowDim))
+  
+}
+
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
   # Runs main functions that are inside the tryCatch.W.E
@@ -1601,11 +1621,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   resultTable <- performCalculations(resultTable, parameters)
   
-  
-  
   ## BLUE SECTION - Auto Well Flagging
 
   resultTable <- autoFlagWells(resultTable, parameters)
+  resultTable[autoFlagType=="KO", flag := "KO"]
   
   # END Auto Well Flagging
   
@@ -1620,12 +1639,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   treatmentGroupBy <- c(groupBy, "cmpdConc")
   
   resultTable[, tempParentId:=.GRP, by=treatmentGroupBy]
+  
   batchDataTable <- resultTable[is.na(flag)]
   
   treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
   treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
 
+  
   ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'     
   # e.g.      analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
   if(FALSE) {
@@ -1835,9 +1856,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
                                            experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
     } else { # if (useRdap)
-      
+      if(parameters$hitEfficacyThreshold != "") {
+        hitThreshold <- parameters$hitEfficacyThreshold
+      } else if (parameters$hitSDThreshold != "") {
+        hitThreshold <- parameters$hitSDThreshold
+      } else {
+        hitThreshold <- ""
+      }
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
-                               threshold = parameters$hitEfficacyThreshold, experiment, dryRun)
+                               threshold = hitThreshold, experiment, dryRun)
       summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                            racas::applicationSettings$client.port,
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
