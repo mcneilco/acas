@@ -2,7 +2,7 @@ class window.InternalizationAgentParent extends Thing
 	className: "InternalizationAgentParent"
 	lsProperties:
 		defaultLabels: [
-			key: 'name'
+			key: 'internalization agent name'
 			type: 'name'
 			kind: 'internalization agent name'
 			preferred: true
@@ -16,17 +16,23 @@ class window.InternalizationAgentParent extends Thing
 			kind: 'internalization agent type'
 #			value: "" #will be set by the user
 		,
-			key: 'conjugation'
+			key: 'conjugation type'
 			stateType: 'parent attributes'
 			stateKind: 'internalization agent parent attributes'
 			type: 'codeValue'
-			kind: 'conjugation'
+			kind: 'conjugation type'
 		,
 			key: 'conjugation site'
 			stateType: 'parent attributes'
 			stateKind: 'internalization agent parent attributes'
 			type: 'codeValue'
 			kind: 'conjugation site'
+		,
+			key: 'protein aa sequence'
+			stateType: 'parent attributes'
+			stateKind: 'internalization agent parent attributes'
+			type: 'stringValue'
+			kind: 'protein aa sequence'
 		,
 			key: 'scientist'
 			stateType: 'parent attributes'

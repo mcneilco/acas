@@ -1,7 +1,7 @@
 (function() {
   (function(exports) {
     return exports.siRNA = {
-      codeName: "ExamplesiRNA-00000001",
+      codeName: "ExampleThing-00000001",
       id: 1,
       ignored: false,
       lsKind: "siRNA",
@@ -32,7 +32,7 @@
           lsTypeAndKind: "name_corpName",
           modifiedDate: null,
           physicallyLabled: false,
-          preferred: true,
+          preferred: false,
           recordedBy: "egao",
           recordedDate: 1375141504000,
           version: 0
@@ -47,7 +47,7 @@
           lsTypeAndKind: "barcode_barcode",
           modifiedDate: null,
           physicallyLabled: false,
-          preferred: true,
+          preferred: false,
           recordedBy: "egao",
           recordedDate: 1375141504000,
           version: 0
@@ -173,7 +173,11 @@
             }
           ]
         }
-      ]
+      ],
+      lsType: "thing",
+      recordedBy: "egao",
+      recordedDate: 1375889487000,
+      shortDescription: "thing created by egao"
     };
   })((typeof process === "undefined" || !process.versions ? window.thingTestJSON = window.thingTestJSON || {} : exports));
 

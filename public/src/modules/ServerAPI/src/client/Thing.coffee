@@ -1,29 +1,54 @@
 class window.Thing extends Backbone.Model
 	lsProperties: {}
-	#TODO: need these?
-	defaultLabels: []
-	defaultValues: []
-	defaultValueArrays: []
 
 	defaults: () =>
 		#attrs =
 		@set lsType: "thing"
 		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
-		@set corpName: ""
+		@set corpName: "" #TODO: need this?
 		@set recordedBy: ""
-		@set recordedDate: null
-		@set shortDescription: " " #TODO: need this?
+		@set recordedDate: new Date().getTime()
+		@set shortDescription: " "
 		@set lsLabels: new LabelList()
 		@set lsStates: new StateList()
-		console.log "this.className"
-		console.log this.className
 		@createDefaultLabels() # attrs
 		@createDefaultStates() # attrs
 
 		#return attrs
 
+	set: (attr,options) ->
+		console.log "new set in Thing"
+		console.log attr
+		console.log options
+		#TODO: check to see if attr is in default labels
+		if @get(attr) instanceof Label and options != undefined
+			console.log "setting a LABEL"
+			@getFullLabel(attr).changeLabelText(options)
+		else
+			Backbone.Model::set.apply @, arguments
+
+	get: (attr) ->
+		console.log "new get in Thing"
+		console.log attr
+		fullObject = Backbone.Model::get.apply @, arguments
+		if fullObject instanceof Label
+			console.log "get full object is a label"
+			console.log fullObject
+			fullObject.get('labelText')
+		else
+			fullObject
+
+			#		if @get(attr) instanceof Label
+#			console.log "getting a LABEL"
+##			@get(attr).changeLabelText(options)
+#		else
+#		Backbone.Model::get.apply @, arguments
+#
+	getFullLabel: (attr) ->
+		console.log "get full label"
+		Backbone.Model::get.apply @, arguments
+
 	initialize: ->
-		console.log @
 		@.set @parse(@.attributes)
 		#Problem, if new() overwrites defaults, I will lose my nested value attribute defaults
 		#solution, save labels and values as base attributes. Only use new and fetch, don't use new, passing in attributes
@@ -32,9 +57,6 @@ class window.Thing extends Backbone.Model
 		# The good thing about making all the defaults is i never need to use getOrCreate, just get becuase I know the value was made at initializtion
 
 	parse: (resp) =>
-		console.log "parse called"
-		console.log @
-		console.log resp
 		if resp?
 			if resp.lsLabels?
 				console.log "passed resp.labels?"
@@ -42,12 +64,13 @@ class window.Thing extends Backbone.Model
 					resp.lsLabels = new LabelList(resp.lsLabels)
 				resp.lsLabels.on 'change', =>
 					@trigger 'change'
-#			else #TODO: need?
-#				console.log "no resp.lsLabels, creating default labels"
-#				@createDefaultLabels()
+			else #TODO: need?
+				console.log "no resp.lsLabels, creating default labels"
+				@createDefaultLabels()
 
 			if resp.lsStates?
 				if resp.lsStates not instanceof StateList
+					console.log "resp.lsStates = new StateList"
 					resp.lsStates = new StateList(resp.lsStates)
 				resp.lsStates.on 'change', =>
 					@trigger 'change'

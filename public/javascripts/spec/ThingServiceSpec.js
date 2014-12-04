@@ -11,13 +11,13 @@ This suite of services provides CRUD operations on Thing Objects
       };
     });
     return describe('Thing CRUD Tests', function() {
-      describe('when fetching Thing stub by className', function() {
+      describe('when fetching Thing by code', function() {
         beforeEach(function() {
           var self;
           self = this;
           return $.ajax({
             type: 'GET',
-            url: "api/thing/className/siRNA",
+            url: "api/things/codeName/ExampleThing-00000021",
             data: {
               testMode: true
             },
@@ -34,20 +34,17 @@ This suite of services provides CRUD operations on Thing Objects
         return it('should return a thing stub', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
-            return expect(this.serviceReturn.className).toEqual("siRNA");
+            return expect(this.serviceReturn.codeName).toEqual("ExampleThing-00000001");
           });
         });
       });
-      describe('when fetching Experiment stubs by protocol code', function() {
+      describe('when fetching full Thing by id', function() {
         beforeEach(function() {
           var self;
           self = this;
           return $.ajax({
             type: 'GET',
-            url: "api/experiments/protocolCodename/PROT-00000005",
-            data: {
-              testMode: true
-            },
+            url: "api/things/1",
             success: function(json) {
               return self.serviceReturn = json;
             },
@@ -58,45 +55,21 @@ This suite of services provides CRUD operations on Thing Objects
             dataType: 'json'
           });
         });
-        return it('should return an array of experiment stubs', function() {
+        return it('should return a full thing object', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
-            return expect(this.serviceReturn.codeName).toEqual("EXPT-00000001");
+            return expect(this.serviceReturn.codeName).toEqual("ExampleThing-00000001");
           });
         });
       });
-      describe('when fetching full Experiment by id', function() {
-        beforeEach(function() {
-          var self;
-          self = this;
-          return $.ajax({
-            type: 'GET',
-            url: "api/experiments/1",
-            success: function(json) {
-              return self.serviceReturn = json;
-            },
-            error: function(err) {
-              console.log('got ajax error');
-              return self.serviceReturn = null;
-            },
-            dataType: 'json'
-          });
-        });
-        return it('should return a full experiment', function() {
-          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
-          return runs(function() {
-            return expect(this.serviceReturn.codeName).toEqual("EXPT-00000001");
-          });
-        });
-      });
-      describe('when saving new experiment', function() {
+      describe('when saving new thing', function() {
         beforeEach(function() {
           var self;
           self = this;
           return $.ajax({
             type: 'POST',
-            url: "api/experiments",
-            data: window.experimentServiceTestJSON.experimentToSave,
+            url: "api/things",
+            data: window.thingTestJSON.siRNA,
             success: function(json) {
               return self.serviceReturn = json;
             },
@@ -107,21 +80,21 @@ This suite of services provides CRUD operations on Thing Objects
             dataType: 'json'
           });
         });
-        return it('should return an experiment', function() {
+        return it('should return a thing', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
             return expect(this.serviceReturn.id).not.toBeNull();
           });
         });
       });
-      return describe('when updating existing experiment', function() {
+      return describe('when updating existing thing', function() {
         beforeEach(function() {
           var self;
           self = this;
           return $.ajax({
             type: 'PUT',
-            url: "api/experiments/1234",
-            data: window.experimentServiceTestJSON.fullExperimentFromServer,
+            url: "api/things/1234",
+            data: window.thingTestJSON.siRNA,
             success: function(json) {
               return self.serviceReturn = json;
             },
@@ -132,7 +105,7 @@ This suite of services provides CRUD operations on Thing Objects
             dataType: 'json'
           });
         });
-        return it('should return the experiment', function() {
+        return it('should return the thing', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
             return expect(this.serviceReturn.id).not.toBeNull();

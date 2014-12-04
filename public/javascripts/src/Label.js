@@ -21,6 +21,16 @@
       imageFile: null
     };
 
+    Label.prototype.changeLabelText = function(options) {
+      console.log("change label text");
+      console.log(options);
+      console.log(this);
+      this.set({
+        labelText: options
+      });
+      return console.log(this);
+    };
+
     return Label;
 
   })(Backbone.Model);

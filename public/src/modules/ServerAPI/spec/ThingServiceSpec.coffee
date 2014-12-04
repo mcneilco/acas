@@ -9,12 +9,12 @@ describe 'Thing Service testing', ->
 			typeof @serviceReturn != 'undefined'
 
 	describe 'Thing CRUD Tests', ->
-		describe 'when fetching Thing stub by className', ->
+		describe 'when fetching Thing by code', -> #TODO: should return stub or full object?
 			beforeEach ->
 				self = @
 				$.ajax
 					type: 'GET'
-					url: "api/thing/className/siRNA"
+					url: "api/things/codeName/ExampleThing-00000021"
 					data:
 						testMode: true
 					success: (json) ->
@@ -27,16 +27,14 @@ describe 'Thing Service testing', ->
 			it 'should return a thing stub', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
-					expect(@serviceReturn.className).toEqual "siRNA"
+					expect(@serviceReturn.codeName).toEqual "ExampleThing-00000001"
 
-		describe 'when fetching Experiment stubs by protocol code', ->
+		describe 'when fetching full Thing by id', ->
 			beforeEach ->
 				self = @
 				$.ajax
 					type: 'GET'
-					url: "api/experiments/protocolCodename/PROT-00000005"
-					data:
-						testMode: true
+					url: "api/things/1"
 					success: (json) ->
 						self.serviceReturn = json
 					error: (err) ->
@@ -44,37 +42,18 @@ describe 'Thing Service testing', ->
 						self.serviceReturn = null
 					dataType: 'json'
 
-			it 'should return an array of experiment stubs', ->
+			it 'should return a full thing object', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
-					expect(@serviceReturn.codeName).toEqual "EXPT-00000001"
+					expect(@serviceReturn.codeName).toEqual "ExampleThing-00000001"
 
-
-		describe 'when fetching full Experiment by id', ->
-			beforeEach ->
-				self = @
-				$.ajax
-					type: 'GET'
-					url: "api/experiments/1"
-					success: (json) ->
-						self.serviceReturn = json
-					error: (err) ->
-						console.log 'got ajax error'
-						self.serviceReturn = null
-					dataType: 'json'
-
-			it 'should return a full experiment', ->
-				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-				runs ->
-					expect(@serviceReturn.codeName).toEqual "EXPT-00000001"
-
-		describe 'when saving new experiment', ->
+		describe 'when saving new thing', ->
 			beforeEach ->
 				self = @
 				$.ajax
 					type: 'POST'
-					url: "api/experiments"
-					data: window.experimentServiceTestJSON.experimentToSave
+					url: "api/things"
+					data: window.thingTestJSON.siRNA
 					success: (json) ->
 						self.serviceReturn = json
 					error: (err) ->
@@ -82,18 +61,18 @@ describe 'Thing Service testing', ->
 						self.serviceReturn = null
 					dataType: 'json'
 
-			it 'should return an experiment', ->
+			it 'should return a thing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn.id).not.toBeNull()
 
-		describe 'when updating existing experiment', ->
+		describe 'when updating existing thing', ->
 			beforeEach ->
 				self = @
 				$.ajax
 					type: 'PUT'
-					url: "api/experiments/1234"
-					data: window.experimentServiceTestJSON.fullExperimentFromServer
+					url: "api/things/1234"
+					data: window.thingTestJSON.siRNA
 					success: (json) ->
 						self.serviceReturn = json
 					error: (err) ->
@@ -101,7 +80,8 @@ describe 'Thing Service testing', ->
 						self.serviceReturn = null
 					dataType: 'json'
 
-			it 'should return the experiment', ->
+			it 'should return the thing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn.id).not.toBeNull()
+

@@ -217,7 +217,7 @@
       modifiedDate: null,
       recordedBy: "egao",
       recordedDate: 1375141508000,
-      shortDescription: "is this needed?",
+      shortDescription: "example short description",
       version: 0
     };
   })((typeof process === "undefined" || !process.versions ? window.internalizationAgentTestJSON = window.internalizationAgentTestJSON || {} : exports));

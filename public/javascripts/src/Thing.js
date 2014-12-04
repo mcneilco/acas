@@ -16,12 +16,6 @@
 
     Thing.prototype.lsProperties = {};
 
-    Thing.prototype.defaultLabels = [];
-
-    Thing.prototype.defaultValues = [];
-
-    Thing.prototype.defaultValueArrays = [];
-
     Thing.prototype.defaults = function() {
       this.set({
         lsType: "thing"
@@ -36,7 +30,7 @@
         recordedBy: ""
       });
       this.set({
-        recordedDate: null
+        recordedDate: new Date().getTime()
       });
       this.set({
         shortDescription: " "
@@ -47,21 +41,46 @@
       this.set({
         lsStates: new StateList()
       });
-      console.log("this.className");
-      console.log(this.className);
       this.createDefaultLabels();
       return this.createDefaultStates();
     };
 
+    Thing.prototype.set = function(attr, options) {
+      console.log("new set in Thing");
+      console.log(attr);
+      console.log(options);
+      if (this.get(attr) instanceof Label && options !== void 0) {
+        console.log("setting a LABEL");
+        return this.getFullLabel(attr).changeLabelText(options);
+      } else {
+        return Backbone.Model.prototype.set.apply(this, arguments);
+      }
+    };
+
+    Thing.prototype.get = function(attr) {
+      var fullObject;
+      console.log("new get in Thing");
+      console.log(attr);
+      fullObject = Backbone.Model.prototype.get.apply(this, arguments);
+      if (fullObject instanceof Label) {
+        console.log("get full object is a label");
+        console.log(fullObject);
+        return fullObject.get('labelText');
+      } else {
+        return fullObject;
+      }
+    };
+
+    Thing.prototype.getFullLabel = function(attr) {
+      console.log("get full label");
+      return Backbone.Model.prototype.get.apply(this, arguments);
+    };
+
     Thing.prototype.initialize = function() {
-      console.log(this);
       return this.set(this.parse(this.attributes));
     };
 
     Thing.prototype.parse = function(resp) {
-      console.log("parse called");
-      console.log(this);
-      console.log(resp);
       if (resp != null) {
         if (resp.lsLabels != null) {
           console.log("passed resp.labels?");
@@ -73,9 +92,13 @@
               return _this.trigger('change');
             };
           })(this));
+        } else {
+          console.log("no resp.lsLabels, creating default labels");
+          this.createDefaultLabels();
         }
         if (resp.lsStates != null) {
           if (!(resp.lsStates instanceof StateList)) {
+            console.log("resp.lsStates = new StateList");
             resp.lsStates = new StateList(resp.lsStates);
           }
           return resp.lsStates.on('change', (function(_this) {

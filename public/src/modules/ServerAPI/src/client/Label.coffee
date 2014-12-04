@@ -10,6 +10,13 @@ class window.Label extends Backbone.Model
 		physicallyLabled: false
 		imageFile: null
 
+	changeLabelText: (options) ->
+		console.log "change label text"
+		console.log options
+		console.log @
+		@set labelText: options
+		console.log @
+
 class window.LabelList extends Backbone.Collection
 	model: Label
 

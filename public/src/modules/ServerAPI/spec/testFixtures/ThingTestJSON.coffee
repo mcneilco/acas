@@ -1,7 +1,7 @@
 ((exports) ->
 
 	exports.siRNA =
-		codeName: "ExamplesiRNA-00000001"
+		codeName: "ExampleThing-00000001"
 		id: 1
 		ignored: false
 		lsKind: "siRNA" #should be same as the className
@@ -31,7 +31,7 @@
 			lsTypeAndKind: "name_corpName"
 			modifiedDate: null
 			physicallyLabled: false
-			preferred: true
+			preferred: false
 			recordedBy: "egao"
 			recordedDate: 1375141504000
 			version: 0
@@ -46,7 +46,7 @@
 			lsTypeAndKind: "barcode_barcode"
 			modifiedDate: null
 			physicallyLabled: false
-			preferred: true
+			preferred: false
 			recordedBy: "egao"
 			recordedDate: 1375141504000
 			version: 0
@@ -161,5 +161,10 @@
 				version: 0
 			]
 		]
+		lsType: "thing"
+		recordedBy: "egao"
+		recordedDate: 1375889487000
+		shortDescription: "thing created by egao"
+
 
 ) (if (typeof process is "undefined" or not process.versions) then window.thingTestJSON = window.thingTestJSON or {} else exports)

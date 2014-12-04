@@ -99,6 +99,9 @@
 	routeSet_21 = require("./routes/ServerUtilityFunctions.js");
 	if (routeSet_21.setupAPIRoutes) {
 		routeSet_21.setupAPIRoutes(app); }
+	routeSet_22 = require("./routes/ThingServiceRoutes.js");
+	if (routeSet_22.setupAPIRoutes) {
+		routeSet_22.setupAPIRoutes(app); }
 
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("ACAS API server listening on port " + app.get('port'));

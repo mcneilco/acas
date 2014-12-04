@@ -113,6 +113,8 @@
 	routeSet_20.setupRoutes(app, loginRoutes);
 	routeSet_21 = require("./routes/ServerUtilityFunctions.js");
 	routeSet_21.setupRoutes(app, loginRoutes);
+	routeSet_22 = require("./routes/ThingServiceRoutes.js");
+	routeSet_22.setupRoutes(app, loginRoutes);
 
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {
