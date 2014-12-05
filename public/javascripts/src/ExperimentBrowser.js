@@ -377,7 +377,6 @@
         this.$(".bv_noMatchesFoundMessage").removeClass("hide");
       } else {
         this.$(".bv_noMatchesFoundMessage").addClass("hide");
-        console.log(this.collection);
         this.collection.each((function(_this) {
           return function(exp) {
             var ersc;
