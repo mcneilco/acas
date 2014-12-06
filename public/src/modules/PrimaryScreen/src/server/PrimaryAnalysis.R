@@ -1394,12 +1394,22 @@ checkControls <- function(resultTable) {
   # Input:  resultTable (data.table)
   # Output: none
   
+  controlsExist <- list(posExists=TRUE, negExists=TRUE)
   if (!any(resultTable$wellType == "PC")) {
-    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded 
-             and your postive control is defined correctly.")
+    controlsExist$posExists <- FALSE
   }
   
   if (!any(resultTable$wellType == "NC")) {
+    controlsExist$negExists <- FALSE
+  }
+  
+  if(!controlsExist$posExists && !controlsExist$negExists) {
+    stopUser("The positive and negative controls were not found in the plates. Make sure all transfers have been loaded 
+             and your controls are defined correctly.")
+  } else if (!controlsExist$posExists) {
+    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded 
+             and your postive control is defined correctly.")
+  } else if (!controlsExist$negExists) {
     stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded 
              and your negative control is defined correctly.")
   }
@@ -2397,7 +2407,7 @@ runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
   library('racas')
   options("scipen"=15)
-  save(request, file="request.Rda")
+  #save(request, file="request.Rda")
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse

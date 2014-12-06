@@ -213,7 +213,7 @@ createGGHeatmap <- function(name, plate, margins=c(1,1,1,1)) {
   
   plateHeatmap <- ggplot(plate,aes(x=x,y=y,fill=normalizedValues)) +
     #scale_x_continuous(expand=c(0,0),breaks=1:max(plate$x)) + 
-    scale_x_continuous(expand=c(0,0),breaks=seq(min(plate$x),max(plate$x), by = 2)) + 
+    scale_x_continuous(expand=c(0,0),breaks=seq(from=2,to=max(plate$x), by = 2)) + 
     #geom_tile() + scale_y_discrete(limits=rev(LETTERS[1:16])) +
     #geom_tile() + scale_y_discrete(limits=rev(LETTERS[1:maxLetters])) +
     geom_tile() + scale_y_discrete(limits=rev(unique(plate$y))) +
@@ -235,4 +235,20 @@ createGGHeatmap <- function(name, plate, margins=c(1,1,1,1)) {
           axis.title.y = element_blank()) +
   scale_fill_continuous(name="Activity (rfu)")
   return(plateHeatmap)
+}
+
+createZPrimeByPlatePlot <- function(resultTable) {
+  plot(resultTable$plateOrder, 
+       resultTable$zPrimeByPlate, 
+       main="Z' By Plate", 
+       type="o", 
+       col="blue", 
+       xlab="Plate Order",
+       ylab="Z Prime",
+       ylim=range(floor(min(resultTable$zPrimeByPlate)):ceiling(max(resultTable$zPrimeByPlate))),
+       axes=FALSE)
+  box()
+  axis(side=1, at=1:max(resultTable$plateOrder))
+  axis(side=2, at=floor(min(resultTable$zPrimeByPlate)):ceiling(max(resultTable$zPrimeByPlate)))
+  
 }

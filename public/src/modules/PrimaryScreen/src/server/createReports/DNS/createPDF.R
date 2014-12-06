@@ -122,19 +122,3 @@ createPDF <- function(resultTable, parameters, summaryInfo, threshold, experimen
   
   return(pdfLocation)
 }
-
-createZPrimeByPlatePlot <- function(resultTable) {
-  plot(resultTable$plateOrder, 
-       resultTable$zPrimeByPlate, 
-       main="Z' By Plate", 
-       type="o", 
-       col="blue", 
-       xlab="Plate Order",
-       ylab="Z Prime",
-       ylim=range(floor(min(resultTable$zPrimeByPlate)):ceiling(max(resultTable$zPrimeByPlate))),
-       axes=FALSE)
-  box()
-  axis(side=1, at=1:max(resultTable$plateOrder))
-  axis(side=2, at=floor(min(resultTable$zPrimeByPlate)):ceiling(max(resultTable$zPrimeByPlate)))
-  
-}

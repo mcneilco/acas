@@ -9,11 +9,12 @@ readDataTitles <- function(fileName, parseParams, headerRowVector, tempFilePath)
                                                                    sep=parseParams$sepChar, 
                                                                    skip=headerRowVector-1, 
                                                                    nrows=1, header=TRUE,
-                                                                   check.names=FALSE, fill=NA)), 
+                                                                   check.names=FALSE, fill=NA,
+                                                                   comment.char="")), 
                                                c("Well", "X")))[dataTitle!=""]
     dataTitles$readOrder <- 1:nrow(dataTitles) 
   } else {
-    stopUser("Unknown error in readDataTitles function.")
+    stopUser("Internal error: Unknown error in readDataTitles function.")
   }
   
   return(dataTitles)
