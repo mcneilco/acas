@@ -9,7 +9,7 @@ require('racas')
 configList <- racas::applicationSettings
 
 
-postData <- rawToChar(receiveBin(1024))
+postData <- rawToChar(receiveBin())
 
 #postData <- '{"geneIDs":"1, 2; 15, blah"}'
 #postData <- '{"geneIDs":""}'

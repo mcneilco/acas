@@ -12,8 +12,10 @@ require('racas')
 
 if(is.null(GET$format)){
   exportCSV <- FALSE
+  onlyPublicData <- "true"
 } else {
   exportCSV <- ifelse(GET$format == "CSV", TRUE, FALSE)
+  onlyPublicData <- "false"
 }
 
 postData <- rawToChar(receiveBin())
@@ -55,10 +57,11 @@ batchCodeList <- unique(batchCodeList)
 batchCodeList.Json <- toJSON(batchCodeList)
 
 dataCsv <- getURL(
-  paste0(racas::applicationSettings$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData?format=csv"),
+  paste0(racas::applicationSettings$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData?format=csv&onlyPublicData=", onlyPublicData),
   customrequest='POST',
   httpheader=c('Content-Type'='application/json'),
   postfields=batchCodeList.Json)
+
 
 dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
 dataDT <- as.data.table(dataDF)
