@@ -207,11 +207,14 @@
     };
 
     DoseResponseFitWorkflowController.prototype.handleFitComplete = function() {
-      return this.$('.bv_completeControlContainer').show();
+      this.$('.bv_completeControlContainer').show();
+      return this.drdpc.$('.bv_loadAnother').hide();
     };
 
     DoseResponseFitWorkflowController.prototype.handleFitAnother = function() {
       this.drdpc.loadAnother();
+      this.$('.bv_doseResponseAnalysis').empty();
+      this.$('.bv_doseResponseAnalysis').append("<div class='bv_uploadDataToFit span10'>Data must be uploaded first before fitting.</div>");
       this.$('.bv_completeControlContainer').hide();
       return this.$('.bv_uploadDataTabLink').click();
     };
