@@ -28,7 +28,7 @@ if (length(geneDataList) > 0) {
 	requestObject$requests <- requestList
 
 	geneNameList <- getURL(
-		paste0(configList$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
+		paste0(configList$client.service.persistence.fullpath, "api/v1/lsthings/getGeneCodeNameFromNameRequest"),
 		#paste0("http://host3.labsynch.com:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
 		customrequest='POST',
 		httpheader=c('Content-Type'='application/json'),
@@ -61,7 +61,7 @@ if (length(geneDataList) > 0) {
 
 experimentNodes <- getURL(
 	#paste0("http://host3.labsynch.com:8080/acas/experiments/jstreenodes/jsonArray"),
-	paste0(configList$client.service.persistence.fullpath, "experiments/jstreenodes/jsonArray"),
+	paste0(configList$client.service.persistence.fullpath, "api/v1/experiments/jstreenodes/jsonArray"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
 	postfields=batchCodes.Json)

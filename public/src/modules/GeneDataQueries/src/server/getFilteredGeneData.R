@@ -158,7 +158,7 @@ if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
 
 dataCsv <- getURL(
   #	'http://localhost:8080/acas/experiments/agdata/batchcodelist/experimentcodelist?format=csv',
-  paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/agdata/batchcodelist/experimentcodelist?format=csv&onlyPublicData=", onlyPublicData),
+  paste0(racas::applicationSettings$client.service.persistence.fullpath, "api/v1/experiments/agdata/batchcodelist/experimentcodelist?format=csv&onlyPublicData=", onlyPublicData),
   customrequest='POST',
   httpheader=c('Content-Type'='application/json'),
   postfields=toJSON(searchParams))
