@@ -8,6 +8,7 @@ createPDF <- function(resultTable, parameters, summaryInfo, threshold, experimen
   
   allResultTable <- resultTable
   resultTable <- resultTable[is.na(resultTable$flag),]
+  resultTable <- resultTable[!is.na(resultTable$activity),]
   
   if(dryRun) {
     pdfLocation <- paste0("experiments/",experiment$codeName, "/draft/", experiment$codeName, "_SummaryDRAFT.pdf")
