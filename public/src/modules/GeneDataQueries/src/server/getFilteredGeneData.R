@@ -121,7 +121,7 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
     requestObject$requests <- requestList
     geneNameList <- getURL(
       #			paste0("http://localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
-      paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
+      paste0(racas::applicationSettings$client.service.persistence.fullpath, "api/v1/lsthings/getGeneCodeNameFromNameRequest"),
       customrequest='POST',
       httpheader=c('Content-Type'='application/json'),
       postfields=toJSON(requestObject))
