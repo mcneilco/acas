@@ -260,7 +260,7 @@
           this.$(".bv_experimentSearchTerm").attr("disabled", true);
           this.$(".bv_doSearchIcon").addClass("hide");
           this.$(".bv_clearSearchIcon").removeClass("hide");
-          $(".bv_searchingMessage").removeClass("hide");
+          $(".bv_searchingExperimentsMessage").removeClass("hide");
           $(".bv_experimentBrowserSearchInstructions").addClass("hide");
           $(".bv_searchTerm").html(experimentSearchTerm);
           return this.doSearch(experimentSearchTerm);
@@ -269,9 +269,9 @@
           this.$(".bv_experimentSearchTerm").attr("disabled", false);
           this.$(".bv_clearSearchIcon").addClass("hide");
           this.$(".bv_doSearchIcon").removeClass("hide");
-          $(".bv_searchingMessage").addClass("hide");
+          $(".bv_searchingExperimentsMessage").addClass("hide");
           $(".bv_experimentBrowserSearchInstructions").removeClass("hide");
-          $(".bv_searchStatusIndicator").removeClass("hide");
+          $(".bv_searchExperimentsStatusIndicator").removeClass("hide");
           this.updateExperimentSearchTerm();
           return this.trigger("resetSearch");
         }
@@ -377,7 +377,6 @@
         this.$(".bv_noMatchesFoundMessage").removeClass("hide");
       } else {
         this.$(".bv_noMatchesFoundMessage").addClass("hide");
-        console.log(this.collection);
         this.collection.each((function(_this) {
           return function(exp) {
             var ersc;
@@ -445,14 +444,14 @@
     };
 
     ExperimentBrowserController.prototype.setupExperimentSummaryTable = function(experiments) {
-      $(".bv_searchingMessage").addClass("hide");
+      $(".bv_searchingExperimentsMessage").addClass("hide");
       if (experiments === null) {
         return this.$(".bv_errorOccurredPerformingSearch").removeClass("hide");
       } else if (experiments.length === 0) {
-        this.$(".bv_noMatchesFoundMessage").removeClass("hide");
+        this.$(".bv_noMatchingExperimentsFoundMessage").removeClass("hide");
         return this.$(".bv_experimentTableController").html("");
       } else {
-        $(".bv_searchStatusIndicator").addClass("hide");
+        $(".bv_searchExperimentsStatusIndicator").addClass("hide");
         this.$(".bv_experimentTableController").removeClass("hide");
         this.experimentSummaryTable = new ExperimentSummaryTableController({
           collection: new ExperimentList(experiments)
@@ -474,10 +473,16 @@
       this.experimentController.displayInReadOnlyMode();
       $(".bv_experimentBaseController").removeClass("hide");
       $(".bv_experimentBaseControllerContainer").removeClass("hide");
-      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
-        return this.$('.bv_deleteExperiment').show();
+      if (experiment.getStatus().get('stringValue') === "Deleted") {
+        this.$('.bv_deleteExperiment').hide();
+        return this.$('.bv_editExperiment').hide();
       } else {
-        return this.$('.bv_deleteExperiment').hide();
+        this.$('.bv_editExperiment').show();
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
+          return this.$('.bv_deleteExperiment').show();
+        } else {
+          return this.$('.bv_deleteExperiment').hide();
+        }
       }
     };
 
@@ -501,7 +506,7 @@
       this.$(".bv_deletingStatusIndicator").removeClass("hide");
       this.$(".bv_deleteButtons").addClass("hide");
       return $.ajax({
-        url: "api/experiments/" + (this.experimentController.model.get("id")),
+        url: "/api/experiments/" + (this.experimentController.model.get("id")),
         type: 'DELETE',
         success: (function(_this) {
           return function(result) {
@@ -548,7 +553,7 @@
       }
       $(".bv_experimentBaseController").addClass("hide");
       $(".bv_experimentBaseControllerContainer").addClass("hide");
-      return $(".bv_noMatchesFoundMessage").addClass("hide");
+      return $(".bv_noMatchingExperimentsFoundMessage").addClass("hide");
     };
 
     ExperimentBrowserController.prototype.render = function() {

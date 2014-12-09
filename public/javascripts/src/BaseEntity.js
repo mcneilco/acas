@@ -295,8 +295,6 @@
       copiedEntity.getNotebook().set({
         stringValue: ""
       });
-      console.log("copiedEntity");
-      console.log(copiedEntity);
       return copiedEntity;
     };
 
