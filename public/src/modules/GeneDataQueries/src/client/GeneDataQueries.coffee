@@ -199,7 +199,32 @@ class window.ExperimentTreeController extends Backbone.View
 		else
 			@trigger 'disableNext'
 
-class window.ExperimentResultFilterTermController extends Backbone.View
+class window.ExperimentResultFilterTerm extends Backbone.Model
+	defaults: ->
+		filterValue: ""
+
+	validate: (attrs) ->
+		errors = []
+		if (attrs.filterValue is "" and attrs.lsType != 'booleanValue') or (attrs.filterValue is null and attrs.lsType != 'booleanValue')
+			errors.push
+				attribute: 'filterValue'
+				message: "Filter value must be set"
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+class window.ExperimentResultFilterTermList extends Backbone.Collection
+	model: ExperimentResultFilterTerm
+
+	validateCollection: ->
+		modelErrors = []
+		@.each (model) =>
+			modelErrors.push model.validationError...
+		modelErrors
+
+
+class window.ExperimentResultFilterTermController extends AbstractFormController
 	template: _.template($("#ExperimentResultFilterTermView").html())
 	tagName: "div"
 	className: "form-inline"
@@ -207,8 +232,11 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 		"change .bv_experiment": "setKindOptions"
 		"change .bv_kind": "setOperatorOptions"
 		"click .bv_delete": "clear"
+		"change .bv_filterValue": "attributeChanged"
 
 	initialize: ->
+		@errorOwnerName = 'ExperimentResultFilterTermController'
+		@setBindings()
 		@filterOptions = @options.filterOptions
 		@model.set termName: @options.termName
 		@model.on "destroy", @remove, @
@@ -241,16 +269,25 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 				@$('.bv_operator_bool').removeClass('bv_operator').hide()
 				@$('.bv_operator_string').removeClass('bv_operator').hide()
 				@$('.bv_filterValue').show()
+				@$('.bv_filterValue').val("")
+				@$('.bv_filterValue').change()
+				@updateModel()
 			when "booleanValue"
 				@$('.bv_operator_number').removeClass('bv_operator').hide()
 				@$('.bv_operator_bool').addClass('bv_operator').show()
 				@$('.bv_operator_string').removeClass('bv_operator').hide()
 				@$('.bv_filterValue').hide()
+				@$('.bv_filterValue').val("")
+				@$('.bv_filterValue').change()
+				@updateModel()
 			when "stringValue"
 				@$('.bv_operator_number').removeClass('bv_operator').hide()
 				@$('.bv_operator_bool').removeClass('bv_operator').hide()
 				@$('.bv_operator_string').addClass('bv_operator').show()
 				@$('.bv_filterValue').show()
+				@$('.bv_filterValue').val("")
+				@$('.bv_filterValue').change()
+				@updateModel()
 
 	getSelectedExperiment: ->
 		exptCode = @$('.bv_experiment').val()
@@ -275,6 +312,16 @@ class window.ExperimentResultFilterTermController extends Backbone.View
 
 	clear: =>
 		@model.destroy()
+		@trigger 'checkCollection'
+
+	validationError: =>
+		super()
+		@trigger 'disableNext'
+
+	clearValidationErrorStyles: =>
+		super()
+		@trigger 'enableNext'
+
 
 class window.ExperimentResultFilterTermListController extends Backbone.View
 	template: _.template($("#ExperimentResultFilterTermListView").html())
@@ -290,11 +337,13 @@ class window.ExperimentResultFilterTermListController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
+		@collection.on 'change', @checkCollection
+
 
 		@
 
 	addOne: =>
-		newModel = new Backbone.Model()
+		newModel = new ExperimentResultFilterTerm()
 		@collection.add newModel
 		erftc = new ExperimentResultFilterTermController
 			model: newModel
@@ -302,6 +351,22 @@ class window.ExperimentResultFilterTermListController extends Backbone.View
 			termName: @TERM_NUMBER_PREFIX+@nextTermNumber++
 		@$('.bv_filterTerms').append erftc.render().el
 		@on "updateFilterModels", erftc.updateModel
+		erftc.on 'checkCollection', =>
+			@checkCollection()
+		erftc.on 'disableNext', =>
+			@trigger 'disableNext'
+		erftc.on 'enableNext', =>
+			@trigger 'enableNext'
+		if erftc.model.validationError.length > 0
+			@trigger 'disableNext'
+		else
+			@trigger 'enableNext'
+
+	checkCollection: =>
+		if @collection.validateCollection().length > 0
+			@trigger 'disableNext'
+		else
+			@trigger 'enableNext'
 
 	updateCollection: ->
 		@trigger "updateFilterModels"
@@ -321,9 +386,15 @@ class window.ExperimentResultFilterController extends Backbone.View
 		$(@el).html @template()
 		@erftlc = new ExperimentResultFilterTermListController
 			el: @$('.bv_filterTermList')
-			collection: new Backbone.Collection()
+			collection: new ExperimentResultFilterTermList()
+#			collection: new Backbone.Collection()
 			filterOptions: @filterOptions
 		@erftlc.render()
+		@erftlc.on 'enableNext', =>
+			@trigger 'enableNext'
+		@erftlc.on 'disableNext', =>
+			@trigger 'disableNext'
+
 		@handleBooleanFilterChanged()
 
 		@
@@ -427,6 +498,10 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			el: @$('.bv_getFiltersView')
 			filterOptions: new Backbone.Collection json.results.experiments
 		@erfc.render()
+		@erfc.on 'disableNext', =>
+			@trigger 'disableNext'
+		@erfc.on 'enableNext', =>
+			@trigger 'enableNext'
 		@$('.bv_getExperimentsView').hide()
 		@$('.bv_getFiltersView').show()
 		@nextStep = 'fromFiltersToResults'

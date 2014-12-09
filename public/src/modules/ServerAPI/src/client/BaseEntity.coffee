@@ -180,8 +180,6 @@ class window.BaseEntity extends Backbone.Model
 		copiedEntity.getCompletionDate().set dateValue: null
 		copiedEntity.getNotebook().set stringValue: ""
 
-		console.log "copiedEntity"
-		console.log copiedEntity
 		copiedEntity
 
 class window.BaseEntityList extends Backbone.Collection

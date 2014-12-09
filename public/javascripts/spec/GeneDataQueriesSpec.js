@@ -338,12 +338,55 @@
         });
       });
       describe("Experiment attribute filtering panel", function() {
+        describe("Experiment Result Filter Term model testing", function() {
+          describe("when loaded from new", function() {
+            beforeEach(function() {
+              return this.erft = new ExperimentResultFilterTerm();
+            });
+            return describe("Defaults", function() {
+              return it('Should have a empty filter value', function() {
+                return expect(this.erft.get("filterValue")).toEqual("");
+              });
+            });
+          });
+          return describe("model validation tests", function() {
+            beforeEach(function() {
+              return this.erft = new ExperimentResultFilterTerm();
+            });
+            return it("should be invalid when the filter value is empty and the lsType is not booleanValue", function() {
+              var filtErrors;
+              this.erft.set({
+                lsType: "stringValue"
+              });
+              this.erft.set({
+                filterValue: ""
+              });
+              expect(this.erft.isValid()).toBeFalsy();
+              filtErrors = _.filter(this.erft.validationError, function(err) {
+                return err.attribute === 'filterValue';
+              });
+              return expect(filtErrors.length).toBeGreaterThan(0);
+            });
+          });
+        });
+        describe("Experiment Result Filter Term List testing", function() {
+          return describe("When loaded from new", function() {
+            beforeEach(function() {
+              return this.erftl = new ExperimentResultFilterTermList();
+            });
+            return describe("Existence", function() {
+              return it("should be defined", function() {
+                return expect(this.erftl).toBeDefined();
+              });
+            });
+          });
+        });
         describe("filter term controller", function() {
           return describe('when instantiated', function() {
             beforeEach(function() {
               this.erftc = new ExperimentResultFilterTermController({
                 el: $('#fixture'),
-                model: new Backbone.Model(),
+                model: new ExperimentResultFilterTerm(),
                 filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments),
                 termName: "Q1"
               });
@@ -431,6 +474,24 @@
                 return expect(this.erftc.$('.bv_filterValue')).toBeVisible();
               });
             });
+            describe("controller validation rules", function() {
+              describe("when filter value is hidden", function() {
+                return it("should be invalid", function() {
+                  this.erftc.$('.bv_kind').val("hit");
+                  this.erftc.$('.bv_kind').change();
+                  return expect(this.erftc.$('.bv_group_filterValue').hasClass('error')).toBeFalsy();
+                });
+              });
+              return describe("when filter value is shown and not filled", function() {
+                return it("should be invalid", function() {
+                  this.erftc.$('.bv_kind').val("category");
+                  this.erftc.$('.bv_kind').change();
+                  this.erftc.$('.bv_filterValue').val("");
+                  this.erftc.$('.bv_filterValue').change();
+                  return expect(this.erftc.$('.bv_group_filterValue').hasClass('error')).toBeTruthy();
+                });
+              });
+            });
             return describe("get filter term", function() {
               return it("should return hash of user selections", function() {
                 this.erftc.$('.bv_experiment').val("EXPT-00000396");
@@ -454,7 +515,7 @@
             beforeEach(function() {
               this.erftlc = new ExperimentResultFilterTermListController({
                 el: $('#fixture'),
-                collection: new Backbone.Collection(),
+                collection: new ExperimentResultFilterTermList(),
                 filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments)
               });
               return this.erftlc.render();

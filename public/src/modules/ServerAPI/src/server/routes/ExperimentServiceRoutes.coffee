@@ -185,7 +185,7 @@ exports.deleteExperiment = (req, res) ->
 	#curl -i -X DELETE -H Accept:application/json -H Content-Type:application/json  http://host4.labsynch.com:8080/acas/experiments/406773
 	config = require '../conf/compiled/conf.js'
 	experimentId = req.params.id
-	baseurl = config.all.client.service.persistence.fullpath+"experiments/"+experimentId
+	baseurl = config.all.client.service.persistence.fullpath+"/api/v1/experiments/browser/"+experimentId
 	console.log "baseurl"
 	console.log baseurl
 	request = require 'request'
