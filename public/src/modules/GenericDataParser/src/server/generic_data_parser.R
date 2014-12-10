@@ -1425,8 +1425,8 @@ validateProject <- function(projectName, configList, errorEnv) {
     addError(paste("There was an error in validating your project:", projectList), errorEnv = errorEnv)
     return("")
   })
-  #projectCodes <- sapply(projectList, function(x) x$code)
-  projectNames <- sapply(projectList, function(x) x$name)
+  projectNames <- sapply(projectList, function(x) x$code)
+  #projectNames <- sapply(projectList, function(x) x$name)
   if(length(projectNames) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
   if (projectName %in% projectNames) {
     return(projectName)
@@ -2253,8 +2253,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
-                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
-                        replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning, includeTreatmentGroupData, 
+                        formatParameters$stateGroups, reportFilePath, formatParameters$hideAllData, reportFileSummary, formatParameters$curveNames, recordedBy, 
+                        formatParameters$replaceFakeCorpBatchId, formatParameters$annotationType, formatParameters$sigFigs, formatParameters$rowMeaning, formatParameters$includeTreatmentGroupData, 
                         inputFormat, mainCode)
     } else {
       calculatedResults$experimentID <- experiment$id
@@ -2822,7 +2822,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
 
 getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat) {
   # Creates a list of format parameters, based on custom format settings if it is a "rawOnlyFormat"
-  
+  formatSettings <- customFormatSettings
   o <- list()
   if (rawOnlyFormat) {
     o$lookFor <- "Raw Data"
@@ -2835,11 +2835,11 @@ getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat
     o$sigFigs <- formatSettings[[inputFormat]]$sigFigs
     o$splitSubjects <- formatSettings[[inputFormat]]$splitSubjects
     o$rowMeaning <- formatSettings[[inputFormat]]$rowMeaning
-    if(is.null(rowMeaning)) {
+    if(is.null(o$rowMeaning)) {
       o$rowMeaning <- "subject"
     }
     o$includeTreatmentGroupData <- formatSettings[[inputFormat]]$includeTreatmentGroupData
-    if (is.null(includeTreatmentGroupData)) {
+    if (is.null(o$includeTreatmentGroupData)) {
       o$includeTreatmentGroupData <- TRUE
     }
   } else {
