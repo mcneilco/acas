@@ -176,6 +176,7 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 				@$(".bv_clearSearchIcon").addClass "hide"
 				@$(".bv_doSearchIcon").removeClass "hide"
 				$(".bv_searchStatusIndicator").addClass "hide"
+				$(".bv_deletedExperimentMessage").addClass "hide"
 				@updateExperimentSearchTerm()
 				@trigger "resetSearch"
 
@@ -285,9 +286,11 @@ class window.ExperimentBrowserController extends Backbone.View
 		$(".bv_searchStatusIndicator").addClass "hide"
 		if experiments is null
 			@$(".bv_errorOccurredPerformingSearch").removeClass "hide"
+			@$(".bv_deletedExperimentMessage").addClass "hide"
 
 		else if experiments.length is 0
 			@$(".bv_noMatchesFoundMessage").removeClass "hide"
+			@$(".bv_deletedExperimentMessage").addClass "hide"
 			@$(".bv_experimentTableController").html ""
 		else
 			console.log experiments[0].ignored
@@ -301,7 +304,7 @@ class window.ExperimentBrowserController extends Backbone.View
 				@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
 				$(".bv_experimentTableController").html @experimentSummaryTable.render().el
 				$(".bv_matchingExperimentsHeader").removeClass "hide"
-
+				@$(".bv_deletedExperimentMessage").addClass "hide"
 				unless @includeDuplicateAndEdit
 					@selectedExperimentUpdated new Experiment experiments[0]
 
