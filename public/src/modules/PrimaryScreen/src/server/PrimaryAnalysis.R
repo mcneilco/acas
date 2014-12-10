@@ -1868,9 +1868,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
                                            experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
     } else { # if (useRdap)
-      if(parameters$hitEfficacyThreshold != "") {
+      if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
         hitThreshold <- parameters$hitEfficacyThreshold
-      } else if (parameters$hitSDThreshold != "") {
+      } else if (!is.null(parameters$hitSDThreshold) && parameters$hitSDThreshold != "") {
         hitThreshold <- parameters$hitSDThreshold
       } else {
         hitThreshold <- ""
