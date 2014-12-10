@@ -714,7 +714,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Returns:
   #	  a data frame containing the organized calculated data
   
-  library('reshape')
+  library('reshape2')
   library('gdata')
   library('plyr')
   

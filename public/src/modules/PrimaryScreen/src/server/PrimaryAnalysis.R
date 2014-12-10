@@ -33,9 +33,10 @@
 # newest experimentID: 75191, 9036, 11203
 # request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
 ############ testMode TRUE #############
-# file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/Archive.zip", "privateUploads/")
-# request <- structure(list(fileToParse = "Archive.zip", reportFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}", primaryAnalysisExperimentId = 203528, testMode = "true"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
-############ testMode FALSE ############
+# file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/Archive (2).zip", "privateUploads/")
+# file.copy("public/src/modules/PrimaryScreen/spec/specFiles/Step2_Renormalize_Input_v2.txt", "privateUploads/")
+# request <- structure(list(fileToParse = "Archive (2).zip", reportFile = "Step2_Renormalize_Input_v2.txt", dryRunMode = TRUE, user = "bob", primaryAnalysisExperimentId = 203528, testMode = "true", flaggedWells = "Step2_Renormalize_Input_v2.txt", inputParameters = "{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "primaryAnalysisExperimentId", "testMode", "flaggedWells", "inputParameters"))
+############ testMode FALSE #############
 # file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/ArchiveNonTest.zip", "privateUploads/")
 # request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1086654", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
 
@@ -418,7 +419,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   subjectData$fileName <- NULL
   
   makeLongData <- function(entityData, resultTypes, splitTreatmentGroupsBy) {
-    library('reshape')
+    library('reshape2')
     library('gdata')
     
     entityData$entityID <- seq(1,nrow(entityData))
@@ -1483,7 +1484,7 @@ autoFlagWells <- function(resultTable, parameters) {
   resultTable[, autoFlagObservation:=NA_character_]
   resultTable[, autoFlagReason:=NA_character_]
   
-  if(parameters$thresholdType == "") {
+  if(is.null(parameters$thresholdType) || parameters$thresholdType == "") {
     return(resultTable)
   } else if(parameters$thresholdType == "efficacy") {
     hitThreshold <- parameters$hitEfficacyThreshold
@@ -1545,14 +1546,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   if(!testMode) {
     experiment <- getExperimentById(experimentId)
-    setExperimentStatus(status = "running", experiment, dryRun)
+    setExperimentStatus(status = "running", experiment, dryRun=dryRun)
   } else {
     experiment <- list(id = experimentId, codeName = "test", version = 0)
   }
   
   parameters <- getExperimentParameters(inputParameters)
 
-  if(length(unique(grepl(parameters$thresholdType, parameters$transformationRuleList))) < 2 && 
+  if(!is.null(parameters$thresholdType) && 
+       length(unique(grepl(parameters$thresholdType, parameters$transformationRuleList))) < 2 && 
        !grepl(parameters$thresholdType, parameters$transformationRuleList)) {
     stopUser(paste0("Hit selection parameter (", parameters$thresholdType, ") not calculated in transformation section."))
   }
@@ -1977,9 +1979,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
                                   subjectData=subjectDataLong,
                                   recordedBy=user, lsTransaction=lsTransaction)
-      
-      f#analysisGroupData$experimentVersion <- experiment$version
-      
     }
     
     #     if (!useRdap) {
@@ -2052,7 +2051,7 @@ validateValueKinds <- function(valueKinds, valueTypes, createNew=TRUE) {
     stopUser("Invalid value types")
   }
   
-  if (createNew) {
+  if (createNew && length(newValueKinds) > 0) {
     # Create the new valueKinds, using the correct valueType
     newValueKindTypes <- valueTypes[match(newValueKinds, valueKinds)]
     
@@ -2370,6 +2369,7 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   if ("tempParentId" %in% names(resultTable)) {
     idVars <- c(idVars, "tempParentId")
   }
+  codeIdVars <- c(idVars, "cmpdConc")
   
   usedCol <- (resultTypes[, includedColumn, with=F][[1]]) & (resultTypes$columnName %in% names(resultTable))
   
@@ -2377,9 +2377,18 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   codeResultColumns <- resultTypes[valueType=="codeValue" & usedCol, columnName]
   stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
   
-  numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, variable.name="columnName", value.name="numericValue")
-  codeResults <- melt(resultTable, id.vars=idVars, measure.vars=codeResultColumns, variable.name="columnName", value.name="codeValue")
-  stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, variable.name="columnName", value.name="stringValue", variable.factor = FALSE)
+  numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
+                         variable.name="columnName", value.name="numericValue")
+  codeResults <- melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
+                      variable.name="columnName", value.name="codeValue")
+  stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
+                        variable.name="columnName", value.name="stringValue", 
+                        variable.factor = FALSE)
+  
+  codeResults[, concentration:=cmpdConc]
+  codeResults[, cmpdConc:=NULL]
+  codeResults[columnName != "batchCode", concentration:=NA]
+  codeResults[!is.na(concentration), concUnit:="uM"]
   
   longResults <- as.data.table(rbind.fill(numericResults, codeResults, stringResults))
   
@@ -2502,9 +2511,8 @@ runPrimaryAnalysis <- function(request) {
     } else {
       experiment <- loadResult$value$experiment
     }
-    if(!dryRun) {
-      htmlSummary <- saveAnalysisResults(experiment, hasError, htmlSummary, user, dryRun)
-    }
+    saveAnalysisResults(experiment, hasError, htmlSummary, user, dryRun)
+    
   }, error= function(e) {
     htmlSummary <- paste(htmlSummary, "<p>Could not get the experiment</p>")  
   })
