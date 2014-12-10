@@ -283,9 +283,9 @@ class window.PrimaryScreenExperiment extends Experiment
 		@.set lsKind: "flipr screening assay"
 
 	getAnalysisStatus: ->
-		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
-		if !status.has('stringValue')
-			status.set stringValue: "not started"
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "analysis status"
+		if !status.has('codeValue')
+			status.set codeValue: "not started"
 
 		status
 
@@ -863,7 +863,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	showExistingResults: ->
 		analysisStatus = @model.getAnalysisStatus()
 		if analysisStatus != null
-			analysisStatus = analysisStatus.get('stringValue')
+			analysisStatus = analysisStatus.get('codeValue')
 		else
 			analysisStatus = "not started"
 		@$('.bv_analysisStatus').html(analysisStatus)
@@ -907,7 +907,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		newArgs =
 			el: @$('.bv_fileUploadWrapper')
 			paramsFromExperiment:	@model.getAnalysisParameters()
-			analyzedPreviously: @model.getAnalysisStatus().get('stringValue')!="not started"
+			analyzedPreviously: @model.getAnalysisStatus().get('codeValue')!="not started"
 		@dataAnalysisController = new window[dacClassName](newArgs)
 		@dataAnalysisController.setUser(window.AppLaunchParams.loginUserName)
 		@dataAnalysisController.setExperimentId(@model.id)

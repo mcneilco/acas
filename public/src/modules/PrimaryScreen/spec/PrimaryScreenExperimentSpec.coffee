@@ -383,7 +383,7 @@ describe "Primary Screen Experiment module testing", ->
 						expect(@pse.getModelFitParameters().inverseAgonistMode ).toBeTruthy()
 				describe "special states", ->
 					it "should be able to get the analysis status", ->
-						expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
+						expect(@pse.getAnalysisStatus().get('codeValue')).toEqual "not started"
 					it "should be able to get the analysis result html", ->
 						expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
 					it "should be able to get the model fit status", ->
@@ -398,7 +398,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@pse2.get('lsKind')).toEqual "flipr screening assay"
 			describe "special states", ->
 				it "should be able to get the analysis status", ->
-					expect(@pse2.getAnalysisStatus().get('stringValue')).toEqual "not started"
+					expect(@pse2.getAnalysisStatus().get('codeValue')).toEqual "not started"
 				it "should be able to get the analysis result html", ->
 					expect(@pse2.getAnalysisResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the model fit status", ->
@@ -1079,7 +1079,7 @@ describe "Primary Screen Experiment module testing", ->
 		describe "handling re-analysis", ->
 			beforeEach ->
 				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
-				@exp.getAnalysisStatus().set stringValue: "analsysis complete"
+				@exp.getAnalysisStatus().set codeValue: "analsysis complete"
 				@psac = new PrimaryScreenAnalysisController
 					model: @exp
 					el: $('#fixture')

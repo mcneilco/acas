@@ -1694,8 +1694,8 @@
 				ignored: false
 				lsKind: "analysis status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_analysis status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_analysis status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null

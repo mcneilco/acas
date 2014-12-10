@@ -471,10 +471,10 @@
 
     PrimaryScreenExperiment.prototype.getAnalysisStatus = function() {
       var status;
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "analysis status");
-      if (!status.has('stringValue')) {
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "analysis status");
+      if (!status.has('codeValue')) {
         status.set({
-          stringValue: "not started"
+          codeValue: "not started"
         });
       }
       return status;
@@ -1352,7 +1352,7 @@
       var analysisStatus, res, resultValue;
       analysisStatus = this.model.getAnalysisStatus();
       if (analysisStatus !== null) {
-        analysisStatus = analysisStatus.get('stringValue');
+        analysisStatus = analysisStatus.get('codeValue');
       } else {
         analysisStatus = "not started";
       }
@@ -1408,7 +1408,7 @@
       newArgs = {
         el: this.$('.bv_fileUploadWrapper'),
         paramsFromExperiment: this.model.getAnalysisParameters(),
-        analyzedPreviously: this.model.getAnalysisStatus().get('stringValue') !== "not started"
+        analyzedPreviously: this.model.getAnalysisStatus().get('codeValue') !== "not started"
       };
       this.dataAnalysisController = new window[dacClassName](newArgs);
       this.dataAnalysisController.setUser(window.AppLaunchParams.loginUserName);

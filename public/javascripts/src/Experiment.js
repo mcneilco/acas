@@ -217,10 +217,10 @@
     Experiment.prototype.getAnalysisStatus = function() {
       var metadataKind, status;
       metadataKind = this.get('subclass') + " metadata";
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "stringValue", "analysis status");
-      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "analysis status");
+      if (status.get('codeValue') === void 0 || status.get('codeValue') === "") {
         status.set({
-          stringValue: "created"
+          codeValue: "created"
         });
       }
       return status;

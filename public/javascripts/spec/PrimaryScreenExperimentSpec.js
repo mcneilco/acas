@@ -647,7 +647,7 @@
           });
           return describe("special states", function() {
             it("should be able to get the analysis status", function() {
-              return expect(this.pse.getAnalysisStatus().get('stringValue')).toEqual("not started");
+              return expect(this.pse.getAnalysisStatus().get('codeValue')).toEqual("not started");
             });
             it("should be able to get the analysis result html", function() {
               return expect(this.pse.getAnalysisResultHTML().get('clobValue')).toEqual("<p>Analysis not yet completed</p>");
@@ -672,7 +672,7 @@
         });
         return describe("special states", function() {
           it("should be able to get the analysis status", function() {
-            return expect(this.pse2.getAnalysisStatus().get('stringValue')).toEqual("not started");
+            return expect(this.pse2.getAnalysisStatus().get('codeValue')).toEqual("not started");
           });
           it("should be able to get the analysis result html", function() {
             return expect(this.pse2.getAnalysisResultHTML().get('clobValue')).toEqual("");
@@ -1567,7 +1567,7 @@
         beforeEach(function() {
           this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
           this.exp.getAnalysisStatus().set({
-            stringValue: "analsysis complete"
+            codeValue: "analsysis complete"
           });
           this.psac = new PrimaryScreenAnalysisController({
             model: this.exp,
