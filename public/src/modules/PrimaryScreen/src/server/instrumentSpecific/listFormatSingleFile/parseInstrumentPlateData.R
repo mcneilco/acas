@@ -20,7 +20,7 @@ parseInstrumentPlateData <- function(fileName, parseParams, titleVector, tempFil
   
   # Checks to make sure all columns exist in the assay plate. If not, missing ones are added in
   if(!identical(setdiff(titleVector, colnames(assayDataDT)), character(0))) {
-    assayDataDT[ , c(setdiff(titleVector, colnames(assayDataDT))) := as.character(NA)]
+    assayDataDT[ , c(setdiff(titleVector, colnames(assayDataDT))) := as.numeric(NA)]
   }
   setcolorder(assayDataDT, c("rowName","colName","wellReference",titleVector))
   

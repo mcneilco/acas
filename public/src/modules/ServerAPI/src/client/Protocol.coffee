@@ -61,6 +61,16 @@ class window.Protocol extends BaseEntity
 			errors.push
 				attribute: 'notebook'
 				message: "Notebook must be set"
+		assayTreeRule = @getAssayTreeRule().get('stringValue')
+		unless assayTreeRule is "" or assayTreeRule is undefined or assayTreeRule is null
+			if assayTreeRule.charAt([0]) != "/"
+				errors.push
+					attribute: 'assayTreeRule'
+					message: "Assay tree rule must start with '/'"
+			else if assayTreeRule.charAt([assayTreeRule.length-1]) is "/"
+				errors.push
+					attribute: 'assayTreeRule'
+					message: "Assay tree rule should not end with '/'"
 
 		if errors.length > 0
 			return errors

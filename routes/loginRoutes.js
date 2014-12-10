@@ -127,7 +127,7 @@
     var callback;
     callback = function(results) {
       console.log(results);
-      if (results.indexOf("Your new password is sent to your email address") >= 0) {
+      if (results.indexOf("Your new password has been sent to your email address.") >= 0) {
         req.flash('error', 'Your new password has been sent to your email address.');
         return resp.redirect('/passwordReset');
       } else if (results.indexOf("connection_error") >= 0) {
