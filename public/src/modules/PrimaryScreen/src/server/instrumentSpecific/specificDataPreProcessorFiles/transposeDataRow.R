@@ -8,7 +8,6 @@
 # Returns:
 #   A data.frame  of the row of data
 
-
 transposeDataRow <- function(dataRow, dataName, tempFilePath) {
   
   # runlog
@@ -16,6 +15,7 @@ transposeDataRow <- function(dataRow, dataName, tempFilePath) {
 
   dataRow <- replace(dataRow, is.na(dataRow), as.numeric(NA))
   assayDataFrame <- as.data.frame(t(dataRow), stringsAsFactors=FALSE)
+  assayDataFrame$V1 <- as.numeric(assayDataFrame$V1)
   assayDataFrame$colName <- seq(1:length(dataRow))
   names(assayDataFrame) <- c(dataName, 'colName')    
   
