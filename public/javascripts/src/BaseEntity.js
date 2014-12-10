@@ -107,7 +107,7 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "stringValue", "status");
       if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
         status.set({
-          stringValue: "created"
+          stringValue: "Created"
         });
       }
       return status;

@@ -92,7 +92,7 @@
     } else {
       config = require('../conf/compiled/conf.js');
       putId = req.body.id;
-      baseurl = config.all.client.service.persistence.fullpath + "protocols/" + putId;
+      baseurl = config.all.client.service.persistence.fullpath + "api/v1/protocols/" + putId;
       request = require('request');
       return request({
         method: 'PUT',
