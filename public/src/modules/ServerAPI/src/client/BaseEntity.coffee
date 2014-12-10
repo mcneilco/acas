@@ -205,6 +205,7 @@ class window.BaseEntityController extends AbstractFormController
 		unless @model?
 			@model=new BaseEntity()
 		@model.on 'sync', =>
+			console.log "sync base entity"
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
@@ -278,6 +279,7 @@ class window.BaseEntityController extends AbstractFormController
 
 
 	handleRecordedByChanged: =>
+		console.log "handleRecordedByChanged in base entity"
 		@model.set recordedBy: @recordedByListController.getSelectedCode()
 		@handleNameChanged()
 
@@ -299,6 +301,7 @@ class window.BaseEntityController extends AbstractFormController
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
+		console.log "handle name changed in base entity"
 		subclass = @model.get('subclass')
 		newName = UtilityFunctions::getTrimmedInput @$('.bv_'+subclass+'Name')
 		@model.get('lsLabels').setBestName new Label
@@ -355,6 +358,8 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_saving').show()
+		console.log "about to save model"
+		console.log @model
 		@model.save()
 
 	validationError: =>

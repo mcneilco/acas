@@ -229,17 +229,22 @@
       $(this.el).html(this.template(this.model.attributes));
       this.model.on('sync', (function(_this) {
         return function() {
+          console.log("sync protocol");
           _this.trigger('amClean');
           _this.$('.bv_saving').hide();
+          console.log("bv_saving should be hidden");
           _this.$('.bv_updateComplete').show();
           _this.$('.bv_save').attr('disabled', 'disabled');
-          return _this.render();
+          _this.render();
+          return console.log("sync render completed");
         };
       })(this));
       this.model.on('change', (function(_this) {
         return function() {
+          console.log("on change");
           _this.trigger('amDirty');
-          return _this.$('.bv_updateComplete').hide();
+          _this.$('.bv_updateComplete').hide();
+          return console.log("end on change");
         };
       })(this));
       this.$('.bv_save').attr('disabled', 'disabled');

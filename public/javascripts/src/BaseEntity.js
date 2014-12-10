@@ -361,6 +361,7 @@
       }
       this.model.on('sync', (function(_this) {
         return function() {
+          console.log("sync base entity");
           _this.trigger('amClean');
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
@@ -451,6 +452,7 @@
     };
 
     BaseEntityController.prototype.handleRecordedByChanged = function() {
+      console.log("handleRecordedByChanged in base entity");
       this.model.set({
         recordedBy: this.recordedByListController.getSelectedCode()
       });
@@ -487,6 +489,7 @@
 
     BaseEntityController.prototype.handleNameChanged = function() {
       var newName, subclass;
+      console.log("handle name changed in base entity");
       subclass = this.model.get('subclass');
       newName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + subclass + 'Name'));
       this.model.get('lsLabels').setBestName(new Label({
@@ -556,6 +559,8 @@
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
+      console.log("about to save model");
+      console.log(this.model);
       return this.model.save();
     };
 

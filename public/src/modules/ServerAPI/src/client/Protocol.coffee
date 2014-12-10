@@ -138,14 +138,19 @@ class window.ProtocolBaseController extends BaseEntityController
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
 		@model.on 'sync', =>
+			console.log "sync protocol"
 			@trigger 'amClean'
 			@$('.bv_saving').hide()
+			console.log "bv_saving should be hidden"
 			@$('.bv_updateComplete').show()
 			@$('.bv_save').attr('disabled', 'disabled')
 			@render()
+			console.log "sync render completed"
 		@model.on 'change', =>
+			console.log "on change"
 			@trigger 'amDirty'
 			@$('.bv_updateComplete').hide()
+			console.log "end on change"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupRecordedBySelect()
