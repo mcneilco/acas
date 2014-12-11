@@ -1,7 +1,7 @@
 ((exports) ->
 	exports.dataDictValues =
 		[
-			type: "experimentMetadata"
+			type: "experiment metadata"
 			kind: "instrument reader"
 			codes:
 				[
@@ -10,7 +10,7 @@
 					ignored: false
 				]
 		,
-			type: "experimentMetadata"
+			type: "experiment metadata"
 			kind: "signal direction"
 			codes:
 				[
@@ -19,8 +19,8 @@
 					ignored: false
 				]
 		,
-			type: "experimentMetadata"
-			kind: "aggregate by1"
+			type: "experiment metadata"
+			kind: "aggregate by"
 			codes:
 				[
 					code: "compound batch concentration"
@@ -28,8 +28,8 @@
 					ignored: false
 				]
 		,
-			type: "experimentMetadata"
-			kind: "aggregate by2"
+			type: "experiment metadata"
+			kind: "aggregation method"
 			codes:
 				[
 					code: "median"
@@ -41,7 +41,7 @@
 					ignored: false
 				]
 		,
-			type: "experimentMetadata"
+			type: "experiment metadata"
 			kind: "transformation"
 			codes:
 				[
@@ -58,7 +58,7 @@
 					ignored: false
 				]
 		,
-			type: "experimentMetadata"
+			type: "experiment metadata"
 			kind: "normalization"
 			codes:
 				[
@@ -79,7 +79,7 @@
 					ignored: false
 				]
 		,
-			type: "experimentMetadata"
+			type: "experiment metadata"
 			kind: "read name"
 			codes:
 				[

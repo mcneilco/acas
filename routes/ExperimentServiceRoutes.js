@@ -1,6 +1,7 @@
 (function() {
   exports.setupAPIRoutes = function(app) {
     app.get('/api/experiments/codename/:code', exports.experimentByCodename);
+    app.get('/api/experiments/experimentName/:name', exports.experimentByName);
     app.get('/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', exports.experimentById);
     app.post('/api/experiments', exports.postExperiment);
@@ -9,6 +10,7 @@
 
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename);
+    app.get('/api/experiments/experimentName/:name', loginRoutes.ensureAuthenticated, exports.experimentByName);
     app.get('/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById);
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
@@ -37,6 +39,21 @@
       } else {
         return serverUtilityFunctions.getFromACASServer(baseurl, response);
       }
+    }
+  };
+
+  exports.experimentByName = function(req, resp) {
+    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    console.log("exports.experiment by name");
+    if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      baseurl = config.all.client.service.persistence.fullpath + "api/v1/experiments?findByName&name=" + req.params.name;
+      console.log(baseurl);
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
 
@@ -90,9 +107,16 @@
             return resp.end(JSON.stringify(json));
           } else {
             console.log('got ajax error trying to save new experiment');
-            console.log(error);
-            console.log(json);
-            return console.log(response);
+            console.log("response");
+            console.log(response);
+            console.log(response.body);
+            console.log(response.body[0]);
+            console.log(response.body[0].message);
+            if (response.body[0].message === "not unique experiment name") {
+              console.log(json);
+              console.log("ending resp");
+              return resp.end(JSON.stringify(response.body[0].message));
+            }
           }
         };
       })(this));
@@ -131,7 +155,7 @@
   };
 
   exports.genericExperimentSearch = function(req, res) {
-    var emptyResponse, experimentServiceTestJSON, json;
+    var baseurl, config, emptyResponse, experimentServiceTestJSON, serverUtilityFunctions;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       if (req.params.searchTerm === "no-match") {
@@ -141,10 +165,12 @@
         return res.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer]));
       }
     } else {
-      json = {
-        message: "genericExperimentSearch not implemented yet"
-      };
-      return res.end(JSON.stringify(json));
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "api/v1/experiments/search?q=" + req.params.searchTerm;
+      console.log("baseurl");
+      console.log(baseurl);
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, res);
     }
   };
 

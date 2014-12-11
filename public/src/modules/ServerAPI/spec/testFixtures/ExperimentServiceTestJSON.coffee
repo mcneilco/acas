@@ -199,7 +199,7 @@
 			codeName: "EXPT-00000046"
 			id: 270
 			ignored: false
-			kind: null
+			lsKind: null #changed from kind to lsKind
 			lsTransaction:
 				comments: "protocol 201 transactions"
 				id: 179
@@ -216,7 +216,7 @@
 			codeName: "EXPT-00000047"
 			id: 271
 			ignored: false
-			kind: null
+			lsKind: null #changed from kind to lsKind
 			lsTransaction:
 				comments: "protocol 201 transactions"
 				id: 180
@@ -233,7 +233,7 @@
 
 	exports.experimentToSave =
 		ignored: false
-		kind: "primary screen experiment"
+		lsKind: "primary screen experiment" #changed from kind to lsKind
 		modifiedBy: null
 		modifiedDate: null
 		recordedBy: "jmcneil"
@@ -1097,68 +1097,6 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
-				clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing signal (highest = 100%)","aggregateBy1":"compound batch concentration","aggregateBy2":"median","normalizationRule":"plate order only","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"htsFormat":false,"autoHitSelection":false,"matchReadName":false,"primaryAnalysisReadList":[{"readPosition":11,"readName":"none","activity":false},{"readPosition":12,"readName":"fluorescence","activity":true},{"readPosition":13,"readName":"luminescence","activity":false}],"transformationRuleList":[{"transformationRule":"% efficacy"},{"transformationRule":"sd"},{"transformationRule":"null"}]}'
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				id: 333
-				ignored: false
-				lsKind: "data analysis parameters"
-				lsTransaction: 2
-				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_data analysis parameters"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: '{ "max": { "limitType": "pin", "value": 100 }, "min": { "limitType": "none", "value": null }, "slope": { "limitType": "limit", "value": 1.5 }, "inactiveThreshold": 20, "inverseAgonistMode": true}'
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				id: 3331
-				ignored: false
-				lsKind: "model fit parameters"
-				lsTransaction: 2
-				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_model fit parameters"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
 				clobValue: null
 				codeValue: null
 				comments: null
@@ -1262,8 +1200,8 @@
 				ignored: false
 				lsKind: "analysis status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_analysis status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_analysis status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -1309,6 +1247,68 @@
 				sigFigs: null
 				stringValue: "not started"
 #				stringValue: "complete"
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing","aggregateBy":"compound batch concentration","aggregationMethod":"median","normalizationRule":"plate order only","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"htsFormat":false,"autoHitSelection":false,"matchReadName":false,"primaryAnalysisReadList":[{"readPosition":11,"readName":"none","activity":false},{"readPosition":12,"readName":"fluorescence","activity":true},{"readPosition":13,"readName":"luminescence","activity":false}],"transformationRuleList":[{"transformationRule":"% efficacy"},{"transformationRule":"sd"},{"transformationRule":"null"}]}'
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 333
+				ignored: false
+				lsKind: "data analysis parameters"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_data analysis parameters"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: '{ "max": { "limitType": "pin", "value": 100 }, "min": { "limitType": "none", "value": null }, "slope": { "limitType": "limit", "value": 1.5 }, "inactiveThreshold": 20, "inverseAgonistMode": true}'
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 3331
+				ignored: false
+				lsKind: "model fit parameters"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_model fit parameters"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -1434,6 +1434,33 @@
 				valueOperator: null
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_description"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 8046999912
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
 				valueUnit: null
 				version: 0
 			,
@@ -2546,8 +2573,8 @@
 				ignored: false
 				lsKind: "analysis status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_analysis status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_analysis status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -2718,6 +2745,33 @@
 				valueOperator: null
 				lsType: "clobValue"
 				lsTypeAndKind: "clobValue_description"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 804699999123
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
 				valueUnit: null
 				version: 0
 			,
@@ -3107,6 +3161,33 @@
 				lsTypeAndKind: "clobValue_description"
 				valueUnit: null
 				version: 0
+			,
+				clobValue: "comments go here"
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 804699912399
+				ignored: false
+				lsTransaction:
+					comments: ""
+					id: 87
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "comments"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_comments"
+				valueUnit: null
+				version: 0
 			]
 			modifiedBy: null
 			modifiedDate: null
@@ -3161,7 +3242,7 @@
 		]
 		id: 64781
 		ignored: false
-		kind: "ACAS doc for batches"
+		lsKind: "ACAS doc for batches" #changed from kind to lsKind
 		lsTransaction:
 			comments: "docForBatches upload"
 			id: 423
@@ -3174,7 +3255,7 @@
 			codeName: "ACASdocForBatches"
 			id: 2403
 			ignored: false
-			kind: null
+			lsKind: null #changed from kind to lsKind
 			lsTransaction:
 				comments: "docForBatches upload"
 				id: 38
@@ -3482,7 +3563,7 @@
 			ignored: false
 			recordedBy: "jmcneil"
 			recordedDate: 1367455531000
-			kind: "ACAS doc for batches"
+			lsKind: "ACAS doc for batches" #changed from kind to lsKind
 			lsTransaction:
 				comments: "docForBatches upload"
 				id: 423

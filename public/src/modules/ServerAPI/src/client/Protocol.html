@@ -1,0 +1,122 @@
+<script type="text/template" id="ProtocolBaseView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="span10">
+        <div class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label"><i class="icon-lock bv_lock"></i> Status</label>
+                <div class="controls">
+                    <select class="bv_status select-picker" style="width:350px;">
+                    </select>
+                </div>
+            </div>
+            <div class="control-group bv_group_protocolName">
+                <label class="control-label">*Protocol Name</label>
+                <div class="controls">
+                    <input class="bv_protocolName" style="width:336px;" type="text" placeholder="">
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Code</label>
+                <div class="controls">
+                    <span class="uneditable-input bv_protocolCode" style="width:336px;">autofill when saved</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Kind</label>
+                <div class="controls">
+                    <span class="uneditable-input bv_protocolKind" style="width:336px;">autofill from protocol create form</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-horizontal">
+            <div class="control-group bv_group_assayTreeRule">
+                <label class="control-label">Assay Tree Rule</label>
+                 <div class="controls">
+                     <input class="bv_assayTreeRule" style="width:335px;" type="text" placeholder="" />
+                </div>
+            </div>
+
+            <div class="control-group bv_group_recordedBy">
+                <label class="control-label">*Scientist</label>
+                <div class="controls">
+                    <select class="bv_recordedBy" style="width:350px;">
+                        <option value="">Scientist</option>
+                        <option value="nxm7557">Neelima Mannava</option>
+                        <option value="xxl7932">Xiaodong Li</option>
+                        <option value="xxt8875">Xiao-Qing Tang</option>
+                        <option value="hxx5072">Hong Xu</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group bv_group_completionDate">
+                <label class="control-label">*Date</label>
+                <div class="controls">
+                    <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                        <input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:310px;">
+                        <span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group bv_group_notebook">
+                <label class="control-label">*Notebook</label>
+                <div class="controls">
+                    <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
+                </div>
+            </div>
+            <div class="control-group bv_group_tags" style="margin-bottom:10px;">
+                <label class="control-label">Key Words</label>
+                <div class="controls">
+                    <input class="bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
+                </div>
+            </div>
+
+            <div class="control-group bv_group_assayStage">
+                <label class="control-label">Assay Stage</label>
+                <div class="controls">
+                    <select class="bv_assayStage" style="width:350px;"></select>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+    <div class="bv_primaryScreenProtocolAutofillSection"></div>
+
+
+
+
+
+    <div>
+        <div class="span10">Short Description</div>
+        <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;" placeholder="Short Description"></textarea>
+    </div>
+
+    <div>
+        <div class="span10">Assay Principle</div>
+        <textarea rows="7" class="bv_assayPrinciple" style="width:650px;" placeholder="Assay Principle"></textarea>
+    </div>
+
+    <div>
+        <div class="span10">Full Description</div>
+        <textarea rows="7" class="bv_description" style="width:650px;" placeholder="Full Description"></textarea>
+    </div>
+
+    <div>
+        <div class="span10">Comments</div>
+        <textarea rows="7" class="bv_comments" style="width:650px;" placeholder="Comments"></textarea>
+    </div>
+
+    <!-- SAVE AND CANCEL -->
+    <div>
+        <button type="button" class="btn bv_save pull-left" style="margin-right:10px;">Save</button>
+        <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;"></div>
+        <div class="bv_saving hide" style="padding-top:5px;color:red;">Saving...</div>
+    </div>
+
+
+
+</script>
+

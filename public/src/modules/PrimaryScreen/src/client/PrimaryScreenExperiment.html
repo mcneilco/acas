@@ -4,7 +4,7 @@
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#tab1" data-toggle="tab">General Information</a></li>
                 <li><a href="#tab3" data-toggle="tab">Data Analysis</a></li>
-                <!--<li><a href="#tab5" data-toggle="tab">Model Fit</a></li>-->
+                <li><a href="#tab5" data-toggle="tab">Model Fit</a></li>
             </ul>
 
             <div class="tab-content span12">
@@ -15,8 +15,9 @@
                 <!-- DATA ANALYSIS TAB -->
                 <div class="tab-pane bv_primaryScreenDataAnalysis" id="tab3" style="overflow:hidden;"></div>
 
-                <!--&lt;!&ndash; CURVE FIT ANALYSIS TAB &ndash;&gt;-->
-                <!--<div class="tab-pane bv_doseResponseAnalysis" id="tab5"></div>-->
+
+                <!-- CURVE FIT ANALYSIS TAB -->
+                <div class="tab-pane bv_doseResponseAnalysis" id="tab5"></div>
 
             </div>
         </div>
@@ -154,20 +155,21 @@
                 <select class="bv_signalDirectionRule" style="width:349px;"></select>
             </div>
         </div>
-        <div class="control-group bv_group_aggregateBy1">
+        <div class="control-group bv_group_aggregateByGroup">
             <label class="control-label">*Aggregate By</label>
             <div class="controls">
-                <span class="bv_group_aggregateBy1">
-                    <select class="bv_aggregateBy1" style="width:245px;"> </select>
+                <span class="bv_group_aggregateBy">
+                    <select class="bv_aggregateBy" style="width:245px;"> </select>
                 </span>
-                <span class="bv_group_aggregateBy2">
-                    <select class="bv_aggregateBy2" style="width:100px;"></select>
+                <span class="bv_group_aggregationMethod">
+                    <select class="bv_aggregationMethod" style="width:100px;"></select>
                 </span>
             </div>
         </div>
         <div class="control-group bv_group_normalizationRule">
             <label class="control-label" style="width:100px;margin-left:40px;">*Normalization</label>
             <div class="controls">
+                <!--<div class="bv_normalizationRule"></div>-->
                 <select class="bv_normalizationRule" style="width:349px;">
                 </select>
             </div>
@@ -208,9 +210,9 @@
     </div>
 
 
-    <hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:6px;" />
-
-    <h5 style="margin-bottom:27px;">Upload Data and Analyze</h5>
+    <!--<hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:6px;" />-->
+<!---->
+    <!--<h5 style="margin-bottom:27px;">Upload Data and Analyze</h5>-->
 
 
 </script>

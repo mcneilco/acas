@@ -497,7 +497,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   }
   
   tryCatch({
-    currentValueKindsList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds/")))
+    currentValueKindsList <- getAllValueKinds()
   }, error = function(e) {
     stopUser("Internal Error: Could not get current value kinds")
   })
@@ -545,26 +545,14 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     if (!dryRun) {
       # Create the new valueKinds, using the correct valueType
       # TODO: also check that valueKinds have the correct valueType when being loaded a second time
-      valueTypesList <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuetypes")))
+      valueTypesList <- getAllValueTypes()
       valueTypes <- sapply(valueTypesList, getElement, "typeName")
       valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
       valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob"))]
       
       # This is for the curveNames, but would catch other added values as well
       valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
-      
-      newValueTypesList <- valueTypesList[match(valueKindTypes, valueTypes)]
-      newValueKindsUpload <- mapply(function(x, y) list(kindName=x, lsType=y), newValueKinds, newValueTypesList,
-                                    SIMPLIFY = F, USE.NAMES = F)
-      tryCatch({
-        response <- getURL(
-          paste0(racas::applicationSettings$client.service.persistence.fullpath, "valuekinds/jsonArray"),
-          customrequest='POST',
-          httpheader=c('Content-Type'='application/json'),
-          postfields=toJSON(newValueKindsUpload))
-      }, error = function(e) {
-        addError(paste("Error in saving new column headers:", e$message))
-      })
+      saveValueKinds(newValueKinds, valueKindTypes)
     }
   }
   return(NULL)
@@ -714,7 +702,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Returns:
   #	  a data frame containing the organized calculated data
   
-  library('reshape')
+  library('reshape2')
   library('gdata')
   library('plyr')
   
@@ -1158,7 +1146,7 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
   }
   
   tryCatch({
-    protocolList <- fromJSON(getURL(paste0(configList$client.service.persistence.fullpath, "protocols?FindByProtocolName&protocolName=", URLencode(protocolName, reserved = TRUE))))
+    protocolList <- getProtocolsByName(protocolName)
   }, error = function(e) {
     stopUser("There was an error in accessing the protocol. Please contact your system administrator.")
   })
@@ -1176,11 +1164,11 @@ getProtocolByNameAndFormat <- function(protocolName, configList, formFormat) {
     protocol <- NA
   } else {
     # If the protocol does exist, get the full version
-    protocol <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "protocols/", protocolList[[1]]$id))))
+    protocol <- getProtocolById(protocolList[[1]]$id)
   }
   return(protocol)
 }
-getExperimentByName <- function(experimentName, protocol, configList, duplicateNamesAllowed = FALSE) {
+getExperimentByNameCheck <- function(experimentName, protocol, configList, duplicateNamesAllowed = FALSE) {
   # Gets the experiment entered as an input, warns if it does exist, and throws an error if it is in the wrong protocol
   # 
   # Args:
@@ -1196,7 +1184,7 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
   require('rjson')
   
   tryCatch({
-    experimentList <- fromJSON(getURL(paste0(configList$client.service.persistence.fullpath, "experiments?FindByExperimentName&experimentName=", URLencode(experimentName, reserved=TRUE))))
+    experimentList <- getExperimentsByName(experimentName)
   }, error = function(e) {
     stopUser("There was an error checking if the experiment already exists. Please contact your system administrator.")
   })
@@ -1222,10 +1210,11 @@ getExperimentByName <- function(experimentName, protocol, configList, duplicateN
           experimentList <- correctExperiments
         }
       }
-      protocolOfExperiment <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "protocols/", experimentList[[1]]$protocol$id))))
     }, error = function(e) {
       stopUser("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
     })
+    protocolOfExperiment <- getProtocolById(experimentList[[1]]$protocol$id)
+
     
     if (is.na(protocol) || protocolOfExperiment$id != protocol$id) {
       if (duplicateNamesAllowed) {
@@ -1400,7 +1389,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   
   # Save the experiment to the server
   experiment <- saveExperiment(experiment)
-  experiment <- fromJSON(getURL(URLencode(paste0(configList$client.service.persistence.fullpath, "experiments/", experiment$id))))
+  experiment <- getExperimentById(experiment$id)
   return(experiment)
 }
 validateProject <- function(projectName, configList, errorEnv) {
@@ -2219,7 +2208,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
     validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
   } else {
-    experiment <- getExperimentByName(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
+    experiment <- getExperimentByNameCheck(experimentName = validatedMetaData$'Experiment Name'[1], protocol, configList, duplicateExperimentNamesAllowed)
   }
   
   # Checks if we have a new experiment

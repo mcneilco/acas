@@ -104,7 +104,7 @@ exports.authenticationService = (req, resp) ->
 exports.resetAuthenticationService = (req, resp) ->
 	callback = (results) ->
 		console.log results
-		if results.indexOf("Your new password is sent to your email address")>=0
+		if results.indexOf("Your new password has been sent to your email address.")>=0
 			req.flash 'error','Your new password has been sent to your email address.'
 			resp.redirect '/passwordReset'
 		else if results.indexOf("connection_error")>=0
@@ -146,7 +146,6 @@ exports.resetpage = (req, res) ->
 	error = req.flash('error')
 	if error.length > 0
 		errorMsg = error[0]
-	console.log "trying to reset pass"
 	if config.all.server.security.authstrategy is "database"
 		res.render 'passwordReset',
 			title: "ACAS reset"

@@ -88,20 +88,23 @@
           })(this)
         });
       }
-
-      /*$.get("/api/experiments/protocolCodename/#{protocolCode}", ( experiments ) =>
-      			@setupExperimentSummaryTable experiments
-      		)
-       */
-
-      /*
-      		$.get( "/api/ExperimentsForProtocol", ( experiments ) =>
-      			@setupExperimentSummaryTable experiments
-      		)
-       */
     };
 
+
+    /*$.get("/api/experiments/protocolCodename/#{protocolCode}", ( experiments ) =>
+    		@setupExperimentSummaryTable experiments
+    	)
+     */
+
+
+    /*
+    	$.get( "/api/ExperimentsForProtocol", ( experiments ) =>
+    		@setupExperimentSummaryTable experiments
+    	)
+     */
+
     ExperimentSearchController.prototype.doGenericExperimentSearch = function(searchTerm) {
+      console.log("doGenericExperimentSearch");
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/genericSearch/" + searchTerm,
@@ -163,6 +166,7 @@
     };
 
     ExperimentSearchController.prototype.setupExperimentSummaryTable = function(experiments) {
+      $(".bv_experimentTableController").removeClass("hide");
       this.experimentSummaryTable = new ExperimentSummaryTableController({
         el: $(".bv_experimentTableController"),
         collection: new ExperimentList(experiments)
@@ -211,6 +215,8 @@
     ExperimentSimpleSearchController.prototype.initialize = function() {
       this.includeDuplicateAndEdit = this.options.includeDuplicateAndEdit;
       this.searchUrl = "";
+      console.log("@includeDuplicateAndEdit");
+      console.log(this.includeDuplicateAndEdit);
       if (this.includeDuplicateAndEdit) {
         return this.searchUrl = this.genericSearchUrl;
       } else {
@@ -245,22 +251,27 @@
 
     ExperimentSimpleSearchController.prototype.handleDoSearchClicked = function() {
       var experimentSearchTerm;
+      $(".bv_experimentTableController").addClass("hide");
       $(".bv_errorOccurredPerformingSearch").addClass("hide");
       experimentSearchTerm = $.trim(this.$(".bv_experimentSearchTerm").val());
+      $(".bv_searchTerm").val("");
       if (experimentSearchTerm !== "") {
         if (this.$(".bv_clearSearchIcon").hasClass("hide")) {
           this.$(".bv_experimentSearchTerm").attr("disabled", true);
           this.$(".bv_doSearchIcon").addClass("hide");
           this.$(".bv_clearSearchIcon").removeClass("hide");
-          $(".bv_searchStatusIndicator").removeClass("hide");
+          $(".bv_searchingMessage").removeClass("hide");
+          $(".bv_experimentBrowserSearchInstructions").addClass("hide");
+          $(".bv_searchTerm").html(experimentSearchTerm);
           return this.doSearch(experimentSearchTerm);
         } else {
           this.$(".bv_experimentSearchTerm").val("");
           this.$(".bv_experimentSearchTerm").attr("disabled", false);
           this.$(".bv_clearSearchIcon").addClass("hide");
           this.$(".bv_doSearchIcon").removeClass("hide");
-          $(".bv_searchStatusIndicator").addClass("hide");
-          $(".bv_deletedExperimentMessage").addClass("hide");
+          $(".bv_searchingMessage").addClass("hide");
+          $(".bv_experimentBrowserSearchInstructions").removeClass("hide");
+          $(".bv_searchStatusIndicator").removeClass("hide");
           this.updateExperimentSearchTerm();
           return this.trigger("resetSearch");
         }
@@ -270,6 +281,7 @@
     ExperimentSimpleSearchController.prototype.doSearch = function(experimentSearchTerm) {
       this.trigger('find');
       if (experimentSearchTerm !== "") {
+        console.log("doGenericExperimentSearch");
         return $.ajax({
           type: 'GET',
           url: this.searchUrl + experimentSearchTerm,
@@ -375,6 +387,11 @@
             return _this.$("tbody").append(ersc.render().el);
           };
         })(this));
+        this.$("table").dataTable({
+          oLanguage: {
+            sSearch: "Filter results: "
+          }
+        });
       }
       return this;
     };
@@ -389,6 +406,7 @@
     function ExperimentBrowserController() {
       this.render = __bind(this.render, this);
       this.destroyExperimentSummaryTable = __bind(this.destroyExperimentSummaryTable, this);
+      this.handleDuplicateExperimentClicked = __bind(this.handleDuplicateExperimentClicked, this);
       this.handleEditExperimentClicked = __bind(this.handleEditExperimentClicked, this);
       this.handleCancelDeleteClicked = __bind(this.handleCancelDeleteClicked, this);
       this.handleConfirmDeleteExperimentClicked = __bind(this.handleConfirmDeleteExperimentClicked, this);
@@ -398,13 +416,12 @@
       return ExperimentBrowserController.__super__.constructor.apply(this, arguments);
     }
 
-    ExperimentBrowserController.prototype.initialize = function() {
-      return this.includeDuplicateAndEdit = false;
-    };
+    ExperimentBrowserController.prototype.includeDuplicateAndEdit = true;
 
     ExperimentBrowserController.prototype.events = {
       "click .bv_deleteExperiment": "handleDeleteExperimentClicked",
       "click .bv_editExperiment": "handleEditExperimentClicked",
+      "click .bv_duplicateExperiment": "handleDuplicateExperimentClicked",
       "click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked",
       "click .bv_cancelDelete": "handleCancelDeleteClicked"
     };
@@ -419,45 +436,30 @@
       this.searchController = new ExperimentSimpleSearchController({
         model: new ExperimentSearch(),
         el: this.$('.bv_experimentSearchController'),
-        includeDuplicateAndEdit: this.includeDuplicateAndEdi
+        includeDuplicateAndEdit: this.includeDuplicateAndEdit
       });
       this.searchController.render();
       this.searchController.on("searchReturned", this.setupExperimentSummaryTable);
       return this.searchController.on("resetSearch", this.destroyExperimentSummaryTable);
-
-      /*
-      		@searchController = new ExperimentSearchController
-      			model: new ExperimentSearch()
-      			el: @$('.bv_experimentSearchController')
-      		@searchController.render()
-       */
     };
 
     ExperimentBrowserController.prototype.setupExperimentSummaryTable = function(experiments) {
-      $(".bv_searchStatusIndicator").addClass("hide");
+      $(".bv_searchingMessage").addClass("hide");
       if (experiments === null) {
-        this.$(".bv_errorOccurredPerformingSearch").removeClass("hide");
-        return this.$(".bv_deletedExperimentMessage").addClass("hide");
+        return this.$(".bv_errorOccurredPerformingSearch").removeClass("hide");
       } else if (experiments.length === 0) {
         this.$(".bv_noMatchesFoundMessage").removeClass("hide");
-        this.$(".bv_deletedExperimentMessage").addClass("hide");
         return this.$(".bv_experimentTableController").html("");
       } else {
-        console.log(experiments[0].ignored);
-        if (experiments[0].ignored) {
-          this.$(".bv_deletedExperimentMessage").removeClass("hide");
-          return this.$(".bv_experimentTableController").html("");
-        } else {
-          this.experimentSummaryTable = new ExperimentSummaryTableController({
-            collection: new ExperimentList(experiments)
-          });
-          this.experimentSummaryTable.on("selectedRowUpdated", this.selectedExperimentUpdated);
-          $(".bv_experimentTableController").html(this.experimentSummaryTable.render().el);
-          $(".bv_matchingExperimentsHeader").removeClass("hide");
-          this.$(".bv_deletedExperimentMessage").addClass("hide");
-          if (!this.includeDuplicateAndEdit) {
-            return this.selectedExperimentUpdated(new Experiment(experiments[0]));
-          }
+        $(".bv_searchStatusIndicator").addClass("hide");
+        this.$(".bv_experimentTableController").removeClass("hide");
+        this.experimentSummaryTable = new ExperimentSummaryTableController({
+          collection: new ExperimentList(experiments)
+        });
+        this.experimentSummaryTable.on("selectedRowUpdated", this.selectedExperimentUpdated);
+        $(".bv_experimentTableController").html(this.experimentSummaryTable.render().el);
+        if (!this.includeDuplicateAndEdit) {
+          return this.selectedExperimentUpdated(new Experiment(experiments[0]));
         }
       }
     };
@@ -521,6 +523,10 @@
       return window.open("/api/experiments/edit/" + (this.experimentController.model.get("codeName")), '_blank');
     };
 
+    ExperimentBrowserController.prototype.handleDuplicateExperimentClicked = function() {
+      return window.open("/api/experiments/duplicate/" + (this.experimentController.model.get("codeName")), '_blank');
+    };
+
     ExperimentBrowserController.prototype.destroyExperimentSummaryTable = function() {
       if (this.experimentSummaryTable != null) {
         this.experimentSummaryTable.remove();
@@ -528,7 +534,6 @@
       if (this.experimentController != null) {
         this.experimentController.remove();
       }
-      $(".bv_matchingExperimentsHeader").addClass("hide");
       $(".bv_experimentBaseController").addClass("hide");
       $(".bv_experimentBaseControllerContainer").addClass("hide");
       return $(".bv_noMatchesFoundMessage").addClass("hide");

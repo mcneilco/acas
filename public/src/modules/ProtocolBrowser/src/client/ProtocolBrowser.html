@@ -1,0 +1,152 @@
+<script type="text/template" id="ProtocolSimpleSearchView" xmlns="http://www.w3.org/1999/html">
+    <div class="navbar" style="margin-bottom: 0px; ">
+        <div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+            <!-- <form class="navbar-search pull-left"> -->
+            <div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
+                <div class="input-append">
+                    <input class="bv_protocolSearchTerm" style="
+							padding-right: 14px;
+							border-top-left-radius: 15px;
+							border-bottom-left-radius: 15px;
+							" type="text" placeholder="Search for protocols">
+                    <button class="btn bv_doSearch add-on" style="
+							border-top-right-radius: 15px;
+							border-bottom-right-radius: 15px;
+							height: 30px;
+							margin-top: 0px;
+							background-color: #fff;
+							border-left: 0px;
+							border-bottom: 1px solid #cccccc;
+							border-right: 1px solid #cccccc;
+							border-top: 1px solid #cccccc;
+              box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+              width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
+                        <i class="icon-search bv_doSearchIcon"></i>
+                        <i class="icon-remove bv_clearSearchIcon hide"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- </form> -->
+        </div>
+    </div>
+
+</script>
+
+
+<script type="text/template" id="ProtocolRowSummaryView" xmlns="http://www.w3.org/1999/html">
+    <td class='bv_protocolCode' style="width: 125px;"><%= protocolCode %></td>
+    <td class='bv_protocolKind' style="width: 80px;"><%= protocolKind %></td>
+    <td class='bv_protocolName' style="width: 200px;"><%= protocolName %></td>
+    <td class='bv_recordedBy' style="width: 125px;"><%=recordedBy%></td>
+    <td class='bv_recordedDate' style="width: 80px;"><%= moment(recordedDate).format("YYYY-MM-DD") %></td>
+    <td class='bv_assayStage' ><%=assayStage%></td>
+    <td class='bv_status' ><%=status%></td>
+    <td class='bv_experimentCount' ><%=experimentCount%></td>
+</script>
+
+<script type="text/template" id="ProtocolSummaryTableView" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+        <thead style="">
+        <tr>
+            <th style="width: 125px;">Code</th>
+            <th style="width: 80px;">Kind</th>
+            <th style="width: 200px;">Name</th>
+            <th >Scientist</th>
+            <th style="width: 80px;">Date</th>
+            <th >Assay Stage</th>
+            <th >Status</th>
+            <th >Experiment Count</th>
+        </tr>
+        </thead>
+        <tbody style="">
+
+        </tbody>
+    </table>
+</script>
+
+
+<script type="text/template" id="ProtocolBrowserView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="bv_protocolSearchController" style="padding-bottom: 0px;"></div>
+    <div class="" style=" border: 1px solid #d4d4d4; border-top: 0px; margin: 0px; padding: 0px; ">
+
+        <div class="bv_searchStatusIndicator" style="height: 280px;">
+            <table width="100%">
+                <thead>
+                <tr><td style="display: none;">placeholder</td></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
+                        <h5 class="bv_noMatchesFoundMessage hide">No Matching Protocols Found</h5>
+                        <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the protocol.</h5>
+
+                        <div class="bv_protocolBrowserSearchInstructions">
+                            <i class="icon-search bv_doSearchIcon"></i>
+                            Protocol Browser
+                        </div>
+                        <div class="hide bv_searchingMessage" style="margin: auto;">
+                            <h5>Searching for Protocols containing text "<i class="bv_searchTerm"></i>"</h5>
+                            <div class="progress progress-striped active " style="width: 90%; margin: auto;">
+                                <div class="bar" style="width: 100%; margin: auto;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bv_protocolTableController hide" style="margin: 10px; padding: 0px; overflow: auto; height: 280px; overflow: auto;"></div>
+    </div>
+    <!--
+    <h5>Selected Protocol Details</h5>
+    -->
+    <div class="well well-small bv_protocolBaseControllerContainer hide" style="margin-top: 10px;">
+        <button class="btn btn-danger bv_deleteProtocol">Delete</button>
+        <button class="btn bv_duplicateProtocol pull-right" style="margin-left: 0.5em;">Duplicate</button>
+        <button class="btn bv_editProtocol pull-right">Edit</button>
+        <hr />
+        <div class="">
+            <div class="bv_protocolBaseController hide"></div>
+        </div>
+    </div>
+
+    <div class="modal hide bv_confirmDeleteProtocol">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Delete Protocol</h3>
+        </div>
+        <div class="modal-body">
+            <div class="bv_deleteWarningMessage">
+                <p>Are you sure you would like to delete protocol: <span class="bv_protocolCodeName"></span>?</p>
+            </div>
+            <div class="bv_deletingStatusIndicator hide">
+                <table width="100%"></table>
+                <tr>
+                    <td style="text-align: center; width: 100%">
+                        <h4>Deleting Protocol</h4>
+                        <div class="progress progress-striped active" style="width: 100%;">
+                            <div class="bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                </tr>
+            </div>
+            <div class="bv_protocolDeletedSuccessfullyMessage hide">
+                <p>Protocol <span class="bv_protocolCodeName"></span> has successfully been deleted</p>
+            </div>
+            <div class="bv_errorDeletingProtocolMessage hide">
+                <p>An error occurred deleting Protocol <span class="bv_protocolCodeName"></span>.  Please contact support for additional help.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+		    <span class="bv_deleteButtons">
+		      <a href="#" class="btn btn-danger bv_confirmDeleteProtocolButton">Delete Protocol</a>
+		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
+			  </span>
+		    <span class="bv_okayButton hide">
+			    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
+		    </span>
+        </div>
+    </div>
+</script>

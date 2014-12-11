@@ -198,6 +198,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		unless @parameterController
 			@setupCurveFitAnalysisParameterController()
 		@$('.bv_fitOptionWrapper').show()
+		@$('.bv_fitModelButton').show()
 		@$('.bv_analyzeExperimentToFit').hide()
 		@handleStatusChanged()
 

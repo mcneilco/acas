@@ -31,6 +31,9 @@ window.ModuleMenusConfiguration =
 		isHeader: true
 		menuName: "Search and Edit"
 	,
+		isHeader: false, menuName: "Protocol Browser"
+		mainControllerClassName: "ProtocolBrowserController"
+	,
 		isHeader: false, menuName: "Experiment Browser"
 		mainControllerClassName: "ExperimentBrowserController"
 	,
