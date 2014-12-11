@@ -473,7 +473,7 @@
               version: 0
             }, {
               clobValue: null,
-              codeValue: null,
+              codeValue: "created",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -481,8 +481,8 @@
               ignored: false,
               lsKind: "status",
               lsTransaction: 2,
-              lsType: "stringValue",
-              lsTypeAndKind: "stringValue_status",
+              lsType: "codeValue",
+              lsTypeAndKind: "codeValue_status",
               modifiedBy: null,
               modifiedDate: null,
               numberOfReplicates: null,
@@ -494,7 +494,7 @@
               recordedBy: "egao",
               recordedDate: 1375889487000,
               sigFigs: null,
-              stringValue: "created",
+              stringValue: null,
               uncertainty: null,
               uncertaintyType: null,
               unitKind: null,

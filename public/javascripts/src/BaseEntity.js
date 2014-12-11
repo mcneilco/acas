@@ -104,10 +104,19 @@
     BaseEntity.prototype.getStatus = function() {
       var metadataKind, status;
       metadataKind = this.get('subclass') + " metadata";
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "stringValue", "status");
-      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "status");
+      if (status.get('codeValue') === void 0 || status.get('codeValue') === "") {
         status.set({
-          stringValue: "Created"
+          codeValue: "created"
+        });
+        status.set({
+          codeType: "protocol"
+        });
+        status.set({
+          codeKind: "status"
+        });
+        status.set({
+          codeOrigin: "acas ddict"
         });
       }
       return status;
@@ -135,7 +144,7 @@
 
     BaseEntity.prototype.isEditable = function() {
       var status;
-      status = this.getStatus().get('stringValue');
+      status = this.getStatus().get('codeValue');
       switch (status) {
         case "created":
           return true;
@@ -287,7 +296,7 @@
         version: 0
       });
       copiedEntity.getStatus().set({
-        stringValue: "created"
+        codeValue: "created"
       });
       copiedEntity.getCompletionDate().set({
         dateValue: null
@@ -407,7 +416,7 @@
         this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
       }
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
-      this.$('.bv_status').val(this.model.getStatus().get('stringValue'));
+      this.$('.bv_status').val(this.model.getStatus().get('codeValue'));
       if (this.model.isNew()) {
         this.$('.bv_save').html("Save");
       } else {
@@ -419,11 +428,11 @@
 
     BaseEntityController.prototype.setupStatusSelect = function() {
       this.statusList = new PickListList();
-      this.statusList.url = "/api/dataDict/" + this.model.get('subclass') + " metadata/" + this.model.get('subclass') + " status";
+      this.statusList.url = "/api/dataDict/" + this.model.get('subclass') + "/status";
       return this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,
-        selectedCode: this.model.getStatus().get('stringValue')
+        selectedCode: this.model.getStatus().get('codeValue')
       });
     };
 
@@ -517,7 +526,7 @@
 
     BaseEntityController.prototype.handleStatusChanged = function() {
       this.model.getStatus().set({
-        stringValue: this.statusListController.getSelectedCode()
+        codeValue: this.statusListController.getSelectedCode()
       });
       return this.updateEditable();
     };

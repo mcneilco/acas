@@ -63,7 +63,7 @@
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
           });
           it('Experiment status should default to created ', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("Created");
+            return expect(this.exp.getStatus().get('codeValue')).toEqual("created");
           });
           return it('completionDate should be null ', function() {
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(null);
@@ -73,31 +73,31 @@
           return describe("should tell you if it is editable based on status", function() {
             it("should be locked if status is New", function() {
               this.exp.getStatus().set({
-                stringValue: "New"
+                codeValue: "New"
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
             it("should be locked if status is started", function() {
               this.exp.getStatus().set({
-                stringValue: "started"
+                codeValue: "started"
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
             it("should be locked if status is complete", function() {
               this.exp.getStatus().set({
-                stringValue: "complete"
+                codeValue: "complete"
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
             it("should be locked if status is finalized", function() {
               this.exp.getStatus().set({
-                stringValue: "finalized"
+                codeValue: "finalized"
               });
               return expect(this.exp.isEditable()).toBeFalsy();
             });
             return it("should be locked if status is rejected", function() {
               this.exp.getStatus().set({
-                stringValue: "rejected"
+                codeValue: "rejected"
               });
               return expect(this.exp.isEditable()).toBeFalsy();
             });
@@ -188,7 +188,7 @@
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(1342080000000);
           });
           return it('Should have a status value', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("started");
+            return expect(this.exp.getStatus().get('codeValue')).toEqual("started");
           });
         });
       });
@@ -262,7 +262,7 @@
             return expect(this.exp.get('lsTags').length).toEqual(0);
           });
           return it('Should have a status value of created', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("Created");
+            return expect(this.exp.getStatus().get('codeValue')).toEqual("created");
           });
         });
       });
@@ -594,7 +594,7 @@
             return expect(this.ebc.$('.bv_status option').length).toBeGreaterThan(0);
           });
           return it("should default to created", function() {
-            return expect(this.ebc.$('.bv_status').val()).toEqual("Created");
+            return expect(this.ebc.$('.bv_status').val()).toEqual("created");
           });
         });
         describe("populated fields", function() {
@@ -712,7 +712,7 @@
             return runs(function() {
               this.ebc.$('.bv_status').val('complete');
               this.ebc.$('.bv_status').change();
-              return expect(this.ebc.model.getStatus().get('stringValue')).toEqual('complete');
+              return expect(this.ebc.model.getStatus().get('codeValue')).toEqual('complete');
             });
           });
         });
@@ -835,7 +835,7 @@
         beforeEach(function() {
           this.exp0 = new Experiment();
           this.exp0.getStatus().set({
-            stringValue: "Created"
+            codeValue: "created"
           });
           this.ebc = new ExperimentBaseController({
             model: this.exp0,
@@ -881,7 +881,7 @@
               return this.ebc.$('.bv_protocolCode option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.ebc.$('.bv_status').val()).toEqual('Created');
+              return expect(this.ebc.$('.bv_status').val()).toEqual('created');
             });
           });
           return it("should show the status select disabled", function() {

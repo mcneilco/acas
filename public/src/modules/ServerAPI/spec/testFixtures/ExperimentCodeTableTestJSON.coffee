@@ -1,8 +1,8 @@
 ((exports) ->
 	exports.dataDictValues =
 		[
-			type: "experiment metadata"
-			kind: "experiment status"
+			type: "experiment"
+			kind: "status"
 			codes:
 				[
 					code: "created"

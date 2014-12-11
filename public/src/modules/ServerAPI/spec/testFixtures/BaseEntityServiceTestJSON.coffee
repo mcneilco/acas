@@ -251,7 +251,7 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeValue: "started"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -259,8 +259,8 @@
 				ignored: false
 				lsKind: "status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -272,7 +272,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "started"
+				stringValue: null
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -1841,7 +1841,7 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeValue: "started"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -1849,8 +1849,8 @@
 				ignored: false
 				lsKind: "status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -1862,7 +1862,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "started"
+				stringValue: null
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null

@@ -96,7 +96,7 @@ class window.ProtocolRowSummaryController extends Backbone.View
 			protocolKind: @model.get('lsKind')
 			recordedBy: @model.get('recordedBy')
 			assayStage: @model.getAssayStage().get("codeValue")
-			status: @model.getStatus().get("stringValue")
+			status: @model.getStatus().get("codeValue")
 			experimentCount: @model.get('experimentCount')
 #			analysisStatus: @model.getAnalysisStatus().get("stringValue")
 			recordedDate: @model.get("recordedDate")
@@ -181,7 +181,7 @@ class window.ProtocolBrowserController extends Backbone.View
 		@protocolController.displayInReadOnlyMode()
 		$(".bv_protocolBaseController").removeClass("hide")
 		$(".bv_protocolBaseControllerContainer").removeClass("hide")
-		if protocol.getStatus().get('stringValue') is "Deleted"
+		if protocol.getStatus().get('codeValue') is "Deleted"
 			@$('.bv_deleteProtocol').hide()
 			@$('.bv_editProtocol').hide()
 			@$('.bv_duplicateProtocol').hide()

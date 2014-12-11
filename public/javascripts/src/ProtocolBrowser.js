@@ -156,7 +156,7 @@
         protocolKind: this.model.get('lsKind'),
         recordedBy: this.model.get('recordedBy'),
         assayStage: this.model.getAssayStage().get("codeValue"),
-        status: this.model.getStatus().get("stringValue"),
+        status: this.model.getStatus().get("codeValue"),
         experimentCount: this.model.get('experimentCount'),
         recordedDate: this.model.get("recordedDate")
       };
@@ -285,7 +285,7 @@
       this.protocolController.displayInReadOnlyMode();
       $(".bv_protocolBaseController").removeClass("hide");
       $(".bv_protocolBaseControllerContainer").removeClass("hide");
-      if (protocol.getStatus().get('stringValue') === "Deleted") {
+      if (protocol.getStatus().get('codeValue') === "Deleted") {
         this.$('.bv_deleteProtocol').hide();
         this.$('.bv_editProtocol').hide();
         return this.$('.bv_duplicateProtocol').hide();

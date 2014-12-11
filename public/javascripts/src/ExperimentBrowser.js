@@ -337,7 +337,7 @@
         experimentCode: this.model.get('codeName'),
         protocolName: this.model.get('protocol').get("codeName"),
         recordedBy: this.model.get('recordedBy'),
-        status: this.model.getStatus().get("stringValue"),
+        status: this.model.getStatus().get("codeValue"),
         analysisStatus: this.model.getAnalysisStatus().get("stringValue"),
         recordedDate: this.model.get("recordedDate")
       };
@@ -468,7 +468,7 @@
       this.experimentController.displayInReadOnlyMode();
       $(".bv_experimentBaseController").removeClass("hide");
       $(".bv_experimentBaseControllerContainer").removeClass("hide");
-      if (experiment.getStatus().get('stringValue') === "Deleted") {
+      if (experiment.getStatus().get('codeValue') === "Deleted") {
         this.$('.bv_deleteExperiment').hide();
         return this.$('.bv_editExperiment').hide();
       } else {

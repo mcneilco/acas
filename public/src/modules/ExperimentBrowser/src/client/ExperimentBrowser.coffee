@@ -227,7 +227,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			experimentCode: @model.get('codeName')
 			protocolName: @model.get('protocol').get("codeName")
 			recordedBy: @model.get('recordedBy')
-			status: @model.getStatus().get("stringValue")
+			status: @model.getStatus().get("codeValue")
 			analysisStatus: @model.getAnalysisStatus().get("stringValue")
 			recordedDate: @model.get("recordedDate")
 		$(@el).html(@template(toDisplay))
@@ -314,7 +314,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		@experimentController.displayInReadOnlyMode()
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
-		if experiment.getStatus().get('stringValue') is "Deleted"
+		if experiment.getStatus().get('codeValue') is "Deleted"
 			@$('.bv_deleteExperiment').hide()
 			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
 		else
