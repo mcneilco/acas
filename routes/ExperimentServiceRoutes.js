@@ -21,23 +21,29 @@
     return app.get('/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename);
   };
 
-  exports.experimentByCodename = function(request, response) {
-    var baseurl, config, experimentServiceTestJSON, fullObjectFlag, serverUtilityFunctions;
-    console.log(request.params.code);
-    console.log(request.query.testMode);
-    if ((request.query.testMode === true) || (global.specRunnerTestmode === true)) {
+  exports.experimentByCodename = function(req, resp) {
+    var baseurl, config, experimentServiceTestJSON, expt, fullObjectFlag, serverUtilityFunctions;
+    console.log(req.params.code);
+    console.log(req.query.testMode);
+    if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return response.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
+      expt = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
+      if (req.params.code.indexOf("screening") > -1) {
+        expt.lsKind = "flipr screening assay";
+      } else {
+        expt.lsKind = "default";
+      }
+      return resp.json(expt);
     } else {
       config = require('../conf/compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-      baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + request.params.code;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + req.params.code;
       fullObjectFlag = "with=fullobject";
-      if (request.query.fullObject) {
+      if (req.query.fullObject) {
         baseurl += "?" + fullObjectFlag;
-        return serverUtilityFunctions.getFromACASServer(baseurl, response);
+        return serverUtilityFunctions.getFromACASServer(baseurl, resp);
       } else {
-        return serverUtilityFunctions.getFromACASServer(baseurl, response);
+        return serverUtilityFunctions.getFromACASServer(baseurl, resp);
       }
     }
   };
