@@ -285,7 +285,7 @@
       this.protocolController.displayInReadOnlyMode();
       $(".bv_protocolBaseController").removeClass("hide");
       $(".bv_protocolBaseControllerContainer").removeClass("hide");
-      if (protocol.getStatus().get('codeValue') === "Deleted") {
+      if (protocol.getStatus().get('codeValue') === "deleted") {
         this.$('.bv_deleteProtocol').hide();
         this.$('.bv_editProtocol').hide();
         return this.$('.bv_duplicateProtocol').hide();

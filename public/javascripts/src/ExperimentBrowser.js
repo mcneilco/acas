@@ -468,7 +468,7 @@
       this.experimentController.displayInReadOnlyMode();
       $(".bv_experimentBaseController").removeClass("hide");
       $(".bv_experimentBaseControllerContainer").removeClass("hide");
-      if (experiment.getStatus().get('codeValue') === "Deleted") {
+      if (experiment.getStatus().get('codeValue') === "deleted") {
         this.$('.bv_deleteExperiment').hide();
         return this.$('.bv_editExperiment').hide();
       } else {

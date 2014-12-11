@@ -2456,3 +2456,17 @@
 2014-12-11T22:17:27.789Z - info:  sourceApp=logUsage, action=Returned success from R function with trapped errors: runRFunctionTest, data={"commit":false,"transactionId":null,"results":{"path":"/Users/evagao/Documents/McNeilCo/acas","fileToParse":"public/src/modules/BulkLoadSampleTransfers/spec/specFiles/SampleTransfers_good.csv","dryRun":"true","htmlSummary":"<h2>load summary goes here</h2><h3>More info</h3>"},"hasError":false,"hasWarning":true,"errorMessages":[]}, user=jmcneil, transactionId=null
 2014-12-11T22:17:27.867Z - info:  sourceApp=logUsage, action=About to call R function: runRFunctionTest, data={"fileToParse":"public/src/modules/BulkLoadSampleTransfers/spec/specFiles/SampleTransfers_good.csv","dryRun":"true"}, user=undefined, transactionId=null
 2014-12-11T22:17:27.937Z - info:  sourceApp=logUsage, action=About to call R function: runRFunctionTest, data={"fileToParse":"public/src/modules/BulkLoadSampleTransfers/spec/specFiles/SampleTransfers_good.csv","dryRun":"true"}, user=undefined, transactionId=null
+2014-12-11T22:48:06.801Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-11T22:48:07.114Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-11T22:48:15.180Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2014-12-11T22:48:16.798Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2014-12-11T22:48:18.706Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-11T22:50:33.935Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-11T22:50:34.233Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-11T22:50:36.823Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2014-12-11T22:50:39.568Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2014-12-11T22:50:41.251Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2014-12-11T22:50:42.457Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-11T22:51:41.062Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-11T22:51:41.322Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-11T22:51:44.769Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null

@@ -181,7 +181,7 @@ class window.ProtocolBrowserController extends Backbone.View
 		@protocolController.displayInReadOnlyMode()
 		$(".bv_protocolBaseController").removeClass("hide")
 		$(".bv_protocolBaseControllerContainer").removeClass("hide")
-		if protocol.getStatus().get('codeValue') is "Deleted"
+		if protocol.getStatus().get('codeValue') is "deleted"
 			@$('.bv_deleteProtocol').hide()
 			@$('.bv_editProtocol').hide()
 			@$('.bv_duplicateProtocol').hide()

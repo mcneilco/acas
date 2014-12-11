@@ -314,7 +314,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		@experimentController.displayInReadOnlyMode()
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
-		if experiment.getStatus().get('codeValue') is "Deleted"
+		if experiment.getStatus().get('codeValue') is "deleted"
 			@$('.bv_deleteExperiment').hide()
 			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
 		else
