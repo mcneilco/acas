@@ -96,8 +96,9 @@ class window.ProtocolBaseController extends BaseEntityController
 
 		)
 
-	initialize: ->
+	initialize: =>
 		if @model?
+			console.log "CI 1"
 			@completeInitialization()
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
@@ -108,6 +109,7 @@ class window.ProtocolBaseController extends BaseEntityController
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get protocol for code in this URL, creating new one'
+							console.log "CI 2"
 							@completeInitialization()
 						success: (json) =>
 							if json.length == 0
@@ -124,33 +126,25 @@ class window.ProtocolBaseController extends BaseEntityController
 										@model = prot
 								else
 									alert 'Could not get protocol for code in this URL. Creating new protocol'
+							console.log "CI 3"
 							@completeInitialization()
 				else
+					console.log "CI 4"
 					@completeInitialization()
 			else
+				console.log "CI 5"
 				@completeInitialization()
 
-	completeInitialization: ->
+	completeInitialization: =>
+		console.log "complete initialization"
 		unless @model?
 			@model = new Protocol()
 		@errorOwnerName = 'ProtocolBaseController'
 		@setBindings()
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		@model.on 'sync', =>
-			console.log "sync protocol"
-			@trigger 'amClean'
-			@$('.bv_saving').hide()
-			console.log "bv_saving should be hidden"
-			@$('.bv_updateComplete').show()
-			@$('.bv_save').attr('disabled', 'disabled')
-			@render()
-			console.log "sync render completed"
-		@model.on 'change', =>
-			console.log "on change"
-			@trigger 'amDirty'
-			@$('.bv_updateComplete').hide()
-			console.log "end on change"
+		@listenTo @model, 'sync', @modelSaveCallBack
+		@listenTo @model, 'change', @modelChangeCallBack
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupRecordedBySelect()
@@ -169,6 +163,23 @@ class window.ProtocolBaseController extends BaseEntityController
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
 		super()
 		@
+
+	modelSaveCallBack: (method, model) ->
+		console.log "sync protocol"
+		@trigger 'amClean'
+		@$('.bv_saving').hide()
+		console.log "bv_saving should be hidden"
+		@$('.bv_updateComplete').show()
+		@$('.bv_save').attr('disabled', 'disabled')
+		@render()
+		console.log "sync render completed"
+
+	modelChangeCallBack: (method, model) ->
+		console.log "on change"
+		@trigger 'amDirty'
+		@$('.bv_updateComplete').hide()
+		console.log "end on change"
+
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()

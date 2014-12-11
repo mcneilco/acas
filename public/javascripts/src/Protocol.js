@@ -157,6 +157,8 @@
       this.handleAssayPrincipleChanged = __bind(this.handleAssayPrincipleChanged, this);
       this.handleAssayStageChanged = __bind(this.handleAssayStageChanged, this);
       this.render = __bind(this.render, this);
+      this.completeInitialization = __bind(this.completeInitialization, this);
+      this.initialize = __bind(this.initialize, this);
       return ProtocolBaseController.__super__.constructor.apply(this, arguments);
     }
 
@@ -175,6 +177,7 @@
 
     ProtocolBaseController.prototype.initialize = function() {
       if (this.model != null) {
+        console.log("CI 1");
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
@@ -185,6 +188,7 @@
               dataType: 'json',
               error: function(err) {
                 alert('Could not get protocol for code in this URL, creating new one');
+                console.log("CI 2");
                 return this.completeInitialization();
               },
               success: (function(_this) {
@@ -206,20 +210,24 @@
                       alert('Could not get protocol for code in this URL. Creating new protocol');
                     }
                   }
+                  console.log("CI 3");
                   return _this.completeInitialization();
                 };
               })(this)
             });
           } else {
+            console.log("CI 4");
             return this.completeInitialization();
           }
         } else {
+          console.log("CI 5");
           return this.completeInitialization();
         }
       }
     };
 
     ProtocolBaseController.prototype.completeInitialization = function() {
+      console.log("complete initialization");
       if (this.model == null) {
         this.model = new Protocol();
       }
@@ -227,26 +235,8 @@
       this.setBindings();
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
-      this.model.on('sync', (function(_this) {
-        return function() {
-          console.log("sync protocol");
-          _this.trigger('amClean');
-          _this.$('.bv_saving').hide();
-          console.log("bv_saving should be hidden");
-          _this.$('.bv_updateComplete').show();
-          _this.$('.bv_save').attr('disabled', 'disabled');
-          _this.render();
-          return console.log("sync render completed");
-        };
-      })(this));
-      this.model.on('change', (function(_this) {
-        return function() {
-          console.log("on change");
-          _this.trigger('amDirty');
-          _this.$('.bv_updateComplete').hide();
-          return console.log("end on change");
-        };
-      })(this));
+      this.listenTo(this.model, 'sync', this.modelSaveCallBack);
+      this.listenTo(this.model, 'change', this.modelChangeCallBack);
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
       this.setupRecordedBySelect();
@@ -266,6 +256,24 @@
       this.$('.bv_assayPrinciple').val(this.model.getAssayPrinciple().get('clobValue'));
       ProtocolBaseController.__super__.render.call(this);
       return this;
+    };
+
+    ProtocolBaseController.prototype.modelSaveCallBack = function(method, model) {
+      console.log("sync protocol");
+      this.trigger('amClean');
+      this.$('.bv_saving').hide();
+      console.log("bv_saving should be hidden");
+      this.$('.bv_updateComplete').show();
+      this.$('.bv_save').attr('disabled', 'disabled');
+      this.render();
+      return console.log("sync render completed");
+    };
+
+    ProtocolBaseController.prototype.modelChangeCallBack = function(method, model) {
+      console.log("on change");
+      this.trigger('amDirty');
+      this.$('.bv_updateComplete').hide();
+      return console.log("end on change");
     };
 
     ProtocolBaseController.prototype.setUpAssayStageSelect = function() {

@@ -2310,3 +2310,8 @@
 2014-12-10T21:47:44.050Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2014-12-10T21:47:44.323Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2014-12-10T21:48:01.863Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-10T22:50:58.188Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-10T22:50:58.468Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-10T23:22:39.593Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-10T23:22:39.976Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-10T23:22:47.128Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
