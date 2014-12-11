@@ -178,7 +178,6 @@
         success: this.handleSearchReturn,
         error: (function(_this) {
           return function(err) {
-            console.log('got ajax error');
             return _this.serviceReturn = null;
           };
         })(this),
@@ -225,7 +224,6 @@
         success: this.resultController.showCSVFileLink,
         error: (function(_this) {
           return function(err) {
-            console.log('got ajax error');
             return _this.serviceReturn = null;
           };
         })(this)
@@ -717,7 +715,6 @@
         success: this.handleGetGeneExperimentsReturn,
         error: (function(_this) {
           return function(err) {
-            console.log('got ajax error trying to get experiment tree');
             return _this.serviceReturn = null;
           };
         })(this)
@@ -769,7 +766,6 @@
         success: this.handleGetExperimentSearchAttributesReturn,
         error: (function(_this) {
           return function(err) {
-            console.log('got ajax error');
             return _this.serviceReturn = null;
           };
         })(this)
@@ -825,7 +821,6 @@
         success: this.handleSearchReturn,
         error: (function(_this) {
           return function(err) {
-            console.log('got ajax error');
             return _this.serviceReturn = null;
           };
         })(this)
@@ -859,7 +854,6 @@
         success: this.resultController.showCSVFileLink,
         error: (function(_this) {
           return function(err) {
-            console.log('got ajax error');
             return _this.serviceReturn = null;
           };
         })(this)

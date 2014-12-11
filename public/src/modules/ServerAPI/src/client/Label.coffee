@@ -14,7 +14,6 @@ class window.LabelList extends Backbone.Collection
 	model: Label
 
 	getCurrent: ->
-		console.log "get current"
 		@filter (lab) ->
 			!(lab.get 'ignored')
 
@@ -46,17 +45,11 @@ class window.LabelList extends Backbone.Collection
 		return bestLabel
 
 	pickBestName: ->
-		console.log @getCurrent()
 		preferredNames = _.filter @getCurrent(), (lab) ->
 			lab.get('preferred') && (lab.get('lsType') == "name")
-		console.log "preferred names"
-		console.log preferredNames
 		bestLabel = _.max preferredNames, (lab) ->
 			rd = lab.get 'recordedDate'
-			console.log rd
 			(if (rd is "") then Infinity else rd)
-		console.log "best label"
-		console.log bestLabel
 		return bestLabel
 
 	setBestName: (label) ->
@@ -67,18 +60,15 @@ class window.LabelList extends Backbone.Collection
 		currentName = @pickBestName()
 		if currentName?
 			if currentName.isNew()
-				console.log "current name is new"
 				currentName.set
 					labelText: label.get 'labelText'
 					lsKind: label.get 'lsKind'
 					recordedBy: label.get 'recordedBy'
 					recordedDate: label.get 'recordedDate'
 			else
-				console.log "set current name to ignored = true"
 				currentName.set ignored: true
 				@add label
 		else
-			console.log "current name doesn't exist"
 			@add label
 
 class window.Value extends Backbone.Model

@@ -359,22 +359,8 @@
       if (this.model == null) {
         this.model = new BaseEntity();
       }
-      this.model.on('sync', (function(_this) {
-        return function() {
-          console.log("sync base entity");
-          _this.trigger('amClean');
-          _this.$('.bv_saving').hide();
-          _this.$('.bv_updateComplete').show();
-          _this.$('.bv_save').attr('disabled', 'disabled');
-          return _this.render();
-        };
-      })(this));
-      this.model.on('change', (function(_this) {
-        return function() {
-          _this.trigger('amDirty');
-          return _this.$('.bv_updateComplete').hide();
-        };
-      })(this));
+      this.listenTo(this.model, 'sync', this.modelSaveCallBack);
+      this.listenTo(this.model, 'change', this.modelChangeCallBack);
       this.errorOwnerName = 'BaseEntityController';
       this.setBindings();
       $(this.el).empty();
@@ -384,6 +370,19 @@
       this.setupRecordedBySelect();
       this.setupTagList();
       return this.model.getStatus().on('change', this.updateEditable);
+    };
+
+    BaseEntityController.prototype.modelSaveCallBack = function(method, model) {
+      this.trigger('amClean');
+      this.$('.bv_saving').hide();
+      this.$('.bv_updateComplete').show();
+      this.$('.bv_save').attr('disabled', 'disabled');
+      return this.render();
+    };
+
+    BaseEntityController.prototype.modelChangeCallBack = function(method, model) {
+      this.trigger('amDirty');
+      return this.$('.bv_updateComplete').hide();
     };
 
     BaseEntityController.prototype.render = function() {
@@ -452,7 +451,6 @@
     };
 
     BaseEntityController.prototype.handleRecordedByChanged = function() {
-      console.log("handleRecordedByChanged in base entity");
       this.model.set({
         recordedBy: this.recordedByListController.getSelectedCode()
       });
@@ -489,7 +487,6 @@
 
     BaseEntityController.prototype.handleNameChanged = function() {
       var newName, subclass;
-      console.log("handle name changed in base entity");
       subclass = this.model.get('subclass');
       newName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + subclass + 'Name'));
       this.model.get('lsLabels').setBestName(new Label({
@@ -559,8 +556,6 @@
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
-      console.log("about to save model");
-      console.log(this.model);
       return this.model.save();
     };
 

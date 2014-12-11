@@ -104,7 +104,6 @@
      */
 
     ExperimentSearchController.prototype.doGenericExperimentSearch = function(searchTerm) {
-      console.log("doGenericExperimentSearch");
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/genericSearch/" + searchTerm,
@@ -215,8 +214,6 @@
     ExperimentSimpleSearchController.prototype.initialize = function() {
       this.includeDuplicateAndEdit = this.options.includeDuplicateAndEdit;
       this.searchUrl = "";
-      console.log("@includeDuplicateAndEdit");
-      console.log(this.includeDuplicateAndEdit);
       if (this.includeDuplicateAndEdit) {
         return this.searchUrl = this.genericSearchUrl;
       } else {
@@ -281,7 +278,6 @@
     ExperimentSimpleSearchController.prototype.doSearch = function(experimentSearchTerm) {
       this.trigger('find');
       if (experimentSearchTerm !== "") {
-        console.log("doGenericExperimentSearch");
         return $.ajax({
           type: 'GET',
           url: this.searchUrl + experimentSearchTerm,
@@ -371,7 +367,6 @@
     ExperimentSummaryTableController.prototype.render = function() {
       this.template = _.template($('#ExperimentSummaryTableView').html());
       $(this.el).html(this.template);
-      console.dir(this.collection);
       window.fooSearchResults = this.collection;
       if (this.collection.models.length === 0) {
         this.$(".bv_noMatchesFoundMessage").removeClass("hide");

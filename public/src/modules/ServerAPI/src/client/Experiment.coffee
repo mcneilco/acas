@@ -209,19 +209,8 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_saveFailed').show()
 			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
 				@$('.bv_saveFailed').hide()
-		@model.on 'sync', =>
-			@$('.bv_saving').hide()
-			@$('.bv_save').attr('disabled', 'disabled')
-			if @$('.bv_saveFailed').is(":visible")
-				@$('.bv_updateComplete').hide()
-				@trigger 'amDirty'
-			else
-				@$('.bv_updateComplete').show()
-				@trigger 'amClean'
-			@render()
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateComplete').hide()
+		@listenTo @model, 'sync', @modelSaveCallBack
+		@listenTo @model, 'change', @modelChangeCallBack
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupRecordedBySelect()
@@ -231,6 +220,20 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupProjectSelect()
 		@render()
 
+	modelSaveCallBack: (method, model) ->
+		@$('.bv_saving').hide()
+		@$('.bv_save').attr('disabled', 'disabled')
+		if @$('.bv_saveFailed').is(":visible")
+			@$('.bv_updateComplete').hide()
+			@trigger 'amDirty'
+		else
+			@$('.bv_updateComplete').show()
+			@trigger 'amClean'
+		@render()
+
+	modelChangeCallBack: (method, model) ->
+		@trigger 'amDirty'
+		@$('.bv_updateComplete').hide()
 
 	render: =>
 		unless @model?

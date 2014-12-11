@@ -35,7 +35,6 @@
     LabelList.prototype.model = Label;
 
     LabelList.prototype.getCurrent = function() {
-      console.log("get current");
       return this.filter(function(lab) {
         return !(lab.get('ignored'));
       });
@@ -96,24 +95,18 @@
 
     LabelList.prototype.pickBestName = function() {
       var bestLabel, preferredNames;
-      console.log(this.getCurrent());
       preferredNames = _.filter(this.getCurrent(), function(lab) {
         return lab.get('preferred') && (lab.get('lsType') === "name");
       });
-      console.log("preferred names");
-      console.log(preferredNames);
       bestLabel = _.max(preferredNames, function(lab) {
         var rd;
         rd = lab.get('recordedDate');
-        console.log(rd);
         if (rd === "") {
           return Infinity;
         } else {
           return rd;
         }
       });
-      console.log("best label");
-      console.log(bestLabel);
       return bestLabel;
     };
 
@@ -127,7 +120,6 @@
       currentName = this.pickBestName();
       if (currentName != null) {
         if (currentName.isNew()) {
-          console.log("current name is new");
           return currentName.set({
             labelText: label.get('labelText'),
             lsKind: label.get('lsKind'),
@@ -135,14 +127,12 @@
             recordedDate: label.get('recordedDate')
           });
         } else {
-          console.log("set current name to ignored = true");
           currentName.set({
             ignored: true
           });
           return this.add(label);
         }
       } else {
-        console.log("current name doesn't exist");
         return this.add(label);
       }
     };

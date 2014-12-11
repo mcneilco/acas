@@ -610,32 +610,13 @@
         this.model = new PrimaryScreenProtocol();
       }
       $(this.el).html(this.template());
-      this.model.on('sync', (function(_this) {
-        return function() {
-          _this.trigger('amClean');
-          _this.$('.bv_savingModule').hide();
-          _this.$('.bv_updateModuleComplete').show();
-          _this.$('.bv_saveModule').attr('disabled', 'disabled');
-          if (_this.model.isNew()) {
-            _this.$('.bv_saveModule').html("Save");
-            return _this.$('.bv_saveInstructions').show();
-          } else {
-            _this.$('.bv_saveModule').html("Update");
-            return _this.$('.bv_saveInstructions').hide();
-          }
-        };
-      })(this));
+      this.listenTo(this.model, 'sync', this.modelSaveCallBack);
       if (this.model.isNew()) {
         this.$('.bv_saveModule').html("Save");
       } else {
         this.$('.bv_saveModule').html("Update");
       }
-      this.model.on('change', (function(_this) {
-        return function() {
-          _this.trigger('amDirty');
-          return _this.$('.bv_updateModuleComplete').hide();
-        };
-      })(this));
+      this.listenTo(this.model, 'change', this.modelChangeCallBack);
       this.model.on('readyToSave', this.handleFinishSave);
       this.setupPrimaryScreenProtocolController();
       this.setupPrimaryScreenAnalysisParametersController();
@@ -652,6 +633,25 @@
         this.$('.bv_saveInstructions').hide();
       }
       return this.trigger('amClean');
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.modelSaveCallBack = function(method, model) {
+      this.trigger('amClean');
+      this.$('.bv_savingModule').hide();
+      this.$('.bv_updateModuleComplete').show();
+      this.$('.bv_saveModule').attr('disabled', 'disabled');
+      if (this.model.isNew()) {
+        this.$('.bv_saveModule').html("Save");
+        return this.$('.bv_saveInstructions').show();
+      } else {
+        this.$('.bv_saveModule').html("Update");
+        return this.$('.bv_saveInstructions').hide();
+      }
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.modelChangeCallBack = function(method, model) {
+      this.trigger('amDirty');
+      return this.$('.bv_updateModuleComplete').hide();
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleProtocolSaved = function() {

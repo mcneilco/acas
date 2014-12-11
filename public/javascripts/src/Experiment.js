@@ -331,26 +331,8 @@
           });
         };
       })(this));
-      this.model.on('sync', (function(_this) {
-        return function() {
-          _this.$('.bv_saving').hide();
-          _this.$('.bv_save').attr('disabled', 'disabled');
-          if (_this.$('.bv_saveFailed').is(":visible")) {
-            _this.$('.bv_updateComplete').hide();
-            _this.trigger('amDirty');
-          } else {
-            _this.$('.bv_updateComplete').show();
-            _this.trigger('amClean');
-          }
-          return _this.render();
-        };
-      })(this));
-      this.model.on('change', (function(_this) {
-        return function() {
-          _this.trigger('amDirty');
-          return _this.$('.bv_updateComplete').hide();
-        };
-      })(this));
+      this.listenTo(this.model, 'sync', this.modelSaveCallBack);
+      this.listenTo(this.model, 'change', this.modelChangeCallBack);
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
       this.setupRecordedBySelect();
@@ -359,6 +341,24 @@
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
       return this.render();
+    };
+
+    ExperimentBaseController.prototype.modelSaveCallBack = function(method, model) {
+      this.$('.bv_saving').hide();
+      this.$('.bv_save').attr('disabled', 'disabled');
+      if (this.$('.bv_saveFailed').is(":visible")) {
+        this.$('.bv_updateComplete').hide();
+        this.trigger('amDirty');
+      } else {
+        this.$('.bv_updateComplete').show();
+        this.trigger('amClean');
+      }
+      return this.render();
+    };
+
+    ExperimentBaseController.prototype.modelChangeCallBack = function(method, model) {
+      this.trigger('amDirty');
+      return this.$('.bv_updateComplete').hide();
     };
 
     ExperimentBaseController.prototype.render = function() {

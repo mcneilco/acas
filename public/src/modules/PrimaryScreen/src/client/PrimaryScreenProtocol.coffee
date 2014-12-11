@@ -412,27 +412,14 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		unless @model?
 			@model = new PrimaryScreenProtocol()
 		$(@el).html @template()
-		@model.on 'sync', =>
-			@trigger 'amClean'
-			@$('.bv_savingModule').hide()
-			@$('.bv_updateModuleComplete').show()
-			@$('.bv_saveModule').attr('disabled', 'disabled')
-			if @model.isNew()
-				@$('.bv_saveModule').html("Save")
-				@$('.bv_saveInstructions').show()
-			else
-				@$('.bv_saveModule').html("Update")
-				@$('.bv_saveInstructions').hide()
-
+		@listenTo @model, 'sync', @modelSaveCallBack
 		if @model.isNew()
 			@$('.bv_saveModule').html("Save")
 		else
 			@$('.bv_saveModule').html("Update")
 
 
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateModuleComplete').hide()
+		@listenTo @model, 'change', @modelChangeCallBack
 		@model.on 'readyToSave', @handleFinishSave
 
 		@setupPrimaryScreenProtocolController()
@@ -453,6 +440,22 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@$('.bv_saveInstructions').hide()
 
 		@trigger 'amClean' #so that module starts off clean when initialized
+
+	modelSaveCallBack: (method, model) ->
+		@trigger 'amClean'
+		@$('.bv_savingModule').hide()
+		@$('.bv_updateModuleComplete').show()
+		@$('.bv_saveModule').attr('disabled', 'disabled')
+		if @model.isNew()
+			@$('.bv_saveModule').html("Save")
+			@$('.bv_saveInstructions').show()
+		else
+			@$('.bv_saveModule').html("Update")
+			@$('.bv_saveInstructions').hide()
+
+	modelChangeCallBack: (method, model) ->
+		@trigger 'amDirty'
+		@$('.bv_updateModuleComplete').hide()
 
 	handleProtocolSaved: =>
 		@trigger 'amClean'

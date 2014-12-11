@@ -63,7 +63,7 @@
             return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
           });
           it('Experiment status should default to created ', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("created");
+            return expect(this.exp.getStatus().get('stringValue')).toEqual("Created");
           });
           return it('completionDate should be null ', function() {
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(null);
@@ -262,7 +262,7 @@
             return expect(this.exp.get('lsTags').length).toEqual(0);
           });
           return it('Should have a status value of created', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("created");
+            return expect(this.exp.getStatus().get('stringValue')).toEqual("Created");
           });
         });
       });
@@ -594,7 +594,7 @@
             return expect(this.ebc.$('.bv_status option').length).toBeGreaterThan(0);
           });
           return it("should default to created", function() {
-            return expect(this.ebc.$('.bv_status').val()).toEqual("created");
+            return expect(this.ebc.$('.bv_status').val()).toEqual("Created");
           });
         });
         describe("populated fields", function() {
@@ -835,7 +835,7 @@
         beforeEach(function() {
           this.exp0 = new Experiment();
           this.exp0.getStatus().set({
-            stringValue: "created"
+            stringValue: "Created"
           });
           this.ebc = new ExperimentBaseController({
             model: this.exp0,
@@ -881,7 +881,7 @@
               return this.ebc.$('.bv_protocolCode option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.ebc.$('.bv_status').val()).toEqual('created');
+              return expect(this.ebc.$('.bv_status').val()).toEqual('Created');
             });
           });
           return it("should show the status select disabled", function() {

@@ -204,16 +204,8 @@ class window.BaseEntityController extends AbstractFormController
 	initialize: ->
 		unless @model?
 			@model=new BaseEntity()
-		@model.on 'sync', =>
-			console.log "sync base entity"
-			@trigger 'amClean'
-			@$('.bv_saving').hide()
-			@$('.bv_updateComplete').show()
-			@$('.bv_save').attr('disabled', 'disabled')
-			@render()
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateComplete').hide()
+		@listenTo @model, 'sync', @modelSaveCallBack
+		@listenTo @model, 'change', @modelChangeCallBack
 		@errorOwnerName = 'BaseEntityController'
 		@setBindings()
 		$(@el).empty()
@@ -223,6 +215,17 @@ class window.BaseEntityController extends AbstractFormController
 		@setupRecordedBySelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
+
+	modelSaveCallBack: (method, model) ->
+		@trigger 'amClean'
+		@$('.bv_saving').hide()
+		@$('.bv_updateComplete').show()
+		@$('.bv_save').attr('disabled', 'disabled')
+		@render()
+
+	modelChangeCallBack: (method, model) ->
+		@trigger 'amDirty'
+		@$('.bv_updateComplete').hide()
 
 	render: =>
 		unless @model?
@@ -279,7 +282,6 @@ class window.BaseEntityController extends AbstractFormController
 
 
 	handleRecordedByChanged: =>
-		console.log "handleRecordedByChanged in base entity"
 		@model.set recordedBy: @recordedByListController.getSelectedCode()
 		@handleNameChanged()
 
@@ -301,7 +303,6 @@ class window.BaseEntityController extends AbstractFormController
 			recordedBy: @model.get('recordedBy')
 
 	handleNameChanged: =>
-		console.log "handle name changed in base entity"
 		subclass = @model.get('subclass')
 		newName = UtilityFunctions::getTrimmedInput @$('.bv_'+subclass+'Name')
 		@model.get('lsLabels').setBestName new Label
@@ -358,8 +359,6 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_saving').show()
-		console.log "about to save model"
-		console.log @model
 		@model.save()
 
 	validationError: =>

@@ -113,7 +113,6 @@ class window.ProtocolSummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($('#ProtocolSummaryTableView').html())
 		$(@el).html @template
-		console.dir @collection
 		window.fooSearchResults = @collection
 		if @collection.models.length is 0
 			@$(".bv_noMatchesFoundMessage").removeClass "hide"

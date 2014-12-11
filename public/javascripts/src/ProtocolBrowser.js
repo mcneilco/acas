@@ -186,7 +186,6 @@
     ProtocolSummaryTableController.prototype.render = function() {
       this.template = _.template($('#ProtocolSummaryTableView').html());
       $(this.el).html(this.template);
-      console.dir(this.collection);
       window.fooSearchResults = this.collection;
       if (this.collection.models.length === 0) {
         this.$(".bv_noMatchesFoundMessage").removeClass("hide");

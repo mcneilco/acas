@@ -45,7 +45,7 @@ describe "Experiment module testing", ->
 				it 'Project code should default to unassigned ', ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
 				it 'Experiment status should default to created ', ->
-					expect(@exp.getStatus().get('stringValue')).toEqual "created"
+					expect(@exp.getStatus().get('stringValue')).toEqual "Created"
 				it 'completionDate should be null ', ->
 					expect(@exp.getCompletionDate().get('dateValue')).toEqual null
 			describe "other features", ->
@@ -176,7 +176,7 @@ describe "Experiment module testing", ->
 				it 'Should not have a tags', ->
 					expect(@exp.get('lsTags').length).toEqual 0
 				it 'Should have a status value of created', ->
-					expect(@exp.getStatus().get('stringValue')).toEqual "created"
+					expect(@exp.getStatus().get('stringValue')).toEqual "Created"
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -406,7 +406,7 @@ describe "Experiment module testing", ->
 				it "should show status options after loading them from server", ->
 					expect(@ebc.$('.bv_status option').length).toBeGreaterThan 0
 				it "should default to created", ->\
-					expect(@ebc.$('.bv_status').val()).toEqual "created"
+					expect(@ebc.$('.bv_status').val()).toEqual "Created"
 			describe "populated fields", ->
 				it "should show the protocol code", ->
 					waitsFor ->
@@ -591,7 +591,7 @@ describe "Experiment module testing", ->
 		describe "When created from a new experiment", ->
 			beforeEach ->
 				@exp0 = new Experiment()
-				@exp0.getStatus().set stringValue: "created" #work around for left over pointers
+				@exp0.getStatus().set stringValue: "Created" #work around for left over pointers
 				@ebc = new ExperimentBaseController
 					model: @exp0
 					el: $('#fixture')
@@ -625,7 +625,7 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_protocolCode option').length > 0
 					, 1000
 					runs ->
-						expect(@ebc.$('.bv_status').val()).toEqual 'created'
+						expect(@ebc.$('.bv_status').val()).toEqual 'Created'
 				it "should show the status select disabled", ->
 					expect(@ebc.$('.bv_status').attr('disabled')).toEqual 'disabled'
 			describe "when user picks protocol ", ->

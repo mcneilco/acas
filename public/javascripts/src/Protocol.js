@@ -177,7 +177,6 @@
 
     ProtocolBaseController.prototype.initialize = function() {
       if (this.model != null) {
-        console.log("CI 1");
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
@@ -188,7 +187,6 @@
               dataType: 'json',
               error: function(err) {
                 alert('Could not get protocol for code in this URL, creating new one');
-                console.log("CI 2");
                 return this.completeInitialization();
               },
               success: (function(_this) {
@@ -210,24 +208,20 @@
                       alert('Could not get protocol for code in this URL. Creating new protocol');
                     }
                   }
-                  console.log("CI 3");
                   return _this.completeInitialization();
                 };
               })(this)
             });
           } else {
-            console.log("CI 4");
             return this.completeInitialization();
           }
         } else {
-          console.log("CI 5");
           return this.completeInitialization();
         }
       }
     };
 
     ProtocolBaseController.prototype.completeInitialization = function() {
-      console.log("complete initialization");
       if (this.model == null) {
         this.model = new Protocol();
       }
@@ -259,21 +253,16 @@
     };
 
     ProtocolBaseController.prototype.modelSaveCallBack = function(method, model) {
-      console.log("sync protocol");
       this.trigger('amClean');
       this.$('.bv_saving').hide();
-      console.log("bv_saving should be hidden");
       this.$('.bv_updateComplete').show();
       this.$('.bv_save').attr('disabled', 'disabled');
-      this.render();
-      return console.log("sync render completed");
+      return this.render();
     };
 
     ProtocolBaseController.prototype.modelChangeCallBack = function(method, model) {
-      console.log("on change");
       this.trigger('amDirty');
-      this.$('.bv_updateComplete').hide();
-      return console.log("end on change");
+      return this.$('.bv_updateComplete').hide();
     };
 
     ProtocolBaseController.prototype.setUpAssayStageSelect = function() {
