@@ -81,21 +81,24 @@
 	routeSet_15 = require("./routes/PreferredBatchIdService.js");
 	if (routeSet_15.setupAPIRoutes) {
 		routeSet_15.setupAPIRoutes(app); }
-	routeSet_16 = require("./routes/PrimaryScreenRoutes.js");
+	routeSet_16 = require("./routes/PrimaryScreenProtocolRoutes.js");
 	if (routeSet_16.setupAPIRoutes) {
 		routeSet_16.setupAPIRoutes(app); }
-	routeSet_17 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_17 = require("./routes/PrimaryScreenRoutes.js");
 	if (routeSet_17.setupAPIRoutes) {
 		routeSet_17.setupAPIRoutes(app); }
-	routeSet_18 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_18 = require("./routes/ProjectServiceRoutes.js");
 	if (routeSet_18.setupAPIRoutes) {
 		routeSet_18.setupAPIRoutes(app); }
-	routeSet_19 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_19 = require("./routes/ProtocolServiceRoutes.js");
 	if (routeSet_19.setupAPIRoutes) {
 		routeSet_19.setupAPIRoutes(app); }
-	routeSet_20 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_20 = require("./routes/RunPrimaryAnalysisRoutes.js");
 	if (routeSet_20.setupAPIRoutes) {
 		routeSet_20.setupAPIRoutes(app); }
+	routeSet_21 = require("./routes/ServerUtilityFunctions.js");
+	if (routeSet_21.setupAPIRoutes) {
+		routeSet_21.setupAPIRoutes(app); }
 
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("ACAS API server listening on port " + app.get('port'));
