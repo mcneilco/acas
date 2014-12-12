@@ -4,13 +4,7 @@ Scroll down for previous deploy instructions
 
 ## Deploying to a customer
 
-See 
-```
-#!bash
-
-bin/install.sh
-```
-
+See acas_compiler repo
 
 ## Deploying in a development environment
 
@@ -57,6 +51,9 @@ or
     svn checkout http://smeyer@customer_repo/............. acas_custom
 
 ### Install dependencies
+    Install Mongodb for logging (if customer needs mongo logging service)
+    http://www.mongodb.org/downloads  (download appropriate version for the server being deployed to)
+    start mongo deamon
 
     npm install
     grunt coffee

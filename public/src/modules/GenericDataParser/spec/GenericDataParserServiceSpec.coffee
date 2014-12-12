@@ -6,7 +6,7 @@ goodDataRequest =
 	fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve_with_warnings.xls"
 	reportFile: null #if user uploads report, put temp path here
 	dryRunMode: true
-	requireDoseResponse: true # an optional parameter that asks the parser to return an error if input is not a dose respnse format file
+	requireDoseResponse: true # an optional parameter that asks the parser to return an error if input is not a dose response format file
 	user: 'jmcneil'
 	testMode: true
 
@@ -14,7 +14,7 @@ goodDataRequestDryRunFalse =
 	fileToParse: "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve_with_warnings.xls"
 	reportFile: null #if user uploads report, put temp path here
 	dryRunMode: false
-	requireDoseResponse: true # an optional parameter that asks the parser to return an error if input is not a dose respnse format file
+	requireDoseResponse: true # an optional parameter that asks the parser to return an error if input is not a dose response format file
 	user: 'jmcneil'
 	testMode: true
 

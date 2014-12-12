@@ -1,23 +1,71 @@
 .bv_curveCurator .selected {
     border-width: 3px;
     border-style: solid;
-    border-color: #696969;
+    border-color: #ABAAAB !important;
 }
 
 .bv_curveCurator .bv_curveList .bv_curveSummaries {
-    height: 684px;
+    /*height: 684px;*/
     width: 265px;
     overflow-y: auto;
 }
 
 .bv_curveCurator .bv_curveSummary {
     width: 250px;
-    height: 200px;
+    height: 155px;
+    margin-bottom: 10px;
+    border-color: #e3e3e3;
+    border-style: solid;
+    border-width: 3px;
 }
 
 
-.bv_curveCurator .bv_curveEditor .bv_shinyContainer {
-    height: 700px;
-    min-width: 770px;
-    border: none;
+.bv_curveCurator .bv_curveEditor {
+    margin-left: 0;
+    width: 1010px;
+}
+
+.bv_curveCurator .bv_plotWindow {
+    border-style: solid;
+    border-width: 1px;
+    border-color: #e3e3e3;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+
+.btn-grey {
+    color: #ffffff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    background-color: #9f9d9d;
+    *background-color: #999999;
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#9a9a9a), to(#999999));
+    background-image: -webkit-linear-gradient(top, #9a9a9a, #999999);
+    background-image: -o-linear-gradient(top, #9a9a9a, #999999);
+    background-image: linear-gradient(to bottom, #9a9a9a, #999999);
+    background-image: -moz-linear-gradient(top, #9a9a9a, #999999);
+    background-repeat: repeat-x;
+    border-color: #999999 #999999 #8b8b8b;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffee5f5b', endColorstr='#ffbd362f', GradientType=0);
+    filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+}
+
+.btn-grey:hover,
+.btn-grey:active,
+.btn-grey.active,
+.btn-grey.disabled,
+.btn-grey[disabled] {
+    color: #ffffff;
+    background-color: #999999;
+    *background-color: #8b8b8b;
+}
+
+.btn-grey:active,
+.btn-grey.active {
+    background-color: #8b8b8b \9;
+}
+
+.btn-group.open .btn-grey.dropdown-toggle {
+    background-color: #999999;
 }

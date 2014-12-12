@@ -21,7 +21,7 @@ class window.ExperimentSearchController extends AbstractFormController
 	updateModel: =>
 		@model.set
 			protocolCode: @$('.bv_protocolName').val()
-			experimentCode: @getTrimmedInput('.bv_experimentCode')
+			experimentCode: UtilityFunctions::getTrimmedInput @$('.bv_experimentCode')
 
 	updateExperimentCode: =>
 		experimentCode = $.trim(@$(".bv_experimentCode").val())
@@ -62,7 +62,6 @@ class window.ExperimentSearchController extends AbstractFormController
 
 
 	doGenericExperimentSearch: (searchTerm) =>
-		console.log "doGenericExperimentSearch"
 		$.ajax
 			type: 'GET'
 			url: "/api/experiments/genericSearch/#{searchTerm}"
@@ -177,6 +176,7 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 				@$(".bv_clearSearchIcon").addClass "hide"
 				@$(".bv_doSearchIcon").removeClass "hide"
 				$(".bv_searchStatusIndicator").addClass "hide"
+				$(".bv_deletedExperimentMessage").addClass "hide"
 				@updateExperimentSearchTerm()
 				@trigger "resetSearch"
 
@@ -185,7 +185,6 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 		#$(".bv_experimentTableController").html "Searching..."
 
 		unless experimentSearchTerm is ""
-			console.log "doGenericExperimentSearch"
 			$.ajax
 				type: 'GET'
 				url: @searchUrl + experimentSearchTerm
@@ -217,7 +216,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		toDisplay =
 			experimentName: @model.get('lsLabels').pickBestName().get('labelText')
 			experimentCode: @model.get('codeName')
-			protocolName: @model.get('protocol').get("preferredName")
+			protocolName: @model.get('protocol').get("codeName")
 			recordedBy: @model.get('recordedBy')
 			status: @model.getStatus().get("stringValue")
 			analysisStatus: @model.getAnalysisStatus().get("stringValue")
@@ -287,20 +286,27 @@ class window.ExperimentBrowserController extends Backbone.View
 		$(".bv_searchStatusIndicator").addClass "hide"
 		if experiments is null
 			@$(".bv_errorOccurredPerformingSearch").removeClass "hide"
+			@$(".bv_deletedExperimentMessage").addClass "hide"
 
 		else if experiments.length is 0
 			@$(".bv_noMatchesFoundMessage").removeClass "hide"
+			@$(".bv_deletedExperimentMessage").addClass "hide"
 			@$(".bv_experimentTableController").html ""
 		else
-			@experimentSummaryTable = new ExperimentSummaryTableController
-				collection: new ExperimentList experiments
+			console.log experiments[0].ignored
+			if experiments[0].ignored
+				@$(".bv_deletedExperimentMessage").removeClass "hide"
+				@$(".bv_experimentTableController").html ""
+			else
+				@experimentSummaryTable = new ExperimentSummaryTableController
+					collection: new ExperimentList experiments
 
-			@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
-			$(".bv_experimentTableController").html @experimentSummaryTable.render().el
-			$(".bv_matchingExperimentsHeader").removeClass "hide"
-
-			unless @includeDuplicateAndEdit
-				@selectedExperimentUpdated new Experiment experiments[0]
+				@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
+				$(".bv_experimentTableController").html @experimentSummaryTable.render().el
+				$(".bv_matchingExperimentsHeader").removeClass "hide"
+				@$(".bv_deletedExperimentMessage").addClass "hide"
+				unless @includeDuplicateAndEdit
+					@selectedExperimentUpdated new Experiment experiments[0]
 
 	selectedExperimentUpdated: (experiment) =>
 		@trigger "selectedExperimentUpdated"

@@ -3,8 +3,6 @@ exports.requiredScripts = [
 	'/src/lib/json2.js',
 	'/src/lib/underscore.js',
 	'/src/lib/backbone-min.js',
-	'/src/lib/bootstrap/bootstrap-tooltip.js',
-	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
 	'/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js',
 	'/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js',
 	'/src/lib/bootstrap/bootstrap.min.js',
@@ -15,8 +13,12 @@ exports.requiredScripts = [
 	'/src/lib/jqueryFileUpload/js/jquery.fileupload-ui.js',
 	'/src/lib/jqueryFileUpload/js/locale.js',
 	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
-	'/src/lib/dataTables/js/jquery.dataTables.js',
-	'/src/lib/jstree/jstree.min.js'
+    '/src/lib/bootstrap/bootstrap-tooltip.js',
+    '/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
+    '/src/lib/dataTables/js/jquery.dataTables.js',
+	'/src/lib/jsxgraph/jsxgraphcore.js',
+	'/src/lib/jstree/jstree.min.js',
+	'/src/lib/moment.min.js'
 ];
 
 exports.applicationScripts = [

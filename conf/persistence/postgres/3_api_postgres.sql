@@ -3,6 +3,7 @@
 -----------------------------
 --TODO: make into proper ddl
 --drop (ordered by dependency)
+DROP VIEW api_system_statistics;
 DROP VIEW API_SUBJECT_CONTAINER_RESULTS;
 DROP VIEW API_SUBJECT_RESULTS;
 drop view api_container_contents;
@@ -66,7 +67,7 @@ AS
 CREATE OR REPLACE VIEW p_api_analysis_group_results AS 
 SELECT ag.id AS ag_id, 
 ag.code_name as ag_code_name,
-ag.experiment_id AS experiment_id, 
+e.id AS experiment_id, 
 agv2.code_value AS tested_lot, 
 agv3.numeric_value AS tested_conc, 
 CASE
@@ -123,13 +124,15 @@ THEN
 		)
 WHEN agv.ls_type = 'dateValue'
 	THEN to_char(agv.date_value, 'yyyy-mm-dd')
-	ELSE agv.string_value
+	ELSE COALESCE(agv.string_value,agv.comments)
 END AS string_value,
 agv.clob_value,
 agv.comments, 
 agv.recorded_date::timestamp::date,
 agv.public_data
 FROM analysis_GROUP ag
+JOIN experiment_analysisgroup eag ON eag.analysis_group_id = ag.id
+JOIN experiment e ON eag.experiment_id = e.id
 JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
 JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code' AND agv.ls_kind <> 'time'
 JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
@@ -146,7 +149,7 @@ WHERE public_data='1';
 
 CREATE OR REPLACE VIEW api_curve_params AS 
 select
-ag.experiment_id,
+e.id,
 ag.id as ag_id,
 agv2.code_value,
 MAX( CASE agv.ls_kind WHEN 'Max' THEN agv.numeric_value ELSE null END ) AS max,
@@ -165,11 +168,13 @@ MAX( CASE agv.ls_kind WHEN 'Hill slope' THEN agv.unit_kind ELSE null END ) AS hi
 MAX( CASE WHEN agv.ls_kind LIKE '%curve id' THEN agv.string_value ELSE null END ) AS curveid,
 MAX( CASE agv.ls_kind WHEN 'Category' THEN agv.string_value ELSE null END ) AS category
    FROM analysis_GROUP ag
+   JOIN experiment_analysisgroup eag ON eag.analysis_group_id = ag.id
+   JOIN experiment e ON eag.experiment_id = e.id
    JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
    JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code'
    JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
 where ags.ls_kind = 'Dose Response'
-GROUP by ag.experiment_id, agv2.code_value, ag.id;
+GROUP by e.id, agv2.code_value, ag.id;
 
 CREATE OR REPLACE VIEW api_dose_response AS 
 select s.id AS S_ID,
@@ -185,10 +190,13 @@ select s.id AS S_ID,
 	 max(CASE sv.ls_kind WHEN 'Response' then ss.version else null end) as response_ss_version,
 	 max(CASE sv.ls_kind WHEN 'Response' then sv.id else null end) as response_sv_id,
      max(CASE sv.ls_kind WHEN 'flag' then sv.id else null end) as flag_sv_id,
-	 max(CASE sv.ls_kind WHEN 'Response' then s.treatment_group_id else null end) as tg_id,
+	 max(CASE sv.ls_kind WHEN 'Response' then tgs.treatment_group_id else null end) as tg_id,
 	 max(api_agsvb.AG_ID) AS ag_id
-FROM api_analysis_group_results api_agsvb JOIN treatment_GROUP tg on api_agsvb.ag_id=tg.analysis_GROUP_id
-	JOIN subject s on tg.id=s.treatment_GROUP_id
+FROM api_analysis_group_results api_agsvb
+	JOIN analysisgroup_treatmentgroup agtg ON api_agsvb.ag_id= agtg.analysis_group_id
+	JOIN treatment_GROUP tg ON agtg.treatment_group_id = tg.id
+	JOIN treatmentgroup_subject tgs ON tg.id = tgs.treatment_group_id
+	JOIN subject s ON tgs.subject_id = s.id
 	JOIN subject_state ss ON ss.subject_id = s.id
 	JOIN subject_value sv ON sv.subject_state_id = ss.id
 WHERE api_agsvb.ls_kind like '%curve id'
@@ -307,17 +315,20 @@ ss.id AS state_id,
 ss.ls_kind AS state_kind,
 ss.ls_type AS state_type
 FROM api_protocol p
-join api_experiment e on e.protocol_id = p.protocol_id
-join analysis_group ag on ag.experiment_id = e.id
-join treatment_group tg on tg.analysis_group_id = ag.id
-join subject s on s.treatment_group_id = tg.id
-JOIN subject_state ss ON ss.subject_id = s.id
-JOIN subject_value sv ON sv.subject_state_id = ss.id AND sv.ls_kind <> 'tested concentration' AND sv.ls_kind <> 'batch code' AND sv.ls_kind <> 'time'
-LEFT OUTER JOIN subject_value sv2 ON sv2.subject_state_id = ss.id and sv2.ls_kind = 'batch code'
-LEFT OUTER JOIN subject_value sv3 ON sv3.subject_state_id = ss.id and sv3.ls_kind = 'tested concentration'
-LEFT OUTER JOIN subject_value sv4 ON sv4.subject_state_id = ss.id and sv4.ls_kind = 'time'
-LEFT OUTER JOIN subject_state ss2 ON ss2.subject_id = s.id and ss2.ls_kind = 'treatment'
-LEFT OUTER JOIN subject_value sv5 ON sv5.subject_state_id = ss2.id and sv5.ls_kind = 'batch code';
+	JOIN api_experiment e on e.protocol_id = p.protocol_id
+	JOIN experiment_analysisgroup eag ON eag.experiment_id = e.id
+	JOIN analysis_group ag on eag.analysis_group_id = ag.id
+	JOIN analysisgroup_treatmentgroup agtg ON ag.id= agtg.analysis_group_id
+	JOIN treatment_GROUP tg ON agtg.treatment_group_id = tg.id
+	JOIN treatmentgroup_subject tgs ON tg.id = tgs.treatment_group_id
+	JOIN subject s ON tgs.subject_id = s.id
+	JOIN subject_state ss ON ss.subject_id = s.id
+	JOIN subject_value sv ON sv.subject_state_id = ss.id AND sv.ls_kind <> 'tested concentration' AND sv.ls_kind <> 'batch code' AND sv.ls_kind <> 'time'
+	LEFT OUTER JOIN subject_value sv2 ON sv2.subject_state_id = ss.id and sv2.ls_kind = 'batch code'
+	LEFT OUTER JOIN subject_value sv3 ON sv3.subject_state_id = ss.id and sv3.ls_kind = 'tested concentration'
+	LEFT OUTER JOIN subject_value sv4 ON sv4.subject_state_id = ss.id and sv4.ls_kind = 'time'
+	LEFT OUTER JOIN subject_state ss2 ON ss2.subject_id = s.id and ss2.ls_kind = 'treatment'
+	LEFT OUTER JOIN subject_value sv5 ON sv5.subject_state_id = ss2.id and sv5.ls_kind = 'batch code';
 
 
 
@@ -384,19 +395,22 @@ cs.id AS state_id,
 cs.ls_kind AS state_kind,
 cs.ls_type AS state_type
 FROM api_protocol p
-join api_experiment e on e.protocol_id = p.protocol_id
-join analysis_group ag on ag.experiment_id = e.id
-join treatment_group tg on tg.analysis_group_id = ag.id
-join subject s on s.treatment_group_id = tg.id
-JOIN subject_state ss ON ss.subject_id = s.id
-JOIN itx_subject_container isc ON isc.subject_id=s.id
-JOIN container c ON c.id = isc.container_id
-JOIN container_state cs ON cs.container_id = c.id
-JOIN container_value cv ON cv.container_state_id = cs.id
-LEFT OUTER JOIN subject_value sv2 ON sv2.subject_state_id = ss.id and sv2.ls_kind = 'batch code'
-LEFT OUTER JOIN subject_value sv3 ON sv3.subject_state_id = ss.id and sv3.ls_kind = 'tested concentration'
-LEFT OUTER JOIN subject_state ss2 ON ss2.subject_id = s.id and ss2.ls_kind = 'treatment'
-LEFT OUTER JOIN subject_value sv4 ON sv4.subject_state_id = ss2.id and sv4.ls_kind = 'batch code'
+	JOIN api_experiment e on e.protocol_id = p.protocol_id
+	JOIN experiment_analysisgroup eag ON eag.experiment_id = e.id
+	JOIN analysis_group ag on eag.analysis_group_id = ag.id
+	JOIN analysisgroup_treatmentgroup agtg ON ag.id= agtg.analysis_group_id
+	JOIN treatment_GROUP tg ON agtg.treatment_group_id = tg.id
+	JOIN treatmentgroup_subject tgs ON tg.id = tgs.treatment_group_id
+	JOIN subject s ON tgs.subject_id = s.id
+	JOIN subject_state ss ON ss.subject_id = s.id
+	JOIN itx_subject_container isc ON isc.subject_id=s.id
+	JOIN container c ON c.id = isc.container_id
+	JOIN container_state cs ON cs.container_id = c.id
+	JOIN container_value cv ON cv.container_state_id = cs.id
+	LEFT OUTER JOIN subject_value sv2 ON sv2.subject_state_id = ss.id and sv2.ls_kind = 'batch code'
+	LEFT OUTER JOIN subject_value sv3 ON sv3.subject_state_id = ss.id and sv3.ls_kind = 'tested concentration'
+	LEFT OUTER JOIN subject_state ss2 ON ss2.subject_id = s.id and ss2.ls_kind = 'treatment'
+	LEFT OUTER JOIN subject_value sv4 ON sv4.subject_state_id = ss2.id and sv4.ls_kind = 'batch code'
 UNION select * from api_subject_results;
 
 CREATE OR REPLACE VIEW API_ALL_DATA as
@@ -616,32 +630,35 @@ cs.ls_kind AS c_state_kind,
 cs.ls_type AS c_state_type
 
 FROM api_protocol p
-JOIN api_experiment e on e.protocol_id = p.protocol_id
-JOIN analysis_group ag on ag.experiment_id = e.id
-JOIN treatment_group tg on tg.analysis_group_id = ag.id
-JOIN subject s on s.treatment_group_id = tg.id
-LEFT OUTER JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
-LEFT OUTER JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code'
-LEFT OUTER JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
-LEFT OUTER JOIN analysis_GROUP_value agv3 ON agv3.analysis_state_id = ags.id and agv3.ls_kind = 'tested concentration'
-LEFT OUTER JOIN treatment_group_state tgs ON tgs.treatment_group_id = tg.id
-LEFT OUTER JOIN treatment_group_value tgv ON tgv.treatment_state_id = tgs.id AND tgv.ls_kind <> 'tested concentration' AND tgv.ls_kind <> 'batch code' AND tgv.ls_kind <> 'time'
-LEFT OUTER JOIN treatment_group_value tgv2 ON tgv2.treatment_state_id = tgs.id and tgv2.ls_kind = 'batch code'
-LEFT OUTER JOIN treatment_group_value tgv3 ON tgv3.treatment_state_id = tgs.id and tgv3.ls_kind = 'tested concentration'
-LEFT OUTER JOIN treatment_group_value tgv4 ON tgv4.treatment_state_id = tgs.id and tgv4.ls_kind = 'time'
-LEFT OUTER JOIN treatment_group_state tgs2 ON tgs2.treatment_group_id = tg.id and tgs2.ls_kind = 'treatment'
-LEFT OUTER JOIN treatment_group_value tgv5 ON tgv5.treatment_state_id = tgs2.id and tgv5.ls_kind = 'batch code'
-LEFT OUTER JOIN subject_state ss ON ss.subject_id = s.id
-LEFT OUTER JOIN subject_value sv ON sv.subject_state_id = ss.id AND sv.ls_kind <> 'tested concentration' AND sv.ls_kind <> 'batch code' AND sv.ls_kind <> 'time'
-LEFT OUTER JOIN subject_value sv2 ON sv2.subject_state_id = ss.id and sv2.ls_kind = 'batch code'
-LEFT OUTER JOIN subject_value sv3 ON sv3.subject_state_id = ss.id and sv3.ls_kind = 'tested concentration'
-LEFT OUTER JOIN subject_value sv4 ON sv4.subject_state_id = ss.id and sv4.ls_kind = 'time'
-LEFT OUTER JOIN subject_state ss2 ON ss2.subject_id = s.id and ss2.ls_kind = 'treatment'
-LEFT OUTER JOIN subject_value sv5 ON sv5.subject_state_id = ss2.id and sv5.ls_kind = 'batch code'
-LEFT OUTER JOIN itx_subject_container isc ON isc.subject_id=s.id
-LEFT OUTER JOIN container c ON c.id = isc.container_id
-LEFT OUTER JOIN container_state cs ON cs.container_id = c.id
-LEFT OUTER JOIN container_value cv ON cv.container_state_id = cs.id;
+	JOIN api_experiment e on e.protocol_id = p.protocol_id
+	JOIN experiment_analysisgroup eag ON eag.experiment_id = e.id
+	JOIN analysis_group ag on eag.analysis_group_id = ag.id
+	JOIN analysisgroup_treatmentgroup agtg ON ag.id= agtg.analysis_group_id
+	JOIN treatment_GROUP tg ON agtg.treatment_group_id = tg.id
+	JOIN treatmentgroup_subject tgsub ON tg.id = tgsub.treatment_group_id
+	JOIN subject s ON tgsub.subject_id = s.id
+	LEFT OUTER JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
+	LEFT OUTER JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code'
+	LEFT OUTER JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
+	LEFT OUTER JOIN analysis_GROUP_value agv3 ON agv3.analysis_state_id = ags.id and agv3.ls_kind = 'tested concentration'
+	LEFT OUTER JOIN treatment_group_state tgs ON tgs.treatment_group_id = tg.id
+	LEFT OUTER JOIN treatment_group_value tgv ON tgv.treatment_state_id = tgs.id AND tgv.ls_kind <> 'tested concentration' AND tgv.ls_kind <> 'batch code' AND tgv.ls_kind <> 'time'
+	LEFT OUTER JOIN treatment_group_value tgv2 ON tgv2.treatment_state_id = tgs.id and tgv2.ls_kind = 'batch code'
+	LEFT OUTER JOIN treatment_group_value tgv3 ON tgv3.treatment_state_id = tgs.id and tgv3.ls_kind = 'tested concentration'
+	LEFT OUTER JOIN treatment_group_value tgv4 ON tgv4.treatment_state_id = tgs.id and tgv4.ls_kind = 'time'
+	LEFT OUTER JOIN treatment_group_state tgs2 ON tgs2.treatment_group_id = tg.id and tgs2.ls_kind = 'treatment'
+	LEFT OUTER JOIN treatment_group_value tgv5 ON tgv5.treatment_state_id = tgs2.id and tgv5.ls_kind = 'batch code'
+	LEFT OUTER JOIN subject_state ss ON ss.subject_id = s.id
+	LEFT OUTER JOIN subject_value sv ON sv.subject_state_id = ss.id AND sv.ls_kind <> 'tested concentration' AND sv.ls_kind <> 'batch code' AND sv.ls_kind <> 'time'
+	LEFT OUTER JOIN subject_value sv2 ON sv2.subject_state_id = ss.id and sv2.ls_kind = 'batch code'
+	LEFT OUTER JOIN subject_value sv3 ON sv3.subject_state_id = ss.id and sv3.ls_kind = 'tested concentration'
+	LEFT OUTER JOIN subject_value sv4 ON sv4.subject_state_id = ss.id and sv4.ls_kind = 'time'
+	LEFT OUTER JOIN subject_state ss2 ON ss2.subject_id = s.id and ss2.ls_kind = 'treatment'
+	LEFT OUTER JOIN subject_value sv5 ON sv5.subject_state_id = ss2.id and sv5.ls_kind = 'batch code'
+	LEFT OUTER JOIN itx_subject_container isc ON isc.subject_id=s.id
+	LEFT OUTER JOIN container c ON c.id = isc.container_id
+	LEFT OUTER JOIN container_state cs ON cs.container_id = c.id
+	LEFT OUTER JOIN container_value cv ON cv.container_state_id = cs.id;
 
 CREATE OR REPLACE VIEW api_experiment_results
 as
@@ -667,7 +684,32 @@ select agv.code_value as batch_code,
     '</A>'
     ) as experiment_code_link
 FROM api_protocol p
-join api_experiment e on p.PROTOCOL_ID = e.PROTOCOL_ID
-JOIN analysis_GROUP ag ON ag.EXPERIMENT_ID=e.id
-JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
-JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind = 'batch code';
+	JOIN api_experiment e on p.PROTOCOL_ID = e.PROTOCOL_ID
+	JOIN experiment_analysisgroup eag ON eag.experiment_id = e.id
+	JOIN analysis_group ag on eag.analysis_group_id = ag.id
+	JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
+	JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind = 'batch code';
+
+CREATE OR REPLACE VIEW api_system_statistics AS
+SELECT
+	api_protocol.code_name AS protocol_code,
+	api_protocol.label_text AS protocol_name,
+	api_experiment.code_name AS experiment_code,
+	api_experiment.label_text AS experiment_name,
+	api_experiment.recorded_date AS experiment_date,
+	COUNT(DISTINCT api_analysis_group_results.ag_id) AS analysis_groups,
+	COUNT(DISTINCT api_subject_results.subject_code_name) AS subjects,
+	COUNT(DISTINCT api_subject_results.sv_id) AS raw_data_points
+FROM api_protocol
+	LEFT JOIN api_experiment
+		ON api_protocol.protocol_id = api_experiment.protocol_id
+	LEFT JOIN api_analysis_group_results
+		ON api_experiment.id = api_analysis_group_results.experiment_id
+	LEFT JOIN api_subject_results
+		ON api_analysis_group_results.ag_code_name = api_subject_results.analysis_group_code_name
+GROUP BY
+	api_protocol.code_name,
+	api_experiment.recorded_date,
+	api_protocol.label_text,
+	api_experiment.code_name,
+	api_experiment.label_text;

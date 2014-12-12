@@ -16,7 +16,8 @@
       mainControllerClassName: "controllerClassNameReplaceMe",
       isLoaded: false,
       isActive: false,
-      isDirty: false
+      isDirty: false,
+      autoLaunchName: null
     };
 
     ModuleLauncher.prototype.requestActivation = function() {
@@ -81,15 +82,13 @@
       } else {
         $(this.el).removeClass("active");
       }
-      if (this.model.get('isLoaded')) {
-        this.$('.bv_isLoaded').show();
-      } else {
-        this.$('.bv_isLoaded').hide();
-      }
+      this.$('.bv_isLoaded').hide();
       if (this.model.get('isDirty')) {
         this.$('.bv_isDirty').show();
+        window.conf.leaveACASMessage = "WARNING: There are unsaved changes.";
       } else {
         this.$('.bv_isDirty').hide();
+        window.conf.leaveACASMessage = "There are no unsaved changes.";
       }
       if (this.model.has('requireUserRoles')) {
         if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.model.get('requireUserRoles'))) {
@@ -256,7 +255,9 @@
           });
         }
       }
-      return $(this.el).show();
+      $(this.el).show();
+      $('.bv_mainModuleWrapper').show();
+      return $('.bv_homePageWrapper').hide();
     };
 
     ModuleLauncherController.prototype.handleDeactivation = function() {

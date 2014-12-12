@@ -19,6 +19,13 @@ module.exports = (grunt) ->
 						dest: "public/javascripts/src/"
 						ext: '.js'
 					]
+			serverOnlyModules:
+				files: [
+						expand: true
+						flatten: false
+						src: ["serverOnlyModules/**/*.coffee"]
+						ext: '.js'
+					]
 			spec:
 				files: [
 					expand: true
@@ -213,6 +220,12 @@ module.exports = (grunt) ->
 				options:
 					cwd: 'conf'
 				src: 'conf/PrepareTestJSON.js'
+			reload_rapache:
+				call: (grunt, options) ->
+					shell = require('shelljs')
+					result = shell.exec('bin/acas-darwin.sh reload', {silent:true})
+					return result.output
+
 		replace:
 			clientHost:
 				src: ["conf/config.properties"]
@@ -229,6 +242,9 @@ module.exports = (grunt) ->
 			coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
 				tasks: 'coffee:app'
+			compileServerOnlyModules:
+				files: 'serverOnlyModules/**/*.coffee'
+				tasks: 'coffee:serverOnlyModules'
 			compileSpec:
 				files: "public/src/modules/**/spec/*.coffee"
 				tasks: "coffee:spec"
@@ -332,7 +348,11 @@ module.exports = (grunt) ->
 					"public/javascripts/spec/testFixtures/*.js"
 				]
 				tasks: "execute:prepare_test_JSON"
-
+			reload_rapache:
+				files: [
+					"r_libs/racas/*"
+				]
+				tasks: "execute:reload_rapache"
 
 
 

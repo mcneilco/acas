@@ -7,6 +7,7 @@ class window.ModuleLauncher extends Backbone.Model
 		isLoaded: false
 		isActive: false
 		isDirty: false
+		autoLaunchName: null
 
 	requestActivation: ->
 		@trigger 'activationRequested', @
@@ -37,10 +38,13 @@ class window.ModuleLauncherMenuController extends Backbone.View
 		if @model.get('isActive') then $(@el).addClass "active"
 		else $(@el).removeClass "active"
 
-		if @model.get('isLoaded') then @$('.bv_isLoaded').show()
-		else @$('.bv_isLoaded').hide()
-		if @model.get('isDirty') then @$('.bv_isDirty').show()
-		else @$('.bv_isDirty').hide()
+		@$('.bv_isLoaded').hide()
+		if @model.get('isDirty')
+			@$('.bv_isDirty').show()
+			window.conf.leaveACASMessage = "WARNING: There are unsaved changes."
+		else
+			@$('.bv_isDirty').hide()
+			window.conf.leaveACASMessage = "There are no unsaved changes."
 
 		if @model.has 'requireUserRoles'
 			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @model.get('requireUserRoles')
@@ -141,6 +145,8 @@ class window.ModuleLauncherController extends Backbone.View
 				@model.set isLoaded: true
 
 		$(@el).show()
+		$('.bv_mainModuleWrapper').show()
+		$('.bv_homePageWrapper').hide()
 
 	handleDeactivation:  =>
 		$(@el).hide()

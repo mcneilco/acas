@@ -1,16 +1,17 @@
 (function() {
   var csUtilities, startApp;
 
+  global.logger = require("./routes/Logger");
+
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
-    var LocalStrategy, child, config, express, flash, forever, fs, http, https, indexRoutes, loginRoutes, options, passport, path, sslOptions, testModeOverRide, upload, user, util;
+    var LocalStrategy, child, config, express, flash, forever, fs, http, https, indexRoutes, loginRoutes, options, passport, path, sslOptions, testModeOverRide, user, util;
     config = require('./conf/compiled/conf.js');
     express = require('express');
     user = require('./routes/user');
     http = require('http');
     path = require('path');
-    upload = require('./node_modules_customized/jquery-file-upload-middleware');
     flash = require('connect-flash');
     passport = require('passport');
     util = require('util');
@@ -24,18 +25,20 @@
         console.log("############ Starting in stubs mode");
       }
     }
-    upload.configure({
-      uploadDir: __dirname + '/privateUploads',
-      ssl: config.all.client.use.ssl,
-      uploadUrl: "/dataFiles"
-    });
     passport.serializeUser(function(user, done) {
-      return done(null, user.username);
+      var userToSerialize;
+      userToSerialize = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        roles: user.roles
+      };
+      return done(null, userToSerialize);
     });
-    passport.deserializeUser(function(username, done) {
-      return csUtilities.findByUsername(username, function(err, user) {
-        return done(err, user);
-      });
+    passport.deserializeUser(function(user, done) {
+      return done(null, user);
     });
     passport.use(new LocalStrategy(csUtilities.loginStrategy));
     loginRoutes = require('./routes/loginRoutes');
@@ -58,18 +61,11 @@
       app.use(passport.session({
         pauseStream: true
       }));
-      app.use('/uploads', upload.fileHandler());
       app.use(express.json());
       app.use(express.urlencoded());
       app.use(express.methodOverride());
       app.use(express["static"](path.join(__dirname, 'public')));
       return app.use(app.router);
-    });
-    upload.on("error", function(e) {
-      return console.log("fileUpload: ", e.message);
-    });
-    upload.on("end", function(fileInfo) {
-      return app.emit("file-uploaded", fileInfo);
     });
     loginRoutes.setupRoutes(app, passport);
     indexRoutes = require('./routes/index.js');
@@ -97,18 +93,22 @@
 	routeSet_10.setupRoutes(app, loginRoutes);
 	routeSet_11 = require("./routes/GenericDataParserRoutes.js");
 	routeSet_11.setupRoutes(app, loginRoutes);
-	routeSet_12 = require("./routes/PreferredBatchIdService.js");
+	routeSet_12 = require("./routes/Logger.js");
 	routeSet_12.setupRoutes(app, loginRoutes);
-	routeSet_13 = require("./routes/PrimaryScreenRoutes.js");
+	routeSet_13 = require("./routes/LoggingRoutes.js");
 	routeSet_13.setupRoutes(app, loginRoutes);
-	routeSet_14 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_14 = require("./routes/PreferredBatchIdService.js");
 	routeSet_14.setupRoutes(app, loginRoutes);
-	routeSet_15 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_15 = require("./routes/PrimaryScreenRoutes.js");
 	routeSet_15.setupRoutes(app, loginRoutes);
-	routeSet_16 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_16 = require("./routes/ProjectServiceRoutes.js");
 	routeSet_16.setupRoutes(app, loginRoutes);
-	routeSet_17 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_17 = require("./routes/ProtocolServiceRoutes.js");
 	routeSet_17.setupRoutes(app, loginRoutes);
+	routeSet_18 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_18.setupRoutes(app, loginRoutes);
+	routeSet_19 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_19.setupRoutes(app, loginRoutes);
 
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {

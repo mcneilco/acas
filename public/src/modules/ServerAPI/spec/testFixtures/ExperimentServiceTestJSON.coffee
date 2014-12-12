@@ -1097,7 +1097,7 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
-				clobValue: '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "conentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 250753.77,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd"}'
+				clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing signal (highest = 100%)","aggregateBy1":"compound batch concentration","aggregateBy2":"median","normalizationRule":"plate order only","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"htsFormat":false,"autoHitSelection":false,"matchReadName":false,"primaryAnalysisReadList":[{"readPosition":11,"readName":"none","activity":false},{"readPosition":12,"readName":"fluorescence","activity":true},{"readPosition":13,"readName":"luminescence","activity":false}],"transformationRuleList":[{"transformationRule":"% efficacy"},{"transformationRule":"sd"},{"transformationRule":"null"}]}'
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -1401,7 +1401,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "Started"
+				stringValue: "started"
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -2381,7 +2381,7 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
-				clobValue: '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "conentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 250753.77,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "transformationRule": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd"}'
+				clobValue: '{  "positiveControl": {    "batchCode": "CMPD-12345678-01",    "concentration": 10,    "conentrationUnits": "uM"  },  "negativeControl": {    "batchCode": "CMPD-87654321-01",    "concentration": 1,    "concentrationUnits": "uM"  },  "agonistControl": {    "batchCode": "CMPD-87654399-01",    "concentration": 250753.77,    "concentrationUnits": "uM"  },  "vehicleControl": {    "batchCode": "CMPD-00000001-01",    "concentration": null,    "concentrationUnits": null  },  "": "(maximum-minimum)/minimum",  "normalizationRule": "plate order",  "hitEfficacyThreshold": 42,  "hitSDThreshold": 5.0,  "thresholdType": "sd"}'
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -2685,7 +2685,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "Started"
+				stringValue: "started"
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -3072,7 +3072,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "Started"
+				stringValue: "started"
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -3489,8 +3489,12 @@
 				recordedDate: 1367455531000
 				version: 0
 		]
+	exports.resultViewerURLByExperimentCodeName =
+		resultViewerURL: "host4.labsynch.com:9080/seurat/runseurat?cmd=newjob&AssayName=FLIPR%20target%20A%20biochemical&AssayProtocol=test%3a%3a"
+
 
 
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentServiceTestJSON = window.experimentServiceTestJSON or {} else exports)
+
 
 

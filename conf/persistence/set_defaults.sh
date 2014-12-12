@@ -83,8 +83,7 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json" -d '[
 {kindName: "raw results locations", lsType:{id:1, version:0}},
 {kindName: "experiment metadata", lsType:{id:1, version:0}},
-{kindName: "Generic", lsType:{id:2, version:0}},
-{kindName: "Dose Response", lsType:{id:2, version:0}},
+{kindName: "dose response", lsType:{id:2, version:0}},
 {kindName: "results", lsType:{id:2, version:0}},
 {kindName: "test compound treatment", lsType:{id:2, version:0}},
 {kindName: "animal information", lsType:{id:1, version:0}},

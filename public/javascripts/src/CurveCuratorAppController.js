@@ -12,15 +12,16 @@
     }
 
     CurveCuratorAppRouter.prototype.routes = {
-      ":exptCode": "loadCurvesForExptCode"
+      ":exptCode": "loadCurvesForExptCode",
+      ":exptCode/:curveID": "loadCurvesForExptCode"
     };
 
     CurveCuratorAppRouter.prototype.initialize = function(options) {
       return this.appController = options.appController;
     };
 
-    CurveCuratorAppRouter.prototype.loadCurvesForExptCode = function(exptCode) {
-      return this.appController.loadCurvesForExptCode(exptCode);
+    CurveCuratorAppRouter.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
+      return this.appController.loadCurvesForExptCode(exptCode, curveID);
     };
 
     return CurveCuratorAppRouter;
@@ -58,8 +59,27 @@
       return this;
     };
 
-    CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode) {
-      return this.ccc.getCurvesFromExperimentCode(exptCode);
+    CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
+      this.ccc.getCurvesFromExperimentCode(exptCode, curveID);
+      return $.ajax({
+        type: 'GET',
+        url: "/api/experiments/resultViewerURL/" + exptCode,
+        success: (function(_this) {
+          return function(json) {
+            var resultViewerURL;
+            _this.resultViewerURL = json;
+            resultViewerURL = _this.resultViewerURL.resultViewerURL;
+            _this.$('.bv_resultViewerBtn').attr('href', resultViewerURL);
+            return _this.$('.bv_resultViewerBtn').show();
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            return _this.serviceReturn = null;
+          };
+        })(this),
+        dataType: 'json'
+      });
     };
 
     return CurveCuratorAppController;

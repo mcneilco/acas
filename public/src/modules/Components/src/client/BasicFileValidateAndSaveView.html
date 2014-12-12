@@ -1,6 +1,6 @@
 <script type="text/template" id="BasicFileValidateAndSaveView">
     <div class='bv_outerContainer container' >
-        <div class="bv_moduleTitle row-fluid span7">Generic Data Parser</div>
+        <div class="bv_moduleTitle row-fluid span7" style="padding-bottom: 0px;margin-bottom: 0px;">Generic Data Parser</div>
         <div class="row-fluid span7 bv_additionalValuesForm"></div>
         <div class="bv_resultStatus row-fluid span7"></div>
         <div class='bv_fileUploadWrapper row-fluid'>
@@ -8,11 +8,32 @@
                 To upload the <b>required data file</b>, click the "Browse Files…" button and select a file.
             </div>
             <div class='bv_parseFile'></div>
-            <div class='bv_reportFileWrapper row-fluid' style="display: none;">
-                <div class='well span7'>
-                    To upload an <b>optional report file</b>, click the "Browse Files…" button and select a file.
+            <div class="bv_reportFileFeature well span7" style="background:white;padding-bottom:0;margin-left:0;">
+                <div class="control-group bv_group_attachReportFile">
+                    <input type="checkbox" name="bv_attachReportFile" class="bv_attachReportFile" style="margin-top:0px;margin-bottom:3px;"/>
+                    <label class="control-label bv_attachReportCheckboxText pull-right" style="width:200px;margin-bottom:20px;margin-right:410px;">Attach optional report file
+                    </label>
+
                 </div>
-                <div class='bv_reportFile'></div>
+                <div class='bv_reportFileWrapper row-fluid' style="display: none;">
+                    <div class='bv_reportFileDirections well span12'>
+                        To upload an <b>optional report file</b>, click the "Browse Files…" button and select a file.
+                    </div>
+                    <div class='bv_reportFile'></div>
+                </div>
+            </div>
+            <div class="bv_imagesFileFeature well span7" style="background:#FFFFFF;padding-bottom:0;margin-left:0;">
+                <div class="control-group bv_group_attachImagesFile">
+                    <label class="control-label checkbox" style="width:200px;padding-left:20px;margin-bottom:20px;">
+                        <input type="checkbox" name="bv_attachImagesFile" class="bv_attachImagesFile"/>Attach optional image file
+                    </label>
+                </div>
+                <div class='bv_imagesFileWrapper row-fluid' style="display: none;">
+                    <div class='well span12'>
+                        To upload an <b>optional image file</b>, click the "Browse Files…" button and select a file.
+                    </div>
+                    <div class='bv_imagesFile'></div>
+                </div>
             </div>
         </div>
 

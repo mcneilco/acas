@@ -7,7 +7,8 @@
 
 (function() {
   exports.logUsage = function(action, data, username) {
-    return console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
+    console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
+    return global.logger.writeToLog("info", "logUsage", action, data, username, null);
   };
 
   exports.getConfServiceVars = function(sysEnv, callback) {
@@ -19,14 +20,13 @@
   exports.authCheck = function(user, pass, retFun) {
     var config, request;
     config = require('../../../conf/compiled/conf.js');
-    console.log(config.all.client.require);
     request = require('request');
     return request({
       headers: {
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       },
       method: 'POST',
-      url: config.all.client.require.loginLink,
+      url: config.all.server.roologin.loginLink,
       form: {
         j_username: user,
         j_password: pass
@@ -39,10 +39,11 @@
         } else if (!error && response.statusCode === 302) {
           return retFun(JSON.stringify(response.headers.location));
         } else {
-          console.log('got ajax error trying authenticate a user');
+          console.log('got connection error trying authenticate a user');
           console.log(error);
           console.log(json);
-          return console.log(response);
+          console.log(response);
+          return retFun("connection_error " + error);
         }
       };
     })(this));
@@ -57,7 +58,7 @@
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       },
       method: 'POST',
-      url: config.all.client.require.resetLink,
+      url: config.all.server.roologin.resetLink,
       form: {
         emailAddress: email
       },
@@ -70,7 +71,8 @@
           console.log('got ajax error trying authenticate a user');
           console.log(error);
           console.log(json);
-          return console.log(response);
+          console.log(response);
+          return retFun("connection_error " + error);
         }
       };
     })(this));
@@ -85,7 +87,7 @@
         accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
       },
       method: 'POST',
-      url: config.all.client.require.changeLink,
+      url: config.all.server.roologin.changeLink,
       form: {
         username: user,
         oldPassword: passOld,
@@ -102,7 +104,8 @@
           console.log('got ajax error trying authenticate a user');
           console.log(error);
           console.log(json);
-          return console.log(response);
+          console.log(response);
+          return retFun("connection_error " + error);
         }
       };
     })(this));
@@ -112,7 +115,7 @@
     var config, request;
     console.log("getting user");
     config = require('../../../conf/compiled/conf.js');
-    if (config.all.client.require.login && !global.specRunnerTestmode) {
+    if (config.all.server.roologin.getUserLink && !global.specRunnerTestmode) {
       console.log("getting user from server");
       request = require('request');
       return request({
@@ -120,7 +123,7 @@
           accept: 'application/json'
         },
         method: 'POST',
-        url: config.all.client.require.getUserLink,
+        url: config.all.server.roologin.getUserLink,
         json: {
           name: username
         }
@@ -181,6 +184,16 @@
         return done(null, false, {
           message: "Invalid credentials"
         });
+      } else if (results.indexOf("connection_error") >= 0) {
+        try {
+          exports.logUsage("Connection to authentication service failed: ", "", username);
+        } catch (_error) {
+          error = _error;
+          console.log("Exception trying to log:" + error);
+        }
+        return done(null, false, {
+          message: "Cannot connect to authentication service. Please contact an administrator"
+        });
       } else {
         try {
           exports.logUsage("User logged in succesfully: ", "", username);
@@ -207,6 +220,15 @@
       }
     ];
     return resp.end(JSON.stringify(projects));
+  };
+
+  exports.makeServiceRequestHeaders = function(user) {
+    var config, headers, username;
+    config = require('../../../conf/compiled/conf.js');
+    username = user != null ? user.username : "testmode";
+    return headers = {
+      "From": username
+    };
   };
 
 }).call(this);

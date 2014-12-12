@@ -38,50 +38,69 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 		return
 
 	exec = require('child_process').exec
-	#npm install temporary
 	Tempfile = require 'temporary/lib/file'
 
 	rCommandFile = new Tempfile
-	requestJSONFile =new Tempfile
-	requestJSONFile.writeFileSync JSON.stringify(request.body)
+	requestJSONFile = new Tempfile
+	stdoutFile =  new Tempfile
+	requestJSONFile.writeFile JSON.stringify(request.body), =>
 
-	rCommand = 'tryCatch({ '
-	rCommand += '	out <- capture.output(.libPaths("r_libs")); '
-	rCommand += '	out <- capture.output(require("rjson")); '
-	rCommand += '	out <- capture.output(source("'+rScript+'")); '
-	rCommand += '	out <- capture.output(request <- fromJSON(file='+JSON.stringify(requestJSONFile.path)+'));'
-	rCommand += '	out <- capture.output(returnValues <- '+rFunction+'(request));'
-	rCommand += '	cat(toJSON(returnValues));'
-	rCommand += '},error = function(ex) {cat(paste("R Execution Error:",ex));})'
-	rCommandFile.writeFileSync rCommand
-	console.log rCommand
-	command = rScriptCommand + " " + rCommandFile.path + " 2> /dev/null"
+		rCommand = 'tryCatch({ '
+		rCommand += '	out <- capture.output(.libPaths("r_libs")); '
+		rCommand += '	out <- capture.output(require("rjson")); '
+		rCommand += '	out <- capture.output(source("'+rScript+'")); '
+		rCommand += '	out <- capture.output(request <- fromJSON(file='+JSON.stringify(requestJSONFile.path)+'));'
+		rCommand += '	out <- capture.output(returnValues <- '+rFunction+'(request));'
+		rCommand += '	cat(toJSON(returnValues));'
+		rCommand += '},error = function(ex) {cat(paste("R Execution Error:",ex));})'
+		rCommandFile.writeFile rCommand, =>
+			console.log rCommand
+			console.log stdoutFile.path
+			command = rScriptCommand + " " + rCommandFile.path + " > "+stdoutFile.path+" 2> /dev/null"
 
+			child = exec command,  (error, stdout, stderr) ->
+				console.log "stderr: " + stderr
+				console.log "stdout: " + stdout
+				stdoutFile.readFile encoding: 'utf8', (err, stdoutFileText) =>
+					if stdoutFileText.indexOf("R Execution Error") is 0
+						message =
+							errorLevel: "error"
+							message: stdoutFileText
+						result =
+							hasError: true
+							hasWarning: false
+							errorMessages: [message]
+							transactionId: null
+							experimentId: null
+							results: null
+						returnFunction.call JSON.stringify(result)
+						csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), request.body.user
+					else
+						returnFunction.call @, stdoutFileText
+						try
+							if stdoutFileText.indexOf '"hasError":true' > -1
+								csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, stdoutFileText, request.body.user
+							else
+								csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", request.body.user
+						catch error
+							console.log error
+
+exports.runRScript = (rScript) ->
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	rScriptCommand = config.all.server.rscript
+	if config.all.server.rscript?
+		rScriptCommand = config.all.server.rscript
+	else
+		rScriptCommand = "Rscript"
+
+	exec = require('child_process').exec
+	command = "export R_LIBS=r_libs && "+ rScriptCommand + " " + rScript + " 2> /dev/null"
+	console.log "About to call R script using command: "+command
 	child = exec command,  (error, stdout, stderr) ->
 		console.log "stderr: " + stderr
 		console.log "stdout: " + stdout
-		if stdout.indexOf("R Execution Error") is 0
-			message =
-				errorLevel: "error"
-				message: stdout
-			result =
-				hasError: true
-				hasWarning: false
-				errorMessages: [message]
-				transactionId: null
-				experimentId: null
-				results: null
-			returnFunction.call JSON.stringify(result)
-			csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), request.body.user
-		else
-			returnFunction.call @, stdout
-			try
-				if stdout.indexOf '"hasError":true' > -1
-					csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, stdout, request.body.user
-				else
-					csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", request.body.user
-			catch error
-				console.log error
+
 
 ### To allow following test routes to work, install this Module
 	# ServerUtility function testing routes

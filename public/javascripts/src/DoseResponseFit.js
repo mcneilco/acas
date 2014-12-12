@@ -19,7 +19,7 @@
         requireDoseResponse: true
       };
       DoseResponseDataParserController.__super__.initialize.call(this);
-      return this.$('.bv_moduleTitle').html('Load Efficacy Data for Dose-Respnse Fit');
+      return this.$('.bv_moduleTitle').html('Load Efficacy Data for Dose Response Fit');
     };
 
     DoseResponseDataParserController.prototype.handleSaveReturnSuccess = function(json) {
@@ -121,7 +121,6 @@
 
     DoseResponseFitController.prototype.fitReturnSuccess = function(json) {
       this.$('.bv_modelFitResultsHTML').html(json.results.htmlSummary);
-      this.$('.bv_modelFitStatus').html(json.results.status);
       this.$('.bv_resultsContainer').show();
       this.$('.bv_fitModelButton').hide();
       this.$('.bv_fitOptionWrapper').hide();
@@ -180,6 +179,9 @@
 
     DoseResponseFitWorkflowController.prototype.initializeCurveFitController = function() {
       this.$('.bv_doseResponseAnalysis').empty();
+      if (this.modelFitController != null) {
+        this.modelFitController.undelegateEvents();
+      }
       this.modelFitController = new DoseResponseFitController({
         experimentCode: this.drdpc.getNewExperimentCode(),
         el: this.$('.bv_doseResponseAnalysis')
@@ -199,17 +201,20 @@
     };
 
     DoseResponseFitWorkflowController.prototype.handleDataUploadComplete = function() {
-      this.initializeCurveFitController();
       this.$('.bv_modelFitTabLink').click();
+      this.initializeCurveFitController();
       return this.trigger('amDirty');
     };
 
     DoseResponseFitWorkflowController.prototype.handleFitComplete = function() {
-      return this.$('.bv_completeControlContainer').show();
+      this.$('.bv_completeControlContainer').show();
+      return this.drdpc.$('.bv_loadAnother').hide();
     };
 
     DoseResponseFitWorkflowController.prototype.handleFitAnother = function() {
-      this.intializeParserController();
+      this.drdpc.loadAnother();
+      this.$('.bv_doseResponseAnalysis').empty();
+      this.$('.bv_doseResponseAnalysis').append("<div class='bv_uploadDataToFit span10'>Data must be uploaded first before fitting.</div>");
       this.$('.bv_completeControlContainer').hide();
       return this.$('.bv_uploadDataTabLink').click();
     };

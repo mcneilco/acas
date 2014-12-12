@@ -3,8 +3,6 @@ exports.requiredScripts = [
 	'/src/lib/json2.js',
 	'/src/lib/underscore.js',
 	'/src/lib/backbone-min.js',
-	'/src/lib/bootstrap/bootstrap-tooltip.js',
-	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
 	'/src/lib/jqueryFileUpload/js/vendor/jquery.ui.widget.js',
 	'/src/lib/jqueryFileUpload/js/jquery.iframe-transport.js',
 	'/src/lib/bootstrap/bootstrap.min.js',
@@ -15,8 +13,12 @@ exports.requiredScripts = [
 	'/src/lib/jqueryFileUpload/js/jquery.fileupload-ui.js',
 	'/src/lib/jqueryFileUpload/js/locale.js',
 	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
-	'/src/lib/dataTables/js/jquery.dataTables.js',
-	'/src/lib/jstree/jstree.min.js'
+    '/src/lib/bootstrap/bootstrap-tooltip.js',
+    '/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
+    '/src/lib/dataTables/js/jquery.dataTables.js',
+	'/src/lib/jsxgraph/jsxgraphcore.js',
+	'/src/lib/jstree/jstree.min.js',
+	'/src/lib/moment.min.js'
 ];
 
 exports.applicationScripts = [
@@ -48,6 +50,7 @@ exports.applicationScripts = [
 	"/javascripts/src/ExperimentBrowser.js",
 	"/javascripts/src/GeneDataQueries.js",
 	"/javascripts/src/GenericDataParser.js",
+	"/javascripts/src/Logging.js",
 	"/javascripts/src/ModuleLauncher.js",
 	"/javascripts/src/ModuleMenus.js",
 	"/javascripts/src/ModuleMenusConfiguration.js",
@@ -71,6 +74,7 @@ exports.specScripts = [
 	"/src/modules/Components/spec/testFixtures/TagListTestJSON.js",
 	"/src/modules/Components/spec/testFixtures/projectServiceTestJSON.js",
 	"/src/modules/DocForBatches/spec/testFixtures/testJSON.js",
+	"/src/modules/Logging/spec/testFixtures/LoggingTestJSON.js",
 	"/javascripts/spec/testFixtures/CurveAnalysisCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/CurveFitTestFixtures.js",
 	"/javascripts/spec/testFixtures/CurveFitTestJSON.js",
@@ -88,7 +92,6 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/curveCuratorTestFixtures.js",
 	"/src/modules/DocForBatches/spec/DocForBatchesSpec.js",
-	"/src/modules/ExperimentBrowser/spec/ProtocolStub.js",
 	"/javascripts/spec/AbstractFormControllerSpec.js",
 	"/javascripts/spec/AnalysisGroupSpec.js",
 	"/javascripts/spec/AuthenticationServiceSpec.js",
@@ -113,6 +116,8 @@ exports.specScripts = [
 	"/javascripts/spec/LSFileChooserSpec.js",
 	"/javascripts/spec/LSFileInputSpec.js",
 	"/javascripts/spec/LabelSpec.js",
+	"/javascripts/spec/LoggingServicesSpec.js",
+	"/javascripts/spec/LoggingSpec.js",
 	"/javascripts/spec/ModuleLauncherSpec.js",
 	"/javascripts/spec/ModuleMenusSpec.js",
 	"/javascripts/spec/PickListSpec.js",

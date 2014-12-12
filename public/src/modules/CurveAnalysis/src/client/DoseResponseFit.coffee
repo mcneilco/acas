@@ -6,7 +6,7 @@ class window.DoseResponseDataParserController extends BasicFileValidateAndSaveCo
 		@errorOwnerName = 'DoseResponseDataParserController'
 		@additionalData = requireDoseResponse: true
 		super()
-		@$('.bv_moduleTitle').html('Load Efficacy Data for Dose-Respnse Fit')
+		@$('.bv_moduleTitle').html('Load Efficacy Data for Dose Response Fit')
 
 	handleSaveReturnSuccess: (json) =>
 		super(json)
@@ -72,7 +72,6 @@ class window.DoseResponseFitController extends Backbone.View
 
 	fitReturnSuccess: (json) =>
 		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
-		@$('.bv_modelFitStatus').html(json.results.status)
 		@$('.bv_resultsContainer').show()
 		@$('.bv_fitModelButton').hide()
 		@$('.bv_fitOptionWrapper').hide()
@@ -106,6 +105,8 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 
 	initializeCurveFitController: =>
 		@$('.bv_doseResponseAnalysis').empty()
+		if @modelFitController?
+			@modelFitController.undelegateEvents()
 		@modelFitController = new DoseResponseFitController
 			experimentCode: @drdpc.getNewExperimentCode()
 			el: @$('.bv_doseResponseAnalysis')
@@ -117,16 +118,18 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 		@modelFitController.on 'fitComplete', @handleFitComplete
 
 	handleDataUploadComplete: =>
-		@initializeCurveFitController()
 		@$('.bv_modelFitTabLink').click()
+		@initializeCurveFitController()
 		@trigger 'amDirty'
-
 
 	handleFitComplete: =>
 		@$('.bv_completeControlContainer').show()
+		@drdpc.$('.bv_loadAnother').hide()
 
 	handleFitAnother: =>
-		@intializeParserController()
+		@drdpc.loadAnother()
+		@$('.bv_doseResponseAnalysis').empty()
+		@$('.bv_doseResponseAnalysis').append "<div class='bv_uploadDataToFit span10'>Data must be uploaded first before fitting.</div>"
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_uploadDataTabLink').click()
 

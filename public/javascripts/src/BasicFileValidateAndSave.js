@@ -15,6 +15,8 @@
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
       this.parseAndSave = __bind(this.parseAndSave, this);
       this.validateParseFile = __bind(this.validateParseFile, this);
+      this.handleImagesFileRemoved = __bind(this.handleImagesFileRemoved, this);
+      this.handleImagesFileUploaded = __bind(this.handleImagesFileUploaded, this);
       this.handleReportFileRemoved = __bind(this.handleReportFileRemoved, this);
       this.handleReportFileUploaded = __bind(this.handleReportFileUploaded, this);
       this.handleParseFileRemoved = __bind(this.handleParseFileRemoved, this);
@@ -37,6 +39,10 @@
 
     BasicFileValidateAndSaveController.prototype.loadReportFile = false;
 
+    BasicFileValidateAndSaveController.prototype.imagesFileNameOnServer = null;
+
+    BasicFileValidateAndSaveController.prototype.loadImagesFile = false;
+
     BasicFileValidateAndSaveController.prototype.filePath = "";
 
     BasicFileValidateAndSaveController.prototype.additionalData = {
@@ -48,13 +54,19 @@
 
     BasicFileValidateAndSaveController.prototype.maxFileSize = 200000000;
 
+    BasicFileValidateAndSaveController.prototype.attachReportFile = false;
+
+    BasicFileValidateAndSaveController.prototype.attachImagesFile = false;
+
     BasicFileValidateAndSaveController.prototype.template = _.template($("#BasicFileValidateAndSaveView").html());
 
     BasicFileValidateAndSaveController.prototype.events = {
       'click .bv_next': 'validateParseFile',
       'click .bv_save': 'parseAndSave',
       'click .bv_back': 'backToUpload',
-      'click .bv_loadAnother': 'loadAnother'
+      'click .bv_loadAnother': 'loadAnother',
+      'click .bv_attachReportFile': 'handleAttachReportFileChanged',
+      'click .bv_attachImagesFile': 'handleAttachImagesFileChanged'
     };
 
     BasicFileValidateAndSaveController.prototype.initialize = function() {
@@ -85,7 +97,24 @@
         this.reportFileController.on('fileInput:uploadComplete', this.handleReportFileUploaded);
         this.reportFileController.on('fileInput:removedFile', this.handleReportFileRemoved);
         this.reportFileController.render();
-        this.$('.bv_reportFileWrapper').show();
+        this.handleAttachReportFileChanged();
+      } else {
+        this.$('.bv_reportFileFeature').hide();
+      }
+      if (this.loadImagesFile) {
+        this.imagesFileController = new LSFileInputController({
+          el: this.$('.bv_imagesFile'),
+          inputTitle: '',
+          url: UtilityFunctions.prototype.getFileServiceURL(),
+          fieldIsRequired: false,
+          allowedFileTypes: ['zip']
+        });
+        this.imagesFileController.on('fileInput:uploadComplete', this.handleImagesFileUploaded);
+        this.imagesFileController.on('fileInput:removedFile', this.handleImagesFileRemoved);
+        this.imagesFileController.render();
+        this.handleAttachImagesFileChanged();
+      } else {
+        this.$('.bv_imagesFileFeature').hide();
       }
       return this.showFileSelectPhase();
     };
@@ -118,6 +147,15 @@
 
     BasicFileValidateAndSaveController.prototype.handleReportFileRemoved = function() {
       return this.reportFileNameOnServer = null;
+    };
+
+    BasicFileValidateAndSaveController.prototype.handleImagesFileUploaded = function(fileName) {
+      this.imagesFileNameOnServer = this.filePath + fileName;
+      return this.trigger('amDirty');
+    };
+
+    BasicFileValidateAndSaveController.prototype.handleImagesFileRemoved = function() {
+      return this.imagesFileNameOnServer = null;
     };
 
     BasicFileValidateAndSaveController.prototype.validateParseFile = function() {
@@ -172,6 +210,7 @@
       data = {
         fileToParse: this.parseFileNameOnServer,
         reportFile: this.reportFileNameOnServer,
+        imagesFile: this.imagesFileNameOnServer,
         dryRunMode: dryRun,
         user: user
       };
@@ -238,6 +277,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.showFileSelectPhase = function() {
+      this.$('.bv_resultStatus').hide();
       this.$('.bv_resultStatus').html("");
       this.$('.bv_htmlSummary').hide();
       this.$('.bv_htmlSummary').html('');
@@ -249,7 +289,32 @@
       return this.$('.bv_csvPreviewContainer').hide();
     };
 
+    BasicFileValidateAndSaveController.prototype.handleAttachReportFileChanged = function() {
+      var attachReportFile;
+      attachReportFile = this.$('.bv_attachReportFile').is(":checked");
+      if (attachReportFile) {
+        return this.$('.bv_reportFileWrapper').show();
+      } else {
+        this.handleReportFileRemoved();
+        this.$('.bv_reportFileWrapper').hide();
+        return this.reportFileController.render();
+      }
+    };
+
+    BasicFileValidateAndSaveController.prototype.handleAttachImagesFileChanged = function() {
+      var attachImagesFile;
+      attachImagesFile = this.$('.bv_attachImagesFile').is(":checked");
+      if (attachImagesFile) {
+        return this.$('.bv_imagesFileWrapper').show();
+      } else {
+        this.handleImagesFileRemoved();
+        this.$('.bv_imagesFileWrapper').hide();
+        return this.imagesFileController.render();
+      }
+    };
+
     BasicFileValidateAndSaveController.prototype.showFileUploadPhase = function() {
+      this.$('.bv_resultStatus').show();
       this.$('.bv_htmlSummary').show();
       this.$('.bv_fileUploadWrapper').hide();
       this.$('.bv_nextControlContainer').hide();
@@ -259,6 +324,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.showFileUploadCompletePhase = function() {
+      this.$('.bv_resultStatus').show();
       this.$('.bv_htmlSummary').show();
       this.$('.bv_csvPreviewContainer').hide();
       this.$('.bv_fileUploadWrapper').hide();

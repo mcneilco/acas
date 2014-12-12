@@ -47,6 +47,7 @@ exports.index = (req, res, moduleLaunchParams) ->
 			testMode: false
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
+			loggingToMongo: config.all.logging.usemongo
 
 
 exports.specRunner = (req, res) ->
