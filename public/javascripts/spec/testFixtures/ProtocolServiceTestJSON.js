@@ -53,7 +53,7 @@
               publicData: true,
               recordedDate: 1363388477000,
               sigFigs: null,
-              stringValue: "assay tree rule goes here",
+              stringValue: "/assayTreeRule",
               uncertainty: null,
               urlValue: null,
               lsKind: "assay tree rule",

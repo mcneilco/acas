@@ -292,7 +292,7 @@ describe "Protocol module testing", ->
 				it "should fill the short description field", ->
 					expect(@pbc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 				it "should fill the assay tree rule field", ->
-					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "assay tree rule goes here"
+					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "/assayTreeRule"
 				it "should fill the assay stage field", ->
 					waitsFor ->
 						@pbc.$('.bv_assayStage option').length > 0

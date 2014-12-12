@@ -437,7 +437,7 @@
             return expect(this.pbc.$('.bv_shortDescription').html()).toEqual("primary analysis");
           });
           it("should fill the assay tree rule field", function() {
-            return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("assay tree rule goes here");
+            return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("/assayTreeRule");
           });
           it("should fill the assay stage field", function() {
             waitsFor(function() {
