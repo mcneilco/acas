@@ -178,29 +178,38 @@
       return State.__super__.constructor.apply(this, arguments);
     }
 
-    State.prototype.defaults = function() {
-      return {
-        lsValues: new ValueList(),
-        ignored: false,
-        recordedDate: null,
-        recordedBy: ""
-      };
+    State.prototype.defaults = {
+      lsValues: new ValueList(),
+      ignored: false,
+      recordedDate: null,
+      recordedBy: ""
     };
 
     State.prototype.initialize = function() {
-      return this.set(this.parse(this.attributes));
+      if (this.has('lsValues')) {
+        if (!(this.get('lsValues') instanceof ValueList)) {
+          this.set({
+            lsValues: new ValueList(this.get('lsValues'))
+          });
+        }
+      }
+      return this.get('lsValues').on('change', (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
     };
 
     State.prototype.parse = function(resp) {
       if (resp.lsValues != null) {
         if (!(resp.lsValues instanceof ValueList)) {
           resp.lsValues = new ValueList(resp.lsValues);
+          resp.lsValues.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
-        resp.lsValues.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
       }
       return resp;
     };

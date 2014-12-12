@@ -93,7 +93,8 @@ renderCurve <- function(getParams) {
       if(length(curveIds == 1)) {
         experimentCode <- query(paste0("SELECT e.code_name
                                      FROM experiment e
-                                     JOIN analysis_group ag on ag.experiment_id=e.id
+                                     JOIN experiment_analysisgroup eag ON e.id = eag.experiment_id
+                                     JOIN analysis_group ag ON ag.id = eag.analysis_group_id
                                      JOIN analysis_group_state ags on ags.analysis_group_id=ag.id
                                      JOIN analysis_group_value agv on agv.analysis_state_id=ags.id
                                      WHERE agv.string_value = ",sqliz(GET$curveIds),"

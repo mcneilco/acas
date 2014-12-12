@@ -17,7 +17,6 @@ describe "Curve Curator Module testing", ->
 	describe "Curve List Model testing", ->
 		beforeEach ->
 			@curveList = new CurveList window.curveCuratorTestJSON.curveCuratorThumbs.curves
-			@curvesFetched = false
 		describe "basic plumbing tests", ->
 			it "should have model defined", ->
 				expect(CurveList).toBeDefined()
@@ -26,6 +25,45 @@ describe "Curve Curator Module testing", ->
 				categories = @curveList.getCategories()
 				expect(categories.length).toEqual 5
 				expect(categories instanceof Backbone.Collection).toBeTruthy()
+		describe "getting curve by curveid", ->
+			it "should return a curve", ->
+				curve = @curveList.getCurveByID("AG-00344446_1680")
+				expect(curve instanceof Curve)
+		describe "getting curve index by curveid", ->
+			it "should return a curve", ->
+				curveIndex = @curveList.getIndexByCurveID("AG-00344446_1680")
+				expect(curveIndex).toEqual 8
+		describe "updating a curve summary", ->
+			it "should update curve summary", ->
+				originalCurve = @curveList.models[0]
+				oldCurveID = originalCurve.get 'curveid'
+				newCurveID = originalCurve.get 'curveid' + " test"
+				dirty = !originalCurve.get 'dirty'
+				category = originalCurve.get 'category' + " test"
+				flagUser = originalCurve.get 'flagUser' + " test"
+				flagAlgorithm = originalCurve.get 'flagAlgorithm' + " test"
+				@curveList.updateCurveSummary(oldCurveID,newCurveID,dirty,category,flagUser,flagAlgorithm)
+				updatedCurve = @curveList.models[0]
+				expect(updatedCurve.get 'curveid').toEqual(newCurveID)
+				expect(updatedCurve.get 'dirty').toEqual(dirty)
+				expect(updatedCurve.get 'category').toEqual(category)
+				expect(updatedCurve.get 'flagUser').toEqual(flagUser)
+				expect(updatedCurve.get 'flagAlgorithm').toEqual(flagAlgorithm)
+		describe "updating dirty flag", ->
+			it "should update dirty flag", ->
+				originalCurve = @curveList.models[0]
+				dirty = !originalCurve.get 'dirty'
+				@curveList.updateDirtyFlag(originalCurve.get('curveid'), dirty)
+				updatedCurve = @curveList.models[0]
+				expect(updatedCurve.get 'dirty').toEqual(dirty)
+		describe "updating flag user", ->
+			it "should update flag user", ->
+				originalCurve = @curveList.models[0]
+				flagUser = originalCurve.get 'flagUser' + " test"
+				@curveList.updateFlagUser(originalCurve.get('curveid'), flagUser)
+				updatedCurve = @curveList.models[0]
+				expect(updatedCurve.get 'flagUser').toEqual(flagUser)
+
 
 	describe "CurveCurationSetModel testing", ->
 		beforeEach ->
@@ -78,8 +116,8 @@ describe "Curve Curator Module testing", ->
 				expect(@csc.$('.bv_compoundCode').html()).toEqual "CMPD-0000007-01A"
 		describe "selection", ->
 			it "should show selected when clicked", ->
-				@csc.$el.click()
-				expect(@csc.$el.hasClass('selected')).toBeTruthy()
+				@csc.$('.bv_flagUser').click()
+				@csc.$el.hasClass('selected')
 		describe "algorithm approved display", ->
 			it "should show not approved when algorithm flagged", ->
 				@csc.model.set flagAlgorithm: "no fit"
@@ -106,6 +144,40 @@ describe "Curve Curator Module testing", ->
 				expect(@csc.$('.bv_thumbsUp')).toBeHidden()
 				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
 				expect(@csc.$('.bv_na')).toBeVisible()
+		describe "user flagged curation", ->
+			it "should show flag user menu when flag user button is clicked", ->
+				@csc.$('.bv_flagUser').click()
+				expect(@csc.$('.bv_dropdown')).toBeVisible()
+			it "should update user flag when user selects reject dropdown menu item", ->
+				@csc.model.set
+					flagUser: 'NA'
+				@csc.$('.bv_flagUser').click()
+				@csc.$('.bv_userReject').click()
+				waitsFor =>
+					@csc.model.get('flagUser') == "rejected"
+				, 200
+				runs =>
+					expect(@csc.model.get('flagUser')).toEqual("rejected")
+			it "should update user flag when user selects approve dropdown menu item", ->
+				@csc.model.set
+					flagUser: 'NA'
+				@csc.$('.bv_flagUser').click()
+				@csc.$('.bv_userApprove').click()
+				waitsFor =>
+					@csc.model.get('flagUser') == "approved"
+				, 200
+				runs =>
+					expect(@csc.model.get('flagUser')).toEqual("approved")
+			it "should update user flag when user selects NA dropdown menu item", ->
+				@csc.model.set
+					flagUser: 'approved'
+				@csc.$('.bv_flagUser').click()
+				@csc.$('.bv_userNA').click()
+				waitsFor =>
+					@csc.model.get('flagUser') == "NA"
+				, 200
+				runs =>
+					expect(@csc.model.get('flagUser')).toEqual("NA")
 
 	describe "Curve Summary List Controller tests", ->
 		beforeEach ->
@@ -124,14 +196,14 @@ describe "Curve Curator Module testing", ->
 				expect(@cslc.$('.bv_curveSummary').length).toEqual 16
 		describe "user thumbnail selection", ->
 			beforeEach ->
-				@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).click()
+				@cslc.$('.bv_curveSummaries .bv_curveSummary .bv_group_thumbnail')[0].click()
 			it "should highlight selected row", ->
 				expect(@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeTruthy()
 			it "should select other row when other row is selected", ->
-				@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(1).click()
+				@cslc.$('.bv_curveSummaries .bv_curveSummary .bv_group_thumbnail')[1].click()
 				expect(@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(1).hasClass('selected')).toBeTruthy()
 			it "should clear selected when another row is selected", ->
-				@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(1).click()
+				@cslc.$('.bv_curveSummaries .bv_curveSummary .bv_group_thumbnail')[1].click()
 				expect(@cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeFalsy()
 		describe "filtering", ->
 			it "should only show Sigmoid when requested", ->

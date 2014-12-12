@@ -98,7 +98,6 @@
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      console.log("in post experiment");
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments";
       request = require('request');
@@ -138,8 +137,6 @@
     } else {
       config = require('../conf/compiled/conf.js');
       putId = req.body.id;
-      console.log("putID");
-      console.log(putId);
       baseurl = config.all.client.service.persistence.fullpath + "experiments/" + putId;
       request = require('request');
       return request({

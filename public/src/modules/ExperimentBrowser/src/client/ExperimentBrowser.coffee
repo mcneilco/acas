@@ -62,7 +62,6 @@ class window.ExperimentSearchController extends AbstractFormController
 
 
 	doGenericExperimentSearch: (searchTerm) =>
-		console.log "doGenericExperimentSearch"
 		$.ajax
 			type: 'GET'
 			url: "/api/experiments/genericSearch/#{searchTerm}"
@@ -137,8 +136,6 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 	initialize: ->
 		@includeDuplicateAndEdit = @options.includeDuplicateAndEdit
 		@searchUrl = ""
-		console.log("@includeDuplicateAndEdit")
-		console.log @includeDuplicateAndEdit
 		if @includeDuplicateAndEdit
 			@searchUrl = @genericSearchUrl
 		else
@@ -197,7 +194,6 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 		#$(".bv_experimentTableController").html "Searching..."
 
 		unless experimentSearchTerm is ""
-			console.log "doGenericExperimentSearch"
 			$.ajax
 				type: 'GET'
 				url: @searchUrl + experimentSearchTerm
@@ -304,11 +300,6 @@ class window.ExperimentBrowserController extends Backbone.View
 
 			@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
 			$(".bv_experimentTableController").html @experimentSummaryTable.render().el
-
-
-
-			unless @includeDuplicateAndEdit
-				@selectedExperimentUpdated new Experiment experiments[0]
 
 	selectedExperimentUpdated: (experiment) =>
 		@trigger "selectedExperimentUpdated"

@@ -150,9 +150,9 @@ log() {
 do_start() {
     dirname=`basename $ACAS_HOME`
     LOCKFILE=$ACAS_HOME/bin/app.js.LOCKFILE
-    logname=$server_log_path/${dirname}${server_log_suffix}.log
-    logout=$server_log_path/${dirname}${server_log_suffix}_stdout.log
-    logerr=$server_log_path/${dirname}${server_log_suffix}_stderr.log
+    logname=$server_log_path/acas${server_log_suffix}.log
+    logout=$server_log_path/acas${server_log_suffix}_stdout.log
+    logerr=$server_log_path/acas${server_log_suffix}_stderr.log
     # Check if it's running first
     if running ;  then
         log "app.js already running"

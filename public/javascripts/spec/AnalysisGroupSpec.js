@@ -41,7 +41,7 @@ This suite of services provides CRUD operations on Analysis Group Objects
         });
         return describe("after initial load", function() {
           it("should have a kind", function() {
-            return expect(this.ag.get('lsKind')).toEqual("ACAS doc for batches");
+            return expect(this.ag.get('kind')).toEqual("ACAS doc for batches");
           });
           it("should have a code ", function() {
             return expect(this.ag.get('codeName')).toEqual("AG-00037424");
