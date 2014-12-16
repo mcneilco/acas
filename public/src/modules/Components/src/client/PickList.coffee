@@ -93,8 +93,8 @@ class window.AddParameterOptionPanel extends Backbone.Model
 	defaults:
 		parameter: null
 		codeType: null
-		codeOrigin: "acas ddict"
-		codeKind: null #this is set when the panel is shown
+		codeOrigin: "ACAS DDICT"
+		codeKind: null
 		newOptionLabel: null
 		newOptionDescription: null
 		newOptionComments: null
@@ -141,8 +141,6 @@ class window.AddParameterOptionPanelController extends AbstractFormController
 		parameterNameWithSpaces = @model.get('parameter').replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
 		@$('.bv_parameter').html(pascalCaseParameterName)
-		@model.set
-			codeKind: parameterNameWithSpaces.toLowerCase()
 
 	updateModel: =>
 		@model.set
@@ -211,6 +209,7 @@ class window.EditablePickListSelectController extends Backbone.View
 					model: new AddParameterOptionPanel
 						parameter: @options.parameter
 						codeType: @options.codeType
+						codeKind: @options.codeKind
 					el: @$('.bv_addOptionPanel')
 				@addPanelController.on 'addOptionRequested', @handleAddOptionRequested
 			@addPanelController.render()
@@ -230,7 +229,6 @@ class window.EditablePickListSelectController extends Backbone.View
 				codeOrigin: requestedOptionModel.get('codeOrigin')
 				description: requestedOptionModel.get('newOptionDescription')
 				comments: requestedOptionModel.get('newOptionComments')
-				newOption: true
 			@pickListController.collection.add newPickList
 
 			@$('.bv_optionAddedMessage').show()
@@ -250,8 +248,8 @@ class window.EditablePickListSelectController extends Backbone.View
 		code = @pickListController.getSelectedCode()
 		selectedModel = @pickListController.collection.getModelWithCode(code)
 		if selectedModel != undefined
-			if selectedModel.get('newOption')?
-				selectedModel.unset('newOption')
+			if selectedModel.get('id')?
+				selectedModel.unset('id')
 				#TODO: check to see this works once the route is set up
 				$.ajax
 					type: 'POST'

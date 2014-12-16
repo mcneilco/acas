@@ -1541,16 +1541,16 @@
         });
         it("Should disable analsyis parameter editing if status is finalized", function() {
           this.psac.model.getStatus().set({
-            stringValue: "finalized"
+            codeValue: "finalized"
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toEqual('disabled');
         });
         it("Should enable analsyis parameter editing if status is finalized", function() {
           this.psac.model.getStatus().set({
-            stringValue: "finalized"
+            codeValue: "finalized"
           });
           this.psac.model.getStatus().set({
-            stringValue: "started"
+            codeValue: "started"
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined();
         });

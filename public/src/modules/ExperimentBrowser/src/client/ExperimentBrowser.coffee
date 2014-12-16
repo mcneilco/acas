@@ -227,7 +227,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			experimentCode: @model.get('codeName')
 			protocolName: @model.get('protocol').get("codeName")
 			recordedBy: @model.get('recordedBy')
-			status: @model.getStatus().get("stringValue")
+			status: @model.getStatus().get("codeValue")
 			analysisStatus: @model.getAnalysisStatus().get("stringValue")
 			recordedDate: @model.get("recordedDate")
 		$(@el).html(@template(toDisplay))

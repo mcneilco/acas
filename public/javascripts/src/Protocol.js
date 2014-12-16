@@ -38,13 +38,13 @@
           codeValue: "unassigned"
         });
         assayStage.set({
-          codeType: "protocolMetadata"
+          codeType: "assay"
         });
         assayStage.set({
-          codeKind: "assay stage"
+          codeKind: "stage"
         });
         assayStage.set({
-          codeOrigin: "acas ddict"
+          codeOrigin: "ACAS DDICT"
         });
       }
       return assayStage;
@@ -264,7 +264,7 @@
 
     ProtocolBaseController.prototype.setUpAssayStageSelect = function() {
       this.assayStageList = new PickListList();
-      this.assayStageList.url = "/api/dataDict/protocol metadata/assay stage";
+      this.assayStageList.url = "/api/codetables/assay/stage";
       return this.assayStageListController = new PickListSelectController({
         el: this.$('.bv_assayStage'),
         collection: this.assayStageList,

@@ -47,7 +47,7 @@
 
     PrimaryScreenProtocolParameters.prototype.getCustomerMolecularTargetCodeOrigin = function() {
       var molecularTarget;
-      molecularTarget = this.getPrimaryScreenProtocolParameterCodeValue('molecular target');
+      molecularTarget = this.getMolecularTarget();
       if (molecularTarget.get('codeOrigin') === "customer ddict") {
         return true;
       } else {
@@ -57,14 +57,14 @@
 
     PrimaryScreenProtocolParameters.prototype.setCustomerMolecularTargetCodeOrigin = function(customerCodeOrigin) {
       var molecularTarget;
-      molecularTarget = this.getPrimaryScreenProtocolParameterCodeValue('molecular target');
+      molecularTarget = this.getMolecularTarget();
       if (customerCodeOrigin) {
         return molecularTarget.set({
           codeOrigin: "customer ddict"
         });
       } else {
         return molecularTarget.set({
-          codeOrigin: "acas ddict"
+          codeOrigin: "ACAS DDICT"
         });
       }
     };
@@ -91,26 +91,124 @@
       return maxY;
     };
 
-    PrimaryScreenProtocolParameters.prototype.getPrimaryScreenProtocolParameterCodeValue = function(parameterName) {
-      var parameter;
-      parameter = this.getOrCreateValueByTypeAndKind("codeValue", parameterName);
-      parameter.set({
-        codeType: "protocolMetadata"
-      });
-      parameter.set({
-        codeKind: parameterName
-      });
-      if (parameter.get('codeValue') === void 0 || parameter.get('codeValue') === "") {
-        parameter.set({
+    PrimaryScreenProtocolParameters.prototype.getAssayActivity = function() {
+      var aa;
+      aa = this.getOrCreateValueByTypeAndKind("codeValue", "assay activity");
+      if (aa.get('codeValue') === void 0 || aa.get('codeValue') === "" || aa.get('codeValue') === null) {
+        aa.set({
           codeValue: "unassigned"
         });
-      }
-      if (parameter.get('codeOrigin') === void 0 || parameter.get('codeOrigin') === "") {
-        parameter.set({
-          codeOrigin: "acas ddict"
+        aa.set({
+          codeType: "assay"
+        });
+        aa.set({
+          codeKind: "activity"
+        });
+        aa.set({
+          codeOrigin: "ACAS DDICT"
         });
       }
-      return parameter;
+      return aa;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getMolecularTarget = function() {
+      var mt;
+      mt = this.getOrCreateValueByTypeAndKind("codeValue", "molecular target");
+      if (mt.get('codeValue') === void 0 || mt.get('codeValue') === "" || mt.get('codeValue') === null) {
+        mt.set({
+          codeValue: "unassigned"
+        });
+        mt.set({
+          codeType: "assay"
+        });
+        mt.set({
+          codeKind: "molecular target"
+        });
+        mt.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return mt;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getTargetOrigin = function() {
+      var to;
+      to = this.getOrCreateValueByTypeAndKind("codeValue", "target origin");
+      if (to.get('codeValue') === void 0 || to.get('codeValue') === "" || to.get('codeValue') === null) {
+        to.set({
+          codeValue: "unassigned"
+        });
+        to.set({
+          codeType: "target"
+        });
+        to.set({
+          codeKind: "origin"
+        });
+        to.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return to;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getAssayType = function() {
+      var at;
+      at = this.getOrCreateValueByTypeAndKind("codeValue", "assay type");
+      if (at.get('codeValue') === void 0 || at.get('codeValue') === "" || at.get('codeValue') === null) {
+        at.set({
+          codeValue: "unassigned"
+        });
+        at.set({
+          codeType: "assay"
+        });
+        at.set({
+          codeKind: "type"
+        });
+        at.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return at;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getAssayTechnology = function() {
+      var at;
+      at = this.getOrCreateValueByTypeAndKind("codeValue", "assay technology");
+      if (at.get('codeValue') === void 0 || at.get('codeValue') === "" || at.get('codeValue') === null) {
+        at.set({
+          codeValue: "unassigned"
+        });
+        at.set({
+          codeType: "assay"
+        });
+        at.set({
+          codeKind: "technology"
+        });
+        at.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return at;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getCellLine = function() {
+      var cl;
+      cl = this.getOrCreateValueByTypeAndKind("codeValue", "cell line");
+      if (cl.get('codeValue') === void 0 || cl.get('codeValue') === "" || cl.get('codeValue') === null) {
+        cl.set({
+          codeValue: "unassigned"
+        });
+        cl.set({
+          codeType: "reagent"
+        });
+        cl.set({
+          codeKind: "cell line"
+        });
+        cl.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return cl;
     };
 
     PrimaryScreenProtocolParameters.prototype.getOrCreateValueByTypeAndKind = function(vType, vKind) {
@@ -295,13 +393,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupAssayActivitySelect = function() {
       this.assayActivityList = new PickListList();
-      this.assayActivityList.url = "/api/dataDict/protocol metadata/assay activity";
+      this.assayActivityList.url = "/api/codetables/assay/activity";
       this.assayActivityListController = new EditablePickListSelectController({
         el: this.$('.bv_assayActivity'),
         collection: this.assayActivityList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue'),
+        selectedCode: this.model.getAssayActivity().get('codeValue'),
         parameter: "assayActivity",
-        codeType: "protocolMetadata",
+        codeType: "assay",
+        codeKind: "activity",
         roles: ["admin"]
       });
       return this.assayActivityListController.render();
@@ -309,13 +408,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupTargetOriginSelect = function() {
       this.targetOriginList = new PickListList();
-      this.targetOriginList.url = "/api/dataDict/protocol metadata/target origin";
+      this.targetOriginList.url = "/api/codetables/target/origin";
       this.targetOriginListController = new EditablePickListSelectController({
         el: this.$('.bv_targetOrigin'),
         collection: this.targetOriginList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue'),
+        selectedCode: this.model.getTargetOrigin().get('codeValue'),
         parameter: "targetOrigin",
-        codeType: "protocolMetadata",
+        codeType: "target",
+        codeKind: "origin",
         roles: ["admin"]
       });
       return this.targetOriginListController.render();
@@ -323,13 +423,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupAssayTypeSelect = function() {
       this.assayTypeList = new PickListList();
-      this.assayTypeList.url = "/api/dataDict/protocol metadata/assay type";
+      this.assayTypeList.url = "/api/codetables/assay/type";
       this.assayTypeListController = new EditablePickListSelectController({
         el: this.$('.bv_assayType'),
         collection: this.assayTypeList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue'),
+        selectedCode: this.model.getAssayType().get('codeValue'),
         parameter: "assayType",
-        codeType: "protocolMetadata",
+        codeType: "assay",
+        codeKind: "type",
         roles: ["admin"]
       });
       return this.assayTypeListController.render();
@@ -337,13 +438,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupAssayTechnologySelect = function() {
       this.assayTechnologyList = new PickListList();
-      this.assayTechnologyList.url = "/api/dataDict/protocol metadata/assay technology";
+      this.assayTechnologyList.url = "/api/codetables/assay/technology";
       this.assayTechnologyListController = new EditablePickListSelectController({
         el: this.$('.bv_assayTechnology'),
         collection: this.assayTechnologyList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue'),
+        selectedCode: this.model.getAssayTechnology().get('codeValue'),
         parameter: "assayTechnology",
-        codeType: "protocolMetadata",
+        codeType: "assay",
+        codeKind: "technology",
         roles: ["admin"]
       });
       return this.assayTechnologyListController.render();
@@ -351,13 +453,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupCellLineSelect = function() {
       this.cellLineList = new PickListList();
-      this.cellLineList.url = "/api/dataDict/protocol metadata/cell line";
+      this.cellLineList.url = "/api/codetables/reagent/cell line";
       this.cellLineListController = new EditablePickListSelectController({
         el: this.$('.bv_cellLine'),
         collection: this.cellLineList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue'),
+        selectedCode: this.model.getCellLine().get('codeValue'),
         parameter: "cellLine",
-        codeType: "protocolMetadata",
+        codeType: "reagent",
+        codeKind: "cell line",
         roles: ["admin"]
       });
       return this.cellLineListController.render();
@@ -371,14 +474,15 @@
         this.$('.bv_customerMolecularTargetDDictChkbx').attr("checked", "checked");
         this.molecularTargetList.url = "/api/customerMolecularTargetCodeTable";
       } else {
-        this.molecularTargetList.url = "/api/dataDict/protocol metadata/molecular target";
+        this.molecularTargetList.url = "/api/codetables/assay/molecular target";
       }
       this.molecularTargetListController = new EditablePickListSelectController({
         el: this.$('.bv_molecularTarget'),
         collection: this.molecularTargetList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue'),
+        selectedCode: this.model.getMolecularTarget().get('codeValue'),
         parameter: "molecularTarget",
-        codeType: "protocolMetadata",
+        codeType: "assay",
+        codeKind: "molecular target",
         roles: ["admin"]
       });
       this.molecularTargetListController.render();
@@ -390,22 +494,22 @@
     };
 
     PrimaryScreenProtocolParametersController.prototype.updateModel = function() {
-      this.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').set({
+      this.model.getAssayActivity().set({
         codeValue: this.assayActivityListController.getSelectedCode()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set({
+      this.model.getMolecularTarget().set({
         codeValue: this.molecularTargetListController.getSelectedCode()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('target origin').set({
+      this.model.getTargetOrigin().set({
         codeValue: this.targetOriginListController.getSelectedCode()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('assay type').set({
+      this.model.getAssayType().set({
         codeValue: this.assayTypeListController.getSelectedCode()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').set({
+      this.model.getAssayTechnology().set({
         codeValue: this.assayTechnologyListController.getSelectedCode()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('cell line').set({
+      this.model.getCellLine().set({
         codeValue: this.cellLineListController.getSelectedCode()
       });
       this.model.getCurveDisplayMax().set({
@@ -425,7 +529,7 @@
         this.molecularTargetListController.render();
         this.molecularTargetListController.hideAddOptionButton();
       } else {
-        this.molecularTargetList.url = "/api/dataDict/protocol metadata/molecular target";
+        this.molecularTargetList.url = "/api/codetables/assay/molecular target";
         this.molecularTargetListController.render();
         this.molecularTargetListController.showAddOptionButton();
       }

@@ -38,9 +38,9 @@ describe "Protocol module testing", ->
 				it 'Should have an assay stage value', ->
 					expect(@prot.getAssayStage() instanceof Value).toBeTruthy()
 					expect(@prot.getAssayStage().get('codeValue')).toEqual "unassigned"
-					expect(@prot.getAssayStage().get('codeOrigin')).toEqual "acas ddict"
-					expect(@prot.getAssayStage().get('codeType')).toEqual "protocolMetadata"
-					expect(@prot.getAssayStage().get('codeKind')).toEqual "assay stage"
+					expect(@prot.getAssayStage().get('codeOrigin')).toEqual "ACAS DDICT"
+					expect(@prot.getAssayStage().get('codeType')).toEqual "assay"
+					expect(@prot.getAssayStage().get('codeKind')).toEqual "stage"
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple() instanceof Value).toBeTruthy()
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual ""
@@ -53,25 +53,25 @@ describe "Protocol module testing", ->
 				it 'Should have a notebook value', ->
 					expect(@prot.getNotebook() instanceof Value).toBeTruthy()
 				it 'Protocol status should default to created ', ->
-					expect(@prot.getStatus().get('stringValue')).toEqual "created"
+					expect(@prot.getStatus().get('codeValue')).toEqual "created"
 				it 'completionDate should be null ', ->
 					expect(@prot.getCompletionDate().get('dateValue')).toEqual null
 			describe "other features", ->
 				describe "should tell you if it is editable based on status", ->
 					it "should be locked if status is created", ->
-						@prot.getStatus().set stringValue: "created"
+						@prot.getStatus().set codeValue: "created"
 						expect(@prot.isEditable()).toBeTruthy()
 					it "should be locked if status is started", ->
-						@prot.getStatus().set stringValue: "started"
+						@prot.getStatus().set codeValue: "started"
 						expect(@prot.isEditable()).toBeTruthy()
 					it "should be locked if status is complete", ->
-						@prot.getStatus().set stringValue: "complete"
+						@prot.getStatus().set codeValue: "complete"
 						expect(@prot.isEditable()).toBeTruthy()
 					it "should be locked if status is finalized", ->
-						@prot.getStatus().set stringValue: "finalized"
+						@prot.getStatus().set codeValue: "finalized"
 						expect(@prot.isEditable()).toBeFalsy()
 					it "should be locked if status is rejected", ->
-						@prot.getStatus().set stringValue: "rejected"
+						@prot.getStatus().set codeValue: "rejected"
 						expect(@prot.isEditable()).toBeFalsy()
 
 		describe "when loaded from existing", ->
@@ -105,7 +105,7 @@ describe "Protocol module testing", ->
 				it 'Should have a completionDate value', ->
 					expect(@prot.getCompletionDate().get('dateValue')).toEqual 1342080000000
 				it 'Should have a status value', ->
-					expect(@prot.getStatus().get('stringValue')).toEqual "created"
+					expect(@prot.getStatus().get('codeValue')).toEqual "created"
 
 		describe "when loaded from stub", ->
 			beforeEach ->
@@ -434,11 +434,11 @@ describe "Protocol module testing", ->
 					runs ->
 						@pbc.$('.bv_status').val('complete')
 						@pbc.$('.bv_status').change()
-						expect(@pbc.model.getStatus().get('stringValue')).toEqual 'complete'
+						expect(@pbc.model.getStatus().get('codeValue')).toEqual 'complete'
 		describe "When created from a new protocol", ->
 			beforeEach ->
 				@prot = new Protocol()
-				@prot.getStatus().set stringValue: "created" #work around for left over pointers
+				@prot.getStatus().set codeValue: "created" #work around for left over pointers
 				@pbc = new ProtocolBaseController
 					model: @prot
 					el: $('#fixture')

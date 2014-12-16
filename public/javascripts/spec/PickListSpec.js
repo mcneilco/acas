@@ -194,7 +194,7 @@
           return expect(this.adop.get('codeKind')).toBeNull();
         });
         it("should have the codeOrigin set to acas ddict", function() {
-          return expect(this.adop.get('codeOrigin')).toEqual("acas ddict");
+          return expect(this.adop.get('codeOrigin')).toEqual("ACAS DDICT");
         });
         it("should have the label text be null", function() {
           return expect(this.adop.get('newOptionLabel')).toBeNull();

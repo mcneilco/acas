@@ -16,9 +16,9 @@ class window.Protocol extends BaseEntity
 		assayStage = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "assay stage"
 		if assayStage.get('codeValue') is undefined or assayStage.get('codeValue') is "" or assayStage.get('codeValue') is null
 			assayStage.set codeValue: "unassigned"
-			assayStage.set codeType: "protocolMetadata"
-			assayStage.set codeKind: "assay stage"
-			assayStage.set codeOrigin: "acas ddict"
+			assayStage.set codeType: "assay"
+			assayStage.set codeKind: "stage"
+			assayStage.set codeOrigin: "ACAS DDICT"
 
 		assayStage
 
@@ -166,7 +166,7 @@ class window.ProtocolBaseController extends BaseEntityController
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()
-		@assayStageList.url = "/api/dataDict/protocol metadata/assay stage"
+		@assayStageList.url = "/api/codetables/assay/stage"
 		@assayStageListController = new PickListSelectController
 			el: @$('.bv_assayStage')
 			collection: @assayStageList

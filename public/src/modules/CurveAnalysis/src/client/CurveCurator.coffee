@@ -21,7 +21,7 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 
 	setupKnockoutReasonPicklist: =>
 		@knockoutReasonList = new PickListList()
-		@knockoutReasonList.url = "/api/dataDict/user well flags/reason"
+		@knockoutReasonList.url = "/api/codetables/user well flags/flag observation"
 		@knockoutReasonListController = new PickListSelectController
 			el: @$('.bv_dataDictPicklist')
 			collection: @knockoutReasonList

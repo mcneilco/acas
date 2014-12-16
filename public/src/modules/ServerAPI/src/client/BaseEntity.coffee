@@ -58,10 +58,15 @@ class window.BaseEntity extends Backbone.Model
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook"
 
 	getStatus: ->
-		metadataKind = @.get('subclass') + " metadata"
-		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "status"
-		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "created"
+		subclass = @.get('subclass')
+		metadataKind = subclass + " metadata"
+		valueKind = subclass + " status"
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", valueKind
+		if status.get('codeValue') is undefined or status.get('codeValue') is ""
+			status.set codeValue: "created"
+			status.set codeType: subclass
+			status.set codeKind: "status"
+			status.set codeOrigin: "ACAS DDICT"
 
 		status
 
@@ -81,7 +86,7 @@ class window.BaseEntity extends Backbone.Model
 
 
 	isEditable: ->
-		status = @getStatus().get 'stringValue'
+		status = @getStatus().get 'codeValue'
 		switch status
 			when "created" then return true
 			when "started" then return true
@@ -176,7 +181,7 @@ class window.BaseEntity extends Backbone.Model
 			recordedBy: ""
 			recordedDate: new Date().getTime()
 			version: 0
-		copiedEntity.getStatus().set stringValue: "created"
+		copiedEntity.getStatus().set codeValue: "created"
 		copiedEntity.getCompletionDate().set dateValue: null
 		copiedEntity.getNotebook().set stringValue: ""
 
@@ -240,7 +245,7 @@ class window.BaseEntityController extends AbstractFormController
 		if @model.getCompletionDate().get('dateValue')?
 			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
-		@$('.bv_status').val(@model.getStatus().get('stringValue'))
+		@$('.bv_status').val(@model.getStatus().get('codeValue'))
 		if @model.isNew()
 			@$('.bv_save').html("Save")
 		else
@@ -250,12 +255,13 @@ class window.BaseEntityController extends AbstractFormController
 		@
 
 	setupStatusSelect: ->
+		statusState = @model.getStatus()
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/"+@model.get('subclass')+" metadata/"+@model.get('subclass')+" status"
+		@statusList.url = "/api/codetables/"+statusState.get('codeType')+"/"+statusState.get('codeKind')
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList
-			selectedCode: @model.getStatus().get 'stringValue'
+			selectedCode: statusState.get 'codeValue'
 
 	setupTagList: ->
 		@$('.bv_tags').val ""
@@ -309,7 +315,7 @@ class window.BaseEntityController extends AbstractFormController
 		@model.trigger 'change'
 
 	handleStatusChanged: =>
-		@model.getStatus().set stringValue: @statusListController.getSelectedCode()
+		@model.getStatus().set codeValue: @statusListController.getSelectedCode()
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
 

@@ -56,8 +56,11 @@
           it('Should have a notebook value', function() {
             return expect(this.bem.getNotebook() instanceof Value).toBeTruthy();
           });
-          it('Entity status should default to created ', function() {
-            return expect(this.bem.getStatus().get('stringValue')).toEqual("created");
+          it('Entity status should default to created and should have default code type, kind, and origin', function() {
+            expect(this.bem.getStatus().get('codeValue')).toEqual("created");
+            expect(this.bem.getStatus().get('codeType')).toEqual("entity");
+            expect(this.bem.getStatus().get('codeKind')).toEqual("status");
+            return expect(this.bem.getStatus().get('codeOrigin')).toEqual("ACAS DDICT");
           });
           return it('completionDate should be null ', function() {
             return expect(this.bem.getCompletionDate().get('dateValue')).toEqual(null);
@@ -67,31 +70,31 @@
           return describe("should tell you if it is editable based on status", function() {
             it("should be locked if status is created", function() {
               this.bem.getStatus().set({
-                stringValue: "created"
+                codeValue: "created"
               });
               return expect(this.bem.isEditable()).toBeTruthy();
             });
             it("should be locked if status is started", function() {
               this.bem.getStatus().set({
-                stringValue: "started"
+                codeValue: "started"
               });
               return expect(this.bem.isEditable()).toBeTruthy();
             });
             it("should be locked if status is complete", function() {
               this.bem.getStatus().set({
-                stringValue: "complete"
+                codeValue: "complete"
               });
               return expect(this.bem.isEditable()).toBeTruthy();
             });
             it("should be locked if status is finalized", function() {
               this.bem.getStatus().set({
-                stringValue: "finalized"
+                codeValue: "finalized"
               });
               return expect(this.bem.isEditable()).toBeFalsy();
             });
             return it("should be locked if status is rejected", function() {
               this.bem.getStatus().set({
-                stringValue: "rejected"
+                codeValue: "rejected"
               });
               return expect(this.bem.isEditable()).toBeFalsy();
             });
@@ -131,7 +134,8 @@
             return expect(this.bem.getCompletionDate().get('dateValue')).toEqual(1342080000000);
           });
           return it('Should have a status value', function() {
-            return expect(this.bem.getStatus().get('stringValue')).toEqual("started");
+            console.log(this.bem.getStatus());
+            return expect(this.bem.getStatus().get('codeValue')).toEqual("started");
           });
         });
       });
@@ -363,7 +367,7 @@
           return expect(this.copiedEntity.get('lsType')).toEqual(this.bem.get('lsKind'));
         });
         it("should have the status set to created", function() {
-          return expect(this.copiedEntity.getStatus().get('stringValue')).toEqual("created");
+          return expect(this.copiedEntity.getStatus().get('codeValue')).toEqual("created");
         });
         it("should have the code name be undefined", function() {
           return expect(this.copiedEntity.get('codeName')).toBeUndefined();
@@ -583,7 +587,7 @@
             return runs(function() {
               this.bec.$('.bv_status').val('complete');
               this.bec.$('.bv_status').change();
-              return expect(this.bec.model.getStatus().get('stringValue')).toEqual('complete');
+              return expect(this.bec.model.getStatus().get('codeValue')).toEqual('complete');
             });
           });
         });
@@ -592,7 +596,7 @@
         beforeEach(function() {
           this.bem = new BaseEntity();
           this.bem.getStatus().set({
-            stringValue: "created"
+            codeValue: "created"
           });
           this.bec = new BaseEntityController({
             model: this.bem,
@@ -625,7 +629,7 @@
               subclass: 'experiment'
             });
             this.bem2.getStatus().set({
-              stringValue: "created"
+              codeValue: "created"
             });
             this.bec2 = new BaseEntityController({
               model: this.bem2,

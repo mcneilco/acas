@@ -130,8 +130,8 @@ class window.Experiment extends BaseEntity
 		if projectCodeValue.get('codeValue') is undefined or projectCodeValue.get('codeValue') is ""
 			projectCodeValue.set codeValue: "unassigned"
 			projectCodeValue.set codeType: "project"
-			projectCodeValue.set codeKind: "project"
-			projectCodeValue.set codeOrigin: "acas ddict"
+			projectCodeValue.set codeKind: "biology"
+			projectCodeValue.set codeOrigin: "ACAS DDICT"
 
 		projectCodeValue
 
@@ -275,11 +275,11 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/experiment metadata/experiment status"
+		@statusList.url = "/api/codetables/experiment/status"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList
-			selectedCode: @model.getStatus().get 'stringValue'
+			selectedCode: @model.getStatus().get 'codeValue'
 
 	setupTagList: ->
 		@$('.bv_tags').val ""

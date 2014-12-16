@@ -1,7 +1,7 @@
 ((exports) ->
-	exports.dataDictValues =
+	exports.codetableValues =
 		[
-			type: "experiment metadata"
+			type: "equipment"
 			kind: "instrument reader"
 			codes:
 				[
@@ -10,7 +10,7 @@
 					ignored: false
 				]
 		,
-			type: "experiment metadata"
+			type: "analysis parameter"
 			kind: "signal direction"
 			codes:
 				[
@@ -19,7 +19,7 @@
 					ignored: false
 				]
 		,
-			type: "experiment metadata"
+			type: "analysis parameter"
 			kind: "aggregate by"
 			codes:
 				[
@@ -28,7 +28,7 @@
 					ignored: false
 				]
 		,
-			type: "experiment metadata"
+			type: "analysis parameter"
 			kind: "aggregation method"
 			codes:
 				[
@@ -41,7 +41,7 @@
 					ignored: false
 				]
 		,
-			type: "experiment metadata"
+			type: "analysis parameter"
 			kind: "transformation"
 			codes:
 				[
@@ -58,7 +58,7 @@
 					ignored: false
 				]
 		,
-			type: "experiment metadata"
+			type: "analysis parameter"
 			kind: "normalization"
 			codes:
 				[
@@ -79,7 +79,7 @@
 					ignored: false
 				]
 		,
-			type: "experiment metadata"
+			type: "reader data"
 			kind: "read name"
 			codes:
 				[

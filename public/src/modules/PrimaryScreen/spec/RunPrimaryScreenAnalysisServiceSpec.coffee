@@ -109,7 +109,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/instrument reader"
+						url: "api/codetables/equipment/instrument reader"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -140,7 +140,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/signal direction"
+						url: "api/codetables/analysis parameter/signal direction"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -171,7 +171,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/aggregate by"
+						url: "api/codetables/analysis parameter/aggregate by"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -202,7 +202,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/aggregation method"
+						url: "api/codetables/analysis parameter/aggregation method"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -233,7 +233,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/transformation"
+						url: "api/codetables/analysis parameter/transformation"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -264,7 +264,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/normalization"
+						url: "api/codetables/analysis parameter/normalization"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
@@ -295,7 +295,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/read name"
+						url: "api/codetables/reader data/read name"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>

@@ -27,7 +27,7 @@ class window.PrimaryScreenProtocolParameters extends State
 
 	getCustomerMolecularTargetCodeOrigin: =>
 	#returns true if molecular target's codeOrigin is not acas ddict
-		molecularTarget = @getPrimaryScreenProtocolParameterCodeValue('molecular target')
+		molecularTarget = @getMolecularTarget()
 		if molecularTarget.get('codeOrigin') is "customer ddict"
 			return true
 		else
@@ -35,11 +35,11 @@ class window.PrimaryScreenProtocolParameters extends State
 
 	setCustomerMolecularTargetCodeOrigin: (customerCodeOrigin) ->
 	# customerCodeOrigin is boolean. If true, codeOrigin for molecular target is not acas ddict
-		molecularTarget = @getPrimaryScreenProtocolParameterCodeValue('molecular target')
+		molecularTarget = @getMolecularTarget()
 		if customerCodeOrigin
 			molecularTarget.set codeOrigin: "customer ddict"
 		else
-			molecularTarget.set codeOrigin: "acas ddict"
+			molecularTarget.set codeOrigin: "ACAS DDICT"
 
 	getCurveDisplayMin: ->
 		minY = @.getOrCreateValueByTypeAndKind "numericValue", "curve display min"
@@ -55,16 +55,66 @@ class window.PrimaryScreenProtocolParameters extends State
 
 		maxY
 
-	getPrimaryScreenProtocolParameterCodeValue: (parameterName) ->
-		parameter = @.getOrCreateValueByTypeAndKind "codeValue", parameterName
-		parameter.set codeType: "protocolMetadata"
-		parameter.set codeKind: parameterName
-		if parameter.get('codeValue') is undefined or parameter.get('codeValue') is ""
-			parameter.set codeValue: "unassigned"
-		if parameter.get('codeOrigin') is undefined or parameter.get('codeOrigin') is ""
-			parameter.set codeOrigin: "acas ddict"
+	getAssayActivity: ->
+		aa = @.getOrCreateValueByTypeAndKind "codeValue", "assay activity"
+		if aa.get('codeValue') is undefined or aa.get('codeValue') is "" or aa.get('codeValue') is null
+			aa.set codeValue: "unassigned"
+			aa.set codeType: "assay"
+			aa.set codeKind: "activity"
+			aa.set codeOrigin: "ACAS DDICT"
 
-		parameter
+		aa
+
+	getMolecularTarget: ->
+		mt = @.getOrCreateValueByTypeAndKind "codeValue", "molecular target"
+		if mt.get('codeValue') is undefined or mt.get('codeValue') is "" or mt.get('codeValue') is null
+			mt.set codeValue: "unassigned"
+			mt.set codeType: "assay"
+			mt.set codeKind: "molecular target"
+			mt.set codeOrigin: "ACAS DDICT"
+
+		mt
+
+	getTargetOrigin: ->
+		to = @.getOrCreateValueByTypeAndKind "codeValue", "target origin"
+		if to.get('codeValue') is undefined or to.get('codeValue') is "" or to.get('codeValue') is null
+			to.set codeValue: "unassigned"
+			to.set codeType: "target"
+			to.set codeKind: "origin"
+			to.set codeOrigin: "ACAS DDICT"
+
+		to
+
+	getAssayType: ->
+		at = @.getOrCreateValueByTypeAndKind "codeValue", "assay type"
+		if at.get('codeValue') is undefined or at.get('codeValue') is "" or at.get('codeValue') is null
+			at.set codeValue: "unassigned"
+			at.set codeType: "assay"
+			at.set codeKind: "type"
+			at.set codeOrigin: "ACAS DDICT"
+
+		at
+
+	getAssayTechnology: ->
+		at = @.getOrCreateValueByTypeAndKind "codeValue", "assay technology"
+		if at.get('codeValue') is undefined or at.get('codeValue') is "" or at.get('codeValue') is null
+			at.set codeValue: "unassigned"
+			at.set codeType: "assay"
+			at.set codeKind: "technology"
+			at.set codeOrigin: "ACAS DDICT"
+
+		at
+
+	getCellLine: ->
+		cl = @.getOrCreateValueByTypeAndKind "codeValue", "cell line"
+		if cl.get('codeValue') is undefined or cl.get('codeValue') is "" or cl.get('codeValue') is null
+			cl.set codeValue: "unassigned"
+			cl.set codeType: "reagent"
+			cl.set codeKind: "cell line"
+			cl.set codeOrigin: "ACAS DDICT"
+
+		cl
+
 
 	getOrCreateValueByTypeAndKind: (vType, vKind) ->
 		descVals = @getValuesByTypeAndKind vType, vKind
@@ -198,61 +248,66 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 
 	setupAssayActivitySelect: ->
 		@assayActivityList = new PickListList()
-		@assayActivityList.url = "/api/dataDict/protocol metadata/assay activity"
+		@assayActivityList.url = "/api/codetables/assay/activity"
 		@assayActivityListController = new EditablePickListSelectController
 			el: @$('.bv_assayActivity')
 			collection: @assayActivityList
-			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')
+			selectedCode: @model.getAssayActivity().get('codeValue')
 			parameter: "assayActivity"
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "activity"
 			roles: ["admin"]
 		@assayActivityListController.render()
 
 	setupTargetOriginSelect: ->
 		@targetOriginList = new PickListList()
-		@targetOriginList.url = "/api/dataDict/protocol metadata/target origin"
+		@targetOriginList.url = "/api/codetables/target/origin"
 		@targetOriginListController = new EditablePickListSelectController
 			el: @$('.bv_targetOrigin')
 			collection: @targetOriginList
-			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')
+			selectedCode: @model.getTargetOrigin().get('codeValue')
 			parameter: "targetOrigin"
-			codeType: "protocolMetadata"
+			codeType: "target"
+			codeKind: "origin"
 			roles: ["admin"]
 		@targetOriginListController.render()
 
 	setupAssayTypeSelect: ->
 		@assayTypeList = new PickListList()
-		@assayTypeList.url = "/api/dataDict/protocol metadata/assay type"
+		@assayTypeList.url = "/api/codetables/assay/type"
 		@assayTypeListController = new EditablePickListSelectController
 			el: @$('.bv_assayType')
 			collection: @assayTypeList
-			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')
+			selectedCode: @model.getAssayType().get('codeValue')
 			parameter: "assayType"
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "type"
 			roles: ["admin"]
 		@assayTypeListController.render()
 
 	setupAssayTechnologySelect: ->
 		@assayTechnologyList = new PickListList()
-		@assayTechnologyList.url = "/api/dataDict/protocol metadata/assay technology"
+		@assayTechnologyList.url = "/api/codetables/assay/technology"
 		@assayTechnologyListController = new EditablePickListSelectController
 			el: @$('.bv_assayTechnology')
 			collection: @assayTechnologyList
-			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')
+			selectedCode: @model.getAssayTechnology().get('codeValue')
 			parameter: "assayTechnology"
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "technology"
 			roles: ["admin"]
 		@assayTechnologyListController.render()
 
 	setupCellLineSelect: ->
 		@cellLineList = new PickListList()
-		@cellLineList.url = "/api/dataDict/protocol metadata/cell line"
+		@cellLineList.url = "/api/codetables/reagent/cell line"
 		@cellLineListController = new EditablePickListSelectController
 			el: @$('.bv_cellLine')
 			collection: @cellLineList
-			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')
+			selectedCode: @model.getCellLine().get('codeValue')
 			parameter: "cellLine"
-			codeType: "protocolMetadata"
+			codeType: "reagent"
+			codeKind: "cell line"
 			roles: ["admin"]
 		@cellLineListController.render()
 
@@ -264,13 +319,14 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			@$('.bv_customerMolecularTargetDDictChkbx').attr("checked", "checked")
 			@molecularTargetList.url = "/api/customerMolecularTargetCodeTable"
 		else
-			@molecularTargetList.url = "/api/dataDict/protocol metadata/molecular target"
+			@molecularTargetList.url = "/api/codetables/assay/molecular target"
 		@molecularTargetListController = new EditablePickListSelectController
 			el: @$('.bv_molecularTarget')
 			collection: @molecularTargetList
-			selectedCode: @model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')
+			selectedCode: @model.getMolecularTarget().get('codeValue')
 			parameter: "molecularTarget"
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "molecular target"
 			roles: ["admin"]
 		@molecularTargetListController.render()
 		if checked
@@ -279,17 +335,17 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			@molecularTargetListController.showAddOptionButton()
 
 	updateModel: =>
-		@model.getPrimaryScreenProtocolParameterCodeValue('assay activity').set
+		@model.getAssayActivity().set
 			codeValue: @assayActivityListController.getSelectedCode()
-		@model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set
+		@model.getMolecularTarget().set
 			codeValue: @molecularTargetListController.getSelectedCode()
-		@model.getPrimaryScreenProtocolParameterCodeValue('target origin').set
+		@model.getTargetOrigin().set
 			codeValue: @targetOriginListController.getSelectedCode()
-		@model.getPrimaryScreenProtocolParameterCodeValue('assay type').set
+		@model.getAssayType().set
 			codeValue: @assayTypeListController.getSelectedCode()
-		@model.getPrimaryScreenProtocolParameterCodeValue('assay technology').set
+		@model.getAssayTechnology().set
 			codeValue: @assayTechnologyListController.getSelectedCode()
-		@model.getPrimaryScreenProtocolParameterCodeValue('cell line').set
+		@model.getCellLine().set
 			codeValue: @cellLineListController.getSelectedCode()
 		@model.getCurveDisplayMax().set
 			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_maxY'))
@@ -305,7 +361,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			@molecularTargetListController.render()
 			@molecularTargetListController.hideAddOptionButton()
 		else
-			@molecularTargetList.url = "/api/dataDict/protocol metadata/molecular target"
+			@molecularTargetList.url = "/api/codetables/assay/molecular target"
 			@molecularTargetListController.render()
 			@molecularTargetListController.showAddOptionButton()
 

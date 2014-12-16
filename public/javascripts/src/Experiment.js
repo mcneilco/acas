@@ -205,10 +205,10 @@
           codeType: "project"
         });
         projectCodeValue.set({
-          codeKind: "project"
+          codeKind: "biology"
         });
         projectCodeValue.set({
-          codeOrigin: "acas ddict"
+          codeOrigin: "ACAS DDICT"
         });
       }
       return projectCodeValue;
@@ -415,11 +415,11 @@
 
     ExperimentBaseController.prototype.setupStatusSelect = function() {
       this.statusList = new PickListList();
-      this.statusList.url = "/api/dataDict/experiment metadata/experiment status";
+      this.statusList.url = "/api/codetables/experiment/status";
       return this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,
-        selectedCode: this.model.getStatus().get('stringValue')
+        selectedCode: this.model.getStatus().get('codeValue')
       });
     };
 

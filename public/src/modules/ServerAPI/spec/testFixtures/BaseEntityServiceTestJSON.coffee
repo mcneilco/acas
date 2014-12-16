@@ -222,16 +222,19 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				codeType: "experiment"
+				codeValue: "started"
 				comments: null
 				dateValue: null
 				fileValue: null
 				id: 2
 				ignored: false
-				lsKind: "status"
+				lsKind: "experiment status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_experiment status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -243,7 +246,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "started"
+				stringValue: null
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -1812,16 +1815,19 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				codeType: "experiment"
+				codeValue: "started"
 				comments: null
 				dateValue: null
 				fileValue: null
 				id: 2
 				ignored: false
-				lsKind: "status"
+				lsKind: "experiment status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_experiment status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -1833,7 +1839,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "started"
+				stringValue: null
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null

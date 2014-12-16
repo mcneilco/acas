@@ -49,7 +49,7 @@
 
     DoseResponseKnockoutPanelController.prototype.setupKnockoutReasonPicklist = function() {
       this.knockoutReasonList = new PickListList();
-      this.knockoutReasonList.url = "/api/dataDict/user well flags/reason";
+      this.knockoutReasonList.url = "/api/codetables/user well flags/flag observation";
       return this.knockoutReasonListController = new PickListSelectController({
         el: this.$('.bv_dataDictPicklist'),
         collection: this.knockoutReasonList

@@ -59,11 +59,17 @@
           it('Should have a project value', function() {
             return expect(this.exp.getProjectCode() instanceof Value).toBeTruthy();
           });
-          it('Project code should default to unassigned ', function() {
-            return expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
+          it('Project code should default to unassigned and have a default code type, kind, and origin', function() {
+            expect(this.exp.getProjectCode().get('codeValue')).toEqual("unassigned");
+            expect(this.exp.getProjectCode().get('codeType')).toEqual("project");
+            expect(this.exp.getProjectCode().get('codeKind')).toEqual("biology");
+            return expect(this.exp.getProjectCode().get('codeOrigin')).toEqual("ACAS DDICT");
           });
-          it('Experiment status should default to created ', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("created");
+          it('Experiment status should default to created and have default code type, kind, and origin ', function() {
+            expect(this.exp.getStatus().get('codeValue')).toEqual("created");
+            expect(this.exp.getStatus().get('codeType')).toEqual("experiment");
+            expect(this.exp.getStatus().get('codeKind')).toEqual("status");
+            return expect(this.exp.getStatus().get('codeOrigin')).toEqual("ACAS DDICT");
           });
           return it('completionDate should be null ', function() {
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(null);
@@ -73,31 +79,31 @@
           return describe("should tell you if it is editable based on status", function() {
             it("should be locked if status is New", function() {
               this.exp.getStatus().set({
-                stringValue: "New"
+                codeValue: "New"
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
             it("should be locked if status is started", function() {
               this.exp.getStatus().set({
-                stringValue: "started"
+                codeValue: "started"
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
             it("should be locked if status is complete", function() {
               this.exp.getStatus().set({
-                stringValue: "complete"
+                codeValue: "complete"
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
             it("should be locked if status is finalized", function() {
               this.exp.getStatus().set({
-                stringValue: "finalized"
+                codeValue: "finalized"
               });
               return expect(this.exp.isEditable()).toBeFalsy();
             });
             return it("should be locked if status is rejected", function() {
               this.exp.getStatus().set({
-                stringValue: "rejected"
+                codeValue: "rejected"
               });
               return expect(this.exp.isEditable()).toBeFalsy();
             });
@@ -188,7 +194,7 @@
             return expect(this.exp.getCompletionDate().get('dateValue')).toEqual(1342080000000);
           });
           return it('Should have a status value', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("started");
+            return expect(this.exp.getStatus().get('codeValue')).toEqual("started");
           });
         });
       });
@@ -262,7 +268,7 @@
             return expect(this.exp.get('lsTags').length).toEqual(0);
           });
           return it('Should have a status value of created', function() {
-            return expect(this.exp.getStatus().get('stringValue')).toEqual("created");
+            return expect(this.exp.getStatus().get('codeValue')).toEqual("created");
           });
         });
       });
@@ -712,7 +718,7 @@
             return runs(function() {
               this.ebc.$('.bv_status').val('complete');
               this.ebc.$('.bv_status').change();
-              return expect(this.ebc.model.getStatus().get('stringValue')).toEqual('complete');
+              return expect(this.ebc.model.getStatus().get('codeValue')).toEqual('complete');
             });
           });
         });
@@ -835,7 +841,7 @@
         beforeEach(function() {
           this.exp0 = new Experiment();
           this.exp0.getStatus().set({
-            stringValue: "created"
+            codeValue: "created"
           });
           this.ebc = new ExperimentBaseController({
             model: this.exp0,

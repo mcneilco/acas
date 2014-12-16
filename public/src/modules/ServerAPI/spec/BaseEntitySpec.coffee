@@ -41,28 +41,31 @@ describe "Base Entity testing", ->
 					expect(@bem.getComments().get('clobValue')).toEqual ""
 				it 'Should have a notebook value', ->
 					expect(@bem.getNotebook() instanceof Value).toBeTruthy()
-				it 'Entity status should default to created ', ->
-					expect(@bem.getStatus().get('stringValue')).toEqual "created"
+				it 'Entity status should default to created and should have default code type, kind, and origin', ->
+					expect(@bem.getStatus().get('codeValue')).toEqual "created"
+					expect(@bem.getStatus().get('codeType')).toEqual "entity"
+					expect(@bem.getStatus().get('codeKind')).toEqual "status"
+					expect(@bem.getStatus().get('codeOrigin')).toEqual "ACAS DDICT"
 				it 'completionDate should be null ', ->
 					expect(@bem.getCompletionDate().get('dateValue')).toEqual null
 			describe "other features", ->
 				describe "should tell you if it is editable based on status", ->
 					it "should be locked if status is created", ->
-						@bem.getStatus().set stringValue: "created"
+						@bem.getStatus().set codeValue: "created"
 						expect(@bem.isEditable()).toBeTruthy()
 					it "should be locked if status is started", ->
-						@bem.getStatus().set stringValue: "started"
+						@bem.getStatus().set codeValue: "started"
 						expect(@bem.isEditable()).toBeTruthy()
 					it "should be locked if status is complete", ->
-						@bem.getStatus().set stringValue: "complete"
+						@bem.getStatus().set codeValue: "complete"
 						expect(@bem.isEditable()).toBeTruthy()
 					it "should be locked if status is finalized", ->
-						@bem.getStatus().set stringValue: "finalized"
+						@bem.getStatus().set codeValue: "finalized"
 						expect(@bem.isEditable()).toBeFalsy()
 					it "should be locked if status is rejected", ->
-						@bem.getStatus().set stringValue: "rejected"
+						@bem.getStatus().set codeValue: "rejected"
 						expect(@bem.isEditable()).toBeFalsy()
-						
+
 		describe "when loaded from existing", ->
 			beforeEach ->
 				@bem = new BaseEntity window.baseEntityServiceTestJSON.savedExperimentWithAnalysisGroups
@@ -86,8 +89,9 @@ describe "Base Entity testing", ->
 				it 'Should have a completionDate value', ->
 					expect(@bem.getCompletionDate().get('dateValue')).toEqual 1342080000000
 				it 'Should have a status value', ->
-					expect(@bem.getStatus().get('stringValue')).toEqual "started"
-					
+					console.log @bem.getStatus()
+					expect(@bem.getStatus().get('codeValue')).toEqual "started"
+
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -244,7 +248,7 @@ describe "Base Entity testing", ->
 			it "should have the same lsKind as the original entity", ->
 				expect(@copiedEntity.get('lsType')).toEqual @bem.get('lsKind')
 			it "should have the status set to created", ->
-				expect(@copiedEntity.getStatus().get('stringValue')).toEqual "created"
+				expect(@copiedEntity.getStatus().get('codeValue')).toEqual "created"
 			it "should have the code name be undefined", ->
 				expect(@copiedEntity.get('codeName')).toBeUndefined()
 			it "should have the entity name be empty", ->
@@ -410,13 +414,13 @@ describe "Base Entity testing", ->
 					runs ->
 						@bec.$('.bv_status').val('complete')
 						@bec.$('.bv_status').change()
-						expect(@bec.model.getStatus().get('stringValue')).toEqual 'complete'
+						expect(@bec.model.getStatus().get('codeValue')).toEqual 'complete'
 
 
 		describe "When created from a new entity", ->
 			beforeEach ->
 				@bem = new BaseEntity()
-				@bem.getStatus().set stringValue: "created" #work around for left over pointers
+				@bem.getStatus().set codeValue: "created" #work around for left over pointers
 				@bec = new BaseEntityController
 					model: @bem
 					el: $('#fixture')
@@ -437,7 +441,7 @@ describe "Base Entity testing", ->
 				it "should show status select value as created", ->
 					@bem2 = new BaseEntity()
 					@bem2.set subclass: 'experiment' #this is required to load experimentStatus options from the dataDict (no dataDict for entityStatus)
-					@bem2.getStatus().set stringValue: "created" #work around for left over pointers
+					@bem2.getStatus().set codeValue: "created" #work around for left over pointers
 					@bec2 = new BaseEntityController
 						model: @bem2
 						el: $('#fixture')

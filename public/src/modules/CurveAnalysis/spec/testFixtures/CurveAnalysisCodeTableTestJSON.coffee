@@ -1,8 +1,8 @@
 ((exports) ->
-	exports.dataDictValues =
+	exports.codetableValues =
 		[
 			type: "algorithm well flags"
-			kind: "reason"
+			kind: "flag observation"
 			codes:
 				[
 					code: "outlier"
@@ -23,7 +23,7 @@
 				]
 		,
 			type: "user well flags"
-			kind: "reason"
+			kind: "flag observation"
 			codes:
 				[
 					code: "outlier"

@@ -555,7 +555,7 @@
 
     PrimaryAnalysisReadController.prototype.setUpReadNameSelect = function() {
       this.readNameList = new PickListList();
-      this.readNameList.url = "/api/dataDict/experiment metadata/read name";
+      this.readNameList.url = "/api/codetables/reader data/read name";
       return this.readNameListController = new PickListSelectController({
         el: this.$('.bv_readName'),
         collection: this.readNameList,
@@ -636,7 +636,7 @@
 
     TransformationRuleController.prototype.setUpTransformationRuleSelect = function() {
       this.transformationList = new PickListList();
-      this.transformationList.url = "/api/dataDict/experiment metadata/transformation";
+      this.transformationList.url = "/api/codetables/analysis parameter/transformation";
       return this.transformationListController = new PickListSelectController({
         el: this.$('.bv_transformationRule'),
         collection: this.transformationList,
@@ -925,7 +925,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupInstrumentReaderSelect = function() {
       this.instrumentList = new PickListList();
-      this.instrumentList.url = "/api/dataDict/experiment metadata/instrument reader";
+      this.instrumentList.url = "/api/codetables/equipment/instrument reader";
       return this.instrumentListController = new PickListSelectController({
         el: this.$('.bv_instrumentReader'),
         collection: this.instrumentList,
@@ -939,7 +939,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupSignalDirectionSelect = function() {
       this.signalDirectionList = new PickListList();
-      this.signalDirectionList.url = "/api/dataDict/experiment metadata/signal direction";
+      this.signalDirectionList.url = "/api/codetables/analysis parameter/signal direction";
       return this.signalDirectionListController = new PickListSelectController({
         el: this.$('.bv_signalDirectionRule'),
         collection: this.signalDirectionList,
@@ -953,7 +953,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupAggregateBySelect = function() {
       this.aggregateByList = new PickListList();
-      this.aggregateByList.url = "/api/dataDict/experiment metadata/aggregate by";
+      this.aggregateByList.url = "/api/codetables/analysis parameter/aggregate by";
       return this.aggregateByListController = new PickListSelectController({
         el: this.$('.bv_aggregateBy'),
         collection: this.aggregateByList,
@@ -967,7 +967,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupAggregationMethodSelect = function() {
       this.aggregationMethodList = new PickListList();
-      this.aggregationMethodList.url = "/api/dataDict/experiment metadata/aggregation method";
+      this.aggregationMethodList.url = "/api/codetables/analysis parameter/aggregation method";
       return this.aggregationMethodListController = new PickListSelectController({
         el: this.$('.bv_aggregationMethod'),
         collection: this.aggregationMethodList,
@@ -981,7 +981,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupNormalizationSelect = function() {
       this.normalizationList = new PickListList();
-      this.normalizationList.url = "/api/dataDict/experiment metadata/normalization";
+      this.normalizationList.url = "/api/codetables/analysis parameter/normalization";
       return this.normalizationListController = new PickListSelectController({
         el: this.$('.bv_normalizationRule'),
         collection: this.normalizationList,
