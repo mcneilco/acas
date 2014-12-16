@@ -1192,6 +1192,15 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
   # Warn the user if the experiment already exists (the else block)
   if (length(experimentList)==0) {
     experiment <- NA
+    # Validate experiment name
+    invalidCharacters <- racas::applicationSettings$client.service.result.viewer.experimentName.invalidCharacters
+    if (!is.null(invalidCharacters) && invalidCharacters != "") {
+      for (invalidCharacter in strsplit(invalidCharacters, "")[[1]]) {
+        if (grepl(invalidCharacter, experimentName, fixed = TRUE)) {
+          addError(paste0("\"", invalidCharacter, "\" is not allowed in your experiment name. Please change the name."))
+        }
+      }
+    }
   } else {
     tryCatch({
       protocolIds <- sapply(experimentList, function(x) x$protocol$id)
@@ -1347,12 +1356,13 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                           lsKind="experiment metadata")
   
   # Create a label for the experiment name
+  experimentName <- trim(gsub("CREATETHISEXPERIMENT$", "", metaData$"Experiment Name"[1]))
   experimentLabels <- list()
   experimentLabels[[length(experimentLabels)+1]] <- createExperimentLabel(lsTransaction = lsTransaction, 
                                                                           recordedBy=recordedBy, 
                                                                           lsType="name", 
                                                                           lsKind="experiment name",
-                                                                          labelText=experimentName <- trim(gsub("CREATETHISEXPERIMENT$", "", metaData$"Experiment Name"[1])),
+                                                                          labelText=experimentName,
                                                                           preferred=TRUE)
   
   # Create LS Tags

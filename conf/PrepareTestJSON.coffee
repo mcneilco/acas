@@ -18,7 +18,7 @@ currentTypeAndKind = {}
 
 for fileName in allCodeTableFiles
 	codeTableFile = require fileName
-	for codeTable in codeTableFile['dataDictValues']
+	for codeTable in codeTableFile['codetableValues']
 		type = codeTable['type']
 		kind = codeTable['kind']
 		currentTypeAndKind['type'] = type

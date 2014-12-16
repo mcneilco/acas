@@ -653,7 +653,7 @@
               return expect(this.pse.getDryRunResultHTML().get('clobValue')).toEqual("<p>Dry Run not started</p>");
             });
             it("should be able to get the analysis status", function() {
-              return expect(this.pse.getAnalysisStatus().get('stringValue')).toEqual("not started");
+              return expect(this.pse.getAnalysisStatus().get('codeValue')).toEqual("not started");
             });
             it("should be able to get the analysis result html", function() {
               return expect(this.pse.getAnalysisResultHTML().get('clobValue')).toEqual("<p>Analysis not yet completed</p>");
@@ -671,11 +671,6 @@
         beforeEach(function() {
           return this.pse2 = new PrimaryScreenExperiment();
         });
-        describe("defaults", function() {
-          return it("should have lsKind set to flipr screening assay", function() {
-            return expect(this.pse2.get('lsKind')).toEqual("flipr screening assay");
-          });
-        });
         return describe("special states", function() {
           it("should be able to get the dry run status", function() {
             return expect(this.pse2.getDryRunStatus().get('codeValue')).toEqual("not started");
@@ -684,7 +679,7 @@
             return expect(this.pse2.getDryRunResultHTML().get('clobValue')).toEqual("");
           });
           it("should be able to get the analysis status", function() {
-            return expect(this.pse2.getAnalysisStatus().get('stringValue')).toEqual("not started");
+            return expect(this.pse2.getAnalysisStatus().get('codeValue')).toEqual("not started");
           });
           it("should be able to get the analysis result html", function() {
             return expect(this.pse2.getAnalysisResultHTML().get('clobValue')).toEqual("");
@@ -1551,16 +1546,16 @@
         });
         it("Should disable analsyis parameter editing if status is finalized", function() {
           this.psac.model.getStatus().set({
-            stringValue: "finalized"
+            codeValue: "finalized"
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toEqual('disabled');
         });
         it("Should enable analsyis parameter editing if status is finalized", function() {
           this.psac.model.getStatus().set({
-            stringValue: "finalized"
+            codeValue: "finalized"
           });
           this.psac.model.getStatus().set({
-            stringValue: "started"
+            codeValue: "started"
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined();
         });
@@ -1572,7 +1567,7 @@
         beforeEach(function() {
           this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
           this.exp.getAnalysisStatus().set({
-            stringValue: "analsysis complete"
+            codeValue: "analsysis complete"
           });
           this.psac = new PrimaryScreenAnalysisController({
             model: this.exp,

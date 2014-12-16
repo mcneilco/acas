@@ -156,7 +156,7 @@
           return this.syncEvent;
         }, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.testModel.get('fitSettings').get('max').get('limitType')).toEqual('none');
+          return expect(this.testModel.get('fitSettings').get('max').get('limitType')).toEqual('pin');
         });
       });
     });

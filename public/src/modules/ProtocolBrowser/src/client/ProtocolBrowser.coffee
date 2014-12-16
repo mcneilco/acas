@@ -96,7 +96,7 @@ class window.ProtocolRowSummaryController extends Backbone.View
 			protocolKind: @model.get('lsKind')
 			recordedBy: @model.get('recordedBy')
 			assayStage: @model.getAssayStage().get("codeValue")
-			status: @model.getStatus().get("stringValue")
+			status: @model.getStatus().get("codeValue")
 			experimentCount: @model.get('experimentCount')
 #			analysisStatus: @model.getAnalysisStatus().get("stringValue")
 			recordedDate: @model.get("recordedDate")

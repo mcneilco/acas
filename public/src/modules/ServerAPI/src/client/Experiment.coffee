@@ -130,17 +130,17 @@ class window.Experiment extends BaseEntity
 		if projectCodeValue.get('codeValue') is undefined or projectCodeValue.get('codeValue') is ""
 			projectCodeValue.set codeValue: "unassigned"
 			projectCodeValue.set codeType: "project"
-			projectCodeValue.set codeKind: "project"
-			projectCodeValue.set codeOrigin: "acas ddict"
+			projectCodeValue.set codeKind: "biology"
+			projectCodeValue.set codeOrigin: "ACAS DDICT"
 
 		projectCodeValue
 
 	getAnalysisStatus: ->
 		metadataKind = @.get('subclass') + " metadata"
-		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "analysis status"
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", "analysis status"
 		#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
-		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "created"
+		if status.get('codeValue') is undefined or status.get('codeValue') is ""
+			status.set codeValue: "created"
 
 		status
 
@@ -275,11 +275,11 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/experiment metadata/experiment status"
+		@statusList.url = "/api/codetables/experiment/status"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList
-			selectedCode: @model.getStatus().get 'stringValue'
+			selectedCode: @model.getStatus().get 'codeValue'
 
 	setupTagList: ->
 		@$('.bv_tags').val ""

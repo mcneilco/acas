@@ -72,7 +72,6 @@ class window.DoseResponseFitController extends Backbone.View
 
 	fitReturnSuccess: (json) =>
 		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
-		@$('.bv_modelFitStatus').html(json.results.status)
 		@$('.bv_resultsContainer').show()
 		@$('.bv_fitModelButton').hide()
 		@$('.bv_fitOptionWrapper').hide()
@@ -125,9 +124,12 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 
 	handleFitComplete: =>
 		@$('.bv_completeControlContainer').show()
+		@drdpc.$('.bv_loadAnother').hide()
 
 	handleFitAnother: =>
 		@drdpc.loadAnother()
+		@$('.bv_doseResponseAnalysis').empty()
+		@$('.bv_doseResponseAnalysis').append "<div class='bv_uploadDataToFit span10'>Data must be uploaded first before fitting.</div>"
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_uploadDataTabLink').click()
 

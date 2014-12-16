@@ -105,7 +105,6 @@ class window.GeneIDQuerySearchController extends Backbone.View
 				user: window.AppLaunchParams.loginUserName
 			success: @handleSearchReturn
 			error: (err) =>
-				console.log 'got ajax error'
 				@serviceReturn = null
 			dataType: 'json'
 
@@ -144,7 +143,6 @@ class window.GeneIDQuerySearchController extends Backbone.View
 				user: window.AppLaunchParams.loginUserName
 			success: @resultController.showCSVFileLink
 			error: (err) =>
-				console.log 'got ajax error'
 				@serviceReturn = null
 
 
@@ -383,7 +381,6 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				geneIDs: @searchCodes
 			success: @handleGetGeneExperimentsReturn
 			error: (err) =>
-				console.log 'got ajax error trying to get experiment tree'
 				@serviceReturn = null
 
 	handleGetGeneExperimentsReturn: (json) =>
@@ -418,7 +415,6 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				experimentCodes: @experimentList
 			success: @handleGetExperimentSearchAttributesReturn
 			error: (err) =>
-				console.log 'got ajax error'
 				@serviceReturn = null
 
 	handleGetExperimentSearchAttributesReturn: (json) =>
@@ -451,7 +447,6 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				user: window.AppLaunchParams.loginUserName
 			success: @handleSearchReturn
 			error: (err) =>
-				console.log 'got ajax error'
 				@serviceReturn = null
 
 	handleSearchReturn: (json) =>
@@ -477,7 +472,6 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				user: window.AppLaunchParams.loginUserName
 			success: @resultController.showCSVFileLink
 			error: (err) =>
-				console.log 'got ajax error'
 				@serviceReturn = null
 
 

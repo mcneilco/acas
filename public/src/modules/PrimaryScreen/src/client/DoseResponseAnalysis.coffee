@@ -1,5 +1,5 @@
 class window.DoseResponseAnalysisParameters extends Backbone.Model
-	defaults: ->
+	defaults:
 		inactiveThreshold: 20
 		inverseAgonistMode: true
 		max: new Backbone.Model limitType: 'none'
@@ -7,42 +7,32 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 		slope: new Backbone.Model limitType: 'none'
 
 	initialize: ->
-		@.set @parse(@.attributes)
+		@fixCompositeClasses()
 
-	parse: (resp) =>
-		if resp.max?
-			if resp.max not instanceof Backbone.Model
-				resp.max = new Backbone.Model(resp.max)
-			resp.max.on 'change', =>
-				@trigger 'change'
-		if resp.min?
-			if resp.min not instanceof Backbone.Model
-				resp.min = new Backbone.Model(resp.min)
-			resp.min.on 'change', =>
-				@trigger 'change'
-		if resp.slope?
-			if resp.slope not instanceof Backbone.Model
-				resp.slope = new Backbone.Model(resp.slope)
-			resp.slope.on 'change', =>
-				@trigger 'change'
-		resp
+	fixCompositeClasses: =>
+		if @get('max') not instanceof Backbone.Model
+			@set max: new Backbone.Model(@get('max'))
+		if @get('min') not instanceof Backbone.Model
+			@set min: new Backbone.Model(@get('min'))
+		if @get('slope') not instanceof Backbone.Model
+			@set slope: new Backbone.Model(@get('slope'))
 
 
 	validate: (attrs) ->
 		errors = []
 
 		limitType = attrs.min.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.min.get('value')) || attrs.min.get('value') == null)
+		if (limitType == "pin" || limitType == "limit") && _.isNaN(attrs.min.get('value'))
 			errors.push
 				attribute: 'min_value'
 				message: "Min threshold value must be set when limit type is pin or limit"
 		limitType = attrs.max.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.max.get('value')) || attrs.max.get('value') == null)
+		if (limitType == "pin" || limitType == "limit") && _.isNaN(attrs.max.get('value'))
 			errors.push
 				attribute: 'max_value'
 				message: "Max threshold value must be set when limit type is pin or limit"
 		limitType = attrs.slope.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.slope.get('value')) || attrs.slope.get('value') == null)
+		if (limitType == "pin" || limitType == "limit") && _.isNaN(attrs.slope.get('value'))
 			errors.push
 				attribute: 'slope_value'
 				message: "Slope threshold value must be set when limit type is pin or limit"
@@ -112,12 +102,11 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
 			silent: true
 		@model.trigger 'change'
-		@trigger 'updateState'
 
 	handleInactiveThresholdChanged: (event, ui) =>
 		@model.set 'inactiveThreshold': ui.value
 		@updateThresholdDisplay(@model.get 'inactiveThreshold')
-		@attributeChanged()
+		@attributeChanged
 
 	handleInactiveThresholdMoved: (event, ui) =>
 		@updateThresholdDisplay(ui.value)

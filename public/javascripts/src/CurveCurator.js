@@ -49,7 +49,7 @@
 
     DoseResponseKnockoutPanelController.prototype.setupKnockoutReasonPicklist = function() {
       this.knockoutReasonList = new PickListList();
-      this.knockoutReasonList.url = "/api/dataDict/user well flags/reason";
+      this.knockoutReasonList.url = "/api/codetables/user well flags/flag observation";
       return this.knockoutReasonListController = new PickListSelectController({
         el: this.$('.bv_dataDictPicklist'),
         collection: this.knockoutReasonList
@@ -283,7 +283,7 @@
               dash: 3,
               strokeColor: color
             });
-            brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), plotWindow[2]]], {
+            brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), 0]], {
               fixed: true,
               straightFirst: false,
               straightLast: false,
@@ -415,6 +415,7 @@
 
     function CurveDetail() {
       this.parse = __bind(this.parse, this);
+      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       return CurveDetail.__super__.constructor.apply(this, arguments);
     }
 
@@ -423,7 +424,15 @@
     };
 
     CurveDetail.prototype.initialize = function() {
-      return this.set(this.parse(this.attributes));
+      return this.fixCompositeClasses();
+    };
+
+    CurveDetail.prototype.fixCompositeClasses = function() {
+      if (!(this.get('fitSettings') instanceof DoseResponseAnalysisParameters)) {
+        return this.set({
+          fitSettings: new DoseResponseAnalysisParameters(this.get('fitSettings'))
+        });
+      }
     };
 
     CurveDetail.prototype.parse = function(resp) {
@@ -624,13 +633,11 @@
     };
 
     CurveEditorController.prototype.handleUpdateSuccess = function() {
-      var curveid, dirty, flagAlgorithm, flagUser;
+      var curveid, dirty;
       this.handleModelSync();
       curveid = this.model.get('curveid');
-      flagUser = this.model.get('flagUser');
-      flagAlgorithm = this.model.get('flagAlgorithm');
       dirty = this.model.get('dirty');
-      return this.trigger('curveDetailUpdated', curveid, flagUser, flagAlgorithm, dirty);
+      return this.trigger('curveDetailUpdated', curveid, dirty);
     };
 
     return CurveEditorController;
@@ -652,7 +659,8 @@
     __extends(CurveList, _super);
 
     function CurveList() {
-      this.updateCurveFlagUser = __bind(this.updateCurveFlagUser, this);
+      this.updateFlagUser = __bind(this.updateFlagUser, this);
+      this.updateDirtyFlag = __bind(this.updateDirtyFlag, this);
       this.updateCurveSummary = __bind(this.updateCurveSummary, this);
       this.getIndexByCurveID = __bind(this.getIndexByCurveID, this);
       this.getCurveByID = __bind(this.getCurveByID, this);
@@ -701,11 +709,19 @@
       });
     };
 
-    CurveList.prototype.updateCurveFlagUser = function(curveid, dirty) {
+    CurveList.prototype.updateDirtyFlag = function(curveid, dirty) {
       var curve;
       curve = this.getCurveByID(curveid);
       return curve.set({
         dirty: dirty
+      });
+    };
+
+    CurveList.prototype.updateFlagUser = function(curveid, flagUser) {
+      var curve;
+      curve = this.getCurveByID(curveid);
+      return curve.set({
+        flagUser: flagUser
       });
     };
 
@@ -721,11 +737,9 @@
       return CurveCurationSet.__super__.constructor.apply(this, arguments);
     }
 
-    CurveCurationSet.prototype.defaults = function() {
-      return {
-        sortOptions: new Backbone.Collection(),
-        curves: new CurveList()
-      };
+    CurveCurationSet.prototype.defaults = {
+      sortOptions: new Backbone.Collection(),
+      curves: new CurveList()
     };
 
     CurveCurationSet.prototype.setExperimentCode = function(exptCode) {
@@ -736,22 +750,22 @@
       if (resp.curves != null) {
         if (!(resp.curves instanceof CurveList)) {
           resp.curves = new CurveList(resp.curves);
+          resp.curves.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
-        resp.curves.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
       }
       if (resp.sortOptions != null) {
         if (!(resp.sortOptions instanceof Backbone.Collection)) {
           resp.sortOptions = new Backbone.Collection(resp.sortOptions);
+          resp.sortOptions.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
-        resp.sortOptions.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
       }
       return resp;
     };
@@ -816,6 +830,7 @@
     function CurveSummaryController() {
       this.clearSelected = __bind(this.clearSelected, this);
       this.setSelected = __bind(this.setSelected, this);
+      this.setUserFlag = __bind(this.setUserFlag, this);
       this.render = __bind(this.render, this);
       return CurveSummaryController.__super__.constructor.apply(this, arguments);
     }
@@ -827,7 +842,10 @@
     CurveSummaryController.prototype.className = 'bv_curveSummary';
 
     CurveSummaryController.prototype.events = {
-      'click': 'setSelected'
+      'click .bv_group_thumbnail': 'setSelected',
+      'click .bv_userApprove': 'userApprove',
+      'click .bv_userReject': 'userReject',
+      'click .bv_userNA': 'userNA'
     };
 
     CurveSummaryController.prototype.initialize = function() {
@@ -837,6 +855,7 @@
     CurveSummaryController.prototype.render = function() {
       var curveUrl;
       this.$el.empty();
+      this.model.url = '/api/curve/stub/' + this.model.get('curveid');
       if (window.AppLaunchParams.testMode) {
         curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
         curveUrl += this.model.get('curveid') + ".png";
@@ -858,15 +877,24 @@
         this.$('.bv_na').show();
         this.$('.bv_thumbsUp').hide();
         this.$('.bv_thumbsDown').hide();
+        this.$('.bv_flagUser').removeClass('btn-success');
+        this.$('.bv_flagUser').removeClass('btn-danger');
+        this.$('.bv_flagUser').addClass('btn-grey');
       } else {
         if (this.model.get('flagUser') === 'approved') {
           this.$('.bv_na').hide();
           this.$('.bv_thumbsUp').show();
           this.$('.bv_thumbsDown').hide();
+          this.$('.bv_flagUser').addClass('btn-success');
+          this.$('.bv_flagUser').removeClass('btn-danger');
+          this.$('.bv_flagUser').removeClass('btn-grey');
         } else {
           this.$('.bv_na').hide();
           this.$('.bv_thumbsUp').hide();
           this.$('.bv_thumbsDown').show();
+          this.$('.bv_flagUser').removeClass('btn-success');
+          this.$('.bv_flagUser').addClass('btn-danger');
+          this.$('.bv_flagUser').removeClass('btn-grey');
         }
       }
       if (this.model.get('dirty')) {
@@ -875,8 +903,63 @@
         this.$('.bv_dirty').hide();
       }
       this.$('.bv_compoundCode').html(this.model.get('curveAttributes').compoundCode);
-      this.model.on('change', this.render);
       return this;
+    };
+
+    CurveSummaryController.prototype.userApprove = function() {
+      return this.approveReject("approved");
+    };
+
+    CurveSummaryController.prototype.userReject = function() {
+      return this.approveReject("rejected");
+    };
+
+    CurveSummaryController.prototype.userNA = function() {
+      return this.approveReject("NA");
+    };
+
+    CurveSummaryController.prototype.approveReject = function(decision) {
+      if (!this.model.get('dirty')) {
+        return this.setUserFlag(decision);
+      } else {
+        return this.trigger('showCurveEditorDirtyPanel');
+      }
+    };
+
+    CurveSummaryController.prototype.setUserFlag = function(flagUser) {
+      this.disableSummary();
+      return this.model.save({
+        flagUser: flagUser,
+        user: window.AppLaunchParams.loginUserName
+      }, {
+        wait: true,
+        success: (function(_this) {
+          return function() {
+            _this.enableSummary();
+            if (_this.$el.hasClass('selected')) {
+              return _this.trigger('selected', _this);
+            }
+          };
+        })(this),
+        error: (function(_this) {
+          return function() {
+            $('.bv_badCurveUpdate').modal({
+              backdrop: "static"
+            });
+            return $('.bv_badCurveUpdate').modal("show");
+          };
+        })(this)
+      });
+    };
+
+    CurveSummaryController.prototype.disableSummary = function() {
+      this.undelegateEvents();
+      return this.$el.fadeTo(100, 0.2);
+    };
+
+    CurveSummaryController.prototype.enableSummary = function() {
+      this.delegateEvents();
+      return this.$el.fadeTo(100, 1);
     };
 
     CurveSummaryController.prototype.setSelected = function() {
@@ -909,6 +992,7 @@
     __extends(CurveSummaryListController, _super);
 
     function CurveSummaryListController() {
+      this.showCurveEditorDirtyPanel = __bind(this.showCurveEditorDirtyPanel, this);
       this.selectionUpdated = __bind(this.selectionUpdated, this);
       this.anyDirty = __bind(this.anyDirty, this);
       this.render = __bind(this.render, this);
@@ -968,6 +1052,7 @@
           });
           _this.$('.bv_curveSummaries').append(csController.render().el);
           csController.on('selected', _this.selectionUpdated);
+          csController.on('showCurveEditorDirtyPanel', _this.showCurveEditorDirtyPanel);
           _this.on('clearSelected', csController.clearSelected);
           if (_this.firstRun && (_this.initiallySelectedCurveID != null)) {
             if (_this.initiallySelectedCurveID === cs.get('curveid')) {
@@ -977,22 +1062,21 @@
           if (_this.selectedcid != null) {
             if (csController.model.cid === _this.selectedcid) {
               if (!_this.firstRun) {
-                return csController.styleSelected();
+                csController.styleSelected();
               } else {
-                return csController.setSelected();
+                csController.setSelected();
               }
             }
           } else {
             if (_this.firstRun && i === 1) {
               _this.selectedcid = cs.id;
-              return csController.setSelected();
+              csController.setSelected();
             }
           }
+          return i = 2;
         };
       })(this));
-      if (this.toRender.length > 0) {
-        this.firstRun = false;
-      }
+      this.firstRun = false;
       return this;
     };
 
@@ -1012,8 +1096,12 @@
         return this.trigger('selectionUpdated', who);
       } else {
         who.clearSelected();
-        return this.curveEditorDirtyPanel.show();
+        return this.showCurveEditorDirtyPanel();
       }
+    };
+
+    CurveSummaryListController.prototype.showCurveEditorDirtyPanel = function() {
+      return this.curveEditorDirtyPanel.show();
     };
 
     CurveSummaryListController.prototype.filter = function(key) {
@@ -1117,7 +1205,7 @@
     };
 
     CurveCuratorController.prototype.handleCurveDetailUpdated = function(curveid, dirty) {
-      return this.curveListController.collection.updateCurveFlagUser(curveid, dirty);
+      return this.curveListController.collection.updateDirtyFlag(curveid, dirty);
     };
 
     CurveCuratorController.prototype.handleCurveUpdateError = function() {

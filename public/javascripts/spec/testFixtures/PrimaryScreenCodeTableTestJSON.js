@@ -1,8 +1,8 @@
 (function() {
   (function(exports) {
-    return exports.dataDictValues = [
+    return exports.codetableValues = [
       {
-        type: "experiment metadata",
+        type: "equipment",
         kind: "instrument reader",
         codes: [
           {
@@ -12,7 +12,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "analysis parameter",
         kind: "signal direction",
         codes: [
           {
@@ -22,7 +22,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "analysis parameter",
         kind: "aggregate by",
         codes: [
           {
@@ -32,7 +32,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "analysis parameter",
         kind: "aggregation method",
         codes: [
           {
@@ -46,7 +46,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "analysis parameter",
         kind: "transformation",
         codes: [
           {
@@ -64,7 +64,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "analysis parameter",
         kind: "normalization",
         codes: [
           {
@@ -86,7 +86,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "reader data",
         kind: "read name",
         codes: [
           {

@@ -104,7 +104,6 @@
      */
 
     ExperimentSearchController.prototype.doGenericExperimentSearch = function(searchTerm) {
-      console.log("doGenericExperimentSearch");
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/genericSearch/" + searchTerm,
@@ -215,8 +214,6 @@
     ExperimentSimpleSearchController.prototype.initialize = function() {
       this.includeDuplicateAndEdit = this.options.includeDuplicateAndEdit;
       this.searchUrl = "";
-      console.log("@includeDuplicateAndEdit");
-      console.log(this.includeDuplicateAndEdit);
       if (this.includeDuplicateAndEdit) {
         return this.searchUrl = this.genericSearchUrl;
       } else {
@@ -281,7 +278,6 @@
     ExperimentSimpleSearchController.prototype.doSearch = function(experimentSearchTerm) {
       this.trigger('find');
       if (experimentSearchTerm !== "") {
-        console.log("doGenericExperimentSearch");
         return $.ajax({
           type: 'GET',
           url: this.searchUrl + experimentSearchTerm,
@@ -341,7 +337,7 @@
         experimentCode: this.model.get('codeName'),
         protocolName: this.model.get('protocol').get("codeName"),
         recordedBy: this.model.get('recordedBy'),
-        status: this.model.getStatus().get("stringValue"),
+        status: this.model.getStatus().get("codeValue"),
         analysisStatus: this.model.getAnalysisStatus().get("stringValue"),
         recordedDate: this.model.get("recordedDate")
       };
@@ -457,10 +453,7 @@
           collection: new ExperimentList(experiments)
         });
         this.experimentSummaryTable.on("selectedRowUpdated", this.selectedExperimentUpdated);
-        $(".bv_experimentTableController").html(this.experimentSummaryTable.render().el);
-        if (!this.includeDuplicateAndEdit) {
-          return this.selectedExperimentUpdated(new Experiment(experiments[0]));
-        }
+        return $(".bv_experimentTableController").html(this.experimentSummaryTable.render().el);
       }
     };
 

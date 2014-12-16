@@ -23,12 +23,12 @@
 					name: "R^2"
 				}
 				{
-					code: "userApproved"
-					name: "User Approved"
+					code: "flagUser"
+					name: "User Flag"
 				}
 				{
-					code: "algorithmApproved"
-					name: "Algorithm Approved"
+					code: "flagAlgorithm"
+					name: "Algorithm Flag"
 				}
 			]
 			curves: [
@@ -37,6 +37,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "NA"
 					category: "sigmoid"
+					dirty: false
 					curveAttributes:
 						EC50: 0.284844160002036
 						SST: 57369.0621852408
@@ -51,6 +52,7 @@
 					flagAlgorithm: "no fit"
 					flagUser: "approved"
 					category: "insufficient data"
+					dirty: false
 					curveAttributes:
 						EC50: 0.004
 						SST: []
@@ -65,6 +67,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "rejected"
 					category: "weak tested potency"
+					dirty: false
 					curveAttributes:
 						EC50: 0.003
 						SST: 3648.9989241476
@@ -79,6 +82,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "rejected"
 					category: "inactive"
+					dirty: false
 					curveAttributes:
 						EC50: 0.002
 						SST: 992.26874416044
@@ -93,6 +97,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "rejected"
 					category: "inactive"
+					dirty: false
 					curveAttributes:
 						EC50: 0.001
 						SST: 992.26874416044
@@ -107,6 +112,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "rejected"
 					category: "strong tested potency"
+					dirty: false
 					curveAttributes:
 						EC50: 0.005
 						SST: 1066.45816260053
@@ -121,6 +127,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "NA"
 					category: "sigmoid"
+					dirty: false
 					curveAttributes:
 						EC50: 0.335485738191051
 						SST: 65850.4707086692
@@ -135,6 +142,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "NA"
 					category: "weak tested potency"
+					dirty: false
 					curveAttributes:
 						EC50: 20
 						SST: 41929.3349508575
@@ -149,6 +157,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "NA"
 					category: "sigmoid"
+					dirty: false
 					curveAttributes:
 						EC50: 0.00000920554903854162
 						SST: 50902.597444995
@@ -163,6 +172,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "NA"
 					category: "sigmoid"
+					dirty: false
 					curveAttributes:
 						EC50: 0.798664040834177
 						SST: 52271.0370588527
@@ -177,6 +187,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "NA"
 					category: "sigmoid"
+					dirty: false
 					curveAttributes:
 						EC50: 0.537560272281405
 						SST: 33674.9802691028
@@ -191,6 +202,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "rejected"
 					category: "sigmoid"
+					dirty: false
 					curveAttributes:
 						EC50: 10000
 						SST: 280465.164416049
@@ -219,6 +231,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "NA"
 					category: "sigmoid"
+					dirty: false
 					curveAttributes:
 						EC50: 0.117860268317249
 						SST: 318700.999744653
@@ -233,6 +246,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "NA"
 					category: "sigmoid"
+					dirty: false
 					curveAttributes:
 						EC50: 0.0340605424622247
 						SST: 324694.514248068
@@ -247,6 +261,7 @@
 					flagAlgorithm: "NA"
 					flagUser: "NA"
 					category: "sigmoid"
+					dirty: false
 					curveAttributes:
 						EC50: 0.0214690832325238
 						SST: 511979.176495131

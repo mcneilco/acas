@@ -21,7 +21,7 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 
 	setupKnockoutReasonPicklist: =>
 		@knockoutReasonList = new PickListList()
-		@knockoutReasonList.url = "/api/dataDict/user well flags/reason"
+		@knockoutReasonList.url = "/api/codetables/user well flags/flag observation"
 		@knockoutReasonListController = new PickListSelectController
 			el: @$('.bv_dataDictPicklist')
 			collection: @knockoutReasonList
@@ -203,9 +203,10 @@ class window.DoseResponsePlotController extends AbstractFormController
 						color = '#ff0000'
 					else
 						color = '#808080'
-
+#				Horizontal Line
 					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),plotWindow[2]]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
+#				Vertical Line
+					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
 
 		getMouseCoords = (e) ->
 			cPos = brd.getCoordsTopLeftCorner(e)
@@ -288,8 +289,10 @@ class window.CurveDetail extends Backbone.Model
 	url: ->
 		return "/api/curve/detail/" + @id
 	initialize: ->
-		@.set @parse(@.attributes)
-
+		@fixCompositeClasses()
+	fixCompositeClasses: =>
+		if @get('fitSettings') not instanceof DoseResponseAnalysisParameters
+			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
 	parse: (resp) =>
 		if resp.fitSettings not instanceof DoseResponseAnalysisParameters
 			resp.fitSettings = new DoseResponseAnalysisParameters(resp.fitSettings)
@@ -419,10 +422,8 @@ class window.CurveEditorController extends Backbone.View
 	handleUpdateSuccess: =>
 		@handleModelSync()
 		curveid = @model.get 'curveid'
-		flagUser = @model.get 'flagUser'
-		flagAlgorithm = @model.get 'flagAlgorithm'
 		dirty = @model.get 'dirty'
-		@trigger 'curveDetailUpdated', curveid, flagUser, flagAlgorithm, dirty
+		@trigger 'curveDetailUpdated', curveid, dirty
 
 class window.Curve extends Backbone.Model
 
@@ -457,13 +458,19 @@ class window.CurveList extends Backbone.Collection
 			flagAlgorithm: flagAlgorithm
 			category: category
 
-	updateCurveFlagUser: (curveid, dirty) =>
+	updateDirtyFlag: (curveid, dirty) =>
 		curve = @getCurveByID(curveid)
 		curve.set
 			dirty: dirty
 
+	updateFlagUser: (curveid, flagUser) =>
+		curve = @getCurveByID(curveid)
+		curve.set
+			flagUser: flagUser
+
+
 class window.CurveCurationSet extends Backbone.Model
-	defaults: ->
+	defaults:
 		sortOptions: new Backbone.Collection()
 		curves: new CurveList()
 	setExperimentCode: (exptCode) ->
@@ -473,13 +480,13 @@ class window.CurveCurationSet extends Backbone.Model
 		if resp.curves?
 			if resp.curves not instanceof CurveList
 				resp.curves = new CurveList(resp.curves)
-			resp.curves.on 'change', =>
-				@trigger 'change'
+				resp.curves.on 'change', =>
+					@trigger 'change'
 		if resp.sortOptions?
 			if resp.sortOptions not instanceof Backbone.Collection
 				resp.sortOptions = new Backbone.Collection(resp.sortOptions)
-			resp.sortOptions.on 'change', =>
-				@trigger 'change'
+				resp.sortOptions.on 'change', =>
+					@trigger 'change'
 		resp
 
 
@@ -512,12 +519,17 @@ class window.CurveSummaryController extends Backbone.View
 	tagName: 'div'
 	className: 'bv_curveSummary'
 	events:
-		'click': 'setSelected'
+		'click .bv_group_thumbnail': 'setSelected'
+		'click .bv_userApprove': 'userApprove'
+		'click .bv_userReject': 'userReject'
+		'click .bv_userNA': 'userNA'
+
 	initialize: ->
 		@model.on 'change', @render
 
 	render: =>
 		@$el.empty()
+		@model.url = '/api/curve/stub/' + @model.get 'curveid'
 		if window.AppLaunchParams.testMode
 			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
@@ -536,23 +548,73 @@ class window.CurveSummaryController extends Backbone.View
 			@$('.bv_na').show()
 			@$('.bv_thumbsUp').hide()
 			@$('.bv_thumbsDown').hide()
+			@$('.bv_flagUser').removeClass('btn-success')
+			@$('.bv_flagUser').removeClass('btn-danger')
+			@$('.bv_flagUser').addClass('btn-grey')
 		else
 			if @model.get('flagUser') == 'approved'
 				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').show()
 				@$('.bv_thumbsDown').hide()
+				@$('.bv_flagUser').addClass('btn-success')
+				@$('.bv_flagUser').removeClass('btn-danger')
+				@$('.bv_flagUser').removeClass('btn-grey')
 			else
 				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').hide()
 				@$('.bv_thumbsDown').show()
+				@$('.bv_flagUser').removeClass('btn-success')
+				@$('.bv_flagUser').addClass('btn-danger')
+				@$('.bv_flagUser').removeClass('btn-grey')
 		if @model.get 'dirty'
 			@$('.bv_dirty').show()
 		else
 			@$('.bv_dirty').hide()
 
 		@$('.bv_compoundCode').html @model.get('curveAttributes').compoundCode
-		@model.on 'change', @render
+#		@model.on 'change', @render
 		@
+
+	userApprove: ->
+		@approveReject("approved")
+
+	userReject: ->
+		@approveReject("rejected")
+
+	userNA: ->
+		@approveReject("NA")
+
+	approveReject: (decision) ->
+		if !@model.get 'dirty'
+			@setUserFlag(decision)
+		else
+			@trigger 'showCurveEditorDirtyPanel'
+
+	setUserFlag: (flagUser) =>
+#		UtilityFunctions::showProgressModal $('.bv_curveCuratorDropDown')
+		@disableSummary()
+		@model.save(flagUser: flagUser, user: window.AppLaunchParams.loginUserName, {
+			wait: true,
+			success: =>
+#				UtilityFunctions::hideProgressModal $('.bv_curveCuratorDropDown')
+				@enableSummary()
+				if @$el.hasClass('selected')
+					@trigger 'selected', @
+			error: =>
+				$('.bv_badCurveUpdate').modal
+					backdrop: "static"
+				$('.bv_badCurveUpdate').modal "show"
+		})
+
+	disableSummary: ->
+		@undelegateEvents()
+		@$el.fadeTo(100, 0.2)
+
+
+	enableSummary: ->
+		@delegateEvents()
+		@$el.fadeTo(100, 1)
+
 
 	setSelected: =>
 		if !@$el.hasClass('selected')
@@ -571,7 +633,6 @@ class window.CurveSummaryController extends Backbone.View
 
 class window.CurveSummaryListController extends Backbone.View
 	template: _.template($("#CurveSummaryListView").html())
-
 	initialize: ->
 		@filterKey = 'all'
 		@sortKey = 'none'
@@ -608,6 +669,7 @@ class window.CurveSummaryListController extends Backbone.View
 			csController = new CurveSummaryController(model: cs)
 			@$('.bv_curveSummaries').append(csController.render().el)
 			csController.on 'selected', @selectionUpdated
+			csController.on 'showCurveEditorDirtyPanel', @showCurveEditorDirtyPanel
 			@on 'clearSelected', csController.clearSelected
 			if @firstRun && @initiallySelectedCurveID?
 				if @initiallySelectedCurveID == cs.get 'curveid'
@@ -622,9 +684,9 @@ class window.CurveSummaryListController extends Backbone.View
 				if @firstRun && i==1
 					@selectedcid = cs.id
 					csController.setSelected()
+			i = 2
 
-		if @toRender.length > 0
-			@firstRun = false
+		@firstRun = false
 		@
 
 	anyDirty: =>
@@ -639,7 +701,10 @@ class window.CurveSummaryListController extends Backbone.View
 			@trigger 'selectionUpdated', who
 		else
 			who.clearSelected()
-			@curveEditorDirtyPanel.show()
+			@showCurveEditorDirtyPanel()
+
+	showCurveEditorDirtyPanel: =>
+		@curveEditorDirtyPanel.show()
 
 	filter: (key) ->
 		@filterKey = key
@@ -717,7 +782,7 @@ class window.CurveCuratorController extends Backbone.View
 		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, flagUser, flagAlgorithm)
 
 	handleCurveDetailUpdated: (curveid, dirty) =>
-		@curveListController.collection.updateCurveFlagUser(curveid, dirty)
+		@curveListController.collection.updateDirtyFlag(curveid, dirty)
 
 	handleCurveUpdateError: =>
 		@$('.bv_badCurveUpdate').modal

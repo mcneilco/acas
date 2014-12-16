@@ -47,7 +47,7 @@
 				publicData: true
 				recordedDate: 1363388477000
 				sigFigs: null
-				stringValue: "assay tree rule goes here"
+				stringValue: "/assayTreeRule"
 				uncertainty: null
 				urlValue: null
 				lsKind: "assay tree rule"
@@ -58,9 +58,10 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeKind: "stage"
+				codeType: "assay"
 				codeValue: "assay development"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -258,16 +259,19 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				codeType: "protocol"
+				codeValue: "created"
 				comments: null
 				dateValue: null
 				fileValue: null
 				id: 2
 				ignored: false
-				lsKind: "status"
+				lsKind: "protocol status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_protocol status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -279,7 +283,7 @@
 				recordedBy: "egao"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "created"
+				stringValue: null
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null

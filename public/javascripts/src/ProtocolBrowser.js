@@ -156,7 +156,7 @@
         protocolKind: this.model.get('lsKind'),
         recordedBy: this.model.get('recordedBy'),
         assayStage: this.model.getAssayStage().get("codeValue"),
-        status: this.model.getStatus().get("stringValue"),
+        status: this.model.getStatus().get("codeValue"),
         experimentCount: this.model.get('experimentCount'),
         recordedDate: this.model.get("recordedDate")
       };

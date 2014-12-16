@@ -2,9 +2,9 @@
 
 	exports.newPickListOption =
 		code: "test new option" #same as codeValue
-		codeKind: "assay type"
-		codeOrigin: "acas ddict" #default value
-		codeType: "protocolMetadata"
+		codeKind: "type"
+		codeOrigin: "ACAS DDICT" #default value
+		codeType: "assay"
 		comments: "test comments"
 		description: "test description"
 		ignored: false
@@ -21,9 +21,10 @@
 		lsTypeAndKind: "metadata_screening assay"
 		lsValues: [
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "activity"
 			codeValue: "luminescence"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -51,7 +52,8 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "molecular target"
 			codeValue: "test1"
 			codeOrigin: "customer ddict"
 			comments: null
@@ -81,9 +83,10 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "target"
+			codeKind: "origin"
 			codeValue: "human"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -111,9 +114,10 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "type"
 			codeValue: "cellular assay"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -141,9 +145,10 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "technology"
 			codeValue: "wizard triple luminescence"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -171,9 +176,10 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "reagent"
+			codeKind: "cell line"
 			codeValue: "cell line y"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -497,16 +503,16 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeValue: "created"
 				comments: null
 				dateValue: null
 				fileValue: null
 				id: 2
 				ignored: false
-				lsKind: "status"
+				lsKind: "protocol status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_protocol status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -518,7 +524,7 @@
 				recordedBy: "egao"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "created"
+				stringValue: null
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -542,9 +548,10 @@
 			lsTypeAndKind: "metadata_screening assay"
 			lsValues: [
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "assay"
+				codeKind: "activity"
 				codeValue: "luminescence"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -572,7 +579,8 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "assay"
+				codeKind: "molecular target"
 				codeValue: "test1"
 				codeOrigin: "customer ddict"
 				comments: null
@@ -602,9 +610,10 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "target"
+				codeKind: "origin"
 				codeValue: "human"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -632,9 +641,10 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "assay"
+				codeKind: "type"
 				codeValue: "cellular assay"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -662,9 +672,10 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "assay"
+				codeKind: "technology"
 				codeValue: "wizard triple luminescence"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -692,9 +703,10 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "reagent"
+				codeKind: "cell line"
 				codeValue: "cell line y"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null

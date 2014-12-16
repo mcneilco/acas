@@ -1,92 +1,92 @@
 <script type="text/template" id="ExperimentBaseView" xmlns="http://www.w3.org/1999/html">
 
-	<div class="span10">
-    <div class="form-horizontal">
-        <div class="control-group">
-            <label class="control-label"><i class="icon-lock bv_lock"></i> Status</label>
-            <div class="controls">
-                <select class="bv_status select-picker" style="width:350px;">
-                </select>
+    <div class="span10">
+        <div class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label"><i class="icon-lock bv_lock"></i> Status</label>
+                <div class="controls">
+                    <select class="bv_status select-picker" style="width:350px;">
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Code</label>
+                <div class="controls">
+                    <span class="uneditable-input bv_experimentCode" style="width:336px;">autofill when saved</span>
+                </div>
+            </div>
+            <div class="control-group bv_group_experimentName">
+                <label class="control-label">*Experiment Name</label>
+                <div class="controls">
+                    <input class="bv_experimentName" style="width:336px;" type="text" placeholder="">
+                </div>
             </div>
         </div>
-        <div class="control-group">
-            <label class="control-label">Code</label>
-            <div class="controls">
-                <span class="uneditable-input bv_experimentCode" style="width:336px;">autofill when saved</span>
+
+
+        <div class="form-horizontal">
+            <div class="control-group bv_group_recordedBy">
+                <label class="control-label">*Scientist</label>
+                <div class="controls">
+                    <select class="bv_recordedBy" style="width:350px;">
+                        <option value="">Scientist</option>
+                        <option value="jmcneil">John McNeil</option>
+                        <option value="smeyer">smeyer</option>
+                        <option value="nxm7557">Neelima Mannava</option>
+                        <option value="xxl7932">Xiaodong Li</option>
+                        <option value="xxt8875">Xiao-Qing Tang</option>
+                        <option value="hxx5072">Hong Xu</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group bv_group_completionDate">
+                <label class="control-label">*Date</label>
+                <div class="controls">
+                    <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                        <input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:310px;">
+                        <span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="control-group bv_group_experimentName">
-            <label class="control-label">*Experiment Name</label>
-            <div class="controls">
-                <input class="bv_experimentName" style="width:336px;" type="text" placeholder="">
+
+
+
+        <div class="form-horizontal">
+            <div class="control-group bv_Â¡Code bv_group_protocolCode">
+                <label class="control-label ">*Protocol</label>
+                <div class="controls">
+                    <select class="bv_protocolCode" style="width:350px;">
+                    </select>
+                </div>
+                <div class="controls">
+                    <button type="button" class="btn bv_useProtocolParameters hide" style="margin-top:5px;">Use Parameters</button>
+                </div>
             </div>
         </div>
+
+        <div class="form-horizontal">
+            <div class="control-group bv_group_projectCode">
+                <label class="control-label">*Project</label>
+                <div class="controls">
+                    <select class="bv_projectCode" style="width:350px;"></select>
+                </div>
+            </div>
+            <div class="control-group bv_group_notebook">
+                <label class="control-label">*Notebook</label>
+                <div class="controls">
+                    <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
+                </div>
+            </div>
+            <div class="control-group bv_group_tags">
+                <label class="control-label">Key Words</label>
+                <div class="controls">
+                    <input class="bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
+                </div>
+            </div>
+        </div>
+
     </div>
-
-
-    <div class="form-horizontal">
-        <div class="control-group bv_group_recordedBy">
-            <label class="control-label">*Scientist</label>
-            <div class="controls">
-		        <select class="bv_recordedBy" style="width:350px;">
-	                <option value="">Scientist</option>
-	                <option value="jmcneil">John McNeil</option>
-	                <option value="smeyer">smeyer</option>
-	                <option value="nxm7557">Neelima Mannava</option>
-	                <option value="xxl7932">Xiaodong Li</option>
-                    <option value="xxt8875">Xiao-Qing Tang</option>
-                    <option value="hxx5072">Hong Xu</option>
-	            </select>
-	        </div>
-        </div>
-	    <div class="control-group bv_group_completionDate">
-		    <label class="control-label">*Date</label>
-		    <div class="controls">
-		        <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
-		            <input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:310px;">
-		            <span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>
-		        </div>
-		    </div>
-		</div>
-    </div>
-
-
-
-    <div class="form-horizontal">
-        <div class="control-group bv_¡Code bv_group_protocolCode">
-            <label class="control-label ">*Protocol</label>
-            <div class="controls">
-                <select class="bv_protocolCode" style="width:350px;">
-                </select>
-            </div>
-            <div class="controls">
-                <button type="button" class="btn bv_useProtocolParameters hide" style="margin-top:5px;">Use Parameters</button>
-            </div>
-        </div>
-    </div>
-
-	<div class="form-horizontal">
-	    <div class="control-group bv_group_projectCode">
-	        <label class="control-label">*Project</label>
-	        <div class="controls">
-	            <select class="bv_projectCode" style="width:350px;"></select>
-	        </div>
-	    </div>
-	    <div class="control-group bv_group_notebook">
-	        <label class="control-label">*Notebook</label>
-		    <div class="controls">
-	            <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
-		    </div>
-	    </div>
-        <div class="control-group bv_group_tags">
-            <label class="control-label">Key Words</label>
-            <div class="controls">
-                <input class="bv_tags" type="text" data-role="tagsinput" placeholder="Add tags" />
-            </div>
-        </div>
-	</div>
-
-	</div>
 
     <div>
         <div class="span10">Short Description</div>
@@ -127,7 +127,7 @@
                     <!--<span>The experiment could not be saved because the entered experiment name is already used by another experiment. Please enter in a new experiment name.</span>-->
                 </div>
                 <!--<div class="modal-footer">-->
-                    <!--<button type="button" class="btn bv_ok" disabled="disabled">Add</button>-->
+                <!--<button type="button" class="btn bv_ok" disabled="disabled">Add</button>-->
                 <!--</div>-->
             </div>
         </div>

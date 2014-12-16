@@ -97,7 +97,6 @@ exports.postExperiment = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
-		console.log "in post experiment"
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments"
 		request = require 'request'
@@ -133,8 +132,6 @@ exports.putExperiment = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		putId = req.body.id
-		console.log "putID"
-		console.log putId
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+putId
 		request = require 'request'
 		request(
@@ -169,9 +166,6 @@ exports.genericExperimentSearch = (req, res) ->
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, res)
-
-#		json = {message: "genericExperimentSearch not implemented yet"}
-#		res.end JSON.stringify json
 
 exports.editExperimentLookupAndRedirect = (req, res) ->
 	if global.specRunnerTestmode
@@ -257,7 +251,7 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 									console.log error
 									console.log json
 									console.log response
-						)
+							)
 				else
 					console.log 'got ajax error trying to save new experiment'
 					console.log error

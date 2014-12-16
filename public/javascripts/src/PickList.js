@@ -173,7 +173,7 @@
     AddParameterOptionPanel.prototype.defaults = {
       parameter: null,
       codeType: null,
-      codeOrigin: "acas ddict",
+      codeOrigin: "ACAS DDICT",
       codeKind: null,
       newOptionLabel: null,
       newOptionDescription: null,
@@ -239,10 +239,7 @@
       this.$('.bv_addParameterOptionModal').modal('show');
       parameterNameWithSpaces = this.model.get('parameter').replace(/([A-Z])/g, ' $1');
       pascalCaseParameterName = parameterNameWithSpaces.charAt(0).toUpperCase() + parameterNameWithSpaces.slice(1);
-      this.$('.bv_parameter').html(pascalCaseParameterName);
-      return this.model.set({
-        codeKind: parameterNameWithSpaces.toLowerCase()
-      });
+      return this.$('.bv_parameter').html(pascalCaseParameterName);
     };
 
     AddParameterOptionPanelController.prototype.updateModel = function() {
@@ -335,7 +332,8 @@
           this.addPanelController = new AddParameterOptionPanelController({
             model: new AddParameterOptionPanel({
               parameter: this.options.parameter,
-              codeType: this.options.codeType
+              codeType: this.options.codeType,
+              codeKind: this.options.codeKind
             }),
             el: this.$('.bv_addOptionPanel')
           });
@@ -360,8 +358,7 @@
           codeKind: requestedOptionModel.get('codeKind'),
           codeOrigin: requestedOptionModel.get('codeOrigin'),
           description: requestedOptionModel.get('newOptionDescription'),
-          comments: requestedOptionModel.get('newOptionComments'),
-          newOption: true
+          comments: requestedOptionModel.get('newOptionComments')
         });
         this.pickListController.collection.add(newPickList);
         this.$('.bv_optionAddedMessage').show();
@@ -385,8 +382,8 @@
       code = this.pickListController.getSelectedCode();
       selectedModel = this.pickListController.collection.getModelWithCode(code);
       if (selectedModel !== void 0) {
-        if (selectedModel.get('newOption') != null) {
-          selectedModel.unset('newOption');
+        if (selectedModel.get('id') != null) {
+          selectedModel.unset('id');
           return $.ajax({
             type: 'POST',
             url: "/api/codeTables",

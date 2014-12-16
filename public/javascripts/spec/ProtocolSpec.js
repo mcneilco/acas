@@ -52,9 +52,9 @@
           it('Should have an assay stage value', function() {
             expect(this.prot.getAssayStage() instanceof Value).toBeTruthy();
             expect(this.prot.getAssayStage().get('codeValue')).toEqual("unassigned");
-            expect(this.prot.getAssayStage().get('codeOrigin')).toEqual("acas ddict");
-            expect(this.prot.getAssayStage().get('codeType')).toEqual("protocolMetadata");
-            return expect(this.prot.getAssayStage().get('codeKind')).toEqual("assay stage");
+            expect(this.prot.getAssayStage().get('codeOrigin')).toEqual("ACAS DDICT");
+            expect(this.prot.getAssayStage().get('codeType')).toEqual("assay");
+            return expect(this.prot.getAssayStage().get('codeKind')).toEqual("stage");
           });
           it('Should have an assay principle value', function() {
             expect(this.prot.getAssayPrinciple() instanceof Value).toBeTruthy();
@@ -72,7 +72,7 @@
             return expect(this.prot.getNotebook() instanceof Value).toBeTruthy();
           });
           it('Protocol status should default to created ', function() {
-            return expect(this.prot.getStatus().get('stringValue')).toEqual("created");
+            return expect(this.prot.getStatus().get('codeValue')).toEqual("created");
           });
           return it('completionDate should be null ', function() {
             return expect(this.prot.getCompletionDate().get('dateValue')).toEqual(null);
@@ -82,31 +82,31 @@
           return describe("should tell you if it is editable based on status", function() {
             it("should be locked if status is created", function() {
               this.prot.getStatus().set({
-                stringValue: "created"
+                codeValue: "created"
               });
               return expect(this.prot.isEditable()).toBeTruthy();
             });
             it("should be locked if status is started", function() {
               this.prot.getStatus().set({
-                stringValue: "started"
+                codeValue: "started"
               });
               return expect(this.prot.isEditable()).toBeTruthy();
             });
             it("should be locked if status is complete", function() {
               this.prot.getStatus().set({
-                stringValue: "complete"
+                codeValue: "complete"
               });
               return expect(this.prot.isEditable()).toBeTruthy();
             });
             it("should be locked if status is finalized", function() {
               this.prot.getStatus().set({
-                stringValue: "finalized"
+                codeValue: "finalized"
               });
               return expect(this.prot.isEditable()).toBeFalsy();
             });
             return it("should be locked if status is rejected", function() {
               this.prot.getStatus().set({
-                stringValue: "rejected"
+                codeValue: "rejected"
               });
               return expect(this.prot.isEditable()).toBeFalsy();
             });
@@ -158,7 +158,7 @@
             return expect(this.prot.getCompletionDate().get('dateValue')).toEqual(1342080000000);
           });
           return it('Should have a status value', function() {
-            return expect(this.prot.getStatus().get('stringValue')).toEqual("created");
+            return expect(this.prot.getStatus().get('codeValue')).toEqual("created");
           });
         });
       });
@@ -437,7 +437,7 @@
             return expect(this.pbc.$('.bv_shortDescription').html()).toEqual("primary analysis");
           });
           it("should fill the assay tree rule field", function() {
-            return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("assay tree rule goes here");
+            return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("/assayTreeRule");
           });
           it("should fill the assay stage field", function() {
             waitsFor(function() {
@@ -614,7 +614,7 @@
             return runs(function() {
               this.pbc.$('.bv_status').val('complete');
               this.pbc.$('.bv_status').change();
-              return expect(this.pbc.model.getStatus().get('stringValue')).toEqual('complete');
+              return expect(this.pbc.model.getStatus().get('codeValue')).toEqual('complete');
             });
           });
         });
@@ -623,7 +623,7 @@
         beforeEach(function() {
           this.prot = new Protocol();
           this.prot.getStatus().set({
-            stringValue: "created"
+            codeValue: "created"
           });
           this.pbc = new ProtocolBaseController({
             model: this.prot,

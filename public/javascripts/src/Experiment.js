@@ -205,10 +205,10 @@
           codeType: "project"
         });
         projectCodeValue.set({
-          codeKind: "project"
+          codeKind: "biology"
         });
         projectCodeValue.set({
-          codeOrigin: "acas ddict"
+          codeOrigin: "ACAS DDICT"
         });
       }
       return projectCodeValue;
@@ -217,10 +217,10 @@
     Experiment.prototype.getAnalysisStatus = function() {
       var metadataKind, status;
       metadataKind = this.get('subclass') + " metadata";
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "stringValue", "analysis status");
-      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "analysis status");
+      if (status.get('codeValue') === void 0 || status.get('codeValue') === "") {
         status.set({
-          stringValue: "created"
+          codeValue: "created"
         });
       }
       return status;
@@ -415,11 +415,11 @@
 
     ExperimentBaseController.prototype.setupStatusSelect = function() {
       this.statusList = new PickListList();
-      this.statusList.url = "/api/dataDict/experiment metadata/experiment status";
+      this.statusList.url = "/api/codetables/experiment/status";
       return this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,
-        selectedCode: this.model.getStatus().get('stringValue')
+        selectedCode: this.model.getStatus().get('codeValue')
       });
     };
 

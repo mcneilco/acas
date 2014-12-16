@@ -19,20 +19,72 @@
     });
     describe("Curve List Model testing", function() {
       beforeEach(function() {
-        this.curveList = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs.curves);
-        return this.curvesFetched = false;
+        return this.curveList = new CurveList(window.curveCuratorTestJSON.curveCuratorThumbs.curves);
       });
       describe("basic plumbing tests", function() {
         return it("should have model defined", function() {
           return expect(CurveList).toBeDefined();
         });
       });
-      return describe("making category list", function() {
+      describe("making category list", function() {
         return it("should return a list of categories", function() {
           var categories;
           categories = this.curveList.getCategories();
           expect(categories.length).toEqual(5);
           return expect(categories instanceof Backbone.Collection).toBeTruthy();
+        });
+      });
+      describe("getting curve by curveid", function() {
+        return it("should return a curve", function() {
+          var curve;
+          curve = this.curveList.getCurveByID("AG-00344446_1680");
+          return expect(curve instanceof Curve);
+        });
+      });
+      describe("getting curve index by curveid", function() {
+        return it("should return a curve", function() {
+          var curveIndex;
+          curveIndex = this.curveList.getIndexByCurveID("AG-00344446_1680");
+          return expect(curveIndex).toEqual(8);
+        });
+      });
+      describe("updating a curve summary", function() {
+        return it("should update curve summary", function() {
+          var category, dirty, flagAlgorithm, flagUser, newCurveID, oldCurveID, originalCurve, updatedCurve;
+          originalCurve = this.curveList.models[0];
+          oldCurveID = originalCurve.get('curveid');
+          newCurveID = originalCurve.get('curveid' + " test");
+          dirty = !originalCurve.get('dirty');
+          category = originalCurve.get('category' + " test");
+          flagUser = originalCurve.get('flagUser' + " test");
+          flagAlgorithm = originalCurve.get('flagAlgorithm' + " test");
+          this.curveList.updateCurveSummary(oldCurveID, newCurveID, dirty, category, flagUser, flagAlgorithm);
+          updatedCurve = this.curveList.models[0];
+          expect(updatedCurve.get('curveid')).toEqual(newCurveID);
+          expect(updatedCurve.get('dirty')).toEqual(dirty);
+          expect(updatedCurve.get('category')).toEqual(category);
+          expect(updatedCurve.get('flagUser')).toEqual(flagUser);
+          return expect(updatedCurve.get('flagAlgorithm')).toEqual(flagAlgorithm);
+        });
+      });
+      describe("updating dirty flag", function() {
+        return it("should update dirty flag", function() {
+          var dirty, originalCurve, updatedCurve;
+          originalCurve = this.curveList.models[0];
+          dirty = !originalCurve.get('dirty');
+          this.curveList.updateDirtyFlag(originalCurve.get('curveid'), dirty);
+          updatedCurve = this.curveList.models[0];
+          return expect(updatedCurve.get('dirty')).toEqual(dirty);
+        });
+      });
+      return describe("updating flag user", function() {
+        return it("should update flag user", function() {
+          var flagUser, originalCurve, updatedCurve;
+          originalCurve = this.curveList.models[0];
+          flagUser = originalCurve.get('flagUser' + " test");
+          this.curveList.updateFlagUser(originalCurve.get('curveid'), flagUser);
+          updatedCurve = this.curveList.models[0];
+          return expect(updatedCurve.get('flagUser')).toEqual(flagUser);
         });
       });
     });
@@ -114,8 +166,8 @@
       });
       describe("selection", function() {
         return it("should show selected when clicked", function() {
-          this.csc.$el.click();
-          return expect(this.csc.$el.hasClass('selected')).toBeTruthy();
+          this.csc.$('.bv_flagUser').click();
+          return this.csc.$el.hasClass('selected');
         });
       });
       describe("algorithm approved display", function() {
@@ -135,7 +187,7 @@
           return expect(this.csc.$('.bv_fail')).toBeHidden();
         });
       });
-      return describe("user flagged display", function() {
+      describe("user flagged display", function() {
         it("should show thumbs up when user approved", function() {
           this.csc.model.set({
             flagUser: "approved"
@@ -159,6 +211,63 @@
           expect(this.csc.$('.bv_thumbsUp')).toBeHidden();
           expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
           return expect(this.csc.$('.bv_na')).toBeVisible();
+        });
+      });
+      return describe("user flagged curation", function() {
+        it("should show flag user menu when flag user button is clicked", function() {
+          this.csc.$('.bv_flagUser').click();
+          return expect(this.csc.$('.bv_dropdown')).toBeVisible();
+        });
+        it("should update user flag when user selects reject dropdown menu item", function() {
+          this.csc.model.set({
+            flagUser: 'NA'
+          });
+          this.csc.$('.bv_flagUser').click();
+          this.csc.$('.bv_userReject').click();
+          waitsFor((function(_this) {
+            return function() {
+              return _this.csc.model.get('flagUser') === "rejected";
+            };
+          })(this), 200);
+          return runs((function(_this) {
+            return function() {
+              return expect(_this.csc.model.get('flagUser')).toEqual("rejected");
+            };
+          })(this));
+        });
+        it("should update user flag when user selects approve dropdown menu item", function() {
+          this.csc.model.set({
+            flagUser: 'NA'
+          });
+          this.csc.$('.bv_flagUser').click();
+          this.csc.$('.bv_userApprove').click();
+          waitsFor((function(_this) {
+            return function() {
+              return _this.csc.model.get('flagUser') === "approved";
+            };
+          })(this), 200);
+          return runs((function(_this) {
+            return function() {
+              return expect(_this.csc.model.get('flagUser')).toEqual("approved");
+            };
+          })(this));
+        });
+        return it("should update user flag when user selects NA dropdown menu item", function() {
+          this.csc.model.set({
+            flagUser: 'approved'
+          });
+          this.csc.$('.bv_flagUser').click();
+          this.csc.$('.bv_userNA').click();
+          waitsFor((function(_this) {
+            return function() {
+              return _this.csc.model.get('flagUser') === "NA";
+            };
+          })(this), 200);
+          return runs((function(_this) {
+            return function() {
+              return expect(_this.csc.model.get('flagUser')).toEqual("NA");
+            };
+          })(this));
         });
       });
     });
@@ -186,17 +295,17 @@
       });
       describe("user thumbnail selection", function() {
         beforeEach(function() {
-          return this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).click();
+          return this.cslc.$('.bv_curveSummaries .bv_curveSummary .bv_group_thumbnail')[0].click();
         });
         it("should highlight selected row", function() {
           return expect(this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeTruthy();
         });
         it("should select other row when other row is selected", function() {
-          this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(1).click();
+          this.cslc.$('.bv_curveSummaries .bv_curveSummary .bv_group_thumbnail')[1].click();
           return expect(this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(1).hasClass('selected')).toBeTruthy();
         });
         return it("should clear selected when another row is selected", function() {
-          this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(1).click();
+          this.cslc.$('.bv_curveSummaries .bv_curveSummary .bv_group_thumbnail')[1].click();
           return expect(this.cslc.$('.bv_curveSummaries .bv_curveSummary').eq(0).hasClass('selected')).toBeFalsy();
         });
       });

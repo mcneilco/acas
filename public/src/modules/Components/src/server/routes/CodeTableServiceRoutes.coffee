@@ -1,12 +1,12 @@
 _ = require "underscore"
 
 exports.setupAPIRoutes = (app) ->
-	app.get '/api/dataDict/:type/:kind', exports.getDataDictValues
+	app.get '/api/codetables/:type/:kind', exports.getCodeTableValues
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/dataDict/:type/:kind', loginRoutes.ensureAuthenticated, exports.getDataDictValues
+	app.get '/api/codetables/:type/:kind', loginRoutes.ensureAuthenticated, exports.getCodeTableValues
 
-exports.getDataDictValues = (req, resp) ->
+exports.getCodeTableValues = (req, resp) ->
 	if global.specRunnerTestmode
 		codeTableServiceTestJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
 		correctCodeTable = _.findWhere(codeTableServiceTestJSON.codes, {type:req.params.type, kind:req.params.kind})

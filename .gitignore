@@ -13,3 +13,5 @@ acas_custom/*
 node_modules/*
 !node_modules/underscoreDeepExtend*
 acas.log
+racas.log
+

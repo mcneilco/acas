@@ -1,9 +1,9 @@
 (function() {
   (function(exports) {
-    return exports.dataDictValues = [
+    return exports.codetableValues = [
       {
-        type: "protocol metadata",
-        kind: "protocol status",
+        type: "protocol",
+        kind: "status",
         codes: [
           {
             code: "created",
@@ -24,6 +24,16 @@
           }, {
             code: "rejected",
             name: "Rejected",
+            ignored: false
+          }
+        ]
+      }, {
+        type: "assay",
+        kind: "stage",
+        codes: [
+          {
+            code: "assay development",
+            name: "Assay Development",
             ignored: false
           }
         ]

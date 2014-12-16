@@ -135,7 +135,7 @@ describe "PickList Select Unit Testing", ->
 			it "should have the codeKind set to null", ->
 				expect(@adop.get('codeKind')).toBeNull()
 			it "should have the codeOrigin set to acas ddict", ->
-				expect(@adop.get('codeOrigin')).toEqual "acas ddict"
+				expect(@adop.get('codeOrigin')).toEqual "ACAS DDICT"
 			it "should have the label text be null", ->
 				expect(@adop.get('newOptionLabel')).toBeNull()
 			it "should have the description be set to null", ->
@@ -257,4 +257,3 @@ describe "PickList Select Unit Testing", ->
 						it "should tell user that the option already exists", ->
 							expect(@editablePickListController.$('.bv_optionAddedMessage')).toBeHidden()
 							expect(@editablePickListController.$('.bv_errorMessage')).toBeVisible()
-

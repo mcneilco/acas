@@ -42,28 +42,34 @@ describe "Experiment module testing", ->
 					expect(@exp.getNotebook() instanceof Value).toBeTruthy()
 				it 'Should have a project value', ->
 					expect(@exp.getProjectCode() instanceof Value).toBeTruthy()
-				it 'Project code should default to unassigned ', ->
+				it 'Project code should default to unassigned and have a default code type, kind, and origin', ->
 					expect(@exp.getProjectCode().get('codeValue')).toEqual "unassigned"
-				it 'Experiment status should default to created ', ->
-					expect(@exp.getStatus().get('stringValue')).toEqual "created"
+					expect(@exp.getProjectCode().get('codeType')).toEqual "project"
+					expect(@exp.getProjectCode().get('codeKind')).toEqual "biology"
+					expect(@exp.getProjectCode().get('codeOrigin')).toEqual "ACAS DDICT"
+				it 'Experiment status should default to created and have default code type, kind, and origin ', ->
+					expect(@exp.getStatus().get('codeValue')).toEqual "created"
+					expect(@exp.getStatus().get('codeType')).toEqual "experiment"
+					expect(@exp.getStatus().get('codeKind')).toEqual "status"
+					expect(@exp.getStatus().get('codeOrigin')).toEqual "ACAS DDICT"
 				it 'completionDate should be null ', ->
 					expect(@exp.getCompletionDate().get('dateValue')).toEqual null
 			describe "other features", ->
 				describe "should tell you if it is editable based on status", ->
 					it "should be locked if status is New", ->
-						@exp.getStatus().set stringValue: "New"
+						@exp.getStatus().set codeValue: "New"
 						expect(@exp.isEditable()).toBeTruthy()
 					it "should be locked if status is started", ->
-						@exp.getStatus().set stringValue: "started"
+						@exp.getStatus().set codeValue: "started"
 						expect(@exp.isEditable()).toBeTruthy()
 					it "should be locked if status is complete", ->
-						@exp.getStatus().set stringValue: "complete"
+						@exp.getStatus().set codeValue: "complete"
 						expect(@exp.isEditable()).toBeTruthy()
 					it "should be locked if status is finalized", ->
-						@exp.getStatus().set stringValue: "finalized"
+						@exp.getStatus().set codeValue: "finalized"
 						expect(@exp.isEditable()).toBeFalsy()
 					it "should be locked if status is rejected", ->
-						@exp.getStatus().set stringValue: "rejected"
+						@exp.getStatus().set codeValue: "rejected"
 						expect(@exp.isEditable()).toBeFalsy()
 
 		describe "when loaded from existing", ->
@@ -123,7 +129,7 @@ describe "Experiment module testing", ->
 				it 'Should have a completionDate value', ->
 					expect(@exp.getCompletionDate().get('dateValue')).toEqual 1342080000000
 				it 'Should have a status value', ->
-					expect(@exp.getStatus().get('stringValue')).toEqual "started"
+					expect(@exp.getStatus().get('codeValue')).toEqual "started"
 		describe "when created from template protocol", ->
 			beforeEach ->
 				@exp = new Experiment()
@@ -176,7 +182,7 @@ describe "Experiment module testing", ->
 				it 'Should not have a tags', ->
 					expect(@exp.get('lsTags').length).toEqual 0
 				it 'Should have a status value of created', ->
-					expect(@exp.getStatus().get('stringValue')).toEqual "created"
+					expect(@exp.getStatus().get('codeValue')).toEqual "created"
 		describe "model change propogation", ->
 			it "should trigger change when label changed", ->
 				runs ->
@@ -501,7 +507,7 @@ describe "Experiment module testing", ->
 					runs ->
 						@ebc.$('.bv_status').val('complete')
 						@ebc.$('.bv_status').change()
-						expect(@ebc.model.getStatus().get('stringValue')).toEqual 'complete'
+						expect(@ebc.model.getStatus().get('codeValue')).toEqual 'complete'
 		describe "When created from a saved experiment", ->
 			beforeEach ->
 				@exp2 = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -591,7 +597,7 @@ describe "Experiment module testing", ->
 		describe "When created from a new experiment", ->
 			beforeEach ->
 				@exp0 = new Experiment()
-				@exp0.getStatus().set stringValue: "created" #work around for left over pointers
+				@exp0.getStatus().set codeValue: "created" #work around for left over pointers
 				@ebc = new ExperimentBaseController
 					model: @exp0
 					el: $('#fixture')

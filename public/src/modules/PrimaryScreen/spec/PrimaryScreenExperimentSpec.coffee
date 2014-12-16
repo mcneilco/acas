@@ -387,7 +387,7 @@ describe "Primary Screen Experiment module testing", ->
 					it "should be able to get the dry run result html", ->
 						expect(@pse.getDryRunResultHTML().get('clobValue')).toEqual "<p>Dry Run not started</p>"
 					it "should be able to get the analysis status", ->
-						expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
+						expect(@pse.getAnalysisStatus().get('codeValue')).toEqual "not started"
 					it "should be able to get the analysis result html", ->
 						expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
 					it "should be able to get the model fit status", ->
@@ -397,16 +397,13 @@ describe "Primary Screen Experiment module testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
 				@pse2 = new PrimaryScreenExperiment()
-			describe "defaults", ->
-				it "should have lsKind set to flipr screening assay", ->
-					expect(@pse2.get('lsKind')).toEqual "flipr screening assay"
 			describe "special states", ->
 				it "should be able to get the dry run status", ->
 					expect(@pse2.getDryRunStatus().get('codeValue')).toEqual "not started"
 				it "should be able to get the dry run result html", ->
 					expect(@pse2.getDryRunResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the analysis status", ->
-					expect(@pse2.getAnalysisStatus().get('stringValue')).toEqual "not started"
+					expect(@pse2.getAnalysisStatus().get('codeValue')).toEqual "not started"
 				it "should be able to get the analysis result html", ->
 					expect(@pse2.getAnalysisResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the model fit status", ->
@@ -1076,18 +1073,18 @@ describe "Primary Screen Experiment module testing", ->
 					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 				@psac.render()
 			it "Should disable analsyis parameter editing if status is finalized", ->
-				@psac.model.getStatus().set stringValue: "finalized"
+				@psac.model.getStatus().set codeValue: "finalized"
 				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toEqual 'disabled'
 			it "Should enable analsyis parameter editing if status is finalized", ->
-				@psac.model.getStatus().set stringValue: "finalized"
-				@psac.model.getStatus().set stringValue: "started"
+				@psac.model.getStatus().set codeValue: "finalized"
+				@psac.model.getStatus().set codeValue: "started"
 				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined()
 			it "should show upload button as upload data since status is 'not started'", ->
 				expect(@psac.$('.bv_save').html()).toEqual "Upload Data"
 		describe "handling re-analysis", ->
 			beforeEach ->
 				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
-				@exp.getAnalysisStatus().set stringValue: "analsysis complete"
+				@exp.getAnalysisStatus().set codeValue: "analsysis complete"
 				@psac = new PrimaryScreenAnalysisController
 					model: @exp
 					el: $('#fixture')
