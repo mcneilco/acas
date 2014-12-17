@@ -617,7 +617,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
-		@normalizationList.url = "/api/codetables/analysis parameter/normalization"
+		@normalizationList.url = "/api/codetables/analysis parameter/normalization method"
 		@normalizationListController = new PickListSelectController
 			el: @$('.bv_normalizationRule')
 			collection: @normalizationList
