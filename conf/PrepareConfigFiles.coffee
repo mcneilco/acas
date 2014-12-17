@@ -103,7 +103,7 @@ getRFileHandlerString = (rFilesWithRoute, config, acasHome)->
 	routes.join('\n\n')
 
 getApacheCompileOptions = ->
-	posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl']
+	posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl', '/usr/sbin/httpd2-prefork', '/usr/sbin/httpd2']
 	for possibleCommand in posssibleCommands
 		if shell.which(possibleCommand)
 			apacheCommand = possibleCommand
@@ -121,10 +121,13 @@ getApacheCompileOptions = ->
 			if option.match('Ubuntu')
 				apacheVersion = 'Ubuntu'
 			else
-				if os.type() == "Darwin"
-					apacheVersion = 'Darwin'
+				if option.match('SUSE')
+					apacheVersion = 'SUSE'
 				else
-					apacheVersion = 'Redhat'
+					if os.type() == "Darwin"
+						apacheVersion = 'Darwin'
+					else
+						apacheVersion = 'Redhat'
 		else
 			option = option.match(/^ -D .*/)
 			if option?
@@ -152,6 +155,10 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 			serverRoot = '\"/etc/httpd\"'
 			modulesDir = 'modules/'
 			typesConfig = '/etc/mime.types'
+		when 'SUSE'
+			serverRoot = '\"/usr\"'
+			modulesDir = 'lib64/apache2/'
+			typesConfig = '/etc/mime.types'
 		when 'Darwin'
 			serverRoot = '\"/usr\"'
 			modulesDir = 'libexec/apache2/'
@@ -168,7 +175,7 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerAdmin'}).value)
 	confs.push('LoadModule mime_module ' + modulesDir + "mod_mime.so")
 	confs.push('TypesConfig ' + typesConfig)
-	if apacheVersion in ['Redhat', 'Darwin']
+	if apacheVersion in ['Redhat', 'Darwin', 'SUSE']
 		confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
 		confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
 	if apacheVersion == 'Darwin'
