@@ -282,16 +282,18 @@ class window.EditablePickListSelectController extends Backbone.View
 			if selectedModel.get('id')?
 				callback.call()
 			else
-				#TODO: check to see this works once the route is set up
 				$.ajax
 					type: 'POST'
-					url: "/api/codetables/"+selectedModel.get('codeType')+"/"+selectedModel.get('codeKind')
-					data: selectedModel
+					url: "/api/codetables"
+					data: JSON.stringify selectedModel
+					dataType: 'json'
+					contentType: 'application/json'
+					processData: false
 					success: callback.call()
 					error: (err) =>
 						alert 'could not add option to code table'
 						@serviceReturn = null
-					dataType: 'json'
+
 		else
 			callback.call()
 
