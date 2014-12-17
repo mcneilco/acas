@@ -18,7 +18,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
-	app.get '/api/experiments/state/:stateId', loginRoutes.ensureAuthenticated, exports.experimentStateById
+	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
 
 exports.experimentByCodename = (req, resp) ->
 	console.log req.params.code
@@ -262,15 +262,15 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 			resp.statusCode = 500
 			resp.end "configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist"
 
-exports.experimentStateById = (req, resp) ->
-	console.log req.params.stateId
+exports.experimentValueById = (req, resp) ->
+	console.log req.params.id
 	if global.specRunnerTestmode
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer.lsStates[1] #return experiment metadata state
 	else
-		json = {message: "experiment state by id not implemented yet"}
-		res.end JSON.stringify json
-#		config = require '../conf/compiled/conf.js'
-#		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+req.params.id
-#		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-#		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+#		json = {message: "experiment state by id not implemented yet"}
+#		res.end JSON.stringify json
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"api/v1/experimentvalues/"+req.params.id
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)

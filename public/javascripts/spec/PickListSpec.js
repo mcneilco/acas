@@ -225,7 +225,8 @@
         this.adopc = new AddParameterOptionPanelController({
           model: new AddParameterOptionPanel({
             parameter: "projects",
-            codeType: "protocolMetadata"
+            codeType: "protocolMetadata",
+            codeKind: "projects"
           }),
           el: $('#fixture')
         });
@@ -234,9 +235,6 @@
       describe("basic startup conditions", function() {
         it("should exist", function() {
           return expect(this.adopc).toBeDefined();
-        });
-        it("should set the codeKind", function() {
-          return expect(this.adopc.model.get('codeKind')).toEqual("projects");
         });
         it("should load a template", function() {
           return expect(this.adopc.$('.bv_addParameterOptionModal').length).toEqual(1);
@@ -300,6 +298,7 @@
               selectedCode: "unassigned",
               parameter: "projects",
               codeType: "protocolMetadata",
+              codeKind: "projects",
               roles: ["admin"]
             });
             return this.editablePickListController.render();
@@ -346,8 +345,8 @@
                 newOption = this.editablePickListController.addPanelController.model.get('newOptionLabel');
                 return expect(this.editablePickListController.pickListController.checkOptionInCollection(newOption)).toBeDefined();
               });
-              return it("should show the option added message", function() {
-                expect(this.editablePickListController.$('.bv_optionAddedMessage')).toBeVisible();
+              return it("should have the picklist's selected option be the new option", function() {
+                expect(this.editablePickListController.pickListController.getSelectedCode()).toEqual("new option");
                 return expect(this.editablePickListController.$('.bv_errorMessage')).toBeHidden();
               });
             });
@@ -363,7 +362,6 @@
                 });
               });
               return it("should tell user that the option already exists", function() {
-                expect(this.editablePickListController.$('.bv_optionAddedMessage')).toBeHidden();
                 return expect(this.editablePickListController.$('.bv_errorMessage')).toBeVisible();
               });
             });

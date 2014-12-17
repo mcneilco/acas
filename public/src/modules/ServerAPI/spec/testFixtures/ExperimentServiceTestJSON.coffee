@@ -1290,7 +1290,7 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeValue: "not started"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -1298,8 +1298,8 @@
 				ignored: false
 				lsKind: "model fit status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_model fit status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_model fit status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -1311,7 +1311,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "not started"
+				stringValue: null
 #				stringValue: "complete"
 				uncertainty: null
 				uncertaintyType: null
@@ -2732,7 +2732,7 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeValue: "not started"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -2740,8 +2740,8 @@
 				ignored: false
 				lsKind: "model fit status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_model fit status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_model fit status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -2753,7 +2753,7 @@
 				recordedBy: "smeyer"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "not started"
+				stringValue: null
 #				stringValue: "complete"
 				uncertainty: null
 				uncertaintyType: null

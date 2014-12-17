@@ -220,6 +220,7 @@
 
     BasicFileValidateAndSaveController.prototype.handleValidationReturnSuccess = function(json) {
       var summaryStr, _ref;
+      console.log("handle validation return success in bfv&s");
       summaryStr = "Validation Results: ";
       if (!json.hasError) {
         this.filePassedValidation = true;

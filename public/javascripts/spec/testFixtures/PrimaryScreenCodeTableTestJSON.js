@@ -65,7 +65,7 @@
         ]
       }, {
         type: "analysis parameter",
-        kind: "normalization",
+        kind: "normalization method",
         codes: [
           {
             code: "plate order only",

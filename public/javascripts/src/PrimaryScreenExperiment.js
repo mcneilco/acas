@@ -524,10 +524,10 @@
 
     PrimaryScreenExperiment.prototype.getModelFitStatus = function() {
       var status;
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "model fit status");
-      if (!status.has('stringValue')) {
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit status");
+      if (!status.has('codeValue')) {
         status.set({
-          stringValue: "not started"
+          codeValue: "not started"
         });
       }
       return status;
@@ -1012,7 +1012,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupNormalizationSelect = function() {
       this.normalizationList = new PickListList();
-      this.normalizationList.url = "/api/codetables/analysis parameter/normalization";
+      this.normalizationList.url = "/api/codetables/analysis parameter/normalization method";
       return this.normalizationListController = new PickListSelectController({
         el: this.$('.bv_normalizationRule'),
         collection: this.normalizationList,
@@ -1259,16 +1259,17 @@
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.handleValidationReturnSuccess = function(json) {
       var resultStatus;
       AbstractUploadAndRunPrimaryAnalsysisController.__super__.handleValidationReturnSuccess.call(this, json);
-      if (this.$('.bv_resultStatus').html().indexOf("Success")) {
+      if (!json.hasError) {
         resultStatus = "Dry Run Results: Success";
-        if (this.$('.bv_resultStatus').html().indexOf("warnings")) {
+        if (json.hasWarning) {
           resultStatus += " but with warnings";
         }
       } else {
         resultStatus = "Dry Run Results: Failed";
       }
       this.$('.bv_resultStatus').html(resultStatus);
-      return this.analysisParameterController.disableAllInputs();
+      this.analysisParameterController.disableAllInputs();
+      return console.log;
     };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.handleSaveReturnSuccess = function(json) {
@@ -1300,6 +1301,11 @@
       if (this.analysisParameterController != null) {
         return this.analysisParameterController.enableAllInputs();
       }
+    };
+
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.showFileUploadCompletePhase = function() {
+      this.analyzedPreviously = true;
+      return AbstractUploadAndRunPrimaryAnalsysisController.__super__.showFileUploadCompletePhase.call(this);
     };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.disableAll = function() {
@@ -1401,7 +1407,7 @@
     };
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
-      var analysisStatus, dryRunStatus, resultHTML, resultStatus;
+      var analysisStatus, dryRunStatus, statusId;
       dryRunStatus = this.model.getDryRunStatus();
       if (dryRunStatus !== null) {
         dryRunStatus = dryRunStatus.get('codeValue');
@@ -1419,105 +1425,145 @@
       if (dryRunStatus === "running") {
         if (analysisStatus === "running") {
           console.log("warning message");
-          resultStatus = "An error has occurred. Dry Run: running. Analysis: running.";
-          resultHTML = "";
-          this.trigger("warning");
+          return this.showWarningStatus(dryRunStatus, analysisStatus);
         } else {
           console.log("validate status drop down modal progress bar");
           console.log("progress bar shown");
-          resultStatus = "Dry Run Results: Dry run in progress.";
-          resultHTML = "";
-          this.checkStatus("dryRun");
+          statusId = this.model.getDryRunStatus().get('id');
           this.trigger("dryRunRunning");
+          return this.checkStatus(statusId, "dryRun");
         }
       } else if (analysisStatus === "running") {
         if (dryRunStatus === "not started") {
           console.log("warning message");
-          resultStatus = "An error has occurred. Dry Run: not started. Analysis: running.";
-          resultHTML = "";
+          return this.showWarningStatus(dryRunStatus, analysisStatus);
         } else {
           console.log("save status drop down modal progress bar");
-          resultStatus = "Upload Results: Upload in progress.";
-          resultHTML = "";
+          statusId = this.model.getAnalysisStatus().get('id');
           this.trigger('analysisRunning');
+          return this.checkStatus(statusId, "analysis");
         }
       } else if (analysisStatus === "complete" || analysisStatus === "failed") {
-        if (analysisStatus === "complete") {
-          console.log("saved data page, fill bv_htmlSummary with analysis result html clobValue, show re-analyze button");
-          resultStatus = "Upload Results: Success";
-        } else {
-          console.log("failed page, fill bv_htmlSummary with analyisis clob, show back button");
-          resultStatus = "Upload Results: Failed due to errors";
-        }
-        resultHTML = this.model.getAnalysisResultHTML().get('clobValue');
-        if (this.dataAnalysisController != null) {
-          this.dataAnalysisController.showFileUploadCompletePhase();
-        }
+        return this.showAnalysisResults(analysisStatus);
       } else {
         if (dryRunStatus === "not started") {
           console.log("upload data page - hide bv_htmlSummary, csvPreviewContainer, bv_saveControlContainer, bv_completeControlContainer");
-          resultStatus = "Upload Data and Analyze";
-          resultHTML = "";
+          return this.showUploadWrapper();
         } else {
           console.log("update bv_resultStatus with the dryRun status, fill bv_htmlSummary with dry run result html");
-          if (dryRunStatus === "complete") {
-            resultStatus = "Dry Run Results: Success";
-          } else {
-            resultStatus = "Dry Run Results: Failed";
-          }
-          resultHTML = this.model.getDryRunResultHTML().get('clobValue');
-          if (this.dataAnalysisController != null) {
-            this.dataAnalysisController.parseFileUploaded = true;
-            this.dataAnalysisController.filePassedValidation = true;
-            this.dataAnalysisController.showFileUploadPhase();
-            this.dataAnalysisController.handleFormValid();
-          }
+          return this.showDryRunResults(dryRunStatus);
         }
       }
+    };
+
+    PrimaryScreenAnalysisController.prototype.showWarningStatus = function(dryRunStatus, analysisStatus) {
+      var resultHTML, resultStatus;
+      resultStatus = "An error has occurred. Dry Run: " + dryRunStatus + ". Analysis: " + analysisStatus + ".";
+      resultHTML = "An error has occurred.";
+      this.trigger("warning");
       this.$('.bv_resultStatus').html(resultStatus);
       return this.$('.bv_htmlSummary').html(resultHTML);
     };
 
-    PrimaryScreenAnalysisController.prototype.checkStatus = function(statusType) {
-      var stateId;
-      console.log("checking dry run status");
+    PrimaryScreenAnalysisController.prototype.checkStatus = function(statusId, analysisStep) {
+      console.log("checking status");
       console.log(this.model);
-      stateId = (this.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata"))[0].id;
-      console.log(stateId);
+      console.log(statusId);
       return $.ajax({
         type: 'GET',
-        url: "/api/experiments/state/" + stateId,
+        url: "/api/experiments/values/" + statusId,
         dataType: 'json',
         error: function(err) {
-          return alert('Error - Could not get requested experiment metadata state.');
+          return alert('Error - Could not get requested status value.');
         },
         success: (function(_this) {
           return function(json) {
-            var expMetadataState, status;
+            var resultHTML, resultStatus, status, statusValue;
             if (json.length === 0) {
-              return alert('Success but could not get requested experiment metadata state.');
+              return alert('Success but could not get requested status value.');
             } else {
               console.log("json");
               console.log(json);
-              expMetadataState = new State(json);
-              console.log((expMetadataState.getValuesByTypeAndKind("codeValue", "dry run status"))[0]);
-              console.log((expMetadataState.getValuesByTypeAndKind("codeValue", "dry run status"))[0].get('codeValue'));
-              if (statusType === "dryRun") {
-                status = (expMetadataState.getValuesByTypeAndKind("codeValue", "dry run status"))[0].get('codeValue');
-              } else {
-                status = (expMetadataState.getValuesByTypeAndKind("codeValue", "analysis status"))[0].get('codeValue');
-              }
-              console.log(status);
+              statusValue = new Value(json);
+              console.log(statusValue);
+              status = statusValue.get('codeValue');
               if (status === "running") {
-                setTimeout(_this.checkStatus, 5000);
-                return console.log("dry run is still running");
+                setTimeout(_this.checkStatus(statusId, analysisStep), 5000);
+                console.log("still running");
+                if (analysisStep === "dryRun") {
+                  resultStatus = "Dry Run Results: Dry run in progress.";
+                  resultHTML = "";
+                } else {
+                  resultStatus = "Upload Results: Upload in progress.";
+                  resultHTML = _this.model.getDryRunResultHTML().get('clobValue');
+                }
+                _this.$('.bv_resultStatus').html(resultStatus);
+                _this.$('.bv_htmlSummary').html(resultHTML);
+                if (_this.dataAnalysisController != null) {
+                  return _this.dataAnalysisController.showFileUploadPhase();
+                }
               } else {
-                return console.log("done running dry run");
+                console.log("done running");
+                console.log(status);
+                if (analysisStep === "dryRun") {
+                  console.log("should hide validate bar and show dry run results");
+                  _this.trigger("dryRunDone");
+                  return _this.showDryRunResults(status);
+                } else {
+                  console.log("should hide upload bar and show analysis results");
+                  _this.trigger("analysisDone");
+                  return _this.showAnalysisResults(status);
+                }
               }
             }
           };
         })(this)
       });
+    };
+
+    PrimaryScreenAnalysisController.prototype.showAnalysisResults = function(analysisStatus) {
+      var resultHTML, resultStatus;
+      if (analysisStatus === "complete") {
+        console.log("saved data page, fill bv_htmlSummary with analysis result html clobValue, show re-analyze button");
+        resultStatus = "Upload Results: Success";
+      } else {
+        console.log("failed page, fill bv_htmlSummary with analyisis clob, show re-analyze button");
+        resultStatus = "Upload Results: Failed due to errors";
+      }
+      resultHTML = this.model.getAnalysisResultHTML().get('clobValue');
+      if (this.dataAnalysisController != null) {
+        console.log("show analysis reults - upload complete phase");
+        this.dataAnalysisController.showFileUploadCompletePhase();
+      }
+      this.$('.bv_resultStatus').html(resultStatus);
+      return this.$('.bv_htmlSummary').html(resultHTML);
+    };
+
+    PrimaryScreenAnalysisController.prototype.showDryRunResults = function(dryRunStatus) {
+      var resultHTML, resultStatus;
+      console.log("show dry run results");
+      if (dryRunStatus === "complete") {
+        resultStatus = "Dry Run Results: Success";
+      } else {
+        resultStatus = "Dry Run Results: Failed";
+      }
+      resultHTML = this.model.getDryRunResultHTML().get('clobValue');
+      if (this.dataAnalysisController != null) {
+        this.dataAnalysisController.parseFileUploaded = true;
+        this.dataAnalysisController.filePassedValidation = true;
+        this.dataAnalysisController.showFileUploadPhase();
+        this.dataAnalysisController.handleFormValid();
+      }
+      this.$('.bv_resultStatus').html(resultStatus);
+      return this.$('.bv_htmlSummary').html(resultHTML);
+    };
+
+    PrimaryScreenAnalysisController.prototype.showUploadWrapper = function() {
+      var resultHTML, resultStatus;
+      resultStatus = "Upload Data and Analyze";
+      resultHTML = "";
+      this.$('.bv_resultStatus').html(resultStatus);
+      return this.$('.bv_htmlSummary').html(resultHTML);
     };
 
     PrimaryScreenAnalysisController.prototype.setExperimentNotSaved = function() {
@@ -1532,8 +1578,10 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleExperimentSaved = function() {
+      console.log("handle experiment saved");
       this.setExperimentSaved();
       if (this.dataAnalysisController == null) {
+        console.log("no data analysis controller");
         this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
       }
       return this.model.getStatus().on('change', this.handleStatusChanged);
@@ -1679,7 +1727,7 @@
       })(this));
       this.analysisController.on('warning', (function(_this) {
         return function() {
-          return _this.showWarning();
+          return _this.showWarningModal();
         };
       })(this));
       this.analysisController.on('dryRunRunning', (function(_this) {
@@ -1687,9 +1735,19 @@
           return _this.showValidateProgressBar();
         };
       })(this));
+      this.analysisController.on('dryRunDone', (function(_this) {
+        return function() {
+          return _this.hideValidateProgressBar();
+        };
+      })(this));
       this.analysisController.on('analysisRunning', (function(_this) {
         return function() {
           return _this.showSaveProgressBar();
+        };
+      })(this));
+      this.analysisController.on('analysisDone', (function(_this) {
+        return function() {
+          return _this.hideSaveProgressBar();
         };
       })(this));
       this.setupModelFitController(this.modelFitControllerName);
@@ -1731,13 +1789,13 @@
       return this.analysisController.render();
     };
 
-    AbstractPrimaryScreenExperimentController.prototype.showWarning = function() {
+    AbstractPrimaryScreenExperimentController.prototype.showWarningModal = function() {
       var analysisResult, analysisStatus, dryRunResult, dryRunStatus;
       console.log("should show warning message");
       this.$('a[href="#tab3"]').tab('show');
       dryRunStatus = this.model.getDryRunStatus().get('codeValue');
       dryRunResult = this.model.getDryRunResultHTML().get('clobValue');
-      analysisStatus = this.model.getAnalysisStatus().get('stringValue');
+      analysisStatus = this.model.getAnalysisStatus().get('codeValue');
       analysisResult = this.model.getAnalysisResultHTML().get('clobValue');
       console.log(dryRunStatus);
       console.log(analysisStatus);
@@ -1769,6 +1827,16 @@
         backdrop: "static"
       });
       return this.$('.bv_saveStatusDropDown').modal("show");
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.hideValidateProgressBar = function() {
+      console.log("should hide validate progress bar");
+      return this.$('.bv_validateStatusDropDown').modal("hide");
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.hideSaveProgressBar = function() {
+      console.log("should hide save progress bar");
+      return this.$('.bv_saveStatusDropDown').modal("hide");
     };
 
     return AbstractPrimaryScreenExperimentController;
