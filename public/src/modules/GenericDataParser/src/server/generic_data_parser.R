@@ -1646,9 +1646,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                 subjectData$concentration, "-", subjectData$concentrationUnit, "-",
                                 subjectData$time, "-", subjectData$timeUnit, "-", subjectData$subjectStateID)
   
-  subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
+  subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData, entityKind = "subject"))
   
-  subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
+  subjectData <- rbind.fill(subjectData, meltTimes(subjectData, entityKind = "subject"))
   
   stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
   subjectData$stateID <- stateAndVersion$entityStateId
@@ -1676,7 +1676,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                       & !(subjectData$subjectID %in% excludedSubjects),]
     
     # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
-    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
+    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex", "resultTypeAndUnit"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
     treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
     if (nrow(treatmentGroupData) > 0) {
       stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
