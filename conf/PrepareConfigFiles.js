@@ -148,7 +148,7 @@
 
   getApacheCompileOptions = function() {
     var apacheCommand, apacheVersion, compileOptionStrings, compileOptions, compileString, option, possibleCommand, posssibleCommands, _i, _j, _len, _len1;
-    posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl'];
+    posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl', '/usr/sbin/httpd2-prefork', '/usr/sbin/httpd2'];
     for (_i = 0, _len = posssibleCommands.length; _i < _len; _i++) {
       possibleCommand = posssibleCommands[_i];
       if (shell.which(possibleCommand)) {
@@ -172,10 +172,14 @@
         if (option.match('Ubuntu')) {
           apacheVersion = 'Ubuntu';
         } else {
-          if (os.type() === "Darwin") {
-            apacheVersion = 'Darwin';
+          if (option.match('SUSE')) {
+            apacheVersion = 'SUSE';
           } else {
-            apacheVersion = 'Redhat';
+            if (os.type() === "Darwin") {
+              apacheVersion = 'Darwin';
+            } else {
+              apacheVersion = 'Redhat';
+            }
           }
         }
       } else {
@@ -224,6 +228,11 @@
         modulesDir = 'modules/';
         typesConfig = '/etc/mime.types';
         break;
+      case 'SUSE':
+        serverRoot = '\"/usr\"';
+        modulesDir = 'lib64/apache2/';
+        typesConfig = '/etc/mime.types';
+        break;
       case 'Darwin':
         serverRoot = '\"/usr\"';
         modulesDir = 'libexec/apache2/';
@@ -251,7 +260,7 @@
     }).value);
     confs.push('LoadModule mime_module ' + modulesDir + "mod_mime.so");
     confs.push('TypesConfig ' + typesConfig);
-    if (apacheVersion === 'Redhat' || apacheVersion === 'Darwin') {
+    if (apacheVersion === 'Redhat' || apacheVersion === 'Darwin' || apacheVersion === 'SUSE') {
       confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so");
       confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so");
     }
