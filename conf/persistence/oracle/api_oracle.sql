@@ -194,7 +194,7 @@ select s.id AS S_ID,
 	 max(CASE sv.ls_kind WHEN 'Response' then tgs.treatment_group_id else null end) as tg_id,
 	 max(api_agsvb.AG_ID) AS ag_id
 FROM api_analysis_group_results api_agsvb
-  JOIN analysisgroup_treatmentgroup agtg on api_agsvb.ag_id = agtg.treatment_group_id
+  JOIN analysisgroup_treatmentgroup agtg on api_agsvb.ag_id = agtg.analysis_group_id
   JOIN treatmentgroup_subject tgs on agtg.treatment_group_id=tgs.treatment_group_id
 	JOIN subject s on tgs.subject_id=s.id
 	JOIN subject_state ss ON ss.subject_id = s.id
