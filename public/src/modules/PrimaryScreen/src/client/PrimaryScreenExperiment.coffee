@@ -768,6 +768,7 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@allowedFileTypes = ['zip']
 		@loadReportFile = true
 		super()
+		@$('.bv_resultStatus').html("Upload Data and Analyze")
 		@$('.bv_reportFileDirections').html('To upload an <b>optional well flagging file</b>, click the "Browse Files…" button and select a file.')
 #		@$("label[for='.bv_attachReportFile']").innerHTML('Attach optional well flagging file')
 		@$('.bv_attachReportCheckboxText').html('Attach optional well flagging file')
@@ -806,7 +807,6 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 			resultStatus = "Dry Run Results: Failed"
 		@$('.bv_resultStatus').html(resultStatus)
 		@analysisParameterController.disableAllInputs()
-		console.log
 
 	handleSaveReturnSuccess: (json) =>
 		super(json)
@@ -836,6 +836,10 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@analyzedPreviously = true
 		super()
 
+	disableAllInputs: ->
+		console.log "disabling all inputs in AbstractUploadAndRunPrimaryAnalsysisController "
+		@analysisParameterController.disableAllInputs()
+
 	disableAll: ->
 		@analysisParameterController.disableAllInputs()
 		@$('.bv_htmlSummary').hide()
@@ -863,6 +867,10 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 
 	setExperimentId: (expId) ->
 		@experimentId = expId
+
+	updateAnalysisParamModel: (model) ->
+		@analysisParameterController.model = model.getAnalysisParameters()
+		@analysisParameterController.render()
 
 class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRunPrimaryAnalsysisController
 	initialize: ->
@@ -940,7 +948,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@showAnalysisResults(analysisStatus)
 
 		else
-			if dryRunStatus is "not started" #TODO: check if needed.
+			if dryRunStatus is "not started"
 				console.log "upload data page - hide bv_htmlSummary, csvPreviewContainer, bv_saveControlContainer, bv_completeControlContainer"
 				@showUploadWrapper()
 			else
@@ -974,7 +982,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 					console.log statusValue
 					status = statusValue.get('codeValue')
 					if status is "running"
-						setTimeout(@checkStatus(statusId, analysisStep), 5000)
+						setTimeout(@checkStatus, 5000, statusId, analysisStep)
 						console.log "still running"
 						if analysisStep is "dryRun"
 							resultStatus = "Dry Run Results: Dry run in progress."
@@ -991,14 +999,43 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 						console.log "done running"
 						console.log status
 						#TODO: need to get updated state and show
-						if analysisStep is "dryRun"
-							console.log "should hide validate bar and show dry run results"
-							@trigger "dryRunDone"
-							@showDryRunResults(status)
-						else
-							console.log "should hide upload bar and show analysis results"
-							@trigger "analysisDone"
-							@showAnalysisResults(status)
+						console.log "finished fetching updated model"
+						console.log @model
+						@showUpdatedModel =>
+							@showUpdatedStatus(analysisStep)
+
+	showUpdatedModel: (callback) =>
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/codename/"+@model.get('codeName')
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get experiment for codeName of the model'
+			success: (json) =>
+				if json.length == 0
+					alert 'Could not get experiment for codeName of the model'
+				else
+					#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#					exp = new PrimaryScreenExperiment json
+					exp = new PrimaryScreenExperiment json[0]
+					exp.set exp.parse(exp.attributes)
+					@model = exp
+					@dataAnalysisController.updateAnalysisParamModel(@model)
+					callback.call()
+
+		console.log "just returned from get"
+		console.log @
+#		@.render()
+
+	showUpdatedStatus: (analysisStep)->
+		if analysisStep is "dryRun"
+			console.log "should hide validate bar and show dry run results"
+			@trigger "dryRunDone"
+			@showDryRunResults(@model.getDryRunStatus().get('codeValue'))
+		else
+			console.log "should hide upload bar and show analysis results"
+			@trigger "analysisDone"
+			@showAnalysisResults(@model.getAnalysisStatus().get('codeValue'))
 
 	showAnalysisResults: (analysisStatus) ->
 		if analysisStatus is "complete"
@@ -1013,6 +1050,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@dataAnalysisController.showFileUploadCompletePhase()
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
+		@dataAnalysisController.disableAllInputs()
 
 	showDryRunResults: (dryRunStatus) ->
 		console.log "show dry run results"
@@ -1029,6 +1067,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
+		@dataAnalysisController.disableAllInputs()
 
 	showUploadWrapper: ->
 		resultStatus = "Upload Data and Analyze"
@@ -1078,7 +1117,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@trigger 'amDirty'
 		@dataAnalysisController.on 'amClean', =>
 			@trigger 'amClean'
-		@showExistingResults()
+#		@showExistingResults()
 
 
 # This wraps all the tabs

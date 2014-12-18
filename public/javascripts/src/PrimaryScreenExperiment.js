@@ -1218,6 +1218,7 @@
       this.allowedFileTypes = ['zip'];
       this.loadReportFile = true;
       AbstractUploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
+      this.$('.bv_resultStatus').html("Upload Data and Analyze");
       this.$('.bv_reportFileDirections').html('To upload an <b>optional well flagging file</b>, click the "Browse Files…" button and select a file.');
       return this.$('.bv_attachReportCheckboxText').html('Attach optional well flagging file');
     };
@@ -1268,8 +1269,7 @@
         resultStatus = "Dry Run Results: Failed";
       }
       this.$('.bv_resultStatus').html(resultStatus);
-      this.analysisParameterController.disableAllInputs();
-      return console.log;
+      return this.analysisParameterController.disableAllInputs();
     };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.handleSaveReturnSuccess = function(json) {
@@ -1308,6 +1308,11 @@
       return AbstractUploadAndRunPrimaryAnalsysisController.__super__.showFileUploadCompletePhase.call(this);
     };
 
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.disableAllInputs = function() {
+      console.log("disabling all inputs in AbstractUploadAndRunPrimaryAnalsysisController ");
+      return this.analysisParameterController.disableAllInputs();
+    };
+
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.disableAll = function() {
       this.analysisParameterController.disableAllInputs();
       this.$('.bv_htmlSummary').hide();
@@ -1341,6 +1346,11 @@
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.setExperimentId = function(expId) {
       return this.experimentId = expId;
+    };
+
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.updateAnalysisParamModel = function(model) {
+      this.analysisParameterController.model = model.getAnalysisParameters();
+      return this.analysisParameterController.render();
     };
 
     return AbstractUploadAndRunPrimaryAnalsysisController;
@@ -1381,6 +1391,7 @@
       this.handleAnalysisComplete = __bind(this.handleAnalysisComplete, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.setExperimentSaved = __bind(this.setExperimentSaved, this);
+      this.showUpdatedModel = __bind(this.showUpdatedModel, this);
       this.checkStatus = __bind(this.checkStatus, this);
       this.render = __bind(this.render, this);
       return PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
@@ -1488,7 +1499,7 @@
               console.log(statusValue);
               status = statusValue.get('codeValue');
               if (status === "running") {
-                setTimeout(_this.checkStatus(statusId, analysisStep), 5000);
+                setTimeout(_this.checkStatus, 5000, statusId, analysisStep);
                 console.log("still running");
                 if (analysisStep === "dryRun") {
                   resultStatus = "Dry Run Results: Dry run in progress.";
@@ -1505,20 +1516,55 @@
               } else {
                 console.log("done running");
                 console.log(status);
-                if (analysisStep === "dryRun") {
-                  console.log("should hide validate bar and show dry run results");
-                  _this.trigger("dryRunDone");
-                  return _this.showDryRunResults(status);
-                } else {
-                  console.log("should hide upload bar and show analysis results");
-                  _this.trigger("analysisDone");
-                  return _this.showAnalysisResults(status);
-                }
+                console.log("finished fetching updated model");
+                console.log(_this.model);
+                return _this.showUpdatedModel(function() {
+                  return _this.showUpdatedStatus(analysisStep);
+                });
               }
             }
           };
         })(this)
       });
+    };
+
+    PrimaryScreenAnalysisController.prototype.showUpdatedModel = function(callback) {
+      $.ajax({
+        type: 'GET',
+        url: "/api/experiments/codename/" + this.model.get('codeName'),
+        dataType: 'json',
+        error: function(err) {
+          return alert('Could not get experiment for codeName of the model');
+        },
+        success: (function(_this) {
+          return function(json) {
+            var exp;
+            if (json.length === 0) {
+              return alert('Could not get experiment for codeName of the model');
+            } else {
+              exp = new PrimaryScreenExperiment(json[0]);
+              exp.set(exp.parse(exp.attributes));
+              _this.model = exp;
+              _this.dataAnalysisController.updateAnalysisParamModel(_this.model);
+              return callback.call();
+            }
+          };
+        })(this)
+      });
+      console.log("just returned from get");
+      return console.log(this);
+    };
+
+    PrimaryScreenAnalysisController.prototype.showUpdatedStatus = function(analysisStep) {
+      if (analysisStep === "dryRun") {
+        console.log("should hide validate bar and show dry run results");
+        this.trigger("dryRunDone");
+        return this.showDryRunResults(this.model.getDryRunStatus().get('codeValue'));
+      } else {
+        console.log("should hide upload bar and show analysis results");
+        this.trigger("analysisDone");
+        return this.showAnalysisResults(this.model.getAnalysisStatus().get('codeValue'));
+      }
     };
 
     PrimaryScreenAnalysisController.prototype.showAnalysisResults = function(analysisStatus) {
@@ -1536,7 +1582,8 @@
         this.dataAnalysisController.showFileUploadCompletePhase();
       }
       this.$('.bv_resultStatus').html(resultStatus);
-      return this.$('.bv_htmlSummary').html(resultHTML);
+      this.$('.bv_htmlSummary').html(resultHTML);
+      return this.dataAnalysisController.disableAllInputs();
     };
 
     PrimaryScreenAnalysisController.prototype.showDryRunResults = function(dryRunStatus) {
@@ -1555,7 +1602,8 @@
         this.dataAnalysisController.handleFormValid();
       }
       this.$('.bv_resultStatus').html(resultStatus);
-      return this.$('.bv_htmlSummary').html(resultHTML);
+      this.$('.bv_htmlSummary').html(resultHTML);
+      return this.dataAnalysisController.disableAllInputs();
     };
 
     PrimaryScreenAnalysisController.prototype.showUploadWrapper = function() {
@@ -1618,12 +1666,11 @@
           return _this.trigger('amDirty');
         };
       })(this));
-      this.dataAnalysisController.on('amClean', (function(_this) {
+      return this.dataAnalysisController.on('amClean', (function(_this) {
         return function() {
           return _this.trigger('amClean');
         };
       })(this));
-      return this.showExistingResults();
     };
 
     return PrimaryScreenAnalysisController;
