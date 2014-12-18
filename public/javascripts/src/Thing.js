@@ -45,42 +45,12 @@
       return this.createDefaultStates();
     };
 
-    Thing.prototype.set = function(attr, options) {
-      console.log("new set in Thing");
-      console.log(attr);
-      console.log(options);
-      if (this.get(attr) instanceof Label && options !== void 0) {
-        console.log("setting a LABEL");
-        return this.getFullLabel(attr).changeLabelText(options);
-      } else {
-        return Backbone.Model.prototype.set.apply(this, arguments);
-      }
-    };
-
-    Thing.prototype.get = function(attr) {
-      var fullObject;
-      console.log("new get in Thing");
-      console.log(attr);
-      fullObject = Backbone.Model.prototype.get.apply(this, arguments);
-      if (fullObject instanceof Label) {
-        console.log("get full object is a label");
-        console.log(fullObject);
-        return fullObject.get('labelText');
-      } else {
-        return fullObject;
-      }
-    };
-
-    Thing.prototype.getFullLabel = function(attr) {
-      console.log("get full label");
-      return Backbone.Model.prototype.get.apply(this, arguments);
-    };
-
     Thing.prototype.initialize = function() {
       return this.set(this.parse(this.attributes));
     };
 
     Thing.prototype.parse = function(resp) {
+      console.log("parse");
       if (resp != null) {
         if (resp.lsLabels != null) {
           console.log("passed resp.labels?");
@@ -92,29 +62,26 @@
               return _this.trigger('change');
             };
           })(this));
-        } else {
-          console.log("no resp.lsLabels, creating default labels");
-          this.createDefaultLabels();
         }
         if (resp.lsStates != null) {
           if (!(resp.lsStates instanceof StateList)) {
             console.log("resp.lsStates = new StateList");
             resp.lsStates = new StateList(resp.lsStates);
           }
-          return resp.lsStates.on('change', (function(_this) {
+          resp.lsStates.on('change', (function(_this) {
             return function() {
               return _this.trigger('change');
             };
           })(this));
         }
-      } else {
-        this.createDefaultLabels();
-        return this.createDefaultStates();
       }
+      this.createDefaultLabels();
+      return this.createDefaultStates();
     };
 
     Thing.prototype.sync = function() {
       var dLabel, dValue, _i, _j, _len, _len1, _ref, _ref1, _results;
+      console.log("sync");
       _ref = this.lsProperties.defaultLabels;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dLabel = _ref[_i];
@@ -130,15 +97,15 @@
     };
 
     Thing.prototype.createDefaultLabels = function() {
-      var dLabel, newLabel, _i, _len, _ref, _results;
+      var dLabel, newLabel, _i, _len, _ref;
       _ref = this.lsProperties.defaultLabels;
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dLabel = _ref[_i];
         newLabel = this.get('lsLabels').getOrCreateLabelByTypeAndKind(dLabel.type, dLabel.kind);
-        _results.push(this.set(dLabel.key, newLabel));
+        this.set(dLabel.key, newLabel);
       }
-      return _results;
+      console.log("created default labels");
+      return console.log(this);
     };
 
     Thing.prototype.createDefaultStates = function() {

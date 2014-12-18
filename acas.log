@@ -1456,3 +1456,15 @@
 2014-12-04T19:54:33.067Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2014-12-04T19:54:33.327Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2014-12-04T19:54:37.483Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-18T17:53:55.896Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-18T17:53:56.184Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-18T19:47:12.306Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-18T23:15:51.645Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-18T23:15:51.956Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-18T23:15:54.435Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-18T23:18:01.520Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-18T23:18:01.785Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-18T23:18:04.496Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-18T23:28:45.330Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-18T23:28:45.621Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-18T23:28:48.642Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null

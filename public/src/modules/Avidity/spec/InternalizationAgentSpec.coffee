@@ -67,9 +67,10 @@ describe 'Internalization Agent testing', ->
 				expect(@iap.get('shortDescription')).toEqual "example short description"
 			it "Should have the label set", ->
 				console.log @iap
-				expect(@iap.get("internalization agent name")).toEqual "IA Example 1"
+				expect(@iap.get("internalization agent name").get("labelText")).toEqual "IA Example 1"
 				label = (@iap.get("lsLabels").getLabelByTypeAndKind("name", "internalization agent name"))
-				expect(label.get('labelText')).toEqual "IA Example 1"
+				console.log label[0]
+				expect(label[0].get('labelText')).toEqual "IA Example 1"
 			it "Should have a model attribute for the label in defaultLabels", ->
 				expect(@iap.get("internalization agent name")).toBeDefined()
 			it "Should have a lsStates with the states in defaultStates", ->

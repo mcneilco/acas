@@ -92,14 +92,10 @@ describe 'Thing testing', ->
 				expect(@siRNA.get("corpName")).toBeDefined()
 
 			it 'should reference the lsLabel model objects stored in lsLabels as top level model attributes', ->
-				@siRNA.set("corpName","newCorpName")
+				@siRNA.get("corpName").set("labelText", "newCorpName")
 				corpNameLabel = @siRNA.get("lsLabels").getLabelByTypeAndKind("name", "corpName")[0]
-				expect(corpNameLabel.get("labelText")).toEqual @siRNA.get("corpName")
-#				expect(corpNameLabel.get("labelText")).toEqual @siRNA.get("corpName").get("labelText")
+				expect(corpNameLabel.get("labelText")).toEqual @siRNA.get("corpName").get("labelText")
 				expect(corpNameLabel.get("labelText")).toEqual "newCorpName"
-				console.log @siRNA.get('corpName')
-				console.log @siRNA
-
 
 			it 'should remove the top level label references when sync() is called', ->
 				expect(@siRNA.get("corpName")).toBeDefined()
@@ -138,6 +134,8 @@ describe 'Thing testing', ->
 				expect(sequenceStateValue.get("stringValue")).toEqual @siRNA.get("sequence").get("value")
 				expect(sequenceStateValue.get("stringValue")).toEqual "newsequence"
 				expect(@siRNA.get("sequence").get("value")).toEqual "newsequence"
+				console.log "this"
+				console.log @siRNA
 
 			it 'should remove the top level lsStates model object references when sync() is called', ->
 				expect(@siRNA.get("sequence")).toBeDefined()

@@ -16,38 +16,6 @@ class window.Thing extends Backbone.Model
 
 		#return attrs
 
-	set: (attr,options) ->
-		console.log "new set in Thing"
-		console.log attr
-		console.log options
-		#TODO: check to see if attr is in default labels
-		if @get(attr) instanceof Label and options != undefined
-			console.log "setting a LABEL"
-			@getFullLabel(attr).changeLabelText(options)
-		else
-			Backbone.Model::set.apply @, arguments
-
-	get: (attr) ->
-		console.log "new get in Thing"
-		console.log attr
-		fullObject = Backbone.Model::get.apply @, arguments
-		if fullObject instanceof Label
-			console.log "get full object is a label"
-			console.log fullObject
-			fullObject.get('labelText')
-		else
-			fullObject
-
-			#		if @get(attr) instanceof Label
-#			console.log "getting a LABEL"
-##			@get(attr).changeLabelText(options)
-#		else
-#		Backbone.Model::get.apply @, arguments
-#
-	getFullLabel: (attr) ->
-		console.log "get full label"
-		Backbone.Model::get.apply @, arguments
-
 	initialize: ->
 		@.set @parse(@.attributes)
 		#Problem, if new() overwrites defaults, I will lose my nested value attribute defaults
@@ -57,6 +25,7 @@ class window.Thing extends Backbone.Model
 		# The good thing about making all the defaults is i never need to use getOrCreate, just get becuase I know the value was made at initializtion
 
 	parse: (resp) =>
+		console.log "parse"
 		if resp?
 			if resp.lsLabels?
 				console.log "passed resp.labels?"
@@ -64,9 +33,6 @@ class window.Thing extends Backbone.Model
 					resp.lsLabels = new LabelList(resp.lsLabels)
 				resp.lsLabels.on 'change', =>
 					@trigger 'change'
-			else #TODO: need?
-				console.log "no resp.lsLabels, creating default labels"
-				@createDefaultLabels()
 
 			if resp.lsStates?
 				if resp.lsStates not instanceof StateList
@@ -74,11 +40,11 @@ class window.Thing extends Backbone.Model
 					resp.lsStates = new StateList(resp.lsStates)
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
-		else
-			@createDefaultLabels()
-			@createDefaultStates()
+		@createDefaultLabels()
+		@createDefaultStates()
 
 	sync: ->
+		console.log "sync"
 		for dLabel in @lsProperties.defaultLabels
 			@unset dLabel.key
 
@@ -97,6 +63,8 @@ class window.Thing extends Backbone.Model
 		for dLabel in @lsProperties.defaultLabels
 			newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
 			@set dLabel.key, newLabel
+		console.log "created default labels"
+		console.log @
 
 
 	createDefaultStates: =>

@@ -98,9 +98,10 @@
         it("Should have the label set", function() {
           var label;
           console.log(this.iap);
-          expect(this.iap.get("internalization agent name")).toEqual("IA Example 1");
+          expect(this.iap.get("internalization agent name").get("labelText")).toEqual("IA Example 1");
           label = this.iap.get("lsLabels").getLabelByTypeAndKind("name", "internalization agent name");
-          return expect(label.get('labelText')).toEqual("IA Example 1");
+          console.log(label[0]);
+          return expect(label[0].get('labelText')).toEqual("IA Example 1");
         });
         it("Should have a model attribute for the label in defaultLabels", function() {
           return expect(this.iap.get("internalization agent name")).toBeDefined();

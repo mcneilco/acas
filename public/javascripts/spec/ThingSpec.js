@@ -112,12 +112,10 @@
         });
         it('should reference the lsLabel model objects stored in lsLabels as top level model attributes', function() {
           var corpNameLabel;
-          this.siRNA.set("corpName", "newCorpName");
+          this.siRNA.get("corpName").set("labelText", "newCorpName");
           corpNameLabel = this.siRNA.get("lsLabels").getLabelByTypeAndKind("name", "corpName")[0];
-          expect(corpNameLabel.get("labelText")).toEqual(this.siRNA.get("corpName"));
-          expect(corpNameLabel.get("labelText")).toEqual("newCorpName");
-          console.log(this.siRNA.get('corpName'));
-          return console.log(this.siRNA);
+          expect(corpNameLabel.get("labelText")).toEqual(this.siRNA.get("corpName").get("labelText"));
+          return expect(corpNameLabel.get("labelText")).toEqual("newCorpName");
         });
         it('should remove the top level label references when sync() is called', function() {
           expect(this.siRNA.get("corpName")).toBeDefined();
@@ -159,7 +157,9 @@
           sequenceStateValue = this.siRNA.get('lsStates').getStateValueByTypeAndKind("descriptors", "unique attributes", "stringValue", "sequence");
           expect(sequenceStateValue.get("stringValue")).toEqual(this.siRNA.get("sequence").get("value"));
           expect(sequenceStateValue.get("stringValue")).toEqual("newsequence");
-          return expect(this.siRNA.get("sequence").get("value")).toEqual("newsequence");
+          expect(this.siRNA.get("sequence").get("value")).toEqual("newsequence");
+          console.log("this");
+          return console.log(this.siRNA);
         });
         it('should remove the top level lsStates model object references when sync() is called', function() {
           expect(this.siRNA.get("sequence")).toBeDefined();
