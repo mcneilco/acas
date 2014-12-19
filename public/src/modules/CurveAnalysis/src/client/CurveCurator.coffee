@@ -380,6 +380,7 @@ class window.CurveEditorController extends Backbone.View
 
 	handleResetClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
+		@deleteRsession()
 		@model.fetch
 			success: @handleUpdateSuccess
 			error: @handleUpdateError

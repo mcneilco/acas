@@ -568,6 +568,7 @@
 
     CurveEditorController.prototype.handleResetClicked = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
+      this.deleteRsession();
       return this.model.fetch({
         success: this.handleUpdateSuccess,
         error: this.handleUpdateError
