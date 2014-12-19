@@ -158,7 +158,6 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		data
 
 	handleValidationReturnSuccess: (json) =>
-		console.log "handle validation return success in bfv&s"
 		summaryStr = "Validation Results: "
 		if not json.hasError
 			@filePassedValidation = true

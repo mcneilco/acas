@@ -143,7 +143,6 @@ class window.AddParameterOptionPanelController extends AbstractFormController
 		@$('.bv_parameter').html(pascalCaseParameterName)
 
 	hideModal: ->
-		console.log "hide modal"
 		@$('.bv_addParameterOptionModal').modal('hide')
 
 	updateModel: =>

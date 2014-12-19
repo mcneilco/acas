@@ -837,7 +837,6 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		super()
 
 	disableAllInputs: ->
-		console.log "disabling all inputs in AbstractUploadAndRunPrimaryAnalsysisController "
 		@analysisParameterController.disableAllInputs()
 
 	disableAll: ->
@@ -919,26 +918,18 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			analysisStatus = "not started"
 #		@$('.bv_analysisStatus').html(analysisStatus)
 
-		console.log dryRunStatus
-		console.log analysisStatus
-
 		#running statuses
 		if dryRunStatus is "running"
 			if analysisStatus is "running" # invalid state
-				console.log "warning message"
 				@showWarningStatus(dryRunStatus, analysisStatus)
 			else
-				console.log "validate status drop down modal progress bar"
-				console.log "progress bar shown"
 				statusId = @model.getDryRunStatus().get('id')
 				@trigger "dryRunRunning"
 				@checkStatus(statusId, "dryRun")
 		else if analysisStatus is "running"
 			if dryRunStatus is "not started" # invalid state
-				console.log "warning message"
 				@showWarningStatus(dryRunStatus, analysisStatus)
 			else #valid
-				console.log "save status drop down modal progress bar"
 				statusId = @model.getAnalysisStatus().get('id')
 				@trigger 'analysisRunning'
 				@checkStatus(statusId, "analysis")
@@ -949,10 +940,8 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 
 		else
 			if dryRunStatus is "not started"
-				console.log "upload data page - hide bv_htmlSummary, csvPreviewContainer, bv_saveControlContainer, bv_completeControlContainer"
 				@showUploadWrapper()
 			else
-				console.log "update bv_resultStatus with the dryRun status, fill bv_htmlSummary with dry run result html"
 				@showDryRunResults(dryRunStatus)
 
 	showWarningStatus: (dryRunStatus, analysisStatus) ->
@@ -963,9 +952,6 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_htmlSummary').html(resultHTML)
 
 	checkStatus: (statusId, analysisStep) =>
-		console.log "checking status"
-		console.log @model
-		console.log statusId
 		$.ajax
 			type: 'GET'
 			url: "/api/experiments/values/"+statusId
@@ -976,14 +962,10 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 				if json.length == 0
 					alert 'Success but could not get requested status value.'
 				else
-					console.log "json"
-					console.log json
 					statusValue = new Value json
-					console.log statusValue
 					status = statusValue.get('codeValue')
 					if status is "running"
 						setTimeout(@checkStatus, 5000, statusId, analysisStep)
-						console.log "still running"
 						if analysisStep is "dryRun"
 							resultStatus = "Dry Run Results: Dry run in progress."
 							resultHTML = ""
@@ -996,11 +978,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 							@dataAnalysisController.showFileUploadPhase()
 
 					else
-						console.log "done running"
-						console.log status
 						#TODO: need to get updated state and show
-						console.log "finished fetching updated model"
-						console.log @model
 						@showUpdatedModel =>
 							@showUpdatedStatus(analysisStep)
 
@@ -1023,37 +1001,27 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 					@dataAnalysisController.updateAnalysisParamModel(@model)
 					callback.call()
 
-		console.log "just returned from get"
-		console.log @
-#		@.render()
-
 	showUpdatedStatus: (analysisStep)->
 		if analysisStep is "dryRun"
-			console.log "should hide validate bar and show dry run results"
 			@trigger "dryRunDone"
 			@showDryRunResults(@model.getDryRunStatus().get('codeValue'))
 		else
-			console.log "should hide upload bar and show analysis results"
 			@trigger "analysisDone"
 			@showAnalysisResults(@model.getAnalysisStatus().get('codeValue'))
 
 	showAnalysisResults: (analysisStatus) ->
 		if analysisStatus is "complete"
-			console.log "saved data page, fill bv_htmlSummary with analysis result html clobValue, show re-analyze button"
 			resultStatus = "Upload Results: Success"
 		else
-			console.log "failed page, fill bv_htmlSummary with analyisis clob, show re-analyze button"
 			resultStatus = "Upload Results: Failed due to errors"
 		resultHTML = @model.getAnalysisResultHTML().get('clobValue')
 		if @dataAnalysisController?
-			console.log "show analysis reults - upload complete phase"
 			@dataAnalysisController.showFileUploadCompletePhase()
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
 		@dataAnalysisController.disableAllInputs()
 
 	showDryRunResults: (dryRunStatus) ->
-		console.log "show dry run results"
 		if dryRunStatus is "complete"
 			resultStatus = "Dry Run Results: Success" #warnings are not stored so status will just be successful even if there are warnings
 		else
@@ -1085,10 +1053,8 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_fileUploadWrapper').show()
 
 	handleExperimentSaved: =>
-		console.log "handle experiment saved"
 		@setExperimentSaved()
 		unless @dataAnalysisController?
-			console.log "no data analysis controller"
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 		@model.getStatus().on 'change', @handleStatusChanged
 
@@ -1217,14 +1183,11 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@analysisController.render()
 
 	showWarningModal: ->
-		console.log "should show warning message"
 		@$('a[href="#tab3"]').tab('show')
 		dryRunStatus = @model.getDryRunStatus().get('codeValue')
 		dryRunResult = @model.getDryRunResultHTML().get('clobValue')
 		analysisStatus = @model.getAnalysisStatus().get('codeValue')
 		analysisResult = @model.getAnalysisResultHTML().get('clobValue')
-		console.log dryRunStatus
-		console.log analysisStatus
 		@$('.bv_dryRunStatus').html("Dry Run Status: "+dryRunStatus)
 		@$('.bv_dryRunResult').html("Dry Run Result HTML: "+dryRunResult)
 		@$('.bv_analysisStatus').html("Analysis Status: "+analysisStatus)
@@ -1238,25 +1201,21 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 
 	showValidateProgressBar: ->
-		console.log "should show validate progress bar"
 		@$('a[href="#tab3"]').tab('show')
 		@$('.bv_validateStatusDropDown').modal
 			backdrop: "static"
 		@$('.bv_validateStatusDropDown').modal("show")
 
 	showSaveProgressBar: ->
-		console.log "should show save progress bar"
 		@$('a[href="#tab3"]').tab('show')
 		@$('.bv_saveStatusDropDown').modal
 			backdrop: "static"
 		@$('.bv_saveStatusDropDown').modal("show")
 
 	hideValidateProgressBar: ->
-		console.log "should hide validate progress bar"
 		@$('.bv_validateStatusDropDown').modal("hide")
 
 	hideSaveProgressBar: ->
-		console.log "should hide save progress bar"
 		@$('.bv_saveStatusDropDown').modal("hide")
 
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController

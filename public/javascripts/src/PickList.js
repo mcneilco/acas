@@ -243,7 +243,6 @@
     };
 
     AddParameterOptionPanelController.prototype.hideModal = function() {
-      console.log("hide modal");
       return this.$('.bv_addParameterOptionModal').modal('hide');
     };
 
