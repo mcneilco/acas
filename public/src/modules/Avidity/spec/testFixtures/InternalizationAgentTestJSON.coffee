@@ -4,7 +4,7 @@
 		codeName: "IA-00000001"
 		id: 1
 		ignored: false
-		lsKind: "InternalizationAgentParent" #should be same as the className
+		lsKind: "internalization agent" #should be same as the className
 		lsLabels: [
 			id: 1
 			ignored: false
@@ -199,7 +199,7 @@
 			version: 0
 		]
 		lsTransaction: 1
-		lsType: "thing"
+		lsType: "parent"
 		lsTypeAndKind: "thing_InternalizationAgentParent"
 		modifiedBy: null
 		modifiedDate: null

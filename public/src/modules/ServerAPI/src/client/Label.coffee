@@ -153,6 +153,7 @@ class window.StateList extends Backbone.Collection
 		mStates = @getStatesByTypeAndKind sType, sKind
 		mState = mStates[0] #TODO should do something smart if there are more than one
 		unless mState?
+			console.log "creating new state"
 			mState = new State
 				lsType: sType
 				lsKind: sKind

@@ -1,5 +1,12 @@
 class window.InternalizationAgentParent extends Thing
-	className: "InternalizationAgentParent"
+	className: "internalization agent parent"
+
+	initialize: ->
+		@.set
+			lsType: "parent"
+			lsKind: "internalization agent"
+		super()
+
 	lsProperties:
 		defaultLabels: [
 			key: 'internalization agent name'
@@ -37,7 +44,7 @@ class window.InternalizationAgentParent extends Thing
 			key: 'scientist'
 			stateType: 'parent attributes'
 			stateKind: 'internalization agent parent attributes'
-			type: 'codeValue'
+			type: 'stringValue'
 			kind: 'scientist'
 		,
 			key: 'notebook'

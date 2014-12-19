@@ -4,7 +4,8 @@ class window.Thing extends Backbone.Model
 	defaults: () =>
 		#attrs =
 		@set lsType: "thing"
-		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
+		@set lsKind: "thing"
+#		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
 		@set corpName: "" #TODO: need this?
 		@set recordedBy: ""
 		@set recordedDate: new Date().getTime()
@@ -17,6 +18,8 @@ class window.Thing extends Backbone.Model
 		#return attrs
 
 	initialize: ->
+		console.log "initialize"
+		console.log @
 		@.set @parse(@.attributes)
 		#Problem, if new() overwrites defaults, I will lose my nested value attribute defaults
 		#solution, save labels and values as base attributes. Only use new and fetch, don't use new, passing in attributes
@@ -35,9 +38,11 @@ class window.Thing extends Backbone.Model
 					@trigger 'change'
 
 			if resp.lsStates?
+				console.log "lsStates exists"
 				if resp.lsStates not instanceof StateList
 					console.log "resp.lsStates = new StateList"
 					resp.lsStates = new StateList(resp.lsStates)
+					console.log resp.lsStates
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
 		@createDefaultLabels()
@@ -72,10 +77,20 @@ class window.Thing extends Backbone.Model
 		for dValue in @lsProperties.defaultValues
 			#Adding the new state and value to @
 			newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
-			#setting stringValue to value
-			newValue.set dValue.type, dValue.value
-#			#Setting dValue.key attribute in @ to point to the newValue
+
+			#setting unitType and unitKind in the state, if units are given
+			if dValue.unitKind?
+				newValue.set unitKind: dValue.unitKind
+			if dValue.unitType?
+				newValue.set unitType: dValue.unitType
+
+			#Setting dValue.key attribute in @ to point to the newValue
 			@set dValue.key, newValue
+
+			#setting top level model attribute's value to equal valueType's value
+			# (ie set "value" to equal value in "stringValue")
+			@get(dValue.kind).set("value", newValue.get(dValue.type))
+
 
 
 # moved this example to ThingSpec.coffee

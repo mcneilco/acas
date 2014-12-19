@@ -9,7 +9,15 @@
       return InternalizationAgentParent.__super__.constructor.apply(this, arguments);
     }
 
-    InternalizationAgentParent.prototype.className = "InternalizationAgentParent";
+    InternalizationAgentParent.prototype.className = "internalization agent parent";
+
+    InternalizationAgentParent.prototype.initialize = function() {
+      this.set({
+        lsType: "parent",
+        lsKind: "internalization agent"
+      });
+      return InternalizationAgentParent.__super__.initialize.call(this);
+    };
 
     InternalizationAgentParent.prototype.lsProperties = {
       defaultLabels: [
@@ -49,7 +57,7 @@
           key: 'scientist',
           stateType: 'parent attributes',
           stateKind: 'internalization agent parent attributes',
-          type: 'codeValue',
+          type: 'stringValue',
           kind: 'scientist'
         }, {
           key: 'notebook',

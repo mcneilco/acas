@@ -294,6 +294,7 @@
       mStates = this.getStatesByTypeAndKind(sType, sKind);
       mState = mStates[0];
       if (mState == null) {
+        console.log("creating new state");
         mState = new State({
           lsType: sType,
           lsKind: sKind

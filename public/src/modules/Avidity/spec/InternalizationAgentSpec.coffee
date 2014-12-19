@@ -14,9 +14,9 @@ describe 'Internalization Agent testing', ->
 				it "should be defined", ->
 					expect(@iap).toBeDefined()
 				it "should have a type", ->
-					expect(@iap.get('lsType')).toEqual "thing"
+					expect(@iap.get('lsType')).toEqual "parent"
 				it "should have a kind", ->
-					expect(@iap.get('lsKind')).toEqual "InternalizationAgentParent"
+					expect(@iap.get('lsKind')).toEqual "internalization agent"
 				it "should have an empty scientist", ->
 					expect(@iap.get('recordedBy')).toEqual ""
 				it "should have a recordedDate set to now", ->
@@ -56,9 +56,9 @@ describe 'Internalization Agent testing', ->
 			it "should be defined", ->
 				expect(@iap).toBeDefined()
 			it "should have a type", ->
-				expect(@iap.get('lsType')).toEqual "thing"
+				expect(@iap.get('lsType')).toEqual "parent"
 			it "should have a kind", ->
-				expect(@iap.get('lsKind')).toEqual "InternalizationAgentParent"
+				expect(@iap.get('lsKind')).toEqual "internalization agent"
 			it "should have a scientist set", ->
 				expect(@iap.get('recordedBy')).toEqual "egao"
 			it "should have a recordedDate set", ->

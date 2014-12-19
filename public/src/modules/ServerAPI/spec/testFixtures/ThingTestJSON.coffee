@@ -77,7 +77,7 @@
 				publicData: true
 				recordedDate: 1363388477000
 				sigFigs: null
-				stringValue: "test stringValue"
+				stringValue: "test sequence"
 				uncertainty: null
 				urlValue: null
 				lsKind: "sequence"
@@ -89,7 +89,7 @@
 			]
 		,
 			comments: null
-			id: 11
+			id: 12
 			ignored: false
 			lsKind: "other attributes"
 			lsTransaction: 1
@@ -118,6 +118,7 @@
 				urlValue: null
 				lsKind: "mass"
 				unitKind: "mg"
+				unitType: "mass"
 				valueOperator: null
 				lsType: "numericValue"
 				lsTypeAndKind: "numericValue_mass"
@@ -126,14 +127,14 @@
 			]
 		,
 			comments: null
-			id: 11
+			id: 13
 			ignored: false
 			lsKind: "experiment meta"
 			lsTransaction: 1
 			lsType: "meta"
 			lsTypeAndKind: "meta_experiment meta"
 			lsValues: [
-				clobValue: "clobValue example"
+				clobValue: "parameters clobValue example"
 				codeValue: null
 				comments: null
 				dateValue: null

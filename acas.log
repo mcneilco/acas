@@ -1468,3 +1468,30 @@
 2014-12-18T23:28:45.330Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2014-12-18T23:28:45.621Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2014-12-18T23:28:48.642Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-19T00:23:12.423Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-19T00:23:12.691Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-19T00:27:33.116Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-19T00:53:57.077Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-19T00:53:57.337Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-19T00:54:02.615Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-19T18:49:13.777Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-19T18:49:14.173Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-19T18:49:18.764Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-19T18:49:38.359Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-19T18:49:38.682Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-19T18:49:41.289Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-19T19:20:06.404Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-19T19:20:06.659Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-19T19:22:20.666Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-19T19:29:57.622Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-19T19:29:57.979Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-19T19:30:01.814Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2014-12-19T19:30:03.844Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2014-12-19T19:30:06.131Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2014-12-19T19:54:33.518Z - info:  sourceApp=logUsage, action=About to call R function: parseGenericData, data={"fileToParse":"1_Generic_eva_edited.xlsx","reportFile":"","imagesFile":"","dryRunMode":"true","user":"egao","experimentId":"1234","otherparam":"fred"}, user=egao, transactionId=null
+2014-12-19T19:54:34.333Z - info:  sourceApp=logUsage, action=Returned success from R function with trapped errors: parseGenericData, data={"commit":false,"transactionId":null,"results":{"path":"/Users/evagao/Documents/McNeilCo/acas","fileToParse":"1_Generic_eva_edited.xlsx","dryRun":"","htmlSummary":"<h2>load summary goes here</h2><h3>More info</h3>"},"hasError":false,"hasWarning":true,"errorMessages":[]}, user=egao, transactionId=null
+2014-12-19T19:54:44.007Z - info:  sourceApp=logUsage, action=About to call R function: parseGenericData, data={"fileToParse":"1_Generic_eva_edited.xlsx","reportFile":"","imagesFile":"","dryRunMode":"false","user":"egao","experimentId":"1234","otherparam":"fred"}, user=egao, transactionId=null
+2014-12-19T19:54:44.165Z - info:  sourceApp=logUsage, action=Returned success from R function with trapped errors: parseGenericData, data={"commit":false,"transactionId":null,"results":{"path":"/Users/evagao/Documents/McNeilCo/acas","fileToParse":"1_Generic_eva_edited.xlsx","dryRun":"","htmlSummary":"<h2>load summary goes here</h2><h3>More info</h3>"},"hasError":false,"hasWarning":true,"errorMessages":[]}, user=egao, transactionId=null
+2014-12-19T22:00:43.852Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2014-12-19T22:00:44.185Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2014-12-19T22:00:46.829Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null

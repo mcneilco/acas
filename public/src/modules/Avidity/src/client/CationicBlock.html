@@ -1,0 +1,158 @@
+<script type="text/template" id="CationicBlockParentView" xmlns="http://www.w3.org/1999/html">
+    <h4><span>Parent Registration</span></h4>
+    <div class="span10">
+        <div class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label">Cationic Block Parent ID</label>
+                <div class="controls">
+                    <span class="uneditable-input bv_cationicBlockParentCode" style="width:336px;">autofill when saved</span>
+                </div>
+            </div>
+            <div class="control-group bv_group_cationicBlockParentName">
+                <label class="control-label">*Name</label>
+                <div class="controls">
+                    <input class="bv_cationicBlockParentNameText" style="width:165px;" type="text" placeholder="">
+                    <select class="bv_cationicBlockParentNameRepeat" style="width:165px;"></select>
+                </div>
+            </div>
+            <div class="control-group bv_group_molecularWeight">
+                <label class="control-label">*Molecular Weight</label>
+                <div class="controls">
+                    <input class="bv_molecularWeight" style="width:336px;" type="text" placeholder="" />
+                    <span style="margin-left:5px;">g/mol</span>
+                </div>
+            </div>
+            <div class="control-group bv_group_recordedBy">
+                <label class="control-label">*Scientist</label>
+                <div class="controls">
+                    <select class="bv_recordedBy" style="width:350px;">
+                        <option value="">Select Scientist</option>
+                        <option value="nxm7557">Neelima Mannava</option>
+                        <option value="xxl7932">Xiaodong Li</option>
+                        <option value="xxt8875">Xiao-Qing Tang</option>
+                        <option value="hxx5072">Hong Xu</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group bv_group_completionDate">
+                <label class="control-label">*Date</label>
+                <div class="controls">
+                    <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                        <input class="bv_completionDate" type="text" value="" placeholder="Filled from first batch" style="width:310px;">
+                        <span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group bv_group_notebook">
+                <label class="control-label">*Notebook</label>
+                <div class="controls">
+                    <input class="bv_notebook" style="width:336px;" type="text" placeholder="Filled from first batch" />
+                </div>
+            </div>
+
+            <div>
+                <button type="button" class="btn bv_updateParent pull-right hide" style="margin-right:200px;">Update</button>
+                <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;">Update Complete</div>
+                <div class="bv_updating hide" style="padding-top:5px;color:red;">Updating...</div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="span10" style="margin-left:0px;margin-right:50px;margin-top:12px;margin-bottom:0px;" />
+</script>
+
+<script type="text/template" id="CationicBlockBatchView" xmlns="http://www.w3.org/1999/html">
+
+    <h4><span>Batch Registration</span></h4>
+
+    <div class="span10">
+        <div class="form-horizontal">
+            <div class="control-group bv_group_selectBatch">
+                <label class="control-label">*Select Batch ID</label>
+                <div class="controls">
+                    <select class="bv_selectBatch" style="width:349px;"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="span8" style="margin-left: 50px;margin-right:50px;margin-top: 10px;margin-bottom:0px;width: 600px;"/>
+
+    <div class="span10">
+        <div class="form-horizontal well" style="width:625px;height:425px;padding-left:0px;">
+            <div class="control-group">
+                <label class="control-label">Batch ID</label>
+                <div class="controls">
+                    <span class="uneditable-input bv_cationicBlockBatchCode" style="width:336px;">autofill when saved</span>
+                </div>
+            </div>
+            <div class="control-group bv_group_recordedBy">
+                <label class="control-label">*Scientist</label>
+                <div class="controls">
+                    <select class="bv_recordedBy" style="width:350px;">
+                        <option value="">Select Scientist</option>
+                        <option value="nxm7557">Neelima Mannava</option>
+                        <option value="xxl7932">Xiaodong Li</option>
+                        <option value="xxt8875">Xiao-Qing Tang</option>
+                        <option value="hxx5072">Hong Xu</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group bv_group_completionDate">
+                <label class="control-label">*Date</label>
+                <div class="controls">
+                    <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                        <input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:310px;">
+                        <span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group bv_group_notebook">
+                <label class="control-label">*Notebook</label>
+                <div class="controls">
+                    <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
+                </div>
+            </div>
+            <div class="control-group bv_group_location">
+                <label class="control-label">*Location</label>
+                <div class="controls">
+                    <input class="bv_location" style="width:336px;" type="text" placeholder="" />
+                </div>
+            </div>
+            <div class="control-group bv_group_amount">
+                <label class="control-label">*Amount</label>
+                <div class="controls">
+                    <input class="bv_amount" style="width:336px;" type="text" placeholder="" />
+                    <span style="margin-left:5px;">g</span>
+                </div>
+            </div>
+
+            <div class="control-group bv_group_analyticalMethod">
+                <label class="control-label">*Analytical Method</label>
+                <div class="controls">
+                    <span style="margin-left:6px;margin-bottom:5px;">File Type</span>
+                    <span style="margin-left:158px;margin-bottom:5px;">File Name</span>
+                        <span class="control-group bv_group_fileType pull-left">
+                            <select class="span6 bv_fileType" style="width:200px;"></select>
+                        </span>
+                        <button class="close bv_delete pull-right hide">&times;</button>
+
+                        <span class="span 5 bv_uploadFile" style="width:200px;height:40px;margin-left:0px;"></span>
+                </div>
+            </div>
+            <div>
+                <button type="button" class="btn bv_updateBatch pull-right" style="margin-right:10px;">Update</button>
+                <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;">Update Complete</div>
+                <div class="bv_updating hide" style="padding-top:5px;color:red;">Updating...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAVE-->
+    <div>
+        <button type="button" class="btn bv_save pull-right" style="margin-right:10px;">Save</button>
+        <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;"></div>
+        <div class="bv_saving hide" style="padding-top:5px;color:red;">Saving...</div>
+    </div>
+
+</script>

@@ -21,7 +21,7 @@
         lsType: "thing"
       });
       this.set({
-        lsKind: this.className
+        lsKind: "thing"
       });
       this.set({
         corpName: ""
@@ -46,6 +46,8 @@
     };
 
     Thing.prototype.initialize = function() {
+      console.log("initialize");
+      console.log(this);
       return this.set(this.parse(this.attributes));
     };
 
@@ -64,9 +66,11 @@
           })(this));
         }
         if (resp.lsStates != null) {
+          console.log("lsStates exists");
           if (!(resp.lsStates instanceof StateList)) {
             console.log("resp.lsStates = new StateList");
             resp.lsStates = new StateList(resp.lsStates);
+            console.log(resp.lsStates);
           }
           resp.lsStates.on('change', (function(_this) {
             return function() {
@@ -116,8 +120,18 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dValue = _ref[_i];
         newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(dValue.stateType, dValue.stateKind, dValue.type, dValue.kind);
-        newValue.set(dValue.type, dValue.value);
-        _results.push(this.set(dValue.key, newValue));
+        if (dValue.unitKind != null) {
+          newValue.set({
+            unitKind: dValue.unitKind
+          });
+        }
+        if (dValue.unitType != null) {
+          newValue.set({
+            unitType: dValue.unitType
+          });
+        }
+        this.set(dValue.key, newValue);
+        _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
       }
       return _results;
     };

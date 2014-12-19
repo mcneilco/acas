@@ -11,8 +11,6 @@
           return siRNA.__super__.constructor.apply(this, arguments);
         }
 
-        siRNA.prototype.className = "siRNA";
-
         siRNA.prototype.lsProperties = {
           defaultLabels: [
             {
@@ -45,7 +43,8 @@
               stateKind: 'other attributes',
               type: 'numericValue',
               kind: 'mass',
-              unitKind: 'mg'
+              unitKind: 'mg',
+              unitType: 'mass'
             }, {
               key: 'analysis parameters',
               stateType: 'meta',
@@ -88,7 +87,7 @@
           return expect(this.siRNA.get('lsType')).toEqual("thing");
         });
         it("should have a kind", function() {
-          return expect(this.siRNA.get('lsKind')).toEqual("siRNA");
+          return expect(this.siRNA.get('lsKind')).toEqual("thing");
         });
         it("should have an empty scientist", function() {
           return expect(this.siRNA.get('recordedBy')).toEqual("");
@@ -148,6 +147,16 @@
           expect(lsValues).toBeDefined();
           return expect(lsValues.length).toEqual(1);
         });
+        it('should store unit type and unit kind in the associated state', function() {
+          var lsStates, lsValues;
+          lsStates = this.siRNA.get('lsStates').getStatesByTypeAndKind("descriptors", "other attributes");
+          lsValues = lsStates[0].get('lsValues');
+          console.log("lsValues");
+          console.log(lsValues);
+          console.log(lsValues.at(0));
+          expect(lsValues.at(0).get('unitType')).toEqual('mass');
+          return expect(lsValues.at(0).get('unitKind')).toEqual('mg');
+        });
         it('should create model attributes for each element in defaultValues', function() {
           return expect(this.siRNA.get("sequence")).toBeDefined();
         });
@@ -179,7 +188,7 @@
         });
       });
     });
-    return describe("When created from existing", function() {
+    describe("When created from existing", function() {
       beforeEach(function() {
         return this.testsiRNA = new siRNA(JSON.parse(JSON.stringify(window.thingTestJSON.siRNA)));
       });
@@ -196,11 +205,69 @@
         it("should have a scientist set", function() {
           return expect(this.testsiRNA.get('recordedBy')).toEqual("egao");
         });
-        it("should have a recordedDate set", function() {
+        it("should have a recordedDate", function() {
           return expect(this.testsiRNA.get('recordedDate')).toEqual(1375889487000);
         });
-        return it('Should have a short description set', function() {
+        it("Should have a short description", function() {
           return expect(this.testsiRNA.get('shortDescription')).toEqual("thing created by egao");
+        });
+        it("should have a sequence value", function() {
+          return expect(this.testsiRNA.get('sequence').get("value")).toEqual("test sequence");
+        });
+        return it("should have a mass value", function() {
+          return expect(this.testsiRNA.get('mass').get("value")).toEqual(12.3);
+        });
+      });
+    });
+    return describe("model change propagation", function() {
+      it("should trigger change when label changed", function() {
+        runs(function() {
+          this.testsiRNA = new siRNA();
+          this.siRNAChanged = false;
+          this.testsiRNA.get('lsLabels').setBestName(new Label({
+            labelKind: "siRNA name",
+            labelText: "test label",
+            recordedBy: this.testsiRNA.get('recordedBy'),
+            recordedDate: this.testsiRNA.get('recordedDate')
+          }));
+          this.testsiRNA.on('change', (function(_this) {
+            return function() {
+              return _this.siRNAChanged = true;
+            };
+          })(this));
+          this.siRNAChanged = false;
+          return this.testsiRNA.get('lsLabels').setBestName(new Label({
+            labelKind: "experiment name",
+            labelText: "new label",
+            recordedBy: this.testsiRNA.get('recordedBy'),
+            recordedDate: this.testsiRNA.get('recordedDate')
+          }));
+        });
+        waitsFor(function() {
+          return this.siRNAChanged;
+        }, 500);
+        return runs(function() {
+          return expect(this.siRNAChanged).toBeTruthy();
+        });
+      });
+      return it("should trigger change when value changed in state", function() {
+        runs(function() {
+          this.testsiRNA = new siRNA(window.thingTestJSON.siRNA);
+          this.testsiRNAChanged = false;
+          this.testsiRNA.on('change', (function(_this) {
+            return function() {
+              return _this.siRNAChanged = true;
+            };
+          })(this));
+          return this.testsiRNA.get('lsStates').at(0).get('lsValues').at(0).set({
+            stringValue: 'new test sequence'
+          });
+        });
+        waitsFor(function() {
+          return this.siRNAChanged;
+        }, 500);
+        return runs(function() {
+          return expect(this.siRNAChanged).toBeTruthy();
         });
       });
     });

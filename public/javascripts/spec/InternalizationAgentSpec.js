@@ -19,10 +19,10 @@
             return expect(this.iap).toBeDefined();
           });
           it("should have a type", function() {
-            return expect(this.iap.get('lsType')).toEqual("thing");
+            return expect(this.iap.get('lsType')).toEqual("parent");
           });
           it("should have a kind", function() {
-            return expect(this.iap.get('lsKind')).toEqual("InternalizationAgentParent");
+            return expect(this.iap.get('lsKind')).toEqual("internalization agent");
           });
           it("should have an empty scientist", function() {
             return expect(this.iap.get('recordedBy')).toEqual("");
@@ -81,10 +81,10 @@
           return expect(this.iap).toBeDefined();
         });
         it("should have a type", function() {
-          return expect(this.iap.get('lsType')).toEqual("thing");
+          return expect(this.iap.get('lsType')).toEqual("parent");
         });
         it("should have a kind", function() {
-          return expect(this.iap.get('lsKind')).toEqual("InternalizationAgentParent");
+          return expect(this.iap.get('lsKind')).toEqual("internalization agent");
         });
         it("should have a scientist set", function() {
           return expect(this.iap.get('recordedBy')).toEqual("egao");

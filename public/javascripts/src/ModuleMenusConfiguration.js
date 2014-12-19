@@ -43,6 +43,11 @@
       mainControllerClassName: "DNSKDPrimaryScreenExperimentController",
       autoLaunchName: "dnskd_screening_assay"
     }, {
+      isHeader: false,
+      menuName: "Cationic Block",
+      mainControllerClassName: "CationicBlockParentController",
+      autoLaunchName: "cationic_block"
+    }, {
       isHeader: true,
       menuName: "Inventory"
     }, {

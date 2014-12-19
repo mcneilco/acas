@@ -4,7 +4,7 @@ describe 'Thing testing', ->
 
 		# Here is example usage
 		class window.siRNA extends Thing
-			className: "siRNA"
+#			className: "siRNA"
 			lsProperties:
 				defaultLabels: [
 					key: 'name'
@@ -39,6 +39,7 @@ describe 'Thing testing', ->
 					type: 'numericValue'
 					kind: 'mass'
 					unitKind: 'mg'
+					unitType: 'mass'
 #					value: 42.34
 				,
 					key: 'analysis parameters'
@@ -74,7 +75,7 @@ describe 'Thing testing', ->
 			it "should have a type", ->
 				expect(@siRNA.get('lsType')).toEqual "thing"
 			it "should have a kind", ->
-				expect(@siRNA.get('lsKind')).toEqual "siRNA"
+				expect(@siRNA.get('lsKind')).toEqual "thing"
 			it "should have an empty scientist", ->
 				expect(@siRNA.get('recordedBy')).toEqual ""
 			it "should have a recordedDate set to now", ->
@@ -125,6 +126,15 @@ describe 'Thing testing', ->
 				expect(lsValues).toBeDefined()
 				expect(lsValues.length).toEqual 1
 
+			it 'should store unit type and unit kind in the associated state', ->
+				lsStates = @siRNA.get('lsStates').getStatesByTypeAndKind "descriptors", "other attributes"
+				lsValues = lsStates[0].get('lsValues')
+				console.log "lsValues"
+				console.log lsValues
+				console.log lsValues.at(0)
+				expect(lsValues.at(0).get('unitType')).toEqual 'mass'
+				expect(lsValues.at(0).get('unitKind')).toEqual 'mg'
+
 			it 'should create model attributes for each element in defaultValues', ->
 				expect(@siRNA.get("sequence")).toBeDefined()
 
@@ -166,7 +176,50 @@ describe 'Thing testing', ->
 				expect(@testsiRNA.get('lsKind')).toEqual "siRNA"
 			it "should have a scientist set", ->
 				expect(@testsiRNA.get('recordedBy')).toEqual "egao"
-			it "should have a recordedDate set", ->
+			it "should have a recordedDate", ->
 				expect(@testsiRNA.get('recordedDate')).toEqual 1375889487000
-			it 'Should have a short description set', ->
+			it "Should have a short description", ->
 				expect(@testsiRNA.get('shortDescription')).toEqual "thing created by egao"
+			it "should have a sequence value", ->
+				expect(@testsiRNA.get('sequence').get("value")).toEqual "test sequence"
+			it "should have a mass value", ->
+				expect(@testsiRNA.get('mass').get("value")).toEqual 12.3
+#			it "should have an analysis parameters value", ->
+#				expect(@testsiRNA.get('analysis parameters').get("value")).toEqual "parameters clobValue example"
+
+	describe "model change propagation", ->
+		it "should trigger change when label changed", ->
+			runs ->
+				@testsiRNA = new siRNA()
+				@siRNAChanged = false
+				@testsiRNA.get('lsLabels').setBestName new Label
+					labelKind: "siRNA name"
+					labelText: "test label"
+					recordedBy: @testsiRNA.get 'recordedBy'
+					recordedDate: @testsiRNA.get 'recordedDate'
+				@testsiRNA.on 'change', =>
+					@siRNAChanged = true
+				@siRNAChanged = false
+				@testsiRNA.get('lsLabels').setBestName new Label
+					labelKind: "experiment name"
+					labelText: "new label"
+					recordedBy: @testsiRNA.get 'recordedBy'
+					recordedDate: @testsiRNA.get 'recordedDate'
+			waitsFor ->
+				@siRNAChanged
+			, 500
+			runs ->
+				expect(@siRNAChanged).toBeTruthy()
+		it "should trigger change when value changed in state", ->
+			runs ->
+				@testsiRNA = new siRNA window.thingTestJSON.siRNA
+				@testsiRNAChanged = false
+				@testsiRNA.on 'change', =>
+					@siRNAChanged = true
+				@testsiRNA.get('lsStates').at(0).get('lsValues').at(0).set(stringValue: 'new test sequence')
+			waitsFor ->
+				@siRNAChanged
+			, 500
+			runs ->
+				expect(@siRNAChanged).toBeTruthy()
+

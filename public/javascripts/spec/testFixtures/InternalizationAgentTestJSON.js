@@ -4,7 +4,7 @@
       codeName: "IA-00000001",
       id: 1,
       ignored: false,
-      lsKind: "InternalizationAgentParent",
+      lsKind: "internalization agent",
       lsLabels: [
         {
           id: 1,
@@ -211,7 +211,7 @@
         }
       ],
       lsTransaction: 1,
-      lsType: "thing",
+      lsType: "parent",
       lsTypeAndKind: "thing_InternalizationAgentParent",
       modifiedBy: null,
       modifiedDate: null,
