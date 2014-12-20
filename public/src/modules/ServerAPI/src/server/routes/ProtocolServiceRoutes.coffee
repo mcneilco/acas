@@ -195,7 +195,7 @@ exports.genericProtocolSearch = (req, res) ->
 			res.end JSON.stringify [protocolServiceTestJSON.fullSavedProtocol]
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"api/v1/protocols/search?q="+req.params.searchTerm
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm
 		console.log "baseurl"
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -204,7 +204,7 @@ exports.genericProtocolSearch = (req, res) ->
 exports.deleteProtocol = (req, res) ->
 	config = require '../conf/compiled/conf.js'
 	protocolID = req.params.id
-	baseurl = config.all.client.service.persistence.fullpath+"/api/v1/protocols/browser/"+protocolID
+	baseurl = config.all.client.service.persistence.fullpath+"protocols/browser/"+protocolID
 	console.log "baseurl"
 	console.log baseurl
 	request = require 'request'

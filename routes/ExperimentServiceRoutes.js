@@ -58,7 +58,7 @@
     } else {
       config = require('../conf/compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-      baseurl = config.all.client.service.persistence.fullpath + "api/v1/experiments?findByName&name=" + req.params.name;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments?findByName&name=" + req.params.name;
       console.log(baseurl);
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -173,7 +173,7 @@
       }
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "api/v1/experiments/search?q=" + req.params.searchTerm;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/search?q=" + req.params.searchTerm;
       console.log("baseurl");
       console.log(baseurl);
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -312,7 +312,7 @@
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer.lsStates[1]));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "api/v1/experimentvalues/" + req.params.id;
+      baseurl = config.all.client.service.persistence.fullpath + "experimentvalues/" + req.params.id;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }

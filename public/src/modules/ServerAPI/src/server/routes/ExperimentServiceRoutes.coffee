@@ -57,7 +57,7 @@ exports.experimentByName = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		baseurl = config.all.client.service.persistence.fullpath+"api/v1/experiments?findByName&name="+req.params.name
+		baseurl = config.all.client.service.persistence.fullpath+"experiments?findByName&name="+req.params.name
 		console.log baseurl
 #		fullObjectFlag = "with=fullobject"
 #		if req.query.fullObject
@@ -161,7 +161,7 @@ exports.genericExperimentSearch = (req, res) ->
 			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"api/v1/experiments/search?q="+req.params.searchTerm
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm
 		console.log "baseurl"
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -271,6 +271,6 @@ exports.experimentValueById = (req, resp) ->
 #		json = {message: "experiment state by id not implemented yet"}
 #		res.end JSON.stringify json
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"api/v1/experimentvalues/"+req.params.id
+		baseurl = config.all.client.service.persistence.fullpath+"experimentvalues/"+req.params.id
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
