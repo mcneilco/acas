@@ -39,6 +39,7 @@
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", reportFile="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_error.xls", dryRunMode = "false", user="smeyer"))
+#       request <- c(fileToParse="2_Concentration.xls", dryRunMode = "false", user="smeyer")
 
 # Other files:
 # "public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls"
@@ -1865,9 +1866,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
                                 analysisGroupData$time, "-", analysisGroupData$timeUnit, "-", analysisGroupData$stateKind)
   analysisGroupData$parentId <- analysisGroupData$experimentID
   analysisGroupData$tempId <- analysisGroupData$analysisGroupID
-  analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations2(analysisGroupData))
+  analysisGroupData <- rbind.fill(analysisGroupData, makeConcentrationColumns(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes2(analysisGroupData))
-  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes2(analysisGroupData))
+  analysisGroupData <- rbind.fill(analysisGroupData, gdpMeltBatchCodes(analysisGroupData))
   
   #Note: use unitKind, not valueUnit
   # use operatorKind, not valueOperator
@@ -1882,9 +1883,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData$lsTransaction <- lsTransaction
     treatmentGroupData$recordedBy <- recordedBy
     
-    treatmentGroupData <- rbind.fill(treatmentGroupData, meltConcentrations2(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, makeConcentrationColumns(treatmentGroupData))
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes2(treatmentGroupData))
-    treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes2(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, gdpMeltBatchCodes(treatmentGroupData))
     
     treatmentGroupData$unitKind <- treatmentGroupData$valueUnit
     if (!is.null(treatmentGroupData$valueOperator)) {
@@ -1902,9 +1903,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     subjectData$lsTransaction <- lsTransaction
     subjectData$recordedBy <- recordedBy
    
-    subjectData <- rbind.fill(subjectData, meltConcentrations2(subjectData))
+    subjectData <- rbind.fill(subjectData, makeConcentrationColumns(subjectData))
     subjectData <- rbind.fill(subjectData, meltTimes2(subjectData))
-    subjectData <- rbind.fill(subjectData, meltBatchCodes2(subjectData))
+    subjectData <- rbind.fill(subjectData, gdpMeltBatchCodes(subjectData))
     
     subjectData$unitKind <- subjectData$valueUnit
     subjectData$operatorKind <- subjectData$valueOperator
@@ -2292,6 +2293,63 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   return(summaryInfo)
 }
+
+gdpMeltBatchCodes <- function(entityData) {
+  # Check for missing batchCode
+  output <- data.frame()
+  if (is.null(entityData$batchCode) || all(is.na(entityData$batchCode))) {
+    return(output)
+  }
+  
+  optionalColumns <- c("lsTransaction", "recordedBy")
+  
+  neededColumns <- c("batchCode", "tempStateId", "parentId", "tempId", "stateType", "stateKind")
+  if (!all(neededColumns %in% names(entityData))) {stop("Internal error: missing needed columns")}
+  
+  usedColumns <- c(neededColumns, optionalColumns[optionalColumns %in% names(entityData)])
+  
+  
+  batchCodeValues <- unique(entityData[, usedColumns])
+  
+  names(batchCodeValues)[1] <- "codeValue"
+  batchCodeValues$valueType <- "codeValue"
+  batchCodeValues$valueKind <- "batch code"
+  batchCodeValues$publicData <- TRUE
+  batchCodeValues$concentration <- entityData$concentration
+  batchCodeValues$concUnit <- entityData$concentrationUnit
+  batchCodeValues <- batchCodeValues[!is.na(batchCodeValues$codeValue), ]
+  
+  return(batchCodeValues)
+}
+
+makeConcentrationColumns <- function(entityData) {
+  if(any(is.na(entityData$concentration))) {
+    return(data.frame())
+  }
+  
+  optionalColumns <- c("lsTransaction", "recordedBy")
+  
+  neededColumns <- c("concentration", "concentrationUnit", "tempStateId", "parentId", "tempId", "stateType", "stateKind")
+  if (!all(neededColumns %in% names(entityData))) {stop("Internal error: missing needed columns")}
+  usedColumns <- c(neededColumns, optionalColumns[optionalColumns %in% names(entityData)])
+  
+  createConcentrationRows <- function(entityData) {
+    output <- unique(entityData[, usedColumns])
+    if (nrow(output) > 1) stop("Non-unique concentrations in a tempStateId")
+    output$concentration <- output$concentration
+    output$concUnit <- output$concentrationUnit
+    output$valueKind <- "tested concentration"
+    output$valueType <- "numericValue"
+    output$publicData <- TRUE
+#     output$concentration <- NULL
+    output$concentrationUnit <- NULL
+    return(output)
+  }
+  
+  output <- ddply(.data=entityData, .variables = c("tempStateId"), .fun = createConcentrationRows)
+  return(output)
+}
+
 getStateGroups <- function(formatSettings) {
   #Gets stateGroups from configuration list
   
