@@ -277,8 +277,8 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   # Give warning and error messages for changed or missing id's
   for (batchId in newBatchIds) {
     if (batchId["preferredName"] == "") {
-      addError(paste0(mainCode, " '", batchId["requestName"], 
-                                        "' has not been registered in the system. Contact your system administrator for help."))
+#       addError(paste0(mainCode, " '", batchId["requestName"], 
+#                                         "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
       warnUser(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
                      "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
@@ -1866,9 +1866,12 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
                                 analysisGroupData$time, "-", analysisGroupData$timeUnit, "-", analysisGroupData$stateKind)
   analysisGroupData$parentId <- analysisGroupData$experimentID
   analysisGroupData$tempId <- analysisGroupData$analysisGroupID
-  analysisGroupData <- rbind.fill(analysisGroupData, makeConcentrationColumns(analysisGroupData))
+  #   analysisGroupData <- rbind.fill(analysisGroupData, makeConcentrationColumns(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes2(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, gdpMeltBatchCodes(analysisGroupData))
+  analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concentration <- NA
+  analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit <- NA
+  analysisGroupData$concentrationUnit <- NULL
   
   #Note: use unitKind, not valueUnit
   # use operatorKind, not valueOperator
@@ -1883,9 +1886,12 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData$lsTransaction <- lsTransaction
     treatmentGroupData$recordedBy <- recordedBy
     
-    treatmentGroupData <- rbind.fill(treatmentGroupData, makeConcentrationColumns(treatmentGroupData))
+    #     treatmentGroupData <- rbind.fill(treatmentGroupData, makeConcentrationColumns(treatmentGroupData))
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes2(treatmentGroupData))
     treatmentGroupData <- rbind.fill(treatmentGroupData, gdpMeltBatchCodes(treatmentGroupData))
+    treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concentration <- NA
+    treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit <- NA
+    treatmentGroupData$concentrationUnit <- NULL
     
     treatmentGroupData$unitKind <- treatmentGroupData$valueUnit
     if (!is.null(treatmentGroupData$valueOperator)) {
@@ -1903,9 +1909,12 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     subjectData$lsTransaction <- lsTransaction
     subjectData$recordedBy <- recordedBy
    
-    subjectData <- rbind.fill(subjectData, makeConcentrationColumns(subjectData))
+    #     subjectData <- rbind.fill(subjectData, makeConcentrationColumns(subjectData))
     subjectData <- rbind.fill(subjectData, meltTimes2(subjectData))
     subjectData <- rbind.fill(subjectData, gdpMeltBatchCodes(subjectData))
+    subjectData[subjectData$valueKind != "batch code", ]$concentration <- NA
+    subjectData[subjectData$valueKind != "batch code", ]$concUnit <- NA
+    subjectData$concentrationUnit <- NULL
     
     subjectData$unitKind <- subjectData$valueUnit
     subjectData$operatorKind <- subjectData$valueOperator
