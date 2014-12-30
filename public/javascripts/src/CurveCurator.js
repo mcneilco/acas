@@ -450,6 +450,7 @@
     __extends(CurveEditorController, _super);
 
     function CurveEditorController() {
+      this.deleteRsession = __bind(this.deleteRsession, this);
       this.handleUpdateSuccess = __bind(this.handleUpdateSuccess, this);
       this.handleSaveSuccess = __bind(this.handleSaveSuccess, this);
       this.handleUpdateError = __bind(this.handleUpdateError, this);
@@ -527,6 +528,9 @@
     };
 
     CurveEditorController.prototype.setModel = function(model) {
+      if (this.model != null) {
+        this.deleteRsession();
+      }
       this.model = model;
       this.render();
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
@@ -564,6 +568,7 @@
 
     CurveEditorController.prototype.handleResetClicked = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
+      this.deleteRsession();
       return this.model.fetch({
         success: this.handleUpdateSuccess,
         error: this.handleUpdateError
@@ -638,6 +643,13 @@
       curveid = this.model.get('curveid');
       dirty = this.model.get('dirty');
       return this.trigger('curveDetailUpdated', curveid, dirty);
+    };
+
+    CurveEditorController.prototype.deleteRsession = function() {
+      return this.model.save({
+        action: 'deleteSession',
+        user: window.AppLaunchParams.loginUserName
+      });
     };
 
     return CurveEditorController;

@@ -357,7 +357,10 @@ class window.CurveEditorController extends Backbone.View
 			@$el.html "No curve selected"
 
 	setModel: (model)->
+		if @model?
+			@deleteRsession()
 		@model = model
+
 		@render()
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@model.on 'sync', @handleModelSync
@@ -377,6 +380,7 @@ class window.CurveEditorController extends Backbone.View
 
 	handleResetClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
+		@deleteRsession()
 		@model.fetch
 			success: @handleUpdateSuccess
 			error: @handleUpdateError
@@ -424,6 +428,9 @@ class window.CurveEditorController extends Backbone.View
 		curveid = @model.get 'curveid'
 		dirty = @model.get 'dirty'
 		@trigger 'curveDetailUpdated', curveid, dirty
+
+	deleteRsession: =>
+		@model.save({action: 'deleteSession', user: window.AppLaunchParams.loginUserName})
 
 class window.Curve extends Backbone.Model
 
@@ -771,10 +778,6 @@ class window.CurveCuratorController extends Backbone.View
 				@$('.bv_sortDirection_descending').attr( "checked", true );
 
 			@handleSortChanged()
-#			indexOfRequestedCurve = @curveListController.collection.getIndexByCurveID(requestedCurveIDToSelect)
-#			if indexOfRequestedCurve == -1
-#				indexOfRequestedCurve = 0
-#			@$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click()
 
 		@
 

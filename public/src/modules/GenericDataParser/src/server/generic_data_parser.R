@@ -295,9 +295,9 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     prefDT <- as.data.table(preferredIdFrame)
     prefDT[ referenceName == "", referenceName := preferredName ]
     preferredIdFrame <- as.data.frame(prefDT)
-    calculatedResults[[mainCode]][batchesToCheck] <- preferredIdFrame$referenceName[match(calculatedResults[[mainCode]][batchesToCheck],preferredIdFrame$requestName)]
+    calculatedResults$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults$batchCode[batchesToCheck],preferredIdFrame$requestName)]
   } else {
-    calculatedResults[[mainCode]][batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults[[mainCode]][batchesToCheck],preferredIdFrame$requestName)]
+    calculatedResults$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults$batchCode[batchesToCheck],preferredIdFrame$requestName)]
   }
   
   #### ================= Check the value kinds =======================================================
@@ -1414,8 +1414,8 @@ validateProject <- function(projectName, configList, errorEnv) {
     addError(paste("There was an error in validating your project:", projectList), errorEnv = errorEnv)
     return("")
   })
-  #projectCodes <- sapply(projectList, function(x) x$code)
-  projectNames <- sapply(projectList, function(x) x$name)
+  projectNames <- sapply(projectList, function(x) x$code)
+  #projectNames <- sapply(projectList, function(x) x$name)
   if(length(projectNames) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
   if (projectName %in% projectNames) {
     return(projectName)
@@ -1635,9 +1635,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                 subjectData$concentration, "-", subjectData$concentrationUnit, "-",
                                 subjectData$time, "-", subjectData$timeUnit, "-", subjectData$subjectStateID)
   
-  subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
+  subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData, entityKind = "subject"))
   
-  subjectData <- rbind.fill(subjectData, meltTimes(subjectData))
+  subjectData <- rbind.fill(subjectData, meltTimes(subjectData, entityKind = "subject"))
   
   stateAndVersion <- saveStatesFromLongFormat(subjectData, "subject", stateGroups, "stateID", recordedBy, lsTransaction)
   subjectData$stateID <- stateAndVersion$entityStateId
@@ -1665,7 +1665,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                       & !(subjectData$subjectID %in% excludedSubjects),]
     
     # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
-    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
+    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex", "resultTypeAndUnit"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
     treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
     if (nrow(treatmentGroupData) > 0) {
       stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
@@ -2242,8 +2242,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     if(rawOnlyFormat) { 
       uploadRawDataOnly(metaData = validatedMetaData, lsTransaction, subjectData = calculatedResults,
                         experiment, fileStartLocation = pathToGenericDataFormatExcelFile, configList, 
-                        stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames, recordedBy, 
-                        replaceFakeCorpBatchId, annotationType, sigFigs, rowMeaning, includeTreatmentGroupData, 
+                        formatParameters$stateGroups, reportFilePath, formatParameters$hideAllData, reportFileSummary, formatParameters$curveNames, recordedBy, 
+                        formatParameters$replaceFakeCorpBatchId, formatParameters$annotationType, formatParameters$sigFigs, formatParameters$rowMeaning, formatParameters$includeTreatmentGroupData, 
                         inputFormat, mainCode)
     } else {
       calculatedResults$experimentID <- experiment$id
@@ -2811,7 +2811,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
 
 getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat) {
   # Creates a list of format parameters, based on custom format settings if it is a "rawOnlyFormat"
-  
+  formatSettings <- customFormatSettings
   o <- list()
   if (rawOnlyFormat) {
     o$lookFor <- "Raw Data"
@@ -2824,11 +2824,11 @@ getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat
     o$sigFigs <- formatSettings[[inputFormat]]$sigFigs
     o$splitSubjects <- formatSettings[[inputFormat]]$splitSubjects
     o$rowMeaning <- formatSettings[[inputFormat]]$rowMeaning
-    if(is.null(rowMeaning)) {
+    if(is.null(o$rowMeaning)) {
       o$rowMeaning <- "subject"
     }
     o$includeTreatmentGroupData <- formatSettings[[inputFormat]]$includeTreatmentGroupData
-    if (is.null(includeTreatmentGroupData)) {
+    if (is.null(o$includeTreatmentGroupData)) {
       o$includeTreatmentGroupData <- TRUE
     }
   } else {
