@@ -39,6 +39,11 @@
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_Curve.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       file.copy(from="public/src/modules/GenericDataParser/spec/specFiles/ExampleInputFormat_with_error.xls", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 #       parseGenericData(c(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_Curve.xls", reportFile="serverOnlyModules/blueimp-file-upload-node/public/files/ExampleInputFormat_with_error.xls", dryRunMode = "false", user="smeyer"))
+#
+#       file.copy(from="~/Documents/Clients/McNeilCo/5_Dose_Response.xls", to="~/Documents/super-acas/acas/privateUploads/")
+#       request <- c(fileToParse="5_Dose_Response.xls", dryRunMode = "false", user="smeyer")
+#
+#       file.copy(from="~/Documents/Clients/McNeilCo/2_Concentration.xls", to="~/Documents/super-acas/acas/privateUploads/")
 #       request <- c(fileToParse="2_Concentration.xls", dryRunMode = "false", user="smeyer")
 
 # Other files:
@@ -277,8 +282,8 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   # Give warning and error messages for changed or missing id's
   for (batchId in newBatchIds) {
     if (batchId["preferredName"] == "") {
-#       addError(paste0(mainCode, " '", batchId["requestName"], 
-#                                         "' has not been registered in the system. Contact your system administrator for help."))
+      addError(paste0(mainCode, " '", batchId["requestName"], 
+                                        "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
       warnUser(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
                      "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
@@ -1316,7 +1321,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                      lsKind = "status",
                                                                      stringValue = "Approved",
                                                                      lsTransaction= lsTransaction)
-  experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
+  experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "codeValue",
                                                                      lsKind = "analysis status",
                                                                      stringValue = "running",
                                                                      lsTransaction= lsTransaction)
