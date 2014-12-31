@@ -109,7 +109,8 @@ renderCurve <- function(getParams) {
       }
     }
   }
-data <- getCurveData(curveIds, globalConnect=TRUE)
+fitData <- get_fit_data_curve_id(curveIds)
+data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
 
 #To be backwards compatable with hill slope example files
 hillSlopes <- which(!is.na(data$parameters$hillslope))

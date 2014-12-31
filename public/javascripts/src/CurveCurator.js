@@ -103,17 +103,26 @@
       this.doseResponseKnockoutPanelController.show();
       this.doseResponseKnockoutPanelController.on('reasonSelected', (function(_this) {
         return function(reason) {
-          return _this.knockoutPoints(selectedPoints, reason);
+          return _this.knockoutPoints(selectedPoints, "knocked out", reason, reason, reason);
         };
       })(this));
     };
 
-    DoseResponsePlotController.prototype.knockoutPoints = function(selectedPoints, reason) {
+    DoseResponsePlotController.prototype.knockoutPoints = function(selectedPoints, status, observation, reason, comment) {
       selectedPoints.forEach((function(_this) {
         return function(selectedPoint) {
-          _this.points[selectedPoint.idx].flag_user = reason;
-          _this.points[selectedPoint.idx]['flag_on.load'] = "NA";
-          _this.points[selectedPoint.idx].flag_algorithm = "NA";
+          _this.points[selectedPoint.idx].algorithmFlagStatus = "";
+          _this.points[selectedPoint.idx].algorithmFlagObservation = "";
+          _this.points[selectedPoint.idx].algorithmFlagReason = "";
+          _this.points[selectedPoint.idx].algorithmFlagComment = "";
+          _this.points[selectedPoint.idx].preprocessFlagStatus = "";
+          _this.points[selectedPoint.idx].preprocessFlagObservation = "";
+          _this.points[selectedPoint.idx].preprocessFlagReason = "";
+          _this.points[selectedPoint.idx].preprocessFlagComment = "";
+          _this.points[selectedPoint.idx].userFlagStatus = status;
+          _this.points[selectedPoint.idx].userFlagObservation = observation;
+          _this.points[selectedPoint.idx].userFlagReason = reason;
+          _this.points[selectedPoint.idx].userFlagComment = comment;
           return selectedPoint.drawAsKnockedOut();
         };
       })(this));
@@ -124,7 +133,7 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var brd, color, createSelection, fct, flag_algorithm, flag_on_load, flag_user, getMouseCoords, ii, includePoints, intersect, log10, p1, promptForKnockout, t, x, y;
+      var algorithmFlagReason, algorithmFlagStatus, brd, color, createSelection, fct, getMouseCoords, ii, includePoints, intersect, log10, p1, preprocessFlagReason, preprocessFlagStatus, promptForKnockout, t, userFlagReason, userFlagStatus, x, y;
       this.points = points;
       log10 = function(val) {
         return Math.log(val) / Math.LN10;
@@ -146,9 +155,17 @@
         includePoints = (function(_this) {
           return function(selectedPoints) {
             selectedPoints.forEach(function(selectedPoint) {
-              _this.points[selectedPoint.idx].flag_user = "NA";
-              _this.points[selectedPoint.idx]['flag_on.load'] = "NA";
-              _this.points[selectedPoint.idx].flag_algorithm = "NA";
+              _this.points[selectedPoint.idx].algorithmFlagObservation = "";
+              _this.points[selectedPoint.idx].algorithmFlagReason = "";
+              _this.points[selectedPoint.idx].algorithmFlagComment = "";
+              _this.points[selectedPoint.idx].preprocessFlagStatus = "";
+              _this.points[selectedPoint.idx].preprocessFlagObservation = "";
+              _this.points[selectedPoint.idx].preprocessFlagReason = "";
+              _this.points[selectedPoint.idx].preprocessFlagComment = "";
+              _this.points[selectedPoint.idx].userFlagStatus = "";
+              _this.points[selectedPoint.idx].userFlagObservation = "";
+              _this.points[selectedPoint.idx].userFlagReason = "";
+              _this.points[selectedPoint.idx].userFlagComment = "";
               return selectedPoint.drawAsIncluded();
             });
             _this.model.set({
@@ -161,17 +178,20 @@
         while (ii < points.length) {
           x = log10(points[ii].dose);
           y = points[ii].response;
-          flag_user = points[ii].flag_user;
-          flag_on_load = points[ii]['flag_on.load'];
-          flag_algorithm = points[ii].flag_algorithm;
-          if (flag_user !== "NA" || flag_on_load !== "NA" || flag_algorithm !== "NA") {
+          userFlagStatus = points[ii].userFlagStatus;
+          preprocessFlagStatus = points[ii].preprocessFlagStatus;
+          algorithmFlagStatus = points[ii].algorithmFlagStatus;
+          userFlagReason = points[ii].userFlagReason;
+          preprocessFlagReason = points[ii].preprocessFlagReason;
+          algorithmFlagReason = points[ii].algorithmFlagReason;
+          if (userFlagStatus === "knocked out" || preprocessFlagStatus === "knocked out" || algorithmFlagStatus === "knocked out") {
             color = (function() {
               switch (false) {
-                case flag_user === "NA":
+                case userFlagStatus !== "knocked out":
                   return 'red';
-                case flag_on_load === "NA":
+                case preprocessFlagStatus !== "knocked out":
                   return 'gray';
-                case flag_algorithm === "NA":
+                case algorithmFlagStatus !== "knocked out":
                   return 'blue';
               }
             })();
@@ -222,12 +242,12 @@
           p1.on("mouseup", p1.handlePointClicked, p1);
           p1.flagLabel = (function() {
             switch (false) {
-              case flag_user === "NA":
-                return flag_user;
-              case flag_on_load === "NA":
-                return flag_on_load;
-              case flag_algorithm === "NA":
-                return flag_algorithm;
+              case userFlagStatus !== "knocked out":
+                return userFlagReason;
+              case preprocessFlagStatus !== "knocked out":
+                return preprocessFlagReason;
+              case algorithmFlagStatus !== "knocked out":
+                return algorithmFlagReason;
               default:
                 return '';
             }
@@ -500,19 +520,19 @@
         this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));
         this.$('.bv_curveErrors').html(this.model.get('curveErrors'));
         this.$('.bv_category').html(this.model.get('category'));
-        if (this.model.get('flagAlgorithm') === 'NA') {
+        if (this.model.get('algorithmFlagStatus') === '') {
           this.$('.bv_pass').show();
           this.$('.bv_fail').hide();
         } else {
           this.$('.bv_pass').hide();
           this.$('.bv_fail').show();
         }
-        if (this.model.get('flagUser') === 'NA') {
+        if (this.model.get('userFlagStatus') === '') {
           this.$('.bv_na').show();
           this.$('.bv_thumbsUp').hide();
           return this.$('.bv_thumbsDown').hide();
         } else {
-          if (this.model.get('flagUser') === 'approved') {
+          if (this.model.get('userFlagStatus') === 'approved') {
             this.$('.bv_na').hide();
             this.$('.bv_thumbsUp').show();
             return this.$('.bv_thumbsDown').hide();
@@ -590,8 +610,8 @@
     CurveEditorController.prototype.handleApproveClicked = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
-        action: 'flagUser',
-        flagUser: 'approved',
+        action: 'userFlagStatus',
+        userFlagStatus: 'approved',
         user: window.AppLaunchParams.loginUserName
       }, {
         success: this.handleUpdateSuccess,
@@ -602,8 +622,8 @@
     CurveEditorController.prototype.handleRejectClicked = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       return this.model.save({
-        action: 'flagUser',
-        flagUser: 'rejected',
+        action: 'userFlagStatus',
+        userFlagStatus: 'rejected',
         user: window.AppLaunchParams.loginUserName
       }, {
         success: this.handleUpdateSuccess,
@@ -627,14 +647,14 @@
     };
 
     CurveEditorController.prototype.handleSaveSuccess = function() {
-      var category, dirty, flagAlgorithm, flagUser, newID;
+      var algorithmFlagStatus, category, dirty, newID, userFlagStatus;
       this.handleModelSync();
       newID = this.model.get('curveid');
       dirty = this.model.get('dirty');
       category = this.model.get('category');
-      flagUser = this.model.get('flagUser');
-      flagAlgorithm = this.model.get('flagAlgorithm');
-      return this.trigger('curveDetailSaved', this.oldID, newID, dirty, category, flagUser, flagAlgorithm);
+      userFlagStatus = this.model.get('userFlagStatus');
+      algorithmFlagStatus = this.model.get('algorithmFlagStatus');
+      return this.trigger('curveDetailSaved', this.oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus);
     };
 
     CurveEditorController.prototype.handleUpdateSuccess = function() {
@@ -671,7 +691,7 @@
     __extends(CurveList, _super);
 
     function CurveList() {
-      this.updateFlagUser = __bind(this.updateFlagUser, this);
+      this.updateUserFlagStatus = __bind(this.updateUserFlagStatus, this);
       this.updateDirtyFlag = __bind(this.updateDirtyFlag, this);
       this.updateCurveSummary = __bind(this.updateCurveSummary, this);
       this.getIndexByCurveID = __bind(this.getIndexByCurveID, this);
@@ -709,14 +729,14 @@
       return index;
     };
 
-    CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty, category, flagUser, flagAlgorithm) {
+    CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty, category, userFlagStatus, algorithmFlagStatus) {
       var curve;
       curve = this.getCurveByID(oldID);
       return curve.set({
         curveid: newCurveID,
         dirty: dirty,
-        flagUser: flagUser,
-        flagAlgorithm: flagAlgorithm,
+        userFlagStatus: algorithmFlagStatus,
+        algorithmFlagStatus: algorithmFlagStatus,
         category: category
       });
     };
@@ -729,11 +749,11 @@
       });
     };
 
-    CurveList.prototype.updateFlagUser = function(curveid, flagUser) {
+    CurveList.prototype.updateUserFlagStatus = function(curveid, userFlagStatus) {
       var curve;
       curve = this.getCurveByID(curveid);
       return curve.set({
-        flagUser: flagUser
+        userFlagStatus: userFlagStatus
       });
     };
 
@@ -842,7 +862,7 @@
     function CurveSummaryController() {
       this.clearSelected = __bind(this.clearSelected, this);
       this.setSelected = __bind(this.setSelected, this);
-      this.setUserFlag = __bind(this.setUserFlag, this);
+      this.setUserFlagStatus = __bind(this.setUserFlagStatus, this);
       this.render = __bind(this.render, this);
       return CurveSummaryController.__super__.constructor.apply(this, arguments);
     }
@@ -878,14 +898,15 @@
       this.$el.html(this.template({
         curveUrl: curveUrl
       }));
-      if (this.model.get('flagAlgorithm') === 'no fit') {
+      if (this.model.get('algorithmFlagStatus') === 'no fit') {
         this.$('.bv_pass').hide();
         this.$('.bv_fail').show();
       } else {
         this.$('.bv_pass').show();
         this.$('.bv_fail').hide();
       }
-      if (this.model.get('flagUser') === 'NA') {
+      console.log(this.model);
+      if (this.model.get('userFlagStatus') === '') {
         this.$('.bv_na').show();
         this.$('.bv_thumbsUp').hide();
         this.$('.bv_thumbsDown').hide();
@@ -938,10 +959,10 @@
       }
     };
 
-    CurveSummaryController.prototype.setUserFlag = function(flagUser) {
+    CurveSummaryController.prototype.setUserFlagStatus = function(userFlagStatus) {
       this.disableSummary();
       return this.model.save({
-        flagUser: flagUser,
+        userFlagStatus: userFlagStatus,
         user: window.AppLaunchParams.loginUserName
       }, {
         wait: true,
@@ -1212,8 +1233,8 @@
       return this;
     };
 
-    CurveCuratorController.prototype.handleCurveDetailSaved = function(oldID, newID, dirty, category, flagUser, flagAlgorithm) {
-      return this.curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, flagUser, flagAlgorithm);
+    CurveCuratorController.prototype.handleCurveDetailSaved = function(oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus) {
+      return this.curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus);
     };
 
     CurveCuratorController.prototype.handleCurveDetailUpdated = function(curveid, dirty) {

@@ -51,14 +51,24 @@ class window.DoseResponsePlotController extends AbstractFormController
 	showDoseResponseKnockoutPanel: (selectedPoints) =>
 		@doseResponseKnockoutPanelController.show()
 		@doseResponseKnockoutPanelController.on 'reasonSelected', (reason) =>
-			@knockoutPoints(selectedPoints,reason)
+			@knockoutPoints(selectedPoints,"knocked out", reason, reason, reason)
 		return
 
-	knockoutPoints: (selectedPoints, reason) =>
+	knockoutPoints: (selectedPoints, status, observation, reason, comment) =>
 		selectedPoints.forEach (selectedPoint) =>
-			@points[selectedPoint.idx].flag_user = reason
-			@points[selectedPoint.idx]['flag_on.load'] = "NA"
-			@points[selectedPoint.idx].flag_algorithm = "NA"
+			@points[selectedPoint.idx].algorithmFlagStatus = ""
+			@points[selectedPoint.idx].algorithmFlagObservation = ""
+			@points[selectedPoint.idx].algorithmFlagReason = ""
+			@points[selectedPoint.idx].algorithmFlagComment = ""
+			@points[selectedPoint.idx].preprocessFlagStatus = ""
+			@points[selectedPoint.idx].preprocessFlagObservation = ""
+			@points[selectedPoint.idx].preprocessFlagReason = ""
+			@points[selectedPoint.idx].preprocessFlagComment = ""
+			@points[selectedPoint.idx].userFlagStatus = status
+			@points[selectedPoint.idx].userFlagObservation = observation
+			@points[selectedPoint.idx].userFlagReason = reason
+			@points[selectedPoint.idx].userFlagComment = comment
+
 			selectedPoint.drawAsKnockedOut()
 		@model.set points: @points
 		@model.trigger 'change'
@@ -84,9 +94,18 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 			includePoints = (selectedPoints) =>
 				selectedPoints.forEach (selectedPoint) =>
-					@points[selectedPoint.idx].flag_user = "NA"
-					@points[selectedPoint.idx]['flag_on.load'] = "NA"
-					@points[selectedPoint.idx].flag_algorithm = "NA"
+					@points[selectedPoint.idx].algorithmFlagObservation = ""
+					@points[selectedPoint.idx].algorithmFlagReason = ""
+					@points[selectedPoint.idx].algorithmFlagComment = ""
+					@points[selectedPoint.idx].preprocessFlagStatus = ""
+					@points[selectedPoint.idx].preprocessFlagObservation = ""
+					@points[selectedPoint.idx].preprocessFlagReason = ""
+					@points[selectedPoint.idx].preprocessFlagComment = ""
+					@points[selectedPoint.idx].userFlagStatus = ""
+					@points[selectedPoint.idx].userFlagObservation = ""
+					@points[selectedPoint.idx].userFlagReason = ""
+					@points[selectedPoint.idx].userFlagComment = ""
+
 					selectedPoint.drawAsIncluded()
 				@model.set points: @points
 				@model.trigger 'change'
@@ -96,14 +115,17 @@ class window.DoseResponsePlotController extends AbstractFormController
 			while ii < points.length
 				x = log10 points[ii].dose
 				y = points[ii].response
-				flag_user = points[ii].flag_user
-				flag_on_load = points[ii]['flag_on.load']
-				flag_algorithm = points[ii].flag_algorithm
-				if (flag_user != "NA" || flag_on_load != "NA" || flag_algorithm != "NA")
+				userFlagStatus = points[ii].userFlagStatus
+				preprocessFlagStatus = points[ii].preprocessFlagStatus
+				algorithmFlagStatus = points[ii].algorithmFlagStatus
+				userFlagReason = points[ii].userFlagReason
+				preprocessFlagReason = points[ii].preprocessFlagReason
+				algorithmFlagReason = points[ii].algorithmFlagReason
+				if (userFlagStatus == "knocked out" || preprocessFlagStatus == "knocked out" || algorithmFlagStatus == "knocked out")
 					color = switch
-						when flag_user != "NA" then 'red'
-						when flag_on_load != "NA" then 'gray'
-						when flag_algorithm != "NA" then 'blue'
+						when userFlagStatus == "knocked out" then 'red'
+						when preprocessFlagStatus == "knocked out" then 'gray'
+						when algorithmFlagStatus == "knocked out" then 'blue'
 
 					p1 = brd.create("point", [x,y],
 						name: points[ii].response_sv_id
@@ -149,9 +171,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 				p1.on "mouseup", p1.handlePointClicked, p1
 
 				p1.flagLabel = switch
-					when flag_user != "NA" then flag_user
-					when flag_on_load != "NA" then flag_on_load
-					when flag_algorithm != "NA" then flag_algorithm
+					when userFlagStatus == "knocked out" then userFlagReason
+					when preprocessFlagStatus == "knocked out" then preprocessFlagReason
+					when algorithmFlagStatus == "knocked out" then algorithmFlagReason
 					else ''
 
 				p1.xLabel = JXG.trunc(points[ii].dose, 4)
@@ -333,19 +355,19 @@ class window.CurveEditorController extends Backbone.View
 			@$('.bv_parameterStdErrors').html @model.get('parameterStdErrors')
 			@$('.bv_curveErrors').html @model.get('curveErrors')
 			@$('.bv_category').html @model.get('category')
-			if @model.get('flagAlgorithm') == 'NA'
+			if @model.get('algorithmFlagStatus') == ''
 				@$('.bv_pass').show()
 				@$('.bv_fail').hide()
 			else
 				@$('.bv_pass').hide()
 				@$('.bv_fail').show()
 
-			if @model.get('flagUser') == 'NA'
+			if @model.get('userFlagStatus') == ''
 				@$('.bv_na').show()
 				@$('.bv_thumbsUp').hide()
 				@$('.bv_thumbsDown').hide()
 			else
-				if @model.get('flagUser') == 'approved'
+				if @model.get('userFlagStatus') == 'approved'
 					@$('.bv_na').hide()
 					@$('.bv_thumbsUp').show()
 					@$('.bv_thumbsDown').hide()
@@ -392,13 +414,13 @@ class window.CurveEditorController extends Backbone.View
 
 	handleApproveClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
-		@model.save({action: 'flagUser', flagUser: 'approved', user: window.AppLaunchParams.loginUserName}
+		@model.save({action: 'userFlagStatus', userFlagStatus: 'approved', user: window.AppLaunchParams.loginUserName}
 			success :@handleUpdateSuccess
 			error: @handleUpdateError)
 
 	handleRejectClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
-		@model.save({action: 'flagUser', flagUser: 'rejected', user: window.AppLaunchParams.loginUserName}
+		@model.save({action: 'userFlagStatus', userFlagStatus: 'rejected', user: window.AppLaunchParams.loginUserName}
 			success :@handleUpdateSuccess
 			error: @handleUpdateError)
 
@@ -419,9 +441,9 @@ class window.CurveEditorController extends Backbone.View
 		newID = @model.get 'curveid'
 		dirty = @model.get 'dirty'
 		category = @model.get 'category'
-		flagUser = @model.get 'flagUser'
-		flagAlgorithm = @model.get 'flagAlgorithm'
-		@trigger 'curveDetailSaved', @oldID, newID, dirty, category, flagUser, flagAlgorithm
+		userFlagStatus = @model.get 'userFlagStatus'
+		algorithmFlagStatus = @model.get 'algorithmFlagStatus'
+		@trigger 'curveDetailSaved', @oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus
 
 	handleUpdateSuccess: =>
 		@handleModelSync()
@@ -456,13 +478,13 @@ class window.CurveList extends Backbone.Collection
 		index = @.indexOf(curve)
 		return index
 
-	updateCurveSummary: (oldID, newCurveID, dirty, category, flagUser, flagAlgorithm) =>
+	updateCurveSummary: (oldID, newCurveID, dirty, category, userFlagStatus, algorithmFlagStatus) =>
 		curve = @getCurveByID(oldID)
 		curve.set
 			curveid: newCurveID
 			dirty: dirty
-			flagUser: flagUser
-			flagAlgorithm: flagAlgorithm
+			userFlagStatus: algorithmFlagStatus
+			algorithmFlagStatus: algorithmFlagStatus
 			category: category
 
 	updateDirtyFlag: (curveid, dirty) =>
@@ -470,10 +492,10 @@ class window.CurveList extends Backbone.Collection
 		curve.set
 			dirty: dirty
 
-	updateFlagUser: (curveid, flagUser) =>
+	updateUserFlagStatus: (curveid, userFlagStatus) =>
 		curve = @getCurveByID(curveid)
 		curve.set
-			flagUser: flagUser
+			userFlagStatus: userFlagStatus
 
 
 class window.CurveCurationSet extends Backbone.Model
@@ -545,13 +567,14 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl += @model.get('curveid') + "&showAxes=false&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
-		if @model.get('flagAlgorithm') == 'no fit'
+		if @model.get('algorithmFlagStatus') == 'no fit'
 			@$('.bv_pass').hide()
 			@$('.bv_fail').show()
 		else
 			@$('.bv_pass').show()
 			@$('.bv_fail').hide()
-		if @model.get('flagUser') == 'NA'
+		console.log @model
+		if @model.get('userFlagStatus') == ''
 			@$('.bv_na').show()
 			@$('.bv_thumbsUp').hide()
 			@$('.bv_thumbsDown').hide()
@@ -597,10 +620,10 @@ class window.CurveSummaryController extends Backbone.View
 		else
 			@trigger 'showCurveEditorDirtyPanel'
 
-	setUserFlag: (flagUser) =>
+	setUserFlagStatus: (userFlagStatus) =>
 #		UtilityFunctions::showProgressModal $('.bv_curveCuratorDropDown')
 		@disableSummary()
-		@model.save(flagUser: flagUser, user: window.AppLaunchParams.loginUserName, {
+		@model.save(userFlagStatus: userFlagStatus, user: window.AppLaunchParams.loginUserName, {
 			wait: true,
 			success: =>
 #				UtilityFunctions::hideProgressModal $('.bv_curveCuratorDropDown')
@@ -781,8 +804,8 @@ class window.CurveCuratorController extends Backbone.View
 
 		@
 
-	handleCurveDetailSaved: (oldID, newID, dirty, category, flagUser, flagAlgorithm) =>
-		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, flagUser, flagAlgorithm)
+	handleCurveDetailSaved: (oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus) =>
+		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus)
 
 	handleCurveDetailUpdated: (curveid, dirty) =>
 		@curveListController.collection.updateDirtyFlag(curveid, dirty)
