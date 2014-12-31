@@ -1876,7 +1876,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes2(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, gdpMeltBatchCodes(analysisGroupData))
   analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concentration <- NA
-  analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit <- NA
+  if(length(analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit) != 0) {
+    analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit <- NA
+  }
   analysisGroupData$concentrationUnit <- NULL
   
   #Note: use unitKind, not valueUnit
@@ -1896,7 +1898,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes2(treatmentGroupData))
     treatmentGroupData <- rbind.fill(treatmentGroupData, gdpMeltBatchCodes(treatmentGroupData))
     treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concentration <- NA
-    treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit <- NA
+    if(length(treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit) != 0) {
+      treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit <- NA
+    }
     treatmentGroupData$concentrationUnit <- NULL
     
     treatmentGroupData$unitKind <- treatmentGroupData$valueUnit
@@ -1919,7 +1923,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     subjectData <- rbind.fill(subjectData, meltTimes2(subjectData))
     subjectData <- rbind.fill(subjectData, gdpMeltBatchCodes(subjectData))
     subjectData[subjectData$valueKind != "batch code", ]$concentration <- NA
-    subjectData[subjectData$valueKind != "batch code", ]$concUnit <- NA
+    if(length(subjectData[subjectData$valueKind != "batch code", ]$concUnit) != 0) {
+      subjectData[subjectData$valueKind != "batch code", ]$concUnit <- NA
+    }
     subjectData$concentrationUnit <- NULL
     
     subjectData$unitKind <- subjectData$valueUnit
@@ -2316,7 +2322,7 @@ gdpMeltBatchCodes <- function(entityData) {
     return(output)
   }
   
-  optionalColumns <- c("lsTransaction", "recordedBy")
+  optionalColumns <- c("lsTransaction", "recordedBy", "concentration", "concentrationUnit")
   
   neededColumns <- c("batchCode", "tempStateId", "parentId", "tempId", "stateType", "stateKind")
   if (!all(neededColumns %in% names(entityData))) {stop("Internal error: missing needed columns")}
@@ -2330,8 +2336,10 @@ gdpMeltBatchCodes <- function(entityData) {
   batchCodeValues$valueType <- "codeValue"
   batchCodeValues$valueKind <- "batch code"
   batchCodeValues$publicData <- TRUE
-  batchCodeValues$concentration <- entityData$concentration
-  batchCodeValues$concUnit <- entityData$concentrationUnit
+  if(length(unique(entityData$concentration)) != 1 && !is.na(unique(entityData$concentration))) {
+    batchCodeValues$concentration <- entityData$concentration
+    batchCodeValues$concUnit <- entityData$concentrationUnit
+  }
   batchCodeValues <- batchCodeValues[!is.na(batchCodeValues$codeValue), ]
   
   return(batchCodeValues)
