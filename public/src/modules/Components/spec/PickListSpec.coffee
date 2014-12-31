@@ -156,13 +156,12 @@ describe "PickList Select Unit Testing", ->
 				model: new AddParameterOptionPanel
 					parameter: "projects"
 					codeType: "protocolMetadata"
+					codeKind: "projects"
 				el: $('#fixture')
 			@adopc.render()
 		describe "basic startup conditions", ->
 			it "should exist", ->
 				expect(@adopc).toBeDefined()
-			it "should set the codeKind", ->
-				expect(@adopc.model.get('codeKind')).toEqual "projects"
 			it "should load a template", ->
 				expect(@adopc.$('.bv_addParameterOptionModal').length).toEqual 1
 			it "should have the save button disabled", ->
@@ -212,6 +211,7 @@ describe "PickList Select Unit Testing", ->
 						selectedCode: "unassigned"
 						parameter: "projects"
 						codeType: "protocolMetadata"
+						codeKind: "projects"
 						roles: ["admin"]
 					@editablePickListController.render()
 				waitsFor ->
@@ -242,8 +242,8 @@ describe "PickList Select Unit Testing", ->
 						it "should have the pickListController add a new model to collection", ->
 							newOption = @editablePickListController.addPanelController.model.get('newOptionLabel')
 							expect(@editablePickListController.pickListController.checkOptionInCollection(newOption)).toBeDefined()
-						it "should show the option added message", ->
-							expect(@editablePickListController.$('.bv_optionAddedMessage')).toBeVisible()
+						it "should have the picklist's selected option be the new option", ->
+							expect(@editablePickListController.pickListController.getSelectedCode()).toEqual "new option"
 							expect(@editablePickListController.$('.bv_errorMessage')).toBeHidden()
 					describe "invalid new option", ->
 						beforeEach ->
@@ -255,5 +255,4 @@ describe "PickList Select Unit Testing", ->
 								@editablePickListController.addPanelController.$('.bv_newOptionComments').change()
 								@editablePickListController.addPanelController.$('.bv_addNewParameterOption').click()
 						it "should tell user that the option already exists", ->
-							expect(@editablePickListController.$('.bv_optionAddedMessage')).toBeHidden()
 							expect(@editablePickListController.$('.bv_errorMessage')).toBeVisible()

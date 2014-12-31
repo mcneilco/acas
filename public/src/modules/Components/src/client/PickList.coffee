@@ -142,6 +142,9 @@ class window.AddParameterOptionPanelController extends AbstractFormController
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
 		@$('.bv_parameter').html(pascalCaseParameterName)
 
+	hideModal: ->
+		@$('.bv_addParameterOptionModal').modal('hide')
+
 	updateModel: =>
 		@model.set
 			newOptionLabel: UtilityFunctions::getTrimmedInput @$('.bv_newOptionLabel')
@@ -222,7 +225,7 @@ class window.EditablePickListSelectController extends Backbone.View
 		if @pickListController.checkOptionInCollection(newOptionCode) == undefined
 			newPickList = new PickList
 				code: newOptionCode #same as codeValue
-				name: newOptionCode.toLowerCase().replace /(^|[^a-z0-9-])([a-z])/g, (m, m1, m2, p) -> m1 + m2.toUpperCase()
+				name: requestedOptionModel.get('newOptionLabel')
 				ignored: false
 				codeType: requestedOptionModel.get('codeType')
 				codeKind: requestedOptionModel.get('codeKind')
@@ -230,12 +233,12 @@ class window.EditablePickListSelectController extends Backbone.View
 				description: requestedOptionModel.get('newOptionDescription')
 				comments: requestedOptionModel.get('newOptionComments')
 			@pickListController.collection.add newPickList
+			@pickListController.setSelectedCode(newPickList.get('code'))
 
-			@$('.bv_optionAddedMessage').show()
 			@$('.bv_errorMessage').hide()
+			@addPanelController.hideModal()
 
 		else
-			@$('.bv_optionAddedMessage').hide()
 			@$('.bv_errorMessage').show()
 
 	hideAddOptionButton: ->
@@ -249,20 +252,18 @@ class window.EditablePickListSelectController extends Backbone.View
 		selectedModel = @pickListController.collection.getModelWithCode(code)
 		if selectedModel != undefined
 			if selectedModel.get('id')?
-				selectedModel.unset('id')
+				callback.call()
+			else
 				#TODO: check to see this works once the route is set up
 				$.ajax
 					type: 'POST'
-					url: "/api/codeTables"
+					url: "/api/codetables/"+selectedModel.get('codeType')+"/"+selectedModel.get('codeKind')
 					data: selectedModel
 					success: callback.call()
 					error: (err) =>
 						alert 'could not add option to code table'
 						@serviceReturn = null
 					dataType: 'json'
-			else
-				callback.call()
-
 		else
 			callback.call()
 

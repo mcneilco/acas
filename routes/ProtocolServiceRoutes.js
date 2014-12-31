@@ -231,7 +231,7 @@
       }
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "api/v1/protocols/search?q=" + req.params.searchTerm;
+      baseurl = config.all.client.service.persistence.fullpath + "protocols/search?q=" + req.params.searchTerm;
       console.log("baseurl");
       console.log(baseurl);
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -243,7 +243,7 @@
     var baseurl, config, protocolID, request;
     config = require('../conf/compiled/conf.js');
     protocolID = req.params.id;
-    baseurl = config.all.client.service.persistence.fullpath + "/api/v1/protocols/browser/" + protocolID;
+    baseurl = config.all.client.service.persistence.fullpath + "protocols/browser/" + protocolID;
     console.log("baseurl");
     console.log(baseurl);
     request = require('request');

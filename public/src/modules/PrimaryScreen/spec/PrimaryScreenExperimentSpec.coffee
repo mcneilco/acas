@@ -382,6 +382,10 @@ describe "Primary Screen Experiment module testing", ->
 						# this is not hydrated into a specific model type at this level, it is passed to the specific curve fit class for that
 						expect(@pse.getModelFitParameters().inverseAgonistMode ).toBeTruthy()
 				describe "special states", ->
+					it "should be able to get the dry run status", ->
+						expect(@pse.getDryRunStatus().get('codeValue')).toEqual "not started"
+					it "should be able to get the dry run result html", ->
+						expect(@pse.getDryRunResultHTML().get('clobValue')).toEqual "<p>Dry Run not started</p>"
 					it "should be able to get the analysis status", ->
 						expect(@pse.getAnalysisStatus().get('codeValue')).toEqual "not started"
 					it "should be able to get the analysis result html", ->
@@ -394,6 +398,10 @@ describe "Primary Screen Experiment module testing", ->
 			beforeEach ->
 				@pse2 = new PrimaryScreenExperiment()
 			describe "special states", ->
+				it "should be able to get the dry run status", ->
+					expect(@pse2.getDryRunStatus().get('codeValue')).toEqual "not started"
+				it "should be able to get the dry run result html", ->
+					expect(@pse2.getDryRunResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the analysis status", ->
 					expect(@pse2.getAnalysisStatus().get('codeValue')).toEqual "not started"
 				it "should be able to get the analysis result html", ->
@@ -1041,13 +1049,13 @@ describe "Primary Screen Experiment module testing", ->
 				it "Class should exist", ->
 					expect(@psac).toBeDefined
 				it "Should load the template", ->
-					expect(@psac.$('.bv_analysisStatus').length).toNotEqual 0
+					expect(@psac.$('.bv_fileUploadWrapper').length).toNotEqual 0
 			describe "display logic", ->
-				it "should show analysis status not started becuase this is a new experiment", ->
-					expect(@psac.$('.bv_analysisStatus').html()).toEqual "not started"
-				it "should not show analysis results becuase this is a new experiment", ->
-					expect(@psac.$('.bv_analysisResultsHTML').html()).toEqual ""
-					expect(@psac.$('.bv_resultsContainer')).toBeHidden()
+#				it "should show analysis status not started becuase this is a new experiment", ->
+#					expect(@psac.$('.bv_analysisStatus').html()).toEqual "not started"
+#				it "should not show analysis results becuase this is a new experiment", ->
+#					expect(@psac.$('.bv_analysisResultsHTML').html()).toEqual ""
+#					expect(@psac.$('.bv_resultsContainer')).toBeHidden()
 				it "should be able to hide data analysis controller", ->
 					@psac.setExperimentNotSaved()
 					expect(@psac.$('.bv_fileUploadWrapper')).toBeHidden()
@@ -1084,6 +1092,20 @@ describe "Primary Screen Experiment module testing", ->
 				@psac.render()
 			it "should show upload button as re-analyze since status is not 'not started'", ->
 				expect(@psac.$('.bv_save').html()).toEqual "Re-Analyze"
+		describe "rendering analysis based on dry run status and analysis status", ->
+			beforeEach ->
+				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
+				@exp.getDryRunStatus().set codeValue: "not started"
+				@exp.getAnalysisStatus().set codeValue: "not started"
+				@psac = new PrimaryScreenAnalysisController
+					model: @exp
+					el: $('#fixture')
+					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
+				@psac.render()
+			it "should show the upload data page", ->
+				expect(@psac.$('.bv_nextControlContainer')).toBeVisible()
+				#TODO: finish writing specs
+
 
 
 	describe "Abstract Primary Screen Experiment Controller testing", ->
@@ -1106,7 +1128,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "Should load a base experiment controller", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
-					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual 0
+					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_fileUploadWrapper').length).toNotEqual 0
 				#TODO this spec is not running because prod IFF does not include a fit module yet
 				xit "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual 0

@@ -829,6 +829,11 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.updateAnalysisClobValue = function() {
       var ap;
+      if (this.primaryScreenAnalysisParametersController.model.get('positiveControl').get('concentration') === Infinity) {
+        this.primaryScreenAnalysisParametersController.model.get('positiveControl').set({
+          concentration: "Infinity"
+        });
+      }
       ap = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
       return ap.set({
         clobValue: JSON.stringify(this.primaryScreenAnalysisParametersController.model.attributes)
@@ -864,7 +869,8 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.validationError = function() {
       AbstractPrimaryScreenProtocolModuleController.__super__.validationError.call(this);
-      return this.$('.bv_saveModule').attr('disabled', 'disabled');
+      this.$('.bv_saveModule').attr('disabled', 'disabled');
+      return this.$('.bv_saveInstructions').show();
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.clearValidationErrorStyles = function() {

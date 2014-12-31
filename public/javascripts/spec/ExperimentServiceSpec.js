@@ -170,7 +170,7 @@ This suite of services provides CRUD operations on Experiment Objects
           });
         });
       });
-      return describe('when updating existing experiment', function() {
+      describe('when updating existing experiment', function() {
         beforeEach(function() {
           var self;
           self = this;
@@ -192,6 +192,30 @@ This suite of services provides CRUD operations on Experiment Objects
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
             return expect(this.serviceReturn.id).not.toBeNull();
+          });
+        });
+      });
+      return describe('when geting experiment state by id', function() {
+        beforeEach(function() {
+          var self;
+          self = this;
+          return $.ajax({
+            type: 'GET',
+            url: "api/experiments/state/11",
+            success: function(json) {
+              return self.serviceReturn = json;
+            },
+            error: function(err) {
+              console.log('got ajax error');
+              return self.serviceReturn = null;
+            },
+            dataType: 'json'
+          });
+        });
+        return it('should return a full experiment', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.lsKind).toEqual("experiment metadata");
           });
         });
       });

@@ -307,43 +307,43 @@
       if (positiveControl === "" || positiveControl === void 0) {
         errors.push({
           attribute: 'positiveControlBatch',
-          message: "Positive control batch much be set"
+          message: "Positive control batch muct be set"
         });
       }
       positiveControlConc = this.get('positiveControl').get('concentration');
       if (_.isNaN(positiveControlConc) || positiveControlConc === void 0 || positiveControlConc === null || positiveControlConc === "") {
         errors.push({
           attribute: 'positiveControlConc',
-          message: "Positive control conc much be set"
+          message: "Positive control conc must be set"
         });
       }
       negativeControl = this.get('negativeControl').get('batchCode');
       if (negativeControl === "" || negativeControl === void 0) {
         errors.push({
           attribute: 'negativeControlBatch',
-          message: "Negative control batch much be set"
+          message: "Negative control batch must be set"
         });
       }
       negativeControlConc = this.get('negativeControl').get('concentration');
       if (_.isNaN(negativeControlConc) || negativeControlConc === void 0 || negativeControlConc === null || negativeControlConc === "") {
         errors.push({
           attribute: 'negativeControlConc',
-          message: "Negative control conc much be set"
+          message: "Negative control conc must be set"
         });
       }
       agonistControl = this.get('agonistControl').get('batchCode');
       agonistControlConc = this.get('agonistControl').get('concentration');
       if ((agonistControl !== "" && agonistControl !== void 0) || (agonistControlConc !== "" && agonistControlConc !== void 0)) {
-        if (agonistControl === "" || agonistControl === void 0) {
+        if (agonistControl === "" || agonistControl === void 0 || agonistControl === null) {
           errors.push({
             attribute: 'agonistControlBatch',
-            message: "Agonist control batch much be set"
+            message: "Agonist control batch must be set"
           });
         }
-        if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === "") {
+        if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === "" || agonistControlConc === null) {
           errors.push({
             attribute: 'agonistControlConc',
-            message: "Agonist control conc much be set"
+            message: "Agonist control conc must be set"
           });
         }
       }
@@ -469,6 +469,37 @@
       });
     };
 
+    PrimaryScreenExperiment.prototype.getDryRunStatus = function() {
+      var status;
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "dry run status");
+      if (!status.has('codeValue')) {
+        status.set({
+          codeValue: "not started"
+        });
+        status.set({
+          codeType: "dry run"
+        });
+        status.set({
+          codeKind: "status"
+        });
+        status.set({
+          codeOrigin: "acas ddict"
+        });
+      }
+      return status;
+    };
+
+    PrimaryScreenExperiment.prototype.getDryRunResultHTML = function() {
+      var result;
+      result = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "dry run result html");
+      if (!result.has('clobValue')) {
+        result.set({
+          clobValue: ""
+        });
+      }
+      return result;
+    };
+
     PrimaryScreenExperiment.prototype.getAnalysisStatus = function() {
       var status;
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "analysis status");
@@ -493,10 +524,10 @@
 
     PrimaryScreenExperiment.prototype.getModelFitStatus = function() {
       var status;
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "model fit status");
-      if (!status.has('stringValue')) {
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit status");
+      if (!status.has('codeValue')) {
         status.set({
-          stringValue: "not started"
+          codeValue: "not started"
         });
       }
       return status;
@@ -981,7 +1012,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.setupNormalizationSelect = function() {
       this.normalizationList = new PickListList();
-      this.normalizationList.url = "/api/codetables/analysis parameter/normalization";
+      this.normalizationList.url = "/api/codetables/analysis parameter/normalization method";
       return this.normalizationListController = new PickListSelectController({
         el: this.$('.bv_normalizationRule'),
         collection: this.normalizationList,
@@ -1174,9 +1205,10 @@
 
     function AbstractUploadAndRunPrimaryAnalsysisController() {
       this.validateParseFile = __bind(this.validateParseFile, this);
+      this.loadAnother = __bind(this.loadAnother, this);
+      this.backToUpload = __bind(this.backToUpload, this);
       this.handleSaveReturnSuccess = __bind(this.handleSaveReturnSuccess, this);
       this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
-      this.parseAndSave = __bind(this.parseAndSave, this);
       this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
       this.handleMSFormValid = __bind(this.handleMSFormValid, this);
       return AbstractUploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
@@ -1186,6 +1218,7 @@
       this.allowedFileTypes = ['zip'];
       this.loadReportFile = true;
       AbstractUploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
+      this.$('.bv_resultStatus').html("Upload Data and Analyze");
       this.$('.bv_reportFileDirections').html('To upload an <b>optional well flagging file</b>, click the "Browse Files…" button and select a file.');
       return this.$('.bv_attachReportCheckboxText').html('Attach optional well flagging file');
     };
@@ -1203,7 +1236,7 @@
       this.analyzedPreviously = this.options.analyzedPreviously;
       this.analysisParameterController.render();
       if (this.analyzedPreviously) {
-        this.$('.bv_save').html("Re-Analyze");
+        this.$('.bv_loadAnother').html("Re-Analyze");
       }
       return this.handleMSFormInvalid();
     };
@@ -1224,17 +1257,18 @@
       }
     };
 
-    AbstractUploadAndRunPrimaryAnalsysisController.prototype.parseAndSave = function() {
-      if (this.analyzedPreviously) {
-        if (!confirm("Re-analyzing the data will delete the previously saved results")) {
-          return;
-        }
-      }
-      return AbstractUploadAndRunPrimaryAnalsysisController.__super__.parseAndSave.call(this);
-    };
-
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.handleValidationReturnSuccess = function(json) {
+      var resultStatus;
       AbstractUploadAndRunPrimaryAnalsysisController.__super__.handleValidationReturnSuccess.call(this, json);
+      if (!json.hasError) {
+        resultStatus = "Dry Run Results: Success";
+        if (json.hasWarning) {
+          resultStatus += " but with warnings";
+        }
+      } else {
+        resultStatus = "Dry Run Results: Failed";
+      }
+      this.$('.bv_resultStatus').html(resultStatus);
       return this.analysisParameterController.disableAllInputs();
     };
 
@@ -1244,11 +1278,38 @@
       return this.trigger('analysis-completed');
     };
 
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.backToUpload = function() {
+      AbstractUploadAndRunPrimaryAnalsysisController.__super__.backToUpload.call(this);
+      this.$('.bv_resultStatus').html("Upload Data and Analyze");
+      return this.$('.bv_resultStatus').show();
+    };
+
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.loadAnother = function() {
+      if (this.analyzedPreviously) {
+        if (!confirm("Re-analyzing the data will delete the previously saved results.")) {
+          return;
+        }
+      }
+      AbstractUploadAndRunPrimaryAnalsysisController.__super__.loadAnother.call(this);
+      this.$('.bv_resultStatus').html("Upload Data and Analyze");
+      return this.$('.bv_resultStatus').show();
+    };
+
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.showFileSelectPhase = function() {
       AbstractUploadAndRunPrimaryAnalsysisController.__super__.showFileSelectPhase.call(this);
+      this.$('.bv_resultStatus').show();
       if (this.analysisParameterController != null) {
         return this.analysisParameterController.enableAllInputs();
       }
+    };
+
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.showFileUploadCompletePhase = function() {
+      this.analyzedPreviously = true;
+      return AbstractUploadAndRunPrimaryAnalsysisController.__super__.showFileUploadCompletePhase.call(this);
+    };
+
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.disableAllInputs = function() {
+      return this.analysisParameterController.disableAllInputs();
     };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.disableAll = function() {
@@ -1286,6 +1347,11 @@
       return this.experimentId = expId;
     };
 
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.updateAnalysisParamModel = function(model) {
+      this.analysisParameterController.model = model.getAnalysisParameters();
+      return this.analysisParameterController.render();
+    };
+
     return AbstractUploadAndRunPrimaryAnalsysisController;
 
   })(BasicFileValidateAndSaveController);
@@ -1304,7 +1370,7 @@
       this.maxFileSize = 200000000;
       this.loadReportFile = false;
       UploadAndRunPrimaryAnalsysisController.__super__.initialize.call(this);
-      this.$('.bv_moduleTitle').html("Upload Data and Analyze");
+      this.$('.bv_moduleTitle').hide();
       this.analysisParameterController = new PrimaryScreenAnalysisParametersController({
         model: this.options.paramsFromExperiment,
         el: this.$('.bv_additionalValuesForm')
@@ -1324,6 +1390,8 @@
       this.handleAnalysisComplete = __bind(this.handleAnalysisComplete, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.setExperimentSaved = __bind(this.setExperimentSaved, this);
+      this.showUpdatedModel = __bind(this.showUpdatedModel, this);
+      this.checkStatus = __bind(this.checkStatus, this);
       this.render = __bind(this.render, this);
       return PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
     }
@@ -1339,8 +1407,8 @@
       if (this.model.isNew()) {
         return this.setExperimentNotSaved();
       } else {
-        this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
-        return this.setExperimentSaved();
+        this.setExperimentSaved();
+        return this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
       }
     };
 
@@ -1349,24 +1417,172 @@
     };
 
     PrimaryScreenAnalysisController.prototype.showExistingResults = function() {
-      var analysisStatus, res, resultValue;
+      var analysisStatus, dryRunStatus, statusId;
+      dryRunStatus = this.model.getDryRunStatus();
+      if (dryRunStatus !== null) {
+        dryRunStatus = dryRunStatus.get('codeValue');
+      } else {
+        dryRunStatus = "not started";
+      }
       analysisStatus = this.model.getAnalysisStatus();
       if (analysisStatus !== null) {
         analysisStatus = analysisStatus.get('codeValue');
       } else {
         analysisStatus = "not started";
       }
-      this.$('.bv_analysisStatus').html(analysisStatus);
-      resultValue = this.model.getAnalysisResultHTML();
-      if (resultValue !== null) {
-        res = resultValue.get('clobValue');
-        if (res === "") {
-          return this.$('.bv_resultsContainer').hide();
+      if (dryRunStatus === "running") {
+        if (analysisStatus === "running") {
+          return this.showWarningStatus(dryRunStatus, analysisStatus);
         } else {
-          this.$('.bv_analysisResultsHTML').html(res);
-          return this.$('.bv_resultsContainer').show();
+          statusId = this.model.getDryRunStatus().get('id');
+          this.trigger("dryRunRunning");
+          return this.checkStatus(statusId, "dryRun");
+        }
+      } else if (analysisStatus === "running") {
+        if (dryRunStatus === "not started") {
+          return this.showWarningStatus(dryRunStatus, analysisStatus);
+        } else {
+          statusId = this.model.getAnalysisStatus().get('id');
+          this.trigger('analysisRunning');
+          return this.checkStatus(statusId, "analysis");
+        }
+      } else if (analysisStatus === "complete" || analysisStatus === "failed") {
+        return this.showAnalysisResults(analysisStatus);
+      } else {
+        if (dryRunStatus === "not started") {
+          return this.showUploadWrapper();
+        } else {
+          return this.showDryRunResults(dryRunStatus);
         }
       }
+    };
+
+    PrimaryScreenAnalysisController.prototype.showWarningStatus = function(dryRunStatus, analysisStatus) {
+      var resultHTML, resultStatus;
+      resultStatus = "An error has occurred. Dry Run: " + dryRunStatus + ". Analysis: " + analysisStatus + ".";
+      resultHTML = "An error has occurred.";
+      this.trigger("warning");
+      this.$('.bv_resultStatus').html(resultStatus);
+      return this.$('.bv_htmlSummary').html(resultHTML);
+    };
+
+    PrimaryScreenAnalysisController.prototype.checkStatus = function(statusId, analysisStep) {
+      return $.ajax({
+        type: 'GET',
+        url: "/api/experiments/values/" + statusId,
+        dataType: 'json',
+        error: function(err) {
+          return alert('Error - Could not get requested status value.');
+        },
+        success: (function(_this) {
+          return function(json) {
+            var resultHTML, resultStatus, status, statusValue;
+            if (json.length === 0) {
+              return alert('Success but could not get requested status value.');
+            } else {
+              statusValue = new Value(json);
+              status = statusValue.get('codeValue');
+              if (status === "running") {
+                setTimeout(_this.checkStatus, 5000, statusId, analysisStep);
+                if (analysisStep === "dryRun") {
+                  resultStatus = "Dry Run Results: Dry run in progress.";
+                  resultHTML = "";
+                } else {
+                  resultStatus = "Upload Results: Upload in progress.";
+                  resultHTML = _this.model.getDryRunResultHTML().get('clobValue');
+                }
+                _this.$('.bv_resultStatus').html(resultStatus);
+                _this.$('.bv_htmlSummary').html(resultHTML);
+                if (_this.dataAnalysisController != null) {
+                  return _this.dataAnalysisController.showFileUploadPhase();
+                }
+              } else {
+                return _this.showUpdatedModel(function() {
+                  return _this.showUpdatedStatus(analysisStep);
+                });
+              }
+            }
+          };
+        })(this)
+      });
+    };
+
+    PrimaryScreenAnalysisController.prototype.showUpdatedModel = function(callback) {
+      return $.ajax({
+        type: 'GET',
+        url: "/api/experiments/codename/" + this.model.get('codeName'),
+        dataType: 'json',
+        error: function(err) {
+          return alert('Could not get experiment for codeName of the model');
+        },
+        success: (function(_this) {
+          return function(json) {
+            var exp;
+            if (json.length === 0) {
+              return alert('Could not get experiment for codeName of the model');
+            } else {
+              exp = new PrimaryScreenExperiment(json[0]);
+              exp.set(exp.parse(exp.attributes));
+              _this.model = exp;
+              _this.dataAnalysisController.updateAnalysisParamModel(_this.model);
+              return callback.call();
+            }
+          };
+        })(this)
+      });
+    };
+
+    PrimaryScreenAnalysisController.prototype.showUpdatedStatus = function(analysisStep) {
+      if (analysisStep === "dryRun") {
+        this.trigger("dryRunDone");
+        return this.showDryRunResults(this.model.getDryRunStatus().get('codeValue'));
+      } else {
+        this.trigger("analysisDone");
+        return this.showAnalysisResults(this.model.getAnalysisStatus().get('codeValue'));
+      }
+    };
+
+    PrimaryScreenAnalysisController.prototype.showAnalysisResults = function(analysisStatus) {
+      var resultHTML, resultStatus;
+      if (analysisStatus === "complete") {
+        resultStatus = "Upload Results: Success";
+      } else {
+        resultStatus = "Upload Results: Failed due to errors";
+      }
+      resultHTML = this.model.getAnalysisResultHTML().get('clobValue');
+      if (this.dataAnalysisController != null) {
+        this.dataAnalysisController.showFileUploadCompletePhase();
+      }
+      this.$('.bv_resultStatus').html(resultStatus);
+      this.$('.bv_htmlSummary').html(resultHTML);
+      return this.dataAnalysisController.disableAllInputs();
+    };
+
+    PrimaryScreenAnalysisController.prototype.showDryRunResults = function(dryRunStatus) {
+      var resultHTML, resultStatus;
+      if (dryRunStatus === "complete") {
+        resultStatus = "Dry Run Results: Success";
+      } else {
+        resultStatus = "Dry Run Results: Failed";
+      }
+      resultHTML = this.model.getDryRunResultHTML().get('clobValue');
+      if (this.dataAnalysisController != null) {
+        this.dataAnalysisController.parseFileUploaded = true;
+        this.dataAnalysisController.filePassedValidation = true;
+        this.dataAnalysisController.showFileUploadPhase();
+        this.dataAnalysisController.handleFormValid();
+      }
+      this.$('.bv_resultStatus').html(resultStatus);
+      this.$('.bv_htmlSummary').html(resultHTML);
+      return this.dataAnalysisController.disableAllInputs();
+    };
+
+    PrimaryScreenAnalysisController.prototype.showUploadWrapper = function() {
+      var resultHTML, resultStatus;
+      resultStatus = "Upload Data and Analyze";
+      resultHTML = "";
+      this.$('.bv_resultStatus').html(resultStatus);
+      return this.$('.bv_htmlSummary').html(resultHTML);
     };
 
     PrimaryScreenAnalysisController.prototype.setExperimentNotSaved = function() {
@@ -1381,11 +1597,11 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleExperimentSaved = function() {
+      this.setExperimentSaved();
       if (this.dataAnalysisController == null) {
         this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
       }
-      this.model.getStatus().on('change', this.handleStatusChanged);
-      return this.setExperimentSaved();
+      return this.model.getStatus().on('change', this.handleStatusChanged);
     };
 
     PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
@@ -1525,6 +1741,31 @@
           return _this.trigger('amClean');
         };
       })(this));
+      this.analysisController.on('warning', (function(_this) {
+        return function() {
+          return _this.showWarningModal();
+        };
+      })(this));
+      this.analysisController.on('dryRunRunning', (function(_this) {
+        return function() {
+          return _this.showValidateProgressBar();
+        };
+      })(this));
+      this.analysisController.on('dryRunDone', (function(_this) {
+        return function() {
+          return _this.hideValidateProgressBar();
+        };
+      })(this));
+      this.analysisController.on('analysisRunning', (function(_this) {
+        return function() {
+          return _this.showSaveProgressBar();
+        };
+      })(this));
+      this.analysisController.on('analysisDone', (function(_this) {
+        return function() {
+          return _this.hideSaveProgressBar();
+        };
+      })(this));
       this.setupModelFitController(this.modelFitControllerName);
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
@@ -1562,6 +1803,49 @@
 
     AbstractPrimaryScreenExperimentController.prototype.handleProtocolAttributesCopied = function() {
       return this.analysisController.render();
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.showWarningModal = function() {
+      var analysisResult, analysisStatus, dryRunResult, dryRunStatus;
+      this.$('a[href="#tab3"]').tab('show');
+      dryRunStatus = this.model.getDryRunStatus().get('codeValue');
+      dryRunResult = this.model.getDryRunResultHTML().get('clobValue');
+      analysisStatus = this.model.getAnalysisStatus().get('codeValue');
+      analysisResult = this.model.getAnalysisResultHTML().get('clobValue');
+      this.$('.bv_dryRunStatus').html("Dry Run Status: " + dryRunStatus);
+      this.$('.bv_dryRunResult').html("Dry Run Result HTML: " + dryRunResult);
+      this.$('.bv_analysisStatus').html("Analysis Status: " + analysisStatus);
+      this.$('.bv_analysisResult').html("Analysis Result HTML: " + analysisResult);
+      this.$('.bv_invalidAnalysisStates').modal({
+        backdrop: "static"
+      });
+      this.$('.bv_invalidAnalysisStates').modal("show");
+      this.$('.bv_fileUploadWrapper .bv_fileUploadWrapper').hide();
+      return this.$('.bv_fileUploadWrapper .bv_flowControl').hide();
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.showValidateProgressBar = function() {
+      this.$('a[href="#tab3"]').tab('show');
+      this.$('.bv_validateStatusDropDown').modal({
+        backdrop: "static"
+      });
+      return this.$('.bv_validateStatusDropDown').modal("show");
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.showSaveProgressBar = function() {
+      this.$('a[href="#tab3"]').tab('show');
+      this.$('.bv_saveStatusDropDown').modal({
+        backdrop: "static"
+      });
+      return this.$('.bv_saveStatusDropDown').modal("show");
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.hideValidateProgressBar = function() {
+      return this.$('.bv_validateStatusDropDown').modal("hide");
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.hideSaveProgressBar = function() {
+      return this.$('.bv_saveStatusDropDown').modal("hide");
     };
 
     return AbstractPrimaryScreenExperimentController;

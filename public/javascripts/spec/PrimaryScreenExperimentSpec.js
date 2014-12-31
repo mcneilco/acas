@@ -646,6 +646,12 @@
             });
           });
           return describe("special states", function() {
+            it("should be able to get the dry run status", function() {
+              return expect(this.pse.getDryRunStatus().get('codeValue')).toEqual("not started");
+            });
+            it("should be able to get the dry run result html", function() {
+              return expect(this.pse.getDryRunResultHTML().get('clobValue')).toEqual("<p>Dry Run not started</p>");
+            });
             it("should be able to get the analysis status", function() {
               return expect(this.pse.getAnalysisStatus().get('codeValue')).toEqual("not started");
             });
@@ -666,6 +672,12 @@
           return this.pse2 = new PrimaryScreenExperiment();
         });
         return describe("special states", function() {
+          it("should be able to get the dry run status", function() {
+            return expect(this.pse2.getDryRunStatus().get('codeValue')).toEqual("not started");
+          });
+          it("should be able to get the dry run result html", function() {
+            return expect(this.pse2.getDryRunResultHTML().get('clobValue')).toEqual("");
+          });
           it("should be able to get the analysis status", function() {
             return expect(this.pse2.getAnalysisStatus().get('codeValue')).toEqual("not started");
           });
@@ -1506,17 +1518,10 @@
             return expect(this.psac).toBeDefined;
           });
           return it("Should load the template", function() {
-            return expect(this.psac.$('.bv_analysisStatus').length).toNotEqual(0);
+            return expect(this.psac.$('.bv_fileUploadWrapper').length).toNotEqual(0);
           });
         });
         return describe("display logic", function() {
-          it("should show analysis status not started becuase this is a new experiment", function() {
-            return expect(this.psac.$('.bv_analysisStatus').html()).toEqual("not started");
-          });
-          it("should not show analysis results becuase this is a new experiment", function() {
-            expect(this.psac.$('.bv_analysisResultsHTML').html()).toEqual("");
-            return expect(this.psac.$('.bv_resultsContainer')).toBeHidden();
-          });
           it("should be able to hide data analysis controller", function() {
             this.psac.setExperimentNotSaved();
             expect(this.psac.$('.bv_fileUploadWrapper')).toBeHidden();
@@ -1558,7 +1563,7 @@
           return expect(this.psac.$('.bv_save').html()).toEqual("Upload Data");
         });
       });
-      return describe("handling re-analysis", function() {
+      describe("handling re-analysis", function() {
         beforeEach(function() {
           this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
           this.exp.getAnalysisStatus().set({
@@ -1573,6 +1578,26 @@
         });
         return it("should show upload button as re-analyze since status is not 'not started'", function() {
           return expect(this.psac.$('.bv_save').html()).toEqual("Re-Analyze");
+        });
+      });
+      return describe("rendering analysis based on dry run status and analysis status", function() {
+        beforeEach(function() {
+          this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
+          this.exp.getDryRunStatus().set({
+            codeValue: "not started"
+          });
+          this.exp.getAnalysisStatus().set({
+            codeValue: "not started"
+          });
+          this.psac = new PrimaryScreenAnalysisController({
+            model: this.exp,
+            el: $('#fixture'),
+            uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
+          });
+          return this.psac.render();
+        });
+        return it("should show the upload data page", function() {
+          return expect(this.psac.$('.bv_nextControlContainer')).toBeVisible();
         });
       });
     });
@@ -1603,7 +1628,7 @@
             return expect(this.psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual(0);
           });
           it("Should load an analysis controller", function() {
-            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual(0);
+            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_fileUploadWrapper').length).toNotEqual(0);
           });
           return xit("Should load a dose response controller", function() {
             return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual(0);

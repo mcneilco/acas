@@ -555,6 +555,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenModelFitParametersController.render()
 
 	updateAnalysisClobValue: =>
+		if @primaryScreenAnalysisParametersController.model.get('positiveControl').get('concentration') is Infinity
+			@primaryScreenAnalysisParametersController.model.get('positiveControl').set concentration: "Infinity" #JSON doesn't store Infinity as value
 		ap = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
 		ap.set clobValue: JSON.stringify @primaryScreenAnalysisParametersController.model.attributes
 
@@ -583,6 +585,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 	validationError: =>
 		super()
 		@$('.bv_saveModule').attr('disabled', 'disabled')
+		@$('.bv_saveInstructions').show()
 
 	clearValidationErrorStyles: =>
 		super()

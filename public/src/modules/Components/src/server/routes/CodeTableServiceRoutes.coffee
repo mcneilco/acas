@@ -14,7 +14,7 @@ exports.getCodeTableValues = (req, resp) ->
 
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"api/v1/ddictvalues/all/"+req.params.type+"/"+req.params.kind+"/codetable"
+		baseurl = config.all.client.service.persistence.fullpath+"ddictvalues/all/"+req.params.type+"/"+req.params.kind+"/codetable"
 		request = require 'request'
 		request(
 			method: 'GET'

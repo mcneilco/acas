@@ -242,6 +242,10 @@
       return this.$('.bv_parameter').html(pascalCaseParameterName);
     };
 
+    AddParameterOptionPanelController.prototype.hideModal = function() {
+      return this.$('.bv_addParameterOptionModal').modal('hide');
+    };
+
     AddParameterOptionPanelController.prototype.updateModel = function() {
       return this.model.set({
         newOptionLabel: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_newOptionLabel')),
@@ -350,9 +354,7 @@
       if (this.pickListController.checkOptionInCollection(newOptionCode) === void 0) {
         newPickList = new PickList({
           code: newOptionCode,
-          name: newOptionCode.toLowerCase().replace(/(^|[^a-z0-9-])([a-z])/g, function(m, m1, m2, p) {
-            return m1 + m2.toUpperCase();
-          }),
+          name: requestedOptionModel.get('newOptionLabel'),
           ignored: false,
           codeType: requestedOptionModel.get('codeType'),
           codeKind: requestedOptionModel.get('codeKind'),
@@ -361,10 +363,10 @@
           comments: requestedOptionModel.get('newOptionComments')
         });
         this.pickListController.collection.add(newPickList);
-        this.$('.bv_optionAddedMessage').show();
-        return this.$('.bv_errorMessage').hide();
+        this.pickListController.setSelectedCode(newPickList.get('code'));
+        this.$('.bv_errorMessage').hide();
+        return this.addPanelController.hideModal();
       } else {
-        this.$('.bv_optionAddedMessage').hide();
         return this.$('.bv_errorMessage').show();
       }
     };
@@ -383,10 +385,11 @@
       selectedModel = this.pickListController.collection.getModelWithCode(code);
       if (selectedModel !== void 0) {
         if (selectedModel.get('id') != null) {
-          selectedModel.unset('id');
+          return callback.call();
+        } else {
           return $.ajax({
             type: 'POST',
-            url: "/api/codeTables",
+            url: "/api/codetables/" + selectedModel.get('codeType') + "/" + selectedModel.get('codeKind'),
             data: selectedModel,
             success: callback.call(),
             error: (function(_this) {
@@ -397,8 +400,6 @@
             })(this),
             dataType: 'json'
           });
-        } else {
-          return callback.call();
         }
       } else {
         return callback.call();

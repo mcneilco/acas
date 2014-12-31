@@ -176,34 +176,34 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		if positiveControl is "" or positiveControl is undefined
 			errors.push
 				attribute: 'positiveControlBatch'
-				message: "Positive control batch much be set"
+				message: "Positive control batch muct be set"
 		positiveControlConc = @get('positiveControl').get('concentration')
 		if _.isNaN(positiveControlConc) or positiveControlConc is undefined or positiveControlConc is null or positiveControlConc is ""
 			errors.push
 				attribute: 'positiveControlConc'
-				message: "Positive control conc much be set"
+				message: "Positive control conc must be set"
 		negativeControl = @get('negativeControl').get('batchCode')
 		if negativeControl is "" or negativeControl is undefined
 			errors.push
 				attribute: 'negativeControlBatch'
-				message: "Negative control batch much be set"
+				message: "Negative control batch must be set"
 		negativeControlConc = @get('negativeControl').get('concentration')
 		if _.isNaN(negativeControlConc) || negativeControlConc is undefined || negativeControlConc is null or negativeControlConc is ""
 			errors.push
 				attribute: 'negativeControlConc'
-				message: "Negative control conc much be set"
+				message: "Negative control conc must be set"
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
 		if (agonistControl !="" and agonistControl != undefined) or (agonistControlConc != "" and agonistControlConc != undefined) # at least one of the agonist control fields is filled
-			if agonistControl is "" or agonistControl is undefined
+			if agonistControl is "" or agonistControl is undefined or agonistControl is null
 				errors.push
 					attribute: 'agonistControlBatch'
-					message: "Agonist control batch much be set"
-			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is ""
+					message: "Agonist control batch must be set"
+			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is "" || agonistControlConc is null
 				errors.push
 					attribute: 'agonistControlConc'
-					message: "Agonist control conc much be set"
+					message: "Agonist control conc must be set"
 		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
 			errors.push
 				attribute: 'signalDirectionRule'
@@ -282,6 +282,23 @@ class window.PrimaryScreenExperiment extends Experiment
 		super()
 		@.set lsKind: "flipr screening assay"
 
+	getDryRunStatus: ->
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "dry run status"
+		if !status.has('codeValue')
+			status.set codeValue: "not started"
+			status.set codeType: "dry run"
+			status.set codeKind: "status"
+			status.set codeOrigin: "acas ddict"
+
+		status
+
+	getDryRunResultHTML: ->
+		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "dry run result html"
+		if !result.has('clobValue')
+			result.set clobValue: ""
+
+		result
+
 	getAnalysisStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "analysis status"
 		if !status.has('codeValue')
@@ -297,9 +314,9 @@ class window.PrimaryScreenExperiment extends Experiment
 		result
 
 	getModelFitStatus: ->
-		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "model fit status"
-		if !status.has('stringValue')
-			status.set stringValue: "not started"
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit status"
+		if !status.has('codeValue')
+			status.set codeValue: "not started"
 
 		status
 
@@ -617,7 +634,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
-		@normalizationList.url = "/api/codetables/analysis parameter/normalization"
+		@normalizationList.url = "/api/codetables/analysis parameter/normalization method"
 		@normalizationListController = new PickListSelectController
 			el: @$('.bv_normalizationRule')
 			collection: @normalizationList
@@ -751,6 +768,7 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@allowedFileTypes = ['zip']
 		@loadReportFile = true
 		super()
+		@$('.bv_resultStatus').html("Upload Data and Analyze")
 		@$('.bv_reportFileDirections').html('To upload an <b>optional well flagging file</b>, click the "Browse Files…" button and select a file.')
 #		@$("label[for='.bv_attachReportFile']").innerHTML('Attach optional well flagging file')
 		@$('.bv_attachReportCheckboxText').html('Attach optional well flagging file')
@@ -765,7 +783,7 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@analyzedPreviously = @options.analyzedPreviously
 		@analysisParameterController.render()
 		if @analyzedPreviously
-			@$('.bv_save').html("Re-Analyze")
+			@$('.bv_loadAnother').html("Re-Analyze")
 		@handleMSFormInvalid() #start invalid since file won't be loaded
 
 	handleMSFormValid: =>
@@ -779,14 +797,15 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		if @analysisParameterController.isValid()
 			super()
 
-	parseAndSave: =>
-		if @analyzedPreviously
-			if !confirm("Re-analyzing the data will delete the previously saved results")
-				return
-		super()
-
 	handleValidationReturnSuccess: (json) =>
 		super(json)
+		if not json.hasError
+			resultStatus = "Dry Run Results: Success"
+			if json.hasWarning
+				resultStatus += " but with warnings"
+		else
+			resultStatus = "Dry Run Results: Failed"
+		@$('.bv_resultStatus').html(resultStatus)
 		@analysisParameterController.disableAllInputs()
 
 	handleSaveReturnSuccess: (json) =>
@@ -794,10 +813,31 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@$('.bv_loadAnother').html("Re-Analyze")
 		@trigger 'analysis-completed'
 
+	backToUpload: =>
+		super()
+		@$('.bv_resultStatus').html("Upload Data and Analyze")
+		@$('.bv_resultStatus').show()
+
+	loadAnother: =>
+		if @analyzedPreviously
+			if !confirm("Re-analyzing the data will delete the previously saved results.")
+				return
+		super()
+		@$('.bv_resultStatus').html("Upload Data and Analyze")
+		@$('.bv_resultStatus').show()
+
 	showFileSelectPhase: ->
 		super()
+		@$('.bv_resultStatus').show()
 		if @analysisParameterController?
 			@analysisParameterController.enableAllInputs()
+
+	showFileUploadCompletePhase: ->
+		@analyzedPreviously = true
+		super()
+
+	disableAllInputs: ->
+		@analysisParameterController.disableAllInputs()
 
 	disableAll: ->
 		@analysisParameterController.disableAllInputs()
@@ -827,6 +867,10 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 	setExperimentId: (expId) ->
 		@experimentId = expId
 
+	updateAnalysisParamModel: (model) ->
+		@analysisParameterController.model = model.getAnalysisParameters()
+		@analysisParameterController.render()
+
 class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRunPrimaryAnalsysisController
 	initialize: ->
 		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
@@ -835,7 +879,8 @@ class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRun
 		@maxFileSize = 200000000
 		@loadReportFile = false
 		super()
-		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+#		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+		@$('.bv_moduleTitle').hide()
 		@analysisParameterController = new PrimaryScreenAnalysisParametersController
 			model: @options.paramsFromExperiment
 			el: @$('.bv_additionalValuesForm')
@@ -853,28 +898,150 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		if @model.isNew()
 			@setExperimentNotSaved()
 		else
-			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 			@setExperimentSaved()
+			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 
 
 	render: =>
 		@showExistingResults()
 
 	showExistingResults: ->
+		dryRunStatus = @model.getDryRunStatus()
+		if dryRunStatus != null
+			dryRunStatus = dryRunStatus.get('codeValue')
+		else
+			dryRunStatus = "not started"
 		analysisStatus = @model.getAnalysisStatus()
 		if analysisStatus != null
 			analysisStatus = analysisStatus.get('codeValue')
 		else
 			analysisStatus = "not started"
-		@$('.bv_analysisStatus').html(analysisStatus)
-		resultValue = @model.getAnalysisResultHTML()
-		if resultValue != null
-			res = resultValue.get('clobValue')
-			if res == ""
-				@$('.bv_resultsContainer').hide()
+#		@$('.bv_analysisStatus').html(analysisStatus)
+
+		#running statuses
+		if dryRunStatus is "running"
+			if analysisStatus is "running" # invalid state
+				@showWarningStatus(dryRunStatus, analysisStatus)
 			else
-				@$('.bv_analysisResultsHTML').html(res)
-				@$('.bv_resultsContainer').show()
+				statusId = @model.getDryRunStatus().get('id')
+				@trigger "dryRunRunning"
+				@checkStatus(statusId, "dryRun")
+		else if analysisStatus is "running"
+			if dryRunStatus is "not started" # invalid state
+				@showWarningStatus(dryRunStatus, analysisStatus)
+			else #valid
+				statusId = @model.getAnalysisStatus().get('id')
+				@trigger 'analysisRunning'
+				@checkStatus(statusId, "analysis")
+
+		#show analysis result clob
+		else if analysisStatus is "complete" or analysisStatus is "failed"
+			@showAnalysisResults(analysisStatus)
+
+		else
+			if dryRunStatus is "not started"
+				@showUploadWrapper()
+			else
+				@showDryRunResults(dryRunStatus)
+
+	showWarningStatus: (dryRunStatus, analysisStatus) ->
+		resultStatus = "An error has occurred. Dry Run: "+dryRunStatus+ ". Analysis: "+ analysisStatus+"."
+		resultHTML = "An error has occurred."
+		@trigger "warning"
+		@$('.bv_resultStatus').html(resultStatus)
+		@$('.bv_htmlSummary').html(resultHTML)
+
+	checkStatus: (statusId, analysisStep) =>
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/values/"+statusId
+			dataType: 'json'
+			error: (err) ->
+				alert 'Error - Could not get requested status value.'
+			success: (json) =>
+				if json.length == 0
+					alert 'Success but could not get requested status value.'
+				else
+					statusValue = new Value json
+					status = statusValue.get('codeValue')
+					if status is "running"
+						setTimeout(@checkStatus, 5000, statusId, analysisStep)
+						if analysisStep is "dryRun"
+							resultStatus = "Dry Run Results: Dry run in progress."
+							resultHTML = ""
+						else
+							resultStatus = "Upload Results: Upload in progress."
+							resultHTML = @model.getDryRunResultHTML().get('clobValue')
+						@$('.bv_resultStatus').html(resultStatus)
+						@$('.bv_htmlSummary').html(resultHTML)
+						if @dataAnalysisController?
+							@dataAnalysisController.showFileUploadPhase()
+
+					else
+						#TODO: need to get updated state and show
+						@showUpdatedModel =>
+							@showUpdatedStatus(analysisStep)
+
+	showUpdatedModel: (callback) =>
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/codename/"+@model.get('codeName')
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get experiment for codeName of the model'
+			success: (json) =>
+				if json.length == 0
+					alert 'Could not get experiment for codeName of the model'
+				else
+					#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#					exp = new PrimaryScreenExperiment json
+					exp = new PrimaryScreenExperiment json[0]
+					exp.set exp.parse(exp.attributes)
+					@model = exp
+					@dataAnalysisController.updateAnalysisParamModel(@model)
+					callback.call()
+
+	showUpdatedStatus: (analysisStep)->
+		if analysisStep is "dryRun"
+			@trigger "dryRunDone"
+			@showDryRunResults(@model.getDryRunStatus().get('codeValue'))
+		else
+			@trigger "analysisDone"
+			@showAnalysisResults(@model.getAnalysisStatus().get('codeValue'))
+
+	showAnalysisResults: (analysisStatus) ->
+		if analysisStatus is "complete"
+			resultStatus = "Upload Results: Success"
+		else
+			resultStatus = "Upload Results: Failed due to errors"
+		resultHTML = @model.getAnalysisResultHTML().get('clobValue')
+		if @dataAnalysisController?
+			@dataAnalysisController.showFileUploadCompletePhase()
+		@$('.bv_resultStatus').html(resultStatus)
+		@$('.bv_htmlSummary').html(resultHTML)
+		@dataAnalysisController.disableAllInputs()
+
+	showDryRunResults: (dryRunStatus) ->
+		if dryRunStatus is "complete"
+			resultStatus = "Dry Run Results: Success" #warnings are not stored so status will just be successful even if there are warnings
+		else
+			resultStatus = "Dry Run Results: Failed"
+		resultHTML = @model.getDryRunResultHTML().get('clobValue')
+		if @dataAnalysisController?
+			@dataAnalysisController.parseFileUploaded = true
+			@dataAnalysisController.filePassedValidation = true
+			@dataAnalysisController.showFileUploadPhase()
+			@dataAnalysisController.handleFormValid()
+
+		@$('.bv_resultStatus').html(resultStatus)
+		@$('.bv_htmlSummary').html(resultHTML)
+		@dataAnalysisController.disableAllInputs()
+
+	showUploadWrapper: ->
+		resultStatus = "Upload Data and Analyze"
+		resultHTML = ""
+		@$('.bv_resultStatus').html(resultStatus)
+		@$('.bv_htmlSummary').html(resultHTML)
 
 	setExperimentNotSaved: ->
 		@$('.bv_fileUploadWrapper').hide()
@@ -886,10 +1053,10 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_fileUploadWrapper').show()
 
 	handleExperimentSaved: =>
+		@setExperimentSaved()
 		unless @dataAnalysisController?
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 		@model.getStatus().on 'change', @handleStatusChanged
-		@setExperimentSaved()
 
 	handleAnalysisComplete: =>
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
@@ -916,6 +1083,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@trigger 'amDirty'
 		@dataAnalysisController.on 'amClean', =>
 			@trigger 'amClean'
+#		@showExistingResults()
 
 
 # This wraps all the tabs
@@ -980,6 +1148,16 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amDirty'
 		@analysisController.on 'amClean', =>
 			@trigger 'amClean'
+		@analysisController.on 'warning', =>
+			@showWarningModal()
+		@analysisController.on 'dryRunRunning', =>
+			@showValidateProgressBar()
+		@analysisController.on 'dryRunDone', =>
+			@hideValidateProgressBar()
+		@analysisController.on 'analysisRunning', =>
+			@showSaveProgressBar()
+		@analysisController.on 'analysisDone', =>
+			@hideSaveProgressBar()
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
 			@modelFitController.primaryAnalysisCompleted()
@@ -1003,6 +1181,42 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 	handleProtocolAttributesCopied: =>
 		@analysisController.render()
+
+	showWarningModal: ->
+		@$('a[href="#tab3"]').tab('show')
+		dryRunStatus = @model.getDryRunStatus().get('codeValue')
+		dryRunResult = @model.getDryRunResultHTML().get('clobValue')
+		analysisStatus = @model.getAnalysisStatus().get('codeValue')
+		analysisResult = @model.getAnalysisResultHTML().get('clobValue')
+		@$('.bv_dryRunStatus').html("Dry Run Status: "+dryRunStatus)
+		@$('.bv_dryRunResult').html("Dry Run Result HTML: "+dryRunResult)
+		@$('.bv_analysisStatus').html("Analysis Status: "+analysisStatus)
+		@$('.bv_analysisResult').html("Analysis Result HTML: "+analysisResult)
+		@$('.bv_invalidAnalysisStates').modal
+			backdrop: "static"
+		@$('.bv_invalidAnalysisStates').modal("show")
+		@$('.bv_fileUploadWrapper .bv_fileUploadWrapper').hide()
+		@$('.bv_fileUploadWrapper .bv_flowControl').hide()
+
+
+
+	showValidateProgressBar: ->
+		@$('a[href="#tab3"]').tab('show')
+		@$('.bv_validateStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_validateStatusDropDown').modal("show")
+
+	showSaveProgressBar: ->
+		@$('a[href="#tab3"]').tab('show')
+		@$('.bv_saveStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_saveStatusDropDown').modal("show")
+
+	hideValidateProgressBar: ->
+		@$('.bv_validateStatusDropDown').modal("hide")
+
+	hideSaveProgressBar: ->
+		@$('.bv_saveStatusDropDown').modal("hide")
 
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
