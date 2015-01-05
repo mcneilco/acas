@@ -1654,3 +1654,9 @@
 2015-01-01T03:56:21.175Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2015-01-01T03:56:21.445Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2015-01-01T03:56:31.995Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-05T17:39:14.273Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-05T17:39:14.579Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-05T17:39:19.171Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2015-01-05T17:39:21.216Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2015-01-05T17:39:24.202Z - info:  sourceApp=logUsage, action=User failed login: , data=, user=egao, transactionId=null
+2015-01-05T17:39:26.320Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
