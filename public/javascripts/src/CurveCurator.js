@@ -57,9 +57,12 @@
     };
 
     DoseResponseKnockoutPanelController.prototype.handleDoseResponseKnockoutPanelHidden = function() {
-      var reason;
+      var comment, observation, reason, status;
+      status = "knocked out";
       reason = this.knockoutReasonListController.getSelectedCode();
-      return this.trigger('reasonSelected', reason);
+      observation = reason;
+      comment = this.knockoutReasonListController.getSelectedModel().get('name');
+      return this.trigger('reasonSelected', status, observation, reason, comment);
     };
 
     return DoseResponseKnockoutPanelController;
@@ -102,8 +105,8 @@
     DoseResponsePlotController.prototype.showDoseResponseKnockoutPanel = function(selectedPoints) {
       this.doseResponseKnockoutPanelController.show();
       this.doseResponseKnockoutPanelController.on('reasonSelected', (function(_this) {
-        return function(reason) {
-          return _this.knockoutPoints(selectedPoints, "knocked out", reason, reason, reason);
+        return function(status, observation, reason, comment) {
+          return _this.knockoutPoints(selectedPoints, status, observation, reason, comment);
         };
       })(this));
     };
@@ -133,7 +136,7 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var algorithmFlagReason, algorithmFlagStatus, brd, color, createSelection, fct, getMouseCoords, ii, includePoints, intersect, log10, p1, preprocessFlagReason, preprocessFlagStatus, promptForKnockout, t, userFlagReason, userFlagStatus, x, y;
+      var algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, fct, getMouseCoords, ii, includePoints, intersect, log10, p1, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagComment, userFlagStatus, x, y;
       this.points = points;
       log10 = function(val) {
         return Math.log(val) / Math.LN10;
@@ -181,9 +184,9 @@
           userFlagStatus = points[ii].userFlagStatus;
           preprocessFlagStatus = points[ii].preprocessFlagStatus;
           algorithmFlagStatus = points[ii].algorithmFlagStatus;
-          userFlagReason = points[ii].userFlagReason;
-          preprocessFlagReason = points[ii].preprocessFlagReason;
-          algorithmFlagReason = points[ii].algorithmFlagReason;
+          userFlagComment = points[ii].userFlagComment;
+          preprocessFlagComment = points[ii].preprocessFlagReason;
+          algorithmFlagComment = points[ii].algorithmFlagComment;
           if (userFlagStatus === "knocked out" || preprocessFlagStatus === "knocked out" || algorithmFlagStatus === "knocked out") {
             color = (function() {
               switch (false) {
@@ -243,11 +246,11 @@
           p1.flagLabel = (function() {
             switch (false) {
               case userFlagStatus !== "knocked out":
-                return userFlagReason;
+                return userFlagComment;
               case preprocessFlagStatus !== "knocked out":
-                return preprocessFlagReason;
+                return preprocessFlagComment;
               case algorithmFlagStatus !== "knocked out":
-                return algorithmFlagReason;
+                return algorithmFlagComment;
               default:
                 return '';
             }
@@ -598,6 +601,7 @@
     CurveEditorController.prototype.handleUpdateClicked = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       this.oldID = this.model.get('curveid');
+      console.log(this.model);
       return this.model.save({
         action: 'save',
         user: window.AppLaunchParams.loginUserName
@@ -719,6 +723,7 @@
       curve = this.findWhere({
         curveid: curveID
       });
+      console.log(curve);
       return curve;
     };
 
@@ -732,13 +737,18 @@
     CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty, category, userFlagStatus, algorithmFlagStatus) {
       var curve;
       curve = this.getCurveByID(oldID);
-      return curve.set({
+      console.log("old id " + oldID);
+      console.log(curve);
+      window.blah = curve;
+      curve.set({
         curveid: newCurveID,
         dirty: dirty,
         userFlagStatus: algorithmFlagStatus,
         algorithmFlagStatus: algorithmFlagStatus,
         category: category
       });
+      console.log("new id " + newCurveID);
+      return console.log(curve);
     };
 
     CurveList.prototype.updateDirtyFlag = function(curveid, dirty) {
@@ -847,9 +857,12 @@
     };
 
     CurveEditorDirtyPanelController.prototype.hide = function() {
-      var reason;
+      var comment, observation, reason, status;
+      status = "knocked out";
       reason = this.knockoutReasonListController.getSelectedCode();
-      return this.trigger('reasonSelected', reason);
+      observation = reason;
+      comment = this.knockoutReasonListController.getSelectedModel().get('name');
+      return this.trigger('reasonSelected', status, observation, reason(comment));
     };
 
     return CurveEditorDirtyPanelController;
@@ -905,7 +918,6 @@
         this.$('.bv_pass').show();
         this.$('.bv_fail').hide();
       }
-      console.log(this.model);
       if (this.model.get('userFlagStatus') === '') {
         this.$('.bv_na').show();
         this.$('.bv_thumbsUp').hide();

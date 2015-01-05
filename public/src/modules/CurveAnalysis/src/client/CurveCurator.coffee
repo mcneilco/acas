@@ -27,8 +27,11 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 			collection: @knockoutReasonList
 
 	handleDoseResponseKnockoutPanelHidden: =>
+		status = "knocked out"
 		reason = @knockoutReasonListController.getSelectedCode()
-		@trigger 'reasonSelected', reason
+		observation = reason
+		comment = @knockoutReasonListController.getSelectedModel().get 'name'
+		@trigger 'reasonSelected', status, observation, reason, comment
 
 class window.DoseResponsePlotController extends AbstractFormController
 	template: _.template($("#DoseResponsePlotView").html())
@@ -50,8 +53,8 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 	showDoseResponseKnockoutPanel: (selectedPoints) =>
 		@doseResponseKnockoutPanelController.show()
-		@doseResponseKnockoutPanelController.on 'reasonSelected', (reason) =>
-			@knockoutPoints(selectedPoints,"knocked out", reason, reason, reason)
+		@doseResponseKnockoutPanelController.on 'reasonSelected', (status, observation, reason, comment) =>
+			@knockoutPoints(selectedPoints, status, observation, reason, comment)
 		return
 
 	knockoutPoints: (selectedPoints, status, observation, reason, comment) =>
@@ -118,9 +121,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 				userFlagStatus = points[ii].userFlagStatus
 				preprocessFlagStatus = points[ii].preprocessFlagStatus
 				algorithmFlagStatus = points[ii].algorithmFlagStatus
-				userFlagReason = points[ii].userFlagReason
-				preprocessFlagReason = points[ii].preprocessFlagReason
-				algorithmFlagReason = points[ii].algorithmFlagReason
+				userFlagComment = points[ii].userFlagComment
+				preprocessFlagComment = points[ii].preprocessFlagReason
+				algorithmFlagComment = points[ii].algorithmFlagComment
 				if (userFlagStatus == "knocked out" || preprocessFlagStatus == "knocked out" || algorithmFlagStatus == "knocked out")
 					color = switch
 						when userFlagStatus == "knocked out" then 'red'
@@ -171,9 +174,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 				p1.on "mouseup", p1.handlePointClicked, p1
 
 				p1.flagLabel = switch
-					when userFlagStatus == "knocked out" then userFlagReason
-					when preprocessFlagStatus == "knocked out" then preprocessFlagReason
-					when algorithmFlagStatus == "knocked out" then algorithmFlagReason
+					when userFlagStatus == "knocked out" then userFlagComment
+					when preprocessFlagStatus == "knocked out" then preprocessFlagComment
+					when algorithmFlagStatus == "knocked out" then algorithmFlagComment
 					else ''
 
 				p1.xLabel = JXG.trunc(points[ii].dose, 4)
@@ -410,6 +413,7 @@ class window.CurveEditorController extends Backbone.View
 	handleUpdateClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@oldID =  @model.get 'curveid'
+		console.log @model
 		@model.save({action: 'save', user: window.AppLaunchParams.loginUserName}, {success :@handleSaveSuccess, error: @handleSaveError})
 
 	handleApproveClicked: =>
@@ -471,6 +475,7 @@ class window.CurveList extends Backbone.Collection
 
 	getCurveByID: (curveID) =>
 		curve = @.findWhere({curveid: curveID})
+		console.log curve
 		return curve
 
 	getIndexByCurveID: (curveID) =>
@@ -480,12 +485,17 @@ class window.CurveList extends Backbone.Collection
 
 	updateCurveSummary: (oldID, newCurveID, dirty, category, userFlagStatus, algorithmFlagStatus) =>
 		curve = @getCurveByID(oldID)
+		console.log "old id #{oldID}"
+		console.log curve
+		window.blah = curve
 		curve.set
 			curveid: newCurveID
 			dirty: dirty
 			userFlagStatus: algorithmFlagStatus
 			algorithmFlagStatus: algorithmFlagStatus
 			category: category
+		console.log "new id #{newCurveID}"
+		console.log curve
 
 	updateDirtyFlag: (curveid, dirty) =>
 		curve = @getCurveByID(curveid)
@@ -540,8 +550,11 @@ class window.CurveEditorDirtyPanelController extends Backbone.View
 		@$('.bv_curveEditorDirtyPanel').modal "show"
 
 	hide: =>
+		status = "knocked out"
 		reason = @knockoutReasonListController.getSelectedCode()
-		@trigger 'reasonSelected', reason
+		observation = reason
+		comment = @knockoutReasonListController.getSelectedModel().get 'name'
+		@trigger 'reasonSelected', status, observation, reason comment
 
 class window.CurveSummaryController extends Backbone.View
 	template: _.template($("#CurveSummaryView").html())
@@ -573,7 +586,6 @@ class window.CurveSummaryController extends Backbone.View
 		else
 			@$('.bv_pass').show()
 			@$('.bv_fail').hide()
-		console.log @model
 		if @model.get('userFlagStatus') == ''
 			@$('.bv_na').show()
 			@$('.bv_thumbsUp').hide()
