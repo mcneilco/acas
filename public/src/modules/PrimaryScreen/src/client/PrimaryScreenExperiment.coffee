@@ -640,7 +640,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			collection: @normalizationList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Rule"
+				name: "Select Normalization Rule"
 			selectedCode: @model.get('normalizationRule')
 
 	setupReadListController: ->

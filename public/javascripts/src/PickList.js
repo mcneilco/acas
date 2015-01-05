@@ -297,12 +297,15 @@
     };
 
     EditablePickListSelectController.prototype.setupEditablePickList = function() {
+      var parameterNameWithSpaces, pascalCaseParameterName;
+      parameterNameWithSpaces = this.options.parameter.replace(/([A-Z])/g, ' $1');
+      pascalCaseParameterName = parameterNameWithSpaces.charAt(0).toUpperCase() + parameterNameWithSpaces.slice(1);
       return this.pickListController = new PickListSelectController({
         el: this.$('.bv_parameterSelectList'),
         collection: this.collection,
         insertFirstOption: new PickList({
           code: "unassigned",
-          name: "Select Rule"
+          name: "Select " + pascalCaseParameterName
         }),
         selectedCode: this.options.selectedCode
       });

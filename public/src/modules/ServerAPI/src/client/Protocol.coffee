@@ -172,7 +172,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			collection: @assayStageList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select assay stage"
+				name: "Select Assay Stage"
 			selectedCode: @model.getAssayStage().get('codeValue')
 
 	handleAssayStageChanged: =>
