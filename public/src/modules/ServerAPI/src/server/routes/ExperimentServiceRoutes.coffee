@@ -160,7 +160,7 @@ exports.genericExperimentSearch = (req, res) ->
 			emptyResponse = []
 			res.end JSON.stringify emptyResponse
 		else
-			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
+			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"api/v1/experiments/search?q="+req.params.searchTerm

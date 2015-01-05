@@ -245,7 +245,7 @@
         emptyResponse = [];
         return res.end(JSON.stringify(emptyResponse));
       } else {
-        return res.end(JSON.stringify([protocolServiceTestJSON.fullSavedProtocol]));
+        return res.end(JSON.stringify([protocolServiceTestJSON.fullSavedProtocol, protocolServiceTestJSON.fullDeletedProtocol]));
       }
     } else {
       config = require('../conf/compiled/conf.js');
