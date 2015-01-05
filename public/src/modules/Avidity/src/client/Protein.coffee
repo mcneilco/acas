@@ -1,38 +1,42 @@
-class window.CationicBlockParent extends AbstractBaseComponentParent
+class window.ProteinParent extends AbstractBaseComponentParent
 	initialize: ->
 		@.set
 			lsType: "parent"
-			lsKind: "cationic block"
+			lsKind: "protein"
 		super()
 
 	lsProperties:
 		defaultLabels: [
-			key: 'cationic block name'
+			key: 'protein name'
 			type: 'name'
-			kind: 'cationic block'
+			kind: 'protein'
 			preferred: true
 #			labelText: "" #gets created when createDefaultLabels is called
 		]
 		defaultValues: [
 			key: 'completion date'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
+			stateKind: 'protein parent'
 			type: 'dateValue'
 			kind: 'completion date'
 		,
 			key: 'notebook'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
+			stateKind: 'protein parent'
 			type: 'stringValue'
 			kind: 'notebook'
 		,
-			key: 'molecular weight'
+			key: 'type'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
-			type: 'numericValue' #used to set the lsValue subclass of the object
-			kind: 'molecular weight'
-			unitType: 'molecular weight'
-			unitKind: 'g/mol'
+			stateKind: 'protein parent'
+			type: 'codeValue'
+			kind: 'type'
+		,
+			key: 'aa sequence'
+			stateType: 'metadata'
+			stateKind: 'protein parent'
+			type: 'stringValue'
+			kind: 'aa sequence'
 		]
 
 	validate: (attrs) ->
@@ -68,11 +72,16 @@ class window.CationicBlockParent extends AbstractBaseComponentParent
 				errors.push
 					attribute: 'notebook'
 					message: "Notebook must be set"
-		mw = attrs["molecular weight"].get('value')
-		if mw is "" or mw is undefined or isNaN(mw)
+		type = attrs.type.get('value')
+		if type is "unassigned" or type is "" or type is undefined
 			errors.push
-				attribute: 'molecularWeight'
-				message: "Molecular weight must be set"
+				attribute: 'type'
+				message: "Type must be set"
+		aaSeq = attrs["aa sequence"].get('value')
+		if aaSeq is "" or aaSeq is undefined
+			errors.push
+				attribute: 'sequence'
+				message: "Protein aa sequence must be set"
 
 		if errors.length > 0
 			return errors
@@ -80,14 +89,14 @@ class window.CationicBlockParent extends AbstractBaseComponentParent
 			return null
 
 
-class window.CationicBlockBatch extends AbstractBaseComponentBatch
+class window.ProteinBatch extends AbstractBaseComponentBatch
 
 	initialize: ->
 		@.set
 			lsType: "batch"
-			lsKind: "cationic block"
-		#			analyticalFileType: "unassigned"
-		#			analyticalFileValue: ""
+			lsKind: "protein"
+#			analyticalFileType: "unassigned"
+#			analyticalFileValue: ""
 		super()
 
 	lsProperties:
@@ -96,13 +105,13 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 		defaultValues: [
 			key: 'completion date'
 			stateType: 'metadata'
-			stateKind: 'cationic block batch'
+			stateKind: 'protein batch'
 			type: 'dateValue'
 			kind: 'completion date'
 		,
 			key: 'notebook'
 			stateType: 'metadata'
-			stateKind: 'cationic block batch'
+			stateKind: 'protein batch'
 			type: 'stringValue'
 			kind: 'notebook'
 		,
@@ -121,57 +130,75 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 			kind: 'location'
 		]
 
-class window.CationicBlockParentController extends AbstractBaseComponentParentController
-	additionalParentAttributesTemplate: _.template($("#CationicBlockParentView").html())
+class window.ProteinParentController extends AbstractBaseComponentParentController
+	additionalParentAttributesTemplate: _.template($("#ProteinParentView").html())
 
 	events: ->
 		_(super()).extend(
-			"change .bv_molecularWeight": "attributeChanged"
+			"change .bv_type": "attributeChanged"
+			"change .bv_sequence": "attributeChanged"
 		)
 
 	initialize: ->
 		unless @model?
 			console.log "create new model in initialize"
-			@model=new CationicBlockParent()
-		@errorOwnerName = 'CationicBlockParentController'
+			@model=new ProteinParent()
+		@errorOwnerName = 'ProteinParentController'
 		super()
-	#TODO: add additional values
+		@setupType()
+			#TODO: add additional values
 
 	render: =>
 		unless @model?
-			@model = new CationicBlockParent()
+			@model = new ProteinParent()
 		super()
-		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
+		@$('.bv_type').val(@model.get('type').get('value'))
+		@$('.bv_sequence').val(@model.get('aa sequence').get('value'))
+		console.log "render model"
+		console.log @model
 
 	updateModel: =>
-		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
-		@model.get("molecular weight").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_molecularWeight')))
+		@model.get("protein name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
+		@model.get("type").set("value", @typeListController.getSelectedCode())
+		@model.get("aa sequence").set("value", UtilityFunctions::getTrimmedInput @$('.bv_sequence'))
 		super()
 
+	setupType: ->
+		console.log "setup type"
+		@typeList = new PickListList()
+		@typeList.url = "/api/dataDict/protein/type"
+		@typeListController = new PickListSelectController
+			el: @$('.bv_type')
+			collection: @typeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select type"
+			selectedCode: @model.get('type').get('value')
+		console.log @model.get('type').get('value')
 
-class window.CationicBlockBatchController extends AbstractBaseComponentBatchController
+class window.ProteinBatchController extends AbstractBaseComponentBatchController
 
 	initialize: ->
 		unless @model?
 			console.log "create new model in initialize"
-			@model=new CationicBlockBatch()
-		@errorOwnerName = 'CationicBlockBatchController'
+			@model=new ProteinBatch()
+		@errorOwnerName = 'ProteinBatchController'
 		super()
 
 	render: =>
 		unless @model?
 			console.log "create new model"
-			@model = new CationicBlockBatch()
+			@model = new ProteinBatch()
 		super()
 
-class window.CationicBlockBatchSelectController extends AbstractBaseComponentBatchSelectController
+class window.ProteinBatchSelectController extends AbstractBaseComponentBatchSelectController
 
 	setupBatchRegForm: (batch)->
 		if batch?
 			model = batch
 		else
-			model = new CationicBlockBatch()
-		@batchController = new CationicBlockBatchController
+			model = new ProteinBatch()
+		@batchController = new ProteinBatchController
 			model: model
 			el: @$('.bv_batchRegForm')
 		super()
@@ -188,19 +215,19 @@ class window.CationicBlockBatchSelectController extends AbstractBaseComponentBat
 				dataType: 'json'
 				error: (err) ->
 					alert 'Could not get selected batch, creating new one'
-					@batchController.model = new CationicBlockBatch()
+					@batchController.model = new ProteinBatch()
 				success: (json) =>
 					if json.length == 0
 						alert 'Could not get selected batch, creating new one'
 					else
 						#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-						#								exp = new CationicBlockBatch json
-						pb = new CationicBlockBatch json
+						#								exp = new ProteinBatch json
+						pb = new ProteinBatch json
 						pb.set pb.parse(pb.attributes)
 						@setupBatchRegForm(pb)
 
-class window.CationicBlockController extends AbstractBaseComponentController
-	moduleLaunchName: "cationic block"
+class window.ProteinController extends AbstractBaseComponentController
+	moduleLaunchName: "protein"
 
 	initialize: ->
 		if @model?
@@ -210,7 +237,7 @@ class window.CationicBlockController extends AbstractBaseComponentController
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
-						url: "/api/cationic blockParents/codeName/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/proteinParents/codeName/"+window.AppLaunchParams.moduleLaunchParams.code
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'
@@ -221,7 +248,7 @@ class window.CationicBlockController extends AbstractBaseComponentController
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								cbp = new CationicBlockParent json
-								cbp = new CationicBlockParent json[0]
+								cbp = new ProteinParent json[0]
 								cbp.set cbp.parse(cbp.attributes)
 								@model = cbp
 							@completeInitialization()
@@ -232,20 +259,20 @@ class window.CationicBlockController extends AbstractBaseComponentController
 
 	completeInitialization: =>
 		unless @model?
-			@model = new CationicBlockParent()
+			@model = new ProteinParent()
 		super()
-		@$('.bv_registrationTitle').html("Cationic Block Parent/Batch Registration")
+		@$('.bv_registrationTitle').html("Protein Parent/Batch Registration")
 
 	setupParentController: ->
-		console.log "set up cationic block parent controller"
+		console.log "set up protein parent controller"
 		console.log @model
-		@parentController = new CationicBlockParentController
+		@parentController = new ProteinParentController
 			model: @model
 			el: @$('.bv_parent')
 		super()
 
 	setupBatchSelectController: ->
-		@batchSelectController = new CationicBlockBatchSelectController
+		@batchSelectController = new ProteinBatchSelectController
 			el: @$('.bv_batch')
 			parentCodeName: @model.get('codeName')
 		super()

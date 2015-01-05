@@ -1,19 +1,19 @@
 ((exports) ->
 
-	exports.cationicBlockParent =
-		codeName: "CB000001"
+	exports.proteinParent =
+		codeName: "PROT000001"
 		id: 1
 		ignored: false
-		lsKind: "cationic block" #should be same as the className
+		lsKind: "protein" #should be same as the className
 		lsLabels: [
 			id: 1
 			ignored: false
 			imageFile: null
-			labelText: "cMAP10"
-			lsKind: "cationic block"
+			labelText: "EGFR 31"
+			lsKind: "protein"
 			lsTransaction: 1
 			lsType: "name"
-			lsTypeAndKind: "name_cationic block"
+			lsTypeAndKind: "name_protein"
 			modifiedDate: null
 			physicallyLabled: false
 			preferred: true
@@ -25,10 +25,10 @@
 			comments: null
 			id: 11
 			ignored: false
-			lsKind: "cationic block parent"
+			lsKind: "protein parent"
 			lsTransaction: 1
 			lsType: "metadata"
-			lsTypeAndKind: "metadata_cationic block parent"
+			lsTypeAndKind: "metadata_protein parent"
 			lsValues: [
 				clobValue: null
 				codeValue: null
@@ -85,7 +85,9 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeKind: "type"
+				codeType: "protein"
+				codeValue: "fab"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -97,19 +99,44 @@
 					recordedDate: 1363388477000
 					version: 0
 				modifiedDate: null
-				numericValue: 231
+				numericValue: null
 				publicData: true
 				recordedDate: 1363388477000
 				sigFigs: null
 				stringValue: null
 				uncertainty: null
 				urlValue: null
-				lsKind: "molecular weight"
+				lsKind: "type"
 				valueOperator: null
-				lsType: "numericValue"
-				lsTypeAndKind: "numericValue_molecular weight"
-				unitKind: "g/mol"
-				unitType: "molecular weight"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_type"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 5
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: "AUGCGACUG"
+				uncertainty: null
+				urlValue: null
+				lsKind: "aa sequence"
+				valueOperator: null
+				lsType: "stringValue"
+				lsTypeAndKind: "stringValue_aa sequence"
 				valueUnit: null
 				version: 0
 			]
@@ -121,7 +148,7 @@
 		]
 		lsTransaction: 1
 		lsType: "parent"
-		lsTypeAndKind: "parent_cationic block"
+		lsTypeAndKind: "parent_protein"
 		modifiedBy: null
 		modifiedDate: null
 		recordedBy: "jane"
@@ -129,19 +156,19 @@
 		shortDescription: " "
 		version: 0
 
-	exports.cationicBlockBatch =
-		codeName: "CB000001-1"
+	exports.proteinBatch =
+		codeName: "PROT000001-1"
 		id: 11
 		ignored: false
-		lsKind: "cationic block" #should be same as the className
+		lsKind: "protein" #should be same as the className
 		lsStates: [
 			comments: null
 			id: 11
 			ignored: false
-			lsKind: "cationic block batch"
+			lsKind: "protein batch"
 			lsTransaction: 1
 			lsType: "metadata"
-			lsTypeAndKind: "metadata_cationic block batch"
+			lsTypeAndKind: "metadata_protein batch"
 			lsValues: [
 				clobValue: null
 				codeValue: null
@@ -270,7 +297,7 @@
 		]
 		lsTransaction: 1
 		lsType: "batch"
-		lsTypeAndKind: "batch_cationic block"
+		lsTypeAndKind: "batch_protein"
 		modifiedBy: null
 		modifiedDate: null
 		recordedBy: "jane"
@@ -278,4 +305,4 @@
 		shortDescription: " "
 		version: 0
 
-) (if (typeof process is "undefined" or not process.versions) then window.cationicBlockTestJSON = window.cationicBlockTestJSON or {} else exports)
+) (if (typeof process is "undefined" or not process.versions) then window.proteinTestJSON = window.proteinTestJSON or {} else exports)

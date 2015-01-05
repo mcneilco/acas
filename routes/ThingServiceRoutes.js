@@ -4,7 +4,8 @@
     app.get('/api/things/:id', loginRoutes.ensureAuthenticated, exports.thingById);
     app.post('/api/things', loginRoutes.ensureAuthenticated, exports.postThing);
     app.put('/api/things/:id', loginRoutes.ensureAuthenticated, exports.putThing);
-    return app["delete"]('/api/things/:id', loginRoutes.ensureAuthenticated, exports.deleteThing);
+    app["delete"]('/api/things/:id', loginRoutes.ensureAuthenticated, exports.deleteThing);
+    return app.get('/api/authors', loginRoutes.ensureAuthenticated, exports.getAuthors);
   };
 
   exports.thingByCodename = function(req, resp) {
@@ -64,6 +65,21 @@
       return resp.end(JSON.stringify({
         error: "delete thing not implemented yet"
       }));
+    }
+  };
+
+  exports.getAuthors = function(req, resp) {
+    var baseurl, config, serverUtilityFunctions, thingServiceTestJSON;
+    console.log("getting authors");
+    if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
+      thingServiceTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
+      return resp.end(JSON.stringify(thingServiceTestJSON.authorsList));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      baseurl = config.all.client.service.persistence.fullpath + "authors/codeTable";
+      console.log(baseurl);
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
 

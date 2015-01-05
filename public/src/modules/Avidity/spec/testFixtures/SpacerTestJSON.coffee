@@ -1,19 +1,19 @@
 ((exports) ->
 
-	exports.cationicBlockParent =
-		codeName: "CB000001"
+	exports.spacerParent =
+		codeName: "SP000001"
 		id: 1
 		ignored: false
-		lsKind: "cationic block" #should be same as the className
+		lsKind: "spacer" #should be same as the className
 		lsLabels: [
 			id: 1
 			ignored: false
 			imageFile: null
-			labelText: "cMAP10"
-			lsKind: "cationic block"
+			labelText: "PEG10"
+			lsKind: "spacer"
 			lsTransaction: 1
 			lsType: "name"
-			lsTypeAndKind: "name_cationic block"
+			lsTypeAndKind: "name_spacer"
 			modifiedDate: null
 			physicallyLabled: false
 			preferred: true
@@ -25,10 +25,10 @@
 			comments: null
 			id: 11
 			ignored: false
-			lsKind: "cationic block parent"
+			lsKind: "spacer parent"
 			lsTransaction: 1
 			lsType: "metadata"
-			lsTypeAndKind: "metadata_cationic block parent"
+			lsTypeAndKind: "metadata_spacer parent"
 			lsValues: [
 				clobValue: null
 				codeValue: null
@@ -121,7 +121,7 @@
 		]
 		lsTransaction: 1
 		lsType: "parent"
-		lsTypeAndKind: "parent_cationic block"
+		lsTypeAndKind: "parent_spacer"
 		modifiedBy: null
 		modifiedDate: null
 		recordedBy: "jane"
@@ -129,19 +129,19 @@
 		shortDescription: " "
 		version: 0
 
-	exports.cationicBlockBatch =
-		codeName: "CB000001-1"
+	exports.spacerBatch =
+		codeName: "SP000001-1"
 		id: 11
 		ignored: false
-		lsKind: "cationic block" #should be same as the className
+		lsKind: "spacer" #should be same as the className
 		lsStates: [
 			comments: null
 			id: 11
 			ignored: false
-			lsKind: "cationic block batch"
+			lsKind: "spacer batch"
 			lsTransaction: 1
 			lsType: "metadata"
-			lsTypeAndKind: "metadata_cationic block batch"
+			lsTypeAndKind: "metadata_spacer batch"
 			lsValues: [
 				clobValue: null
 				codeValue: null
@@ -270,7 +270,7 @@
 		]
 		lsTransaction: 1
 		lsType: "batch"
-		lsTypeAndKind: "batch_cationic block"
+		lsTypeAndKind: "batch_spacer"
 		modifiedBy: null
 		modifiedDate: null
 		recordedBy: "jane"
@@ -278,4 +278,4 @@
 		shortDescription: " "
 		version: 0
 
-) (if (typeof process is "undefined" or not process.versions) then window.cationicBlockTestJSON = window.cationicBlockTestJSON or {} else exports)
+) (if (typeof process is "undefined" or not process.versions) then window.spacerTestJSON = window.spacerTestJSON or {} else exports)

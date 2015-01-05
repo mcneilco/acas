@@ -31,7 +31,7 @@ This suite of services provides CRUD operations on Thing Objects
             dataType: 'json'
           });
         });
-        return it('should return a thing stub', function() {
+        return it('should return a thing', function() {
           waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
           return runs(function() {
             return expect(this.serviceReturn.codeName).toEqual("ExampleThing-00000001");

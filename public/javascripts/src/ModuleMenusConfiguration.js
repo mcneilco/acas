@@ -45,8 +45,23 @@
     }, {
       isHeader: false,
       menuName: "Cationic Block",
-      mainControllerClassName: "CationicBlockParentController",
+      mainControllerClassName: "CationicBlockController",
       autoLaunchName: "cationic_block"
+    }, {
+      isHeader: false,
+      menuName: "Linker Small Molecule",
+      mainControllerClassName: "LinkerSmallMoleculeController",
+      autoLaunchName: "linker_small_molecule"
+    }, {
+      isHeader: false,
+      menuName: "Protein",
+      mainControllerClassName: "ProteinController",
+      autoLaunchName: "protein"
+    }, {
+      isHeader: false,
+      menuName: "Spacer",
+      mainControllerClassName: "SpacerController",
+      autoLaunchName: "spacer"
     }, {
       isHeader: true,
       menuName: "Inventory"

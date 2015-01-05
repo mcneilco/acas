@@ -4,6 +4,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/things', loginRoutes.ensureAuthenticated, exports.postThing
 	app.put '/api/things/:id', loginRoutes.ensureAuthenticated, exports.putThing
 	app.delete '/api/things/:id', loginRoutes.ensureAuthenticated, exports.deleteThing
+	app.get '/api/authors', loginRoutes.ensureAuthenticated, exports.getAuthors #TODO: in 1.4 implemented in BaseEntityServiceRoutes
 
 exports.thingByCodename = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -116,3 +117,16 @@ exports.deleteThing = (req, resp) ->
 #				console.log error
 #				console.log response
 #		)
+
+
+exports.getAuthors = (req, resp) ->
+	console.log "getting authors"
+	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
+		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.end JSON.stringify thingServiceTestJSON.authorsList
+	else
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
+		console.log baseurl
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)

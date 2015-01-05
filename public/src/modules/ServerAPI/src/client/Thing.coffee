@@ -3,6 +3,7 @@ class window.Thing extends Backbone.Model
 
 	defaults: () =>
 		#attrs =
+		@set urlRoot: "/api/cationicBlockParents"
 		@set lsType: "thing"
 		@set lsKind: "thing"
 #		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
@@ -12,8 +13,9 @@ class window.Thing extends Backbone.Model
 		@set shortDescription: " "
 		@set lsLabels: new LabelList()
 		@set lsStates: new StateList()
-		@createDefaultLabels() # attrs
-		@createDefaultStates() # attrs
+		@set urlRoot: "/api/cationicBlockParents"
+#		@createDefaultLabels() # attrs
+#		@createDefaultStates() # attrs
 
 		#return attrs
 
@@ -39,17 +41,20 @@ class window.Thing extends Backbone.Model
 
 			if resp.lsStates?
 				console.log "lsStates exists"
+				console.log resp.lsStates
 				if resp.lsStates not instanceof StateList
 					console.log "resp.lsStates = new StateList"
 					resp.lsStates = new StateList(resp.lsStates)
+					console.log "new resp.lsStates"
 					console.log resp.lsStates
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
 		@createDefaultLabels()
 		@createDefaultStates()
 
-	sync: ->
-		console.log "sync"
+	sync: =>
+		console.log "sync in thing"
+		console.log @
 		for dLabel in @lsProperties.defaultLabels
 			@unset dLabel.key
 
@@ -59,6 +64,9 @@ class window.Thing extends Backbone.Model
 			#recordedDate: new Date().getTime()
 			#recordedBy: #logged in user
 			#hide all label, value and value array keys from save
+		console.log @
+		Backbone.Model.prototype.sync.call(this)
+		console.log 'done syncing'
 
 
 	createDefaultLabels: =>
@@ -68,6 +76,7 @@ class window.Thing extends Backbone.Model
 		for dLabel in @lsProperties.defaultLabels
 			newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
 			@set dLabel.key, newLabel
+			newLabel.set preferred: dLabel.preferred
 		console.log "created default labels"
 		console.log @
 
@@ -83,6 +92,10 @@ class window.Thing extends Backbone.Model
 				newValue.set unitKind: dValue.unitKind
 			if dValue.unitType?
 				newValue.set unitType: dValue.unitType
+			if dValue.codeKind?
+				newValue.set codeKind: dValue.codeKind
+			if dValue.codeType?
+				newValue.set codeType: dValue.codeType
 
 			#Setting dValue.key attribute in @ to point to the newValue
 			@set dValue.key, newValue

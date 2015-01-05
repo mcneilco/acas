@@ -5,286 +5,329 @@ afterEach ->
 	$("#fixture").remove()
 	$("body").append $(@fixture)
 
-describe 'Cationic Block testing', ->
-	describe " Parent model testing", ->
+describe 'Protein testing', ->
+	describe "Protein Parent model testing", ->
 		describe "when loaded from new", ->
 			beforeEach ->
-				@cbp = new CationicBlockParent()
+				@pp = new ProteinParent()
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
-					expect(@cbp).toBeDefined()
+					expect(@pp).toBeDefined()
 				it "should have a type", ->
-					expect(@cbp.get('lsType')).toEqual "parent"
+					expect(@pp.get('lsType')).toEqual "parent"
 				it "should have a kind", ->
-					expect(@cbp.get('lsKind')).toEqual "cationic block"
+					expect(@pp.get('lsKind')).toEqual "protein"
 				it "should have an empty scientist", ->
-					expect(@cbp.get('recordedBy')).toEqual ""
+					expect(@pp.get('recordedBy')).toEqual ""
 				it "should have a recordedDate set to now", ->
-					expect(new Date(@cbp.get('recordedDate')).getHours()).toEqual new Date().getHours()
+					expect(new Date(@pp.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				it "Should have a lsLabels with one label", ->
-					expect(@cbp.get('lsLabels')).toBeDefined()
-					expect(@cbp.get("lsLabels").length).toEqual 1
-					expect(@cbp.get("lsLabels").getLabelByTypeAndKind("name", "cationic block").length).toEqual 1
+					expect(@pp.get('lsLabels')).toBeDefined()
+					expect(@pp.get("lsLabels").length).toEqual 1
+					expect(@pp.get("lsLabels").getLabelByTypeAndKind("name", "protein").length).toEqual 1
 				it "Should have a model attribute for the label in defaultLabels", ->
-					expect(@cbp.get("cationic block name")).toBeDefined()
+					expect(@pp.get("protein name")).toBeDefined()
 				it "Should have a lsStates with the states in defaultStates", ->
-					expect(@cbp.get('lsStates')).toBeDefined()
-					expect(@cbp.get("lsStates").length).toEqual 1
-					expect(@cbp.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block parent").length).toEqual 1
+					expect(@pp.get('lsStates')).toBeDefined()
+					expect(@pp.get("lsStates").length).toEqual 1
+					expect(@pp.get("lsStates").getStatesByTypeAndKind("metadata", "protein parent").length).toEqual 1
 				describe "model attributes for each value in defaultValues", ->
 					it "Should have a model attribute for completion date", ->
-						expect(@cbp.get("completion date")).toBeDefined()
+						expect(@pp.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
-						expect(@cbp.get("notebook")).toBeDefined()
-					it "Should have a model attribute for molecular weight", ->
-						expect(@cbp.get("molecular weight")).toBeDefined()
+						expect(@pp.get("notebook")).toBeDefined()
+					it "Should have a model attribute for type", ->
+						expect(@pp.get("type")).toBeDefined()
+					it "Should have a model attribute for aa sequence", ->
+						expect(@pp.get("aa sequence")).toBeDefined()
 			describe "model validation", ->
 				it "should be invalid when name is empty", ->
-					@cbp.get("cationic block name").set("labelText", "")
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
+					@pp.get("protein name").set("labelText", "")
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
 						err.attribute=='parentName'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should invalid when recorded date is empty", ->
-					@cbp.set recordedDate: new Date("").getTime()
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
+					@pp.set recordedDate: new Date("").getTime()
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
 						err.attribute=='recordedDate'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when molecular weight is NaN", ->
-					@cbp.get("molecular weight").set("value", "fred")
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
-						err.attribute=='molecularWeight'
+				it "should be invalid when type is not selected", ->
+					@pp.get("type").set("value", "")
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
+						err.attribute=='type'
+					)
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be invalid when aa sequence is not filled", ->
+					@pp.get("aa sequence").set("value", "")
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
+						err.attribute=='sequence'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 
 		describe "When created from existing", ->
 			beforeEach ->
-				@cbp = new CationicBlockParent JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockParent))
+				@pp = new ProteinParent JSON.parse(JSON.stringify(window.proteinTestJSON.proteinParent))
 			describe "after initial load", ->
 				it "should be defined", ->
-					expect(@cbp).toBeDefined()
+					expect(@pp).toBeDefined()
 				it "should have a type", ->
-					expect(@cbp.get('lsType')).toEqual "parent"
+					expect(@pp.get('lsType')).toEqual "parent"
 				it "should have a kind", ->
-					expect(@cbp.get('lsKind')).toEqual "cationic block"
+					expect(@pp.get('lsKind')).toEqual "protein"
 				it "should have a scientist set", ->
-					expect(@cbp.get('recordedBy')).toEqual "jane"
+					expect(@pp.get('recordedBy')).toEqual "jane"
 				it "should have a recordedDate set", ->
-					expect(@cbp.get('recordedDate')).toEqual 1375141508000
+					expect(@pp.get('recordedDate')).toEqual 1375141508000
 				it "Should have label set", ->
-					console.log @cbp
-					expect(@cbp.get("cationic block name").get("labelText")).toEqual "cMAP10"
-					label = (@cbp.get("lsLabels").getLabelByTypeAndKind("name", "cationic block"))
+					console.log @pp
+					expect(@pp.get("protein name").get("labelText")).toEqual "EGFR 31"
+					label = (@pp.get("lsLabels").getLabelByTypeAndKind("name", "protein"))
 					console.log label[0]
-					expect(label[0].get('labelText')).toEqual "cMAP10"
+					expect(label[0].get('labelText')).toEqual "EGFR 31"
 				it "Should have a lsStates with the states in defaultStates", ->
-					expect(@cbp.get('lsStates')).toBeDefined()
-					expect(@cbp.get("lsStates").length).toEqual 1
-					expect(@cbp.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block parent").length).toEqual 1
+					expect(@pp.get('lsStates')).toBeDefined()
+					expect(@pp.get("lsStates").length).toEqual 1
+					expect(@pp.get("lsStates").getStatesByTypeAndKind("metadata", "protein parent").length).toEqual 1
 				it "Should have a completion date value", ->
-					expect(@cbp.get("completion date").get("value")).toEqual 1342080000000
+					expect(@pp.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
-					expect(@cbp.get("notebook").get("value")).toEqual "Notebook 1"
-				it "Should have a molecular weight value", ->
-					expect(@cbp.get("molecular weight").get("value")).toEqual 231
+					expect(@pp.get("notebook").get("value")).toEqual "Notebook 1"
+				it "Should have a type value", ->
+					expect(@pp.get("type").get("value")).toEqual "fab"
+				it "Should have a sequence value", ->
+					expect(@pp.get("aa sequence").get("value")).toEqual "AUGCGACUG"
 
 			describe "model validation", ->
 				beforeEach ->
-					@cbp = new CationicBlockParent window.cationicBlockTestJSON.cationicBlockParent
+					@pp = new ProteinParent window.proteinTestJSON.proteinParent
 				it "should be valid when loaded from saved", ->
-					expect(@cbp.isValid()).toBeTruthy()
+					expect(@pp.isValid()).toBeTruthy()
 				it "should be invalid when name is empty", ->
-					@cbp.get("cationic block name").set("labelText", "")
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
+					@pp.get("protein name").set("labelText", "")
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
 						err.attribute=='parentName'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when recorded date is empty", ->
-					@cbp.set recordedDate: new Date("").getTime()
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
+					@pp.set recordedDate: new Date("").getTime()
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
 						err.attribute=='recordedDate'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when scientist not selected", ->
-					@cbp.set recordedBy: ""
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
+					@pp.set recordedBy: ""
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
 						err.attribute=='recordedBy'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when completion date is empty", ->
-					@cbp.get("completion date").set("value", new Date("").getTime())
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
+					@pp.get("completion date").set("value", new Date("").getTime())
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
 						err.attribute=='completionDate'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when notebook is empty", ->
-					@cbp.get("notebook").set("value", "")
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
+					@pp.get("notebook").set("value", "")
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
 						err.attribute=='notebook'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when molecular weight is NaN", ->
-					@cbp.get("molecular weight").set("value", "fred")
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
-						err.attribute=='molecularWeight'
+				it "should be invalid when type is not selected", ->
+					@pp.get("type").set("value", "")
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
+						err.attribute=='type'
+					)
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be invalid when aa sequence is empty", ->
+					@pp.get("aa sequence").set("value", "")
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
+						err.attribute=='sequence'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 
-	describe "Cationic Block Parent Controller testing", ->
+	describe "Protein Parent Controller testing", ->
 		describe "When instantiated from new", ->
 			beforeEach ->
-				@cbp = new CationicBlockParent()
-				@cbpc = new CationicBlockParentController
-					model: @cbp
+				@pp = new ProteinParent()
+				@ppc = new ProteinParentController
+					model: @pp
 					el: $('#fixture')
-				@cbpc.render()
+				@ppc.render()
 			describe "basic existence tests", ->
 				it "should exist", ->
-					expect(@cbpc).toBeDefined()
+					expect(@ppc).toBeDefined()
 				it "should load the template", ->
-					expect(@cbpc.$('.bv_parentCode').html()).toEqual "autofill when saved"
-				it "should load the additional parent attributes temlate", ->
-					expect(@cbpc.$('.bv_molecularWeight').length).toEqual 1
+					expect(@ppc.$('.bv_parentCode').html()).toEqual "autofill when saved"
+				it "should load the additional parent attributes template", ->
+					expect(@ppc.$('.bv_type').length).toEqual 1
 		describe "When instantiated from existing", ->
 			beforeEach ->
-				@cbp = new CationicBlockParent JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockParent))
-				@cbpc = new CationicBlockParentController
-					model: @cbp
+				@pp = new ProteinParent JSON.parse(JSON.stringify(window.proteinTestJSON.proteinParent))
+				@ppc = new ProteinParentController
+					model: @pp
 					el: $('#fixture')
-				@cbpc.render()
+				@ppc.render()
 			describe "render existing parameters", ->
-				it "should show the cationic block parent id", ->
-					expect(@cbpc.$('.bv_parentCode').val()).toEqual "CB000001"
-				it "should fill the cationic block parent name", ->
-					expect(@cbpc.$('.bv_parentName').val()).toEqual "cMAP10"
+				it "should show the protein parent id", ->
+					expect(@ppc.$('.bv_parentCode').val()).toEqual "PROT000001"
+				it "should fill the protein parent name", ->
+					expect(@ppc.$('.bv_parentName').val()).toEqual "EGFR 31"
 				it "should fill the scientist field", ->
 					waitsFor ->
-						@cbpc.$('.bv_recordedBy option').length > 0
+						@ppc.$('.bv_recordedBy option').length > 0
 					, 1000
 					runs ->
-						console.log @cbpc.$('.bv_recordedBy').val()
-						expect(@cbpc.$('.bv_recordedBy').val()).toEqual "jane"
+						console.log @ppc.$('.bv_recordedBy').val()
+						expect(@ppc.$('.bv_recordedBy').val()).toEqual "jane"
 				it "should fill the completion date field", ->
-					expect(@cbpc.$('.bv_completionDate').val()).toEqual "2012-07-12"
+					expect(@ppc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
-					expect(@cbpc.$('.bv_notebook').val()).toEqual "Notebook 1"
-				it "should fill the molecular weight field", ->
-					expect(@cbpc.$('.bv_molecularWeight').val()).toEqual "231"
+					expect(@ppc.$('.bv_notebook').val()).toEqual "Notebook 1"
+				it "should fill the type field", ->
+					waitsFor ->
+						@ppc.$('.bv_type option').length > 0
+					, 1000
+					runs ->
+						console.log @ppc.$('.bv_type').val()
+						console.log @ppc.model
+						expect(@ppc.$('.bv_type').val()).toEqual "fab"
+				it "should fill the aa sequence field", ->
+					expect(@ppc.$('.bv_sequence').val()).toEqual "AUGCGACUG"
 
 			describe "model updates", ->
 				it "should update model when parent name is changed", ->
-					@cbpc.$('.bv_parentName').val(" New name   ")
-					@cbpc.$('.bv_parentName').change()
-					expect(@cbpc.model.get('cationic block name').get('labelText')).toEqual "New name"
+					@ppc.$('.bv_parentName').val(" New name   ")
+					@ppc.$('.bv_parentName').change()
+					expect(@ppc.model.get('protein name').get('labelText')).toEqual "New name"
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
-						@cbpc.$('.bv_recordedBy option').length > 0
+						@ppc.$('.bv_recordedBy option').length > 0
 					, 1000
 					runs ->
-						@cbpc.$('.bv_recordedBy').val('unassigned')
-						@cbpc.$('.bv_recordedBy').change()
-						expect(@cbpc.model.get('recordedBy')).toEqual "unassigned"
+						@ppc.$('.bv_recordedBy').val('unassigned')
+						@ppc.$('.bv_recordedBy').change()
+						expect(@ppc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
-					@cbpc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@cbpc.$('.bv_completionDate').change()
-					expect(@cbpc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
+					@ppc.$('.bv_completionDate').val(" 2013-3-16   ")
+					@ppc.$('.bv_completionDate').change()
+					expect(@ppc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
-					@cbpc.$('.bv_notebook').val(" Updated notebook  ")
-					@cbpc.$('.bv_notebook').change()
-					expect(@cbpc.model.get('notebook').get('value')).toEqual "Updated notebook"
-				it "should update model when molecular weight is changed", ->
-					@cbpc.$('.bv_molecularWeight').val(" 12  ")
-					@cbpc.$('.bv_molecularWeight').change()
-					expect(@cbpc.model.get('molecular weight').get('value')).toEqual 12
-
+					@ppc.$('.bv_notebook').val(" Updated notebook  ")
+					@ppc.$('.bv_notebook').change()
+					expect(@ppc.model.get('notebook').get('value')).toEqual "Updated notebook"
+				it "should update model when the type is changed", ->
+					waitsFor ->
+						@ppc.$('.bv_type option').length > 0
+					, 1000
+					runs ->
+						@ppc.$('.bv_type').val('unassigned')
+						@ppc.$('.bv_type').change()
+						expect(@ppc.model.get('type').get('value')).toEqual "unassigned"
+				it "should update model when aa sequence is changed", ->
+					@ppc.$('.bv_sequence').val(" Updated sequence  ")
+					@ppc.$('.bv_sequence').change()
+					expect(@ppc.model.get('aa sequence').get('value')).toEqual "Updated sequence"
 			describe "controller validation rules", ->
 				beforeEach ->
 					waitsFor ->
-						@cbpc.$('.bv_recordedBy option').length > 0
+						@ppc.$('.bv_recordedBy option').length > 0
 					, 1000
 					runs ->
-						@cbpc.$('.bv_parentName').val(" Updated entity name   ")
-						@cbpc.$('.bv_parentName').change()
-						@cbpc.$('.bv_recordedBy').val("bob")
-						@cbpc.$('.bv_recordedBy').change()
-						@cbpc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@cbpc.$('.bv_completionDate').change()
-						@cbpc.$('.bv_notebook').val("my notebook")
-						@cbpc.$('.bv_notebook').change()
-						@cbpc.$('.bv_molecularWeight').val(" 24")
-						@cbpc.$('.bv_molecularWeight').change()
+						@ppc.$('.bv_parentName').val(" Updated entity name   ")
+						@ppc.$('.bv_parentName').change()
+						@ppc.$('.bv_recordedBy').val("bob")
+						@ppc.$('.bv_recordedBy').change()
+						@ppc.$('.bv_completionDate').val(" 2013-3-16   ")
+						@ppc.$('.bv_completionDate').change()
+						@ppc.$('.bv_notebook').val("my notebook")
+						@ppc.$('.bv_notebook').change()
+						@ppc.$('.bv_type').val("mab")
+						@ppc.$('.bv_type').change()
+						@ppc.$('.bv_sequence').val("AUG")
+						@ppc.$('.bv_sequence').change()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
-							expect(@cbpc.isValid()).toBeTruthy()
+							expect(@ppc.isValid()).toBeTruthy()
 				#					it "save button should be enabled", ->
 				#						runs ->
-				#							expect(@cbpc.$('.bv_save').attr('disabled')).toBeUndefined()
+				#							expect(@ppc.$('.bv_save').attr('disabled')).toBeUndefined()
 				describe "when name field not filled in", ->
 					beforeEach ->
 						runs ->
-							@cbpc.$('.bv_parentName').val("")
-							@cbpc.$('.bv_parentName').change()
+							@ppc.$('.bv_parentName').val("")
+							@ppc.$('.bv_parentName').change()
 					it "should be invalid if name not filled in", ->
 						runs ->
-							expect(@cbpc.isValid()).toBeFalsy()
+							expect(@ppc.isValid()).toBeFalsy()
 					it "should show error in name field", ->
 						runs ->
-							expect(@cbpc.$('.bv_group_parentName').hasClass('error')).toBeTruthy()
+							expect(@ppc.$('.bv_group_parentName').hasClass('error')).toBeTruthy()
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
-							@cbpc.$('.bv_recordedBy').val("")
-							@cbpc.$('.bv_recordedBy').change()
+							@ppc.$('.bv_recordedBy').val("")
+							@ppc.$('.bv_recordedBy').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@cbpc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@ppc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
-							@cbpc.$('.bv_completionDate').val("")
-							@cbpc.$('.bv_completionDate').change()
+							@ppc.$('.bv_completionDate').val("")
+							@ppc.$('.bv_completionDate').change()
 					it "should show error in date field", ->
 						runs ->
-							expect(@cbpc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
+							expect(@ppc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
 				describe "when notebook not filled", ->
 					beforeEach ->
 						runs ->
-							@cbpc.$('.bv_notebook').val("")
-							@cbpc.$('.bv_notebook').change()
+							@ppc.$('.bv_notebook').val("")
+							@ppc.$('.bv_notebook').change()
 					it "should show error on notebook field", ->
 						runs ->
-							expect(@cbpc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
-				describe "when molecular weight not filled", ->
+							expect(@ppc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
+				describe "when type not filled", ->
 					beforeEach ->
 						runs ->
-							@cbpc.$('.bv_molecularWeight').val("")
-							@cbpc.$('.bv_molecularWeight').change()
-					it "should show error on molecular weight field", ->
+							@ppc.$('.bv_type').val("unassigned")
+							@ppc.$('.bv_type').change()
+					it "should show error on type field", ->
 						runs ->
-							expect(@cbpc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy()
+							expect(@ppc.$('.bv_group_type').hasClass('error')).toBeTruthy()
+				describe "when sequence not filled", ->
+					beforeEach ->
+						runs ->
+							@ppc.$('.bv_sequence').val("")
+							@ppc.$('.bv_sequence').change()
+					it "should show error on sequence field", ->
+						runs ->
+							expect(@ppc.$('.bv_group_sequence').hasClass('error')).toBeTruthy()
 
-	describe "Cationic Block Batch model testing", ->
+	describe "Protein Batch model testing", ->
 		describe "when loaded from new", ->
 			beforeEach ->
-				@cbb= new CationicBlockBatch()
+				@cbb= new ProteinBatch()
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
 					expect(@cbb).toBeDefined()
 				it "should have a type", ->
 					expect(@cbb.get('lsType')).toEqual "batch"
 				it "should have a kind", ->
-					expect(@cbb.get('lsKind')).toEqual "cationic block"
+					expect(@cbb.get('lsKind')).toEqual "protein"
 				it "should have an empty scientist", ->
 					expect(@cbb.get('recordedBy')).toEqual ""
 				it "should have a recordedDate set to now", ->
@@ -307,14 +350,14 @@ describe 'Cationic Block testing', ->
 
 		describe "When created from existing", ->
 			beforeEach ->
-				@cbb = new CationicBlockBatch JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockBatch))
+				@cbb = new ProteinBatch JSON.parse(JSON.stringify(window.proteinTestJSON.proteinBatch))
 			describe "after initial load", ->
 				it "should be defined", ->
 					expect(@cbb).toBeDefined()
 				it "should have a type", ->
 					expect(@cbb.get('lsType')).toEqual "batch"
 				it "should have a kind", ->
-					expect(@cbb.get('lsKind')).toEqual "cationic block"
+					expect(@cbb.get('lsKind')).toEqual "protein"
 				it "should have a scientist set", ->
 					expect(@cbb.get('recordedBy')).toEqual "jane"
 				it "should have a recordedDate set", ->
@@ -322,7 +365,7 @@ describe 'Cationic Block testing', ->
 				it "Should have a lsStates with the states in defaultStates", ->
 					expect(@cbb.get('lsStates')).toBeDefined()
 					expect(@cbb.get("lsStates").length).toEqual 2
-					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block batch").length).toEqual 1
+					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "protein batch").length).toEqual 1
 					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
 				it "Should have a completion date value", ->
 					expect(@cbb.get("completion date").get("value")).toEqual 1342080000000
@@ -335,7 +378,7 @@ describe 'Cationic Block testing', ->
 
 		describe "model validation", ->
 			beforeEach ->
-				@cbb = new CationicBlockBatch window.cationicBlockTestJSON.cationicBlockBatch
+				@cbb = new ProteinBatch window.proteinTestJSON.proteinBatch
 			it "should be valid when loaded from saved", ->
 				expect(@cbb.isValid()).toBeTruthy()
 			it "should be invalid when recorded date is empty", ->
@@ -380,11 +423,11 @@ describe 'Cationic Block testing', ->
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 
-	describe "Cationic Block Batch Controller testing", ->
+	describe "Protein Batch Controller testing", ->
 		describe "When instantiated from new", ->
 			beforeEach ->
-				@cbb = new CationicBlockBatch()
-				@cbbc = new CationicBlockBatchController
+				@cbb = new ProteinBatch()
+				@cbbc = new ProteinBatchController
 					model: @cbb
 					el: $('#fixture')
 				@cbbc.render()
@@ -395,14 +438,14 @@ describe 'Cationic Block testing', ->
 					expect(@cbbc.$('.bv_batchCode').html()).toEqual "autofill when saved"
 		describe "When instantiated from existing", ->
 			beforeEach ->
-				@cbb = new CationicBlockBatch JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockBatch))
-				@cbbc = new CationicBlockBatchController
+				@cbb = new ProteinBatch JSON.parse(JSON.stringify(window.proteinTestJSON.proteinBatch))
+				@cbbc = new ProteinBatchController
 					model: @cbb
 					el: $('#fixture')
 				@cbbc.render()
 			describe "render existing parameters", ->
-				it "should show the cationic block batch id", ->
-					expect(@cbbc.$('.bv_batchCode').val()).toEqual "CB000001-1"
+				it "should show the protein batch id", ->
+					expect(@cbbc.$('.bv_batchCode').val()).toEqual "PROT000001-1"
 				it "should fill the scientist field", ->
 					waitsFor ->
 						@cbbc.$('.bv_recordedBy option').length > 0
@@ -465,7 +508,7 @@ describe 'Cationic Block testing', ->
 							expect(@cbbc.isValid()).toBeTruthy()
 				#					it "save button should be enabled", ->
 				#						runs ->
-				#							expect(@cbpc.$('.bv_save').attr('disabled')).toBeUndefined()
+				#							expect(@ppc.$('.bv_save').attr('disabled')).toBeUndefined()
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
@@ -507,10 +550,10 @@ describe 'Cationic Block testing', ->
 						runs ->
 							expect(@cbbc.$('.bv_group_location').hasClass('error')).toBeTruthy()
 
-	describe "Cationic Block Batch Select Controller testing", ->
+	describe "Protein Batch Select Controller testing", ->
 		beforeEach ->
-			@cbb = new CationicBlockBatch()
-			@cbbsc = new CationicBlockBatchSelectController
+			@cbb = new ProteinBatch()
+			@cbbsc = new ProteinBatchSelectController
 				model: @cbb
 				el: $('#fixture')
 			@cbbsc.render()
@@ -549,10 +592,10 @@ describe 'Cationic Block testing', ->
 					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "CB000001-1"
 					expect(@cbbsc.$('.bv_recordedBy').val()).toEqual "jane"
 
-	describe "Cationic Block Controller", ->
+	describe "Protein Controller", ->
 		beforeEach ->
-			@cbc = new CationicBlockController
-				model: new CationicBlockParent()
+			@cbc = new ProteinController
+				model: new ProteinParent()
 				el: $('#fixture')
 			@cbc.render()
 		describe "Basic loading", ->
@@ -564,3 +607,5 @@ describe 'Cationic Block testing', ->
 				expect(@cbc.$('.bv_parent .bv_parentCode').length).toEqual 1
 			it "Should load a batch controller", ->
 				expect(@cbc.$('.bv_batch .bv_batchCode').length).toEqual 1
+
+

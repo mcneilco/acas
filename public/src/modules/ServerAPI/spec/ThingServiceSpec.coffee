@@ -24,7 +24,7 @@ describe 'Thing Service testing', ->
 						self.serviceReturn = null
 					dataType: 'json'
 
-			it 'should return a thing stub', ->
+			it 'should return a thing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn.codeName).toEqual "ExampleThing-00000001"

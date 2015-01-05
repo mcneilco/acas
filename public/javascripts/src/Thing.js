@@ -9,6 +9,7 @@
     function Thing() {
       this.createDefaultStates = __bind(this.createDefaultStates, this);
       this.createDefaultLabels = __bind(this.createDefaultLabels, this);
+      this.sync = __bind(this.sync, this);
       this.parse = __bind(this.parse, this);
       this.defaults = __bind(this.defaults, this);
       return Thing.__super__.constructor.apply(this, arguments);
@@ -17,6 +18,9 @@
     Thing.prototype.lsProperties = {};
 
     Thing.prototype.defaults = function() {
+      this.set({
+        urlRoot: "/api/cationicBlockParents"
+      });
       this.set({
         lsType: "thing"
       });
@@ -41,8 +45,9 @@
       this.set({
         lsStates: new StateList()
       });
-      this.createDefaultLabels();
-      return this.createDefaultStates();
+      return this.set({
+        urlRoot: "/api/cationicBlockParents"
+      });
     };
 
     Thing.prototype.initialize = function() {
@@ -67,9 +72,11 @@
         }
         if (resp.lsStates != null) {
           console.log("lsStates exists");
+          console.log(resp.lsStates);
           if (!(resp.lsStates instanceof StateList)) {
             console.log("resp.lsStates = new StateList");
             resp.lsStates = new StateList(resp.lsStates);
+            console.log("new resp.lsStates");
             console.log(resp.lsStates);
           }
           resp.lsStates.on('change', (function(_this) {
@@ -84,20 +91,22 @@
     };
 
     Thing.prototype.sync = function() {
-      var dLabel, dValue, _i, _j, _len, _len1, _ref, _ref1, _results;
-      console.log("sync");
+      var dLabel, dValue, _i, _j, _len, _len1, _ref, _ref1;
+      console.log("sync in thing");
+      console.log(this);
       _ref = this.lsProperties.defaultLabels;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dLabel = _ref[_i];
         this.unset(dLabel.key);
       }
       _ref1 = this.lsProperties.defaultValues;
-      _results = [];
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         dValue = _ref1[_j];
-        _results.push(this.unset(dValue.key));
+        this.unset(dValue.key);
       }
-      return _results;
+      console.log(this);
+      Backbone.Model.prototype.sync.call(this);
+      return console.log('done syncing');
     };
 
     Thing.prototype.createDefaultLabels = function() {
@@ -107,6 +116,9 @@
         dLabel = _ref[_i];
         newLabel = this.get('lsLabels').getOrCreateLabelByTypeAndKind(dLabel.type, dLabel.kind);
         this.set(dLabel.key, newLabel);
+        newLabel.set({
+          preferred: dLabel.preferred
+        });
       }
       console.log("created default labels");
       return console.log(this);
@@ -128,6 +140,16 @@
         if (dValue.unitType != null) {
           newValue.set({
             unitType: dValue.unitType
+          });
+        }
+        if (dValue.codeKind != null) {
+          newValue.set({
+            codeKind: dValue.codeKind
+          });
+        }
+        if (dValue.codeType != null) {
+          newValue.set({
+            codeType: dValue.codeType
           });
         }
         this.set(dValue.key, newValue);

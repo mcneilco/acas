@@ -112,9 +112,9 @@
         var rd;
         rd = lab.get('recordedDate');
         if (rd === "") {
-          return rd;
+          return Infinity;
         } else {
-          return -1;
+          return rd;
         }
       });
       return bestLabel;
@@ -294,7 +294,6 @@
       mStates = this.getStatesByTypeAndKind(sType, sKind);
       mState = mStates[0];
       if (mState == null) {
-        console.log("creating new state");
         mState = new State({
           lsType: sType,
           lsKind: sKind

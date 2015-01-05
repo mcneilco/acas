@@ -1,0 +1,153 @@
+<script type="text/template" id="AbstractBaseComponentParentView" xmlns="http://www.w3.org/1999/html">
+    <h5><span style="margin-left:20px;margin-top:30px;">Parent Registration</span></h5>
+    <div class="span10">
+        <div class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label">Parent ID</label>
+                <div class="controls">
+                    <span class="uneditable-input bv_parentCode" style="width:336px;">autofill when saved</span>
+                </div>
+            </div>
+            <div class="control-group bv_group_parentName">
+                <label class="control-label">*Name</label>
+                <div class="controls">
+                    <input class="bv_parentName" style="width:336px;" type="text" placeholder="">
+                </div>
+            </div>
+            <div class="control-group bv_group_recordedBy">
+                <label class="control-label">*Scientist</label>
+                <div class="controls">
+                    <select class="bv_recordedBy" style="width:350px;">
+                        <!--<option>Filled from first batch</option>-->
+                    </select>
+                </div>
+            </div>
+            <div class="control-group bv_group_completionDate">
+                <label class="control-label">*Date</label>
+                <div class="controls">
+                    <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                        <input class="bv_completionDate" type="text" value="" placeholder="Filled from first batch" style="width:310px;">
+                        <span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group bv_group_notebook">
+                <label class="control-label">*Notebook</label>
+                <div class="controls">
+                    <input class="bv_notebook" style="width:336px;" type="text" placeholder="Filled from first batch" />
+                </div>
+            </div>
+
+            <div class="bv_additionalParentAttributes"></div>
+
+            <div>
+                <button type="button" class="btn bv_updateParent pull-right hide" style="margin-right:200px;">Update</button>
+                <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;">Update Complete</div>
+                <div class="bv_updating hide" style="padding-top:5px;color:red;">Updating...</div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="AbstractBaseComponentBatchView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="span10">
+        <div class="form-horizontal well" style="width:625px;padding-left:0px;">
+            <div class="control-group">
+                <label class="control-label">Batch ID</label>
+                <div class="controls">
+                    <span class="uneditable-input bv_batchCode" style="width:336px;">autofill when saved</span>
+                </div>
+            </div>
+            <div class="control-group bv_group_recordedBy">
+                <label class="control-label">*Scientist</label>
+                <div class="controls">
+                    <select class="bv_recordedBy" style="width:350px;"></select>
+                </div>
+            </div>
+            <div class="control-group bv_group_completionDate">
+                <label class="control-label">*Date</label>
+                <div class="controls">
+                    <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                        <input class="bv_completionDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:310px;">
+                        <span class="add-on bv_completionDateIcon"><i class="icon-th"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="control-group bv_group_notebook">
+                <label class="control-label">*Notebook</label>
+                <div class="controls">
+                    <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
+                </div>
+            </div>
+            <div class="control-group bv_group_location">
+                <label class="control-label">*Location</label>
+                <div class="controls">
+                    <input class="bv_location" style="width:336px;" type="text" placeholder="" />
+                </div>
+            </div>
+            <div class="control-group bv_group_amount">
+                <label class="control-label">*Amount</label>
+                <div class="controls">
+                    <input class="bv_amount" style="width:336px;" type="text" placeholder="" />
+                    <span style="margin-left:5px;">g</span>
+                </div>
+            </div>
+
+            <div class="control-group bv_group_analyticalMethod" style="margin-bottom:0px;">
+                <label class="control-label">*Analytical Method</label>
+                <div class="controls">
+                    <span style="margin-left:6px;margin-bottom:5px;">File Type</span>
+                    <span style="margin-left:158px;margin-bottom:5px;">File Name</span>
+                        <span class="control-group bv_group_fileType pull-left">
+                            <select class="span6 bv_fileType" style="width:200px;"></select>
+                        </span>
+                    <button class="close bv_delete pull-right hide">&times;</button>
+
+                    <span class="span 5 bv_uploadFile" style="width:200px;height:40px;margin-left:0px;"></span>
+                </div>
+            </div>
+            <div>
+                <button type="button" class="btn bv_updateBatch pull-right hide" style="margin-right:10px;">Update</button>
+                <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;">Update Complete</div>
+                <div class="bv_updating hide" style="padding-top:5px;color:red;">Updating...</div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="AbstractBaseComponentBatchSelectView" xmlns="http://www.w3.org/1999/html">
+    <div class="span10">
+        <h5 style="margin-top:0px;margin-left:20px;">Batch Registration</h5>
+        <div class="form-horizontal" style="margin-left:27px;">
+            <div class="control-group bv_group_batchList">
+                <label class="control-label">*Select Batch ID</label>
+                <div class="controls">
+                    <select class="bv_batchList" style="width:349px;"></select>
+                </div>
+            </div>
+        </div>
+        <div style="margin-bottom:10px;width:700px;height:1px;background-color:#eeeeee;"></div>
+
+    </div>
+    <div class="bv_batchRegForm" style="margin-left:27px;"></div>
+
+    <!--<hr class="span8" style="margin-left: 50px;margin-right:50px;margin-top: 10px;margin-bottom:0px;width: 600px;"/>-->
+</script>
+
+<script type="text/template" id="AbstractBaseComponentView" xmlns="http://www.w3.org/1999/html">
+    <h4 class="bv_registrationTitle"></h4>
+    <div class="bv_parent"></div>
+    <hr class="span10" style="margin-left:0px;margin-right:50px;margin-top:15px;margin-bottom:0px;" />
+    <div class="bv_batch"></div>
+
+    <!-- SAVE-->
+    <div class="span10">
+        <button type="button" class="btn bv_save pull-right" style="margin-right:150px;">Save</button>
+        <div class="bv_saveComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:150px;">Save Complete</div>
+        <div class="bv_saving pull-right hide" style="padding-top:5px;color:red;margin-right:150px;">Saving...</div>
+    </div>
+
+</script>

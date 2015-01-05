@@ -56,7 +56,7 @@ class window.LabelList extends Backbone.Collection
 			lab.get('preferred') && (lab.get('lsType') == "name")
 		bestLabel = _.max preferredNames, (lab) ->
 			rd = lab.get 'recordedDate'
-			(if (rd is "") then rd else -1)
+			(if (rd is "") then Infinity else rd)
 		return bestLabel
 
 	setBestName: (label) ->
@@ -153,7 +153,6 @@ class window.StateList extends Backbone.Collection
 		mStates = @getStatesByTypeAndKind sType, sKind
 		mState = mStates[0] #TODO should do something smart if there are more than one
 		unless mState?
-			console.log "creating new state"
 			mState = new State
 				lsType: sType
 				lsKind: sKind

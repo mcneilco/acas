@@ -1,34 +1,34 @@
-class window.CationicBlockParent extends AbstractBaseComponentParent
+class window.SpacerParent extends AbstractBaseComponentParent
 	initialize: ->
 		@.set
 			lsType: "parent"
-			lsKind: "cationic block"
+			lsKind: "spacer"
 		super()
 
 	lsProperties:
 		defaultLabels: [
-			key: 'cationic block name'
+			key: 'spacer name'
 			type: 'name'
-			kind: 'cationic block'
+			kind: 'spacer'
 			preferred: true
 #			labelText: "" #gets created when createDefaultLabels is called
 		]
 		defaultValues: [
 			key: 'completion date'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
+			stateKind: 'spacer parent'
 			type: 'dateValue'
 			kind: 'completion date'
 		,
 			key: 'notebook'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
+			stateKind: 'spacer parent'
 			type: 'stringValue'
 			kind: 'notebook'
 		,
 			key: 'molecular weight'
 			stateType: 'metadata'
-			stateKind: 'cationic block parent'
+			stateKind: 'spacer parent'
 			type: 'numericValue' #used to set the lsValue subclass of the object
 			kind: 'molecular weight'
 			unitType: 'molecular weight'
@@ -80,12 +80,12 @@ class window.CationicBlockParent extends AbstractBaseComponentParent
 			return null
 
 
-class window.CationicBlockBatch extends AbstractBaseComponentBatch
+class window.SpacerBatch extends AbstractBaseComponentBatch
 
 	initialize: ->
 		@.set
 			lsType: "batch"
-			lsKind: "cationic block"
+			lsKind: "spacer"
 		#			analyticalFileType: "unassigned"
 		#			analyticalFileValue: ""
 		super()
@@ -96,13 +96,13 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 		defaultValues: [
 			key: 'completion date'
 			stateType: 'metadata'
-			stateKind: 'cationic block batch'
+			stateKind: 'spacer batch'
 			type: 'dateValue'
 			kind: 'completion date'
 		,
 			key: 'notebook'
 			stateType: 'metadata'
-			stateKind: 'cationic block batch'
+			stateKind: 'spacer batch'
 			type: 'stringValue'
 			kind: 'notebook'
 		,
@@ -121,8 +121,8 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 			kind: 'location'
 		]
 
-class window.CationicBlockParentController extends AbstractBaseComponentParentController
-	additionalParentAttributesTemplate: _.template($("#CationicBlockParentView").html())
+class window.SpacerParentController extends AbstractBaseComponentParentController
+	additionalParentAttributesTemplate: _.template($("#SpacerParentView").html())
 
 	events: ->
 		_(super()).extend(
@@ -132,46 +132,46 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 	initialize: ->
 		unless @model?
 			console.log "create new model in initialize"
-			@model=new CationicBlockParent()
-		@errorOwnerName = 'CationicBlockParentController'
+			@model=new SpacerParent()
+		@errorOwnerName = 'SpacerParentController'
 		super()
 	#TODO: add additional values
 
 	render: =>
 		unless @model?
-			@model = new CationicBlockParent()
+			@model = new SpacerParent()
 		super()
 		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
 
 	updateModel: =>
-		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
+		@model.get("spacer name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
 		@model.get("molecular weight").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_molecularWeight')))
 		super()
 
 
-class window.CationicBlockBatchController extends AbstractBaseComponentBatchController
+class window.SpacerBatchController extends AbstractBaseComponentBatchController
 
 	initialize: ->
 		unless @model?
 			console.log "create new model in initialize"
-			@model=new CationicBlockBatch()
-		@errorOwnerName = 'CationicBlockBatchController'
+			@model=new SpacerBatch()
+		@errorOwnerName = 'SpacerBatchController'
 		super()
 
 	render: =>
 		unless @model?
 			console.log "create new model"
-			@model = new CationicBlockBatch()
+			@model = new SpacerBatch()
 		super()
 
-class window.CationicBlockBatchSelectController extends AbstractBaseComponentBatchSelectController
+class window.SpacerBatchSelectController extends AbstractBaseComponentBatchSelectController
 
 	setupBatchRegForm: (batch)->
 		if batch?
 			model = batch
 		else
-			model = new CationicBlockBatch()
-		@batchController = new CationicBlockBatchController
+			model = new SpacerBatch()
+		@batchController = new SpacerBatchController
 			model: model
 			el: @$('.bv_batchRegForm')
 		super()
@@ -188,19 +188,19 @@ class window.CationicBlockBatchSelectController extends AbstractBaseComponentBat
 				dataType: 'json'
 				error: (err) ->
 					alert 'Could not get selected batch, creating new one'
-					@batchController.model = new CationicBlockBatch()
+					@batchController.model = new SpacerBatch()
 				success: (json) =>
 					if json.length == 0
 						alert 'Could not get selected batch, creating new one'
 					else
 						#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-						#								exp = new CationicBlockBatch json
-						pb = new CationicBlockBatch json
+						#								exp = new SpacerBatch json
+						pb = new SpacerBatch json
 						pb.set pb.parse(pb.attributes)
 						@setupBatchRegForm(pb)
 
-class window.CationicBlockController extends AbstractBaseComponentController
-	moduleLaunchName: "cationic block"
+class window.SpacerController extends AbstractBaseComponentController
+	moduleLaunchName: "spacer"
 
 	initialize: ->
 		if @model?
@@ -210,7 +210,7 @@ class window.CationicBlockController extends AbstractBaseComponentController
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
-						url: "/api/cationic blockParents/codeName/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/spacerParents/codeName/"+window.AppLaunchParams.moduleLaunchParams.code
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'
@@ -221,7 +221,7 @@ class window.CationicBlockController extends AbstractBaseComponentController
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								cbp = new CationicBlockParent json
-								cbp = new CationicBlockParent json[0]
+								cbp = new SpacerParent json[0]
 								cbp.set cbp.parse(cbp.attributes)
 								@model = cbp
 							@completeInitialization()
@@ -232,20 +232,20 @@ class window.CationicBlockController extends AbstractBaseComponentController
 
 	completeInitialization: =>
 		unless @model?
-			@model = new CationicBlockParent()
+			@model = new SpacerParent()
 		super()
-		@$('.bv_registrationTitle').html("Cationic Block Parent/Batch Registration")
+		@$('.bv_registrationTitle').html("Spacer Parent/Batch Registration")
 
 	setupParentController: ->
-		console.log "set up cationic block parent controller"
+		console.log "set up spacer parent controller"
 		console.log @model
-		@parentController = new CationicBlockParentController
+		@parentController = new SpacerParentController
 			model: @model
 			el: @$('.bv_parent')
 		super()
 
 	setupBatchSelectController: ->
-		@batchSelectController = new CationicBlockBatchSelectController
+		@batchSelectController = new SpacerBatchSelectController
 			el: @$('.bv_batch')
 			parentCodeName: @model.get('codeName')
 		super()
