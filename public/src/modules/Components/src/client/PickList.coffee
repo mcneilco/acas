@@ -181,12 +181,14 @@ class window.EditablePickListSelectController extends Backbone.View
 
 
 	setupEditablePickList: ->
+		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
+		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
 		@pickListController = new PickListSelectController
 			el: @$('.bv_parameterSelectList')
 			collection: @collection
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Rule"
+				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
 
 	setupEditingPrivileges: =>

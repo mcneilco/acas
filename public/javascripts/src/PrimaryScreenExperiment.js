@@ -1018,7 +1018,7 @@
         collection: this.normalizationList,
         insertFirstOption: new PickList({
           code: "unassigned",
-          name: "Select Rule"
+          name: "Select Normalization Rule"
         }),
         selectedCode: this.model.get('normalizationRule')
       });

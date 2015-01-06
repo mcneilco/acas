@@ -270,7 +270,7 @@
         collection: this.assayStageList,
         insertFirstOption: new PickList({
           code: "unassigned",
-          name: "Select assay stage"
+          name: "Select Assay Stage"
         }),
         selectedCode: this.model.getAssayStage().get('codeValue')
       });
