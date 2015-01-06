@@ -6,7 +6,7 @@
 #
 # Sam Meyer
 # sam@mcneilco.com
-# Copyright 2012-2014 John McNeil & Co. Inc.
+# Copyright 2012-2015 John McNeil & Co. Inc.
 #########################################################################
 # Parses a "Generic" formatted excel file into an upload file for ACAS
 #########################################################################
@@ -623,7 +623,9 @@ getExcelColumnFromNumber <- function(number) {
     }
   }))
 }
-extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaintyType, uncertaintyCodeWord, commentCol, commentCodeWord) {
+extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaintyType, uncertaintyCodeWord, 
+                              commentCol, commentCodeWord, stateAssignments, hiddenColumns, linkColumns, classRow,
+                              stateKindRow, stateTypeRow) {
   # Extracts result types, units, conc, and conc units from a data frame
   #
   # Args:
@@ -648,6 +650,9 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
                     ". All column headings must be unique."))
   }
   
+  ignoredHeadersBool <- valueKindsVector %in% ignoreHeaders
+  valueKindNotIgnored <- valueKindsVector[!ignoredHeadersBool]
+  
   emptyValueKinds <- is.na(valueKindsVector) | (trim(valueKindsVector) == "")
   if (any(emptyValueKinds)) {
     stopUser(paste0("Column ", paste(getExcelColumnFromNumber(which(emptyValueKinds)), collapse=", "), " has a blank column header. ",
@@ -662,14 +667,14 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
     }
   }
   
-  fillerArray <- array(dim = length(dataColumns))
+  fillerArray <- rep(NA, length(dataColumns))
   
   returnDataFrame <- data.frame("DataColumn" = fillerArray, "valueKind" = fillerArray, 
                                 "Units" = fillerArray, "Conc" = fillerArray, 
                                 "concUnits" = fillerArray, "reshapeText" = fillerArray)
   returnDataFrame$DataColumn <- dataColumns
   returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
-  returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
+  returnDataFrame$Units <-  getUnitFromParentheses(dataColumns)
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
   returnDataFrame$Conc <- as.numeric(gsub("[^0-9\\.]", "", concAndUnits))
   returnDataFrame$concUnits <- as.character(gsub("[^a-zA-Z]", "", concAndUnits))
@@ -677,12 +682,30 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   returnDataFrame$time <- as.numeric(gsub("[^0-9\\.]", "", timeAndUnits))
   returnDataFrame$timeUnit <- as.character(gsub("[^a-zA-Z]", "", timeAndUnits))
   # Mark standard deviation and comments with a text string
-  returnDataFrame$reshapeText <- ifelse(!is.na(uncertaintyType[2:length(uncertaintyType)]), 
+  uncertaintyTypeUsed <- uncertaintyType[valueKindsVector %in% valueKindNotIgnored]
+  commentColUsed <- commentCol[valueKindsVector %in% valueKindNotIgnored]
+  returnDataFrame$reshapeText <- ifelse(!is.na(uncertaintyTypeUsed), 
                                         paste0(uncertaintyCodeWord, dataColumns), dataColumns)
-  returnDataFrame$reshapeText <- ifelse(commentCol[2:length(commentCol)], 
+  returnDataFrame$reshapeText <- ifelse(commentColUsed, 
                                         paste0(commentCodeWord, returnDataFrame$reshapeText), returnDataFrame$reshapeText)
-  returnDataFrame$uncertaintyType <- uncertaintyType[2:length(uncertaintyType)]
-  returnDataFrame$isComment <- commentCol[2:length(commentCol)]
+  returnDataFrame$uncertaintyType <- uncertaintyTypeUsed
+  returnDataFrame$isComment <- commentColUsed
+  
+  # Add data class and hidden/shown to the valueKinds
+  returnDataFrame$dataClass <- classRow[!ignoredHeadersBool]
+  returnDataFrame$valueType <- translateClassToValueType(returnDataFrame$dataClass)
+  if(is.null(stateAssignments)) {
+    returnDataFrame$stateKind <- stateKindRow[!ignoredHeadersBool]
+    returnDataFrame$stateType <- stateTypeRow[!ignoredHeadersBool]
+  } else {
+    returnDataFrame$stateKind <- stateAssignments$stateKind[match(returnDataFrame$valueKind, stateAssignments$valueKind)]
+    returnDataFrame$stateType <- stateAssignments$stateType[match(returnDataFrame$valueKind, stateAssignments$valueKind)]
+    returnDataFrame[is.na(returnDataFrame$stateKind), "stateKind"] <- "results"
+    returnDataFrame[is.na(returnDataFrame$stateType), "stateType"] <- "data"
+  }
+  
+  returnDataFrame$publicData <- !hiddenColumns[!ignoredHeadersBool]
+  returnDataFrame$linkColumn <- linkColumns[!ignoredHeadersBool]
   
   # Return a data frame with the units separated from the type, and with uncertainties and comments marked
   return(returnDataFrame)
@@ -691,7 +714,7 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
 organizeCalculatedResults <- function(calculatedResults, inputFormat, formatParameters, mainCode, 
                                       lockCorpBatchId = TRUE, rawOnlyFormat = FALSE, 
                                       errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL,
-                                      stateAssignments = NULL) {
+                                      stateAssignments = NULL, concColumn = NULL) {
   # Organizes the calculated results section
   #
   # Args:
@@ -778,6 +801,9 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   if (!is.null(link)) {
     ignoreTheseAsValueKinds <- c(ignoreTheseAsValueKinds, "link")
   }
+  if (!is.null(concColumn)) {
+    ignoreTheseAsValueKinds <- c(ignoreTheseAsValueKinds, concColumn)
+  }
   
   # Mark standard deviation columns (designed to allow standard error as well in future)
   uncertaintyType <- rep(NA, length(classRow))
@@ -787,7 +813,9 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   commentCol <- tolower(classRow) == "comments"
   
   # Call the function that extracts valueKinds, units, conc, concunits from the headers
-  valueKinds <- extractValueKinds(calculatedResultsValueKindRow, ignoreTheseAsValueKinds, uncertaintyType, uncertaintyCodeWord, commentCol, commentCodeWord)
+  valueKinds <- extractValueKinds(calculatedResultsValueKindRow, ignoreTheseAsValueKinds, uncertaintyType, 
+                                  uncertaintyCodeWord, commentCol, commentCodeWord, stateAssignments, 
+                                  hiddenColumns, linkColumns, classRow, stateKindRow, stateTypeRow)
   
   if (any(duplicated(valueKinds$reshapeText[!is.na(valueKinds$uncertaintyType)]))) {
     stopUser("Only one standard deviation may be assigned for a column. Remove the duplicate standard deviation.")
@@ -814,29 +842,6 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
                 "'.")
     )
   }
-  
-  # Add data class and hidden/shown to the valueKinds
-  if (!is.null(mainCode)) {
-    notMainCode <- (calculatedResultsValueKindRow != mainCode) & 
-      (is.null(link) | (calculatedResultsValueKindRow != "link"))
-  } else {
-    notMainCode <- (is.null(link) | (calculatedResultsValueKindRow != "link"))
-  }
-  
-  valueKinds$dataClass <- classRow[notMainCode]
-  valueKinds$valueType <- translateClassToValueType(valueKinds$dataClass)
-  if(is.null(stateAssignments)) {
-    valueKinds$stateKind <- stateKindRow[notMainCode]
-    valueKinds$stateType <- stateTypeRow[notMainCode]
-  } else {
-    valueKinds$stateKind <- stateAssignments$stateKind[match(valueKinds$valueKind, stateAssignments$valueKind)]
-    valueKinds$stateType <- stateAssignments$stateType[match(valueKinds$valueKind, stateAssignments$valueKind)]
-    valueKinds[is.na(valueKinds$stateKind), "stateKind"] <- "results"
-    valueKinds[is.na(valueKinds$stateType), "stateType"] <- "data"
-  }
-  
-  valueKinds$publicData <- !hiddenColumns[notMainCode]
-  valueKinds$linkColumn <- linkColumns[notMainCode]
   
   # Grab the rows of the calculated data 
   results <- subset(calculatedResults, 1:nrow(calculatedResults) > 1)
@@ -900,8 +905,17 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   
   if (!is.null(mainCode)) {
     longResults$batchCode <- longResults[[mainCode]]
-  } else {
+  } else if (is.null(longResults$batchCode)) {
     longResults$batchCode <- NA
+  }
+  
+  if (!is.null(concColumn)) {
+    longResults$concentration <- longResults[[concColumn]]
+    longResults$concUnit <- getUnitFromParentheses(concColumn)
+    longResults[[concColumn]] <- NULL
+  } else {
+    longResults$concentration <- NA
+    longResults$concUnit <- NA
   }
   
   # Merge uncertainty
@@ -919,6 +933,8 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     valueKindAndUnit = unique(valueKindAndUnit),
     id = unique(id),
     batchCode = unique(batchCode), 
+    concentration = unique(concentration),
+    concUnit = unique(concUnit),
     UnparsedValue = UnparsedValue[is.na(uncertaintyType) & !isComment],
     uncertainty = if(any(!is.na(uncertaintyType))) {UnparsedValue[!is.na(uncertaintyType)]} else {NA},
     uncertaintyType = if(any(!is.na(uncertaintyType))) {uncertaintyType[!is.na(uncertaintyType)]} else {NA},
@@ -939,8 +955,11 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Add the extractValueKinds information to the long format
   matchOrder <- match(longResults$"valueKindAndUnit",valueKinds$reshapeText)
   longResults$"valueUnit" <- valueKinds$Units[matchOrder]
-  longResults$"concentration" <- valueKinds$Conc[matchOrder]
-  longResults$"concentrationUnit" <- valueKinds$concUnits[matchOrder]
+  if(all(is.na(longResults$concentration))) {
+    # runs when concColumn is used
+    longResults$concentration <- valueKinds$Conc[matchOrder]
+    longResults$concUnit <- valueKinds$concUnits[matchOrder]
+  }
   longResults$Class <- valueKinds$dataClass[matchOrder]
   longResults$valueType <- valueKinds$valueType[matchOrder]
   longResults$"valueKind" <- valueKinds$valueKind[matchOrder]
@@ -1024,7 +1043,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Clean up the data frame to look nice (remove extra columns)
   row.names(longResults) <- 1:nrow(longResults)
   
-  organizedData <- longResults[c("batchCode","valueKind","valueUnit","concentration","concentrationUnit", "time", 
+  organizedData <- longResults[c("batchCode","valueKind","valueUnit","concentration","concUnit", "time", 
                                  "timeUnit", "numericValue", "stringValue","valueOperator", "dateValue","clobValue",
                                  "urlValue", "fileValue", "inlineFileValue", "codeValue",
                                  "Class", "valueType", "valueKindAndUnit","publicData", "originalMainID", 
@@ -1629,7 +1648,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   }
   
   subjectData$stateID <- paste0(subjectData$subjectID, "-", subjectData$stateGroupIndex, "-", 
-                                subjectData$concentration, "-", subjectData$concentrationUnit, "-",
+                                subjectData$concentration, "-", subjectData$concUnit, "-",
                                 subjectData$time, "-", subjectData$timeUnit, "-", subjectData$subjectStateID)
   
   subjectData <- rbind.fill(subjectData, meltConcentrations(subjectData))
@@ -1868,18 +1887,16 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   ### Analysis Group Data
   # Not all of these will be filled
   analysisGroupData$tempStateId <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex, "-", 
-                                analysisGroupData$concentration, "-", analysisGroupData$concentrationUnit, "-",
+                                analysisGroupData$concentration, "-", analysisGroupData$concUnit, "-",
                                 analysisGroupData$time, "-", analysisGroupData$timeUnit, "-", analysisGroupData$stateKind)
   analysisGroupData$parentId <- analysisGroupData$experimentID
   analysisGroupData$tempId <- analysisGroupData$analysisGroupID
-  #   analysisGroupData <- rbind.fill(analysisGroupData, makeConcentrationColumns(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes2(analysisGroupData))
   analysisGroupData <- rbind.fill(analysisGroupData, gdpMeltBatchCodes(analysisGroupData))
   analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concentration <- NA
   if(length(analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit) != 0) {
     analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit <- NA
   }
-  analysisGroupData$concentrationUnit <- NULL
   
   #Note: use unitKind, not valueUnit
   # use operatorKind, not valueOperator
@@ -1894,14 +1911,12 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData$lsTransaction <- lsTransaction
     treatmentGroupData$recordedBy <- recordedBy
     
-    #     treatmentGroupData <- rbind.fill(treatmentGroupData, makeConcentrationColumns(treatmentGroupData))
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes2(treatmentGroupData))
     treatmentGroupData <- rbind.fill(treatmentGroupData, gdpMeltBatchCodes(treatmentGroupData))
     treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concentration <- NA
     if(length(treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit) != 0) {
       treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit <- NA
     }
-    treatmentGroupData$concentrationUnit <- NULL
     
     treatmentGroupData$unitKind <- treatmentGroupData$valueUnit
     if (!is.null(treatmentGroupData$valueOperator)) {
@@ -1918,21 +1933,21 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   if (!is.null(subjectData)) {
     subjectData$lsTransaction <- lsTransaction
     subjectData$recordedBy <- recordedBy
+    
+    subjectData$tempId <- subjectData$subjectID
+    subjectData$tempParentId <- subjectData$treatmentGroupID
    
-    #     subjectData <- rbind.fill(subjectData, makeConcentrationColumns(subjectData))
     subjectData <- rbind.fill(subjectData, meltTimes2(subjectData))
     subjectData <- rbind.fill(subjectData, gdpMeltBatchCodes(subjectData))
     subjectData[subjectData$valueKind != "batch code", ]$concentration <- NA
     if(length(subjectData[subjectData$valueKind != "batch code", ]$concUnit) != 0) {
       subjectData[subjectData$valueKind != "batch code", ]$concUnit <- NA
     }
-    subjectData$concentrationUnit <- NULL
     
     subjectData$unitKind <- subjectData$valueUnit
     subjectData$operatorKind <- subjectData$valueOperator
     subjectData$stateID <- NULL
-    subjectData$tempId <- subjectData$subjectID
-    subjectData$tempParentId <- subjectData$treatmentGroupID
+    
     subjectData$lsType <- "default"
     subjectData$lsKind <- "default"
   }
@@ -2317,14 +2332,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
 
 gdpMeltBatchCodes <- function(entityData) {
   # Check for missing batchCode
+  # TODO: this can probably replace meltBatchCodes2 in racas
   output <- data.frame()
   if (is.null(entityData$batchCode) || all(is.na(entityData$batchCode))) {
     return(output)
   }
   
-  optionalColumns <- c("lsTransaction", "recordedBy", "concentration", "concentrationUnit")
+  optionalColumns <- c("lsTransaction", "recordedBy", "concentration", "concUnit", "parentId", "tempParentId")
   
-  neededColumns <- c("batchCode", "tempStateId", "parentId", "tempId", "stateType", "stateKind")
+  neededColumns <- c("batchCode", "tempStateId", "tempId", "stateType", "stateKind")
   if (!all(neededColumns %in% names(entityData))) {stop("Internal error: missing needed columns")}
   
   usedColumns <- c(neededColumns, optionalColumns[optionalColumns %in% names(entityData)])
@@ -2336,43 +2352,10 @@ gdpMeltBatchCodes <- function(entityData) {
   batchCodeValues$valueType <- "codeValue"
   batchCodeValues$valueKind <- "batch code"
   batchCodeValues$publicData <- TRUE
-  if(length(unique(entityData$concentration)) != 1 && !is.na(unique(entityData$concentration))) {
-    batchCodeValues$concentration <- entityData$concentration
-    batchCodeValues$concUnit <- entityData$concentrationUnit
-  }
   batchCodeValues <- batchCodeValues[!is.na(batchCodeValues$codeValue), ]
   
   return(batchCodeValues)
 }
-
-makeConcentrationColumns <- function(entityData) {
-  if(any(is.na(entityData$concentration))) {
-    return(data.frame())
-  }
-  
-  optionalColumns <- c("lsTransaction", "recordedBy")
-  
-  neededColumns <- c("concentration", "concentrationUnit", "tempStateId", "parentId", "tempId", "stateType", "stateKind")
-  if (!all(neededColumns %in% names(entityData))) {stop("Internal error: missing needed columns")}
-  usedColumns <- c(neededColumns, optionalColumns[optionalColumns %in% names(entityData)])
-  
-  createConcentrationRows <- function(entityData) {
-    output <- unique(entityData[, usedColumns])
-    if (nrow(output) > 1) stop("Non-unique concentrations in a tempStateId")
-    output$concentration <- output$concentration
-    output$concUnit <- output$concentrationUnit
-    output$valueKind <- "tested concentration"
-    output$valueType <- "numericValue"
-    output$publicData <- TRUE
-#     output$concentration <- NULL
-    output$concentrationUnit <- NULL
-    return(output)
-  }
-  
-  output <- ddply(.data=entityData, .variables = c("tempStateId"), .fun = createConcentrationRows)
-  return(output)
-}
-
 getStateGroups <- function(formatSettings) {
   #Gets stateGroups from configuration list
   
@@ -2808,7 +2791,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   }
 }
 
-organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments, keepColumn, errorEnv, formatParameters) {
+organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments, keepColumn, errorEnv, formatParameters, concColumn) {
   # Returns two data.frames: subjectData and treatmentGroupData
   
   createPtgFunction <- function (groupByColumns) {
@@ -2826,7 +2809,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   subjectData2 <- organizeCalculatedResults(subjectData, inputFormat, formatParameters, mainCode, 
                                             lockCorpBatchId= F, errorEnv= errorEnv, precise = precise, link = link, 
                                             calculateGroupingID = preciseTreatmentGroupID, 
-                                            stateAssignments = stateAssignments)
+                                            stateAssignments = stateAssignments, concColumn = concColumn)
   subjectData2 <- as.data.table(subjectData2)
   
   subjectData2[, treatmentGroupID := groupingID]
@@ -2867,7 +2850,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit)]
   treatmentGroupData <- subjectData3[!is.na(groupingID), createTreatmentGroupData(.SD), 
                                      by = list(groupingID, valueType, valueKind, concentration, 
-                                               concentrationUnit, time, timeUnit, valueUnit, 
+                                               concUnit, time, timeUnit, valueUnit, 
                                                valueKindAndUnit, publicData, linkID, stateType,
                                                stateKind)]
   treatmentGroupData[valueKind %in% groupByColumnsNoUnit, c("uncertainty", "uncertaintyType") := list(NA_real_, NA_character_)]
@@ -2947,7 +2930,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       #subjectDataKept <- as.data.table(subjectData)
       #subjectDataKept2 <- subjectDataKept[!(rowID %in% removeRowID), createTreatmentGroupData(.SD), by = groupByColumns]
       
-      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = c("test compound treatment", "results", "results"))
+      stateAssignments <- data.frame(valueKind = c("Dose", "Response", "flag"), stateType = c("data", "data", "data"), stateKind = c("results", "results", "results"))
       
       intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, keepColumn=keepColumn, errorEnv=errorEnv, formatParameters =  formatParameters)
       subjectData <- intermedList$subjectData
@@ -2983,7 +2966,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       stateAssignments <- data.frame(
         valueKind = c("Dose", "Response", "flag"), 
         stateType = c("data", "data", "data"), 
-        stateKind = c("test compound treatment", "results", "results"),
+        stateKind = c("results", "results", "results"),
         stringsAsFactors = FALSE
       )
       
@@ -2991,8 +2974,17 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       intermedList <- organizeSubjectData(
         subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
         link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
-        formatParameters = formatParameters)
+        formatParameters = formatParameters, concColumn = "Dose (uM)")
+      
+      intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Dose"] <- "concentration"
+      intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Response"] <- "transformed efficacy"
+      intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Dose"] <- "concentration"
+      intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Response"] <- "transformed efficacy"
     }
   }
   return(intermedList)
+}
+getUnitFromParentheses <- function(columnHeaders) {
+  # gets text that is between two parentheses
+  gsub(".*\\((.*)\\).*||(.*)", "\\1", columnHeaders)
 }
