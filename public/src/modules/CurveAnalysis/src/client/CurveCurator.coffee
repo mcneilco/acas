@@ -413,7 +413,6 @@ class window.CurveEditorController extends Backbone.View
 	handleUpdateClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@oldID =  @model.get 'curveid'
-		console.log @model
 		@model.save({action: 'save', user: window.AppLaunchParams.loginUserName}, {success :@handleSaveSuccess, error: @handleSaveError})
 
 	handleApproveClicked: =>
@@ -475,7 +474,6 @@ class window.CurveList extends Backbone.Collection
 
 	getCurveByID: (curveID) =>
 		curve = @.findWhere({curveid: curveID})
-		console.log curve
 		return curve
 
 	getIndexByCurveID: (curveID) =>
@@ -485,17 +483,12 @@ class window.CurveList extends Backbone.Collection
 
 	updateCurveSummary: (oldID, newCurveID, dirty, category, userFlagStatus, algorithmFlagStatus) =>
 		curve = @getCurveByID(oldID)
-		console.log "old id #{oldID}"
-		console.log curve
-		window.blah = curve
 		curve.set
 			curveid: newCurveID
 			dirty: dirty
-			userFlagStatus: algorithmFlagStatus
+			userFlagStatus: userFlagStatus
 			algorithmFlagStatus: algorithmFlagStatus
 			category: category
-		console.log "new id #{newCurveID}"
-		console.log curve
 
 	updateDirtyFlag: (curveid, dirty) =>
 		curve = @getCurveByID(curveid)
@@ -594,7 +587,7 @@ class window.CurveSummaryController extends Backbone.View
 			@$('.bv_flagUser').removeClass('btn-danger')
 			@$('.bv_flagUser').addClass('btn-grey')
 		else
-			if @model.get('flagUser') == 'approved'
+			if @model.get('userFlagStatus') == 'approved'
 				@$('.bv_na').hide()
 				@$('.bv_thumbsUp').show()
 				@$('.bv_thumbsDown').hide()
@@ -624,16 +617,15 @@ class window.CurveSummaryController extends Backbone.View
 		@approveReject("rejected")
 
 	userNA: ->
-		@approveReject("NA")
+		@approveReject("")
 
 	approveReject: (decision) ->
 		if !@model.get 'dirty'
-			@setUserFlag(decision)
+			@setUserFlagStatus(decision)
 		else
 			@trigger 'showCurveEditorDirtyPanel'
 
 	setUserFlagStatus: (userFlagStatus) =>
-#		UtilityFunctions::showProgressModal $('.bv_curveCuratorDropDown')
 		@disableSummary()
 		@model.save(userFlagStatus: userFlagStatus, user: window.AppLaunchParams.loginUserName, {
 			wait: true,

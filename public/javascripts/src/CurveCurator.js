@@ -601,7 +601,6 @@
     CurveEditorController.prototype.handleUpdateClicked = function() {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_statusDropDown'));
       this.oldID = this.model.get('curveid');
-      console.log(this.model);
       return this.model.save({
         action: 'save',
         user: window.AppLaunchParams.loginUserName
@@ -723,7 +722,6 @@
       curve = this.findWhere({
         curveid: curveID
       });
-      console.log(curve);
       return curve;
     };
 
@@ -737,18 +735,13 @@
     CurveList.prototype.updateCurveSummary = function(oldID, newCurveID, dirty, category, userFlagStatus, algorithmFlagStatus) {
       var curve;
       curve = this.getCurveByID(oldID);
-      console.log("old id " + oldID);
-      console.log(curve);
-      window.blah = curve;
-      curve.set({
+      return curve.set({
         curveid: newCurveID,
         dirty: dirty,
-        userFlagStatus: algorithmFlagStatus,
+        userFlagStatus: userFlagStatus,
         algorithmFlagStatus: algorithmFlagStatus,
         category: category
       });
-      console.log("new id " + newCurveID);
-      return console.log(curve);
     };
 
     CurveList.prototype.updateDirtyFlag = function(curveid, dirty) {
@@ -926,7 +919,7 @@
         this.$('.bv_flagUser').removeClass('btn-danger');
         this.$('.bv_flagUser').addClass('btn-grey');
       } else {
-        if (this.model.get('flagUser') === 'approved') {
+        if (this.model.get('userFlagStatus') === 'approved') {
           this.$('.bv_na').hide();
           this.$('.bv_thumbsUp').show();
           this.$('.bv_thumbsDown').hide();
@@ -960,12 +953,12 @@
     };
 
     CurveSummaryController.prototype.userNA = function() {
-      return this.approveReject("NA");
+      return this.approveReject("");
     };
 
     CurveSummaryController.prototype.approveReject = function(decision) {
       if (!this.model.get('dirty')) {
-        return this.setUserFlag(decision);
+        return this.setUserFlagStatus(decision);
       } else {
         return this.trigger('showCurveEditorDirtyPanel');
       }
