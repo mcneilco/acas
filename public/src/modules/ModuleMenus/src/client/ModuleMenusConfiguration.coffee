@@ -62,6 +62,11 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "SpacerController"
 		autoLaunchName:"spacer"
 	,
+		isHeader: false
+		menuName: "Internalization Agent"
+		mainControllerClassName: "InternalizationAgentController"
+		autoLaunchName:"internalization_agent"
+	,
 		isHeader: true
 		menuName: "Inventory"
 	,

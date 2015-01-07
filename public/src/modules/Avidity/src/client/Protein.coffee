@@ -33,6 +33,9 @@ class window.ProteinParent extends AbstractBaseComponentParent
 			stateKind: 'protein parent'
 			type: 'codeValue'
 			kind: 'type'
+			codeType: 'protein'
+			codeKind: 'type'
+			codeOrigin: 'ACAS DDICT'
 		,
 			key: 'aa sequence'
 			stateType: 'metadata'
@@ -143,7 +146,7 @@ class window.ProteinParentController extends AbstractBaseComponentParentControll
 	events: ->
 		_(super()).extend(
 			"change .bv_type": "attributeChanged"
-			"change .bv_sequence": "attributeChanged"
+			"keyup .bv_sequence": "attributeChanged"
 		)
 
 	initialize: ->

@@ -152,8 +152,8 @@ describe 'Spacer testing', ->
 				it "should exist", ->
 					expect(@spc).toBeDefined()
 				it "should load the template", ->
-					expect(@spc.$('.bv_parentCode').html()).toEqual "autofill when saved"
-				it "should load the additional parent attributes temlate", ->
+					expect(@spc.$('.bv_parentCode').html()).toEqual "Autofilled when saved"
+				it "should load the additional parent attributes template", ->
 					expect(@spc.$('.bv_molecularWeight').length).toEqual 1
 		describe "When instantiated from existing", ->
 			beforeEach ->
@@ -227,9 +227,9 @@ describe 'Spacer testing', ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@spc.isValid()).toBeTruthy()
-				#					it "save button should be enabled", ->
-				#						runs ->
-				#							expect(@spc.$('.bv_save').attr('disabled')).toBeUndefined()
+					it "should have the update button be enabled", ->
+						runs ->
+							expect(@spc.$('.bv_updateParent').attr('disabled')).toBeUndefined()
 				describe "when name field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -241,6 +241,9 @@ describe 'Spacer testing', ->
 					it "should show error in name field", ->
 						runs ->
 							expect(@spc.$('.bv_group_parentName').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@spc.$('.bv_updateParent').attr('disabled')).toEqual 'disabled'
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
@@ -277,105 +280,105 @@ describe 'Spacer testing', ->
 	describe "Spacer Batch model testing", ->
 		describe "when loaded from new", ->
 			beforeEach ->
-				@cbb= new SpacerBatch()
+				@sb= new SpacerBatch()
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
-					expect(@cbb).toBeDefined()
+					expect(@sb).toBeDefined()
 				it "should have a type", ->
-					expect(@cbb.get('lsType')).toEqual "batch"
+					expect(@sb.get('lsType')).toEqual "batch"
 				it "should have a kind", ->
-					expect(@cbb.get('lsKind')).toEqual "spacer"
+					expect(@sb.get('lsKind')).toEqual "spacer"
 				it "should have an empty scientist", ->
-					expect(@cbb.get('recordedBy')).toEqual ""
+					expect(@sb.get('recordedBy')).toEqual ""
 				it "should have a recordedDate set to now", ->
-					expect(new Date(@cbb.get('recordedDate')).getHours()).toEqual new Date().getHours()
+					expect(new Date(@sb.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				#				it "should have an analytical method file type", ->
-				#					expect(@cbb.get('analyticalFileType')).toEqual "unassigned"
+				#					expect(@sb.get('analyticalFileType')).toEqual "unassigned"
 				#				it "should have an analytical method fileValue", ->
-				#					expect(@cbb.get('analyticalFileType')).toEqual "unassigned"
+				#					expect(@sb.get('analyticalFileType')).toEqual "unassigned"
 				describe "model attributes for each value in defaultValues", ->
 					it "Should have a model attribute for completion date", ->
-						expect(@cbb.get("completion date")).toBeDefined()
+						expect(@sb.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
-						expect(@cbb.get("notebook")).toBeDefined()
+						expect(@sb.get("notebook")).toBeDefined()
 					#					it "Should have a model attribute for analytical method file type", ->
-					#						expect(@cbb.get("analytical file type")).toBeDefined()
+					#						expect(@sb.get("analytical file type")).toBeDefined()
 					it "Should have a model attribute for amount", ->
-						expect(@cbb.get("amount")).toBeDefined()
+						expect(@sb.get("amount")).toBeDefined()
 					it "Should have a model attribute for location", ->
-						expect(@cbb.get("location")).toBeDefined()
+						expect(@sb.get("location")).toBeDefined()
 
 		describe "When created from existing", ->
 			beforeEach ->
-				@cbb = new SpacerBatch JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch))
+				@sb = new SpacerBatch JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch))
 			describe "after initial load", ->
 				it "should be defined", ->
-					expect(@cbb).toBeDefined()
+					expect(@sb).toBeDefined()
 				it "should have a type", ->
-					expect(@cbb.get('lsType')).toEqual "batch"
+					expect(@sb.get('lsType')).toEqual "batch"
 				it "should have a kind", ->
-					expect(@cbb.get('lsKind')).toEqual "spacer"
+					expect(@sb.get('lsKind')).toEqual "spacer"
 				it "should have a scientist set", ->
-					expect(@cbb.get('recordedBy')).toEqual "jane"
+					expect(@sb.get('recordedBy')).toEqual "jane"
 				it "should have a recordedDate set", ->
-					expect(@cbb.get('recordedDate')).toEqual 1375141508000
+					expect(@sb.get('recordedDate')).toEqual 1375141508000
 				it "Should have a lsStates with the states in defaultStates", ->
-					expect(@cbb.get('lsStates')).toBeDefined()
-					expect(@cbb.get("lsStates").length).toEqual 2
-					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "spacer batch").length).toEqual 1
-					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
+					expect(@sb.get('lsStates')).toBeDefined()
+					expect(@sb.get("lsStates").length).toEqual 2
+					expect(@sb.get("lsStates").getStatesByTypeAndKind("metadata", "spacer batch").length).toEqual 1
+					expect(@sb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
 				it "Should have a completion date value", ->
-					expect(@cbb.get("completion date").get("value")).toEqual 1342080000000
+					expect(@sb.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
-					expect(@cbb.get("notebook").get("value")).toEqual "Notebook 1"
+					expect(@sb.get("notebook").get("value")).toEqual "Notebook 1"
 				it "Should have an amount value", ->
-					expect(@cbb.get("amount").get("value")).toEqual 2.3
+					expect(@sb.get("amount").get("value")).toEqual 2.3
 				it "Should have a location value", ->
-					expect(@cbb.get("location").get("value")).toEqual "Cabinet 1"
+					expect(@sb.get("location").get("value")).toEqual "Cabinet 1"
 
 		describe "model validation", ->
 			beforeEach ->
-				@cbb = new SpacerBatch window.spacerTestJSON.spacerBatch
+				@sb = new SpacerBatch window.spacerTestJSON.spacerBatch
 			it "should be valid when loaded from saved", ->
-				expect(@cbb.isValid()).toBeTruthy()
+				expect(@sb.isValid()).toBeTruthy()
 			it "should be invalid when recorded date is empty", ->
-				@cbb.set recordedDate: new Date("").getTime()
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@sb.set recordedDate: new Date("").getTime()
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
 					err.attribute=='recordedDate'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
-				@cbb.set recordedBy: ""
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@sb.set recordedBy: ""
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
 					err.attribute=='recordedBy'
 				)
 			it "should be invalid when completion date is empty", ->
-				@cbb.get("completion date").set("value", new Date("").getTime())
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@sb.get("completion date").set("value", new Date("").getTime())
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
 					err.attribute=='completionDate'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when notebook is empty", ->
-				@cbb.get("notebook").set("value", "")
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@sb.get("notebook").set("value", "")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when amount is NaN", ->
-				@cbb.get("amount").set("value", "fred")
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@sb.get("amount").set("value", "fred")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
 					err.attribute=='amount'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when location is empty", ->
-				@cbb.get("location").set("value", "")
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@sb.get("location").set("value", "")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
 					err.attribute=='location'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
@@ -383,171 +386,174 @@ describe 'Spacer testing', ->
 	describe "Spacer Batch Controller testing", ->
 		describe "When instantiated from new", ->
 			beforeEach ->
-				@cbb = new SpacerBatch()
-				@cbbc = new SpacerBatchController
-					model: @cbb
+				@sb = new SpacerBatch()
+				@sbc = new SpacerBatchController
+					model: @sb
 					el: $('#fixture')
-				@cbbc.render()
+				@sbc.render()
 			describe "basic existence tests", ->
 				it "should exist", ->
-					expect(@cbbc).toBeDefined()
+					expect(@sbc).toBeDefined()
 				it "should load the template", ->
-					expect(@cbbc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					expect(@sbc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "When instantiated from existing", ->
 			beforeEach ->
-				@cbb = new SpacerBatch JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch))
-				@cbbc = new SpacerBatchController
-					model: @cbb
+				@sb = new SpacerBatch JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch))
+				@sbc = new SpacerBatchController
+					model: @sb
 					el: $('#fixture')
-				@cbbc.render()
+				@sbc.render()
 			describe "render existing parameters", ->
 				it "should show the spacer batch id", ->
-					expect(@cbbc.$('.bv_batchCode').val()).toEqual "SP000001-1"
+					expect(@sbc.$('.bv_batchCode').val()).toEqual "SP000001-1"
 				it "should fill the scientist field", ->
 					waitsFor ->
-						@cbbc.$('.bv_recordedBy option').length > 0
+						@sbc.$('.bv_recordedBy option').length > 0
 					, 1000
 					runs ->
-						expect(@cbbc.$('.bv_recordedBy').val()).toEqual "jane"
+						expect(@sbc.$('.bv_recordedBy').val()).toEqual "jane"
 				it "should fill the completion date field", ->
-					expect(@cbbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
+					expect(@sbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
-					expect(@cbbc.$('.bv_notebook').val()).toEqual "Notebook 1"
+					expect(@sbc.$('.bv_notebook').val()).toEqual "Notebook 1"
 				it "should fill the amount field", ->
-					expect(@cbbc.$('.bv_amount').val()).toEqual "2.3"
+					expect(@sbc.$('.bv_amount').val()).toEqual "2.3"
 				it "should fill the location field", ->
-					expect(@cbbc.$('.bv_location').val()).toEqual "Cabinet 1"
+					expect(@sbc.$('.bv_location').val()).toEqual "Cabinet 1"
 			describe "model updates", ->
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
-						@cbbc.$('.bv_recordedBy option').length > 0
+						@sbc.$('.bv_recordedBy option').length > 0
 					, 1000
 					runs ->
-						@cbbc.$('.bv_recordedBy').val('unassigned')
-						@cbbc.$('.bv_recordedBy').change()
-						expect(@cbbc.model.get('recordedBy')).toEqual "unassigned"
+						@sbc.$('.bv_recordedBy').val('unassigned')
+						@sbc.$('.bv_recordedBy').change()
+						expect(@sbc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
-					@cbbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@cbbc.$('.bv_completionDate').change()
-					expect(@cbbc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
+					@sbc.$('.bv_completionDate').val(" 2013-3-16   ")
+					@sbc.$('.bv_completionDate').change()
+					expect(@sbc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
-					@cbbc.$('.bv_notebook').val(" Updated notebook  ")
-					@cbbc.$('.bv_notebook').change()
-					expect(@cbbc.model.get('notebook').get('value')).toEqual "Updated notebook"
+					@sbc.$('.bv_notebook').val(" Updated notebook  ")
+					@sbc.$('.bv_notebook').change()
+					expect(@sbc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when amount is changed", ->
-					@cbbc.$('.bv_amount').val(" 12  ")
-					@cbbc.$('.bv_amount').change()
-					expect(@cbbc.model.get('amount').get('value')).toEqual 12
+					@sbc.$('.bv_amount').val(" 12  ")
+					@sbc.$('.bv_amount').change()
+					expect(@sbc.model.get('amount').get('value')).toEqual 12
 				it "should update model when location is changed", ->
-					@cbbc.$('.bv_location').val(" Updated location  ")
-					@cbbc.$('.bv_location').change()
-					expect(@cbbc.model.get('location').get('value')).toEqual "Updated location"
+					@sbc.$('.bv_location').val(" Updated location  ")
+					@sbc.$('.bv_location').change()
+					expect(@sbc.model.get('location').get('value')).toEqual "Updated location"
 
 			describe "controller validation rules", ->
 				beforeEach ->
 					waitsFor ->
-						@cbbc.$('.bv_recordedBy option').length > 0
+						@sbc.$('.bv_recordedBy option').length > 0
 					, 1000
 					runs ->
-						@cbbc.$('.bv_recordedBy').val("bob")
-						@cbbc.$('.bv_recordedBy').change()
-						@cbbc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@cbbc.$('.bv_completionDate').change()
-						@cbbc.$('.bv_notebook').val("my notebook")
-						@cbbc.$('.bv_notebook').change()
-						@cbbc.$('.bv_amount').val(" 24")
-						@cbbc.$('.bv_amount').change()
-						@cbbc.$('.bv_location').val(" Hood 4")
-						@cbbc.$('.bv_location').change()
+						@sbc.$('.bv_recordedBy').val("bob")
+						@sbc.$('.bv_recordedBy').change()
+						@sbc.$('.bv_completionDate').val(" 2013-3-16   ")
+						@sbc.$('.bv_completionDate').change()
+						@sbc.$('.bv_notebook').val("my notebook")
+						@sbc.$('.bv_notebook').change()
+						@sbc.$('.bv_amount').val(" 24")
+						@sbc.$('.bv_amount').change()
+						@sbc.$('.bv_location').val(" Hood 4")
+						@sbc.$('.bv_location').change()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
-							expect(@cbbc.isValid()).toBeTruthy()
-				#					it "save button should be enabled", ->
-				#						runs ->
-				#							expect(@spc.$('.bv_save').attr('disabled')).toBeUndefined()
+							expect(@sbc.isValid()).toBeTruthy()
+					it "save button should be enabled", ->
+						runs ->
+							expect(@sbc.$('.bv_saveBatch').attr('disabled')).toBeUndefined()
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_recordedBy').val("")
-							@cbbc.$('.bv_recordedBy').change()
+							@sbc.$('.bv_recordedBy').val("")
+							@sbc.$('.bv_recordedBy').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@sbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@sbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_completionDate').val("")
-							@cbbc.$('.bv_completionDate').change()
+							@sbc.$('.bv_completionDate').val("")
+							@sbc.$('.bv_completionDate').change()
 					it "should show error in date field", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
+							expect(@sbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
 				describe "when notebook not filled", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_notebook').val("")
-							@cbbc.$('.bv_notebook').change()
+							@sbc.$('.bv_notebook').val("")
+							@sbc.$('.bv_notebook').change()
 					it "should show error on notebook field", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
+							expect(@sbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
 				describe "when amount not filled", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_amount').val("")
-							@cbbc.$('.bv_amount').change()
+							@sbc.$('.bv_amount').val("")
+							@sbc.$('.bv_amount').change()
 					it "should show error on amount field", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
+							expect(@sbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
 				describe "when location not filled", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_location').val("")
-							@cbbc.$('.bv_location').change()
+							@sbc.$('.bv_location').val("")
+							@sbc.$('.bv_location').change()
 					it "should show error on location field", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_location').hasClass('error')).toBeTruthy()
+							expect(@sbc.$('.bv_group_location').hasClass('error')).toBeTruthy()
 
 	describe "Spacer Batch Select Controller testing", ->
 		beforeEach ->
-			@cbb = new SpacerBatch()
-			@cbbsc = new SpacerBatchSelectController
-				model: @cbb
+			@sb = new SpacerBatch()
+			@sbsc = new SpacerBatchSelectController
+				model: @sb
 				el: $('#fixture')
-			@cbbsc.render()
+			@sbsc.render()
 		describe "When instantiated", ->
 			describe "basic existence tests", ->
 				it "should exist", ->
-					expect(@cbbsc).toBeDefined()
+					expect(@sbsc).toBeDefined()
 				it "should load the template", ->
-					expect(@cbbsc.$('.bv_batchList').length).toEqual 1
+					expect(@sbsc.$('.bv_batchList').length).toEqual 1
 			describe "rendering", ->
 				it "should have the batch list default to register new batch", ->
 					waitsFor ->
-						@cbbsc.$('.bv_batchList option').length > 0
+						@sbsc.$('.bv_batchList option').length > 0
 					, 1000
 					runs ->
-						expect(@cbbsc.$('.bv_batchList').val()).toEqual "new batch"
+						expect(@sbsc.$('.bv_batchList').val()).toEqual "new batch"
 				it "should a new batch registration form", ->
-					console.log @cbbsc.$('.bv_batchCode')
-					expect(@cbbsc.$('.bv_batchCode').val()).toEqual ""
-					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					console.log @sbsc.$('.bv_batchCode')
+					expect(@sbsc.$('.bv_batchCode').val()).toEqual ""
+					expect(@sbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "behavior", ->
 			it "should show the information for a selected batch", ->
 				waitsFor ->
-					@cbbsc.$('.bv_batchList option').length > 0
+					@sbsc.$('.bv_batchList option').length > 0
 				, 1000
 				runs ->
-					console.log @cbbsc.$('.bv_batchList')
-					@cbbsc.$('.bv_batchList').val("CB000001-1")
-					@cbbsc.$('.bv_batchList').change()
+					console.log @sbsc.$('.bv_batchList')
+					@sbsc.$('.bv_batchList').val("CB000001-1")
+					@sbsc.$('.bv_batchList').change()
 				waitsFor ->
-					@cbbsc.$('.bv_recordedBy option').length > 0
+					@sbsc.$('.bv_recordedBy option').length > 0
 				, 1000
 				runs ->
 					waits(1000)
 				runs ->
-					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "CB000001-1"
-					expect(@cbbsc.$('.bv_recordedBy').val()).toEqual "jane"
+					expect(@sbsc.$('.bv_batchCode').html()).toEqual "CB000001-1"
+					expect(@sbsc.$('.bv_recordedBy').val()).toEqual "jane"
 
 	describe "Spacer Controller", ->
 		beforeEach ->

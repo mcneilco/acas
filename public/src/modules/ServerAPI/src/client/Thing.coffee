@@ -97,6 +97,8 @@ class window.Thing extends Backbone.Model
 				newValue.set codeKind: dValue.codeKind
 			if dValue.codeType?
 				newValue.set codeType: dValue.codeType
+			if dValue.codeOrigin?
+				newValue.set codeOrigin: dValue.codeOrigin
 
 			#Setting dValue.key attribute in @ to point to the newValue
 			@set dValue.key, newValue

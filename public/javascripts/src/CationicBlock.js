@@ -193,7 +193,7 @@
 
     CationicBlockParentController.prototype.events = function() {
       return _(CationicBlockParentController.__super__.events.call(this)).extend({
-        "change .bv_molecularWeight": "attributeChanged"
+        "keyup .bv_molecularWeight": "attributeChanged"
       });
     };
 

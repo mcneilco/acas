@@ -237,7 +237,7 @@
             return expect(this.ppc).toBeDefined();
           });
           it("should load the template", function() {
-            return expect(this.ppc.$('.bv_parentCode').html()).toEqual("autofill when saved");
+            return expect(this.ppc.$('.bv_parentCode').html()).toEqual("Autofilled when saved");
           });
           return it("should load the additional parent attributes template", function() {
             return expect(this.ppc.$('.bv_type').length).toEqual(1);
@@ -352,9 +352,14 @@
             });
           });
           describe("form validation setup", function() {
-            return it("should be valid if form fully filled out", function() {
+            it("should be valid if form fully filled out", function() {
               return runs(function() {
                 return expect(this.ppc.isValid()).toBeTruthy();
+              });
+            });
+            return it("should have the update button be enabled", function() {
+              return runs(function() {
+                return expect(this.ppc.$('.bv_updateParent').attr('disabled')).toBeUndefined();
               });
             });
           });
@@ -370,9 +375,14 @@
                 return expect(this.ppc.isValid()).toBeFalsy();
               });
             });
-            return it("should show error in name field", function() {
+            it("should show error in name field", function() {
               return runs(function() {
                 return expect(this.ppc.$('.bv_group_parentName').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.ppc.$('.bv_updateParent').attr('disabled')).toEqual('disabled');
               });
             });
           });
@@ -602,7 +612,7 @@
             return expect(this.pbc).toBeDefined();
           });
           return it("should load the template", function() {
-            return expect(this.pbc.$('.bv_batchCode').html()).toEqual("autofill when saved");
+            return expect(this.pbc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
           });
         });
       });
@@ -691,9 +701,14 @@
             });
           });
           describe("form validation setup", function() {
-            return it("should be valid if form fully filled out", function() {
+            it("should be valid if form fully filled out", function() {
               return runs(function() {
                 return expect(this.pbc.isValid()).toBeTruthy();
+              });
+            });
+            return it("save button should be enabled", function() {
+              return runs(function() {
+                return expect(this.pbc.$('.bv_saveBatch').attr('disabled')).toBeUndefined();
               });
             });
           });
@@ -704,9 +719,14 @@
                 return this.pbc.$('.bv_recordedBy').change();
               });
             });
-            return it("should show error on scientist dropdown", function() {
+            it("should show error on scientist dropdown", function() {
               return runs(function() {
                 return expect(this.pbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.pbc.$('.bv_saveBatch').attr('disabled')).toEqual('disabled');
               });
             });
           });
@@ -795,7 +815,7 @@
           return it("should a new batch registration form", function() {
             console.log(this.pbsc.$('.bv_batchCode'));
             expect(this.pbsc.$('.bv_batchCode').val()).toEqual("");
-            return expect(this.pbsc.$('.bv_batchCode').html()).toEqual("autofill when saved");
+            return expect(this.pbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
           });
         });
       });

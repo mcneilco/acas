@@ -81,11 +81,11 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 	template: _.template($("#AbstractBaseComponentParentView").html())
 
 	events: ->
-		"change .bv_parentName": "attributeChanged"
+		"keyup .bv_parentName": "attributeChanged"
 		"change .bv_recordedBy": "attributeChanged"
-		"change .bv_completionDate": "attributeChanged"
+		"keyup .bv_completionDate": "attributeChanged"
 		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
-		"change .bv_notebook": "attributeChanged"
+		"keyup .bv_notebook": "attributeChanged"
 		"click .bv_updateParent": "handleUpdateParent"
 
 	initialize: ->
@@ -200,11 +200,11 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 
 	events: ->
 		"change .bv_recordedBy": "attributeChanged"
-		"change .bv_completionDate": "attributeChanged"
+		"keyup .bv_completionDate": "attributeChanged"
 		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
-		"change .bv_notebook": "attributeChanged"
-		"change .bv_amount": "attributeChanged"
-		"change .bv_location": "attributeChanged"
+		"keyup .bv_notebook": "attributeChanged"
+		"keyup .bv_amount": "attributeChanged"
+		"keyup .bv_location": "attributeChanged"
 		"click .bv_saveBatch": "handleSaveBatch"
 
 	initialize: ->
@@ -226,6 +226,9 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 #			@$('.bv_saveBatchComplete').hide()
 		$(@el).empty()
 		$(@el).html @template()
+		console.log @additionalBatchAttributesTemplate?
+		if @additionalBatchAttributesTemplate?
+			@$('.bv_additionalBatchAttributes').html @additionalBatchAttributesTemplate()
 		@setupRecordedBySelect()
 
 
@@ -301,7 +304,7 @@ class window.AbstractBaseComponentBatchSelectController extends Backbone.View
 	template: _.template($("#AbstractBaseComponentBatchSelectView").html())
 
 	events: ->
-		"change .bv_batchList": "handleSelectedBatchChanged"
+		"keyup .bv_batchList": "handleSelectedBatchChanged"
 
 	initialize: ->
 		$(@el).empty()

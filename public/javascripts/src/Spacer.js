@@ -193,7 +193,7 @@
 
     SpacerParentController.prototype.events = function() {
       return _(SpacerParentController.__super__.events.call(this)).extend({
-        "change .bv_molecularWeight": "attributeChanged"
+        "keyup .bv_molecularWeight": "attributeChanged"
       });
     };
 

@@ -170,7 +170,7 @@ describe 'Protein testing', ->
 				it "should exist", ->
 					expect(@ppc).toBeDefined()
 				it "should load the template", ->
-					expect(@ppc.$('.bv_parentCode').html()).toEqual "autofill when saved"
+					expect(@ppc.$('.bv_parentCode').html()).toEqual "Autofilled when saved"
 				it "should load the additional parent attributes template", ->
 					expect(@ppc.$('.bv_type').length).toEqual 1
 		describe "When instantiated from existing", ->
@@ -262,9 +262,9 @@ describe 'Protein testing', ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@ppc.isValid()).toBeTruthy()
-				#					it "save button should be enabled", ->
-				#						runs ->
-				#							expect(@ppc.$('.bv_save').attr('disabled')).toBeUndefined()
+					it "should have the update button be enabled", ->
+						runs ->
+							expect(@ppc.$('.bv_updateParent').attr('disabled')).toBeUndefined()
 				describe "when name field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -276,6 +276,9 @@ describe 'Protein testing', ->
 					it "should show error in name field", ->
 						runs ->
 							expect(@ppc.$('.bv_group_parentName').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@ppc.$('.bv_updateParent').attr('disabled')).toEqual 'disabled'
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
@@ -435,7 +438,7 @@ describe 'Protein testing', ->
 				it "should exist", ->
 					expect(@pbc).toBeDefined()
 				it "should load the template", ->
-					expect(@pbc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					expect(@pbc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "When instantiated from existing", ->
 			beforeEach ->
 				@pb = new ProteinBatch JSON.parse(JSON.stringify(window.proteinTestJSON.proteinBatch))
@@ -506,9 +509,9 @@ describe 'Protein testing', ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@pbc.isValid()).toBeTruthy()
-				#					it "save button should be enabled", ->
-				#						runs ->
-				#							expect(@ppc.$('.bv_save').attr('disabled')).toBeUndefined()
+					it "save button should be enabled", ->
+						runs ->
+							expect(@pbc.$('.bv_saveBatch').attr('disabled')).toBeUndefined()
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
@@ -517,6 +520,9 @@ describe 'Protein testing', ->
 					it "should show error on scientist dropdown", ->
 						runs ->
 							expect(@pbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@pbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -573,7 +579,7 @@ describe 'Protein testing', ->
 				it "should a new batch registration form", ->
 					console.log @pbsc.$('.bv_batchCode')
 					expect(@pbsc.$('.bv_batchCode').val()).toEqual ""
-					expect(@pbsc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					expect(@pbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "behavior", ->
 			it "should show the information for a selected batch", ->
 				waitsFor ->

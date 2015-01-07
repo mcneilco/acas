@@ -213,7 +213,7 @@
             return expect(this.cbpc).toBeDefined();
           });
           it("should load the template", function() {
-            return expect(this.cbpc.$('.bv_parentCode').html()).toEqual("autofill when saved");
+            return expect(this.cbpc.$('.bv_parentCode').html()).toEqual("Autofilled when saved");
           });
           return it("should load the additional parent attributes temlate", function() {
             return expect(this.cbpc.$('.bv_molecularWeight').length).toEqual(1);
@@ -553,7 +553,7 @@
             return expect(this.cbbc).toBeDefined();
           });
           return it("should load the template", function() {
-            return expect(this.cbbc.$('.bv_batchCode').html()).toEqual("autofill when saved");
+            return expect(this.cbbc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
           });
         });
       });
@@ -756,7 +756,7 @@
           return it("should a new batch registration form", function() {
             console.log(this.cbbsc.$('.bv_batchCode'));
             expect(this.cbbsc.$('.bv_batchCode').val()).toEqual("");
-            return expect(this.cbbsc.$('.bv_batchCode').html()).toEqual("autofill when saved");
+            return expect(this.cbbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
           });
         });
       });

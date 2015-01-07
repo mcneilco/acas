@@ -152,7 +152,7 @@ describe 'Linker Small Molecule testing', ->
 				it "should exist", ->
 					expect(@lsmpc).toBeDefined()
 				it "should load the template", ->
-					expect(@lsmpc.$('.bv_parentCode').html()).toEqual "autofill when saved"
+					expect(@lsmpc.$('.bv_parentCode').html()).toEqual "Autofilled when saved"
 				it "should load the additional parent attributes temlate", ->
 					expect(@lsmpc.$('.bv_molecularWeight').length).toEqual 1
 		describe "When instantiated from existing", ->
@@ -227,9 +227,9 @@ describe 'Linker Small Molecule testing', ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@lsmpc.isValid()).toBeTruthy()
-				#					it "save button should be enabled", ->
-				#						runs ->
-				#							expect(@lsmpc.$('.bv_save').attr('disabled')).toBeUndefined()
+					it "should have the update button be enabled", ->
+						runs ->
+							expect(@lsmpc.$('.bv_updateParent').attr('disabled')).toBeUndefined()
 				describe "when name field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -241,6 +241,9 @@ describe 'Linker Small Molecule testing', ->
 					it "should show error in name field", ->
 						runs ->
 							expect(@lsmpc.$('.bv_group_parentName').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@lsmpc.$('.bv_updateParent').attr('disabled')).toEqual 'disabled'
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
@@ -392,7 +395,7 @@ describe 'Linker Small Molecule testing', ->
 				it "should exist", ->
 					expect(@lsmbc).toBeDefined()
 				it "should load the template", ->
-					expect(@lsmbc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					expect(@lsmbc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "When instantiated from existing", ->
 			beforeEach ->
 				@lsmb = new LinkerSmallMoleculeBatch JSON.parse(JSON.stringify(window.linkerSmallMoleculeTestJSON.linkerSmallMoleculeBatch))
@@ -463,9 +466,9 @@ describe 'Linker Small Molecule testing', ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@lsmbc.isValid()).toBeTruthy()
-				#					it "save button should be enabled", ->
-				#						runs ->
-				#							expect(@lsmpc.$('.bv_save').attr('disabled')).toBeUndefined()
+					it "save button should be enabled", ->
+						runs ->
+							expect(@lsmbc.$('.bv_saveBatch').attr('disabled')).toBeUndefined()
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
@@ -474,6 +477,9 @@ describe 'Linker Small Molecule testing', ->
 					it "should show error on scientist dropdown", ->
 						runs ->
 							expect(@lsmbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@lsmbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -530,7 +536,7 @@ describe 'Linker Small Molecule testing', ->
 				it "should a new batch registration form", ->
 					console.log @lsmbsc.$('.bv_batchCode')
 					expect(@lsmbsc.$('.bv_batchCode').val()).toEqual ""
-					expect(@lsmbsc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					expect(@lsmbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "behavior", ->
 			it "should show the information for a selected batch", ->
 				waitsFor ->

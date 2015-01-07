@@ -132,7 +132,7 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 
 	events: ->
 		_(super()).extend(
-			"change .bv_molecularWeight": "attributeChanged"
+			"keyup .bv_molecularWeight": "attributeChanged"
 		)
 
 	initialize: ->

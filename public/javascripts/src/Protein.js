@@ -47,7 +47,10 @@
           stateType: 'metadata',
           stateKind: 'protein parent',
           type: 'codeValue',
-          kind: 'type'
+          kind: 'type',
+          codeType: 'protein',
+          codeKind: 'type',
+          codeOrigin: 'ACAS DDICT'
         }, {
           key: 'aa sequence',
           stateType: 'metadata',
@@ -207,7 +210,7 @@
     ProteinParentController.prototype.events = function() {
       return _(ProteinParentController.__super__.events.call(this)).extend({
         "change .bv_type": "attributeChanged",
-        "change .bv_sequence": "attributeChanged"
+        "keyup .bv_sequence": "attributeChanged"
       });
     };
 

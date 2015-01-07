@@ -152,7 +152,7 @@ describe 'Cationic Block testing', ->
 				it "should exist", ->
 					expect(@cbpc).toBeDefined()
 				it "should load the template", ->
-					expect(@cbpc.$('.bv_parentCode').html()).toEqual "autofill when saved"
+					expect(@cbpc.$('.bv_parentCode').html()).toEqual "Autofilled when saved"
 				it "should load the additional parent attributes temlate", ->
 					expect(@cbpc.$('.bv_molecularWeight').length).toEqual 1
 		describe "When instantiated from existing", ->
@@ -395,7 +395,7 @@ describe 'Cationic Block testing', ->
 				it "should exist", ->
 					expect(@cbbc).toBeDefined()
 				it "should load the template", ->
-					expect(@cbbc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					expect(@cbbc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "When instantiated from existing", ->
 			beforeEach ->
 				@cbb = new CationicBlockBatch JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockBatch))
@@ -536,7 +536,7 @@ describe 'Cationic Block testing', ->
 				it "should a new batch registration form", ->
 					console.log @cbbsc.$('.bv_batchCode')
 					expect(@cbbsc.$('.bv_batchCode').val()).toEqual ""
-					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "behavior", ->
 			it "should show the information for a selected batch", ->
 				waitsFor ->

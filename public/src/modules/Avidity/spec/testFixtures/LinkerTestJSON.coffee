@@ -1,19 +1,19 @@
 ((exports) ->
 
-	exports.proteinParent =
-		codeName: "PROT000001"
+	exports.linkerParent =
+		codeName: "L000001"
 		id: 1
 		ignored: false
-		lsKind: "protein" #should be same as the className
+		lsKind: "linker parent"
 		lsLabels: [
 			id: 1
 			ignored: false
 			imageFile: null
-			labelText: "EGFR 31"
-			lsKind: "protein"
+			labelText: "Ad-PEG5"
+			lsKind: "linker"
 			lsTransaction: 1
 			lsType: "name"
-			lsTypeAndKind: "name_protein"
+			lsTypeAndKind: "name_linker"
 			modifiedDate: null
 			physicallyLabled: false
 			preferred: true
@@ -25,10 +25,10 @@
 			comments: null
 			id: 11
 			ignored: false
-			lsKind: "protein parent"
+			lsKind: "linker parent"
 			lsTransaction: 1
 			lsType: "metadata"
-			lsTypeAndKind: "metadata_protein parent"
+			lsTypeAndKind: "metadata_linker parent"
 			lsValues: [
 				clobValue: null
 				codeValue: null
@@ -85,10 +85,37 @@
 				version: 0
 			,
 				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 63
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: "linear"
+				uncertainty: null
+				urlValue: null
+				lsKind: "architecture"
+				valueOperator: null
+				lsType: "stringValue"
+				lsTypeAndKind: "stringValue_architecture"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
 				codeKind: "type"
-				codeType: "protein"
+				codeType: "linker"
 				codeOrigin: "ACAS DDICT"
-				codeValue: "fab"
+				codeValue: "boronic acid"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -113,33 +140,6 @@
 				lsTypeAndKind: "codeValue_type"
 				valueUnit: null
 				version: 0
-			,
-				clobValue: null
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				id: 5
-				ignored: false
-				lsTransaction:
-					comments: null
-					id: 127
-					recordedDate: 1363388477000
-					version: 0
-				modifiedDate: null
-				numericValue: null
-				publicData: true
-				recordedDate: 1363388477000
-				sigFigs: null
-				stringValue: "AUGCGACUG"
-				uncertainty: null
-				urlValue: null
-				lsKind: "aa sequence"
-				valueOperator: null
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_aa sequence"
-				valueUnit: null
-				version: 0
 			]
 			modifiedBy: null
 			modifiedDate: null
@@ -149,7 +149,7 @@
 		]
 		lsTransaction: 1
 		lsType: "parent"
-		lsTypeAndKind: "parent_protein"
+		lsTypeAndKind: "parent_linker"
 		modifiedBy: null
 		modifiedDate: null
 		recordedBy: "jane"
@@ -157,19 +157,19 @@
 		shortDescription: " "
 		version: 0
 
-	exports.proteinBatch =
-		codeName: "PROT000001-1"
+	exports.linkerBatch =
+		codeName: "L000001-1"
 		id: 11
 		ignored: false
-		lsKind: "protein" #should be same as the className
+		lsKind: "linker" #should be same as the className
 		lsStates: [
 			comments: null
 			id: 11
 			ignored: false
-			lsKind: "protein batch"
+			lsKind: "linker batch"
 			lsTransaction: 1
 			lsType: "metadata"
-			lsTypeAndKind: "metadata_protein batch"
+			lsTypeAndKind: "metadata_linker batch"
 			lsValues: [
 				clobValue: null
 				codeValue: null
@@ -222,6 +222,64 @@
 				valueOperator: null
 				lsType: "stringValue"
 				lsTypeAndKind: "stringValue_notebook"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 425
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 128
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: 231
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "molecular weight"
+				valueOperator: null
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_molecular weight"
+				unitKind: "kDa"
+				unitType: "molecular weight"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 409
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 128
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: 92
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "purity"
+				valueOperator: null
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_purity"
+				unitKind: "% purity"
+				unitType: "percentage"
 				valueUnit: null
 				version: 0
 			]
@@ -298,7 +356,7 @@
 		]
 		lsTransaction: 1
 		lsType: "batch"
-		lsTypeAndKind: "batch_protein"
+		lsTypeAndKind: "batch_linker"
 		modifiedBy: null
 		modifiedDate: null
 		recordedBy: "jane"
@@ -306,4 +364,4 @@
 		shortDescription: " "
 		version: 0
 
-) (if (typeof process is "undefined" or not process.versions) then window.proteinTestJSON = window.proteinTestJSON or {} else exports)
+) (if (typeof process is "undefined" or not process.versions) then window.linkerTestJSON = window.linkerTestJSON or {} else exports)

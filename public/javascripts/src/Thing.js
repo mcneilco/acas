@@ -128,6 +128,11 @@
             codeType: dValue.codeType
           });
         }
+        if (dValue.codeOrigin != null) {
+          newValue.set({
+            codeOrigin: dValue.codeOrigin
+          });
+        }
         this.set(dValue.key, newValue);
         _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
       }

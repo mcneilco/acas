@@ -181,11 +181,11 @@
 
     AbstractBaseComponentParentController.prototype.events = function() {
       return {
-        "change .bv_parentName": "attributeChanged",
+        "keyup .bv_parentName": "attributeChanged",
         "change .bv_recordedBy": "attributeChanged",
-        "change .bv_completionDate": "attributeChanged",
+        "keyup .bv_completionDate": "attributeChanged",
         "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
-        "change .bv_notebook": "attributeChanged",
+        "keyup .bv_notebook": "attributeChanged",
         "click .bv_updateParent": "handleUpdateParent"
       };
     };
@@ -324,11 +324,11 @@
     AbstractBaseComponentBatchController.prototype.events = function() {
       return {
         "change .bv_recordedBy": "attributeChanged",
-        "change .bv_completionDate": "attributeChanged",
+        "keyup .bv_completionDate": "attributeChanged",
         "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
-        "change .bv_notebook": "attributeChanged",
-        "change .bv_amount": "attributeChanged",
-        "change .bv_location": "attributeChanged",
+        "keyup .bv_notebook": "attributeChanged",
+        "keyup .bv_amount": "attributeChanged",
+        "keyup .bv_location": "attributeChanged",
         "click .bv_saveBatch": "handleSaveBatch"
       };
     };
@@ -340,6 +340,10 @@
       this.listenTo(this.model, 'change', this.modelChangeCallback);
       $(this.el).empty();
       $(this.el).html(this.template());
+      console.log(this.additionalBatchAttributesTemplate != null);
+      if (this.additionalBatchAttributesTemplate != null) {
+        this.$('.bv_additionalBatchAttributes').html(this.additionalBatchAttributesTemplate());
+      }
       return this.setupRecordedBySelect();
     };
 
@@ -440,7 +444,7 @@
 
     AbstractBaseComponentBatchSelectController.prototype.events = function() {
       return {
-        "change .bv_batchList": "handleSelectedBatchChanged"
+        "keyup .bv_batchList": "handleSelectedBatchChanged"
       };
     };
 

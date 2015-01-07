@@ -213,9 +213,9 @@
             return expect(this.spc).toBeDefined();
           });
           it("should load the template", function() {
-            return expect(this.spc.$('.bv_parentCode').html()).toEqual("autofill when saved");
+            return expect(this.spc.$('.bv_parentCode').html()).toEqual("Autofilled when saved");
           });
-          return it("should load the additional parent attributes temlate", function() {
+          return it("should load the additional parent attributes template", function() {
             return expect(this.spc.$('.bv_molecularWeight').length).toEqual(1);
           });
         });
@@ -306,9 +306,14 @@
             });
           });
           describe("form validation setup", function() {
-            return it("should be valid if form fully filled out", function() {
+            it("should be valid if form fully filled out", function() {
               return runs(function() {
                 return expect(this.spc.isValid()).toBeTruthy();
+              });
+            });
+            return it("should have the update button be enabled", function() {
+              return runs(function() {
+                return expect(this.spc.$('.bv_updateParent').attr('disabled')).toBeUndefined();
               });
             });
           });
@@ -324,9 +329,14 @@
                 return expect(this.spc.isValid()).toBeFalsy();
               });
             });
-            return it("should show error in name field", function() {
+            it("should show error in name field", function() {
               return runs(function() {
                 return expect(this.spc.$('.bv_group_parentName').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.spc.$('.bv_updateParent').attr('disabled')).toEqual('disabled');
               });
             });
           });
@@ -388,140 +398,140 @@
     describe("Spacer Batch model testing", function() {
       describe("when loaded from new", function() {
         beforeEach(function() {
-          return this.cbb = new SpacerBatch();
+          return this.sb = new SpacerBatch();
         });
         return describe("Existence and Defaults", function() {
           it("should be defined", function() {
-            return expect(this.cbb).toBeDefined();
+            return expect(this.sb).toBeDefined();
           });
           it("should have a type", function() {
-            return expect(this.cbb.get('lsType')).toEqual("batch");
+            return expect(this.sb.get('lsType')).toEqual("batch");
           });
           it("should have a kind", function() {
-            return expect(this.cbb.get('lsKind')).toEqual("spacer");
+            return expect(this.sb.get('lsKind')).toEqual("spacer");
           });
           it("should have an empty scientist", function() {
-            return expect(this.cbb.get('recordedBy')).toEqual("");
+            return expect(this.sb.get('recordedBy')).toEqual("");
           });
           it("should have a recordedDate set to now", function() {
-            return expect(new Date(this.cbb.get('recordedDate')).getHours()).toEqual(new Date().getHours());
+            return expect(new Date(this.sb.get('recordedDate')).getHours()).toEqual(new Date().getHours());
           });
           return describe("model attributes for each value in defaultValues", function() {
             it("Should have a model attribute for completion date", function() {
-              return expect(this.cbb.get("completion date")).toBeDefined();
+              return expect(this.sb.get("completion date")).toBeDefined();
             });
             it("Should have a model attribute for notebook", function() {
-              return expect(this.cbb.get("notebook")).toBeDefined();
+              return expect(this.sb.get("notebook")).toBeDefined();
             });
             it("Should have a model attribute for amount", function() {
-              return expect(this.cbb.get("amount")).toBeDefined();
+              return expect(this.sb.get("amount")).toBeDefined();
             });
             return it("Should have a model attribute for location", function() {
-              return expect(this.cbb.get("location")).toBeDefined();
+              return expect(this.sb.get("location")).toBeDefined();
             });
           });
         });
       });
       describe("When created from existing", function() {
         beforeEach(function() {
-          return this.cbb = new SpacerBatch(JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch)));
+          return this.sb = new SpacerBatch(JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch)));
         });
         return describe("after initial load", function() {
           it("should be defined", function() {
-            return expect(this.cbb).toBeDefined();
+            return expect(this.sb).toBeDefined();
           });
           it("should have a type", function() {
-            return expect(this.cbb.get('lsType')).toEqual("batch");
+            return expect(this.sb.get('lsType')).toEqual("batch");
           });
           it("should have a kind", function() {
-            return expect(this.cbb.get('lsKind')).toEqual("spacer");
+            return expect(this.sb.get('lsKind')).toEqual("spacer");
           });
           it("should have a scientist set", function() {
-            return expect(this.cbb.get('recordedBy')).toEqual("jane");
+            return expect(this.sb.get('recordedBy')).toEqual("jane");
           });
           it("should have a recordedDate set", function() {
-            return expect(this.cbb.get('recordedDate')).toEqual(1375141508000);
+            return expect(this.sb.get('recordedDate')).toEqual(1375141508000);
           });
           it("Should have a lsStates with the states in defaultStates", function() {
-            expect(this.cbb.get('lsStates')).toBeDefined();
-            expect(this.cbb.get("lsStates").length).toEqual(2);
-            expect(this.cbb.get("lsStates").getStatesByTypeAndKind("metadata", "spacer batch").length).toEqual(1);
-            return expect(this.cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual(1);
+            expect(this.sb.get('lsStates')).toBeDefined();
+            expect(this.sb.get("lsStates").length).toEqual(2);
+            expect(this.sb.get("lsStates").getStatesByTypeAndKind("metadata", "spacer batch").length).toEqual(1);
+            return expect(this.sb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual(1);
           });
           it("Should have a completion date value", function() {
-            return expect(this.cbb.get("completion date").get("value")).toEqual(1342080000000);
+            return expect(this.sb.get("completion date").get("value")).toEqual(1342080000000);
           });
           it("Should have a notebook value", function() {
-            return expect(this.cbb.get("notebook").get("value")).toEqual("Notebook 1");
+            return expect(this.sb.get("notebook").get("value")).toEqual("Notebook 1");
           });
           it("Should have an amount value", function() {
-            return expect(this.cbb.get("amount").get("value")).toEqual(2.3);
+            return expect(this.sb.get("amount").get("value")).toEqual(2.3);
           });
           return it("Should have a location value", function() {
-            return expect(this.cbb.get("location").get("value")).toEqual("Cabinet 1");
+            return expect(this.sb.get("location").get("value")).toEqual("Cabinet 1");
           });
         });
       });
       return describe("model validation", function() {
         beforeEach(function() {
-          return this.cbb = new SpacerBatch(window.spacerTestJSON.spacerBatch);
+          return this.sb = new SpacerBatch(window.spacerTestJSON.spacerBatch);
         });
         it("should be valid when loaded from saved", function() {
-          return expect(this.cbb.isValid()).toBeTruthy();
+          return expect(this.sb.isValid()).toBeTruthy();
         });
         it("should be invalid when recorded date is empty", function() {
           var filtErrors;
-          this.cbb.set({
+          this.sb.set({
             recordedDate: new Date("").getTime()
           });
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
+          expect(this.sb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.sb.validationError, function(err) {
             return err.attribute === 'recordedDate';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
-          this.cbb.set({
+          this.sb.set({
             recordedBy: ""
           });
-          expect(this.cbb.isValid()).toBeFalsy();
-          return filtErrors = _.filter(this.cbb.validationError, function(err) {
+          expect(this.sb.isValid()).toBeFalsy();
+          return filtErrors = _.filter(this.sb.validationError, function(err) {
             return err.attribute === 'recordedBy';
           });
         });
         it("should be invalid when completion date is empty", function() {
           var filtErrors;
-          this.cbb.get("completion date").set("value", new Date("").getTime());
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
+          this.sb.get("completion date").set("value", new Date("").getTime());
+          expect(this.sb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.sb.validationError, function(err) {
             return err.attribute === 'completionDate';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
         it("should be invalid when notebook is empty", function() {
           var filtErrors;
-          this.cbb.get("notebook").set("value", "");
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
+          this.sb.get("notebook").set("value", "");
+          expect(this.sb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.sb.validationError, function(err) {
             return err.attribute === 'notebook';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
         it("should be invalid when amount is NaN", function() {
           var filtErrors;
-          this.cbb.get("amount").set("value", "fred");
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
+          this.sb.get("amount").set("value", "fred");
+          expect(this.sb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.sb.validationError, function(err) {
             return err.attribute === 'amount';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
         return it("should be invalid when location is empty", function() {
           var filtErrors;
-          this.cbb.get("location").set("value", "");
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
+          this.sb.get("location").set("value", "");
+          expect(this.sb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.sb.validationError, function(err) {
             return err.attribute === 'location';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
@@ -531,175 +541,185 @@
     describe("Spacer Batch Controller testing", function() {
       describe("When instantiated from new", function() {
         beforeEach(function() {
-          this.cbb = new SpacerBatch();
-          this.cbbc = new SpacerBatchController({
-            model: this.cbb,
+          this.sb = new SpacerBatch();
+          this.sbc = new SpacerBatchController({
+            model: this.sb,
             el: $('#fixture')
           });
-          return this.cbbc.render();
+          return this.sbc.render();
         });
         return describe("basic existence tests", function() {
           it("should exist", function() {
-            return expect(this.cbbc).toBeDefined();
+            return expect(this.sbc).toBeDefined();
           });
           return it("should load the template", function() {
-            return expect(this.cbbc.$('.bv_batchCode').html()).toEqual("autofill when saved");
+            return expect(this.sbc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
           });
         });
       });
       return describe("When instantiated from existing", function() {
         beforeEach(function() {
-          this.cbb = new SpacerBatch(JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch)));
-          this.cbbc = new SpacerBatchController({
-            model: this.cbb,
+          this.sb = new SpacerBatch(JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch)));
+          this.sbc = new SpacerBatchController({
+            model: this.sb,
             el: $('#fixture')
           });
-          return this.cbbc.render();
+          return this.sbc.render();
         });
         describe("render existing parameters", function() {
           it("should show the spacer batch id", function() {
-            return expect(this.cbbc.$('.bv_batchCode').val()).toEqual("SP000001-1");
+            return expect(this.sbc.$('.bv_batchCode').val()).toEqual("SP000001-1");
           });
           it("should fill the scientist field", function() {
             waitsFor(function() {
-              return this.cbbc.$('.bv_recordedBy option').length > 0;
+              return this.sbc.$('.bv_recordedBy option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.cbbc.$('.bv_recordedBy').val()).toEqual("jane");
+              return expect(this.sbc.$('.bv_recordedBy').val()).toEqual("jane");
             });
           });
           it("should fill the completion date field", function() {
-            return expect(this.cbbc.$('.bv_completionDate').val()).toEqual("2012-07-12");
+            return expect(this.sbc.$('.bv_completionDate').val()).toEqual("2012-07-12");
           });
           it("should fill the notebook field", function() {
-            return expect(this.cbbc.$('.bv_notebook').val()).toEqual("Notebook 1");
+            return expect(this.sbc.$('.bv_notebook').val()).toEqual("Notebook 1");
           });
           it("should fill the amount field", function() {
-            return expect(this.cbbc.$('.bv_amount').val()).toEqual("2.3");
+            return expect(this.sbc.$('.bv_amount').val()).toEqual("2.3");
           });
           return it("should fill the location field", function() {
-            return expect(this.cbbc.$('.bv_location').val()).toEqual("Cabinet 1");
+            return expect(this.sbc.$('.bv_location').val()).toEqual("Cabinet 1");
           });
         });
         describe("model updates", function() {
           it("should update model when the scientist is changed", function() {
             waitsFor(function() {
-              return this.cbbc.$('.bv_recordedBy option').length > 0;
+              return this.sbc.$('.bv_recordedBy option').length > 0;
             }, 1000);
             return runs(function() {
-              this.cbbc.$('.bv_recordedBy').val('unassigned');
-              this.cbbc.$('.bv_recordedBy').change();
-              return expect(this.cbbc.model.get('recordedBy')).toEqual("unassigned");
+              this.sbc.$('.bv_recordedBy').val('unassigned');
+              this.sbc.$('.bv_recordedBy').change();
+              return expect(this.sbc.model.get('recordedBy')).toEqual("unassigned");
             });
           });
           it("should update model when completion date is changed", function() {
-            this.cbbc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.cbbc.$('.bv_completionDate').change();
-            return expect(this.cbbc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
+            this.sbc.$('.bv_completionDate').val(" 2013-3-16   ");
+            this.sbc.$('.bv_completionDate').change();
+            return expect(this.sbc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
-            this.cbbc.$('.bv_notebook').val(" Updated notebook  ");
-            this.cbbc.$('.bv_notebook').change();
-            return expect(this.cbbc.model.get('notebook').get('value')).toEqual("Updated notebook");
+            this.sbc.$('.bv_notebook').val(" Updated notebook  ");
+            this.sbc.$('.bv_notebook').change();
+            return expect(this.sbc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
           it("should update model when amount is changed", function() {
-            this.cbbc.$('.bv_amount').val(" 12  ");
-            this.cbbc.$('.bv_amount').change();
-            return expect(this.cbbc.model.get('amount').get('value')).toEqual(12);
+            this.sbc.$('.bv_amount').val(" 12  ");
+            this.sbc.$('.bv_amount').change();
+            return expect(this.sbc.model.get('amount').get('value')).toEqual(12);
           });
           return it("should update model when location is changed", function() {
-            this.cbbc.$('.bv_location').val(" Updated location  ");
-            this.cbbc.$('.bv_location').change();
-            return expect(this.cbbc.model.get('location').get('value')).toEqual("Updated location");
+            this.sbc.$('.bv_location').val(" Updated location  ");
+            this.sbc.$('.bv_location').change();
+            return expect(this.sbc.model.get('location').get('value')).toEqual("Updated location");
           });
         });
         return describe("controller validation rules", function() {
           beforeEach(function() {
             waitsFor(function() {
-              return this.cbbc.$('.bv_recordedBy option').length > 0;
+              return this.sbc.$('.bv_recordedBy option').length > 0;
             }, 1000);
             return runs(function() {
-              this.cbbc.$('.bv_recordedBy').val("bob");
-              this.cbbc.$('.bv_recordedBy').change();
-              this.cbbc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.cbbc.$('.bv_completionDate').change();
-              this.cbbc.$('.bv_notebook').val("my notebook");
-              this.cbbc.$('.bv_notebook').change();
-              this.cbbc.$('.bv_amount').val(" 24");
-              this.cbbc.$('.bv_amount').change();
-              this.cbbc.$('.bv_location').val(" Hood 4");
-              return this.cbbc.$('.bv_location').change();
+              this.sbc.$('.bv_recordedBy').val("bob");
+              this.sbc.$('.bv_recordedBy').change();
+              this.sbc.$('.bv_completionDate').val(" 2013-3-16   ");
+              this.sbc.$('.bv_completionDate').change();
+              this.sbc.$('.bv_notebook').val("my notebook");
+              this.sbc.$('.bv_notebook').change();
+              this.sbc.$('.bv_amount').val(" 24");
+              this.sbc.$('.bv_amount').change();
+              this.sbc.$('.bv_location').val(" Hood 4");
+              return this.sbc.$('.bv_location').change();
             });
           });
           describe("form validation setup", function() {
-            return it("should be valid if form fully filled out", function() {
+            it("should be valid if form fully filled out", function() {
               return runs(function() {
-                return expect(this.cbbc.isValid()).toBeTruthy();
+                return expect(this.sbc.isValid()).toBeTruthy();
+              });
+            });
+            return it("save button should be enabled", function() {
+              return runs(function() {
+                return expect(this.sbc.$('.bv_saveBatch').attr('disabled')).toBeUndefined();
               });
             });
           });
           describe("when scientist not selected", function() {
             beforeEach(function() {
               return runs(function() {
-                this.cbbc.$('.bv_recordedBy').val("");
-                return this.cbbc.$('.bv_recordedBy').change();
+                this.sbc.$('.bv_recordedBy').val("");
+                return this.sbc.$('.bv_recordedBy').change();
               });
             });
-            return it("should show error on scientist dropdown", function() {
+            it("should show error on scientist dropdown", function() {
               return runs(function() {
-                return expect(this.cbbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+                return expect(this.sbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.sbc.$('.bv_saveBatch').attr('disabled')).toEqual('disabled');
               });
             });
           });
           describe("when date field not filled in", function() {
             beforeEach(function() {
               return runs(function() {
-                this.cbbc.$('.bv_completionDate').val("");
-                return this.cbbc.$('.bv_completionDate').change();
+                this.sbc.$('.bv_completionDate').val("");
+                return this.sbc.$('.bv_completionDate').change();
               });
             });
             return it("should show error in date field", function() {
               return runs(function() {
-                return expect(this.cbbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
+                return expect(this.sbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
               });
             });
           });
           describe("when notebook not filled", function() {
             beforeEach(function() {
               return runs(function() {
-                this.cbbc.$('.bv_notebook').val("");
-                return this.cbbc.$('.bv_notebook').change();
+                this.sbc.$('.bv_notebook').val("");
+                return this.sbc.$('.bv_notebook').change();
               });
             });
             return it("should show error on notebook field", function() {
               return runs(function() {
-                return expect(this.cbbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy();
+                return expect(this.sbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy();
               });
             });
           });
           describe("when amount not filled", function() {
             beforeEach(function() {
               return runs(function() {
-                this.cbbc.$('.bv_amount').val("");
-                return this.cbbc.$('.bv_amount').change();
+                this.sbc.$('.bv_amount').val("");
+                return this.sbc.$('.bv_amount').change();
               });
             });
             return it("should show error on amount field", function() {
               return runs(function() {
-                return expect(this.cbbc.$('.bv_group_amount').hasClass('error')).toBeTruthy();
+                return expect(this.sbc.$('.bv_group_amount').hasClass('error')).toBeTruthy();
               });
             });
           });
           return describe("when location not filled", function() {
             beforeEach(function() {
               return runs(function() {
-                this.cbbc.$('.bv_location').val("");
-                return this.cbbc.$('.bv_location').change();
+                this.sbc.$('.bv_location').val("");
+                return this.sbc.$('.bv_location').change();
               });
             });
             return it("should show error on location field", function() {
               return runs(function() {
-                return expect(this.cbbc.$('.bv_group_location').hasClass('error')).toBeTruthy();
+                return expect(this.sbc.$('.bv_group_location').hasClass('error')).toBeTruthy();
               });
             });
           });
@@ -708,57 +728,57 @@
     });
     describe("Spacer Batch Select Controller testing", function() {
       beforeEach(function() {
-        this.cbb = new SpacerBatch();
-        this.cbbsc = new SpacerBatchSelectController({
-          model: this.cbb,
+        this.sb = new SpacerBatch();
+        this.sbsc = new SpacerBatchSelectController({
+          model: this.sb,
           el: $('#fixture')
         });
-        return this.cbbsc.render();
+        return this.sbsc.render();
       });
       describe("When instantiated", function() {
         describe("basic existence tests", function() {
           it("should exist", function() {
-            return expect(this.cbbsc).toBeDefined();
+            return expect(this.sbsc).toBeDefined();
           });
           return it("should load the template", function() {
-            return expect(this.cbbsc.$('.bv_batchList').length).toEqual(1);
+            return expect(this.sbsc.$('.bv_batchList').length).toEqual(1);
           });
         });
         return describe("rendering", function() {
           it("should have the batch list default to register new batch", function() {
             waitsFor(function() {
-              return this.cbbsc.$('.bv_batchList option').length > 0;
+              return this.sbsc.$('.bv_batchList option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.cbbsc.$('.bv_batchList').val()).toEqual("new batch");
+              return expect(this.sbsc.$('.bv_batchList').val()).toEqual("new batch");
             });
           });
           return it("should a new batch registration form", function() {
-            console.log(this.cbbsc.$('.bv_batchCode'));
-            expect(this.cbbsc.$('.bv_batchCode').val()).toEqual("");
-            return expect(this.cbbsc.$('.bv_batchCode').html()).toEqual("autofill when saved");
+            console.log(this.sbsc.$('.bv_batchCode'));
+            expect(this.sbsc.$('.bv_batchCode').val()).toEqual("");
+            return expect(this.sbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
           });
         });
       });
       return describe("behavior", function() {
         return it("should show the information for a selected batch", function() {
           waitsFor(function() {
-            return this.cbbsc.$('.bv_batchList option').length > 0;
+            return this.sbsc.$('.bv_batchList option').length > 0;
           }, 1000);
           runs(function() {
-            console.log(this.cbbsc.$('.bv_batchList'));
-            this.cbbsc.$('.bv_batchList').val("CB000001-1");
-            return this.cbbsc.$('.bv_batchList').change();
+            console.log(this.sbsc.$('.bv_batchList'));
+            this.sbsc.$('.bv_batchList').val("CB000001-1");
+            return this.sbsc.$('.bv_batchList').change();
           });
           waitsFor(function() {
-            return this.cbbsc.$('.bv_recordedBy option').length > 0;
+            return this.sbsc.$('.bv_recordedBy option').length > 0;
           }, 1000);
           runs(function() {
             return waits(1000);
           });
           return runs(function() {
-            expect(this.cbbsc.$('.bv_batchCode').html()).toEqual("CB000001-1");
-            return expect(this.cbbsc.$('.bv_recordedBy').val()).toEqual("jane");
+            expect(this.sbsc.$('.bv_batchCode').html()).toEqual("CB000001-1");
+            return expect(this.sbsc.$('.bv_recordedBy').val()).toEqual("jane");
           });
         });
       });

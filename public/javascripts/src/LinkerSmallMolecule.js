@@ -193,7 +193,7 @@
 
     LinkerSmallMoleculeParentController.prototype.events = function() {
       return _(LinkerSmallMoleculeParentController.__super__.events.call(this)).extend({
-        "change .bv_molecularWeight": "attributeChanged"
+        "keyup .bv_molecularWeight": "attributeChanged"
       });
     };
 

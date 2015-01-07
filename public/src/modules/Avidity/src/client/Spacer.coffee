@@ -132,7 +132,7 @@ class window.SpacerParentController extends AbstractBaseComponentParentControlle
 
 	events: ->
 		_(super()).extend(
-			"change .bv_molecularWeight": "attributeChanged"
+			"keyup .bv_molecularWeight": "attributeChanged"
 		)
 
 	initialize: ->

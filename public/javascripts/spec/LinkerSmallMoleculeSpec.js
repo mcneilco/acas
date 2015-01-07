@@ -213,7 +213,7 @@
             return expect(this.lsmpc).toBeDefined();
           });
           it("should load the template", function() {
-            return expect(this.lsmpc.$('.bv_parentCode').html()).toEqual("autofill when saved");
+            return expect(this.lsmpc.$('.bv_parentCode').html()).toEqual("Autofilled when saved");
           });
           return it("should load the additional parent attributes temlate", function() {
             return expect(this.lsmpc.$('.bv_molecularWeight').length).toEqual(1);
@@ -306,9 +306,14 @@
             });
           });
           describe("form validation setup", function() {
-            return it("should be valid if form fully filled out", function() {
+            it("should be valid if form fully filled out", function() {
               return runs(function() {
                 return expect(this.lsmpc.isValid()).toBeTruthy();
+              });
+            });
+            return it("should have the update button be enabled", function() {
+              return runs(function() {
+                return expect(this.lsmpc.$('.bv_updateParent').attr('disabled')).toBeUndefined();
               });
             });
           });
@@ -324,9 +329,14 @@
                 return expect(this.lsmpc.isValid()).toBeFalsy();
               });
             });
-            return it("should show error in name field", function() {
+            it("should show error in name field", function() {
               return runs(function() {
                 return expect(this.lsmpc.$('.bv_group_parentName').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.lsmpc.$('.bv_updateParent').attr('disabled')).toEqual('disabled');
               });
             });
           });
@@ -543,7 +553,7 @@
             return expect(this.lsmbc).toBeDefined();
           });
           return it("should load the template", function() {
-            return expect(this.lsmbc.$('.bv_batchCode').html()).toEqual("autofill when saved");
+            return expect(this.lsmbc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
           });
         });
       });
@@ -632,9 +642,14 @@
             });
           });
           describe("form validation setup", function() {
-            return it("should be valid if form fully filled out", function() {
+            it("should be valid if form fully filled out", function() {
               return runs(function() {
                 return expect(this.lsmbc.isValid()).toBeTruthy();
+              });
+            });
+            return it("save button should be enabled", function() {
+              return runs(function() {
+                return expect(this.lsmbc.$('.bv_saveBatch').attr('disabled')).toBeUndefined();
               });
             });
           });
@@ -645,9 +660,14 @@
                 return this.lsmbc.$('.bv_recordedBy').change();
               });
             });
-            return it("should show error on scientist dropdown", function() {
+            it("should show error on scientist dropdown", function() {
               return runs(function() {
                 return expect(this.lsmbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.lsmbc.$('.bv_saveBatch').attr('disabled')).toEqual('disabled');
               });
             });
           });
@@ -736,7 +756,7 @@
           return it("should a new batch registration form", function() {
             console.log(this.lsmbsc.$('.bv_batchCode'));
             expect(this.lsmbsc.$('.bv_batchCode').val()).toEqual("");
-            return expect(this.lsmbsc.$('.bv_batchCode').html()).toEqual("autofill when saved");
+            return expect(this.lsmbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
           });
         });
       });
