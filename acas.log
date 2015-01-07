@@ -1743,3 +1743,24 @@
 2015-01-07T00:08:45.179Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2015-01-07T00:08:45.454Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2015-01-07T00:08:49.210Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-07T00:19:59.170Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:19:59.500Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:20:04.727Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-07T00:23:16.748Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:23:17.025Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:23:20.612Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-07T00:25:21.748Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:25:22.014Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:25:28.484Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-07T00:29:28.205Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:29:28.482Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:29:32.417Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-07T00:32:39.397Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:32:39.675Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:32:42.058Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-07T00:38:34.618Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:38:34.896Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:38:38.179Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-07T00:46:04.139Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:46:04.408Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-07T00:46:17.021Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null

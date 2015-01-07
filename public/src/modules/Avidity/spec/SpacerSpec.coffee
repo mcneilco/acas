@@ -564,5 +564,57 @@ describe 'Spacer testing', ->
 				expect(@cbc.$('.bv_parent .bv_parentCode').length).toEqual 1
 			it "Should load a batch controller", ->
 				expect(@cbc.$('.bv_batch .bv_batchCode').length).toEqual 1
+		describe "saving parent/batch for the first time", ->
+			describe "when form is initialized", ->
+				it "should have the save button be disabled initially", ->
+					expect(@cbc.$('.bv_save').attr('disabled')).toEqual 'disabled'
+			describe 'when save is clicked', ->
+				beforeEach ->
+					runs ->
+						@cbc.$('.bv_parentName').val(" Updated entity name   ")
+						@cbc.$('.bv_parentName').change()
+						@cbc.$('.bv_recordedBy').val("bob")
+						@cbc.$('.bv_recordedBy').change()
+						@cbc.$('.bv_completionDate').val(" 2013-3-16   ")
+						@cbc.$('.bv_completionDate').change()
+						@cbc.$('.bv_notebook').val("my notebook")
+						@cbc.$('.bv_notebook').change()
+						@cbc.$('.bv_molecularWeight').val(" 24")
+						@cbc.$('.bv_molecularWeight').change()
+						@cbc.$('.bv_amount').val(" 24")
+						@cbc.$('.bv_amount').change()
+						@cbc.$('.bv_location').val(" Hood 4")
+						@cbc.$('.bv_location').change()
+					waitsFor ->
+						@cbc.$('.bv_recordedBy option').length > 0
+					, 1000
+				it "should have the save button be enabled", ->
+					runs ->
+						expect(@cbc.$('.bv_save').attr('disabled')).toBeUndefined()
+				it "should update the parent code", ->
+					runs ->
+						@cbc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@cbc.$('.bv_parentCode').html()).toEqual "SP000001"
+				it "should update the batch code", ->
+					runs ->
+						@cbc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@cbc.$('.bv_batchCode').html()).toEqual "SP000001-1"
+				it "should show the update parent button", ->
+					runs ->
+						@cbc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@cbc.$('.bv_updateParent')).toBeVisible()
+				it "should show the update batch button", ->
+					runs ->
+						@cbc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@cbc.$('.bv_saveBatch')).toBeVisible()
+
 
 

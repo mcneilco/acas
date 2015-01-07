@@ -9,7 +9,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.cationicBlockParentByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/cationicBlockTestJSON.js'
+		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
 		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
 	else
 		resp.end JSON.stringify {error: "get parent by codename not implemented yet"}

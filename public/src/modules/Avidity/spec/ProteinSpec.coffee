@@ -320,105 +320,105 @@ describe 'Protein testing', ->
 	describe "Protein Batch model testing", ->
 		describe "when loaded from new", ->
 			beforeEach ->
-				@cbb= new ProteinBatch()
+				@pb= new ProteinBatch()
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
-					expect(@cbb).toBeDefined()
+					expect(@pb).toBeDefined()
 				it "should have a type", ->
-					expect(@cbb.get('lsType')).toEqual "batch"
+					expect(@pb.get('lsType')).toEqual "batch"
 				it "should have a kind", ->
-					expect(@cbb.get('lsKind')).toEqual "protein"
+					expect(@pb.get('lsKind')).toEqual "protein"
 				it "should have an empty scientist", ->
-					expect(@cbb.get('recordedBy')).toEqual ""
+					expect(@pb.get('recordedBy')).toEqual ""
 				it "should have a recordedDate set to now", ->
-					expect(new Date(@cbb.get('recordedDate')).getHours()).toEqual new Date().getHours()
+					expect(new Date(@pb.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				#				it "should have an analytical method file type", ->
-				#					expect(@cbb.get('analyticalFileType')).toEqual "unassigned"
+				#					expect(@pb.get('analyticalFileType')).toEqual "unassigned"
 				#				it "should have an analytical method fileValue", ->
-				#					expect(@cbb.get('analyticalFileType')).toEqual "unassigned"
+				#					expect(@pb.get('analyticalFileType')).toEqual "unassigned"
 				describe "model attributes for each value in defaultValues", ->
 					it "Should have a model attribute for completion date", ->
-						expect(@cbb.get("completion date")).toBeDefined()
+						expect(@pb.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
-						expect(@cbb.get("notebook")).toBeDefined()
+						expect(@pb.get("notebook")).toBeDefined()
 					#					it "Should have a model attribute for analytical method file type", ->
-					#						expect(@cbb.get("analytical file type")).toBeDefined()
+					#						expect(@pb.get("analytical file type")).toBeDefined()
 					it "Should have a model attribute for amount", ->
-						expect(@cbb.get("amount")).toBeDefined()
+						expect(@pb.get("amount")).toBeDefined()
 					it "Should have a model attribute for location", ->
-						expect(@cbb.get("location")).toBeDefined()
+						expect(@pb.get("location")).toBeDefined()
 
 		describe "When created from existing", ->
 			beforeEach ->
-				@cbb = new ProteinBatch JSON.parse(JSON.stringify(window.proteinTestJSON.proteinBatch))
+				@pb = new ProteinBatch JSON.parse(JSON.stringify(window.proteinTestJSON.proteinBatch))
 			describe "after initial load", ->
 				it "should be defined", ->
-					expect(@cbb).toBeDefined()
+					expect(@pb).toBeDefined()
 				it "should have a type", ->
-					expect(@cbb.get('lsType')).toEqual "batch"
+					expect(@pb.get('lsType')).toEqual "batch"
 				it "should have a kind", ->
-					expect(@cbb.get('lsKind')).toEqual "protein"
+					expect(@pb.get('lsKind')).toEqual "protein"
 				it "should have a scientist set", ->
-					expect(@cbb.get('recordedBy')).toEqual "jane"
+					expect(@pb.get('recordedBy')).toEqual "jane"
 				it "should have a recordedDate set", ->
-					expect(@cbb.get('recordedDate')).toEqual 1375141508000
+					expect(@pb.get('recordedDate')).toEqual 1375141508000
 				it "Should have a lsStates with the states in defaultStates", ->
-					expect(@cbb.get('lsStates')).toBeDefined()
-					expect(@cbb.get("lsStates").length).toEqual 2
-					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "protein batch").length).toEqual 1
-					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
+					expect(@pb.get('lsStates')).toBeDefined()
+					expect(@pb.get("lsStates").length).toEqual 2
+					expect(@pb.get("lsStates").getStatesByTypeAndKind("metadata", "protein batch").length).toEqual 1
+					expect(@pb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
 				it "Should have a completion date value", ->
-					expect(@cbb.get("completion date").get("value")).toEqual 1342080000000
+					expect(@pb.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
-					expect(@cbb.get("notebook").get("value")).toEqual "Notebook 1"
+					expect(@pb.get("notebook").get("value")).toEqual "Notebook 1"
 				it "Should have an amount value", ->
-					expect(@cbb.get("amount").get("value")).toEqual 2.3
+					expect(@pb.get("amount").get("value")).toEqual 2.3
 				it "Should have a location value", ->
-					expect(@cbb.get("location").get("value")).toEqual "Cabinet 1"
+					expect(@pb.get("location").get("value")).toEqual "Cabinet 1"
 
 		describe "model validation", ->
 			beforeEach ->
-				@cbb = new ProteinBatch window.proteinTestJSON.proteinBatch
+				@pb = new ProteinBatch window.proteinTestJSON.proteinBatch
 			it "should be valid when loaded from saved", ->
-				expect(@cbb.isValid()).toBeTruthy()
+				expect(@pb.isValid()).toBeTruthy()
 			it "should be invalid when recorded date is empty", ->
-				@cbb.set recordedDate: new Date("").getTime()
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@pb.set recordedDate: new Date("").getTime()
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
 					err.attribute=='recordedDate'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
-				@cbb.set recordedBy: ""
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@pb.set recordedBy: ""
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
 					err.attribute=='recordedBy'
 				)
 			it "should be invalid when completion date is empty", ->
-				@cbb.get("completion date").set("value", new Date("").getTime())
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@pb.get("completion date").set("value", new Date("").getTime())
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
 					err.attribute=='completionDate'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when notebook is empty", ->
-				@cbb.get("notebook").set("value", "")
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@pb.get("notebook").set("value", "")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when amount is NaN", ->
-				@cbb.get("amount").set("value", "fred")
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@pb.get("amount").set("value", "fred")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
 					err.attribute=='amount'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when location is empty", ->
-				@cbb.get("location").set("value", "")
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
+				@pb.get("location").set("value", "")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
 					err.attribute=='location'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
@@ -426,186 +426,239 @@ describe 'Protein testing', ->
 	describe "Protein Batch Controller testing", ->
 		describe "When instantiated from new", ->
 			beforeEach ->
-				@cbb = new ProteinBatch()
-				@cbbc = new ProteinBatchController
-					model: @cbb
+				@pb = new ProteinBatch()
+				@pbc = new ProteinBatchController
+					model: @pb
 					el: $('#fixture')
-				@cbbc.render()
+				@pbc.render()
 			describe "basic existence tests", ->
 				it "should exist", ->
-					expect(@cbbc).toBeDefined()
+					expect(@pbc).toBeDefined()
 				it "should load the template", ->
-					expect(@cbbc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					expect(@pbc.$('.bv_batchCode').html()).toEqual "autofill when saved"
 		describe "When instantiated from existing", ->
 			beforeEach ->
-				@cbb = new ProteinBatch JSON.parse(JSON.stringify(window.proteinTestJSON.proteinBatch))
-				@cbbc = new ProteinBatchController
-					model: @cbb
+				@pb = new ProteinBatch JSON.parse(JSON.stringify(window.proteinTestJSON.proteinBatch))
+				@pbc = new ProteinBatchController
+					model: @pb
 					el: $('#fixture')
-				@cbbc.render()
+				@pbc.render()
 			describe "render existing parameters", ->
 				it "should show the protein batch id", ->
-					expect(@cbbc.$('.bv_batchCode').val()).toEqual "PROT000001-1"
+					expect(@pbc.$('.bv_batchCode').val()).toEqual "PROT000001-1"
 				it "should fill the scientist field", ->
 					waitsFor ->
-						@cbbc.$('.bv_recordedBy option').length > 0
+						@pbc.$('.bv_recordedBy option').length > 0
 					, 1000
 					runs ->
-						expect(@cbbc.$('.bv_recordedBy').val()).toEqual "jane"
+						expect(@pbc.$('.bv_recordedBy').val()).toEqual "jane"
 				it "should fill the completion date field", ->
-					expect(@cbbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
+					expect(@pbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
-					expect(@cbbc.$('.bv_notebook').val()).toEqual "Notebook 1"
+					expect(@pbc.$('.bv_notebook').val()).toEqual "Notebook 1"
 				it "should fill the amount field", ->
-					expect(@cbbc.$('.bv_amount').val()).toEqual "2.3"
+					expect(@pbc.$('.bv_amount').val()).toEqual "2.3"
 				it "should fill the location field", ->
-					expect(@cbbc.$('.bv_location').val()).toEqual "Cabinet 1"
+					expect(@pbc.$('.bv_location').val()).toEqual "Cabinet 1"
 			describe "model updates", ->
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
-						@cbbc.$('.bv_recordedBy option').length > 0
+						@pbc.$('.bv_recordedBy option').length > 0
 					, 1000
 					runs ->
-						@cbbc.$('.bv_recordedBy').val('unassigned')
-						@cbbc.$('.bv_recordedBy').change()
-						expect(@cbbc.model.get('recordedBy')).toEqual "unassigned"
+						@pbc.$('.bv_recordedBy').val('unassigned')
+						@pbc.$('.bv_recordedBy').change()
+						expect(@pbc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
-					@cbbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@cbbc.$('.bv_completionDate').change()
-					expect(@cbbc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
+					@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
+					@pbc.$('.bv_completionDate').change()
+					expect(@pbc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
-					@cbbc.$('.bv_notebook').val(" Updated notebook  ")
-					@cbbc.$('.bv_notebook').change()
-					expect(@cbbc.model.get('notebook').get('value')).toEqual "Updated notebook"
+					@pbc.$('.bv_notebook').val(" Updated notebook  ")
+					@pbc.$('.bv_notebook').change()
+					expect(@pbc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when amount is changed", ->
-					@cbbc.$('.bv_amount').val(" 12  ")
-					@cbbc.$('.bv_amount').change()
-					expect(@cbbc.model.get('amount').get('value')).toEqual 12
+					@pbc.$('.bv_amount').val(" 12  ")
+					@pbc.$('.bv_amount').change()
+					expect(@pbc.model.get('amount').get('value')).toEqual 12
 				it "should update model when location is changed", ->
-					@cbbc.$('.bv_location').val(" Updated location  ")
-					@cbbc.$('.bv_location').change()
-					expect(@cbbc.model.get('location').get('value')).toEqual "Updated location"
+					@pbc.$('.bv_location').val(" Updated location  ")
+					@pbc.$('.bv_location').change()
+					expect(@pbc.model.get('location').get('value')).toEqual "Updated location"
 
 			describe "controller validation rules", ->
 				beforeEach ->
 					waitsFor ->
-						@cbbc.$('.bv_recordedBy option').length > 0
+						@pbc.$('.bv_recordedBy option').length > 0
 					, 1000
 					runs ->
-						@cbbc.$('.bv_recordedBy').val("bob")
-						@cbbc.$('.bv_recordedBy').change()
-						@cbbc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@cbbc.$('.bv_completionDate').change()
-						@cbbc.$('.bv_notebook').val("my notebook")
-						@cbbc.$('.bv_notebook').change()
-						@cbbc.$('.bv_amount').val(" 24")
-						@cbbc.$('.bv_amount').change()
-						@cbbc.$('.bv_location').val(" Hood 4")
-						@cbbc.$('.bv_location').change()
+						@pbc.$('.bv_recordedBy').val("bob")
+						@pbc.$('.bv_recordedBy').change()
+						@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
+						@pbc.$('.bv_completionDate').change()
+						@pbc.$('.bv_notebook').val("my notebook")
+						@pbc.$('.bv_notebook').change()
+						@pbc.$('.bv_amount').val(" 24")
+						@pbc.$('.bv_amount').change()
+						@pbc.$('.bv_location').val(" Hood 4")
+						@pbc.$('.bv_location').change()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
-							expect(@cbbc.isValid()).toBeTruthy()
+							expect(@pbc.isValid()).toBeTruthy()
 				#					it "save button should be enabled", ->
 				#						runs ->
 				#							expect(@ppc.$('.bv_save').attr('disabled')).toBeUndefined()
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_recordedBy').val("")
-							@cbbc.$('.bv_recordedBy').change()
+							@pbc.$('.bv_recordedBy').val("")
+							@pbc.$('.bv_recordedBy').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_completionDate').val("")
-							@cbbc.$('.bv_completionDate').change()
+							@pbc.$('.bv_completionDate').val("")
+							@pbc.$('.bv_completionDate').change()
 					it "should show error in date field", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
 				describe "when notebook not filled", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_notebook').val("")
-							@cbbc.$('.bv_notebook').change()
+							@pbc.$('.bv_notebook').val("")
+							@pbc.$('.bv_notebook').change()
 					it "should show error on notebook field", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
 				describe "when amount not filled", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_amount').val("")
-							@cbbc.$('.bv_amount').change()
+							@pbc.$('.bv_amount').val("")
+							@pbc.$('.bv_amount').change()
 					it "should show error on amount field", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
 				describe "when location not filled", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_location').val("")
-							@cbbc.$('.bv_location').change()
+							@pbc.$('.bv_location').val("")
+							@pbc.$('.bv_location').change()
 					it "should show error on location field", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_location').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_location').hasClass('error')).toBeTruthy()
 
 	describe "Protein Batch Select Controller testing", ->
 		beforeEach ->
-			@cbb = new ProteinBatch()
-			@cbbsc = new ProteinBatchSelectController
-				model: @cbb
+			@pb = new ProteinBatch()
+			@pbsc = new ProteinBatchSelectController
+				model: @pb
 				el: $('#fixture')
-			@cbbsc.render()
+			@pbsc.render()
 		describe "When instantiated", ->
 			describe "basic existence tests", ->
 				it "should exist", ->
-					expect(@cbbsc).toBeDefined()
+					expect(@pbsc).toBeDefined()
 				it "should load the template", ->
-					expect(@cbbsc.$('.bv_batchList').length).toEqual 1
+					expect(@pbsc.$('.bv_batchList').length).toEqual 1
 			describe "rendering", ->
 				it "should have the batch list default to register new batch", ->
 					waitsFor ->
-						@cbbsc.$('.bv_batchList option').length > 0
+						@pbsc.$('.bv_batchList option').length > 0
 					, 1000
 					runs ->
-						expect(@cbbsc.$('.bv_batchList').val()).toEqual "new batch"
+						expect(@pbsc.$('.bv_batchList').val()).toEqual "new batch"
 				it "should a new batch registration form", ->
-					console.log @cbbsc.$('.bv_batchCode')
-					expect(@cbbsc.$('.bv_batchCode').val()).toEqual ""
-					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "autofill when saved"
+					console.log @pbsc.$('.bv_batchCode')
+					expect(@pbsc.$('.bv_batchCode').val()).toEqual ""
+					expect(@pbsc.$('.bv_batchCode').html()).toEqual "autofill when saved"
 		describe "behavior", ->
 			it "should show the information for a selected batch", ->
 				waitsFor ->
-					@cbbsc.$('.bv_batchList option').length > 0
+					@pbsc.$('.bv_batchList option').length > 0
 				, 1000
 				runs ->
-					console.log @cbbsc.$('.bv_batchList')
-					@cbbsc.$('.bv_batchList').val("CB000001-1")
-					@cbbsc.$('.bv_batchList').change()
+					console.log @pbsc.$('.bv_batchList')
+					@pbsc.$('.bv_batchList').val("CB000001-1")
+					@pbsc.$('.bv_batchList').change()
 				waitsFor ->
-					@cbbsc.$('.bv_recordedBy option').length > 0
+					@pbsc.$('.bv_recordedBy option').length > 0
 				, 1000
 				runs ->
 					waits(1000)
 				runs ->
-					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "CB000001-1"
-					expect(@cbbsc.$('.bv_recordedBy').val()).toEqual "jane"
+					expect(@pbsc.$('.bv_batchCode').html()).toEqual "CB000001-1"
+					expect(@pbsc.$('.bv_recordedBy').val()).toEqual "jane"
 
 	describe "Protein Controller", ->
 		beforeEach ->
-			@cbc = new ProteinController
+			@pc = new ProteinController
 				model: new ProteinParent()
 				el: $('#fixture')
-			@cbc.render()
+			@pc.render()
 		describe "Basic loading", ->
 			it "Class should exist", ->
-				expect(@cbc).toBeDefined()
+				expect(@pc).toBeDefined()
 			it "Should load the template", ->
-				expect(@cbc.$('.bv_save').length).toEqual 1
+				expect(@pc.$('.bv_save').length).toEqual 1
 			it "Should load a parent controller", ->
-				expect(@cbc.$('.bv_parent .bv_parentCode').length).toEqual 1
+				expect(@pc.$('.bv_parent .bv_parentCode').length).toEqual 1
 			it "Should load a batch controller", ->
-				expect(@cbc.$('.bv_batch .bv_batchCode').length).toEqual 1
+				expect(@pc.$('.bv_batch .bv_batchCode').length).toEqual 1
+		describe "saving parent/batch for the first time", ->
+			describe "when form is initialized", ->
+				it "should have the save button be disabled initially", ->
+					expect(@pc.$('.bv_save').attr('disabled')).toEqual 'disabled'
+			describe 'when save is clicked', ->
+				beforeEach ->
+					runs ->
+						@pc.$('.bv_parentName').val(" Updated entity name   ")
+						@pc.$('.bv_parentName').change()
+						@pc.$('.bv_recordedBy').val("bob")
+						@pc.$('.bv_recordedBy').change()
+						@pc.$('.bv_completionDate').val(" 2013-3-16   ")
+						@pc.$('.bv_completionDate').change()
+						@pc.$('.bv_notebook').val("my notebook")
+						@pc.$('.bv_notebook').change()
+						@pc.$('.bv_type').val(" mab")
+						@pc.$('.bv_type').change()
+						@pc.$('.bv_sequence').val(" AUC")
+						@pc.$('.bv_sequence').change()
+						@pc.$('.bv_amount').val(" 24")
+						@pc.$('.bv_amount').change()
+						@pc.$('.bv_location').val(" Hood 4")
+						@pc.$('.bv_location').change()
+					waitsFor ->
+						@pc.$('.bv_recordedBy option').length > 0
+					, 1000
+				it "should have the save button be enabled", ->
+					runs ->
+						expect(@pc.$('.bv_save').attr('disabled')).toBeUndefined()
+				it "should update the parent code", ->
+					runs ->
+						@pc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@pc.$('.bv_parentCode').html()).toEqual "PROT000001"
+				it "should update the batch code", ->
+					runs ->
+						@pc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@pc.$('.bv_batchCode').html()).toEqual "PROT000001-1"
+				it "should show the update parent button", ->
+					runs ->
+						@pc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@pc.$('.bv_updateParent')).toBeVisible()
+				it "should show the update batch button", ->
+					runs ->
+						@pc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@pc.$('.bv_saveBatch')).toBeVisible()
 
 

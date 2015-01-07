@@ -10,6 +10,8 @@
       return LinkerSmallMoleculeParent.__super__.constructor.apply(this, arguments);
     }
 
+    LinkerSmallMoleculeParent.prototype.urlRoot = "/api/linkerSmallMoleculeParents";
+
     LinkerSmallMoleculeParent.prototype.initialize = function() {
       this.set({
         lsType: "parent",
@@ -82,30 +84,36 @@
             message: "Scientist must be set"
           });
         }
-        cDate = attrs["completion date"].get('value');
-        if (cDate === void 0 || cDate === "") {
-          cDate = "fred";
+        if (attrs["completion date"] != null) {
+          cDate = attrs["completion date"].get('value');
+          if (cDate === void 0 || cDate === "") {
+            cDate = "fred";
+          }
+          if (isNaN(cDate)) {
+            errors.push({
+              attribute: 'completionDate',
+              message: "Date must be set"
+            });
+          }
         }
-        if (isNaN(cDate)) {
-          errors.push({
-            attribute: 'completionDate',
-            message: "Date must be set"
-          });
-        }
-        notebook = attrs.notebook.get('value');
-        if (notebook === "" || notebook === void 0) {
-          errors.push({
-            attribute: 'notebook',
-            message: "Notebook must be set"
-          });
+        if (attrs.notebook != null) {
+          notebook = attrs.notebook.get('value');
+          if (notebook === "" || notebook === void 0) {
+            errors.push({
+              attribute: 'notebook',
+              message: "Notebook must be set"
+            });
+          }
         }
       }
-      mw = attrs["molecular weight"].get('value');
-      if (mw === "" || mw === void 0 || isNaN(mw)) {
-        errors.push({
-          attribute: 'molecularWeight',
-          message: "Molecular weight must be set"
-        });
+      if (attrs["molecular weight"] != null) {
+        mw = attrs["molecular weight"].get('value');
+        if (mw === "" || mw === void 0 || isNaN(mw)) {
+          errors.push({
+            attribute: 'molecularWeight',
+            message: "Molecular weight must be set"
+          });
+        }
       }
       if (errors.length > 0) {
         return errors;
@@ -124,6 +132,8 @@
     function LinkerSmallMoleculeBatch() {
       return LinkerSmallMoleculeBatch.__super__.constructor.apply(this, arguments);
     }
+
+    LinkerSmallMoleculeBatch.prototype.urlRoot = "/api/linkerSmallMoleculeBatches";
 
     LinkerSmallMoleculeBatch.prototype.initialize = function() {
       this.set({
@@ -330,7 +340,7 @@
                   if (json.length === 0) {
                     alert('Could not get parent for code in this URL, creating new one');
                   } else {
-                    cbp = new LinkerSmallMoleculeParent(json[0]);
+                    cbp = new LinkerSmallMoleculeParent(json);
                     cbp.set(cbp.parse(cbp.attributes));
                     _this.model = cbp;
                   }

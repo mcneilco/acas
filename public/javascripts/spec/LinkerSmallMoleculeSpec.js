@@ -771,7 +771,7 @@
         });
         return this.lsmc.render();
       });
-      return describe("Basic loading", function() {
+      describe("Basic loading", function() {
         it("Class should exist", function() {
           return expect(this.lsmc).toBeDefined();
         });
@@ -783,6 +783,77 @@
         });
         return it("Should load a batch controller", function() {
           return expect(this.lsmc.$('.bv_batch .bv_batchCode').length).toEqual(1);
+        });
+      });
+      return describe("saving parent/batch for the first time", function() {
+        describe("when form is initialized", function() {
+          return it("should have the save button be disabled initially", function() {
+            return expect(this.lsmc.$('.bv_save').attr('disabled')).toEqual('disabled');
+          });
+        });
+        return describe('when save is clicked', function() {
+          beforeEach(function() {
+            runs(function() {
+              this.lsmc.$('.bv_parentName').val(" Updated entity name   ");
+              this.lsmc.$('.bv_parentName').change();
+              this.lsmc.$('.bv_recordedBy').val("bob");
+              this.lsmc.$('.bv_recordedBy').change();
+              this.lsmc.$('.bv_completionDate').val(" 2013-3-16   ");
+              this.lsmc.$('.bv_completionDate').change();
+              this.lsmc.$('.bv_notebook').val("my notebook");
+              this.lsmc.$('.bv_notebook').change();
+              this.lsmc.$('.bv_molecularWeight').val(" 24");
+              this.lsmc.$('.bv_molecularWeight').change();
+              this.lsmc.$('.bv_amount').val(" 24");
+              this.lsmc.$('.bv_amount').change();
+              this.lsmc.$('.bv_location').val(" Hood 4");
+              return this.lsmc.$('.bv_location').change();
+            });
+            return waitsFor(function() {
+              return this.lsmc.$('.bv_recordedBy option').length > 0;
+            }, 1000);
+          });
+          it("should have the save button be enabled", function() {
+            return runs(function() {
+              return expect(this.lsmc.$('.bv_save').attr('disabled')).toBeUndefined();
+            });
+          });
+          it("should update the parent code", function() {
+            runs(function() {
+              return this.lsmc.$('.bv_save').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.lsmc.$('.bv_parentCode').html()).toEqual("LSM000001");
+            });
+          });
+          it("should update the batch code", function() {
+            runs(function() {
+              return this.lsmc.$('.bv_save').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.lsmc.$('.bv_batchCode').html()).toEqual("LSM000001-1");
+            });
+          });
+          it("should show the update parent button", function() {
+            runs(function() {
+              return this.lsmc.$('.bv_save').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.lsmc.$('.bv_updateParent')).toBeVisible();
+            });
+          });
+          return it("should show the update batch button", function() {
+            runs(function() {
+              return this.lsmc.$('.bv_save').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.lsmc.$('.bv_saveBatch')).toBeVisible();
+            });
+          });
         });
       });
     });

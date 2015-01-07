@@ -771,7 +771,7 @@
         });
         return this.cbc.render();
       });
-      return describe("Basic loading", function() {
+      describe("Basic loading", function() {
         it("Class should exist", function() {
           return expect(this.cbc).toBeDefined();
         });
@@ -783,6 +783,77 @@
         });
         return it("Should load a batch controller", function() {
           return expect(this.cbc.$('.bv_batch .bv_batchCode').length).toEqual(1);
+        });
+      });
+      return describe("saving parent/batch for the first time", function() {
+        describe("when form is initialized", function() {
+          return it("should have the save button be disabled initially", function() {
+            return expect(this.cbc.$('.bv_save').attr('disabled')).toEqual('disabled');
+          });
+        });
+        return describe('when save is clicked', function() {
+          beforeEach(function() {
+            runs(function() {
+              this.cbc.$('.bv_parentName').val(" Updated entity name   ");
+              this.cbc.$('.bv_parentName').change();
+              this.cbc.$('.bv_recordedBy').val("bob");
+              this.cbc.$('.bv_recordedBy').change();
+              this.cbc.$('.bv_completionDate').val(" 2013-3-16   ");
+              this.cbc.$('.bv_completionDate').change();
+              this.cbc.$('.bv_notebook').val("my notebook");
+              this.cbc.$('.bv_notebook').change();
+              this.cbc.$('.bv_molecularWeight').val(" 24");
+              this.cbc.$('.bv_molecularWeight').change();
+              this.cbc.$('.bv_amount').val(" 24");
+              this.cbc.$('.bv_amount').change();
+              this.cbc.$('.bv_location').val(" Hood 4");
+              return this.cbc.$('.bv_location').change();
+            });
+            return waitsFor(function() {
+              return this.cbc.$('.bv_recordedBy option').length > 0;
+            }, 1000);
+          });
+          it("should have the save button be enabled", function() {
+            return runs(function() {
+              return expect(this.cbc.$('.bv_save').attr('disabled')).toBeUndefined();
+            });
+          });
+          it("should update the parent code", function() {
+            runs(function() {
+              return this.cbc.$('.bv_save').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.cbc.$('.bv_parentCode').html()).toEqual("SP000001");
+            });
+          });
+          it("should update the batch code", function() {
+            runs(function() {
+              return this.cbc.$('.bv_save').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.cbc.$('.bv_batchCode').html()).toEqual("SP000001-1");
+            });
+          });
+          it("should show the update parent button", function() {
+            runs(function() {
+              return this.cbc.$('.bv_save').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.cbc.$('.bv_updateParent')).toBeVisible();
+            });
+          });
+          return it("should show the update batch button", function() {
+            runs(function() {
+              return this.cbc.$('.bv_save').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.cbc.$('.bv_saveBatch')).toBeVisible();
+            });
+          });
         });
       });
     });

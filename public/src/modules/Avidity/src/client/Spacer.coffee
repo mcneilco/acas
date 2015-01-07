@@ -1,4 +1,6 @@
 class window.SpacerParent extends AbstractBaseComponentParent
+	urlRoot: "/api/spacerParents"
+
 	initialize: ->
 		@.set
 			lsType: "parent"
@@ -57,22 +59,25 @@ class window.SpacerParent extends AbstractBaseComponentParent
 				errors.push
 					attribute: 'recordedBy'
 					message: "Scientist must be set"
-			cDate = attrs["completion date"].get('value')
-			if cDate is undefined or cDate is "" then cDate = "fred"
-			if isNaN(cDate)
+			if attrs["completion date"]?
+				cDate = attrs["completion date"].get('value')
+				if cDate is undefined or cDate is "" then cDate = "fred"
+				if isNaN(cDate)
+					errors.push
+						attribute: 'completionDate'
+						message: "Date must be set"
+			if attrs.notebook?
+				notebook = attrs.notebook.get('value')
+				if notebook is "" or notebook is undefined
+					errors.push
+						attribute: 'notebook'
+						message: "Notebook must be set"
+		if attrs["molecular weight"]?
+			mw = attrs["molecular weight"].get('value')
+			if mw is "" or mw is undefined or isNaN(mw)
 				errors.push
-					attribute: 'completionDate'
-					message: "Date must be set"
-			notebook = attrs.notebook.get('value')
-			if notebook is "" or notebook is undefined
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
-		mw = attrs["molecular weight"].get('value')
-		if mw is "" or mw is undefined or isNaN(mw)
-			errors.push
-				attribute: 'molecularWeight'
-				message: "Molecular weight must be set"
+					attribute: 'molecularWeight'
+					message: "Molecular weight must be set"
 
 		if errors.length > 0
 			return errors
@@ -81,6 +86,7 @@ class window.SpacerParent extends AbstractBaseComponentParent
 
 
 class window.SpacerBatch extends AbstractBaseComponentBatch
+	urlRoot: "/api/spacerBatches"
 
 	initialize: ->
 		@.set
@@ -221,7 +227,7 @@ class window.SpacerController extends AbstractBaseComponentController
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								cbp = new CationicBlockParent json
-								cbp = new SpacerParent json[0]
+								cbp = new SpacerParent json
 								cbp.set cbp.parse(cbp.attributes)
 								@model = cbp
 							@completeInitialization()

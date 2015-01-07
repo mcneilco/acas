@@ -172,7 +172,7 @@ class window.CationicBlockBatchController extends AbstractBaseComponentBatchCont
 
 class window.CationicBlockBatchSelectController extends AbstractBaseComponentBatchSelectController
 
-	setupBatchRegForm: (batch) =>
+	setupBatchRegForm: (batch) ->
 		if batch?
 			console.log "batch exists"
 			model = batch

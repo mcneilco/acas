@@ -10,6 +10,8 @@
       return ProteinParent.__super__.constructor.apply(this, arguments);
     }
 
+    ProteinParent.prototype.urlRoot = "/api/proteinParents";
+
     ProteinParent.prototype.initialize = function() {
       this.set({
         lsType: "parent",
@@ -86,37 +88,45 @@
             message: "Scientist must be set"
           });
         }
-        cDate = attrs["completion date"].get('value');
-        if (cDate === void 0 || cDate === "") {
-          cDate = "fred";
+        if (attrs["completion date"] != null) {
+          cDate = attrs["completion date"].get('value');
+          if (cDate === void 0 || cDate === "") {
+            cDate = "fred";
+          }
+          if (isNaN(cDate)) {
+            errors.push({
+              attribute: 'completionDate',
+              message: "Date must be set"
+            });
+          }
         }
-        if (isNaN(cDate)) {
-          errors.push({
-            attribute: 'completionDate',
-            message: "Date must be set"
-          });
+        if (attrs.notebook != null) {
+          notebook = attrs.notebook.get('value');
+          if (notebook === "" || notebook === void 0) {
+            errors.push({
+              attribute: 'notebook',
+              message: "Notebook must be set"
+            });
+          }
         }
-        notebook = attrs.notebook.get('value');
-        if (notebook === "" || notebook === void 0) {
+      }
+      if (attrs.type != null) {
+        type = attrs.type.get('value');
+        if (type === "unassigned" || type === "" || type === void 0) {
           errors.push({
-            attribute: 'notebook',
-            message: "Notebook must be set"
+            attribute: 'type',
+            message: "Type must be set"
           });
         }
       }
-      type = attrs.type.get('value');
-      if (type === "unassigned" || type === "" || type === void 0) {
-        errors.push({
-          attribute: 'type',
-          message: "Type must be set"
-        });
-      }
-      aaSeq = attrs["aa sequence"].get('value');
-      if (aaSeq === "" || aaSeq === void 0) {
-        errors.push({
-          attribute: 'sequence',
-          message: "Protein aa sequence must be set"
-        });
+      if (attrs["aa sequence"] != null) {
+        aaSeq = attrs["aa sequence"].get('value');
+        if (aaSeq === "" || aaSeq === void 0) {
+          errors.push({
+            attribute: 'sequence',
+            message: "Protein aa sequence must be set"
+          });
+        }
       }
       if (errors.length > 0) {
         return errors;
@@ -135,6 +145,8 @@
     function ProteinBatch() {
       return ProteinBatch.__super__.constructor.apply(this, arguments);
     }
+
+    ProteinBatch.prototype.urlRoot = "/api/proteinBatches";
 
     ProteinBatch.prototype.initialize = function() {
       this.set({

@@ -11,7 +11,7 @@
   exports.cationicBlockParentByCodeName = function(req, resp) {
     var cationicBlockTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/cationicBlockTestJSON.js');
+      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js');
       return resp.end(JSON.stringify(cationicBlockTestJSON.cationicBlockParent));
     } else {
       return resp.end(JSON.stringify({

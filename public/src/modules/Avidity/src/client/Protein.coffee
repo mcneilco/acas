@@ -1,4 +1,6 @@
 class window.ProteinParent extends AbstractBaseComponentParent
+	urlRoot: "/api/proteinParents"
+
 	initialize: ->
 		@.set
 			lsType: "parent"
@@ -61,27 +63,31 @@ class window.ProteinParent extends AbstractBaseComponentParent
 				errors.push
 					attribute: 'recordedBy'
 					message: "Scientist must be set"
-			cDate = attrs["completion date"].get('value')
-			if cDate is undefined or cDate is "" then cDate = "fred"
-			if isNaN(cDate)
+			if attrs["completion date"]?
+				cDate = attrs["completion date"].get('value')
+				if cDate is undefined or cDate is "" then cDate = "fred"
+				if isNaN(cDate)
+					errors.push
+						attribute: 'completionDate'
+						message: "Date must be set"
+			if attrs.notebook?
+				notebook = attrs.notebook.get('value')
+				if notebook is "" or notebook is undefined
+					errors.push
+						attribute: 'notebook'
+						message: "Notebook must be set"
+		if attrs.type?
+			type = attrs.type.get('value')
+			if type is "unassigned" or type is "" or type is undefined
 				errors.push
-					attribute: 'completionDate'
-					message: "Date must be set"
-			notebook = attrs.notebook.get('value')
-			if notebook is "" or notebook is undefined
+					attribute: 'type'
+					message: "Type must be set"
+		if attrs["aa sequence"]?
+			aaSeq = attrs["aa sequence"].get('value')
+			if aaSeq is "" or aaSeq is undefined
 				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
-		type = attrs.type.get('value')
-		if type is "unassigned" or type is "" or type is undefined
-			errors.push
-				attribute: 'type'
-				message: "Type must be set"
-		aaSeq = attrs["aa sequence"].get('value')
-		if aaSeq is "" or aaSeq is undefined
-			errors.push
-				attribute: 'sequence'
-				message: "Protein aa sequence must be set"
+					attribute: 'sequence'
+					message: "Protein aa sequence must be set"
 
 		if errors.length > 0
 			return errors
@@ -90,6 +96,7 @@ class window.ProteinParent extends AbstractBaseComponentParent
 
 
 class window.ProteinBatch extends AbstractBaseComponentBatch
+	urlRoot: "/api/proteinBatches"
 
 	initialize: ->
 		@.set

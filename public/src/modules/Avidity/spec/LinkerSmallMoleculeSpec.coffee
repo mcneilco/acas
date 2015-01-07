@@ -564,5 +564,55 @@ describe 'Linker Small Molecule testing', ->
 				expect(@lsmc.$('.bv_parent .bv_parentCode').length).toEqual 1
 			it "Should load a batch controller", ->
 				expect(@lsmc.$('.bv_batch .bv_batchCode').length).toEqual 1
-
+		describe "saving parent/batch for the first time", ->
+			describe "when form is initialized", ->
+				it "should have the save button be disabled initially", ->
+					expect(@lsmc.$('.bv_save').attr('disabled')).toEqual 'disabled'
+			describe 'when save is clicked', ->
+				beforeEach ->
+					runs ->
+						@lsmc.$('.bv_parentName').val(" Updated entity name   ")
+						@lsmc.$('.bv_parentName').change()
+						@lsmc.$('.bv_recordedBy').val("bob")
+						@lsmc.$('.bv_recordedBy').change()
+						@lsmc.$('.bv_completionDate').val(" 2013-3-16   ")
+						@lsmc.$('.bv_completionDate').change()
+						@lsmc.$('.bv_notebook').val("my notebook")
+						@lsmc.$('.bv_notebook').change()
+						@lsmc.$('.bv_molecularWeight').val(" 24")
+						@lsmc.$('.bv_molecularWeight').change()
+						@lsmc.$('.bv_amount').val(" 24")
+						@lsmc.$('.bv_amount').change()
+						@lsmc.$('.bv_location').val(" Hood 4")
+						@lsmc.$('.bv_location').change()
+					waitsFor ->
+						@lsmc.$('.bv_recordedBy option').length > 0
+					, 1000
+				it "should have the save button be enabled", ->
+					runs ->
+						expect(@lsmc.$('.bv_save').attr('disabled')).toBeUndefined()
+				it "should update the parent code", ->
+					runs ->
+						@lsmc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@lsmc.$('.bv_parentCode').html()).toEqual "LSM000001"
+				it "should update the batch code", ->
+					runs ->
+						@lsmc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@lsmc.$('.bv_batchCode').html()).toEqual "LSM000001-1"
+				it "should show the update parent button", ->
+					runs ->
+						@lsmc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@lsmc.$('.bv_updateParent')).toBeVisible()
+				it "should show the update batch button", ->
+					runs ->
+						@lsmc.$('.bv_save').click()
+					waits(1000)
+					runs ->
+						expect(@lsmc.$('.bv_saveBatch')).toBeVisible()
 

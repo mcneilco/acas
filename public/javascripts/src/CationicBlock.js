@@ -258,7 +258,6 @@
 
     function CationicBlockBatchSelectController() {
       this.handleSelectedBatchChanged = __bind(this.handleSelectedBatchChanged, this);
-      this.setupBatchRegForm = __bind(this.setupBatchRegForm, this);
       return CationicBlockBatchSelectController.__super__.constructor.apply(this, arguments);
     }
 
