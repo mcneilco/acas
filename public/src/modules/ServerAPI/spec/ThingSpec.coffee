@@ -98,9 +98,9 @@ describe 'Thing testing', ->
 				expect(corpNameLabel.get("labelText")).toEqual @siRNA.get("corpName").get("labelText")
 				expect(corpNameLabel.get("labelText")).toEqual "newCorpName"
 
-			it 'should remove the top level label references when sync() is called', ->
+			it 'should remove the top level label references when reformatBeforeSaving() is called', ->
 				expect(@siRNA.get("corpName")).toBeDefined()
-				@siRNA.sync()
+				@siRNA.reformatBeforeSaving()
 				expect(@siRNA.get("corpName")).toBeUndefined()
 
 			it 'should create top level label references when parse() is called / when the object is re-hyrdrated', ->
@@ -108,7 +108,7 @@ describe 'Thing testing', ->
 				@siRNA.get("corpName").set("labelText", newLabelText)
 				expect(@siRNA.get("corpName")).toBeDefined()
 
-				@siRNA.sync()
+				@siRNA.reformatBeforeSaving()
 				expect(@siRNA.get("corpName")).toBeUndefined()
 				@siRNA.parse()
 				expect(@siRNA.get("corpName")).toBeDefined()
@@ -147,9 +147,9 @@ describe 'Thing testing', ->
 				console.log "this"
 				console.log @siRNA
 
-			it 'should remove the top level lsStates model object references when sync() is called', ->
+			it 'should remove the top level lsStates model object references when reformatBeforeSaving() is called', ->
 				expect(@siRNA.get("sequence")).toBeDefined()
-				@siRNA.sync()
+				@siRNA.reformatBeforeSaving()
 				expect(@siRNA.get("sequence")).toBeUndefined()
 
 			it 'should create top level lsStates model object references when parse() is called / when the object is re-hyrdrated', ->
@@ -157,7 +157,7 @@ describe 'Thing testing', ->
 				@siRNA.get("sequence").set("value", newsequence)
 				expect(@siRNA.get("sequence")).toBeDefined()
 
-				@siRNA.sync()
+				@siRNA.reformatBeforeSaving()
 				expect(@siRNA.get("sequence")).toBeUndefined()
 				@siRNA.parse()
 				expect(@siRNA.get("sequence")).toBeDefined()

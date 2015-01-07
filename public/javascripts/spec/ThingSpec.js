@@ -116,9 +116,9 @@
           expect(corpNameLabel.get("labelText")).toEqual(this.siRNA.get("corpName").get("labelText"));
           return expect(corpNameLabel.get("labelText")).toEqual("newCorpName");
         });
-        it('should remove the top level label references when sync() is called', function() {
+        it('should remove the top level label references when reformatBeforeSaving() is called', function() {
           expect(this.siRNA.get("corpName")).toBeDefined();
-          this.siRNA.sync();
+          this.siRNA.reformatBeforeSaving();
           return expect(this.siRNA.get("corpName")).toBeUndefined();
         });
         return it('should create top level label references when parse() is called / when the object is re-hyrdrated', function() {
@@ -126,7 +126,7 @@
           newLabelText = "this is a new label";
           this.siRNA.get("corpName").set("labelText", newLabelText);
           expect(this.siRNA.get("corpName")).toBeDefined();
-          this.siRNA.sync();
+          this.siRNA.reformatBeforeSaving();
           expect(this.siRNA.get("corpName")).toBeUndefined();
           this.siRNA.parse();
           expect(this.siRNA.get("corpName")).toBeDefined();
@@ -170,9 +170,9 @@
           console.log("this");
           return console.log(this.siRNA);
         });
-        it('should remove the top level lsStates model object references when sync() is called', function() {
+        it('should remove the top level lsStates model object references when reformatBeforeSaving() is called', function() {
           expect(this.siRNA.get("sequence")).toBeDefined();
-          this.siRNA.sync();
+          this.siRNA.reformatBeforeSaving();
           return expect(this.siRNA.get("sequence")).toBeUndefined();
         });
         return it('should create top level lsStates model object references when parse() is called / when the object is re-hyrdrated', function() {
@@ -180,7 +180,7 @@
           newsequence = "this is a new sequence value";
           this.siRNA.get("sequence").set("value", newsequence);
           expect(this.siRNA.get("sequence")).toBeDefined();
-          this.siRNA.sync();
+          this.siRNA.reformatBeforeSaving();
           expect(this.siRNA.get("sequence")).toBeUndefined();
           this.siRNA.parse();
           expect(this.siRNA.get("sequence")).toBeDefined();

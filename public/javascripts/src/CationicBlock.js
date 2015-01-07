@@ -10,6 +10,8 @@
       return CationicBlockParent.__super__.constructor.apply(this, arguments);
     }
 
+    CationicBlockParent.prototype.urlRoot = "/api/cationicBlockParents";
+
     CationicBlockParent.prototype.initialize = function() {
       this.set({
         lsType: "parent",
@@ -82,30 +84,36 @@
             message: "Scientist must be set"
           });
         }
-        cDate = attrs["completion date"].get('value');
-        if (cDate === void 0 || cDate === "") {
-          cDate = "fred";
+        if (attrs["completion date"] != null) {
+          cDate = attrs["completion date"].get('value');
+          if (cDate === void 0 || cDate === "") {
+            cDate = "fred";
+          }
+          if (isNaN(cDate)) {
+            errors.push({
+              attribute: 'completionDate',
+              message: "Date must be set"
+            });
+          }
         }
-        if (isNaN(cDate)) {
-          errors.push({
-            attribute: 'completionDate',
-            message: "Date must be set"
-          });
-        }
-        notebook = attrs.notebook.get('value');
-        if (notebook === "" || notebook === void 0) {
-          errors.push({
-            attribute: 'notebook',
-            message: "Notebook must be set"
-          });
+        if (attrs.notebook != null) {
+          notebook = attrs.notebook.get('value');
+          if (notebook === "" || notebook === void 0) {
+            errors.push({
+              attribute: 'notebook',
+              message: "Notebook must be set"
+            });
+          }
         }
       }
-      mw = attrs["molecular weight"].get('value');
-      if (mw === "" || mw === void 0 || isNaN(mw)) {
-        errors.push({
-          attribute: 'molecularWeight',
-          message: "Molecular weight must be set"
-        });
+      if (attrs["molecular weight"] != null) {
+        mw = attrs["molecular weight"].get('value');
+        if (mw === "" || mw === void 0 || isNaN(mw)) {
+          errors.push({
+            attribute: 'molecularWeight',
+            message: "Molecular weight must be set"
+          });
+        }
       }
       if (errors.length > 0) {
         return errors;
@@ -124,6 +132,8 @@
     function CationicBlockBatch() {
       return CationicBlockBatch.__super__.constructor.apply(this, arguments);
     }
+
+    CationicBlockBatch.prototype.urlRoot = "/api/cationicBlockBatches";
 
     CationicBlockBatch.prototype.initialize = function() {
       this.set({
@@ -248,14 +258,17 @@
 
     function CationicBlockBatchSelectController() {
       this.handleSelectedBatchChanged = __bind(this.handleSelectedBatchChanged, this);
+      this.setupBatchRegForm = __bind(this.setupBatchRegForm, this);
       return CationicBlockBatchSelectController.__super__.constructor.apply(this, arguments);
     }
 
     CationicBlockBatchSelectController.prototype.setupBatchRegForm = function(batch) {
       var model;
       if (batch != null) {
+        console.log("batch exists");
         model = batch;
       } else {
+        console.log("batch doesn't exist");
         model = new CationicBlockBatch();
       }
       this.batchController = new CationicBlockBatchController({
@@ -308,7 +321,7 @@
       return CationicBlockController.__super__.constructor.apply(this, arguments);
     }
 
-    CationicBlockController.prototype.moduleLaunchName = "cationic block";
+    CationicBlockController.prototype.moduleLaunchName = "cationic_block";
 
     CationicBlockController.prototype.initialize = function() {
       if (this.model != null) {
@@ -318,30 +331,35 @@
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
             return $.ajax({
               type: 'GET',
-              url: "/api/cationic blockParents/codeName/" + window.AppLaunchParams.moduleLaunchParams.code,
+              url: "/api/cationicBlockParents/codeName/" + window.AppLaunchParams.moduleLaunchParams.code,
               dataType: 'json',
               error: function(err) {
                 alert('Could not get parent for code in this URL, creating new one');
+                console.log("ci 1");
                 return this.completeInitialization();
               },
               success: (function(_this) {
                 return function(json) {
                   var cbp;
                   if (json.length === 0) {
+                    console.log("ci 2");
                     alert('Could not get parent for code in this URL, creating new one');
                   } else {
-                    cbp = new CationicBlockParent(json[0]);
+                    cbp = new CationicBlockParent(json);
                     cbp.set(cbp.parse(cbp.attributes));
                     _this.model = cbp;
+                    console.log("ci 3");
                   }
                   return _this.completeInitialization();
                 };
               })(this)
             });
           } else {
+            console.log("ci 4");
             return this.completeInitialization();
           }
         } else {
+          console.log("ci 5");
           return this.completeInitialization();
         }
       }

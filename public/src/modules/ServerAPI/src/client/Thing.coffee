@@ -1,9 +1,9 @@
 class window.Thing extends Backbone.Model
 	lsProperties: {}
+#	urlRoot: "/api/things"
 
 	defaults: () =>
 		#attrs =
-		@set urlRoot: "/api/cationicBlockParents"
 		@set lsType: "thing"
 		@set lsKind: "thing"
 #		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
@@ -13,7 +13,6 @@ class window.Thing extends Backbone.Model
 		@set shortDescription: " "
 		@set lsLabels: new LabelList()
 		@set lsStates: new StateList()
-		@set urlRoot: "/api/cationicBlockParents"
 #		@createDefaultLabels() # attrs
 #		@createDefaultStates() # attrs
 
@@ -52,21 +51,23 @@ class window.Thing extends Backbone.Model
 		@createDefaultLabels()
 		@createDefaultStates()
 
-	sync: =>
-		console.log "sync in thing"
-		console.log @
-		for dLabel in @lsProperties.defaultLabels
-			@unset dLabel.key
+		resp
 
-		for dValue in @lsProperties.defaultValues
-			@unset dValue.key
-		#@set
-			#recordedDate: new Date().getTime()
-			#recordedBy: #logged in user
-			#hide all label, value and value array keys from save
-		console.log @
-		Backbone.Model.prototype.sync.call(this)
-		console.log 'done syncing'
+#	sync: =>
+#		console.log "sync in thing"
+#		console.log @
+#		for dLabel in @lsProperties.defaultLabels
+#			@unset dLabel.key
+#
+#		for dValue in @lsProperties.defaultValues
+#			@unset dValue.key
+#		#@set
+#			#recordedDate: new Date().getTime()
+#			#recordedBy: #logged in user
+#			#hide all label, value and value array keys from save
+#		console.log @
+#		Backbone.Model.prototype.sync.call(this)
+#		console.log 'done syncing'
 
 
 	createDefaultLabels: =>
@@ -105,6 +106,21 @@ class window.Thing extends Backbone.Model
 			@get(dValue.kind).set("value", newValue.get(dValue.type))
 
 
+	reformatBeforeSaving: =>
+		console.log "callMeBeforeCallingSave"
+		for dLabel in @lsProperties.defaultLabels
+			@unset(dLabel.key)
+
+		for dValue in @lsProperties.defaultValues
+			@unset(dValue.key)
+		if @attributes.attributes?
+			delete @attributes.attributes
+		for i of @attributes
+			if _.isFunction(@attributes[i])
+				delete @attributes[i]
+			else if !isNaN(i)
+				console.log "delete number"
+				delete @attributes[i]
 
 # moved this example to ThingSpec.coffee
 #

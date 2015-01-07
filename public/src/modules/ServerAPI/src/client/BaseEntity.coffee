@@ -311,6 +311,7 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_saving').show()
+		console.log @model
 		@model.save()
 
 	validationError: =>

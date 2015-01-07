@@ -490,6 +490,7 @@
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
+      console.log(this.model);
       return this.model.save();
     };
 

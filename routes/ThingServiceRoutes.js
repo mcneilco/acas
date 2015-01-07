@@ -1,18 +1,19 @@
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
-    app.get('/api/things/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodename);
     app.get('/api/things/:id', loginRoutes.ensureAuthenticated, exports.thingById);
+    app.get('/api/things/codeName/:code', loginRoutes.ensureAuthenticated, exports.thingByCodename);
     app.post('/api/things', loginRoutes.ensureAuthenticated, exports.postThing);
     app.put('/api/things/:id', loginRoutes.ensureAuthenticated, exports.putThing);
     app["delete"]('/api/things/:id', loginRoutes.ensureAuthenticated, exports.deleteThing);
-    return app.get('/api/authors', loginRoutes.ensureAuthenticated, exports.getAuthors);
+    app.get('/api/authors', loginRoutes.ensureAuthenticated, exports.getAuthors);
+    return app.get('/api/batches/parentCodeName/:code', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName);
   };
 
   exports.thingByCodename = function(req, resp) {
-    var thingTestJSON;
+    var cationicBlockTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
-      return resp.end(JSON.stringify(thingTestJSON.siRNA));
+      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/cationicBlockTestJSON.js');
+      return resp.end(JSON.stringify(cationicBlockTestJSON.cationicBlockParent));
     } else {
       return resp.end(JSON.stringify({
         error: "get thing by codename not implemented yet"
@@ -33,10 +34,10 @@
   };
 
   exports.postThing = function(req, resp) {
-    var thingTestJSON;
+    var cationicBlockTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
-      return resp.end(JSON.stringify(thingTestJSON.siRNA));
+      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js');
+      return resp.end(JSON.stringify(cationicBlockTestJSON.cationicBlockParent));
     } else {
       return resp.end(JSON.stringify({
         error: "post thing not implemented yet"
@@ -45,10 +46,10 @@
   };
 
   exports.putThing = function(req, resp) {
-    var thingTestJSON;
+    var cationicBlockTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
-      return resp.end(JSON.stringify(thingTestJSON.siRNA));
+      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js');
+      return resp.end(JSON.stringify(cationicBlockTestJSON.cationicBlockParent));
     } else {
       return resp.end(JSON.stringify({
         error: "put thing not implemented yet"
@@ -80,6 +81,19 @@
       baseurl = config.all.client.service.persistence.fullpath + "authors/codeTable";
       console.log(baseurl);
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
+    }
+  };
+
+  exports.batchesByParentCodeName = function(req, resp) {
+    var cationicBlockServiceTestJSON;
+    if (req.query.testMode || global.specRunnerTestmode) {
+      cationicBlockServiceTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockServiceTestJSON.js');
+      console.log("batches by parent codeName test mode");
+      return resp.end(JSON.stringify(cationicBlockServiceTestJSON.batchList));
+    } else {
+      return resp.end(JSON.stringify({
+        error: "get batches by parent codeName not implemented yet"
+      }));
     }
   };
 

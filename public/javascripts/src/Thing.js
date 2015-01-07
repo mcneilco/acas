@@ -7,9 +7,9 @@
     __extends(Thing, _super);
 
     function Thing() {
+      this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
       this.createDefaultStates = __bind(this.createDefaultStates, this);
       this.createDefaultLabels = __bind(this.createDefaultLabels, this);
-      this.sync = __bind(this.sync, this);
       this.parse = __bind(this.parse, this);
       this.defaults = __bind(this.defaults, this);
       return Thing.__super__.constructor.apply(this, arguments);
@@ -18,9 +18,6 @@
     Thing.prototype.lsProperties = {};
 
     Thing.prototype.defaults = function() {
-      this.set({
-        urlRoot: "/api/cationicBlockParents"
-      });
       this.set({
         lsType: "thing"
       });
@@ -42,11 +39,8 @@
       this.set({
         lsLabels: new LabelList()
       });
-      this.set({
-        lsStates: new StateList()
-      });
       return this.set({
-        urlRoot: "/api/cationicBlockParents"
+        lsStates: new StateList()
       });
     };
 
@@ -87,26 +81,8 @@
         }
       }
       this.createDefaultLabels();
-      return this.createDefaultStates();
-    };
-
-    Thing.prototype.sync = function() {
-      var dLabel, dValue, _i, _j, _len, _len1, _ref, _ref1;
-      console.log("sync in thing");
-      console.log(this);
-      _ref = this.lsProperties.defaultLabels;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        dLabel = _ref[_i];
-        this.unset(dLabel.key);
-      }
-      _ref1 = this.lsProperties.defaultValues;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        dValue = _ref1[_j];
-        this.unset(dValue.key);
-      }
-      console.log(this);
-      Backbone.Model.prototype.sync.call(this);
-      return console.log('done syncing');
+      this.createDefaultStates();
+      return resp;
     };
 
     Thing.prototype.createDefaultLabels = function() {
@@ -154,6 +130,36 @@
         }
         this.set(dValue.key, newValue);
         _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
+      }
+      return _results;
+    };
+
+    Thing.prototype.reformatBeforeSaving = function() {
+      var dLabel, dValue, i, _i, _j, _len, _len1, _ref, _ref1, _results;
+      console.log("callMeBeforeCallingSave");
+      _ref = this.lsProperties.defaultLabels;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        dLabel = _ref[_i];
+        this.unset(dLabel.key);
+      }
+      _ref1 = this.lsProperties.defaultValues;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        dValue = _ref1[_j];
+        this.unset(dValue.key);
+      }
+      if (this.attributes.attributes != null) {
+        delete this.attributes.attributes;
+      }
+      _results = [];
+      for (i in this.attributes) {
+        if (_.isFunction(this.attributes[i])) {
+          _results.push(delete this.attributes[i]);
+        } else if (!isNaN(i)) {
+          console.log("delete number");
+          _results.push(delete this.attributes[i]);
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };

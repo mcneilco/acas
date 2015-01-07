@@ -1,15 +1,18 @@
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/things/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodename
 	app.get '/api/things/:id', loginRoutes.ensureAuthenticated, exports.thingById
+	app.get '/api/things/codeName/:code', loginRoutes.ensureAuthenticated, exports.thingByCodename
 	app.post '/api/things', loginRoutes.ensureAuthenticated, exports.postThing
 	app.put '/api/things/:id', loginRoutes.ensureAuthenticated, exports.putThing
 	app.delete '/api/things/:id', loginRoutes.ensureAuthenticated, exports.deleteThing
 	app.get '/api/authors', loginRoutes.ensureAuthenticated, exports.getAuthors #TODO: in 1.4 implemented in BaseEntityServiceRoutes
+	app.get '/api/batches/parentCodeName/:code', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
 
 exports.thingByCodename = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
-		resp.end JSON.stringify thingTestJSON.siRNA
+#		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+#		resp.end JSON.stringify thingTestJSON.siRNA
+		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/cationicBlockTestJSON.js'
+		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
 	else
 		resp.end JSON.stringify {error: "get thing by codename not implemented yet"}
 #		config = require '../conf/compiled/conf.js'
@@ -36,8 +39,10 @@ exports.thingById = (req, resp) ->
 
 exports.postThing = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
-		resp.end JSON.stringify thingTestJSON.siRNA
+#		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+#		resp.end JSON.stringify thingTestJSON.siRNA
+		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
+		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
 	else
 		resp.end JSON.stringify {error: "post thing not implemented yet"}
 #		config = require '../conf/compiled/conf.js'
@@ -61,8 +66,10 @@ exports.postThing = (req, resp) ->
 
 exports.putThing = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
-		resp.end JSON.stringify thingTestJSON.siRNA
+#		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+#		resp.end JSON.stringify thingTestJSON.siRNA
+		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
+		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
 	else
 		resp.end JSON.stringify {error: "put thing not implemented yet"}
 #		config = require '../conf/compiled/conf.js'
@@ -130,3 +137,15 @@ exports.getAuthors = (req, resp) ->
 		baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
 		console.log baseurl
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.batchesByParentCodeName = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		cationicBlockServiceTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockServiceTestJSON.js'
+		console.log "batches by parent codeName test mode"
+		resp.end JSON.stringify cationicBlockServiceTestJSON.batchList
+	else
+		resp.end JSON.stringify {error: "get batches by parent codeName not implemented yet"}
+#		config = require '../conf/compiled/conf.js'
+#		baseurl = config.all.client.service.persistence.fullpath+"batches/parentCodename/"+req.params.code
+#		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+#		serverUtilityFunctions.getFromACASServer(baseurl, resp)

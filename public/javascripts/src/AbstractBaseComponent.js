@@ -81,36 +81,44 @@
           message: "Scientist must be set"
         });
       }
-      cDate = attrs["completion date"].get('value');
-      if (cDate === void 0 || cDate === "") {
-        cDate = "fred";
+      if (attrs["completion date"] != null) {
+        cDate = attrs["completion date"].get('value');
+        if (cDate === void 0 || cDate === "") {
+          cDate = "fred";
+        }
+        if (isNaN(cDate)) {
+          errors.push({
+            attribute: 'completionDate',
+            message: "Date must be set"
+          });
+        }
       }
-      if (isNaN(cDate)) {
-        errors.push({
-          attribute: 'completionDate',
-          message: "Date must be set"
-        });
+      if (attrs.notebook != null) {
+        notebook = attrs.notebook.get('value');
+        if (notebook === "" || notebook === void 0) {
+          errors.push({
+            attribute: 'notebook',
+            message: "Notebook must be set"
+          });
+        }
       }
-      notebook = attrs.notebook.get('value');
-      if (notebook === "" || notebook === void 0) {
-        errors.push({
-          attribute: 'notebook',
-          message: "Notebook must be set"
-        });
+      if (attrs.amount != null) {
+        amount = attrs.amount.get('value');
+        if (amount === "" || amount === void 0 || isNaN(amount)) {
+          errors.push({
+            attribute: 'amount',
+            message: "Amount must be set"
+          });
+        }
       }
-      amount = attrs.amount.get('value');
-      if (amount === "" || amount === void 0 || isNaN(amount)) {
-        errors.push({
-          attribute: 'amount',
-          message: "Amount must be set"
-        });
-      }
-      location = attrs.location.get('value');
-      if (location === "" || location === void 0) {
-        errors.push({
-          attribute: 'location',
-          message: "Location must be set"
-        });
+      if (attrs.location != null) {
+        location = attrs.location.get('value');
+        if (location === "" || location === void 0) {
+          errors.push({
+            attribute: 'location',
+            message: "Location must be set"
+          });
+        }
       }
       if (errors.length > 0) {
         return errors;
@@ -160,6 +168,9 @@
     __extends(AbstractBaseComponentParentController, _super);
 
     function AbstractBaseComponentParentController() {
+      this.handleUpdateParent = __bind(this.handleUpdateParent, this);
+      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
+      this.validationError = __bind(this.validationError, this);
       this.updateModel = __bind(this.updateModel, this);
       this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
       this.render = __bind(this.render, this);
@@ -174,25 +185,16 @@
         "change .bv_recordedBy": "attributeChanged",
         "change .bv_completionDate": "attributeChanged",
         "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
-        "change .bv_notebook": "attributeChanged"
+        "change .bv_notebook": "attributeChanged",
+        "click .bv_updateParent": "handleUpdateParent"
       };
     };
 
     AbstractBaseComponentParentController.prototype.initialize = function() {
       console.log("initialize parent controller");
       this.setBindings();
-      this.model.on('sync', (function(_this) {
-        return function() {
-          console.log("sync in parent controller");
-          _this.trigger('amClean');
-          return _this.render();
-        };
-      })(this));
-      this.model.on('change', (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
+      this.listenTo(this.model, 'sync', this.modelSaveCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
       $(this.el).empty();
       $(this.el).html(this.template());
       console.log("autofill template?");
@@ -207,6 +209,7 @@
       var bestName, codeName;
       codeName = this.model.get('codeName');
       this.$('.bv_parentCode').val(codeName);
+      this.$('.bv_parentCode').html(codeName);
       bestName = this.model.get('lsLabels').pickBestName();
       if (bestName != null) {
         this.$('.bv_parentName').val(bestName.get('labelText'));
@@ -229,6 +232,22 @@
         });
       }
       return this;
+    };
+
+    AbstractBaseComponentParentController.prototype.modelSaveCallback = function(method, model) {
+      console.log("sync in parent controller");
+      this.$('.bv_updateParent').show();
+      this.$('.bv_updateParent').attr('disabled', 'disabled');
+      this.$('.bv_updateParentComplete').show();
+      this.$('.bv_updatingParent').hide();
+      this.trigger('amClean');
+      this.trigger('parentSaved');
+      return this.render();
+    };
+
+    AbstractBaseComponentParentController.prototype.modelChangeCallback = function(method, model) {
+      this.trigger('amDirty');
+      return this.$('.bv_updateParentComplete').hide();
     };
 
     AbstractBaseComponentParentController.prototype.setupRecordedBySelect = function() {
@@ -265,6 +284,24 @@
       return this.model.get("completion date").set("value", UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate'))));
     };
 
+    AbstractBaseComponentParentController.prototype.validationError = function() {
+      AbstractBaseComponentParentController.__super__.validationError.call(this);
+      return this.$('.bv_updateParent').attr('disabled', 'disabled');
+    };
+
+    AbstractBaseComponentParentController.prototype.clearValidationErrorStyles = function() {
+      AbstractBaseComponentParentController.__super__.clearValidationErrorStyles.call(this);
+      return this.$('.bv_updateParent').removeAttr('disabled');
+    };
+
+    AbstractBaseComponentParentController.prototype.handleUpdateParent = function() {
+      console.log("handle update parent");
+      this.model.reformatBeforeSaving();
+      this.$('.bv_updatingParent').show();
+      this.$('.bv_updateParentComplete').html('Update Complete.');
+      return this.model.save();
+    };
+
     return AbstractBaseComponentParentController;
 
   })(AbstractFormController);
@@ -273,6 +310,9 @@
     __extends(AbstractBaseComponentBatchController, _super);
 
     function AbstractBaseComponentBatchController() {
+      this.handleSaveBatch = __bind(this.handleSaveBatch, this);
+      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
+      this.validationError = __bind(this.validationError, this);
       this.updateModel = __bind(this.updateModel, this);
       this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
       this.render = __bind(this.render, this);
@@ -288,25 +328,16 @@
         "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
         "change .bv_notebook": "attributeChanged",
         "change .bv_amount": "attributeChanged",
-        "change .bv_location": "attributeChanged"
+        "change .bv_location": "attributeChanged",
+        "click .bv_saveBatch": "handleSaveBatch"
       };
     };
 
     AbstractBaseComponentBatchController.prototype.initialize = function() {
       console.log("initialize batch controller");
       this.setBindings();
-      this.model.on('sync', (function(_this) {
-        return function() {
-          console.log("sync");
-          _this.trigger('amClean');
-          return _this.render();
-        };
-      })(this));
-      this.model.on('change', (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
+      this.listenTo(this.model, 'sync', this.modelSaveCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
       $(this.el).empty();
       $(this.el).html(this.template());
       return this.setupRecordedBySelect();
@@ -327,6 +358,22 @@
       this.$('.bv_amount').val(this.model.get('amount').get('value'));
       this.$('.bv_location').val(this.model.get('location').get('value'));
       return this;
+    };
+
+    AbstractBaseComponentBatchController.prototype.modelSaveCallback = function(method, model) {
+      console.log("sync in batch controller");
+      this.$('.bv_saveBatch').show();
+      this.$('.bv_saveBatch').attr('disabled', 'disabled');
+      this.$('.bv_saveBatchComplete').show();
+      this.$('.bv_savingBatch').hide();
+      this.trigger('amClean');
+      this.trigger('batchSaved');
+      return this.render();
+    };
+
+    AbstractBaseComponentBatchController.prototype.modelChangeCallback = function(method, model) {
+      this.trigger('amDirty');
+      return this.$('.bv_saveBatchComplete').hide();
     };
 
     AbstractBaseComponentBatchController.prototype.setupRecordedBySelect = function() {
@@ -358,6 +405,25 @@
       return this.model.get("location").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_location')));
     };
 
+    AbstractBaseComponentBatchController.prototype.validationError = function() {
+      AbstractBaseComponentBatchController.__super__.validationError.call(this);
+      return this.$('.bv_saveBatch').attr('disabled', 'disabled');
+    };
+
+    AbstractBaseComponentBatchController.prototype.clearValidationErrorStyles = function() {
+      AbstractBaseComponentBatchController.__super__.clearValidationErrorStyles.call(this);
+      return this.$('.bv_saveBatch').removeAttr('disabled');
+    };
+
+    AbstractBaseComponentBatchController.prototype.handleSaveBatch = function() {
+      console.log("handle save batch");
+      this.model.reformatBeforeSaving();
+      this.$('.bv_savingBatch').show();
+      console.log(this.model);
+      console.log(this.model.get('id'));
+      return this.model.save();
+    };
+
     return AbstractBaseComponentBatchController;
 
   })(AbstractFormController);
@@ -366,6 +432,7 @@
     __extends(AbstractBaseComponentBatchSelectController, _super);
 
     function AbstractBaseComponentBatchSelectController() {
+      this.setupBatchRegForm = __bind(this.setupBatchRegForm, this);
       return AbstractBaseComponentBatchSelectController.__super__.constructor.apply(this, arguments);
     }
 
@@ -386,6 +453,7 @@
     };
 
     AbstractBaseComponentBatchSelectController.prototype.setupBatchSelect = function() {
+      console.log("setup Batch Select");
       this.batchList = new PickListList();
       this.batchList.url = "/api/batches/parentCodename/" + this.parentCodeName;
       return this.batchListController = new PickListSelectController({
@@ -410,7 +478,29 @@
           return _this.trigger('amClean');
         };
       })(this));
-      return this.batchController.render();
+      this.batchController.on('batchSaved', (function(_this) {
+        return function() {
+          console.log("batch adn batch select trigger");
+          _this.setupBatchSelect();
+          _this.batchListController.setSelectedCode(_this.batchController.model.get('codeName'));
+          return _this.trigger('batchSaved');
+        };
+      })(this));
+      this.batchController.render();
+      this.$('.bv_saveBatch').attr('disabled', 'disabled');
+      console.log("is model new?");
+      if (this.batchController.model.isNew()) {
+        this.$('.bv_saveBatch').html("Save Batch");
+        return this.$('.bv_saveBatchComplete').html("Save Complete");
+      } else {
+        this.$('.bv_saveBatch').html("Update Batch");
+        return this.$('.bv_saveBatchComplete').html("Update Complete");
+      }
+    };
+
+    AbstractBaseComponentBatchSelectController.prototype.checkIfFirstBatch = function() {
+      console.log("checkIfFirstBatch");
+      return this.batchListController.collection.length === 1;
     };
 
     return AbstractBaseComponentBatchSelectController;
@@ -421,6 +511,8 @@
     __extends(AbstractBaseComponentController, _super);
 
     function AbstractBaseComponentController() {
+      this.saveNewParentAttributes = __bind(this.saveNewParentAttributes, this);
+      this.handleBatchSaved = __bind(this.handleBatchSaved, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
       return AbstractBaseComponentController.__super__.constructor.apply(this, arguments);
     }
@@ -437,10 +529,14 @@
       $(this.el).html(this.template());
       this.setupParentController();
       this.setupBatchSelectController();
+      this.$('.bv_save').attr('disabled', 'disabled');
       if (this.parentController.model.isNew()) {
-        return this.$('.bv_save').attr('disabled', 'disabled');
+        this.$('.bv_updateParent').hide();
+        return this.$('.bv_saveBatch').hide();
       } else {
-        return this.$('.bv_save').hide();
+        this.$('.bv_save').hide();
+        this.$('.bv_updateParent').show();
+        return this.$('.bv_saveBatch').show();
       }
     };
 
@@ -456,8 +552,25 @@
           return _this.trigger('amClean');
         };
       })(this));
+      this.parentController.on('parentSaved', (function(_this) {
+        return function() {
+          return _this.handleParentSaved();
+        };
+      })(this));
       this.parentController.render();
-      return console.log("rendered parent controller");
+      console.log("rendered parent controller");
+      this.$('.bv_updateParent').attr('disabled', 'disabled');
+      return this.firstSave = this.parentController.model.isNew();
+    };
+
+    AbstractBaseComponentController.prototype.handleParentSaved = function() {
+      if (this.firstSave) {
+        this.$('.bv_saveParentComplete').show();
+        return this.firstSave = false;
+      } else {
+        this.$('.bv_saveParentComplete').hide();
+        return this.$('.bv_saveFirstBatchComplete').hide();
+      }
     };
 
     AbstractBaseComponentController.prototype.setupBatchSelectController = function() {
@@ -472,7 +585,23 @@
           return _this.trigger('amClean');
         };
       })(this));
+      this.batchSelectController.on('batchSaved', (function(_this) {
+        return function() {
+          return _this.handleBatchSaved();
+        };
+      })(this));
       return this.batchSelectController.render();
+    };
+
+    AbstractBaseComponentController.prototype.handleBatchSaved = function() {
+      console.log("first batch saved	");
+      if (this.batchSelectController.checkIfFirstBatch()) {
+        this.$('.bv_saveFirstBatchComplete').show();
+      } else {
+        this.$('.bv_saveFirstBatchComplete').hide();
+        this.$('.bv_saveParent').hide();
+      }
+      return this.$('.bv_saving').hide();
     };
 
     AbstractBaseComponentController.prototype.checkFormValid = function() {
@@ -485,12 +614,28 @@
 
     AbstractBaseComponentController.prototype.handleSaveClicked = function() {
       console.log("save clicked");
+      this.saveNewParentAttributes();
       this.parentController.model.prepareToSave();
       this.batchSelectController.batchController.model.prepareToSave();
       this.$('.bv_save').hide();
       this.$('.bv_saving').show();
+      this.parentController.model.reformatBeforeSaving();
+      this.batchSelectController.batchController.model.reformatBeforeSaving();
+      console.log(this.parentController.model);
+      this.$('.bv_updateParentComplete').html("Save Complete");
+      this.$('.bv_saveBatch').html("Save Batch");
       this.parentController.model.save();
       return this.batchSelectController.batchController.model.save();
+    };
+
+    AbstractBaseComponentController.prototype.saveNewParentAttributes = function() {
+      var cDate, notebook, recordedBy;
+      recordedBy = this.batchSelectController.batchController.model.get('recordedBy');
+      cDate = this.batchSelectController.batchController.model.get('completion date').get('value');
+      notebook = this.batchSelectController.batchController.model.get('notebook').get('value');
+      this.parentController.model.set('recordedBy', recordedBy);
+      this.parentController.model.get('completion date').set('value', cDate);
+      return this.parentController.model.get('notebook').set('value', notebook);
     };
 
     return AbstractBaseComponentController;
