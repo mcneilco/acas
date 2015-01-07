@@ -82,7 +82,7 @@ computeNormalized  <- function(values, wellType, flag) {
 
 computeTransformedResults <- function(mainData, transformation) {
   #TODO switch on transformation
-  if (transformation == "% efficacy") {
+  if (transformation == "percent efficacy") {
     medianPosControl <- median(as.numeric(mainData[wellType == "PC" & is.na(flag)]$normalizedActivity))
     
     # Use Negative Control if Vehicle Control is not defined

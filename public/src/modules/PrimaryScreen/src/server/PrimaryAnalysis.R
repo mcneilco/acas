@@ -1488,11 +1488,11 @@ autoFlagWells <- function(resultTable, parameters) {
     return(resultTable)
   } else if(parameters$thresholdType == "efficacy") {
     hitThreshold <- parameters$hitEfficacyThreshold
-    thresholdType <- "% efficacy"
+    thresholdType <- "percent efficacy"
     
-    setnames(resultTable, "transformed_% efficacy","transformed_efficacy")
+    setnames(resultTable, "transformed_percent efficacy","transformed_efficacy")
     resultTable[transformed_efficacy > hitThreshold , autoFlagType := "HIT"]
-    setnames(resultTable, "transformed_efficacy","transformed_% efficacy")
+    setnames(resultTable, "transformed_efficacy","transformed_percent efficacy")
   } else if(parameters$thresholdType == "sd") {
     hitThreshold <- parameters$hitSDThreshold
     thresholdType <- "standard deviation"
@@ -1948,7 +1948,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       #TODO: get from file
       #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
       #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
-      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_% efficacy", "transformed_sd"), 
+      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_percent efficacy", "transformed_sd"), 
       #                                 stateType=c("metadata","metadata","metadata", "data", "data", "data"), 
       #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
       #                                 stringsAsFactors=FALSE) 
@@ -1957,7 +1957,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
       #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
-      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_% efficacy", "transformed_sd"), 
+      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_percent efficacy", "transformed_sd"), 
       #                                 stateType=c("metadata","metadata","metadata", "data", "data", "data"), 
       #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
       #                                 publicData=c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE),
@@ -2192,7 +2192,7 @@ getColNameChangeDataTables <- function() {
                                                       "batch_number",
                                                       "batchCode",
                                                       "cmpdConc",
-                                                      "transformed_% efficacy",
+                                                      "transformed_percent efficacy",
                                                       "transformed_sd",
                                                       "zPrimeByPlate",
                                                       "zPrime",
