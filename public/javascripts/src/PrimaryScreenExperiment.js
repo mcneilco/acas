@@ -483,7 +483,7 @@
           codeKind: "status"
         });
         status.set({
-          codeOrigin: "acas ddict"
+          codeOrigin: "ACAS DDICT"
         });
       }
       return status;

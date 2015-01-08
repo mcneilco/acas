@@ -288,7 +288,7 @@ class window.PrimaryScreenExperiment extends Experiment
 			status.set codeValue: "not started"
 			status.set codeType: "dry run"
 			status.set codeKind: "status"
-			status.set codeOrigin: "acas ddict"
+			status.set codeOrigin: "ACAS DDICT"
 
 		status
 
