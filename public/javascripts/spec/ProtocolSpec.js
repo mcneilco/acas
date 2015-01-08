@@ -460,7 +460,12 @@
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("FLIPR target A biochemical");
           });
           it("should fill the user field", function() {
-            return expect(this.pbc.$('.bv_recordedBy').val()).toEqual("nxm7557");
+            waitsFor(function() {
+              return this.pbc.$('.bv_recordedBy option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_recordedBy').val()).toEqual("jane");
+            });
           });
           it("should fill the protocol code field", function() {
             return expect(this.pbc.$('.bv_protocolCode').html()).toEqual("PROT-00000001");
@@ -523,10 +528,15 @@
         });
         return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
-            expect(this.pbc.model.get('recordedBy')).toEqual("nxm7557");
-            this.pbc.$('.bv_recordedBy').val("xxl7932");
-            this.pbc.$('.bv_recordedBy').change();
-            return expect(this.pbc.model.get('recordedBy')).toEqual("xxl7932");
+            expect(this.pbc.model.get('recordedBy')).toEqual("jane");
+            waitsFor(function() {
+              return this.pbc.$('.bv_recordedBy option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_recordedBy').val('unassigned');
+              this.pbc.$('.bv_recordedBy').change();
+              return expect(this.pbc.model.get('recordedBy')).toEqual("unassigned");
+            });
           });
           it("should update model when shortDescription is changed", function() {
             this.pbc.$('.bv_shortDescription').val(" New short description   ");
@@ -720,6 +730,9 @@
           });
           describe("when scientist not selected", function() {
             beforeEach(function() {
+              waitsFor(function() {
+                return this.pbc.$('.bv_recordedBy option').length > 0;
+              }, 1000);
               return runs(function() {
                 this.pbc.$('.bv_recordedBy').val("");
                 return this.pbc.$('.bv_recordedBy').change();

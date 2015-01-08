@@ -1177,6 +1177,8 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amClean'
 
 	handleExperimentSaved: =>
+		unless @model.get('subclass')?
+			@model.set subclass: 'experiment'
 		@analysisController.render()
 
 	handleProtocolAttributesCopied: =>
@@ -1221,7 +1223,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 	modelFitControllerName: "DoseResponseAnalysisController"
-	protocolFilter: "?protocolName=FLIPR"
+#	protocolFilter: "?protocolName=FLIPR"
 	protocolKindFilter: "?protocolKind=flipr screening assay"
 	moduleLaunchName: "flipr_screening_assay"
 

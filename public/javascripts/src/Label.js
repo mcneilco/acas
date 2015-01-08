@@ -102,9 +102,9 @@
         var rd;
         rd = lab.get('recordedDate');
         if (rd === "") {
-          return rd;
+          return Infinity;
         } else {
-          return -1;
+          return rd;
         }
       });
       return bestLabel;

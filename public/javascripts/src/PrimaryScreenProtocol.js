@@ -286,22 +286,24 @@
           message: "Scientist must be set"
         });
       }
-      cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "" || cDate === null) {
-        cDate = "fred";
-      }
-      if (isNaN(cDate)) {
-        errors.push({
-          attribute: 'completionDate',
-          message: "Assay completion date must be set"
-        });
-      }
-      notebook = this.getNotebook().get('stringValue');
-      if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-        errors.push({
-          attribute: 'notebook',
-          message: "Notebook must be set"
-        });
+      if (attrs.subclass != null) {
+        cDate = this.getCompletionDate().get('dateValue');
+        if (cDate === void 0 || cDate === "" || cDate === null) {
+          cDate = "fred";
+        }
+        if (isNaN(cDate)) {
+          errors.push({
+            attribute: 'completionDate',
+            message: "Assay completion date must be set"
+          });
+        }
+        notebook = this.getNotebook().get('stringValue');
+        if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
+          errors.push({
+            attribute: 'notebook',
+            message: "Notebook must be set"
+          });
+        }
       }
       assayTreeRule = this.getAssayTreeRule().get('stringValue');
       if (!(assayTreeRule === "" || assayTreeRule === void 0 || assayTreeRule === null)) {
@@ -717,6 +719,11 @@
       this.model.on('sync', (function(_this) {
         return function() {
           _this.trigger('amClean');
+          if (_this.model.get('subclass') == null) {
+            _this.model.set({
+              subclass: 'protocol'
+            });
+          }
           _this.$('.bv_savingModule').hide();
           _this.$('.bv_updateModuleComplete').show();
           _this.$('.bv_saveModule').attr('disabled', 'disabled');

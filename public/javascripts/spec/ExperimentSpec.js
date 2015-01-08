@@ -628,10 +628,14 @@
         return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
             expect(this.ebc.model.get('recordedBy')).toEqual("");
-            this.ebc.$('.bv_recordedBy').val("jmcneil");
-            this.ebc.$('.bv_recordedBy').change();
-            console.log(this.ebc.model.get('recordedBy'));
-            return expect(this.ebc.model.get('recordedBy')).toEqual("jmcneil");
+            waitsFor(function() {
+              return this.ebc.$('.bv_recordedBy option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.ebc.$('.bv_recordedBy').val('unassigned');
+              this.ebc.$('.bv_recordedBy').change();
+              return expect(this.ebc.model.get('recordedBy')).toEqual("unassigned");
+            });
           });
           it("should update model when shortDescription is changed", function() {
             this.ebc.$('.bv_shortDescription').val(" New short description   ");
@@ -778,7 +782,12 @@
             return expect(this.ebc.$('.bv_completionDate').val()).toEqual("2012-07-12");
           });
           it("should fill the user field", function() {
-            return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("nxm7557");
+            waitsFor(function() {
+              return this.ebc.$('.bv_recordedBy option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.ebc.$('.bv_recordedBy').val()).toEqual("jane");
+            });
           });
           it("should fill the code field", function() {
             return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
@@ -938,7 +947,7 @@
               return this.ebc.$('.bv_protocolCode option').length > 0 && this.ebc.$('.bv_projectCode option').length > 0;
             }, 1000);
             runs(function() {
-              this.ebc.$('.bv_recordedBy').val("nxm7557");
+              this.ebc.$('.bv_recordedBy').val("john");
               this.ebc.$('.bv_recordedBy').change();
               this.ebc.$('.bv_shortDescription').val(" New short description   ");
               this.ebc.$('.bv_shortDescription').change();
@@ -1008,6 +1017,9 @@
           });
           describe("when scientist not selected", function() {
             beforeEach(function() {
+              waitsFor(function() {
+                return this.ebc.$('.bv_recordedBy option').length > 0;
+              }, 1000);
               return runs(function() {
                 this.ebc.$('.bv_recordedBy').val("");
                 return this.ebc.$('.bv_recordedBy').change();

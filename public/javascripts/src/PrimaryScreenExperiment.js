@@ -1798,6 +1798,11 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.handleExperimentSaved = function() {
+      if (this.model.get('subclass') == null) {
+        this.model.set({
+          subclass: 'experiment'
+        });
+      }
       return this.analysisController.render();
     };
 
@@ -1862,8 +1867,6 @@
     PrimaryScreenExperimentController.prototype.uploadAndRunControllerName = "UploadAndRunPrimaryAnalsysisController";
 
     PrimaryScreenExperimentController.prototype.modelFitControllerName = "DoseResponseAnalysisController";
-
-    PrimaryScreenExperimentController.prototype.protocolFilter = "?protocolName=FLIPR";
 
     PrimaryScreenExperimentController.prototype.protocolKindFilter = "?protocolKind=flipr screening assay";
 
