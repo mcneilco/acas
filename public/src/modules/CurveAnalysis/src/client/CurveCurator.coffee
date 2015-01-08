@@ -146,7 +146,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 						includePoints([@])
 					return
 
-				p1.on "mouseup", p1.handlePointClicked, p1
+				p1.on "up", p1.handlePointClicked, p1
 
 				p1.flagLabel = switch
 					when flag_user != "NA" then flag_user
@@ -253,7 +253,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 								else
 									includePoints(selected)
 
-				brd.on 'mouseup', brd.mouseUp, brd
+				brd.on 'up', brd.mouseUp, brd
 				brd.followSelection = (e) ->
 					if brd.elementsByName.selection
 						coords = getMouseCoords(e)
@@ -280,7 +280,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 								selected.push(point)
 						selection.selected = selected
 
-				brd.on 'mousemove', brd.followSelection, brd
+				brd.on 'move', brd.followSelection, brd
 				return
 		brd.on "down", createSelection
 		return
