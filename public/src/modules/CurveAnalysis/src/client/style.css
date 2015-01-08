@@ -12,7 +12,7 @@
 
 .bv_curveCurator .bv_curveSummary {
     width: 250px;
-    height: 155px;
+    height: 155px !important;
     margin-bottom: 10px;
     border-color: #e3e3e3;
     border-style: solid;
