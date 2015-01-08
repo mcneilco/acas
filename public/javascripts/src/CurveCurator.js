@@ -242,7 +242,7 @@
               includePoints([this]);
             }
           };
-          p1.on("mouseup", p1.handlePointClicked, p1);
+          p1.on("up", p1.handlePointClicked, p1);
           p1.flagLabel = (function() {
             switch (false) {
               case userFlagStatus !== "knocked out":
@@ -388,7 +388,7 @@
               }
             }
           };
-          brd.on('mouseup', brd.mouseUp, brd);
+          brd.on('up', brd.mouseUp, brd);
           brd.followSelection = function(e) {
             var doseResponsePoints, north, northEast, northWest, selected, selectionCoords, sorted, south, southEast, southWest;
             if (brd.elementsByName.selection) {
@@ -423,7 +423,7 @@
               return selection.selected = selected;
             }
           };
-          brd.on('mousemove', brd.followSelection, brd);
+          brd.on('move', brd.followSelection, brd);
         }
       };
       brd.on("down", createSelection);
