@@ -315,6 +315,7 @@
       this.validationError = __bind(this.validationError, this);
       this.updateModel = __bind(this.updateModel, this);
       this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
+      this.setupAttachFileListController = __bind(this.setupAttachFileListController, this);
       this.render = __bind(this.render, this);
       return AbstractBaseComponentBatchController.__super__.constructor.apply(this, arguments);
     }
@@ -344,7 +345,8 @@
       if (this.additionalBatchAttributesTemplate != null) {
         this.$('.bv_additionalBatchAttributes').html(this.additionalBatchAttributesTemplate());
       }
-      return this.setupRecordedBySelect();
+      this.setupRecordedBySelect();
+      return this.setupAttachFileListController();
     };
 
     AbstractBaseComponentBatchController.prototype.render = function() {
@@ -392,6 +394,50 @@
         }),
         selectedCode: this.model.get('recordedBy')
       });
+    };
+
+    AbstractBaseComponentBatchController.prototype.setupAttachFileListController = function() {
+      return $.ajax({
+        type: 'GET',
+        url: "/api/dataDict/analytical method/file type",
+        dataType: 'json',
+        error: function(err) {
+          return alert('Could not get list of analytical file types');
+        },
+        success: (function(_this) {
+          return function(json) {
+            var attachFileList;
+            if (json.length === 0) {
+              return alert('Got empty list of analytical file types');
+            } else {
+              console.log("success");
+              console.log(json);
+              attachFileList = _this.model.getAnalyticalFiles(json);
+              return _this.finishSetupAttachFileListController(attachFileList);
+            }
+          };
+        })(this)
+      });
+    };
+
+    AbstractBaseComponentBatchController.prototype.finishSetupAttachFileListController = function(attachFileList) {
+      console.log(attachFileList);
+      console.log("finish set up attach file list controller");
+      this.attachFileListController = new AttachFileListController({
+        el: this.$('.bv_attachFileList'),
+        collection: attachFileList
+      });
+      this.attachFileListController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.attachFileListController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      return this.attachFileListController.render();
     };
 
     AbstractBaseComponentBatchController.prototype.handleCompletionDateIconClicked = function() {

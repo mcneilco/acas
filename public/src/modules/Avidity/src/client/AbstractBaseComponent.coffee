@@ -230,6 +230,7 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 		if @additionalBatchAttributesTemplate?
 			@$('.bv_additionalBatchAttributes').html @additionalBatchAttributesTemplate()
 		@setupRecordedBySelect()
+		@setupAttachFileListController()
 
 
 	render: =>
@@ -272,6 +273,38 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 				code: "unassigned"
 				name: "Select Scientist"
 			selectedCode: @model.get('recordedBy')
+
+	setupAttachFileListController: =>
+		$.ajax
+			type: 'GET'
+			url: "/api/dataDict/analytical method/file type"
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get list of analytical file types'
+			success: (json) =>
+				if json.length == 0
+					alert 'Got empty list of analytical file types'
+				else
+					console.log "success"
+					console.log json
+					attachFileList = @model.getAnalyticalFiles(json)
+					@finishSetupAttachFileListController(attachFileList)
+
+	finishSetupAttachFileListController: (attachFileList) ->
+		console.log attachFileList
+		console.log "finish set up attach file list controller"
+#		attachFileList = @model.getAttachFileList()
+#		console.log attachFileList
+#		console.log "done getting afl"
+		@attachFileListController= new AttachFileListController
+#			canRemoveAttachFileModel: false
+			el: @$('.bv_attachFileList')
+			collection: attachFileList
+		@attachFileListController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@attachFileListController.on 'amClean', =>
+			@trigger 'amClean'
+		@attachFileListController.render()
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" )

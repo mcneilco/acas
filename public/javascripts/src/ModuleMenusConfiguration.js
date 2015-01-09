@@ -68,6 +68,11 @@
       mainControllerClassName: "InternalizationAgentController",
       autoLaunchName: "internalization_agent"
     }, {
+      isHeader: false,
+      menuName: "Attach File",
+      mainControllerClassName: "AttachFileListController",
+      autoLaunchName: "attach_file"
+    }, {
       isHeader: true,
       menuName: "Inventory"
     }, {

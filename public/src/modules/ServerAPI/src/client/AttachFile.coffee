@@ -1,34 +1,37 @@
 class window.AttachFile extends Backbone.Model
 	defaults:
 		fileType: "unassigned"
-		nameOnServer: ""
+		fileValue: ""
 
 	validate: (attrs) ->
 		console.log attrs
 		errors = []
-		if attrs.fileType is "unassigned" && attrs.nameOnServer != ""
+		if attrs.fileType is "unassigned" && attrs.fileValue != ""
 			errors.push
 				attribute: 'fileType'
-				message: "Read name must be assigned"
+				message: "File type must be assigned"
 		console.log "validating attach file model"
-		console.log attrs.nameOnServer
+		console.log attrs.fileValue
 		console.log errors
 		if errors.length > 0
 			return errors
 		else
 			return null
 
+class window.AttachFileList extends Backbone.Collection
+	model: AttachFile
+
 class window.AttachFileController extends Backbone.View
 	template: _.template($("#AttachFileView").html())
 	tagName: "div"
-	className: "form-inline"
 
 	events:
 		"change .bv_fileType": "handleFileTypeChanged"
-#		"click .bv_delete": "clear"
+		"click .bv_delete": "clear"
 
 	initialize: ->
-#		@model.on "destroy", @remove, @
+		@model.on "destroy", @remove, @
+		@canRemoveAttachFileModel = @options.canRemoveAttachFileModel
 
 	render: =>
 		$(@el).empty()
@@ -60,11 +63,17 @@ class window.AttachFileController extends Backbone.View
 			selectedCode: @model.get('fileType')
 
 	handleFileUpload: (nameOnServer) =>
-		@$('.bv_delete').show()
-		@model.set nameOnServer: nameOnServer
+		console.log "@canRemoveAttachFileModel attach file controller"
+		console.log @canRemoveAttachFileModel
+		if @canRemoveAttachFileModel
+			@$('.bv_delete').show()
+			console.log "should delete file"
+			@$('td.delete').hide()
+#			@$('.bv_deleteFile').hide()
+		@model.set fileValue: nameOnServer
 		#		@model.getFileInfo().set
 		#			fileValue: "path to file"
-		console.log @model.get('nameOnServer')
+		console.log @model.get('fileValue')
 		@trigger 'fileUploaded'
 		@trigger 'amDirty'
 
@@ -77,9 +86,68 @@ class window.AttachFileController extends Backbone.View
 			fileType: @$('.bv_fileType').val()
 #		@model.getFileInfo().set
 #			lsKind: @$('.bv_fileType').val()
+		console.log @model
+
+	clear: =>
+		console.log "clear"
+		@model.destroy()
+
+class window.AttachFileListController extends Backbone.View
+	template: _.template($("#AttachFileListView").html())
+	canRemoveAttachFileModel: true
+
+	initialize: ->
+		console.log "@options.canRemoveAttachFileModel?"
+		console.log @options.canRemoveAttachFileModel?
+		unless @collection?
+			@collection = new AttachFileList()
+			newModel = new AttachFile()
+			@collection.add newModel
+			console.log "added model to new collection"
+		console.log @collection
+		if @canRemoveAttachFileModel
+			@collection.bind 'remove', @ensureValidCollectionLength
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+
+		@collection.each (fileInfo) =>
+			@addAttachFile(fileInfo)
+		if @collection.length == 0
+			console.log "collection length is zero"
+			@uploadNewAttachFile()
+		@
+
+	# For uploading new files
+	uploadNewAttachFile: =>
+		newModel = new AttachFile()
+		@collection.add newModel
+		@addAttachFile(newModel)
+		console.log "added new attach File"
 
 
+	# For uploading existing attached files
+	addAttachFile: (fileInfo) ->
+		console.log "addAttachFile"
+		afc = new AttachFileController
+			model: fileInfo
+			canRemoveAttachFileModel: @canRemoveAttachFileModel
+		@listenTo afc, 'fileUploaded', @checkIfNeedToAddNew
+#		afc.on 'fileUploaded', =>
+#			if @canRemoveAttachFileModel
+#				@uploadNewAttachFile()
+		afc.on 'amDirty', =>
+			@trigger 'amDirty'
+		@$('.bv_attachFileInfo').append afc.render().el
 
-#	clear: =>
-#		console.log "clear"
-#		@model.destroy()
+	ensureValidCollectionLength: =>
+		console.log "ensureValidCollection"
+		if @collection.length == 0
+			@uploadNewAttachFile()
+
+	checkIfNeedToAddNew: =>
+		console.log "check if need to add new"
+		console.log @canRemoveAttachFileModel
+		if @canRemoveAttachFileModel
+			@uploadNewAttachFile()

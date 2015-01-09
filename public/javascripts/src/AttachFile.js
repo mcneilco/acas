@@ -12,21 +12,21 @@
 
     AttachFile.prototype.defaults = {
       fileType: "unassigned",
-      nameOnServer: ""
+      fileValue: ""
     };
 
     AttachFile.prototype.validate = function(attrs) {
       var errors;
       console.log(attrs);
       errors = [];
-      if (attrs.fileType === "unassigned" && attrs.nameOnServer !== "") {
+      if (attrs.fileType === "unassigned" && attrs.fileValue !== "") {
         errors.push({
           attribute: 'fileType',
-          message: "Read name must be assigned"
+          message: "File type must be assigned"
         });
       }
       console.log("validating attach file model");
-      console.log(attrs.nameOnServer);
+      console.log(attrs.fileValue);
       console.log(errors);
       if (errors.length > 0) {
         return errors;
@@ -38,6 +38,19 @@
     return AttachFile;
 
   })(Backbone.Model);
+
+  window.AttachFileList = (function(_super) {
+    __extends(AttachFileList, _super);
+
+    function AttachFileList() {
+      return AttachFileList.__super__.constructor.apply(this, arguments);
+    }
+
+    AttachFileList.prototype.model = AttachFile;
+
+    return AttachFileList;
+
+  })(Backbone.Collection);
 
   window.AttachFileController = (function(_super) {
     __extends(AttachFileController, _super);
@@ -55,13 +68,15 @@
 
     AttachFileController.prototype.tagName = "div";
 
-    AttachFileController.prototype.className = "form-inline";
-
     AttachFileController.prototype.events = {
-      "change .bv_fileType": "handleFileTypeChanged"
+      "change .bv_fileType": "handleFileTypeChanged",
+      "click .bv_delete": "clear"
     };
 
-    AttachFileController.prototype.initialize = function() {};
+    AttachFileController.prototype.initialize = function() {
+      this.model.on("destroy", this.remove, this);
+      return this.canRemoveAttachFileModel = this.options.canRemoveAttachFileModel;
+    };
 
     AttachFileController.prototype.render = function() {
       $(this.el).empty();
@@ -96,11 +111,17 @@
     };
 
     AttachFileController.prototype.handleFileUpload = function(nameOnServer) {
-      this.$('.bv_delete').show();
+      console.log("@canRemoveAttachFileModel attach file controller");
+      console.log(this.canRemoveAttachFileModel);
+      if (this.canRemoveAttachFileModel) {
+        this.$('.bv_delete').show();
+        console.log("should delete file");
+        this.$('td.delete').hide();
+      }
       this.model.set({
-        nameOnServer: nameOnServer
+        fileValue: nameOnServer
       });
-      console.log(this.model.get('nameOnServer'));
+      console.log(this.model.get('fileValue'));
       this.trigger('fileUploaded');
       return this.trigger('amDirty');
     };
@@ -110,9 +131,10 @@
     };
 
     AttachFileController.prototype.updateModel = function() {
-      return this.model.set({
+      this.model.set({
         fileType: this.$('.bv_fileType').val()
       });
+      return console.log(this.model);
     };
 
     AttachFileController.prototype.clear = function() {
@@ -121,6 +143,95 @@
     };
 
     return AttachFileController;
+
+  })(Backbone.View);
+
+  window.AttachFileListController = (function(_super) {
+    __extends(AttachFileListController, _super);
+
+    function AttachFileListController() {
+      this.checkIfNeedToAddNew = __bind(this.checkIfNeedToAddNew, this);
+      this.ensureValidCollectionLength = __bind(this.ensureValidCollectionLength, this);
+      this.uploadNewAttachFile = __bind(this.uploadNewAttachFile, this);
+      this.render = __bind(this.render, this);
+      return AttachFileListController.__super__.constructor.apply(this, arguments);
+    }
+
+    AttachFileListController.prototype.template = _.template($("#AttachFileListView").html());
+
+    AttachFileListController.prototype.canRemoveAttachFileModel = true;
+
+    AttachFileListController.prototype.initialize = function() {
+      var newModel;
+      console.log("@options.canRemoveAttachFileModel?");
+      console.log(this.options.canRemoveAttachFileModel != null);
+      if (this.collection == null) {
+        this.collection = new AttachFileList();
+        newModel = new AttachFile();
+        this.collection.add(newModel);
+        console.log("added model to new collection");
+      }
+      console.log(this.collection);
+      if (this.canRemoveAttachFileModel) {
+        return this.collection.bind('remove', this.ensureValidCollectionLength);
+      }
+    };
+
+    AttachFileListController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.collection.each((function(_this) {
+        return function(fileInfo) {
+          return _this.addAttachFile(fileInfo);
+        };
+      })(this));
+      if (this.collection.length === 0) {
+        console.log("collection length is zero");
+        this.uploadNewAttachFile();
+      }
+      return this;
+    };
+
+    AttachFileListController.prototype.uploadNewAttachFile = function() {
+      var newModel;
+      newModel = new AttachFile();
+      this.collection.add(newModel);
+      this.addAttachFile(newModel);
+      return console.log("added new attach File");
+    };
+
+    AttachFileListController.prototype.addAttachFile = function(fileInfo) {
+      var afc;
+      console.log("addAttachFile");
+      afc = new AttachFileController({
+        model: fileInfo,
+        canRemoveAttachFileModel: this.canRemoveAttachFileModel
+      });
+      this.listenTo(afc, 'fileUploaded', this.checkIfNeedToAddNew);
+      afc.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      return this.$('.bv_attachFileInfo').append(afc.render().el);
+    };
+
+    AttachFileListController.prototype.ensureValidCollectionLength = function() {
+      console.log("ensureValidCollection");
+      if (this.collection.length === 0) {
+        return this.uploadNewAttachFile();
+      }
+    };
+
+    AttachFileListController.prototype.checkIfNeedToAddNew = function() {
+      console.log("check if need to add new");
+      console.log(this.canRemoveAttachFileModel);
+      if (this.canRemoveAttachFileModel) {
+        return this.uploadNewAttachFile();
+      }
+    };
+
+    return AttachFileListController;
 
   })(Backbone.View);
 

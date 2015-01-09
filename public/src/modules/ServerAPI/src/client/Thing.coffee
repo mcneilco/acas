@@ -107,6 +107,27 @@ class window.Thing extends Backbone.Model
 			# (ie set "value" to equal value in "stringValue")
 			@get(dValue.kind).set("value", newValue.get(dValue.type))
 
+	getAnalyticalFiles: (fileTypes) =>
+		console.log "get analytical files"
+		#get list of possible kinds of analytical files
+		console.log fileTypes
+		attachFileList = new AttachFileList()
+		for type in fileTypes
+			#get lsState metadata, [component] batch
+			#get lsValues with lsType of fileValue and lsKind of each kind of analytical file
+			analyticalFileValue = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", @get('lsKind')+" batch", "fileValue", type.code
+#			if type.code is "nmr"
+#				analyticalFileValue.set fileValue: "test fileValue"
+			unless analyticalFileValue.get('fileValue') is undefined or analyticalFileValue.get('fileValue') is ""
+				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
+				#add new afm to attach file list
+				afm = new AttachFile
+					fileType: type.code
+					fileValue: analyticalFileValue.get('fileValue')
+				attachFileList.add afm
+
+		attachFileList
+
 
 	reformatBeforeSaving: =>
 		console.log "callMeBeforeCallingSave"

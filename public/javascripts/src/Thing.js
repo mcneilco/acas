@@ -8,6 +8,7 @@
 
     function Thing() {
       this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
+      this.getAnalyticalFiles = __bind(this.getAnalyticalFiles, this);
       this.createDefaultStates = __bind(this.createDefaultStates, this);
       this.createDefaultLabels = __bind(this.createDefaultLabels, this);
       this.parse = __bind(this.parse, this);
@@ -137,6 +138,25 @@
         _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
       }
       return _results;
+    };
+
+    Thing.prototype.getAnalyticalFiles = function(fileTypes) {
+      var afm, analyticalFileValue, attachFileList, type, _i, _len;
+      console.log("get analytical files");
+      console.log(fileTypes);
+      attachFileList = new AttachFileList();
+      for (_i = 0, _len = fileTypes.length; _i < _len; _i++) {
+        type = fileTypes[_i];
+        analyticalFileValue = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", this.get('lsKind') + " batch", "fileValue", type.code);
+        if (!(analyticalFileValue.get('fileValue') === void 0 || analyticalFileValue.get('fileValue') === "")) {
+          afm = new AttachFile({
+            fileType: type.code,
+            fileValue: analyticalFileValue.get('fileValue')
+          });
+          attachFileList.add(afm);
+        }
+      }
+      return attachFileList;
     };
 
     Thing.prototype.reformatBeforeSaving = function() {
