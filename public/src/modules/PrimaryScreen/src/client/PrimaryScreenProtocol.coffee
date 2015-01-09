@@ -134,7 +134,7 @@ class window.PrimaryScreenProtocolParameters extends State
 class window.PrimaryScreenProtocol extends Protocol
 	initialize: ->
 		super()
-		@.set lsKind: "flipr screening assay"
+		@.set lsKind: "Bio Activity"
 
 	validate: (attrs) ->
 		errors = []
@@ -450,7 +450,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								prot = new PrimaryScreenProtocol json
 								lsKind = json[0].lsKind
-								if lsKind is "flipr screening assay"
+								if lsKind is "Bio Activity "
 									prot = new PrimaryScreenProtocol json[0]
 									prot.set prot.parse(prot.attributes)
 									if window.AppLaunchParams.moduleLaunchParams.copy

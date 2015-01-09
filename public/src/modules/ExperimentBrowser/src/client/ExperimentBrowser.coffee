@@ -352,7 +352,7 @@ class window.ExperimentBrowserController extends Backbone.View
 
 	handleDuplicateExperimentClicked: =>
 		experimentKind = @experimentController.model.get('lsKind')
-		if experimentKind is "flipr screening assay"
+		if experimentKind is "Bio Activity"
 			window.open("/entity/copy/flipr_screening_assay/#{@experimentController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');

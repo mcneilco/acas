@@ -156,8 +156,8 @@
           it("should be defined", function() {
             return expect(this.psp).toBeDefined();
           });
-          return it("should have lsKind set to flipr screening assay", function() {
-            return expect(this.psp.get('lsKind')).toEqual("flipr screening assay");
+          return it("should have lsKind set to Bio Activity", function() {
+            return expect(this.psp.get('lsKind')).toEqual("Bio Activity");
           });
         });
         return describe("special getters", function() {

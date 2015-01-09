@@ -280,7 +280,7 @@ class window.PrimaryScreenExperiment extends Experiment
 
 	initialize: ->
 		super()
-		@.set lsKind: "flipr screening assay"
+		@.set lsKind: "Bio Activity"
 
 	getDryRunStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "dry run status"
@@ -1110,7 +1110,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								exp = new PrimaryScreenExperiment json
 								lsKind = json[0].lsKind
-								if lsKind is "flipr screening assay"
+								if lsKind is "Bio Activity"
 									exp = new PrimaryScreenExperiment json[0]
 									exp.set exp.parse(exp.attributes)
 									if window.AppLaunchParams.moduleLaunchParams.copy
@@ -1224,7 +1224,7 @@ class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExpe
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 	modelFitControllerName: "DoseResponseAnalysisController"
 #	protocolFilter: "?protocolName=FLIPR"
-	protocolKindFilter: "?protocolKind=flipr screening assay"
+	protocolKindFilter: "?protocolKind=Bio Activity"
 	moduleLaunchName: "flipr_screening_assay"
 
 

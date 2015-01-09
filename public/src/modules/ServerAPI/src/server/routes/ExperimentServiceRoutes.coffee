@@ -27,8 +27,8 @@ exports.experimentByCodename = (req, resp) ->
 #		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 		expt = JSON.parse(JSON.stringify (experimentServiceTestJSON.fullExperimentFromServer))
 
-		if req.params.code.indexOf("screening") > -1
-			expt.lsKind = "flipr screening assay"
+		if req.params.code.indexOf("Bio Activity") > -1
+			expt.lsKind = "Bio Activity"
 
 		else
 			expt.lsKind = "default"

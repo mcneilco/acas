@@ -244,7 +244,7 @@
     PrimaryScreenProtocol.prototype.initialize = function() {
       PrimaryScreenProtocol.__super__.initialize.call(this);
       return this.set({
-        lsKind: "flipr screening assay"
+        lsKind: "Bio Activity"
       });
     };
 
@@ -686,7 +686,7 @@
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
                     lsKind = json[0].lsKind;
-                    if (lsKind === "flipr screening assay") {
+                    if (lsKind === "Bio Activity ") {
                       prot = new PrimaryScreenProtocol(json[0]);
                       prot.set(prot.parse(prot.attributes));
                       if (window.AppLaunchParams.moduleLaunchParams.copy) {

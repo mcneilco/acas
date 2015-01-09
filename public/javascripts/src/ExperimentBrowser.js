@@ -519,7 +519,7 @@
     ExperimentBrowserController.prototype.handleDuplicateExperimentClicked = function() {
       var experimentKind;
       experimentKind = this.experimentController.model.get('lsKind');
-      if (experimentKind === "flipr screening assay") {
+      if (experimentKind === "Bio Activity") {
         return window.open("/entity/copy/flipr_screening_assay/" + (this.experimentController.model.get("codeName")), '_blank');
       } else {
         return window.open("/entity/copy/experiment_base/" + (this.experimentController.model.get("codeName")), '_blank');

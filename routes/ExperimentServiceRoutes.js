@@ -28,8 +28,8 @@
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       expt = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
-      if (req.params.code.indexOf("screening") > -1) {
-        expt.lsKind = "flipr screening assay";
+      if (req.params.code.indexOf("Bio Activity") > -1) {
+        expt.lsKind = "Bio Activity";
       } else {
         expt.lsKind = "default";
       }
