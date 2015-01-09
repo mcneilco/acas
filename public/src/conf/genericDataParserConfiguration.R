@@ -1,5 +1,5 @@
 getFormatSettings <- function() {
-  formatSettings <- list(
+  formatSettings <- list(rawOnly = list(
     "Custom Example" = list(
       annotationType = "",
       hideAllData = FALSE,
@@ -70,6 +70,6 @@ getFormatSettings <- function() {
                               includesOthers = TRUE,
                               includesCorpName = FALSE))
     )
-  )
+  ))
   return(formatSettings)
 } 

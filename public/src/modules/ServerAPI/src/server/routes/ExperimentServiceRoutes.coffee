@@ -15,7 +15,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
 	app.put '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment
 	app.get '/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch
-	app.get '/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
 	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
@@ -28,8 +27,8 @@ exports.experimentByCodename = (req, resp) ->
 #		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 		expt = JSON.parse(JSON.stringify (experimentServiceTestJSON.fullExperimentFromServer))
 
-		if req.params.code.indexOf("screening") > -1
-			expt.lsKind = "flipr screening assay"
+		if req.params.code.indexOf("Bio Activity") > -1
+			expt.lsKind = "Bio Activity"
 
 		else
 			expt.lsKind = "default"

@@ -465,7 +465,7 @@
     PrimaryScreenExperiment.prototype.initialize = function() {
       PrimaryScreenExperiment.__super__.initialize.call(this);
       return this.set({
-        lsKind: "flipr screening assay"
+        lsKind: "Bio Activity"
       });
     };
 
@@ -483,7 +483,7 @@
           codeKind: "status"
         });
         status.set({
-          codeOrigin: "acas ddict"
+          codeOrigin: "ACAS DDICT"
         });
       }
       return status;
@@ -1679,7 +1679,7 @@
                     alert('Could not get experiment for code in this URL, creating new one');
                   } else {
                     lsKind = json[0].lsKind;
-                    if (lsKind === "flipr screening assay") {
+                    if (lsKind === "Bio Activity") {
                       exp = new PrimaryScreenExperiment(json[0]);
                       exp.set(exp.parse(exp.attributes));
                       if (window.AppLaunchParams.moduleLaunchParams.copy) {
@@ -1798,6 +1798,11 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.handleExperimentSaved = function() {
+      if (this.model.get('subclass') == null) {
+        this.model.set({
+          subclass: 'experiment'
+        });
+      }
       return this.analysisController.render();
     };
 
@@ -1863,9 +1868,7 @@
 
     PrimaryScreenExperimentController.prototype.modelFitControllerName = "DoseResponseAnalysisController";
 
-    PrimaryScreenExperimentController.prototype.protocolFilter = "?protocolName=FLIPR";
-
-    PrimaryScreenExperimentController.prototype.protocolKindFilter = "?protocolKind=flipr screening assay";
+    PrimaryScreenExperimentController.prototype.protocolKindFilter = "?protocolKind=Bio Activity";
 
     PrimaryScreenExperimentController.prototype.moduleLaunchName = "flipr_screening_assay";
 

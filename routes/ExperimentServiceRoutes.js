@@ -16,7 +16,6 @@
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
     app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
     app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
-    app.get('/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect);
     app["delete"]('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment);
     app.get('/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename);
     return app.get('/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById);
@@ -29,8 +28,8 @@
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       expt = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
-      if (req.params.code.indexOf("screening") > -1) {
-        expt.lsKind = "flipr screening assay";
+      if (req.params.code.indexOf("Bio Activity") > -1) {
+        expt.lsKind = "Bio Activity";
       } else {
         expt.lsKind = "default";
       }

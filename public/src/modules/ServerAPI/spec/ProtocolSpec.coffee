@@ -310,7 +310,11 @@ describe "Protocol module testing", ->
 				xit "should fill the protocol name field", ->
 					expect(@pbc.$('.bv_protocolName').val()).toEqual "FLIPR target A biochemical"
 				it "should fill the user field", ->
-					expect(@pbc.$('.bv_recordedBy').val()).toEqual "nxm7557"
+					waitsFor ->
+						@pbc.$('.bv_recordedBy option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_recordedBy').val()).toEqual "jane"
 				it "should fill the protocol code field", ->
 					expect(@pbc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
 				it "should fill the protocol kind field", ->
@@ -357,10 +361,14 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_lock')).toBeVisible()
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
-					expect(@pbc.model.get 'recordedBy').toEqual "nxm7557"
-					@pbc.$('.bv_recordedBy').val("xxl7932")
-					@pbc.$('.bv_recordedBy').change()
-					expect(@pbc.model.get 'recordedBy').toEqual "xxl7932"
+					expect(@pbc.model.get 'recordedBy').toEqual "jane"
+					waitsFor ->
+						@pbc.$('.bv_recordedBy option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_recordedBy').val('unassigned')
+						@pbc.$('.bv_recordedBy').change()
+						expect(@pbc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when shortDescription is changed", ->
 					@pbc.$('.bv_shortDescription').val(" New short description   ")
 					@pbc.$('.bv_shortDescription').change()
@@ -505,6 +513,9 @@ describe "Protocol module testing", ->
 							expect(@pbc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 				describe "when scientist not selected", ->
 					beforeEach ->
+						waitsFor ->
+							@pbc.$('.bv_recordedBy option').length > 0
+						, 1000
 						runs ->
 							@pbc.$('.bv_recordedBy').val("")
 							@pbc.$('.bv_recordedBy').change()

@@ -391,7 +391,7 @@ describe "Primary Screen Experiment module testing", ->
 					it "should be able to get the analysis result html", ->
 						expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
 					it "should be able to get the model fit status", ->
-						expect(@pse.getModelFitStatus().get('stringValue')).toEqual "not started"
+						expect(@pse.getModelFitStatus().get('codeValue')).toEqual "not started"
 					it "should be able to get the model result html", ->
 						expect(@pse.getModelFitResultHTML().get('clobValue')).toEqual "<p>Model fit not yet completed</p>"
 		describe "When loaded from new", ->
@@ -407,7 +407,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "should be able to get the analysis result html", ->
 					expect(@pse2.getAnalysisResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the model fit status", ->
-					expect(@pse2.getModelFitStatus().get('stringValue')).toEqual "not started"
+					expect(@pse2.getModelFitStatus().get('codeValue')).toEqual "not started"
 				it "should be able to get the model result html", ->
 					expect(@pse2.getModelFitResultHTML().get('clobValue')).toEqual ""
 

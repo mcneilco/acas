@@ -114,8 +114,8 @@ describe "Primary Screen Protocol module testing", ->
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
 					expect(@psp).toBeDefined()
-				it "should have lsKind set to flipr screening assay", ->
-					expect(@psp.get('lsKind')).toEqual "flipr screening assay"
+				it "should have lsKind set to Bio Activity", ->
+					expect(@psp.get('lsKind')).toEqual "Bio Activity"
 			describe "special getters", ->
 				describe "primary screen protocol parameters", ->
 					it 'Should be able to get primary screen protocol parameters', ->

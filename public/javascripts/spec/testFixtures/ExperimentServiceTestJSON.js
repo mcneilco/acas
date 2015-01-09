@@ -1200,7 +1200,7 @@
               urlValue: null,
               version: 0
             }, {
-              clobValue: "<p>Dry Run complete</p>",
+              clobValue: "<p>Dry Run not started</p>",
               codeValue: null,
               comments: null,
               dateValue: null,
@@ -1265,7 +1265,7 @@
               clobValue: null,
               codeType: "dry run",
               codeKind: "status",
-              codeValue: "running",
+              codeValue: "not started",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -1674,7 +1674,7 @@
         shortDescription: "protocol created by generic data parser",
         version: 1
       },
-      recordedBy: "nxm7557",
+      recordedBy: "jane",
       recordedDate: 1375889487000,
       shortDescription: "experiment created by generic data parser",
       version: 1
@@ -2639,7 +2639,7 @@
               urlValue: null,
               version: 0
             }, {
-              clobValue: "<p>Dry Run complete</p>",
+              clobValue: "<p>Dry Run not started</p>",
               codeValue: null,
               comments: null,
               dateValue: null,
@@ -3164,7 +3164,7 @@
               urlValue: null,
               version: 0
             }, {
-              clobValue: "<p>Dry Run complete</p>",
+              clobValue: "<p>Dry Run not started</p>",
               codeValue: null,
               comments: null,
               dateValue: null,

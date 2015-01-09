@@ -431,10 +431,13 @@ describe "Experiment module testing", ->
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
 					expect(@ebc.model.get 'recordedBy').toEqual ""
-					@ebc.$('.bv_recordedBy').val("jmcneil")
-					@ebc.$('.bv_recordedBy').change()
-					console.log @ebc.model.get('recordedBy')
-					expect(@ebc.model.get 'recordedBy').toEqual "jmcneil"
+					waitsFor ->
+						@ebc.$('.bv_recordedBy option').length > 0
+					, 1000
+					runs ->
+						@ebc.$('.bv_recordedBy').val('unassigned')
+						@ebc.$('.bv_recordedBy').change()
+						expect(@ebc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when shortDescription is changed", ->
 					@ebc.$('.bv_shortDescription').val(" New short description   ")
 					@ebc.$('.bv_shortDescription').change()
@@ -550,7 +553,11 @@ describe "Experiment module testing", ->
 				it "should fill the date field in the same format is the date picker", ->
 					expect(@ebc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the user field", ->
-					expect(@ebc.$('.bv_recordedBy').val()).toEqual "nxm7557"
+					waitsFor ->
+						@ebc.$('.bv_recordedBy option').length > 0
+					, 1000
+					runs ->
+						expect(@ebc.$('.bv_recordedBy').val()).toEqual "jane"
 				it "should fill the code field", ->
 					expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
 				it "should fill the notebook field", ->
@@ -663,7 +670,7 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_protocolCode option').length > 0 && @ebc.$('.bv_projectCode option').length > 0
 					, 1000
 					runs ->
-						@ebc.$('.bv_recordedBy').val("nxm7557")
+						@ebc.$('.bv_recordedBy').val("john")
 						@ebc.$('.bv_recordedBy').change()
 						@ebc.$('.bv_shortDescription').val(" New short description   ")
 						@ebc.$('.bv_shortDescription').change()
@@ -713,6 +720,9 @@ describe "Experiment module testing", ->
 							expect(@ebc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
 				describe "when scientist not selected", ->
 					beforeEach ->
+						waitsFor ->
+							@ebc.$('.bv_recordedBy option').length > 0
+						, 1000
 						runs ->
 							@ebc.$('.bv_recordedBy').val("")
 							@ebc.$('.bv_recordedBy').change()

@@ -111,7 +111,7 @@ class window.BaseEntity extends Backbone.Model
 			errors.push
 				attribute: 'recordedDate'
 				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is ""
+		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
@@ -151,6 +151,11 @@ class window.BaseEntity extends Backbone.Model
 					val.set recordedBy: rBy
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
+		if @attributes.subclass?
+			delete @attributes.subclass
+		if @attributes.protocol?
+			if @attributes.protocol.attributes.subclass?
+				delete @attributes.protocol.attributes.subclass
 		@trigger "readyToSave", @
 
 	duplicateEntity: =>
@@ -211,6 +216,8 @@ class window.BaseEntityController extends AbstractFormController
 			@model=new BaseEntity()
 		@model.on 'sync', =>
 			@trigger 'amClean'
+			unless @model.get('subclass')?
+				@model.set subclass: 'entity'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
 			@$('.bv_save').attr('disabled', 'disabled')
@@ -224,6 +231,7 @@ class window.BaseEntityController extends AbstractFormController
 		$(@el).html @template()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
+		@setupRecordedBySelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 
@@ -262,6 +270,17 @@ class window.BaseEntityController extends AbstractFormController
 			el: @$('.bv_status')
 			collection: @statusList
 			selectedCode: statusState.get 'codeValue'
+
+	setupRecordedBySelect: ->
+		@recordedByList = new PickListList()
+		@recordedByList.url = "/api/authors"
+		@recordedByListController = new PickListSelectController
+			el: @$('.bv_recordedBy')
+			collection: @recordedByList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Scientist"
+			selectedCode: @model.get('recordedBy')
 
 	setupTagList: ->
 		@$('.bv_tags').val ""
@@ -342,6 +361,7 @@ class window.BaseEntityController extends AbstractFormController
 			@trigger "noEditablePickLists"
 
 	handleSaveClicked: =>
+		@$('.bv_save').attr('disabled', 'disabled')
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
 		if @model.isNew()

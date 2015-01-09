@@ -724,11 +724,9 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   #   replaceFakeCorpBatchId: A string that is not a mainCode, will be ignored by the batch check, and will be replaced by a column of the same name
   #   rawOnlyFormat:          A boolean that describes the data format, subject based or analysis group based
   #   stateGroups:            A list of state groups and their attributes, from getFormatSettings
-  #   splitSubjects:          from getFormatSettings
   #   inputFormat:            The experiment format, such as "Dose Response"
   #   calculateGroupingID:    Potentially a function, which will determine the ID for each group (such as a treatmentGroupID)
-  #   stateAssignments:       from getFormatSettings
-  #
+  #   stateAssignments:       a data.frame with columns valueKind, stateType, stateKind, marking where to save each column
   # Returns:
   #	  a data frame containing the organized calculated data
   
@@ -812,6 +810,40 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Mark Comment columns
   commentCol <- tolower(classRow) == "comments"
   
+  # Grab the rows of the calculated data 
+  results <- subset(calculatedResults, 1:nrow(calculatedResults) > 1)
+  names(results) <- unlist(calculatedResultsValueKindRow)
+  
+  if (inputFormat == "Dose Response" && is.null(stateAssignments)) {
+    if (!("Rendering Hint" %in% names(results))) {
+      stopUser("Dose Response data must have a 'Rendering Hint' column.")
+    }
+    doseResponseHint <- unique(results[["Rendering Hint"]])
+    if (length(doseResponseHint) > 1) {
+      stopUser(paste0("Only one Rendering Hint can be used within one file. ",
+                      "Split different kinds of curves into multiple experiments."))
+    }
+    doseResponseSettings <- getFormatSettings()$doseResponseRender
+    if (doseResponseHint %in% names(doseResponseSettings)) {
+      doseResponseKinds <- doseResponseSettings[[doseResponseHint]]$doseResponseKinds
+    } else {
+      # default list
+      doseResponseKinds <- list(
+        "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
+        "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+        "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
+        "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
+      )
+    }
+    
+    stateAssignments <- data.frame(
+      valueKind = unlist(doseResponseKinds),
+      stateType = rep("data", length(doseResponseKinds)), 
+      stateKind = rep("dose response", length(doseResponseKinds)),
+      stringsAsFactors = FALSE
+    )
+  }
+  
   # Call the function that extracts valueKinds, units, conc, concunits from the headers
   valueKinds <- extractValueKinds(calculatedResultsValueKindRow, ignoreTheseAsValueKinds, uncertaintyType, 
                                   uncertaintyCodeWord, commentCol, commentCodeWord, stateAssignments, 
@@ -843,9 +875,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     )
   }
   
-  # Grab the rows of the calculated data 
-  results <- subset(calculatedResults, 1:nrow(calculatedResults) > 1)
-  names(results) <- unlist(calculatedResultsValueKindRow)
+  
   
   names(results)[!is.na(uncertaintyType)] <- paste0(uncertaintyCodeWord, names(results)[!is.na(uncertaintyType)])
   names(results)[commentCol] <- paste0(commentCodeWord, names(results)[commentCol])
@@ -2142,7 +2172,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
   
-  customFormatSettings <- getFormatSettings()
+  customFormatSettings <- getFormatSettings()$rawOnly
   
   validatedMetaDataList <- validateMetaData(metaData, configList, customFormatSettings, errorEnv)
   validatedMetaData <- validatedMetaDataList$validatedMetaData
@@ -2167,28 +2197,12 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = formatParameters$lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
-  stateAssignments <- NULL
-  if (inputFormat == "Dose Response") {
-    doseResponseKinds <- c(
-      "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
-      "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
-      "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
-      "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
-    )
-    stateAssignments <- data.frame(
-      valueKind = doseResponseKinds,
-      stateType = rep("data", length(doseResponseKinds)), 
-      stateKind = rep("dose response", length(doseResponseKinds)),
-      stringsAsFactors = FALSE
-    )
-  }
   
   calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
   calculatedResults <- organizeCalculatedResults(
     calculatedResults, inputFormat, formatParameters, mainCode, 
     lockCorpBatchId = formatParameters$lockCorpBatchId, rawOnlyFormat = rawOnlyFormat, 
-    errorEnv = errorEnv, precise = precise, calculateGroupingID = calculateGroupingID,
-    stateAssignments = stateAssignments)
+    errorEnv = errorEnv, precise = precise, calculateGroupingID = calculateGroupingID)
   
   if (!is.null(formatParameters$splitSubjects)) {
     calculatedResults$subjectID <- calculatedResults$groupingID_2

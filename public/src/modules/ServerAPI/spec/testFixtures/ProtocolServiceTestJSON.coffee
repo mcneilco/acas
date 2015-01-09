@@ -379,7 +379,7 @@
 		lsTypeAndKind: "default_default"
 		modifiedBy: null
 		modifiedDate: null
-		recordedBy: "nxm7557"
+		recordedBy: "jane"
 		recordedDate: 1375141508000
 		shortDescription: "primary analysis"
 		version: 1

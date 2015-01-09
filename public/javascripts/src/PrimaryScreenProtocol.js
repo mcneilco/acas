@@ -244,7 +244,7 @@
     PrimaryScreenProtocol.prototype.initialize = function() {
       PrimaryScreenProtocol.__super__.initialize.call(this);
       return this.set({
-        lsKind: "flipr screening assay"
+        lsKind: "Bio Activity"
       });
     };
 
@@ -286,22 +286,24 @@
           message: "Scientist must be set"
         });
       }
-      cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "" || cDate === null) {
-        cDate = "fred";
-      }
-      if (isNaN(cDate)) {
-        errors.push({
-          attribute: 'completionDate',
-          message: "Assay completion date must be set"
-        });
-      }
-      notebook = this.getNotebook().get('stringValue');
-      if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-        errors.push({
-          attribute: 'notebook',
-          message: "Notebook must be set"
-        });
+      if (attrs.subclass != null) {
+        cDate = this.getCompletionDate().get('dateValue');
+        if (cDate === void 0 || cDate === "" || cDate === null) {
+          cDate = "fred";
+        }
+        if (isNaN(cDate)) {
+          errors.push({
+            attribute: 'completionDate',
+            message: "Assay completion date must be set"
+          });
+        }
+        notebook = this.getNotebook().get('stringValue');
+        if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
+          errors.push({
+            attribute: 'notebook',
+            message: "Notebook must be set"
+          });
+        }
       }
       assayTreeRule = this.getAssayTreeRule().get('stringValue');
       if (!(assayTreeRule === "" || assayTreeRule === void 0 || assayTreeRule === null)) {
@@ -684,7 +686,7 @@
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
                     lsKind = json[0].lsKind;
-                    if (lsKind === "flipr screening assay") {
+                    if (lsKind === "Bio Activity ") {
                       prot = new PrimaryScreenProtocol(json[0]);
                       prot.set(prot.parse(prot.attributes));
                       if (window.AppLaunchParams.moduleLaunchParams.copy) {
@@ -717,6 +719,11 @@
       this.model.on('sync', (function(_this) {
         return function() {
           _this.trigger('amClean');
+          if (_this.model.get('subclass') == null) {
+            _this.model.set({
+              subclass: 'protocol'
+            });
+          }
           _this.$('.bv_savingModule').hide();
           _this.$('.bv_updateModuleComplete').show();
           _this.$('.bv_saveModule').attr('disabled', 'disabled');

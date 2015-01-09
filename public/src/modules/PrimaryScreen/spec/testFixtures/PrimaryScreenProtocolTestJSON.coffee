@@ -306,7 +306,7 @@
 		codeName: "PROT-00000001"
 		id: 1
 		ignored: false
-		lsKind: "default"
+		lsKind: "Bio Activity"
 		lsLabels: [
 			id: 1
 			ignored: false

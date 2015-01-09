@@ -306,7 +306,11 @@ describe "Base Entity testing", ->
 				xit "should fill the entity name field", ->
 					expect(@bec.$('.bv_entityName').val()).toEqual "FLIPR target A biochemical"
 				it "should fill the user field", ->
-					expect(@bec.$('.bv_recordedBy').val()).toEqual "nxm7557"
+					waitsFor ->
+						@bec.$('.bv_recordedBy option').length > 0
+					, 1000
+					runs ->
+						expect(@bec.$('.bv_recordedBy').val()).toEqual "jane"
 				it "should fill the entity code field", ->
 					@bem.set subclass: "entity" # work around for the spec to pass. In a subclass, the dom element would be .bv_[subclass]Code not .bv_entityCode
 					@bec.render()
@@ -357,10 +361,14 @@ describe "Base Entity testing", ->
 						expect(@bec.$('.bv_lock')).toBeVisible()
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
-					expect(@bec.model.get 'recordedBy').toEqual "nxm7557"
-					@bec.$('.bv_recordedBy').val("xxl7932")
-					@bec.$('.bv_recordedBy').change()
-					expect(@bec.model.get 'recordedBy').toEqual "xxl7932"
+					expect(@bec.model.get 'recordedBy').toEqual "jane"
+					waitsFor ->
+						@bec.$('.bv_recordedBy option').length > 0
+					, 1000
+					runs ->
+						@bec.$('.bv_recordedBy').val('unassigned')
+						@bec.$('.bv_recordedBy').change()
+						expect(@bec.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when shortDescription is changed", ->
 					@bec.$('.bv_shortDescription').val(" New short description   ")
 					@bec.$('.bv_shortDescription').change()
@@ -486,6 +494,9 @@ describe "Base Entity testing", ->
 							expect(@bec.$('.bv_save').attr('disabled')).toEqual 'disabled'
 				describe "when scientist not selected", ->
 					beforeEach ->
+						waitsFor ->
+							@bec.$('.bv_recordedBy option').length > 0
+						, 1000
 						runs ->
 							@bec.$('.bv_recordedBy').val("")
 							@bec.$('.bv_recordedBy').change()

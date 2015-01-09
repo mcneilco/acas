@@ -151,7 +151,7 @@
           message: "Experiment date must be set"
         });
       }
-      if (attrs.recordedBy === "") {
+      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
         errors.push({
           attribute: 'recordedBy',
           message: "Scientist must be set"
@@ -163,29 +163,31 @@
           message: "Protocol must be set"
         });
       }
-      notebook = this.getNotebook().get('stringValue');
-      if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-        errors.push({
-          attribute: 'notebook',
-          message: "Notebook must be set"
-        });
-      }
-      projectCode = this.getProjectCode().get('codeValue');
-      if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
-        errors.push({
-          attribute: 'projectCode',
-          message: "Project must be set"
-        });
-      }
-      cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "" || cDate === null) {
-        cDate = "fred";
-      }
-      if (isNaN(cDate)) {
-        errors.push({
-          attribute: 'completionDate',
-          message: "Assay completion date must be set"
-        });
+      if (attrs.subclass != null) {
+        notebook = this.getNotebook().get('stringValue');
+        if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
+          errors.push({
+            attribute: 'notebook',
+            message: "Notebook must be set"
+          });
+        }
+        projectCode = this.getProjectCode().get('codeValue');
+        if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
+          errors.push({
+            attribute: 'projectCode',
+            message: "Project must be set"
+          });
+        }
+        cDate = this.getCompletionDate().get('dateValue');
+        if (cDate === void 0 || cDate === "" || cDate === null) {
+          cDate = "fred";
+        }
+        if (isNaN(cDate)) {
+          errors.push({
+            attribute: 'completionDate',
+            message: "Assay completion date must be set"
+          });
+        }
       }
       if (errors.length > 0) {
         return errors;
@@ -333,6 +335,11 @@
       })(this));
       this.model.on('sync', (function(_this) {
         return function() {
+          if (_this.model.get('subclass') == null) {
+            _this.model.set({
+              subclass: 'experiment'
+            });
+          }
           _this.$('.bv_saving').hide();
           _this.$('.bv_save').attr('disabled', 'disabled');
           if (_this.$('.bv_saveFailed').is(":visible")) {
@@ -353,6 +360,7 @@
       })(this));
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
+      this.setupRecordedBySelect();
       this.setupTagList();
       this.model.getStatus().on('change', this.updateEditable);
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);

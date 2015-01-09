@@ -273,7 +273,7 @@
 
     ProtocolBrowserController.prototype.selectedProtocolUpdated = function(protocol) {
       this.trigger("selectedProtocolUpdated");
-      if (protocol.get('lsKind') === "flipr screening assay") {
+      if (protocol.get('lsKind') === "Bio Activity") {
         this.protocolController = new PrimaryScreenProtocolController({
           model: new PrimaryScreenProtocol(protocol.attributes)
         });
@@ -339,7 +339,7 @@
     ProtocolBrowserController.prototype.handleDuplicateProtocolClicked = function() {
       var protocolKind;
       protocolKind = this.protocolController.model.get('lsKind');
-      if (protocolKind === "flipr screening assay") {
+      if (protocolKind === "Bio Activity") {
         return window.open("/entity/copy/primary_screen_protocol/" + (this.protocolController.model.get("codeName")), '_blank');
       } else {
         return window.open("/entity/copy/protocol_base/" + (this.protocolController.model.get("codeName")), '_blank');

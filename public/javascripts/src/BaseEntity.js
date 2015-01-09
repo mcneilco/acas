@@ -185,7 +185,7 @@
           message: attrs.subclass + " date must be set"
         });
       }
-      if (attrs.recordedBy === "") {
+      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
         errors.push({
           attribute: 'recordedBy',
           message: "Scientist must be set"
@@ -258,6 +258,14 @@
           }
         });
       });
+      if (this.attributes.subclass != null) {
+        delete this.attributes.subclass;
+      }
+      if (this.attributes.protocol != null) {
+        if (this.attributes.protocol.attributes.subclass != null) {
+          delete this.attributes.protocol.attributes.subclass;
+        }
+      }
       return this.trigger("readyToSave", this);
     };
 
@@ -373,6 +381,11 @@
       this.model.on('sync', (function(_this) {
         return function() {
           _this.trigger('amClean');
+          if (_this.model.get('subclass') == null) {
+            _this.model.set({
+              subclass: 'entity'
+            });
+          }
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
           _this.$('.bv_save').attr('disabled', 'disabled');
@@ -391,6 +404,7 @@
       $(this.el).html(this.template());
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
+      this.setupRecordedBySelect();
       this.setupTagList();
       return this.model.getStatus().on('change', this.updateEditable);
     };
@@ -436,6 +450,20 @@
         el: this.$('.bv_status'),
         collection: this.statusList,
         selectedCode: statusState.get('codeValue')
+      });
+    };
+
+    BaseEntityController.prototype.setupRecordedBySelect = function() {
+      this.recordedByList = new PickListList();
+      this.recordedByList.url = "/api/authors";
+      return this.recordedByListController = new PickListSelectController({
+        el: this.$('.bv_recordedBy'),
+        collection: this.recordedByList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Scientist"
+        }),
+        selectedCode: this.model.get('recordedBy')
       });
     };
 
@@ -546,6 +574,7 @@
     };
 
     BaseEntityController.prototype.handleSaveClicked = function() {
+      this.$('.bv_save').attr('disabled', 'disabled');
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
       if (this.model.isNew()) {

@@ -448,7 +448,12 @@
             return expect(this.bec.$('.bv_entityName').val()).toEqual("FLIPR target A biochemical");
           });
           it("should fill the user field", function() {
-            return expect(this.bec.$('.bv_recordedBy').val()).toEqual("nxm7557");
+            waitsFor(function() {
+              return this.bec.$('.bv_recordedBy option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.bec.$('.bv_recordedBy').val()).toEqual("jane");
+            });
           });
           it("should fill the entity code field", function() {
             this.bem.set({
@@ -519,10 +524,15 @@
         });
         return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
-            expect(this.bec.model.get('recordedBy')).toEqual("nxm7557");
-            this.bec.$('.bv_recordedBy').val("xxl7932");
-            this.bec.$('.bv_recordedBy').change();
-            return expect(this.bec.model.get('recordedBy')).toEqual("xxl7932");
+            expect(this.bec.model.get('recordedBy')).toEqual("jane");
+            waitsFor(function() {
+              return this.bec.$('.bv_recordedBy option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.bec.$('.bv_recordedBy').val('unassigned');
+              this.bec.$('.bv_recordedBy').change();
+              return expect(this.bec.model.get('recordedBy')).toEqual("unassigned");
+            });
           });
           it("should update model when shortDescription is changed", function() {
             this.bec.$('.bv_shortDescription').val(" New short description   ");
@@ -694,6 +704,9 @@
           });
           describe("when scientist not selected", function() {
             beforeEach(function() {
+              waitsFor(function() {
+                return this.bec.$('.bv_recordedBy option').length > 0;
+              }, 1000);
               return runs(function() {
                 this.bec.$('.bv_recordedBy').val("");
                 return this.bec.$('.bv_recordedBy').change();

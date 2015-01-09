@@ -49,7 +49,7 @@ class window.LabelList extends Backbone.Collection
 			lab.get('preferred') && (lab.get('lsType') == "name")
 		bestLabel = _.max preferredNames, (lab) ->
 			rd = lab.get 'recordedDate'
-			(if (rd is "") then rd else -1)
+			(if (rd is "") then Infinity else rd)
 		return bestLabel
 
 	setBestName: (label) ->

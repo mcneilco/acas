@@ -659,7 +659,7 @@
               return expect(this.pse.getAnalysisResultHTML().get('clobValue')).toEqual("<p>Analysis not yet completed</p>");
             });
             it("should be able to get the model fit status", function() {
-              return expect(this.pse.getModelFitStatus().get('stringValue')).toEqual("not started");
+              return expect(this.pse.getModelFitStatus().get('codeValue')).toEqual("not started");
             });
             return it("should be able to get the model result html", function() {
               return expect(this.pse.getModelFitResultHTML().get('clobValue')).toEqual("<p>Model fit not yet completed</p>");
@@ -685,7 +685,7 @@
             return expect(this.pse2.getAnalysisResultHTML().get('clobValue')).toEqual("");
           });
           it("should be able to get the model fit status", function() {
-            return expect(this.pse2.getModelFitStatus().get('stringValue')).toEqual("not started");
+            return expect(this.pse2.getModelFitStatus().get('codeValue')).toEqual("not started");
           });
           return it("should be able to get the model result html", function() {
             return expect(this.pse2.getModelFitResultHTML().get('clobValue')).toEqual("");

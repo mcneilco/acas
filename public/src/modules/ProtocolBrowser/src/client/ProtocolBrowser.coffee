@@ -171,7 +171,7 @@ class window.ProtocolBrowserController extends Backbone.View
 
 	selectedProtocolUpdated: (protocol) =>
 		@trigger "selectedProtocolUpdated"
-		if protocol.get('lsKind') is "flipr screening assay"
+		if protocol.get('lsKind') is "Bio Activity"
 			@protocolController = new PrimaryScreenProtocolController
 				model: new PrimaryScreenProtocol protocol.attributes
 		else
@@ -225,7 +225,7 @@ class window.ProtocolBrowserController extends Backbone.View
 	handleDuplicateProtocolClicked: =>
 #		window.open("/api/protocols/duplicate/#{@protocolController.model.get("codeName")}",'_blank');
 		protocolKind = @protocolController.model.get('lsKind')
-		if protocolKind is "flipr screening assay"
+		if protocolKind is "Bio Activity"
 			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');

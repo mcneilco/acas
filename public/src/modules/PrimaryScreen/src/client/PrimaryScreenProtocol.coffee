@@ -134,7 +134,7 @@ class window.PrimaryScreenProtocolParameters extends State
 class window.PrimaryScreenProtocol extends Protocol
 	initialize: ->
 		super()
-		@.set lsKind: "flipr screening assay"
+		@.set lsKind: "Bio Activity"
 
 	validate: (attrs) ->
 		errors = []
@@ -166,17 +166,18 @@ class window.PrimaryScreenProtocol extends Protocol
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
-		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-		if isNaN(cDate)
-			errors.push
-				attribute: 'completionDate'
-				message: "Assay completion date must be set"
-		notebook = @getNotebook().get('stringValue')
-		if notebook is "" or notebook is "unassigned" or notebook is undefined
-			errors.push
-				attribute: 'notebook'
-				message: "Notebook must be set"
+		if attrs.subclass?
+			cDate = @getCompletionDate().get('dateValue')
+			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
+			if isNaN(cDate)
+				errors.push
+					attribute: 'completionDate'
+					message: "Assay completion date must be set"
+			notebook = @getNotebook().get('stringValue')
+			if notebook is "" or notebook is "unassigned" or notebook is undefined
+				errors.push
+					attribute: 'notebook'
+					message: "Notebook must be set"
 		assayTreeRule = @getAssayTreeRule().get('stringValue')
 		unless assayTreeRule is "" or assayTreeRule is undefined or assayTreeRule is null
 			if assayTreeRule.charAt([0]) != "/"
@@ -449,7 +450,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								prot = new PrimaryScreenProtocol json
 								lsKind = json[0].lsKind
-								if lsKind is "flipr screening assay"
+								if lsKind is "Bio Activity "
 									prot = new PrimaryScreenProtocol json[0]
 									prot.set prot.parse(prot.attributes)
 									if window.AppLaunchParams.moduleLaunchParams.copy
@@ -470,6 +471,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		$(@el).html @template()
 		@model.on 'sync', =>
 			@trigger 'amClean'
+			unless @model.get('subclass')?
+				@model.set subclass: 'protocol'
 			@$('.bv_savingModule').hide()
 			@$('.bv_updateModuleComplete').show()
 			@$('.bv_saveModule').attr('disabled', 'disabled')

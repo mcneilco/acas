@@ -95,7 +95,7 @@ class window.Experiment extends BaseEntity
 			errors.push
 				attribute: 'recordedDate'
 				message: "Experiment date must be set"
-		if attrs.recordedBy is ""
+		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
@@ -103,22 +103,23 @@ class window.Experiment extends BaseEntity
 			errors.push
 				attribute: 'protocolCode'
 				message: "Protocol must be set"
-		notebook = @getNotebook().get('stringValue')
-		if notebook is "" or notebook is "unassigned" or notebook is undefined
-			errors.push
-				attribute: 'notebook'
-				message: "Notebook must be set"
-		projectCode = @getProjectCode().get('codeValue')
-		if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
-			errors.push
-				attribute: 'projectCode'
-				message: "Project must be set"
-		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-		if isNaN(cDate)
-			errors.push
-				attribute: 'completionDate'
-				message: "Assay completion date must be set"
+		if attrs.subclass?
+			notebook = @getNotebook().get('stringValue')
+			if notebook is "" or notebook is "unassigned" or notebook is undefined
+				errors.push
+					attribute: 'notebook'
+					message: "Notebook must be set"
+			projectCode = @getProjectCode().get('codeValue')
+			if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
+				errors.push
+					attribute: 'projectCode'
+					message: "Project must be set"
+			cDate = @getCompletionDate().get('dateValue')
+			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
+			if isNaN(cDate)
+				errors.push
+					attribute: 'completionDate'
+					message: "Assay completion date must be set"
 
 		if errors.length > 0
 			return errors
@@ -210,6 +211,8 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
 				@$('.bv_saveFailed').hide()
 		@model.on 'sync', =>
+			unless @model.get('subclass')?
+				@model.set subclass: 'experiment'
 			@$('.bv_saving').hide()
 			@$('.bv_save').attr('disabled', 'disabled')
 			if @$('.bv_saveFailed').is(":visible")
@@ -224,6 +227,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_updateComplete').hide()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
+		@setupRecordedBySelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)

@@ -46,21 +46,22 @@ class window.Protocol extends BaseEntity
 			errors.push
 				attribute: 'recordedDate'
 				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is ""
+		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
-		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-		if isNaN(cDate)
-			errors.push
-				attribute: 'completionDate'
-				message: "Assay completion date must be set"
-		notebook = @getNotebook().get('stringValue')
-		if notebook is "" or notebook is "unassigned" or notebook is undefined
-			errors.push
-				attribute: 'notebook'
-				message: "Notebook must be set"
+		if attrs.subclass?
+			cDate = @getCompletionDate().get('dateValue')
+			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
+			if isNaN(cDate)
+				errors.push
+					attribute: 'completionDate'
+					message: "Assay completion date must be set"
+			notebook = @getNotebook().get('stringValue')
+			if notebook is "" or notebook is "unassigned" or notebook is undefined
+				errors.push
+					attribute: 'notebook'
+					message: "Notebook must be set"
 		assayTreeRule = @getAssayTreeRule().get('stringValue')
 		unless assayTreeRule is "" or assayTreeRule is undefined or assayTreeRule is null
 			if assayTreeRule.charAt([0]) != "/"
@@ -139,6 +140,8 @@ class window.ProtocolBaseController extends BaseEntityController
 		$(@el).html @template(@model.attributes)
 		@model.on 'sync', =>
 			@trigger 'amClean'
+			unless @model.get('subclass')?
+				@model.set subclass: 'protocol'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
 			@$('.bv_save').attr('disabled', 'disabled')
@@ -148,6 +151,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_updateComplete').hide()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
+		@setupRecordedBySelect()
 		@setupTagList()
 		@setUpAssayStageSelect()
 		@model.getStatus().on 'change', @updateEditable
