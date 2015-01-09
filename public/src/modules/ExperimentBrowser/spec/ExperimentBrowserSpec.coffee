@@ -197,26 +197,6 @@ describe "Experiment Browser module testing", ->
 				runs ->
 					expect(@serviceReturn).toBeTruthy()
 
-		describe "Edit Experiment redirect proxy", ->
-			it "should exist and return an OK status", ->
-				experimentCodeName = "EXPT-00000001"
-				runs ->
-					$.ajax
-						type: 'GET'
-						url: "/api/experiments/edit/#{experimentCodeName}"
-						dataType: "json"
-						data:
-							testMode: true
-							fullObject: false
-						success: (json) =>
-							@serviceReturn = json
-						error: (err) =>
-							console.log 'got ajax error'
-							@serviceReturn = null
-
-				waitsFor( @waitForServiceReturn, 'service did not return', 10000)
-				runs ->
-					expect(@serviceReturn).toBeTruthy()
 
 #TODO add search field that filters protocols in protocol select
 #TODO make protocol select a multi-select and search on list of protocols

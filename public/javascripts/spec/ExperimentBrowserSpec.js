@@ -246,7 +246,7 @@
           return typeof this.serviceReturn !== 'undefined';
         };
       });
-      describe("Generic Search Node Proxy", function() {
+      return describe("Generic Search Node Proxy", function() {
         return it("should exist and return an OK status", function() {
           var searchTerm;
           searchTerm = "some experiment";
@@ -254,38 +254,6 @@
             return $.ajax({
               type: 'GET',
               url: "/api/experiments/genericSearch/" + searchTerm,
-              dataType: "json",
-              data: {
-                testMode: true,
-                fullObject: false
-              },
-              success: (function(_this) {
-                return function(json) {
-                  return _this.serviceReturn = json;
-                };
-              })(this),
-              error: (function(_this) {
-                return function(err) {
-                  console.log('got ajax error');
-                  return _this.serviceReturn = null;
-                };
-              })(this)
-            });
-          });
-          waitsFor(this.waitForServiceReturn, 'service did not return', 10000);
-          return runs(function() {
-            return expect(this.serviceReturn).toBeTruthy();
-          });
-        });
-      });
-      return describe("Edit Experiment redirect proxy", function() {
-        return it("should exist and return an OK status", function() {
-          var experimentCodeName;
-          experimentCodeName = "EXPT-00000001";
-          runs(function() {
-            return $.ajax({
-              type: 'GET',
-              url: "/api/experiments/edit/" + experimentCodeName,
               dataType: "json",
               data: {
                 testMode: true,

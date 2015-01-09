@@ -348,10 +348,14 @@ class window.ExperimentBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteExperiment").modal('hide')
 
 	handleEditExperimentClicked: =>
-		window.open("/api/experiments/edit/#{@experimentController.model.get("codeName")}",'_blank');
+		window.open("/entity/edit/codeName/#{@experimentController.model.get("codeName")}",'_blank');
 
 	handleDuplicateExperimentClicked: =>
-		window.open("/api/experiments/duplicate/#{@experimentController.model.get("codeName")}",'_blank');
+		experimentKind = @experimentController.model.get('lsKind')
+		if experimentKind is "flipr screening assay"
+			window.open("/entity/copy/flipr_screening_assay/#{@experimentController.model.get("codeName")}",'_blank');
+		else
+			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');
 
 	destroyExperimentSummaryTable: =>
 		if @experimentSummaryTable?
