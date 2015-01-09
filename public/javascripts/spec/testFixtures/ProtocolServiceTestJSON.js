@@ -143,10 +143,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              lsKind: "description",
+              lsKind: "protocol details",
               valueOperator: null,
               lsType: "clobValue",
-              lsTypeAndKind: "clobValue_description",
+              lsTypeAndKind: "clobValue_protocol details",
               valueUnit: null,
               version: 0
             }, {

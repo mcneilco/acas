@@ -60,9 +60,9 @@
             expect(this.prot.getAssayPrinciple() instanceof Value).toBeTruthy();
             return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("");
           });
-          it('Should have a description value', function() {
-            expect(this.prot.getDescription() instanceof Value).toBeTruthy();
-            return expect(this.prot.getDescription().get('clobValue')).toEqual("");
+          it('Should have a protocol details value', function() {
+            expect(this.prot.getDetails() instanceof Value).toBeTruthy();
+            return expect(this.prot.getDetails().get('clobValue')).toEqual("");
           });
           it('Should have a comments value', function() {
             expect(this.prot.getComments() instanceof Value).toBeTruthy();
@@ -145,8 +145,8 @@
           it('Should have an assay principle value', function() {
             return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("assay principle goes here");
           });
-          it('Should have a description value', function() {
-            return expect(this.prot.getDescription().get('clobValue')).toEqual("protocol details go here");
+          it('Should have a protocol details value', function() {
+            return expect(this.prot.getDetails().get('clobValue')).toEqual("protocol details go here");
           });
           it('Should have a comments value', function() {
             return expect(this.prot.getComments().get('clobValue')).toEqual("protocol comments go here");
@@ -433,9 +433,6 @@
           it("should show the save button text as Update", function() {
             return expect(this.pbc.$('.bv_save').html()).toEqual("Update");
           });
-          it("should fill the short description field", function() {
-            return expect(this.pbc.$('.bv_shortDescription').html()).toEqual("primary analysis");
-          });
           it("should fill the assay tree rule field", function() {
             return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("/assayTreeRule");
           });
@@ -450,8 +447,8 @@
           it("should fill the assay principle field", function() {
             return expect(this.pbc.$('.bv_assayPrinciple').val()).toEqual("assay principle goes here");
           });
-          it("should fill the long description field", function() {
-            return expect(this.pbc.$('.bv_description').html()).toEqual("protocol details go here");
+          it("should fill the protocol details field", function() {
+            return expect(this.pbc.$('.bv_details').html()).toEqual("protocol details go here");
           });
           it("should fill the comments field", function() {
             return expect(this.pbc.$('.bv_comments').html()).toEqual("protocol comments go here");
@@ -575,16 +572,16 @@
             expect(desc).toEqual("New assay principle");
             return expect(this.pbc.model.getAssayPrinciple().get('clobValue')).toEqual("New assay principle");
           });
-          it("should update model when description is changed", function() {
+          it("should update model when protocol details is changed", function() {
             var desc, states, values;
-            this.pbc.$('.bv_description').val(" New long description   ");
-            this.pbc.$('.bv_description').change();
+            this.pbc.$('.bv_details').val(" New protocol details   ");
+            this.pbc.$('.bv_details').change();
             states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
             expect(states.length).toEqual(1);
-            values = states[0].getValuesByTypeAndKind("clobValue", "description");
+            values = states[0].getValuesByTypeAndKind("clobValue", "protocol details");
             desc = values[0].get('clobValue');
-            expect(desc).toEqual("New long description");
-            return expect(this.pbc.model.getDescription().get('clobValue')).toEqual("New long description");
+            expect(desc).toEqual("New protocol details");
+            return expect(this.pbc.model.getDetails().get('clobValue')).toEqual("New protocol details");
           });
           it("should update model when comments is changed", function() {
             var desc, states, values;

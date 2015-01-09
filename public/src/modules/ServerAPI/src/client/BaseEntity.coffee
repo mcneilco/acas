@@ -32,13 +32,13 @@ class window.BaseEntity extends Backbone.Model
 		resp
 
 
-	getDescription: ->
+	getDetails: ->
 		metadataKind = @.get('subclass') + " metadata"
-		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "description"
-		if description.get('clobValue') is undefined or description.get('clobValue') is ""
-			description.set clobValue: ""
+		entityDetails = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", @.get('subclass') + " details"
+		if entityDetails.get('clobValue') is undefined or entityDetails.get('clobValue') is ""
+			entityDetails.set clobValue: ""
 
-		description
+		entityDetails
 
 	getComments: ->
 		metadataKind = @.get('subclass') + " metadata"
@@ -201,7 +201,7 @@ class window.BaseEntityController extends AbstractFormController
 	events: ->
 		"change .bv_recordedBy": "handleRecordedByChanged"
 		"change .bv_shortDescription": "handleShortDescriptionChanged"
-		"change .bv_description": "handleDescriptionChanged"
+		"change .bv_details": "handleDetailsChanged"
 		"change .bv_comments": "handleCommentsChanged"
 		"change .bv_entityName": "handleNameChanged"
 		"change .bv_completionDate": "handleDateChanged"
@@ -246,7 +246,7 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_recordedBy').val(@model.get('recordedBy'))
 		@$('.bv_'+subclass+'Code').html(@model.get('codeName'))
 		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
-		@$('.bv_description').html(@model.getDescription().get('clobValue'))
+		@$('.bv_details').html(@model.getDetails().get('clobValue'))
 		@$('.bv_comments').html(@model.getComments().get('clobValue'))
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
@@ -301,9 +301,9 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@model.set shortDescription: " " #fix for oracle persistance bug
 
-	handleDescriptionChanged: =>
-		@model.getDescription().set
-			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_description')
+	handleDetailsChanged: =>
+		@model.getDetails().set
+			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_details')
 			recordedBy: @model.get('recordedBy')
 
 	handleCommentsChanged: =>

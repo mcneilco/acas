@@ -459,9 +459,16 @@
 
     ExperimentBrowserController.prototype.selectedExperimentUpdated = function(experiment) {
       this.trigger("selectedExperimentUpdated");
-      this.experimentController = new ExperimentBaseController({
-        model: experiment
-      });
+      if (experiment.get('lsKind') === "Bio Activity") {
+        this.experimentController = new ExperimentBaseController({
+          protocolKindFilter: "?protocolKind=Bio Activity",
+          model: new PrimaryScreenExperiment(experiment.attributes)
+        });
+      } else {
+        this.experimentController = new ExperimentBaseController({
+          model: new Experiment(experiment.attributes)
+        });
+      }
       $('.bv_experimentBaseController').html(this.experimentController.render().el);
       this.experimentController.displayInReadOnlyMode();
       $(".bv_experimentBaseController").removeClass("hide");

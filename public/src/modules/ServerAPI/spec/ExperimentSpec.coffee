@@ -35,9 +35,12 @@ describe "Experiment module testing", ->
 				it 'Should have an empty analysisGroups', ->
 					expect(@exp.get('analysisGroups') instanceof AnalysisGroupList).toBeTruthy()
 			describe "required states and values", ->
-				it 'Should have a description value', ->
-					expect(@exp.getDescription() instanceof Value).toBeTruthy()
-					expect(@exp.getDescription().get('clobValue')).toEqual ""
+				it 'Should have a experimentDetails value', ->
+					expect(@exp.getDetails() instanceof Value).toBeTruthy()
+					expect(@exp.getDetails().get('clobValue')).toEqual ""
+				it 'Should have a comments value', ->
+					expect(@exp.getComments() instanceof Value).toBeTruthy()
+					expect(@exp.getComments().get('clobValue')).toEqual ""
 				it 'Should have a notebook value', ->
 					expect(@exp.getNotebook() instanceof Value).toBeTruthy()
 				it 'Should have a project value', ->
@@ -118,8 +121,8 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsLabels').length).toEqual window.experimentServiceTestJSON.savedExperimentWithAnalysisGroups.lsLabels.length
 				it "should have labels", ->
 					expect(@exp.get('lsLabels').at(0).get('lsKind')).toEqual "experiment name"
-				it 'Should have a description value', ->
-					expect(@exp.getDescription().get('clobValue')).toEqual "long description goes here"
+				it 'Should have an experimentDetails value', ->
+					expect(@exp.getDetails().get('clobValue')).toEqual "experiment details go here"
 				it 'Should have a comments value', ->
 					expect(@exp.getComments().get('clobValue')).toEqual "comments go here"
 				it 'Should have a notebook value', ->
@@ -150,7 +153,7 @@ describe "Experiment module testing", ->
 #					console.log new Protocol window.protocolServiceTestJSON.fullSavedProtocol
 #					fullSavedProtocol = new Protocol window.protocolServiceTestJSON.fullSavedProtocol
 #					console.log fullSavedProtocol.getDescription().get('clobValue')
-					expect(@exp.getDescription().get('clobValue')).toEqual ""
+					expect(@exp.getDetails().get('clobValue')).toEqual ""
 				it "should have the comments be an empty string", ->
 #					fullSavedProtocol = new Protocol window.protocolServiceTestJSON.fullSavedProtocol
 #					console.log fullSavedProtocol.getComments().get('clobValue')
@@ -169,10 +172,6 @@ describe "Experiment module testing", ->
 					filtState = @exp.get('lsStates').filter (state) ->
 						state.get('lsKind')=='screening assay'
 					expect(filtState.length).toEqual 0
-				#				it 'Should have a description value', ->
-#					expect(@exp.getDescription().get('clobValue')).toEqual "long description goes here"
-#				it 'Should have a comments value', ->
-#					expect(@exp.getComments().get('clobValue')).toEqual "comments go here"
 				it 'Should not override set notebook value', ->
 					expect(@exp.getNotebook().get('stringValue')).toEqual "spec test NB"
 				it 'Should not override completionDate value', ->
@@ -422,8 +421,8 @@ describe "Experiment module testing", ->
 						expect(@ebc.$('.bv_protocolCode').val()).toEqual "PROT-00000001"
 				it "should not fill the short description field", ->
 					expect(@ebc.$('.bv_shortDescription').html()).toEqual " "
-				it "should not fill the description field", ->
-					expect(@ebc.$('.bv_description').html()).toEqual ""
+				it "should not fill the experimentDetails field", ->
+					expect(@ebc.$('.bv_details').html()).toEqual ""
 				it "should not fill the comments field", ->
 					expect(@ebc.$('.bv_comments').html()).toEqual ""
 				it "should not fill the notebook field", ->
@@ -446,24 +445,24 @@ describe "Experiment module testing", ->
 					@ebc.$('.bv_shortDescription').val("")
 					@ebc.$('.bv_shortDescription').change()
 					expect(@ebc.model.get 'shortDescription').toEqual " "
-				it "should update model when description is changed", ->
-					@ebc.$('.bv_description').val(" New long description   ")
-					@ebc.$('.bv_description').change()
+				it "should update model when experimentDetails is changed", ->
+					@ebc.$('.bv_details').val(" New experiment details   ")
+					@ebc.$('.bv_details').change()
 					states = @ebc.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 					expect(states.length).toEqual 1
-					values = states[0].getValuesByTypeAndKind("clobValue", "description")
+					values = states[0].getValuesByTypeAndKind("clobValue", "experiment details")
 					desc = values[0].get('clobValue')
-					expect(desc).toEqual "New long description"
-					expect(@ebc.model.getDescription().get('clobValue')).toEqual "New long description"
-				it "should update model when description is changed", ->
-					@ebc.$('.bv_description').val(" New long description   ")
-					@ebc.$('.bv_description').change()
+					expect(desc).toEqual "New experiment details"
+					expect(@ebc.model.getDetails().get('clobValue')).toEqual "New experiment details"
+				it "should update model when comments is changed", ->
+					@ebc.$('.bv_comments').val(" New comments   ")
+					@ebc.$('.bv_comments').change()
 					states = @ebc.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 					expect(states.length).toEqual 1
-					values = states[0].getValuesByTypeAndKind("clobValue", "description")
+					values = states[0].getValuesByTypeAndKind("clobValue", "comments")
 					desc = values[0].get('clobValue')
-					expect(desc).toEqual "New long description"
-					expect(@ebc.model.getDescription().get('clobValue')).toEqual "New long description"
+					expect(desc).toEqual "New comments"
+					expect(@ebc.model.getComments().get('clobValue')).toEqual "New comments"
 				it "should update model when name is changed", ->
 					@ebc.$('.bv_experimentName').val(" Updated experiment name   ")
 					@ebc.$('.bv_experimentName').change()
@@ -542,8 +541,8 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_protocolCode').attr("disabled")).toEqual "disabled"
 				it "should fill the short description field", ->
 					expect(@ebc.$('.bv_shortDescription').html()).toEqual "experiment created by generic data parser"
-				it "should fill the long description field", ->
-					expect(@ebc.$('.bv_description').html()).toEqual "long description goes here"
+				it "should fill the experiment details field", ->
+					expect(@ebc.$('.bv_details').html()).toEqual "experiment details go here"
 				it "should fill the comments field", ->
 					expect(@ebc.$('.bv_comments').html()).toEqual "comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
