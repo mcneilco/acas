@@ -171,7 +171,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 						includePoints([@])
 					return
 
-				p1.on "mouseup", p1.handlePointClicked, p1
+				p1.on "up", p1.handlePointClicked, p1
 
 				p1.flagLabel = switch
 					when userFlagStatus == "knocked out" then userFlagComment
@@ -260,7 +260,6 @@ class window.DoseResponsePlotController extends AbstractFormController
 							fillcolor: '#00FF00'
 						selection.knockoutMode = false
 				selection.on 'update', selection.update, selection
-				#p1.on "mouseup", brd.removeObject(brd.elementsByName.selection)
 				brd.mouseUp = ->
 					selection = brd.elementsByName.selection
 					if selection?
@@ -278,7 +277,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 								else
 									includePoints(selected)
 
-				brd.on 'mouseup', brd.mouseUp, brd
+				brd.on 'up', brd.mouseUp, brd
 				brd.followSelection = (e) ->
 					if brd.elementsByName.selection
 						coords = getMouseCoords(e)
@@ -305,7 +304,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 								selected.push(point)
 						selection.selected = selected
 
-				brd.on 'mousemove', brd.followSelection, brd
+				brd.on 'move', brd.followSelection, brd
 				return
 		brd.on "down", createSelection
 		return
