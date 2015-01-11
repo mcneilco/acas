@@ -39,6 +39,22 @@ performCalculations <- function(resultTable, parameters) {
   return(resultTable)
 }
 
+computeZPrime <- function(positiveControls, negativeControls) {
+  # Computes Z'
+  #
+  # Args:
+  #   positiveControls:   A vector of the values of the positive controls
+  #   negativeControls:   A vector of the values of the negative controls
+  # Returns:
+  #   A numeric value between 0 and 1
+  
+  sdPositiveControl <- sd(positiveControls)
+  sdNegativeControl <- sd(negativeControls)
+  meanPositiveControl <- mean(positiveControls)
+  meanNegativeControl <- mean(negativeControls)
+  return (1 - 3*(sdPositiveControl+sdNegativeControl)/abs(meanPositiveControl-meanNegativeControl))
+}
+
 computeSDScore <- function(dataVector, meanValue, sdValue) {
   # TODO: check math, what should be included?
   # Computes an SD Score
@@ -96,21 +112,6 @@ computeNormalized  <- function(values, wellType, flag) {
   return((values - minLevel) / (maxLevel - minLevel))
 }
 
-computeRobustZPrime <- function(positiveControls, negativeControls) {
-  # Computes robust Z'
-  #
-  # Args:
-  #   positiveControls:   A vector of the values of the positive controls
-  #   negativeControls:   A vector of the values of the negative controls
-  # Returns:
-  #   A numeric value between 0 and 1
-  
-  madPositiveControl <- mad(positiveControls)
-  madNegativeControl <- mad(negativeControls)
-  medianPositiveControl <- median(positiveControls)
-  medianNegativeControl <- median(negativeControls)
-  return (1 - 3*(madPositiveControl+madNegativeControl)/abs(medianPositiveControl-medianNegativeControl))
-}
 computeZ <- function(positiveControls, testCompounds) {
   # Computes Z (by using the Z Prime function, but with test compounds as negative controls)
   #

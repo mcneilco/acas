@@ -31,14 +31,14 @@
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
 # newest experimentID: 75191, 9036, 11203
-# request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
+# request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
 ############ testMode TRUE #############
 # file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/Archive (2).zip", "privateUploads/")
 # file.copy("public/src/modules/PrimaryScreen/spec/specFiles/Step2_Renormalize_Input_v2.txt", "privateUploads/")
-# request <- structure(list(fileToParse = "Archive (2).zip", reportFile = "Step2_Renormalize_Input_v2.txt", dryRunMode = TRUE, user = "bob", primaryAnalysisExperimentId = 203528, testMode = "true", flaggedWells = "Step2_Renormalize_Input_v2.txt", inputParameters = "{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "primaryAnalysisExperimentId", "testMode", "flaggedWells", "inputParameters"))
+# request <- structure(list(fileToParse = "Archive (2).zip", reportFile = "Step2_Renormalize_Input_v2.txt", dryRunMode = TRUE, user = "bob", primaryAnalysisExperimentId = 203528, testMode = "true", flaggedWells = "Step2_Renormalize_Input_v2.txt", inputParameters = "{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "primaryAnalysisExperimentId", "testMode", "flaggedWells", "inputParameters"))
 ############ testMode FALSE #############
 # file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/ArchiveNonTest.zip", "privateUploads/")
-# request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1086654", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
+# request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1086654", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
 
 getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
   
@@ -220,6 +220,21 @@ getAnalysisGroupColumns <- function(replicateType) {
 return(requiredColumns)
 }
 
+computeRobustZPrime <- function(positiveControls, negativeControls) {
+  # Computes robust Z'
+  #
+  # Args:
+  #   positiveControls:   A vector of the values of the positive controls
+  #   negativeControls:   A vector of the values of the negative controls
+  # Returns:
+  #   A numeric value between 0 and 1
+  
+  madPositiveControl <- mad(positiveControls)
+  madNegativeControl <- mad(negativeControls)
+  medianPositiveControl <- median(positiveControls)
+  medianNegativeControl <- median(negativeControls)
+  return (1 - 3*(madPositiveControl+madNegativeControl)/abs(medianPositiveControl-medianNegativeControl))
+}
 
 computeZPrime <- function(positiveControls, negativeControls) {
   # Computes Z'
@@ -237,7 +252,7 @@ computeZPrime <- function(positiveControls, negativeControls) {
   return (1 - 3*(sdPositiveControl+sdNegativeControl)/abs(meanPositiveControl-meanNegativeControl))
 }
 
-createPlots <- function(resultTable){
+createPlots <- function(resultTable, parameters){
   source("primaryAnalysisPlots.R")
   require('tools')
   
@@ -314,14 +329,15 @@ createPlots <- function(resultTable){
                             well = resultTable$well[resultTable$barcode==barcode])
     createHeatMap(paste("Heatmap ",barcode), plateData)
   }
-  #create heatmap for average of set
+  #create heatmap for average of set (median or mean, depending on user input)
   plateDataTable <- data.table(values = resultTable$normalized, 
                                well = resultTable$well)
-  plateData <- plateDataTable[,list(values = mean(values)), by=well]
+  plateData <- plateDataTable[,list(values = useAggregationMethod(values, parameters)), by=well]
   createHeatMap("All Plates", plateData)
   
 }
-saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, experimentId){
+
+saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, experimentId, parameters){
   #save(subjectData, experimentId, file="test.Rda")
   
   recordedBy <- user
@@ -627,7 +643,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   treatmentDataStart <- subjectData[subjectData$valueKind %in% c(treatmentDataValueKinds, analysisValueKinds)
                                     & !(subjectData$subjectID %in% excludedSubjects),]
   
-  createRawOnlyTreatmentGroupDataDT <- function(subjectData) {
+  createRawOnlyTreatmentGroupDataDT <- function(subjectData, parameters) {
     isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
     isLessThan <- any(subjectData$valueOperator=="<", na.rm=TRUE)
     resultValue <- NA
@@ -642,7 +658,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       resultValue <- min(subjectData$numericValue)
     } else {
       resultOperator <- as.character(NA)
-      resultValue <- mean(subjectData$numericValue)
+      resultValue <- useAggregationMethod(subjectData$numericValue, parameters)
     }
     return(list(
       "stateID" = subjectData$stateID[1],
@@ -666,7 +682,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   treatmentDataStartDT <- as.data.table(treatmentDataStart)
   
   keepValueKinds <- c("maximum", "minimum", "Dose", "transformed efficacy","normalized efficacy","over efficacy threshold","max time","late peak", "has agonist", "comparison graph")
-  treatmentGroupDataDT <- treatmentDataStartDT[ valueKind %in% keepValueKinds, createRawOnlyTreatmentGroupDataDT(.SD), by = c("analysisGroupID", "treatmentGroupCodeName", "treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex",
+  treatmentGroupDataDT <- treatmentDataStartDT[ valueKind %in% keepValueKinds, createRawOnlyTreatmentGroupDataDT(.SD, parameters), by = c("analysisGroupID", "treatmentGroupCodeName", "treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex",
                                                                                                                               "batchCode", "valueKind", "valueUnit", "valueType")]
   #setkey(treatmentGroupDataDT, treatmentGroupID)
   treatmentGroupData <- as.data.frame(treatmentGroupDataDT)
@@ -1303,7 +1319,9 @@ getExperimentParameters <- function(inputParameters) {
     parameters$aggregateReplicates<- "no"
   }
   
-  if (is.null(parameters$dilutionRatio)) {
+  if(!is.null(parameters$dilutionFactor) && is.null(parameters$dilutionRatio)) {
+    parameters$dilutionRatio <- parameters$dilutionFactor
+  } else if (is.null(parameters$dilutionRatio)) {
     parameters$dilutionRatio <- 2
   }
   
@@ -1616,7 +1634,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                        concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
                                        positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
                                        vehicleControl=parameters$vehicleControl, testMode=testMode)
-  
+  resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
   checkControls(resultTable)
   
   ## User Well Flagging Here
@@ -1640,12 +1658,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   # END Auto Well Flagging
   
+  # Save full resultTable, including wells with no compounds, to write to the spotfire file.
+  # Remove the wells with no compounds to save to the database
+  spotfireResultTable <- copy(resultTable)
+  resultTable <- resultTable[batchCode != "::"]
+  
   # was "across plates"
-  if (parameters$aggregateBy == "compound batch concentration") {
+  if (parameters$aggregateBy == "compound batch concentration" || parameters$aggregateBy == "cmpd batch conc") {
     groupBy <- c("batchCode", "wellType")
   } else if (parameters$aggregateBy == "within plates") {
     groupBy <- c("batchCode", "wellType", "assayBarcode")
   } else {
+    warnUser("No valid aggregation selected. Using default aggregation.")
     groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
   }
   treatmentGroupBy <- c(groupBy, "cmpdConc")
@@ -1884,7 +1908,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
       
     ## TODO: decide if "resultTable" is the correct object to write
-    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, saveLocation=dryRunFileLocation)
+    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation)
     summaryInfo$info$"Spotfire" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                           racas::applicationSettings$client.port,
                                           '/dataFiles/', summaryInfo$dryRunReports, '" target="_blank">Spotfire</a>')
@@ -1933,7 +1957,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
       
-      lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
+      lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId, parameters)
     } else { # We are using Rdap
       
       
@@ -2270,10 +2294,10 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
                 grep("^transformed_", names(batchDataTable), value=TRUE)
   )
   
-  aggregateTreatmentData <- function(DT, meanTarget, sdTarget) {
+  aggregateTreatmentData <- function(DT, meanTarget, sdTarget, parameters) {
     # get means
     outputMeans <- lapply(meanTarget, function(x) {
-      mean(as.numeric(DT[, x, with=FALSE][[1]]))
+      useAggregationMethod(as.numeric(DT[, x, with=FALSE][[1]]), parameters)
     })
     names(outputMeans) <- meanTarget
     
@@ -2291,7 +2315,7 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
     return(c(outputMeans, outputSDs, tempId))
   }
   
-  treatmentData <- batchDataTable[, aggregateTreatmentData(.SD, meanTarget, sdTarget), 
+  treatmentData <- batchDataTable[, aggregateTreatmentData(.SD, meanTarget, sdTarget, parameters), 
                                   by=groupBy] #concUnit,hasAgonist,?
   return(treatmentData)
 }
@@ -2326,17 +2350,17 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   # TODO: bring hasAgonist back in, or put in a config
   
   #       if (parameters$aggregateReplicates == "across plates") {
-  #         treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
+  #         treatmentGroupData <- batchDataTable[, list(groupAggregate = useAggregationMethod(values, parameters), 
   #                                                     stDev = sd(values), n=length(values), 
-  #                                                     sdScore = mean(sdScore), 
+  #                                                     sdScore = useAggregationMethod(sdScore, parameters), 
   #                                                     threshold = ifelse(all(threshold), "yes", "no"),
   #                                                     latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
   #                                              by=list(batchName,fluorescent,concUnit,hasAgonist, wellType)]
   #       } else if (parameters$aggregateReplicates == "within plates") {
-  #         treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
+  #         treatmentGroupData <- batchDataTable[, list(groupAggregate = useAggregationMethod(values, parameters), 
   #                                                     stDev = sd(values), 
   #                                                     n=length(values),
-  #                                                     sdScore = mean(sdScore),
+  #                                                     sdScore = useAggregationMethod(sdScore, parameters),
   #                                                     threshold = ifelse(all(threshold), "yes", "no"),
   #                                                     latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
   #                                              by=list(batchName,fluorescent,barcode,concUnit,hasAgonist, wellType)]
