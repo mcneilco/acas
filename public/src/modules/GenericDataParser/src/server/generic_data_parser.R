@@ -1460,7 +1460,7 @@ validateProject <- function(projectName, configList, errorEnv) {
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.project.path))
+  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$server.nodeapi.path$client.service.project.path))
   }, error = function(e) {
     stopUser("The project service did not respond correctly, contact your system administrator")
   })
