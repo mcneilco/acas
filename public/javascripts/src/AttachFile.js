@@ -127,7 +127,8 @@
     };
 
     AttachFileController.prototype.handleFileTypeChanged = function() {
-      return this.updateModel();
+      this.updateModel();
+      return this.trigger('amDirty');
     };
 
     AttachFileController.prototype.updateModel = function() {
@@ -210,6 +211,7 @@
       this.listenTo(afc, 'fileUploaded', this.checkIfNeedToAddNew);
       afc.on('amDirty', (function(_this) {
         return function() {
+          console.log("afc trigger dirty to aflc");
           return _this.trigger('amDirty');
         };
       })(this));

@@ -108,10 +108,16 @@
       }
       if (attrs["molecular weight"] != null) {
         mw = attrs["molecular weight"].get('value');
-        if (mw === "" || mw === void 0 || isNaN(mw)) {
+        if (mw === "" || mw === void 0) {
           errors.push({
             attribute: 'molecularWeight',
             message: "Molecular weight must be set"
+          });
+        }
+        if (isNaN(mw)) {
+          errors.push({
+            attribute: 'molecularWeight',
+            message: "Molecular weight must be a number"
           });
         }
       }

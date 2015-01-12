@@ -184,7 +184,7 @@ describe 'Spacer testing', ->
 			describe "model updates", ->
 				it "should update model when parent name is changed", ->
 					@spc.$('.bv_parentName').val(" New name   ")
-					@spc.$('.bv_parentName').change()
+					@spc.$('.bv_parentName').keyup()
 					expect(@spc.model.get('spacer name').get('labelText')).toEqual "New name"
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
@@ -196,15 +196,15 @@ describe 'Spacer testing', ->
 						expect(@spc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@spc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@spc.$('.bv_completionDate').change()
+					@spc.$('.bv_completionDate').keyup()
 					expect(@spc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@spc.$('.bv_notebook').val(" Updated notebook  ")
-					@spc.$('.bv_notebook').change()
+					@spc.$('.bv_notebook').keyup()
 					expect(@spc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when molecular weight is changed", ->
 					@spc.$('.bv_molecularWeight').val(" 12  ")
-					@spc.$('.bv_molecularWeight').change()
+					@spc.$('.bv_molecularWeight').keyup()
 					expect(@spc.model.get('molecular weight').get('value')).toEqual 12
 
 			describe "controller validation rules", ->
@@ -214,15 +214,15 @@ describe 'Spacer testing', ->
 					, 1000
 					runs ->
 						@spc.$('.bv_parentName').val(" Updated entity name   ")
-						@spc.$('.bv_parentName').change()
+						@spc.$('.bv_parentName').keyup()
 						@spc.$('.bv_recordedBy').val("bob")
 						@spc.$('.bv_recordedBy').change()
 						@spc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@spc.$('.bv_completionDate').change()
+						@spc.$('.bv_completionDate').keyup()
 						@spc.$('.bv_notebook').val("my notebook")
-						@spc.$('.bv_notebook').change()
+						@spc.$('.bv_notebook').keyup()
 						@spc.$('.bv_molecularWeight').val(" 24")
-						@spc.$('.bv_molecularWeight').change()
+						@spc.$('.bv_molecularWeight').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -234,7 +234,7 @@ describe 'Spacer testing', ->
 					beforeEach ->
 						runs ->
 							@spc.$('.bv_parentName').val("")
-							@spc.$('.bv_parentName').change()
+							@spc.$('.bv_parentName').keyup()
 					it "should be invalid if name not filled in", ->
 						runs ->
 							expect(@spc.isValid()).toBeFalsy()
@@ -256,7 +256,7 @@ describe 'Spacer testing', ->
 					beforeEach ->
 						runs ->
 							@spc.$('.bv_completionDate').val("")
-							@spc.$('.bv_completionDate').change()
+							@spc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@spc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -264,7 +264,7 @@ describe 'Spacer testing', ->
 					beforeEach ->
 						runs ->
 							@spc.$('.bv_notebook').val("")
-							@spc.$('.bv_notebook').change()
+							@spc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@spc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -272,7 +272,7 @@ describe 'Spacer testing', ->
 					beforeEach ->
 						runs ->
 							@spc.$('.bv_molecularWeight').val("")
-							@spc.$('.bv_molecularWeight').change()
+							@spc.$('.bv_molecularWeight').keyup()
 					it "should show error on molecular weight field", ->
 						runs ->
 							expect(@spc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy()
@@ -431,19 +431,19 @@ describe 'Spacer testing', ->
 						expect(@sbc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@sbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@sbc.$('.bv_completionDate').change()
+					@sbc.$('.bv_completionDate').keyup()
 					expect(@sbc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@sbc.$('.bv_notebook').val(" Updated notebook  ")
-					@sbc.$('.bv_notebook').change()
+					@sbc.$('.bv_notebook').keyup()
 					expect(@sbc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when amount is changed", ->
 					@sbc.$('.bv_amount').val(" 12  ")
-					@sbc.$('.bv_amount').change()
+					@sbc.$('.bv_amount').keyup()
 					expect(@sbc.model.get('amount').get('value')).toEqual 12
 				it "should update model when location is changed", ->
 					@sbc.$('.bv_location').val(" Updated location  ")
-					@sbc.$('.bv_location').change()
+					@sbc.$('.bv_location').keyup()
 					expect(@sbc.model.get('location').get('value')).toEqual "Updated location"
 
 			describe "controller validation rules", ->
@@ -455,13 +455,13 @@ describe 'Spacer testing', ->
 						@sbc.$('.bv_recordedBy').val("bob")
 						@sbc.$('.bv_recordedBy').change()
 						@sbc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@sbc.$('.bv_completionDate').change()
+						@sbc.$('.bv_completionDate').keyup()
 						@sbc.$('.bv_notebook').val("my notebook")
-						@sbc.$('.bv_notebook').change()
+						@sbc.$('.bv_notebook').keyup()
 						@sbc.$('.bv_amount').val(" 24")
-						@sbc.$('.bv_amount').change()
+						@sbc.$('.bv_amount').keyup()
 						@sbc.$('.bv_location').val(" Hood 4")
-						@sbc.$('.bv_location').change()
+						@sbc.$('.bv_location').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -484,7 +484,7 @@ describe 'Spacer testing', ->
 					beforeEach ->
 						runs ->
 							@sbc.$('.bv_completionDate').val("")
-							@sbc.$('.bv_completionDate').change()
+							@sbc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@sbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -492,7 +492,7 @@ describe 'Spacer testing', ->
 					beforeEach ->
 						runs ->
 							@sbc.$('.bv_notebook').val("")
-							@sbc.$('.bv_notebook').change()
+							@sbc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@sbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -500,7 +500,7 @@ describe 'Spacer testing', ->
 					beforeEach ->
 						runs ->
 							@sbc.$('.bv_amount').val("")
-							@sbc.$('.bv_amount').change()
+							@sbc.$('.bv_amount').keyup()
 					it "should show error on amount field", ->
 						runs ->
 							expect(@sbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
@@ -508,7 +508,7 @@ describe 'Spacer testing', ->
 					beforeEach ->
 						runs ->
 							@sbc.$('.bv_location').val("")
-							@sbc.$('.bv_location').change()
+							@sbc.$('.bv_location').keyup()
 					it "should show error on location field", ->
 						runs ->
 							expect(@sbc.$('.bv_group_location').hasClass('error')).toBeTruthy()
@@ -578,19 +578,19 @@ describe 'Spacer testing', ->
 				beforeEach ->
 					runs ->
 						@cbc.$('.bv_parentName').val(" Updated entity name   ")
-						@cbc.$('.bv_parentName').change()
+						@cbc.$('.bv_parentName').keyup()
 						@cbc.$('.bv_recordedBy').val("bob")
 						@cbc.$('.bv_recordedBy').change()
 						@cbc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@cbc.$('.bv_completionDate').change()
+						@cbc.$('.bv_completionDate').keyup()
 						@cbc.$('.bv_notebook').val("my notebook")
-						@cbc.$('.bv_notebook').change()
+						@cbc.$('.bv_notebook').keyup()
 						@cbc.$('.bv_molecularWeight').val(" 24")
-						@cbc.$('.bv_molecularWeight').change()
+						@cbc.$('.bv_molecularWeight').keyup()
 						@cbc.$('.bv_amount').val(" 24")
-						@cbc.$('.bv_amount').change()
+						@cbc.$('.bv_amount').keyup()
 						@cbc.$('.bv_location').val(" Hood 4")
-						@cbc.$('.bv_location').change()
+						@cbc.$('.bv_location').keyup()
 					waitsFor ->
 						@cbc.$('.bv_recordedBy option').length > 0
 					, 1000

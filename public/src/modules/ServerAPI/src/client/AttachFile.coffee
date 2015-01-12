@@ -80,6 +80,7 @@ class window.AttachFileController extends Backbone.View
 
 	handleFileTypeChanged: =>
 		@updateModel()
+		@trigger 'amDirty'
 
 	updateModel: =>
 		@model.set
@@ -138,6 +139,7 @@ class window.AttachFileListController extends Backbone.View
 #			if @canRemoveAttachFileModel
 #				@uploadNewAttachFile()
 		afc.on 'amDirty', =>
+			console.log "afc trigger dirty to aflc"
 			@trigger 'amDirty'
 		@$('.bv_attachFileInfo').append afc.render().el
 

@@ -210,7 +210,7 @@ describe 'Protein testing', ->
 			describe "model updates", ->
 				it "should update model when parent name is changed", ->
 					@ppc.$('.bv_parentName').val(" New name   ")
-					@ppc.$('.bv_parentName').change()
+					@ppc.$('.bv_parentName').keyup()
 					expect(@ppc.model.get('protein name').get('labelText')).toEqual "New name"
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
@@ -222,11 +222,11 @@ describe 'Protein testing', ->
 						expect(@ppc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@ppc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@ppc.$('.bv_completionDate').change()
+					@ppc.$('.bv_completionDate').keyup()
 					expect(@ppc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@ppc.$('.bv_notebook').val(" Updated notebook  ")
-					@ppc.$('.bv_notebook').change()
+					@ppc.$('.bv_notebook').keyup()
 					expect(@ppc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when the type is changed", ->
 					waitsFor ->
@@ -238,7 +238,7 @@ describe 'Protein testing', ->
 						expect(@ppc.model.get('type').get('value')).toEqual "unassigned"
 				it "should update model when aa sequence is changed", ->
 					@ppc.$('.bv_sequence').val(" Updated sequence  ")
-					@ppc.$('.bv_sequence').change()
+					@ppc.$('.bv_sequence').keyup()
 					expect(@ppc.model.get('aa sequence').get('value')).toEqual "Updated sequence"
 			describe "controller validation rules", ->
 				beforeEach ->
@@ -247,17 +247,17 @@ describe 'Protein testing', ->
 					, 1000
 					runs ->
 						@ppc.$('.bv_parentName').val(" Updated entity name   ")
-						@ppc.$('.bv_parentName').change()
+						@ppc.$('.bv_parentName').keyup()
 						@ppc.$('.bv_recordedBy').val("bob")
 						@ppc.$('.bv_recordedBy').change()
 						@ppc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@ppc.$('.bv_completionDate').change()
+						@ppc.$('.bv_completionDate').keyup()
 						@ppc.$('.bv_notebook').val("my notebook")
-						@ppc.$('.bv_notebook').change()
+						@ppc.$('.bv_notebook').keyup()
 						@ppc.$('.bv_type').val("mab")
 						@ppc.$('.bv_type').change()
 						@ppc.$('.bv_sequence').val("AUG")
-						@ppc.$('.bv_sequence').change()
+						@ppc.$('.bv_sequence').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -269,7 +269,7 @@ describe 'Protein testing', ->
 					beforeEach ->
 						runs ->
 							@ppc.$('.bv_parentName').val("")
-							@ppc.$('.bv_parentName').change()
+							@ppc.$('.bv_parentName').keyup()
 					it "should be invalid if name not filled in", ->
 						runs ->
 							expect(@ppc.isValid()).toBeFalsy()
@@ -291,7 +291,7 @@ describe 'Protein testing', ->
 					beforeEach ->
 						runs ->
 							@ppc.$('.bv_completionDate').val("")
-							@ppc.$('.bv_completionDate').change()
+							@ppc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@ppc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -299,7 +299,7 @@ describe 'Protein testing', ->
 					beforeEach ->
 						runs ->
 							@ppc.$('.bv_notebook').val("")
-							@ppc.$('.bv_notebook').change()
+							@ppc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@ppc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -315,7 +315,7 @@ describe 'Protein testing', ->
 					beforeEach ->
 						runs ->
 							@ppc.$('.bv_sequence').val("")
-							@ppc.$('.bv_sequence').change()
+							@ppc.$('.bv_sequence').keyup()
 					it "should show error on sequence field", ->
 						runs ->
 							expect(@ppc.$('.bv_group_sequence').hasClass('error')).toBeTruthy()
@@ -474,19 +474,19 @@ describe 'Protein testing', ->
 						expect(@pbc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@pbc.$('.bv_completionDate').change()
+					@pbc.$('.bv_completionDate').keyup()
 					expect(@pbc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@pbc.$('.bv_notebook').val(" Updated notebook  ")
-					@pbc.$('.bv_notebook').change()
+					@pbc.$('.bv_notebook').keyup()
 					expect(@pbc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when amount is changed", ->
 					@pbc.$('.bv_amount').val(" 12  ")
-					@pbc.$('.bv_amount').change()
+					@pbc.$('.bv_amount').keyup()
 					expect(@pbc.model.get('amount').get('value')).toEqual 12
 				it "should update model when location is changed", ->
 					@pbc.$('.bv_location').val(" Updated location  ")
-					@pbc.$('.bv_location').change()
+					@pbc.$('.bv_location').keyup()
 					expect(@pbc.model.get('location').get('value')).toEqual "Updated location"
 
 			describe "controller validation rules", ->
@@ -498,13 +498,13 @@ describe 'Protein testing', ->
 						@pbc.$('.bv_recordedBy').val("bob")
 						@pbc.$('.bv_recordedBy').change()
 						@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@pbc.$('.bv_completionDate').change()
+						@pbc.$('.bv_completionDate').keyup()
 						@pbc.$('.bv_notebook').val("my notebook")
-						@pbc.$('.bv_notebook').change()
+						@pbc.$('.bv_notebook').keyup()
 						@pbc.$('.bv_amount').val(" 24")
-						@pbc.$('.bv_amount').change()
+						@pbc.$('.bv_amount').keyup()
 						@pbc.$('.bv_location').val(" Hood 4")
-						@pbc.$('.bv_location').change()
+						@pbc.$('.bv_location').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -527,7 +527,7 @@ describe 'Protein testing', ->
 					beforeEach ->
 						runs ->
 							@pbc.$('.bv_completionDate').val("")
-							@pbc.$('.bv_completionDate').change()
+							@pbc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@pbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -535,7 +535,7 @@ describe 'Protein testing', ->
 					beforeEach ->
 						runs ->
 							@pbc.$('.bv_notebook').val("")
-							@pbc.$('.bv_notebook').change()
+							@pbc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@pbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -543,7 +543,7 @@ describe 'Protein testing', ->
 					beforeEach ->
 						runs ->
 							@pbc.$('.bv_amount').val("")
-							@pbc.$('.bv_amount').change()
+							@pbc.$('.bv_amount').keyup()
 					it "should show error on amount field", ->
 						runs ->
 							expect(@pbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
@@ -551,7 +551,7 @@ describe 'Protein testing', ->
 					beforeEach ->
 						runs ->
 							@pbc.$('.bv_location').val("")
-							@pbc.$('.bv_location').change()
+							@pbc.$('.bv_location').keyup()
 					it "should show error on location field", ->
 						runs ->
 							expect(@pbc.$('.bv_group_location').hasClass('error')).toBeTruthy()
@@ -621,21 +621,21 @@ describe 'Protein testing', ->
 				beforeEach ->
 					runs ->
 						@pc.$('.bv_parentName').val(" Updated entity name   ")
-						@pc.$('.bv_parentName').change()
+						@pc.$('.bv_parentName').keyup()
 						@pc.$('.bv_recordedBy').val("bob")
 						@pc.$('.bv_recordedBy').change()
 						@pc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@pc.$('.bv_completionDate').change()
+						@pc.$('.bv_completionDate').keyup()
 						@pc.$('.bv_notebook').val("my notebook")
-						@pc.$('.bv_notebook').change()
+						@pc.$('.bv_notebook').keyup()
 						@pc.$('.bv_type').val(" mab")
 						@pc.$('.bv_type').change()
 						@pc.$('.bv_sequence').val(" AUC")
-						@pc.$('.bv_sequence').change()
+						@pc.$('.bv_sequence').keyup()
 						@pc.$('.bv_amount').val(" 24")
-						@pc.$('.bv_amount').change()
+						@pc.$('.bv_amount').keyup()
 						@pc.$('.bv_location').val(" Hood 4")
-						@pc.$('.bv_location').change()
+						@pc.$('.bv_location').keyup()
 					waitsFor ->
 						@pc.$('.bv_recordedBy option').length > 0
 					, 1000

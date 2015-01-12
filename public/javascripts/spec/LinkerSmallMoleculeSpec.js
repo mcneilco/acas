@@ -258,7 +258,7 @@
         describe("model updates", function() {
           it("should update model when parent name is changed", function() {
             this.lsmpc.$('.bv_parentName').val(" New name   ");
-            this.lsmpc.$('.bv_parentName').change();
+            this.lsmpc.$('.bv_parentName').keyup();
             return expect(this.lsmpc.model.get('linker small molecule name').get('labelText')).toEqual("New name");
           });
           it("should update model when the scientist is changed", function() {
@@ -273,17 +273,17 @@
           });
           it("should update model when completion date is changed", function() {
             this.lsmpc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.lsmpc.$('.bv_completionDate').change();
+            this.lsmpc.$('.bv_completionDate').keyup();
             return expect(this.lsmpc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.lsmpc.$('.bv_notebook').val(" Updated notebook  ");
-            this.lsmpc.$('.bv_notebook').change();
+            this.lsmpc.$('.bv_notebook').keyup();
             return expect(this.lsmpc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
           return it("should update model when molecular weight is changed", function() {
             this.lsmpc.$('.bv_molecularWeight').val(" 12  ");
-            this.lsmpc.$('.bv_molecularWeight').change();
+            this.lsmpc.$('.bv_molecularWeight').keyup();
             return expect(this.lsmpc.model.get('molecular weight').get('value')).toEqual(12);
           });
         });
@@ -294,15 +294,15 @@
             }, 1000);
             return runs(function() {
               this.lsmpc.$('.bv_parentName').val(" Updated entity name   ");
-              this.lsmpc.$('.bv_parentName').change();
+              this.lsmpc.$('.bv_parentName').keyup();
               this.lsmpc.$('.bv_recordedBy').val("bob");
               this.lsmpc.$('.bv_recordedBy').change();
               this.lsmpc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.lsmpc.$('.bv_completionDate').change();
+              this.lsmpc.$('.bv_completionDate').keyup();
               this.lsmpc.$('.bv_notebook').val("my notebook");
-              this.lsmpc.$('.bv_notebook').change();
+              this.lsmpc.$('.bv_notebook').keyup();
               this.lsmpc.$('.bv_molecularWeight').val(" 24");
-              return this.lsmpc.$('.bv_molecularWeight').change();
+              return this.lsmpc.$('.bv_molecularWeight').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -321,7 +321,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.lsmpc.$('.bv_parentName').val("");
-                return this.lsmpc.$('.bv_parentName').change();
+                return this.lsmpc.$('.bv_parentName').keyup();
               });
             });
             it("should be invalid if name not filled in", function() {
@@ -357,7 +357,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.lsmpc.$('.bv_completionDate').val("");
-                return this.lsmpc.$('.bv_completionDate').change();
+                return this.lsmpc.$('.bv_completionDate').keyup();
               });
             });
             return it("should show error in date field", function() {
@@ -370,7 +370,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.lsmpc.$('.bv_notebook').val("");
-                return this.lsmpc.$('.bv_notebook').change();
+                return this.lsmpc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook field", function() {
@@ -383,7 +383,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.lsmpc.$('.bv_molecularWeight').val("");
-                return this.lsmpc.$('.bv_molecularWeight').change();
+                return this.lsmpc.$('.bv_molecularWeight').keyup();
               });
             });
             return it("should show error on molecular weight field", function() {
@@ -604,22 +604,22 @@
           });
           it("should update model when completion date is changed", function() {
             this.lsmbc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.lsmbc.$('.bv_completionDate').change();
+            this.lsmbc.$('.bv_completionDate').keyup();
             return expect(this.lsmbc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.lsmbc.$('.bv_notebook').val(" Updated notebook  ");
-            this.lsmbc.$('.bv_notebook').change();
+            this.lsmbc.$('.bv_notebook').keyup();
             return expect(this.lsmbc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
           it("should update model when amount is changed", function() {
             this.lsmbc.$('.bv_amount').val(" 12  ");
-            this.lsmbc.$('.bv_amount').change();
+            this.lsmbc.$('.bv_amount').keyup();
             return expect(this.lsmbc.model.get('amount').get('value')).toEqual(12);
           });
           return it("should update model when location is changed", function() {
             this.lsmbc.$('.bv_location').val(" Updated location  ");
-            this.lsmbc.$('.bv_location').change();
+            this.lsmbc.$('.bv_location').keyup();
             return expect(this.lsmbc.model.get('location').get('value')).toEqual("Updated location");
           });
         });
@@ -632,13 +632,13 @@
               this.lsmbc.$('.bv_recordedBy').val("bob");
               this.lsmbc.$('.bv_recordedBy').change();
               this.lsmbc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.lsmbc.$('.bv_completionDate').change();
+              this.lsmbc.$('.bv_completionDate').keyup();
               this.lsmbc.$('.bv_notebook').val("my notebook");
-              this.lsmbc.$('.bv_notebook').change();
+              this.lsmbc.$('.bv_notebook').keyup();
               this.lsmbc.$('.bv_amount').val(" 24");
-              this.lsmbc.$('.bv_amount').change();
+              this.lsmbc.$('.bv_amount').keyup();
               this.lsmbc.$('.bv_location').val(" Hood 4");
-              return this.lsmbc.$('.bv_location').change();
+              return this.lsmbc.$('.bv_location').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -675,7 +675,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.lsmbc.$('.bv_completionDate').val("");
-                return this.lsmbc.$('.bv_completionDate').change();
+                return this.lsmbc.$('.bv_completionDate').keyup();
               });
             });
             return it("should show error in date field", function() {
@@ -688,7 +688,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.lsmbc.$('.bv_notebook').val("");
-                return this.lsmbc.$('.bv_notebook').change();
+                return this.lsmbc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook field", function() {
@@ -701,7 +701,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.lsmbc.$('.bv_amount').val("");
-                return this.lsmbc.$('.bv_amount').change();
+                return this.lsmbc.$('.bv_amount').keyup();
               });
             });
             return it("should show error on amount field", function() {
@@ -714,7 +714,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.lsmbc.$('.bv_location').val("");
-                return this.lsmbc.$('.bv_location').change();
+                return this.lsmbc.$('.bv_location').keyup();
               });
             });
             return it("should show error on location field", function() {
@@ -815,19 +815,19 @@
           beforeEach(function() {
             runs(function() {
               this.lsmc.$('.bv_parentName').val(" Updated entity name   ");
-              this.lsmc.$('.bv_parentName').change();
+              this.lsmc.$('.bv_parentName').keyup();
               this.lsmc.$('.bv_recordedBy').val("bob");
               this.lsmc.$('.bv_recordedBy').change();
               this.lsmc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.lsmc.$('.bv_completionDate').change();
+              this.lsmc.$('.bv_completionDate').keyup();
               this.lsmc.$('.bv_notebook').val("my notebook");
-              this.lsmc.$('.bv_notebook').change();
+              this.lsmc.$('.bv_notebook').keyup();
               this.lsmc.$('.bv_molecularWeight').val(" 24");
-              this.lsmc.$('.bv_molecularWeight').change();
+              this.lsmc.$('.bv_molecularWeight').keyup();
               this.lsmc.$('.bv_amount').val(" 24");
-              this.lsmc.$('.bv_amount').change();
+              this.lsmc.$('.bv_amount').keyup();
               this.lsmc.$('.bv_location').val(" Hood 4");
-              return this.lsmc.$('.bv_location').change();
+              return this.lsmc.$('.bv_location').keyup();
             });
             return waitsFor(function() {
               return this.lsmc.$('.bv_recordedBy option').length > 0;

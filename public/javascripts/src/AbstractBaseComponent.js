@@ -110,6 +110,12 @@
             message: "Amount must be set"
           });
         }
+        if (isNaN(amount)) {
+          errors.push({
+            attribute: 'amount',
+            message: "Amount must be a number"
+          });
+        }
       }
       if (attrs.location != null) {
         location = attrs.location.get('value');
@@ -429,6 +435,7 @@
       });
       this.attachFileListController.on('amDirty', (function(_this) {
         return function() {
+          console.log("aflc trigger dirty to batch controller");
           return _this.trigger('amDirty');
         };
       })(this));
@@ -490,7 +497,7 @@
 
     AbstractBaseComponentBatchSelectController.prototype.events = function() {
       return {
-        "keyup .bv_batchList": "handleSelectedBatchChanged"
+        "change .bv_batchList": "handleSelectedBatchChanged"
       };
     };
 
@@ -520,6 +527,7 @@
     AbstractBaseComponentBatchSelectController.prototype.setupBatchRegForm = function(batch) {
       this.batchController.on('amDirty', (function(_this) {
         return function() {
+          console.log("batch controller trigger dirty to batch select controller");
           return _this.trigger('amDirty');
         };
       })(this));
@@ -626,6 +634,7 @@
     AbstractBaseComponentController.prototype.setupBatchSelectController = function() {
       this.batchSelectController.on('amDirty', (function(_this) {
         return function() {
+          console.log("batch select controller trigger amDirty to base batch component controller");
           _this.trigger('amDirty');
           return _this.checkFormValid();
         };

@@ -74,10 +74,14 @@ class window.SpacerParent extends AbstractBaseComponentParent
 						message: "Notebook must be set"
 		if attrs["molecular weight"]?
 			mw = attrs["molecular weight"].get('value')
-			if mw is "" or mw is undefined or isNaN(mw)
+			if mw is "" or mw is undefined
 				errors.push
 					attribute: 'molecularWeight'
 					message: "Molecular weight must be set"
+			if isNaN(mw)
+				errors.push
+					attribute: 'molecularWeight'
+					message: "Molecular weight must be a number"
 
 		if errors.length > 0
 			return errors

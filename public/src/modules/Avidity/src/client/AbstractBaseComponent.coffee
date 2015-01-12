@@ -50,6 +50,10 @@ class window.AbstractBaseComponentBatch extends Thing
 				errors.push
 					attribute: 'amount'
 					message: "Amount must be set"
+			if isNaN(amount)
+				errors.push
+					attribute: 'amount'
+					message: "Amount must be a number"
 		if attrs.location?
 			location = attrs.location.get('value')
 			if location is "" or location is undefined
@@ -301,6 +305,7 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 			el: @$('.bv_attachFileList')
 			collection: attachFileList
 		@attachFileListController.on 'amDirty', =>
+			console.log "aflc trigger dirty to batch controller"
 			@trigger 'amDirty'
 		@attachFileListController.on 'amClean', =>
 			@trigger 'amClean'
@@ -337,7 +342,7 @@ class window.AbstractBaseComponentBatchSelectController extends Backbone.View
 	template: _.template($("#AbstractBaseComponentBatchSelectView").html())
 
 	events: ->
-		"keyup .bv_batchList": "handleSelectedBatchChanged"
+		"change .bv_batchList": "handleSelectedBatchChanged"
 
 	initialize: ->
 		$(@el).empty()
@@ -360,6 +365,7 @@ class window.AbstractBaseComponentBatchSelectController extends Backbone.View
 
 	setupBatchRegForm: (batch) =>
 		@batchController.on 'amDirty', =>
+			console.log "batch controller trigger dirty to batch select controller"
 			@trigger 'amDirty'
 		@batchController.on 'amClean', =>
 			@trigger 'amClean'
@@ -431,6 +437,7 @@ class window.AbstractBaseComponentController extends Backbone.View
 #			el: @$('.bv_cationicBlockBatch')
 #			parentCodeName: @model.get('codeName')
 		@batchSelectController.on 'amDirty', =>
+			console.log "batch select controller trigger amDirty to base batch component controller"
 			@trigger 'amDirty'
 			@checkFormValid()
 		@batchSelectController.on 'amClean', =>

@@ -184,7 +184,7 @@ describe 'Cationic Block testing', ->
 			describe "model updates", ->
 				it "should update model when parent name is changed", ->
 					@cbpc.$('.bv_parentName').val(" New name   ")
-					@cbpc.$('.bv_parentName').change()
+					@cbpc.$('.bv_parentName').keyup()
 					expect(@cbpc.model.get('cationic block name').get('labelText')).toEqual "New name"
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
@@ -196,15 +196,15 @@ describe 'Cationic Block testing', ->
 						expect(@cbpc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@cbpc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@cbpc.$('.bv_completionDate').change()
+					@cbpc.$('.bv_completionDate').keyup()
 					expect(@cbpc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@cbpc.$('.bv_notebook').val(" Updated notebook  ")
-					@cbpc.$('.bv_notebook').change()
+					@cbpc.$('.bv_notebook').keyup()
 					expect(@cbpc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when molecular weight is changed", ->
 					@cbpc.$('.bv_molecularWeight').val(" 12  ")
-					@cbpc.$('.bv_molecularWeight').change()
+					@cbpc.$('.bv_molecularWeight').keyup()
 					expect(@cbpc.model.get('molecular weight').get('value')).toEqual 12
 
 			describe "controller validation rules", ->
@@ -214,15 +214,15 @@ describe 'Cationic Block testing', ->
 					, 1000
 					runs ->
 						@cbpc.$('.bv_parentName').val(" Updated entity name   ")
-						@cbpc.$('.bv_parentName').change()
+						@cbpc.$('.bv_parentName').keyup()
 						@cbpc.$('.bv_recordedBy').val("bob")
 						@cbpc.$('.bv_recordedBy').change()
 						@cbpc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@cbpc.$('.bv_completionDate').change()
+						@cbpc.$('.bv_completionDate').keyup()
 						@cbpc.$('.bv_notebook').val("my notebook")
-						@cbpc.$('.bv_notebook').change()
+						@cbpc.$('.bv_notebook').keyup()
 						@cbpc.$('.bv_molecularWeight').val(" 24")
-						@cbpc.$('.bv_molecularWeight').change()
+						@cbpc.$('.bv_molecularWeight').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -234,7 +234,7 @@ describe 'Cationic Block testing', ->
 					beforeEach ->
 						runs ->
 							@cbpc.$('.bv_parentName').val("")
-							@cbpc.$('.bv_parentName').change()
+							@cbpc.$('.bv_parentName').keyup()
 					it "should be invalid if name not filled in", ->
 						runs ->
 							expect(@cbpc.isValid()).toBeFalsy()
@@ -256,7 +256,7 @@ describe 'Cationic Block testing', ->
 					beforeEach ->
 						runs ->
 							@cbpc.$('.bv_completionDate').val("")
-							@cbpc.$('.bv_completionDate').change()
+							@cbpc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@cbpc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -264,7 +264,7 @@ describe 'Cationic Block testing', ->
 					beforeEach ->
 						runs ->
 							@cbpc.$('.bv_notebook').val("")
-							@cbpc.$('.bv_notebook').change()
+							@cbpc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@cbpc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -272,7 +272,7 @@ describe 'Cationic Block testing', ->
 					beforeEach ->
 						runs ->
 							@cbpc.$('.bv_molecularWeight').val("")
-							@cbpc.$('.bv_molecularWeight').change()
+							@cbpc.$('.bv_molecularWeight').keyup()
 					it "should show error on molecular weight field", ->
 						runs ->
 							expect(@cbpc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy()
@@ -431,19 +431,19 @@ describe 'Cationic Block testing', ->
 						expect(@cbbc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@cbbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@cbbc.$('.bv_completionDate').change()
+					@cbbc.$('.bv_completionDate').keyup()
 					expect(@cbbc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@cbbc.$('.bv_notebook').val(" Updated notebook  ")
-					@cbbc.$('.bv_notebook').change()
+					@cbbc.$('.bv_notebook').keyup()
 					expect(@cbbc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when amount is changed", ->
 					@cbbc.$('.bv_amount').val(" 12  ")
-					@cbbc.$('.bv_amount').change()
+					@cbbc.$('.bv_amount').keyup()
 					expect(@cbbc.model.get('amount').get('value')).toEqual 12
 				it "should update model when location is changed", ->
 					@cbbc.$('.bv_location').val(" Updated location  ")
-					@cbbc.$('.bv_location').change()
+					@cbbc.$('.bv_location').keyup()
 					expect(@cbbc.model.get('location').get('value')).toEqual "Updated location"
 
 			describe "controller validation rules", ->
@@ -455,13 +455,13 @@ describe 'Cationic Block testing', ->
 						@cbbc.$('.bv_recordedBy').val("bob")
 						@cbbc.$('.bv_recordedBy').change()
 						@cbbc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@cbbc.$('.bv_completionDate').change()
+						@cbbc.$('.bv_completionDate').keyup()
 						@cbbc.$('.bv_notebook').val("my notebook")
-						@cbbc.$('.bv_notebook').change()
+						@cbbc.$('.bv_notebook').keyup()
 						@cbbc.$('.bv_amount').val(" 24")
-						@cbbc.$('.bv_amount').change()
+						@cbbc.$('.bv_amount').keyup()
 						@cbbc.$('.bv_location').val(" Hood 4")
-						@cbbc.$('.bv_location').change()
+						@cbbc.$('.bv_location').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -484,7 +484,7 @@ describe 'Cationic Block testing', ->
 					beforeEach ->
 						runs ->
 							@cbbc.$('.bv_completionDate').val("")
-							@cbbc.$('.bv_completionDate').change()
+							@cbbc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@cbbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -492,7 +492,7 @@ describe 'Cationic Block testing', ->
 					beforeEach ->
 						runs ->
 							@cbbc.$('.bv_notebook').val("")
-							@cbbc.$('.bv_notebook').change()
+							@cbbc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@cbbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -500,7 +500,7 @@ describe 'Cationic Block testing', ->
 					beforeEach ->
 						runs ->
 							@cbbc.$('.bv_amount').val("")
-							@cbbc.$('.bv_amount').change()
+							@cbbc.$('.bv_amount').keyup()
 					it "should show error on amount field", ->
 						runs ->
 							expect(@cbbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
@@ -508,7 +508,7 @@ describe 'Cationic Block testing', ->
 					beforeEach ->
 						runs ->
 							@cbbc.$('.bv_location').val("")
-							@cbbc.$('.bv_location').change()
+							@cbbc.$('.bv_location').keyup()
 					it "should show error on location field", ->
 						runs ->
 							expect(@cbbc.$('.bv_group_location').hasClass('error')).toBeTruthy()
@@ -578,19 +578,19 @@ describe 'Cationic Block testing', ->
 				beforeEach ->
 					runs ->
 						@cbc.$('.bv_parentName').val(" Updated entity name   ")
-						@cbc.$('.bv_parentName').change()
+						@cbc.$('.bv_parentName').keyup()
 						@cbc.$('.bv_recordedBy').val("bob")
 						@cbc.$('.bv_recordedBy').change()
 						@cbc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@cbc.$('.bv_completionDate').change()
+						@cbc.$('.bv_completionDate').keyup()
 						@cbc.$('.bv_notebook').val("my notebook")
-						@cbc.$('.bv_notebook').change()
+						@cbc.$('.bv_notebook').keyup()
 						@cbc.$('.bv_molecularWeight').val(" 24")
-						@cbc.$('.bv_molecularWeight').change()
+						@cbc.$('.bv_molecularWeight').keyup()
 						@cbc.$('.bv_amount').val(" 24")
-						@cbc.$('.bv_amount').change()
+						@cbc.$('.bv_amount').keyup()
 						@cbc.$('.bv_location').val(" Hood 4")
-						@cbc.$('.bv_location').change()
+						@cbc.$('.bv_location').keyup()
 					waitsFor ->
 						@cbc.$('.bv_recordedBy option').length > 0
 					, 1000

@@ -258,7 +258,7 @@
         describe("model updates", function() {
           it("should update model when parent name is changed", function() {
             this.cbpc.$('.bv_parentName').val(" New name   ");
-            this.cbpc.$('.bv_parentName').change();
+            this.cbpc.$('.bv_parentName').keyup();
             return expect(this.cbpc.model.get('cationic block name').get('labelText')).toEqual("New name");
           });
           it("should update model when the scientist is changed", function() {
@@ -273,17 +273,17 @@
           });
           it("should update model when completion date is changed", function() {
             this.cbpc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.cbpc.$('.bv_completionDate').change();
+            this.cbpc.$('.bv_completionDate').keyup();
             return expect(this.cbpc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.cbpc.$('.bv_notebook').val(" Updated notebook  ");
-            this.cbpc.$('.bv_notebook').change();
+            this.cbpc.$('.bv_notebook').keyup();
             return expect(this.cbpc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
           return it("should update model when molecular weight is changed", function() {
             this.cbpc.$('.bv_molecularWeight').val(" 12  ");
-            this.cbpc.$('.bv_molecularWeight').change();
+            this.cbpc.$('.bv_molecularWeight').keyup();
             return expect(this.cbpc.model.get('molecular weight').get('value')).toEqual(12);
           });
         });
@@ -294,15 +294,15 @@
             }, 1000);
             return runs(function() {
               this.cbpc.$('.bv_parentName').val(" Updated entity name   ");
-              this.cbpc.$('.bv_parentName').change();
+              this.cbpc.$('.bv_parentName').keyup();
               this.cbpc.$('.bv_recordedBy').val("bob");
               this.cbpc.$('.bv_recordedBy').change();
               this.cbpc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.cbpc.$('.bv_completionDate').change();
+              this.cbpc.$('.bv_completionDate').keyup();
               this.cbpc.$('.bv_notebook').val("my notebook");
-              this.cbpc.$('.bv_notebook').change();
+              this.cbpc.$('.bv_notebook').keyup();
               this.cbpc.$('.bv_molecularWeight').val(" 24");
-              return this.cbpc.$('.bv_molecularWeight').change();
+              return this.cbpc.$('.bv_molecularWeight').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -321,7 +321,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.cbpc.$('.bv_parentName').val("");
-                return this.cbpc.$('.bv_parentName').change();
+                return this.cbpc.$('.bv_parentName').keyup();
               });
             });
             it("should be invalid if name not filled in", function() {
@@ -357,7 +357,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.cbpc.$('.bv_completionDate').val("");
-                return this.cbpc.$('.bv_completionDate').change();
+                return this.cbpc.$('.bv_completionDate').keyup();
               });
             });
             return it("should show error in date field", function() {
@@ -370,7 +370,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.cbpc.$('.bv_notebook').val("");
-                return this.cbpc.$('.bv_notebook').change();
+                return this.cbpc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook field", function() {
@@ -383,7 +383,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.cbpc.$('.bv_molecularWeight').val("");
-                return this.cbpc.$('.bv_molecularWeight').change();
+                return this.cbpc.$('.bv_molecularWeight').keyup();
               });
             });
             return it("should show error on molecular weight field", function() {
@@ -604,22 +604,22 @@
           });
           it("should update model when completion date is changed", function() {
             this.cbbc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.cbbc.$('.bv_completionDate').change();
+            this.cbbc.$('.bv_completionDate').keyup();
             return expect(this.cbbc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.cbbc.$('.bv_notebook').val(" Updated notebook  ");
-            this.cbbc.$('.bv_notebook').change();
+            this.cbbc.$('.bv_notebook').keyup();
             return expect(this.cbbc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
           it("should update model when amount is changed", function() {
             this.cbbc.$('.bv_amount').val(" 12  ");
-            this.cbbc.$('.bv_amount').change();
+            this.cbbc.$('.bv_amount').keyup();
             return expect(this.cbbc.model.get('amount').get('value')).toEqual(12);
           });
           return it("should update model when location is changed", function() {
             this.cbbc.$('.bv_location').val(" Updated location  ");
-            this.cbbc.$('.bv_location').change();
+            this.cbbc.$('.bv_location').keyup();
             return expect(this.cbbc.model.get('location').get('value')).toEqual("Updated location");
           });
         });
@@ -632,13 +632,13 @@
               this.cbbc.$('.bv_recordedBy').val("bob");
               this.cbbc.$('.bv_recordedBy').change();
               this.cbbc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.cbbc.$('.bv_completionDate').change();
+              this.cbbc.$('.bv_completionDate').keyup();
               this.cbbc.$('.bv_notebook').val("my notebook");
-              this.cbbc.$('.bv_notebook').change();
+              this.cbbc.$('.bv_notebook').keyup();
               this.cbbc.$('.bv_amount').val(" 24");
-              this.cbbc.$('.bv_amount').change();
+              this.cbbc.$('.bv_amount').keyup();
               this.cbbc.$('.bv_location').val(" Hood 4");
-              return this.cbbc.$('.bv_location').change();
+              return this.cbbc.$('.bv_location').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -675,7 +675,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.cbbc.$('.bv_completionDate').val("");
-                return this.cbbc.$('.bv_completionDate').change();
+                return this.cbbc.$('.bv_completionDate').keyup();
               });
             });
             return it("should show error in date field", function() {
@@ -688,7 +688,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.cbbc.$('.bv_notebook').val("");
-                return this.cbbc.$('.bv_notebook').change();
+                return this.cbbc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook field", function() {
@@ -701,7 +701,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.cbbc.$('.bv_amount').val("");
-                return this.cbbc.$('.bv_amount').change();
+                return this.cbbc.$('.bv_amount').keyup();
               });
             });
             return it("should show error on amount field", function() {
@@ -714,7 +714,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.cbbc.$('.bv_location').val("");
-                return this.cbbc.$('.bv_location').change();
+                return this.cbbc.$('.bv_location').keyup();
               });
             });
             return it("should show error on location field", function() {
@@ -815,19 +815,19 @@
           beforeEach(function() {
             runs(function() {
               this.cbc.$('.bv_parentName').val(" Updated entity name   ");
-              this.cbc.$('.bv_parentName').change();
+              this.cbc.$('.bv_parentName').keyup();
               this.cbc.$('.bv_recordedBy').val("bob");
               this.cbc.$('.bv_recordedBy').change();
               this.cbc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.cbc.$('.bv_completionDate').change();
+              this.cbc.$('.bv_completionDate').keyup();
               this.cbc.$('.bv_notebook').val("my notebook");
-              this.cbc.$('.bv_notebook').change();
+              this.cbc.$('.bv_notebook').keyup();
               this.cbc.$('.bv_molecularWeight').val(" 24");
-              this.cbc.$('.bv_molecularWeight').change();
+              this.cbc.$('.bv_molecularWeight').keyup();
               this.cbc.$('.bv_amount').val(" 24");
-              this.cbc.$('.bv_amount').change();
+              this.cbc.$('.bv_amount').keyup();
               this.cbc.$('.bv_location').val(" Hood 4");
-              return this.cbc.$('.bv_location').change();
+              return this.cbc.$('.bv_location').keyup();
             });
             return waitsFor(function() {
               return this.cbc.$('.bv_recordedBy option').length > 0;

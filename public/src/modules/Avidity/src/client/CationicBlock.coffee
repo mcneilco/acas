@@ -74,10 +74,14 @@ class window.CationicBlockParent extends AbstractBaseComponentParent
 						message: "Notebook must be set"
 		if attrs["molecular weight"]?
 			mw = attrs["molecular weight"].get('value')
-			if mw is "" or mw is undefined or isNaN(mw)
+			if mw is "" or mw is undefined
 				errors.push
 					attribute: 'molecularWeight'
 					message: "Molecular weight must be set"
+			if isNaN(mw)
+				errors.push
+					attribute: 'molecularWeight'
+					message: "Molecular weight must be a number"
 
 		if errors.length > 0
 			return errors
@@ -152,6 +156,7 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 	updateModel: =>
 		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
 		@model.get("molecular weight").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_molecularWeight')))
+		console.log "updating parent name"
 		super()
 
 

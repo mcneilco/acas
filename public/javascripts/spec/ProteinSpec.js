@@ -292,7 +292,7 @@
         describe("model updates", function() {
           it("should update model when parent name is changed", function() {
             this.ppc.$('.bv_parentName').val(" New name   ");
-            this.ppc.$('.bv_parentName').change();
+            this.ppc.$('.bv_parentName').keyup();
             return expect(this.ppc.model.get('protein name').get('labelText')).toEqual("New name");
           });
           it("should update model when the scientist is changed", function() {
@@ -307,12 +307,12 @@
           });
           it("should update model when completion date is changed", function() {
             this.ppc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.ppc.$('.bv_completionDate').change();
+            this.ppc.$('.bv_completionDate').keyup();
             return expect(this.ppc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.ppc.$('.bv_notebook').val(" Updated notebook  ");
-            this.ppc.$('.bv_notebook').change();
+            this.ppc.$('.bv_notebook').keyup();
             return expect(this.ppc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
           it("should update model when the type is changed", function() {
@@ -327,7 +327,7 @@
           });
           return it("should update model when aa sequence is changed", function() {
             this.ppc.$('.bv_sequence').val(" Updated sequence  ");
-            this.ppc.$('.bv_sequence').change();
+            this.ppc.$('.bv_sequence').keyup();
             return expect(this.ppc.model.get('aa sequence').get('value')).toEqual("Updated sequence");
           });
         });
@@ -338,17 +338,17 @@
             }, 1000);
             return runs(function() {
               this.ppc.$('.bv_parentName').val(" Updated entity name   ");
-              this.ppc.$('.bv_parentName').change();
+              this.ppc.$('.bv_parentName').keyup();
               this.ppc.$('.bv_recordedBy').val("bob");
               this.ppc.$('.bv_recordedBy').change();
               this.ppc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.ppc.$('.bv_completionDate').change();
+              this.ppc.$('.bv_completionDate').keyup();
               this.ppc.$('.bv_notebook').val("my notebook");
-              this.ppc.$('.bv_notebook').change();
+              this.ppc.$('.bv_notebook').keyup();
               this.ppc.$('.bv_type').val("mab");
               this.ppc.$('.bv_type').change();
               this.ppc.$('.bv_sequence').val("AUG");
-              return this.ppc.$('.bv_sequence').change();
+              return this.ppc.$('.bv_sequence').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -367,7 +367,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.ppc.$('.bv_parentName').val("");
-                return this.ppc.$('.bv_parentName').change();
+                return this.ppc.$('.bv_parentName').keyup();
               });
             });
             it("should be invalid if name not filled in", function() {
@@ -403,7 +403,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.ppc.$('.bv_completionDate').val("");
-                return this.ppc.$('.bv_completionDate').change();
+                return this.ppc.$('.bv_completionDate').keyup();
               });
             });
             return it("should show error in date field", function() {
@@ -416,7 +416,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.ppc.$('.bv_notebook').val("");
-                return this.ppc.$('.bv_notebook').change();
+                return this.ppc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook field", function() {
@@ -442,7 +442,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.ppc.$('.bv_sequence').val("");
-                return this.ppc.$('.bv_sequence').change();
+                return this.ppc.$('.bv_sequence').keyup();
               });
             });
             return it("should show error on sequence field", function() {
@@ -663,22 +663,22 @@
           });
           it("should update model when completion date is changed", function() {
             this.pbc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.pbc.$('.bv_completionDate').change();
+            this.pbc.$('.bv_completionDate').keyup();
             return expect(this.pbc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.pbc.$('.bv_notebook').val(" Updated notebook  ");
-            this.pbc.$('.bv_notebook').change();
+            this.pbc.$('.bv_notebook').keyup();
             return expect(this.pbc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
           it("should update model when amount is changed", function() {
             this.pbc.$('.bv_amount').val(" 12  ");
-            this.pbc.$('.bv_amount').change();
+            this.pbc.$('.bv_amount').keyup();
             return expect(this.pbc.model.get('amount').get('value')).toEqual(12);
           });
           return it("should update model when location is changed", function() {
             this.pbc.$('.bv_location').val(" Updated location  ");
-            this.pbc.$('.bv_location').change();
+            this.pbc.$('.bv_location').keyup();
             return expect(this.pbc.model.get('location').get('value')).toEqual("Updated location");
           });
         });
@@ -691,13 +691,13 @@
               this.pbc.$('.bv_recordedBy').val("bob");
               this.pbc.$('.bv_recordedBy').change();
               this.pbc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.pbc.$('.bv_completionDate').change();
+              this.pbc.$('.bv_completionDate').keyup();
               this.pbc.$('.bv_notebook').val("my notebook");
-              this.pbc.$('.bv_notebook').change();
+              this.pbc.$('.bv_notebook').keyup();
               this.pbc.$('.bv_amount').val(" 24");
-              this.pbc.$('.bv_amount').change();
+              this.pbc.$('.bv_amount').keyup();
               this.pbc.$('.bv_location').val(" Hood 4");
-              return this.pbc.$('.bv_location').change();
+              return this.pbc.$('.bv_location').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -734,7 +734,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.pbc.$('.bv_completionDate').val("");
-                return this.pbc.$('.bv_completionDate').change();
+                return this.pbc.$('.bv_completionDate').keyup();
               });
             });
             return it("should show error in date field", function() {
@@ -747,7 +747,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.pbc.$('.bv_notebook').val("");
-                return this.pbc.$('.bv_notebook').change();
+                return this.pbc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook field", function() {
@@ -760,7 +760,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.pbc.$('.bv_amount').val("");
-                return this.pbc.$('.bv_amount').change();
+                return this.pbc.$('.bv_amount').keyup();
               });
             });
             return it("should show error on amount field", function() {
@@ -773,7 +773,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.pbc.$('.bv_location').val("");
-                return this.pbc.$('.bv_location').change();
+                return this.pbc.$('.bv_location').keyup();
               });
             });
             return it("should show error on location field", function() {
@@ -874,21 +874,21 @@
           beforeEach(function() {
             runs(function() {
               this.pc.$('.bv_parentName').val(" Updated entity name   ");
-              this.pc.$('.bv_parentName').change();
+              this.pc.$('.bv_parentName').keyup();
               this.pc.$('.bv_recordedBy').val("bob");
               this.pc.$('.bv_recordedBy').change();
               this.pc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.pc.$('.bv_completionDate').change();
+              this.pc.$('.bv_completionDate').keyup();
               this.pc.$('.bv_notebook').val("my notebook");
-              this.pc.$('.bv_notebook').change();
+              this.pc.$('.bv_notebook').keyup();
               this.pc.$('.bv_type').val(" mab");
               this.pc.$('.bv_type').change();
               this.pc.$('.bv_sequence').val(" AUC");
-              this.pc.$('.bv_sequence').change();
+              this.pc.$('.bv_sequence').keyup();
               this.pc.$('.bv_amount').val(" 24");
-              this.pc.$('.bv_amount').change();
+              this.pc.$('.bv_amount').keyup();
               this.pc.$('.bv_location').val(" Hood 4");
-              return this.pc.$('.bv_location').change();
+              return this.pc.$('.bv_location').keyup();
             });
             return waitsFor(function() {
               return this.pc.$('.bv_recordedBy option').length > 0;

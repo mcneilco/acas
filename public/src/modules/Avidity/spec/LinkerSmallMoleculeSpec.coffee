@@ -184,7 +184,7 @@ describe 'Linker Small Molecule testing', ->
 			describe "model updates", ->
 				it "should update model when parent name is changed", ->
 					@lsmpc.$('.bv_parentName').val(" New name   ")
-					@lsmpc.$('.bv_parentName').change()
+					@lsmpc.$('.bv_parentName').keyup()
 					expect(@lsmpc.model.get('linker small molecule name').get('labelText')).toEqual "New name"
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
@@ -196,15 +196,15 @@ describe 'Linker Small Molecule testing', ->
 						expect(@lsmpc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@lsmpc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@lsmpc.$('.bv_completionDate').change()
+					@lsmpc.$('.bv_completionDate').keyup()
 					expect(@lsmpc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@lsmpc.$('.bv_notebook').val(" Updated notebook  ")
-					@lsmpc.$('.bv_notebook').change()
+					@lsmpc.$('.bv_notebook').keyup()
 					expect(@lsmpc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when molecular weight is changed", ->
 					@lsmpc.$('.bv_molecularWeight').val(" 12  ")
-					@lsmpc.$('.bv_molecularWeight').change()
+					@lsmpc.$('.bv_molecularWeight').keyup()
 					expect(@lsmpc.model.get('molecular weight').get('value')).toEqual 12
 
 			describe "controller validation rules", ->
@@ -214,15 +214,15 @@ describe 'Linker Small Molecule testing', ->
 					, 1000
 					runs ->
 						@lsmpc.$('.bv_parentName').val(" Updated entity name   ")
-						@lsmpc.$('.bv_parentName').change()
+						@lsmpc.$('.bv_parentName').keyup()
 						@lsmpc.$('.bv_recordedBy').val("bob")
 						@lsmpc.$('.bv_recordedBy').change()
 						@lsmpc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@lsmpc.$('.bv_completionDate').change()
+						@lsmpc.$('.bv_completionDate').keyup()
 						@lsmpc.$('.bv_notebook').val("my notebook")
-						@lsmpc.$('.bv_notebook').change()
+						@lsmpc.$('.bv_notebook').keyup()
 						@lsmpc.$('.bv_molecularWeight').val(" 24")
-						@lsmpc.$('.bv_molecularWeight').change()
+						@lsmpc.$('.bv_molecularWeight').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -234,7 +234,7 @@ describe 'Linker Small Molecule testing', ->
 					beforeEach ->
 						runs ->
 							@lsmpc.$('.bv_parentName').val("")
-							@lsmpc.$('.bv_parentName').change()
+							@lsmpc.$('.bv_parentName').keyup()
 					it "should be invalid if name not filled in", ->
 						runs ->
 							expect(@lsmpc.isValid()).toBeFalsy()
@@ -256,7 +256,7 @@ describe 'Linker Small Molecule testing', ->
 					beforeEach ->
 						runs ->
 							@lsmpc.$('.bv_completionDate').val("")
-							@lsmpc.$('.bv_completionDate').change()
+							@lsmpc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@lsmpc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -264,7 +264,7 @@ describe 'Linker Small Molecule testing', ->
 					beforeEach ->
 						runs ->
 							@lsmpc.$('.bv_notebook').val("")
-							@lsmpc.$('.bv_notebook').change()
+							@lsmpc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@lsmpc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -272,7 +272,7 @@ describe 'Linker Small Molecule testing', ->
 					beforeEach ->
 						runs ->
 							@lsmpc.$('.bv_molecularWeight').val("")
-							@lsmpc.$('.bv_molecularWeight').change()
+							@lsmpc.$('.bv_molecularWeight').keyup()
 					it "should show error on molecular weight field", ->
 						runs ->
 							expect(@lsmpc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy()
@@ -431,19 +431,19 @@ describe 'Linker Small Molecule testing', ->
 						expect(@lsmbc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@lsmbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@lsmbc.$('.bv_completionDate').change()
+					@lsmbc.$('.bv_completionDate').keyup()
 					expect(@lsmbc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@lsmbc.$('.bv_notebook').val(" Updated notebook  ")
-					@lsmbc.$('.bv_notebook').change()
+					@lsmbc.$('.bv_notebook').keyup()
 					expect(@lsmbc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when amount is changed", ->
 					@lsmbc.$('.bv_amount').val(" 12  ")
-					@lsmbc.$('.bv_amount').change()
+					@lsmbc.$('.bv_amount').keyup()
 					expect(@lsmbc.model.get('amount').get('value')).toEqual 12
 				it "should update model when location is changed", ->
 					@lsmbc.$('.bv_location').val(" Updated location  ")
-					@lsmbc.$('.bv_location').change()
+					@lsmbc.$('.bv_location').keyup()
 					expect(@lsmbc.model.get('location').get('value')).toEqual "Updated location"
 
 			describe "controller validation rules", ->
@@ -455,13 +455,13 @@ describe 'Linker Small Molecule testing', ->
 						@lsmbc.$('.bv_recordedBy').val("bob")
 						@lsmbc.$('.bv_recordedBy').change()
 						@lsmbc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@lsmbc.$('.bv_completionDate').change()
+						@lsmbc.$('.bv_completionDate').keyup()
 						@lsmbc.$('.bv_notebook').val("my notebook")
-						@lsmbc.$('.bv_notebook').change()
+						@lsmbc.$('.bv_notebook').keyup()
 						@lsmbc.$('.bv_amount').val(" 24")
-						@lsmbc.$('.bv_amount').change()
+						@lsmbc.$('.bv_amount').keyup()
 						@lsmbc.$('.bv_location').val(" Hood 4")
-						@lsmbc.$('.bv_location').change()
+						@lsmbc.$('.bv_location').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -484,7 +484,7 @@ describe 'Linker Small Molecule testing', ->
 					beforeEach ->
 						runs ->
 							@lsmbc.$('.bv_completionDate').val("")
-							@lsmbc.$('.bv_completionDate').change()
+							@lsmbc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@lsmbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -492,7 +492,7 @@ describe 'Linker Small Molecule testing', ->
 					beforeEach ->
 						runs ->
 							@lsmbc.$('.bv_notebook').val("")
-							@lsmbc.$('.bv_notebook').change()
+							@lsmbc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@lsmbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -500,7 +500,7 @@ describe 'Linker Small Molecule testing', ->
 					beforeEach ->
 						runs ->
 							@lsmbc.$('.bv_amount').val("")
-							@lsmbc.$('.bv_amount').change()
+							@lsmbc.$('.bv_amount').keyup()
 					it "should show error on amount field", ->
 						runs ->
 							expect(@lsmbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
@@ -508,7 +508,7 @@ describe 'Linker Small Molecule testing', ->
 					beforeEach ->
 						runs ->
 							@lsmbc.$('.bv_location').val("")
-							@lsmbc.$('.bv_location').change()
+							@lsmbc.$('.bv_location').keyup()
 					it "should show error on location field", ->
 						runs ->
 							expect(@lsmbc.$('.bv_group_location').hasClass('error')).toBeTruthy()
@@ -578,19 +578,19 @@ describe 'Linker Small Molecule testing', ->
 				beforeEach ->
 					runs ->
 						@lsmc.$('.bv_parentName').val(" Updated entity name   ")
-						@lsmc.$('.bv_parentName').change()
+						@lsmc.$('.bv_parentName').keyup()
 						@lsmc.$('.bv_recordedBy').val("bob")
 						@lsmc.$('.bv_recordedBy').change()
 						@lsmc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@lsmc.$('.bv_completionDate').change()
+						@lsmc.$('.bv_completionDate').keyup()
 						@lsmc.$('.bv_notebook').val("my notebook")
-						@lsmc.$('.bv_notebook').change()
+						@lsmc.$('.bv_notebook').keyup()
 						@lsmc.$('.bv_molecularWeight').val(" 24")
-						@lsmc.$('.bv_molecularWeight').change()
+						@lsmc.$('.bv_molecularWeight').keyup()
 						@lsmc.$('.bv_amount').val(" 24")
-						@lsmc.$('.bv_amount').change()
+						@lsmc.$('.bv_amount').keyup()
 						@lsmc.$('.bv_location').val(" Hood 4")
-						@lsmc.$('.bv_location').change()
+						@lsmc.$('.bv_location').keyup()
 					waitsFor ->
 						@lsmc.$('.bv_recordedBy option').length > 0
 					, 1000

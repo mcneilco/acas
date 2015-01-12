@@ -108,10 +108,16 @@
       }
       if (attrs["molecular weight"] != null) {
         mw = attrs["molecular weight"].get('value');
-        if (mw === "" || mw === void 0 || isNaN(mw)) {
+        if (mw === "" || mw === void 0) {
           errors.push({
             attribute: 'molecularWeight',
             message: "Molecular weight must be set"
+          });
+        }
+        if (isNaN(mw)) {
+          errors.push({
+            attribute: 'molecularWeight',
+            message: "Molecular weight must be a number"
           });
         }
       }
@@ -217,6 +223,7 @@
     CationicBlockParentController.prototype.updateModel = function() {
       this.model.get("cationic block name").set("labelText", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_parentName')));
       this.model.get("molecular weight").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_molecularWeight'))));
+      console.log("updating parent name");
       return CationicBlockParentController.__super__.updateModel.call(this);
     };
 
