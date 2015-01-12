@@ -65,16 +65,16 @@
       return resp;
     };
 
-    BaseEntity.prototype.getDescription = function() {
-      var description, metadataKind;
+    BaseEntity.prototype.getDetails = function() {
+      var entityDetails, metadataKind;
       metadataKind = this.get('subclass') + " metadata";
-      description = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", "description");
-      if (description.get('clobValue') === void 0 || description.get('clobValue') === "") {
-        description.set({
+      entityDetails = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "clobValue", this.get('subclass') + " details");
+      if (entityDetails.get('clobValue') === void 0 || entityDetails.get('clobValue') === "") {
+        entityDetails.set({
           clobValue: ""
         });
       }
-      return description;
+      return entityDetails;
     };
 
     BaseEntity.prototype.getComments = function() {
@@ -350,7 +350,7 @@
       this.handleDateChanged = __bind(this.handleDateChanged, this);
       this.handleNameChanged = __bind(this.handleNameChanged, this);
       this.handleCommentsChanged = __bind(this.handleCommentsChanged, this);
-      this.handleDescriptionChanged = __bind(this.handleDescriptionChanged, this);
+      this.handleDetailsChanged = __bind(this.handleDetailsChanged, this);
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
       this.handleRecordedByChanged = __bind(this.handleRecordedByChanged, this);
       this.render = __bind(this.render, this);
@@ -363,7 +363,7 @@
       return {
         "change .bv_recordedBy": "handleRecordedByChanged",
         "change .bv_shortDescription": "handleShortDescriptionChanged",
-        "change .bv_description": "handleDescriptionChanged",
+        "change .bv_details": "handleDetailsChanged",
         "change .bv_comments": "handleCommentsChanged",
         "change .bv_entityName": "handleNameChanged",
         "change .bv_completionDate": "handleDateChanged",
@@ -423,7 +423,7 @@
       this.$('.bv_recordedBy').val(this.model.get('recordedBy'));
       this.$('.bv_' + subclass + 'Code').html(this.model.get('codeName'));
       this.$('.bv_' + subclass + 'Kind').html(this.model.get('lsKind'));
-      this.$('.bv_description').html(this.model.getDescription().get('clobValue'));
+      this.$('.bv_details').html(this.model.getDetails().get('clobValue'));
       this.$('.bv_comments').html(this.model.getComments().get('clobValue'));
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
@@ -497,9 +497,9 @@
       }
     };
 
-    BaseEntityController.prototype.handleDescriptionChanged = function() {
-      return this.model.getDescription().set({
-        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_description')),
+    BaseEntityController.prototype.handleDetailsChanged = function() {
+      return this.model.getDetails().set({
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_details')),
         recordedBy: this.model.get('recordedBy')
       });
     };

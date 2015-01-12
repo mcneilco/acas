@@ -135,10 +135,10 @@
 				stringValue: null
 				uncertainty: null
 				urlValue: null
-				lsKind: "description"
+				lsKind: "protocol details"
 				valueOperator: null
 				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_description" #TODO: rename to protocol details after merging with DNETRPLC-62 branch
+				lsTypeAndKind: "clobValue_protocol details"
 				valueUnit: null
 				version: 0
 			,

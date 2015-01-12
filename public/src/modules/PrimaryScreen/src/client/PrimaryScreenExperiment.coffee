@@ -280,6 +280,7 @@ class window.PrimaryScreenExperiment extends Experiment
 
 	initialize: ->
 		super()
+		@.set lsType: "Biology"
 		@.set lsKind: "Bio Activity"
 
 	getDryRunStatus: ->

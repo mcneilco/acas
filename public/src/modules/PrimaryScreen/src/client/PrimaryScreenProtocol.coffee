@@ -134,6 +134,7 @@ class window.PrimaryScreenProtocolParameters extends State
 class window.PrimaryScreenProtocol extends Protocol
 	initialize: ->
 		super()
+		@.set lsType: "Biology"
 		@.set lsKind: "Bio Activity"
 
 	validate: (attrs) ->

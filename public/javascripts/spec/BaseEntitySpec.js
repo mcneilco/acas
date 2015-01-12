@@ -45,9 +45,9 @@
           });
         });
         describe("required states and values", function() {
-          it('Should have a description value', function() {
-            expect(this.bem.getDescription() instanceof Value).toBeTruthy();
-            return expect(this.bem.getDescription().get('clobValue')).toEqual("");
+          it('Should have a entity details value', function() {
+            expect(this.bem.getDetails() instanceof Value).toBeTruthy();
+            return expect(this.bem.getDetails().get('clobValue')).toEqual("");
           });
           it('Should have a comments value', function() {
             expect(this.bem.getComments() instanceof Value).toBeTruthy();
@@ -124,8 +124,8 @@
           it("should have labels", function() {
             return expect(this.bem.get('lsLabels').at(0).get('lsKind')).toEqual("experiment name");
           });
-          it('Should have a description value', function() {
-            return expect(this.bem.getDescription().get('clobValue')).toEqual("long description goes here");
+          it('Should have a entity details value', function() {
+            return expect(this.bem.getDetails().get('clobValue')).toEqual("experiment details go here");
           });
           it('Should have a notebook value', function() {
             return expect(this.bem.getNotebook().get('stringValue')).toEqual("911");
@@ -401,7 +401,7 @@
           return expect(this.copiedEntity.get('shortDescription')).toEqual(this.bem.get('shortDescription'));
         });
         it("should have the same description", function() {
-          return expect(this.copiedEntity.getDescription().get('clobValue')).toEqual(this.bem.getDescription().get('clobValue'));
+          return expect(this.copiedEntity.getDetails().get('clobValue')).toEqual(this.bem.getDetails().get('clobValue'));
         });
         return it("should have the same comments", function() {
           return expect(this.copiedEntity.getComments().get('clobValue')).toEqual(this.bem.getComments().get('clobValue'));
@@ -438,8 +438,8 @@
           it("should fill the short description field", function() {
             return expect(this.bec.$('.bv_shortDescription').html()).toEqual("experiment created by generic data parser");
           });
-          it("should fill the long description field", function() {
-            return expect(this.bec.$('.bv_description').html()).toEqual("long description goes here");
+          xit("should fill the entity details field", function() {
+            return expect(this.bec.$('.bv_details').html()).toEqual("experiment details goes here");
           });
           it("should fill the comments field", function() {
             return expect(this.bec.$('.bv_comments').html()).toEqual("comments go here");
@@ -544,16 +544,16 @@
             this.bec.$('.bv_shortDescription').change();
             return expect(this.bec.model.get('shortDescription')).toEqual(" ");
           });
-          it("should update model when description is changed", function() {
+          xit("should update model when entity details is changed", function() {
             var desc, states, values;
-            this.bec.$('.bv_description').val(" New long description   ");
-            this.bec.$('.bv_description').change();
+            this.bec.$('.bv_details').val(" New experiment details   ");
+            this.bec.$('.bv_details').change();
             states = this.bec.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
             expect(states.length).toEqual(1);
-            values = states[0].getValuesByTypeAndKind("clobValue", "description");
+            values = states[0].getValuesByTypeAndKind("clobValue", "experiment details");
             desc = values[0].get('clobValue');
-            expect(desc).toEqual("New long description");
-            return expect(this.bec.model.getDescription().get('clobValue')).toEqual("New long description");
+            expect(desc).toEqual("New experiment details");
+            return expect(this.bec.model.getDetails().get('clobValue')).toEqual("New experiment details");
           });
           it("should update model when comments is changed", function() {
             var desc, states, values;
