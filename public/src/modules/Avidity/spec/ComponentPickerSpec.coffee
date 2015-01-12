@@ -5,13 +5,13 @@ afterEach ->
 	$("#fixture").remove()
 	$("body").append $(@fixture)
 
-describe "Components testing", ->
-	describe "Component model testing", ->
+describe "Component Builder testing", ->
+	describe "AddComponent model testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
-				@comp = new Component()
+				@ac = new AddComponent()
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
-					expect(@comp).toBeDefined()
+					expect(@ac).toBeDefined()
 				it "should have defaults", ->
-					expect(@comp.get('transformationRule')).toEqual "unassigned"
+					expect(@ac.get('componentType')).toEqual "unassigned"

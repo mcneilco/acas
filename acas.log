@@ -1866,3 +1866,20 @@
 2015-01-10T00:29:57.709Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2015-01-10T00:29:57.998Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2015-01-10T00:29:59.534Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-12T20:34:50.129Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-12T20:34:50.413Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-12T20:35:12.940Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-12T20:46:11.735Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-12T21:06:47.356Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-12T21:06:47.624Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-12T21:07:28.976Z - info:  sourceApp=logUsage, action=Connection to authentication service failed: , data=, user=egao, transactionId=null
+2015-01-12T21:08:01.205Z - info:  sourceApp=logUsage, action=Connection to authentication service failed: , data=, user=egao, transactionId=null
+2015-01-12T21:08:18.994Z - info:  sourceApp=logUsage, action=Connection to authentication service failed: , data=, user=egao, transactionId=null
+2015-01-12T21:09:02.442Z - info:  sourceApp=logUsage, action=Connection to authentication service failed: , data=, user=egao, transactionId=null
+2015-01-12T21:09:03.901Z - info:  sourceApp=logUsage, action=Connection to authentication service failed: , data=, user=egao, transactionId=null
+2015-01-12T21:09:08.112Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-12T21:09:08.379Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-01-12T21:09:45.144Z - info:  sourceApp=logUsage, action=Connection to authentication service failed: , data=, user=egao, transactionId=null
+2015-01-12T21:11:11.320Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
+2015-01-12T22:36:48.515Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-01-12T22:36:48.783Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
