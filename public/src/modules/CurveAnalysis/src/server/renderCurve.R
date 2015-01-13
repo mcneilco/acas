@@ -92,13 +92,13 @@ renderCurve <- function(getParams) {
     if(!as.logical(getParams$inTable)) {
       if(length(curveIds == 1)) {
         experimentCode <- query(paste0("SELECT e.code_name
-                                     FROM experiment e
-                                     JOIN experiment_analysisgroup eag ON e.id = eag.experiment_id
-                                     JOIN analysis_group ag ON ag.id = eag.analysis_group_id
-                                     JOIN analysis_group_state ags on ags.analysis_group_id=ag.id
-                                     JOIN analysis_group_value agv on agv.analysis_state_id=ags.id
-                                     WHERE agv.string_value = ",sqliz(GET$curveIds),"
-                                     AND agv.ls_kind        = 'curve id'"),globalConnect= TRUE)
+                                       FROM experiment e
+                                       JOIN experiment_analysisgroup eag ON e.id = eag.experiment_id
+                                       JOIN analysis_group ag ON ag.id = eag.analysis_group_id
+                                       JOIN analysis_group_state ags on ags.analysis_group_id=ag.id
+                                       JOIN analysis_group_value agv on agv.analysis_state_id=ags.id
+                                       WHERE agv.string_value = ",sqliz(GET$curveIds),"
+                                       AND agv.ls_kind        = 'curve id'"),globalConnect= TRUE)
         link <- paste(getSSLString(), racas::applicationSettings$client.host, ":",
                       racas::applicationSettings$client.port,
                       "/curveCurator/",experimentCode,"/",curveIds,
@@ -109,25 +109,32 @@ renderCurve <- function(getParams) {
       }
     }
   }
-fitData <- get_fit_data_curve_id(curveIds)
-data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
+  fitData <- get_fit_data_curve_id(curveIds)
+  data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
+  
+  #To be backwards compatable with hill slope example files
+  hillSlopes <- which(!is.na(data$parameters$hillslope))
+  if(length(hillSlopes) > 0  ) {
+    data$parameters$slope <- -data$parameters$hillslope[hillSlopes]
+  }
+  fittedHillSLopes <- which(!is.na(data$parameters$fitted_hillslope))
+  if(length(fittedHillSLopes) > 0 ) {
+    data$parameters$fitted_slope <- -data$parameters$fitted_hillslope[fittedHillSLopes]
+  }
 
-#To be backwards compatable with hill slope example files
-hillSlopes <- which(!is.na(data$parameters$hillslope))
-if(length(hillSlopes) > 0  ) {
-  data$parameters$slope <- -data$parameters$hillslope[hillSlopes]
-}
-fittedHillSLopes <- which(!is.na(data$parameters$fitted_hillslope))
-if(length(fittedHillSLopes) > 0 ) {
-  data$parameters$fitted_slope <- -data$parameters$fitted_hillslope[fittedHillSLopes]
-}
-
-setContentType("image/png")
-t <- tempfile()
-plotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "slope"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = showGrid, showAxes = showAxes, labelAxes = labelAxes, showLegend=legend)
-sendBin(readBin(t,'raw',n=file.info(t)$size))
-unlink(t)
-DONE
+  renderingOptions <- switch(fitData[1]$renderingHint,
+                             "4 parameter D-R" = list(fct = LL4, paramNames = c("ec50", "min", "max", "slope"), drawIntercept = "ec50"),
+                             "Ki Fit" = list(fct = OneSiteKi, paramNames = c("ki", "min", "max", "kd", "ligandConc"),drawIntercept = "ki" ),
+  )
+  
+  setContentType("image/png")
+  setHeader("Content-Disposition", paste0("filename=",getParams$curveIds))
+  t <- tempfile()
+  plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = showGrid, showAxes = showAxes, labelAxes = labelAxes, showLegend=legend)
+  sendBin(readBin(t,'raw',n=file.info(t)$size))
+  unlink(t)
+  DONE
 }
 #dput(GET)
 renderCurve(getParams = GET)
+

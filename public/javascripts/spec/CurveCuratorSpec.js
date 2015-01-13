@@ -37,15 +37,15 @@
       describe("getting curve by curveid", function() {
         return it("should return a curve", function() {
           var curve;
-          curve = this.curveList.getCurveByID("AG-00344446_1680");
+          curve = this.curveList.getCurveByID("AG-00440011_6863");
           return expect(curve instanceof Curve);
         });
       });
       describe("getting curve index by curveid", function() {
         return it("should return a curve", function() {
           var curveIndex;
-          curveIndex = this.curveList.getIndexByCurveID("AG-00344446_1680");
-          return expect(curveIndex).toEqual(8);
+          curveIndex = this.curveList.getIndexByCurveID("AG-00440011_6863");
+          return expect(curveIndex).toEqual(15);
         });
       });
       describe("updating a curve summary", function() {
@@ -79,12 +79,12 @@
       });
       return describe("updating flag user", function() {
         return it("should update flag user", function() {
-          var flagUser, originalCurve, updatedCurve;
+          var originalCurve, updatedCurve, userFlagStatus;
           originalCurve = this.curveList.models[0];
-          flagUser = originalCurve.get('flagUser' + " test");
-          this.curveList.updateFlagUser(originalCurve.get('curveid'), flagUser);
+          userFlagStatus = originalCurve.get('userFlagStatus' + " test");
+          this.curveList.updateUserFlagStatus(originalCurve.get('curveid'), userFlagStatus);
           updatedCurve = this.curveList.models[0];
-          return expect(updatedCurve.get('flagUser')).toEqual(flagUser);
+          return expect(updatedCurve.get('userFlagStatus')).toEqual(userFlagStatus);
         });
       });
     });
@@ -158,10 +158,10 @@
       });
       describe("rendering thumbnail", function() {
         it("should have img src attribute set", function() {
-          return expect(this.csc.$('.bv_thumbnail').attr('src')).toContain("AG-00344443_1680");
+          return expect(this.csc.$('.bv_thumbnail').attr('src')).toContain("AG-00439996_6863");
         });
         return it("should show the compound code", function() {
-          return expect(this.csc.$('.bv_compoundCode').html()).toEqual("CMPD-0000007-01A");
+          return expect(this.csc.$('.bv_compoundCode').html()).toEqual("CMPD-0000001-01A");
         });
       });
       describe("selection", function() {
@@ -173,14 +173,14 @@
       describe("algorithm approved display", function() {
         it("should show not approved when algorithm flagged", function() {
           this.csc.model.set({
-            flagAlgorithm: "no fit"
+            algorithmFlagStatus: "no fit"
           });
           expect(this.csc.$('.bv_fail')).toBeVisible();
           return expect(this.csc.$('.bv_pass')).toBeHidden();
         });
         return it("should show approved when algorithm not flagged ", function() {
           this.csc.model.set({
-            flagAlgorithm: "NA"
+            algorithmFlagStatus: ""
           });
           this.csc.render();
           expect(this.csc.$('.bv_pass')).toBeVisible();
@@ -190,14 +190,14 @@
       describe("user flagged display", function() {
         it("should show thumbs up when user approved", function() {
           this.csc.model.set({
-            flagUser: "approved"
+            userFlagStatus: "approved"
           });
           expect(this.csc.$('.bv_thumbsUp')).toBeVisible();
           return expect(this.csc.$('.bv_thumbsDown')).toBeHidden();
         });
         it("should show thumbs down when not user approved", function() {
           this.csc.model.set({
-            flagUser: "rejected"
+            userFlagStatus: "rejected"
           });
           this.csc.render();
           expect(this.csc.$('.bv_thumbsDown')).toBeVisible();
@@ -205,7 +205,7 @@
         });
         return it("should hide thumbs up and thumbs down when no user input", function() {
           this.csc.model.set({
-            flagUser: "NA"
+            userFlagStatus: ""
           });
           this.csc.render();
           expect(this.csc.$('.bv_thumbsUp')).toBeHidden();
@@ -220,52 +220,52 @@
         });
         it("should update user flag when user selects reject dropdown menu item", function() {
           this.csc.model.set({
-            flagUser: 'NA'
+            userFlagStatus: ''
           });
           this.csc.$('.bv_flagUser').click();
           this.csc.$('.bv_userReject').click();
           waitsFor((function(_this) {
             return function() {
-              return _this.csc.model.get('flagUser') === "rejected";
+              return _this.csc.model.get('userFlagStatus') === "rejected";
             };
           })(this), 200);
           return runs((function(_this) {
             return function() {
-              return expect(_this.csc.model.get('flagUser')).toEqual("rejected");
+              return expect(_this.csc.model.get('userFlagStatus')).toEqual("rejected");
             };
           })(this));
         });
         it("should update user flag when user selects approve dropdown menu item", function() {
           this.csc.model.set({
-            flagUser: 'NA'
+            flagUser: ''
           });
           this.csc.$('.bv_flagUser').click();
           this.csc.$('.bv_userApprove').click();
           waitsFor((function(_this) {
             return function() {
-              return _this.csc.model.get('flagUser') === "approved";
+              return _this.csc.model.get('userFlagStatus') === "approved";
             };
           })(this), 200);
           return runs((function(_this) {
             return function() {
-              return expect(_this.csc.model.get('flagUser')).toEqual("approved");
+              return expect(_this.csc.model.get('userFlagStatus')).toEqual("approved");
             };
           })(this));
         });
         return it("should update user flag when user selects NA dropdown menu item", function() {
           this.csc.model.set({
-            flagUser: 'approved'
+            userFlagStatus: 'approved'
           });
           this.csc.$('.bv_flagUser').click();
           this.csc.$('.bv_userNA').click();
           waitsFor((function(_this) {
             return function() {
-              return _this.csc.model.get('flagUser') === "NA";
+              return _this.csc.model.get('userFlagStatus') === "";
             };
           })(this), 200);
           return runs((function(_this) {
             return function() {
-              return expect(_this.csc.model.get('flagUser')).toEqual("NA");
+              return expect(_this.csc.model.get('userFlagStatus')).toEqual("");
             };
           })(this));
         });
@@ -290,7 +290,7 @@
       });
       describe("summary rendering", function() {
         return it("should create summary divs", function() {
-          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(16);
+          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(18);
         });
       });
       describe("user thumbnail selection", function() {
@@ -312,26 +312,26 @@
       describe("filtering", function() {
         it("should only show Sigmoid when requested", function() {
           this.cslc.filter('sigmoid');
-          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(10);
+          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(12);
         });
         return it("should show all when requested", function() {
           this.cslc.filter('sigmoid');
           this.cslc.filter('all');
-          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(16);
+          return expect(this.cslc.$('.bv_curveSummary').length).toEqual(18);
         });
       });
       return describe("sorting", function() {
         it("should show the lowest EC50 when requested", function() {
           this.cslc.sort('EC50', true);
-          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000009-01A");
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000008-01A");
         });
         it("should show the highest EC50 when requested", function() {
           this.cslc.sort('EC50', false);
-          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000007-01A");
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000011-01A");
         });
         return it("should show the first one when no sorting is requested", function() {
           this.cslc.sort('none');
-          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000007-01A");
+          return expect(this.cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual("CMPD-0000001-01A");
         });
       });
     });
@@ -420,13 +420,13 @@
           })(this), 1000);
           return runs((function(_this) {
             return function() {
-              return expect(_this.reasonSelected).toEqual('outlier');
+              return expect(_this.reasonSelected).toEqual('knocked out');
             };
           })(this));
         });
         return it("should return a different value if the options is changed", function() {
           runs(function() {
-            this.kpc.$('.bv_dataDictPicklist').val("crashout");
+            this.kpc.$('.bv_dataDictPicklist').val("knocked out");
             return this.kpc.$('.bv_doseResponseKnockoutPanelOKBtn').click();
           }, 1000);
           waitsFor((function(_this) {
@@ -436,7 +436,7 @@
           })(this), 1000);
           return runs((function(_this) {
             return function() {
-              return expect(_this.reasonSelected).toEqual('crashout');
+              return expect(_this.reasonSelected).toEqual('knocked out');
             };
           })(this));
         });
@@ -601,7 +601,7 @@
               this.ccc.$('.bv_sortDirection_descending').prop("checked", true);
               this.ccc.$('.bv_sortDirection_ascending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_descending').click();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000007-01A");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000011-01A");
             });
           });
           it("should update sort when ascending/descending is changed", function() {
@@ -611,11 +611,11 @@
               this.ccc.$('.bv_sortDirection_descending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_ascending').prop("checked", true);
               this.ccc.$('.bv_sortDirection_ascending').click();
-              expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000009-01A");
+              expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000008-01A");
               this.ccc.$('.bv_sortDirection_descending').prop("checked", true);
               this.ccc.$('.bv_sortDirection_ascending').prop("checked", false);
               this.ccc.$('.bv_sortDirection_descending').click();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000007-01A");
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual("CMPD-0000011-01A");
             });
           });
           it("should add the 'none' option if no sortBy options are received from the server", function() {
@@ -656,7 +656,7 @@
             return runs(function() {
               this.ccc.$('.bv_filterBy').val('sigmoid');
               this.ccc.$('.bv_filterBy').change();
-              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual(10);
+              return expect(this.ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual(12);
             });
           });
         });
