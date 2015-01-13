@@ -243,6 +243,9 @@
 
     PrimaryScreenProtocol.prototype.initialize = function() {
       PrimaryScreenProtocol.__super__.initialize.call(this);
+      this.set({
+        lsType: "Biology"
+      });
       return this.set({
         lsKind: "Bio Activity"
       });

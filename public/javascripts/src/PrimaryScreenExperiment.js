@@ -464,6 +464,9 @@
 
     PrimaryScreenExperiment.prototype.initialize = function() {
       PrimaryScreenExperiment.__super__.initialize.call(this);
+      this.set({
+        lsType: "Biology"
+      });
       return this.set({
         lsKind: "Bio Activity"
       });

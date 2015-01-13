@@ -44,9 +44,9 @@ describe "Protocol module testing", ->
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple() instanceof Value).toBeTruthy()
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual ""
-				it 'Should have a description value', -> # description will be Protocol Details or experimentDetails
-					expect(@prot.getDescription() instanceof Value).toBeTruthy()
-					expect(@prot.getDescription().get('clobValue')).toEqual ""
+				it 'Should have a protocol details value', ->
+					expect(@prot.getDetails() instanceof Value).toBeTruthy()
+					expect(@prot.getDetails().get('clobValue')).toEqual ""
 				it 'Should have a comments value', ->
 					expect(@prot.getComments() instanceof Value).toBeTruthy()
 					expect(@prot.getComments().get('clobValue')).toEqual ""
@@ -96,8 +96,8 @@ describe "Protocol module testing", ->
 					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "assay tree rule"
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual "assay principle goes here"
-				it 'Should have a description value', ->
-					expect(@prot.getDescription().get('clobValue')).toEqual "protocol details go here"
+				it 'Should have a protocol details value', ->
+					expect(@prot.getDetails().get('clobValue')).toEqual "protocol details go here"
 				it 'Should have a comments value', ->
 					expect(@prot.getComments().get('clobValue')).toEqual "protocol comments go here"
 				it 'Should have a notebook value', ->
@@ -289,8 +289,6 @@ describe "Protocol module testing", ->
 			describe "property display", ->
 				it "should show the save button text as Update", ->
 					expect(@pbc.$('.bv_save').html()).toEqual "Update"
-				it "should fill the short description field", ->
-					expect(@pbc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 				it "should fill the assay tree rule field", ->
 					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "/assayTreeRule"
 				it "should fill the assay stage field", ->
@@ -301,8 +299,8 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_assayStage').val()).toEqual "assay development"
 				it "should fill the assay principle field", ->
 					expect(@pbc.$('.bv_assayPrinciple').val()).toEqual "assay principle goes here"
-				it "should fill the long description field", ->
-					expect(@pbc.$('.bv_description').html()).toEqual "protocol details go here"
+				it "should fill the protocol details field", ->
+					expect(@pbc.$('.bv_details').html()).toEqual "protocol details go here"
 				it "should fill the comments field", ->
 					expect(@pbc.$('.bv_comments').html()).toEqual "protocol comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
@@ -399,15 +397,15 @@ describe "Protocol module testing", ->
 					desc = values[0].get('clobValue')
 					expect(desc).toEqual "New assay principle"
 					expect(@pbc.model.getAssayPrinciple().get('clobValue')).toEqual "New assay principle"
-				it "should update model when description is changed", ->
-					@pbc.$('.bv_description').val(" New long description   ")
-					@pbc.$('.bv_description').change()
+				it "should update model when protocol details is changed", ->
+					@pbc.$('.bv_details').val(" New protocol details   ")
+					@pbc.$('.bv_details').change()
 					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
 					expect(states.length).toEqual 1
-					values = states[0].getValuesByTypeAndKind("clobValue", "description")
+					values = states[0].getValuesByTypeAndKind("clobValue", "protocol details")
 					desc = values[0].get('clobValue')
-					expect(desc).toEqual "New long description"
-					expect(@pbc.model.getDescription().get('clobValue')).toEqual "New long description"
+					expect(desc).toEqual "New protocol details"
+					expect(@pbc.model.getDetails().get('clobValue')).toEqual "New protocol details"
 				it "should update model when comments is changed", ->
 					@pbc.$('.bv_comments').val(" New comments   ")
 					@pbc.$('.bv_comments').change()

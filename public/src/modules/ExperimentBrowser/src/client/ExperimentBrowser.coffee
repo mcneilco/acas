@@ -303,8 +303,13 @@ class window.ExperimentBrowserController extends Backbone.View
 
 	selectedExperimentUpdated: (experiment) =>
 		@trigger "selectedExperimentUpdated"
-		@experimentController = new ExperimentBaseController
-			model: experiment
+		if experiment.get('lsKind') is "Bio Activity"
+			@experimentController = new ExperimentBaseController
+				protocolKindFilter: "?protocolKind=Bio Activity"
+				model: new PrimaryScreenExperiment experiment.attributes
+		else
+			@experimentController = new ExperimentBaseController
+				model: new Experiment experiment.attributes
 
 		$('.bv_experimentBaseController').html @experimentController.render().el
 		@experimentController.displayInReadOnlyMode()

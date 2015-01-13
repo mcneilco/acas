@@ -49,9 +49,13 @@
           });
         });
         describe("required states and values", function() {
-          it('Should have a description value', function() {
-            expect(this.exp.getDescription() instanceof Value).toBeTruthy();
-            return expect(this.exp.getDescription().get('clobValue')).toEqual("");
+          it('Should have a experimentDetails value', function() {
+            expect(this.exp.getDetails() instanceof Value).toBeTruthy();
+            return expect(this.exp.getDetails().get('clobValue')).toEqual("");
+          });
+          it('Should have a comments value', function() {
+            expect(this.exp.getComments() instanceof Value).toBeTruthy();
+            return expect(this.exp.getComments().get('clobValue')).toEqual("");
           });
           it('Should have a notebook value', function() {
             return expect(this.exp.getNotebook() instanceof Value).toBeTruthy();
@@ -178,8 +182,8 @@
           it("should have labels", function() {
             return expect(this.exp.get('lsLabels').at(0).get('lsKind')).toEqual("experiment name");
           });
-          it('Should have a description value', function() {
-            return expect(this.exp.getDescription().get('clobValue')).toEqual("long description goes here");
+          it('Should have an experimentDetails value', function() {
+            return expect(this.exp.getDetails().get('clobValue')).toEqual("experiment details go here");
           });
           it('Should have a comments value', function() {
             return expect(this.exp.getComments().get('clobValue')).toEqual("comments go here");
@@ -226,7 +230,7 @@
             return expect(this.exp.get('shortDescription')).toEqual(" ");
           });
           it("should have the description be an empty string", function() {
-            return expect(this.exp.getDescription().get('clobValue')).toEqual("");
+            return expect(this.exp.getDetails().get('clobValue')).toEqual("");
           });
           it("should have the comments be an empty string", function() {
             return expect(this.exp.getComments().get('clobValue')).toEqual("");
@@ -615,8 +619,8 @@
           it("should not fill the short description field", function() {
             return expect(this.ebc.$('.bv_shortDescription').html()).toEqual(" ");
           });
-          it("should not fill the description field", function() {
-            return expect(this.ebc.$('.bv_description').html()).toEqual("");
+          it("should not fill the experimentDetails field", function() {
+            return expect(this.ebc.$('.bv_details').html()).toEqual("");
           });
           it("should not fill the comments field", function() {
             return expect(this.ebc.$('.bv_comments').html()).toEqual("");
@@ -647,27 +651,27 @@
             this.ebc.$('.bv_shortDescription').change();
             return expect(this.ebc.model.get('shortDescription')).toEqual(" ");
           });
-          it("should update model when description is changed", function() {
+          it("should update model when experimentDetails is changed", function() {
             var desc, states, values;
-            this.ebc.$('.bv_description').val(" New long description   ");
-            this.ebc.$('.bv_description').change();
+            this.ebc.$('.bv_details').val(" New experiment details   ");
+            this.ebc.$('.bv_details').change();
             states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
             expect(states.length).toEqual(1);
-            values = states[0].getValuesByTypeAndKind("clobValue", "description");
+            values = states[0].getValuesByTypeAndKind("clobValue", "experiment details");
             desc = values[0].get('clobValue');
-            expect(desc).toEqual("New long description");
-            return expect(this.ebc.model.getDescription().get('clobValue')).toEqual("New long description");
+            expect(desc).toEqual("New experiment details");
+            return expect(this.ebc.model.getDetails().get('clobValue')).toEqual("New experiment details");
           });
-          it("should update model when description is changed", function() {
+          it("should update model when comments is changed", function() {
             var desc, states, values;
-            this.ebc.$('.bv_description').val(" New long description   ");
-            this.ebc.$('.bv_description').change();
+            this.ebc.$('.bv_comments').val(" New comments   ");
+            this.ebc.$('.bv_comments').change();
             states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
             expect(states.length).toEqual(1);
-            values = states[0].getValuesByTypeAndKind("clobValue", "description");
+            values = states[0].getValuesByTypeAndKind("clobValue", "comments");
             desc = values[0].get('clobValue');
-            expect(desc).toEqual("New long description");
-            return expect(this.ebc.model.getDescription().get('clobValue')).toEqual("New long description");
+            expect(desc).toEqual("New comments");
+            return expect(this.ebc.model.getComments().get('clobValue')).toEqual("New comments");
           });
           it("should update model when name is changed", function() {
             this.ebc.$('.bv_experimentName').val(" Updated experiment name   ");
@@ -769,8 +773,8 @@
           it("should fill the short description field", function() {
             return expect(this.ebc.$('.bv_shortDescription').html()).toEqual("experiment created by generic data parser");
           });
-          it("should fill the long description field", function() {
-            return expect(this.ebc.$('.bv_description').html()).toEqual("long description goes here");
+          it("should fill the experiment details field", function() {
+            return expect(this.ebc.$('.bv_details').html()).toEqual("experiment details go here");
           });
           it("should fill the comments field", function() {
             return expect(this.ebc.$('.bv_comments').html()).toEqual("comments go here");

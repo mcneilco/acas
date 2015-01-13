@@ -1515,7 +1515,7 @@
               urlValue: null,
               version: 0
             }, {
-              clobValue: "long description goes here",
+              clobValue: "experiment details go here",
               codeValue: null,
               comments: null,
               dateValue: null,
@@ -1536,10 +1536,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              lsKind: "description",
+              lsKind: "experiment details",
               valueOperator: null,
               lsType: "clobValue",
-              lsTypeAndKind: "clobValue_description",
+              lsTypeAndKind: "clobValue_experiment details",
               valueUnit: null,
               version: 0
             }, {
@@ -2923,7 +2923,7 @@
               urlValue: null,
               version: 0
             }, {
-              clobValue: "long description goes here",
+              clobValue: "experiment details go here",
               codeValue: null,
               comments: null,
               dateValue: null,
@@ -2944,10 +2944,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              lsKind: "description",
+              lsKind: "experiment details",
               valueOperator: null,
               lsType: "clobValue",
-              lsTypeAndKind: "clobValue_description",
+              lsTypeAndKind: "clobValue_experiment details",
               valueUnit: null,
               version: 0
             }, {
@@ -3381,7 +3381,7 @@
               urlValue: null,
               version: 0
             }, {
-              clobValue: "long description goes here",
+              clobValue: "experiment details go here",
               codeValue: null,
               comments: null,
               dateValue: null,
@@ -3402,10 +3402,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              lsKind: "description",
+              lsKind: "experiment details",
               valueOperator: null,
               lsType: "clobValue",
-              lsTypeAndKind: "clobValue_description",
+              lsTypeAndKind: "clobValue_experiment details",
               valueUnit: null,
               version: 0
             }, {
