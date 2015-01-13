@@ -177,8 +177,13 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
     wellTypes[batchNames==vehicleControl$batchCode] <- "VC"
   }
   
-  posBatchFilter <- batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration
-  negBatchFilter <- batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration
+  toleranceRange <- racas::applicationSettings$client.service.control.tolerance.percentage # percent
+  #   toleranceRange <- 0.01
+  
+  posBatchFilter <- batchNames==positiveControl$batchCode & 
+                    abs(concentrations-positiveControl$concentration) <= (positiveControl$concentration * toleranceRange)/100
+  negBatchFilter <- batchNames==negativeControl$batchCode & 
+                    abs(concentrations-negativeControl$concentration) <= (negativeControl$concentration * toleranceRange)/100
     
   if(!is.null(concentrationUnits)) {
     posBatchFilter <- posBatchFilter & concentrations==positiveControl$concentration
