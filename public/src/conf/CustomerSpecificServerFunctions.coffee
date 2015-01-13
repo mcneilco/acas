@@ -180,3 +180,14 @@ exports.makeServiceRequestHeaders = (user) ->
 
 	headers =
 		"From": username
+
+exports.getCustomerMolecularTargetCodes = (resp) ->
+	molecTargetTestJSON = require '../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
+	resp.end JSON.stringify molecTargetTestJSON.customerMolecularTargetCodeTable
+
+exports.getAuthors = (resp) ->
+	config = require '../../../conf/compiled/conf.js'
+	serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
+	console.log baseurl
+	serverUtilityFunctions.getFromACASServer(baseurl, resp)
