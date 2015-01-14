@@ -22,6 +22,8 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
                                                              "batch_number",
                                                              "cmpdConc",
                                                              assayCompoundData$activityColNames), with=FALSE]
+  # TODO: Check concUnit prior to making this adjustment
+  resultTable[ , cmpdConc := cmpdConc * 1000]
   
   resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
   resultTable[batchCode == "NA::NA", batchCode := "::"]

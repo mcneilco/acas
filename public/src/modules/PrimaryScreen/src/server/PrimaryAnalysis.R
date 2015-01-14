@@ -1506,7 +1506,9 @@ autoFlagWells <- function(resultTable, parameters) {
   resultTable[, autoFlagType:=NA_character_]
   resultTable[, autoFlagObservation:=NA_character_]
   resultTable[, autoFlagReason:=NA_character_]
-  
+  if(!parameters$autoHitSelection) {
+    return(resultTable)
+  }
   if(is.null(parameters$thresholdType) || parameters$thresholdType == "") {
     return(resultTable)
   } else if(parameters$thresholdType == "efficacy") {

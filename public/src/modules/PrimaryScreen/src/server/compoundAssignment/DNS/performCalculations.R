@@ -145,7 +145,7 @@ computeTransformedResults <- function(mainData, transformation, parameters) {
       stdevVehControl <- sd(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity))
     }
     return((as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
-  } else if (transformation == "null") {
+  } else if (transformation == "null" || transformation == "") {
     warnUser("No transformation applied to activity.")
     return(mainData$normalizedActivity)
   } else {
