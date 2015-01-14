@@ -231,4 +231,19 @@
     };
   };
 
+  exports.getCustomerMolecularTargetCodes = function(resp) {
+    var molecTargetTestJSON;
+    molecTargetTestJSON = require('../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js');
+    return resp.end(JSON.stringify(molecTargetTestJSON.customerMolecularTargetCodeTable));
+  };
+
+  exports.getAuthors = function(resp) {
+    var baseurl, config, serverUtilityFunctions;
+    config = require('../../../conf/compiled/conf.js');
+    serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
+    baseurl = config.all.client.service.persistence.fullpath + "authors/codeTable";
+    console.log(baseurl);
+    return serverUtilityFunctions.getFromACASServer(baseurl, resp);
+  };
+
 }).call(this);
