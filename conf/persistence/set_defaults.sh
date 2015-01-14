@@ -97,7 +97,9 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "transfer data", lsType:{id:2, version:0}},
 {kindName: "protocol metadata", lsType:{id:1, version:0}},
 {kindName: "plate information", lsType:{id:1, version:0}},
-{kindName: "subject metadata", lsType:{id:1, version:0}}
+{kindName: "subject metadata", lsType:{id:1, version:0}},
+{kindName: "auto flag", lsType:{id:2, version}},
+{kindName: "user flag", lsType:{id:2, version}}
 ]' http://localhost:8080/acas/statekinds/jsonArray
 
 
