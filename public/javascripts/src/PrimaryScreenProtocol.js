@@ -689,7 +689,7 @@
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
                     lsKind = json[0].lsKind;
-                    if (lsKind === "Bio Activity ") {
+                    if (lsKind === "Bio Activity") {
                       prot = new PrimaryScreenProtocol(json[0]);
                       prot.set(prot.parse(prot.attributes));
                       if (window.AppLaunchParams.moduleLaunchParams.copy) {
