@@ -217,7 +217,28 @@
         this.model = new LinkerSmallMoleculeParent();
       }
       LinkerSmallMoleculeParentController.__super__.render.call(this);
-      return this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
+      this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
+      this.setupStructuralFileController();
+      return this;
+    };
+
+    LinkerSmallMoleculeParentController.prototype.setupStructuralFileController = function() {
+      this.structuralFileController = new AttachFileListController({
+        canRemoveAttachFileModel: false,
+        el: this.$('.bv_structuralFile'),
+        collection: new AttachFileList()
+      });
+      this.structuralFileController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.structuralFileController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      return this.structuralFileController.render();
     };
 
     LinkerSmallMoleculeParentController.prototype.updateModel = function() {

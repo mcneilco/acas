@@ -97,32 +97,34 @@
 	routeSet_12.setupRoutes(app, loginRoutes);
 	routeSet_13 = require("./routes/GenericDataParserRoutes.js");
 	routeSet_13.setupRoutes(app, loginRoutes);
-	routeSet_14 = require("./routes/LinkerSmallMoleculeServiceRoutes.js");
+	routeSet_14 = require("./routes/InternalizationAgentServiceRoutes.js");
 	routeSet_14.setupRoutes(app, loginRoutes);
-	routeSet_15 = require("./routes/Logger.js");
+	routeSet_15 = require("./routes/LinkerSmallMoleculeServiceRoutes.js");
 	routeSet_15.setupRoutes(app, loginRoutes);
-	routeSet_16 = require("./routes/LoggingRoutes.js");
+	routeSet_16 = require("./routes/Logger.js");
 	routeSet_16.setupRoutes(app, loginRoutes);
-	routeSet_17 = require("./routes/PreferredBatchIdService.js");
+	routeSet_17 = require("./routes/LoggingRoutes.js");
 	routeSet_17.setupRoutes(app, loginRoutes);
-	routeSet_18 = require("./routes/PrimaryScreenProtocolRoutes.js");
+	routeSet_18 = require("./routes/PreferredBatchIdService.js");
 	routeSet_18.setupRoutes(app, loginRoutes);
-	routeSet_19 = require("./routes/PrimaryScreenRoutes.js");
+	routeSet_19 = require("./routes/PrimaryScreenProtocolRoutes.js");
 	routeSet_19.setupRoutes(app, loginRoutes);
-	routeSet_20 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_20 = require("./routes/PrimaryScreenRoutes.js");
 	routeSet_20.setupRoutes(app, loginRoutes);
-	routeSet_21 = require("./routes/ProteinServiceRoutes.js");
+	routeSet_21 = require("./routes/ProjectServiceRoutes.js");
 	routeSet_21.setupRoutes(app, loginRoutes);
-	routeSet_22 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_22 = require("./routes/ProteinServiceRoutes.js");
 	routeSet_22.setupRoutes(app, loginRoutes);
-	routeSet_23 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_23 = require("./routes/ProtocolServiceRoutes.js");
 	routeSet_23.setupRoutes(app, loginRoutes);
-	routeSet_24 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_24 = require("./routes/RunPrimaryAnalysisRoutes.js");
 	routeSet_24.setupRoutes(app, loginRoutes);
-	routeSet_25 = require("./routes/SpacerServiceRoutes.js");
+	routeSet_25 = require("./routes/ServerUtilityFunctions.js");
 	routeSet_25.setupRoutes(app, loginRoutes);
-	routeSet_26 = require("./routes/ThingServiceRoutes.js");
+	routeSet_26 = require("./routes/SpacerServiceRoutes.js");
 	routeSet_26.setupRoutes(app, loginRoutes);
+	routeSet_27 = require("./routes/ThingServiceRoutes.js");
+	routeSet_27.setupRoutes(app, loginRoutes);
 
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {

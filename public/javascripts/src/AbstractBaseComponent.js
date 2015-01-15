@@ -205,6 +205,9 @@
       $(this.el).html(this.template());
       console.log("autofill template?");
       console.log(this.additionalParentAttributesTemplate != null);
+      if (this.componentPickerTemplate != null) {
+        this.setupComponentPickerController();
+      }
       if (this.additionalParentAttributesTemplate != null) {
         this.$('.bv_additionalParentAttributes').html(this.additionalParentAttributesTemplate());
       }
@@ -236,6 +239,14 @@
         this.$('.bv_completionDateIcon').on("click", function() {
           return false;
         });
+      } else {
+        console.log("model is not new");
+        this.$('.bv_recordedBy').removeAttr('disabled');
+        this.$('.bv_completionDate').removeAttr('disabled');
+        this.$('.bv_notebook').removeAttr('disabled');
+        this.$('.bv_completionDateIcon').on("click", function() {
+          return true;
+        });
       }
       return this;
     };
@@ -254,6 +265,23 @@
     AbstractBaseComponentParentController.prototype.modelChangeCallback = function(method, model) {
       this.trigger('amDirty');
       return this.$('.bv_updateParentComplete').hide();
+    };
+
+    AbstractBaseComponentParentController.prototype.setupComponentPickerController = function() {
+      this.componentPickerController = new ComponentPickerController({
+        el: this.$('.bv_componentPicker')
+      });
+      this.componentPickerController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.componentPickerController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      return this.componentPickerController.render();
     };
 
     AbstractBaseComponentParentController.prototype.setupRecordedBySelect = function() {
@@ -430,6 +458,7 @@
       console.log(attachFileList);
       console.log("finish set up attach file list controller");
       this.attachFileListController = new AttachFileListController({
+        canRemoveAttachFileModel: false,
         el: this.$('.bv_attachFileList'),
         collection: attachFileList
       });
@@ -664,6 +693,9 @@
     };
 
     AbstractBaseComponentController.prototype.checkFormValid = function() {
+      console.log("check form valid");
+      console.log(this.parentController.model.validationError);
+      console.log(this.batchSelectController.batchController.model.validationError);
       if (this.parentController.isValid() && this.batchSelectController.batchController.isValid()) {
         return this.$('.bv_save').removeAttr('disabled');
       } else {

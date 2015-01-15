@@ -160,7 +160,7 @@
 
     AttachFileListController.prototype.template = _.template($("#AttachFileListView").html());
 
-    AttachFileListController.prototype.canRemoveAttachFileModel = true;
+    AttachFileListController.prototype.canRemoveAttachFileModel = false;
 
     AttachFileListController.prototype.initialize = function() {
       var newModel;

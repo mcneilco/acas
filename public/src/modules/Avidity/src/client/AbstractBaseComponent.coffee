@@ -113,6 +113,9 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 		$(@el).html @template()
 		console.log "autofill template?"
 		console.log @additionalParentAttributesTemplate?
+		if @componentPickerTemplate?
+#			@$('.bv_componentPicker').html @componentPickerTemplate()
+			@setupComponentPickerController()
 		if @additionalParentAttributesTemplate?
 			@$('.bv_additionalParentAttributes').html @additionalParentAttributesTemplate()
 		@setupRecordedBySelect()
@@ -140,7 +143,13 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 			@$('.bv_notebook').attr('disabled','disabled')
 			@$('.bv_completionDateIcon').on "click", ->
 				return false
-
+		else
+			console.log "model is not new"
+			@$('.bv_recordedBy').removeAttr('disabled')
+			@$('.bv_completionDate').removeAttr('disabled')
+			@$('.bv_notebook').removeAttr('disabled')
+			@$('.bv_completionDateIcon').on "click", ->
+				return true
 		@
 
 	modelSaveCallback: (method, model) ->
@@ -156,6 +165,15 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 	modelChangeCallback: (method, model) ->
 		@trigger 'amDirty'
 		@$('.bv_updateParentComplete').hide()
+
+	setupComponentPickerController: ->
+		@componentPickerController = new ComponentPickerController
+			el: @$('.bv_componentPicker')
+		@componentPickerController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@componentPickerController.on 'amClean', =>
+			@trigger 'amClean'
+		@componentPickerController.render()
 
 	setupRecordedBySelect: ->
 		console.log "setup recorded by"
@@ -301,7 +319,7 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 #		console.log attachFileList
 #		console.log "done getting afl"
 		@attachFileListController= new AttachFileListController
-#			canRemoveAttachFileModel: false
+			canRemoveAttachFileModel: false
 			el: @$('.bv_attachFileList')
 			collection: attachFileList
 		@attachFileListController.on 'amDirty', =>
@@ -457,6 +475,9 @@ class window.AbstractBaseComponentController extends Backbone.View
 #		@$('.bv_saveBatchComplete').hide()
 
 	checkFormValid: ->
+		console.log "check form valid"
+		console.log @parentController.model.validationError
+		console.log @batchSelectController.batchController.model.validationError
 		if @parentController.isValid() and @batchSelectController.batchController.isValid()
 			@$('.bv_save').removeAttr('disabled')
 		else

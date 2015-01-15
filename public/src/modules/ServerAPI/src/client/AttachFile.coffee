@@ -95,7 +95,7 @@ class window.AttachFileController extends Backbone.View
 
 class window.AttachFileListController extends Backbone.View
 	template: _.template($("#AttachFileListView").html())
-	canRemoveAttachFileModel: true
+	canRemoveAttachFileModel: false
 
 	initialize: ->
 		console.log "@options.canRemoveAttachFileModel?"

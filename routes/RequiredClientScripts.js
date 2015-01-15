@@ -93,6 +93,8 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/CationicBlockServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/CationicBlockTestJSON.js",
+	"/javascripts/spec/testFixtures/ComponentPickerCodeTableTestJSON.js",
+	"/javascripts/spec/testFixtures/ComponentPickerTestJSON.js",
 	"/javascripts/spec/testFixtures/CurveAnalysisCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/CurveFitTestFixtures.js",
 	"/javascripts/spec/testFixtures/CurveFitTestJSON.js",

@@ -75,12 +75,6 @@
           nameError = false;
         }
       }
-      if (nameError) {
-        errors.push({
-          attribute: 'parentName',
-          message: "Name must be set"
-        });
-      }
       if (_.isNaN(attrs.recordedDate)) {
         errors.push({
           attribute: 'recordedDate',
@@ -302,6 +296,8 @@
       this.render = __bind(this.render, this);
       return InternalizationAgentParentController.__super__.constructor.apply(this, arguments);
     }
+
+    InternalizationAgentParentController.prototype.componentPickerTemplate = _.template($("#ComponentPickerView").html());
 
     InternalizationAgentParentController.prototype.additionalParentAttributesTemplate = _.template($("#InternalizationAgentParentView").html());
 

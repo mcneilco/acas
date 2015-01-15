@@ -143,6 +143,64 @@
 				lsTypeAndKind: "codeValue_conjugation site"
 				valueUnit: null
 				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 234
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 128
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: 231
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "batch number"
+				valueOperator: null
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_batch number"
+				unitKind: null
+				unitType: null
+				valueUnit: null
+				version: 0
+			,
+				clobValue: 'componentsList":[{"componentType”:"Protein”,”componentCodeName”:”PROT000001"},{"componentType":"spacer,”componentCodeName”:”SP000003"},{"componentType":"cationic block","componentCodeName":"CB000002"}'
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 235
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 128
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "components"
+				valueOperator: null
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_components"
+				unitKind: null
+				unitType: null
+				valueUnit: null
+				version: 0
 			]
 			modifiedBy: null
 			modifiedDate: null

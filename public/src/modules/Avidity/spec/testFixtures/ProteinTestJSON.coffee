@@ -140,6 +140,35 @@
 				lsTypeAndKind: "stringValue_aa sequence"
 				valueUnit: null
 				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 234
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 128
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: 231
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "batch number"
+				valueOperator: null
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_batch number"
+				unitKind: null
+				unitType: null
+				valueUnit: null
+				version: 0
 			]
 			modifiedBy: null
 			modifiedDate: null

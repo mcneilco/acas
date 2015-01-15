@@ -55,10 +55,6 @@ class window.InternalizationAgentParent extends AbstractBaseComponentParent
 			nameError = true
 			if bestName.get('labelText') != ""
 				nameError = false
-		if nameError
-			errors.push
-				attribute: 'parentName'
-				message: "Name must be set"
 		if _.isNaN(attrs.recordedDate)
 			errors.push
 				attribute: 'recordedDate'
@@ -214,6 +210,7 @@ class window.InternalizationAgentBatch extends AbstractBaseComponentBatch
 
 
 class window.InternalizationAgentParentController extends AbstractBaseComponentParentController
+	componentPickerTemplate: _.template($("#ComponentPickerView").html())
 	additionalParentAttributesTemplate: _.template($("#InternalizationAgentParentView").html())
 
 	events: ->

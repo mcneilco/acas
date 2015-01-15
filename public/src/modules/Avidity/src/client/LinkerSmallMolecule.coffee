@@ -152,6 +152,41 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 			@model = new LinkerSmallMoleculeParent()
 		super()
 		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
+		@setupStructuralFileController()
+		@
+
+	setupStructuralFileController: ->
+		@structuralFileController= new AttachFileListController
+			canRemoveAttachFileModel: false
+			el: @$('.bv_structuralFile')
+			collection: new AttachFileList()
+		@structuralFileController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@structuralFileController.on 'amClean', =>
+			@trigger 'amClean'
+		@structuralFileController.render()
+
+#		@lsFileChooser = new LSFileChooserController({
+#			el: @$('.bv_structuralFile'),
+#			formId: 'fieldBlah',
+#			maxNumberOfFiles: 1,
+#			requiresValidation: false
+#			url: UtilityFunctions::getFileServiceURL()
+#			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'zip']
+#			hideDelete: true
+#		});
+#		@lsFileChooser.render()
+#		@lsFileChooser.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
+#
+#		@
+#
+#	handleFileUpload: (nameOnServer) =>
+#		@model.set fileValue: nameOnServer
+#		#		@model.getFileInfo().set
+#		#			fileValue: "path to file"
+#		console.log @model.get('fileValue')
+#		@trigger 'fileUploaded'
+#		@trigger 'amDirty'
 
 	updateModel: =>
 		@model.get("linker small molecule name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
