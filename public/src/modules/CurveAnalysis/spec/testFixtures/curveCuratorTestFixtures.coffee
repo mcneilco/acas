@@ -1275,6 +1275,7 @@
 			reportedValues: "<table >  <tr> <td> min </td> <td align=\"right\"> 17.15 </td> </tr>  <tr> <td> max </td> <td align=\"right\"> 91.52 </td> </tr>  <tr> <td> slope </td> <td align=\"right\"> 1.24 </td> </tr>  <tr> <td> ec50 </td> <td align=\"right\"> 0.51 </td> </tr>   </table>"
 			sessionID: "/var/folders/5b/s62pqy655kx6929zhxrml5c80000gn/T//rSe-134ae3fa3472c"
 			userFlagStatus: ""
+			renderingHint: "4 parameter D-R"
 ) (if (typeof process is "undefined" or not process.versions) then window.curveCuratorTestJSON = window.curveCuratorTestJSON or {} else exports)
 
 

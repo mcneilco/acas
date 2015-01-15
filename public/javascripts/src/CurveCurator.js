@@ -284,7 +284,7 @@
         }
       }
       if (curve != null) {
-        if (curve.type === "LL.4") {
+        if (curve.type === "4 parameter D-R") {
           fct = function(x) {
             return curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10, x) / curve.ec50)));
           };
@@ -307,6 +307,38 @@
               strokeColor: color
             });
             brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), 0]], {
+              fixed: true,
+              straightFirst: false,
+              straightLast: false,
+              strokeWidth: 2,
+              dash: 3,
+              strokeColor: color
+            });
+          }
+        }
+        if (curve.type === "Ki Fit") {
+          fct = function(x) {
+            return curve.max + (curve.min - curve.max) / (1 + Math.pow(10, x - log10(curve.ki * (1 + curve.ligandConc / curve.kd))));
+          };
+          brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {
+            strokeWidth: 2
+          });
+          if (curve.reported_ki != null) {
+            intersect = fct(log10(curve.reported_ki));
+            if (curve.reported_operator != null) {
+              color = '#ff0000';
+            } else {
+              color = '#808080';
+            }
+            brd.create('line', [[plotWindow[0], intersect], [log10(curve.reported_ki), intersect]], {
+              fixed: true,
+              straightFirst: false,
+              straightLast: false,
+              strokeWidth: 2,
+              dash: 3,
+              strokeColor: color
+            });
+            brd.create('line', [[log10(curve.reported_ki), intersect], [log10(curve.reported_ki), 0]], {
               fixed: true,
               straightFirst: false,
               straightLast: false,
@@ -451,16 +483,16 @@
     };
 
     CurveDetail.prototype.fixCompositeClasses = function() {
-      if (!(this.get('fitSettings') instanceof DoseResponseAnalysisParameters)) {
+      if (!(this.get('fitSettings') instanceof DoseResponseKiAnalysisParameters)) {
         return this.set({
-          fitSettings: new DoseResponseAnalysisParameters(this.get('fitSettings'))
+          fitSettings: new DoseResponseKiAnalysisParameters(this.get('fitSettings'))
         });
       }
     };
 
     CurveDetail.prototype.parse = function(resp) {
-      if (!(resp.fitSettings instanceof DoseResponseAnalysisParameters)) {
-        resp.fitSettings = new DoseResponseAnalysisParameters(resp.fitSettings);
+      if (!(resp.fitSettings instanceof DoseResponseKiAnalysisParameters)) {
+        resp.fitSettings = new DoseResponseKiAnalysisParameters(resp.fitSettings);
       }
       return resp;
     };
@@ -500,10 +532,19 @@
     };
 
     CurveEditorController.prototype.render = function() {
+      var drapcType;
       this.$el.empty();
       if (this.model != null) {
         this.$el.html(this.template());
-        this.drapc = new DoseResponseAnalysisParametersController({
+        drapcType = (function() {
+          switch (this.model.get('renderingHint')) {
+            case "4 parameter D-R":
+              return DoseResponseAnalysisParametersController;
+            case "Ki Fit":
+              return DoseResponseKiAnalysisParametersController;
+          }
+        }).call(this);
+        this.drapc = new drapcType({
           model: this.model.get('fitSettings'),
           el: this.$('.bv_analysisParameterForm')
         });
