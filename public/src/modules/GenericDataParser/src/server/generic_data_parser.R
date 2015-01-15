@@ -1415,7 +1415,7 @@ validateProject <- function(projectName, configList, errorEnv) {
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.project.path))
+  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.project.path))
   }, error = function(e) {
     stopUser("The project service did not respond correctly, contact your system administrator")
   })
@@ -1456,7 +1456,7 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
   
   if (!testMode) {
     response <- tryCatch({
-      getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, configList$client.service.users.path, "/", scientistName)))
+      getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.users.path, "/", scientistName)))
     }, error = function(e) {
       addError( paste("There was an error in validating the scientist's name:", scientistName))
       return("")
@@ -2844,7 +2844,7 @@ getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat
     }
   } else {
     # TODO: generate the list dynamically
-    if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data", "Use Existing Experiment", "Precise For Existing Experiment"))) {
+    if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data", "Use Existing Experiment", "Precise For Existing Experiment", "Precise"))) {
       stopUser("The Format must be 'Generic', 'Dose Response', or some custom format that you have been given.")
     }
     o$lookFor <- "Calculated Results"
