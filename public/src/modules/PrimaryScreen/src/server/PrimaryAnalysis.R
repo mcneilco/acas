@@ -40,6 +40,8 @@
 # file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/ArchiveNonTest.zip", "privateUploads/")
 # request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1086654", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
 
+source("public/src/conf/customFunctions.R")
+
 getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
   
   if(flaggedWells == "") {
@@ -1606,6 +1608,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   dir.create(specDataPrepFileLocation, showWarnings = FALSE)
   
   if (!file.info(folderToParse)$isdir) {
+    originalZipFile <- folderToParse
     folderToParse <- unzipDataFolder(folderToParse, targetLocation, experiment)
   } 
   
@@ -1856,7 +1859,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   if (dryRun && !testMode) {
     saveAcasFileToExperiment(
-      folderToParse, experiment, 
+      originalZipFile, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
   }
   
