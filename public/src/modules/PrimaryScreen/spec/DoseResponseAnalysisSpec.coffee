@@ -15,6 +15,7 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drap).toBeDefined()
 				it "should have defaults", ->
 					expect(@drap.get('inactiveThreshold')).toEqual 20
+					expect(@drap.get('inactiveThresholdMode')).toBeTruthy()
 					expect(@drap.get('inverseAgonistMode')).toBeFalsy()
 					expect(@drap.get('max') instanceof Backbone.Model).toBeTruthy()
 					expect(@drap.get('min') instanceof Backbone.Model).toBeTruthy()
@@ -104,9 +105,13 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.$('.bv_autofillSection').length).toEqual 1
 				it 'should load a template', ->
 					expect(@drapc.$('.bv_inverseAgonistMode').length).toEqual 1
+				it 'should load a template', ->
+					expect(@drapc.$('.bv_inactiveThresholdMode').length).toEqual 1
 #			describe "render default parameters", ->
 				it 'should show the inverse agonist mode', ->
-					expect(@drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeUndefined()
+					expect(@drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeFalsy()
+				it 'should show the inactive threshold mode', ->
+					expect(@drapc.$('.bv_inactiveThresholdMode').attr('checked')).toBeTruthy()
 				it 'should start with max_limitType radio set', ->
 					expect(@drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual 'none'
 				it 'should start with min_limitType radio set', ->
@@ -132,6 +137,8 @@ describe "Dose Response Analysis Module Testing", ->
 			describe "render existing parameters", ->
 				it 'should show the inverse agonist mode', ->
 					expect(@drapc.$('.bv_inverseAgonistMode').attr('checked')).toEqual 'checked'
+				it 'should show the inactive threshold mode', ->
+					expect(@drapc.$('.bv_inactiveThresholdMode').attr('checked')).toEqual 'checked'
 				it 'should start with max_limitType radio set', ->
 					expect(@drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual 'pin'
 				it 'should start with min_limitType radio set', ->
@@ -162,6 +169,12 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.model.get('inverseAgonistMode')).toBeFalsy()
 					@drapc.$('.bv_inverseAgonistMode').click()
 					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
+				it 'should update the inactive threshold mode', ->
+					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
+					@drapc.$('.bv_inactiveThresholdMode').click()
+					expect(@drapc.model.get('inactiveThresholdMode')).toBeFalsy()
+					@drapc.$('.bv_inactiveThresholdMode').click()
+					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
 				it 'should update the max_limitType radio to none', ->
 					@drapc.$(".bv_max_limitType_pin").click()
 					@drapc.$(".bv_max_limitType_none").click()
@@ -286,21 +299,21 @@ describe "Dose Response Analysis Module Testing", ->
 #					expect(@drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual "30"
 			describe "behavior and validation", ->
 				#TODO figure out how to test if slider is in disabled or enabled stated
-#				it "should enable the inactive threshold if inverse agonist mode is not selected", ->
-#					@drapc.$('.bv_inverseAgonistMode').click()
-#					expect(@drapc.model.get('inverseAgonistMode')).toBeFalsy()
-#					expect(@drapc.$('.bv_inactiveTreshold').attr("disabled")).toBeUndefined()
-#				it "should disable the inactive threshold if inverse agonist mode is selected", ->
-#					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
-#					expect(@drapc.$('.bv_inactiveTreshold').attr("disabled")).toEqual "disabled"
-#				it "should disable the inactive threshold if inverse agonist mode is selected after deselection", ->
-#					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
-#					@drapc.$('.bv_inverseAgonistMode').click()
-#					expect(@drapc.model.get('inverseAgonistMode')).toBeFalsy()
-#					@drapc.$('.bv_inverseAgonistMode').click()
-#					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
-#					expect(@drapc.$('.bv_inactiveTreshold').attr("disabled")).toEqual "disabled"
-#					@drapc.$('.bv_inverseAgonistMode').click()
+#				it "should enable the inactive threshold if inactive threshold mode is not selected", ->
+#					@drapc.$('.bv_inactiveThresholdMode').click()
+#					expect(@drapc.model.get('inactiveThresholdMode')).toBeFalsy()
+#					expect(@drapc.$('.bv_inactiveThresholdMode').attr("disabled")).toBeUndefined()
+#				it "should disable the inactive threshold if inactive threshold mode is selected", ->
+#					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
+#					expect(@drapc.$('.bv_inactiveThresholdMode').attr("disabled")).toEqual "disabled"
+#				it "should disable the inactive threshold if inactive threshold mode is selected after deselection", ->
+#					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
+#					@drapc.$('.bv_inactiveThresholdMode').click()
+#					expect(@drapc.model.get('inactiveThresholdMode')).toBeFalsy()
+#					@drapc.$('.bv_inactiveThresholdMode').click()
+#					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
+#					expect(@drapc.$('.bv_inactiveThresholdMode').attr("disabled")).toEqual "disabled"
+#					@drapc.$('.bv_inactiveThresholdMode').click()
 			describe "validation testing", ->
 				describe "error notification", ->
 					it "should show error if max_limitType is set to pin and max_value is not set", ->

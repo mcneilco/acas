@@ -20,6 +20,7 @@
           });
           return it("should have defaults", function() {
             expect(this.drap.get('inactiveThreshold')).toEqual(20);
+            expect(this.drap.get('inactiveThresholdMode')).toBeTruthy();
             expect(this.drap.get('inverseAgonistMode')).toBeFalsy();
             expect(this.drap.get('max') instanceof Backbone.Model).toBeTruthy();
             expect(this.drap.get('min') instanceof Backbone.Model).toBeTruthy();
@@ -163,8 +164,14 @@
           it('should load a template', function() {
             return expect(this.drapc.$('.bv_inverseAgonistMode').length).toEqual(1);
           });
+          it('should load a template', function() {
+            return expect(this.drapc.$('.bv_inactiveThresholdMode').length).toEqual(1);
+          });
           it('should show the inverse agonist mode', function() {
-            return expect(this.drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeUndefined();
+            return expect(this.drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeFalsy();
+          });
+          it('should show the inactive threshold mode', function() {
+            return expect(this.drapc.$('.bv_inactiveThresholdMode').attr('checked')).toBeTruthy();
           });
           it('should start with max_limitType radio set', function() {
             return expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('none');
@@ -202,6 +209,9 @@
         describe("render existing parameters", function() {
           it('should show the inverse agonist mode', function() {
             return expect(this.drapc.$('.bv_inverseAgonistMode').attr('checked')).toEqual('checked');
+          });
+          it('should show the inactive threshold mode', function() {
+            return expect(this.drapc.$('.bv_inactiveThresholdMode').attr('checked')).toEqual('checked');
           });
           it('should start with max_limitType radio set', function() {
             return expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('pin');
@@ -244,6 +254,13 @@
             expect(this.drapc.model.get('inverseAgonistMode')).toBeFalsy();
             this.drapc.$('.bv_inverseAgonistMode').click();
             return expect(this.drapc.model.get('inverseAgonistMode')).toBeTruthy();
+          });
+          it('should update the inactive threshold mode', function() {
+            expect(this.drapc.model.get('inactiveThresholdMode')).toBeTruthy();
+            this.drapc.$('.bv_inactiveThresholdMode').click();
+            expect(this.drapc.model.get('inactiveThresholdMode')).toBeFalsy();
+            this.drapc.$('.bv_inactiveThresholdMode').click();
+            return expect(this.drapc.model.get('inactiveThresholdMode')).toBeTruthy();
           });
           it('should update the max_limitType radio to none', function() {
             this.drapc.$(".bv_max_limitType_pin").click();
