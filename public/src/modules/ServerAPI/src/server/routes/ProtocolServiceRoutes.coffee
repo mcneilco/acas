@@ -1,3 +1,8 @@
+exports.setupAPIRoutes = (app) ->
+	app.get '/api/protocols/codename/:code', exports.protocolByCodename
+	app.get '/api/protocols/:id', exports.protocolById
+	app.post '/api/protocols', exports.postProtocol
+	app.put '/api/protocols/:id', exports.putProtocol
 
 
 exports.setupRoutes = (app, loginRoutes) ->

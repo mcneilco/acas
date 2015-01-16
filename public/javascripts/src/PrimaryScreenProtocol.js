@@ -290,14 +290,14 @@
         });
       }
       if (attrs.subclass != null) {
-        cDate = this.getCompletionDate().get('dateValue');
+        cDate = this.getCreationDate().get('dateValue');
         if (cDate === void 0 || cDate === "" || cDate === null) {
           cDate = "fred";
         }
         if (isNaN(cDate)) {
           errors.push({
-            attribute: 'completionDate',
-            message: "Assay completion date must be set"
+            attribute: 'creationDate',
+            message: "Assay creation date must be set"
           });
         }
         notebook = this.getNotebook().get('stringValue');

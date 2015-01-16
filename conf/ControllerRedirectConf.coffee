@@ -1,7 +1,7 @@
 ((exports) ->
 	exports.controllerRedirectConf =
 		{
-			PRCL:
+			PROT:
 				entityName: "protocols"
 				stub: true #route will return a stub. this is only used for stubsMode testing
 				default:

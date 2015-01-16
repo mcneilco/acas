@@ -48,9 +48,9 @@ class window.BaseEntity extends Backbone.Model
 
 		comments
 
-	getCompletionDate: ->
-		metadataKind = @.get('subclass') + " metadata"
-		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "dateValue", "completion date"
+#	getCompletionDate: ->
+#		metadataKind = @.get('subclass') + " metadata"
+#		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "dateValue", "completion date"
 
 
 	getNotebook: ->
@@ -115,13 +115,13 @@ class window.BaseEntity extends Backbone.Model
 			errors.push
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
-		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-		if isNaN(cDate)
-			errors.push
-				attribute: 'completionDate'
-				message: "Assay completion date must be set"
-		notebook = @getNotebook().get('stringValue')
+#		cDate = @getCompletionDate().get('dateValue')
+#		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
+#		if isNaN(cDate)
+#			errors.push
+#				attribute: 'completionDate'
+#				message: "Assay completion date must be set"
+#		notebook = @getNotebook().get('stringValue')
 		if notebook is "" or notebook is "unassigned" or notebook is undefined
 			errors.push
 				attribute: 'notebook'
@@ -204,8 +204,8 @@ class window.BaseEntityController extends AbstractFormController
 		"change .bv_details": "handleDetailsChanged"
 		"change .bv_comments": "handleCommentsChanged"
 		"change .bv_entityName": "handleNameChanged"
-		"change .bv_completionDate": "handleDateChanged"
-		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+#		"change .bv_completionDate": "handleDateChanged"
+#		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
 		"change .bv_notebook": "handleNotebookChanged"
 		"change .bv_status": "handleStatusChanged"
 		"click .bv_save": "handleSaveClicked"
@@ -248,10 +248,10 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
 		@$('.bv_details').html(@model.getDetails().get('clobValue'))
 		@$('.bv_comments').html(@model.getComments().get('clobValue'))
-		@$('.bv_completionDate').datepicker();
-		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
-		if @model.getCompletionDate().get('dateValue')?
-			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
+#		@$('.bv_completionDate').datepicker();
+#		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+#		if @model.getCompletionDate().get('dateValue')?
+#			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('codeValue'))
 		if @model.isNew()
@@ -321,14 +321,14 @@ class window.BaseEntityController extends AbstractFormController
 		#TODO label change propagation isn't really working, so this is the work-around
 		@model.trigger 'change'
 
-	handleDateChanged: =>
-		@model.getCompletionDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
-		@model.trigger 'change'
-
-
-	handleCompletionDateIconClicked: =>
-		@$( ".bv_completionDate" ).datepicker( "show" )
-
+#	handleDateChanged: =>
+#		@model.getCompletionDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
+#		@model.trigger 'change'
+#
+#
+#	handleCompletionDateIconClicked: =>
+#		@$( ".bv_completionDate" ).datepicker( "show" )
+#
 	handleNotebookChanged: =>
 		@model.getNotebook().set stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
 		@model.trigger 'change'

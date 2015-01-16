@@ -228,6 +228,10 @@
       return status;
     };
 
+    Experiment.prototype.getCompletionDate = function() {
+      return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "dateValue", "completion date");
+    };
+
     return Experiment;
 
   })(BaseEntity);
@@ -250,6 +254,8 @@
 
     function ExperimentBaseController() {
       this.updateEditable = __bind(this.updateEditable, this);
+      this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
+      this.handleDateChanged = __bind(this.handleDateChanged, this);
       this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
       this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
       this.handleProtocolCodeChanged = __bind(this.handleProtocolCodeChanged, this);
@@ -266,7 +272,9 @@
         "change .bv_experimentName": "handleNameChanged",
         "click .bv_useProtocolParameters": "handleUseProtocolParametersClicked",
         "change .bv_protocolCode": "handleProtocolCodeChanged",
-        "change .bv_projectCode": "handleProjectCodeChanged"
+        "change .bv_projectCode": "handleProjectCodeChanged",
+        "change .bv_completionDate": "handleDateChanged",
+        "click .bv_completionDateIcon": "handleCompletionDateIconClicked"
       });
     };
 
@@ -377,6 +385,11 @@
       }
       this.$('.bv_projectCode').val(this.model.getProjectCode().get('codeValue'));
       this.setUseProtocolParametersDisabledState();
+      this.$('.bv_completionDate').datepicker();
+      this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
+      if (this.model.getCompletionDate().get('dateValue') != null) {
+        this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
+      }
       ExperimentBaseController.__super__.render.call(this);
       return this;
     };
@@ -514,6 +527,17 @@
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
       this.model.copyProtocolAttributes(this.model.get('protocol'));
       return this.render();
+    };
+
+    ExperimentBaseController.prototype.handleDateChanged = function() {
+      this.model.getCompletionDate().set({
+        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')))
+      });
+      return this.model.trigger('change');
+    };
+
+    ExperimentBaseController.prototype.handleCompletionDateIconClicked = function() {
+      return this.$(".bv_completionDate").datepicker("show");
     };
 
     ExperimentBaseController.prototype.updateEditable = function() {

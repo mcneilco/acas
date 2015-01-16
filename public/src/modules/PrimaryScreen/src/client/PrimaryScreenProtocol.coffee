@@ -168,12 +168,12 @@ class window.PrimaryScreenProtocol extends Protocol
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
 		if attrs.subclass?
-			cDate = @getCompletionDate().get('dateValue')
+			cDate = @getCreationDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 			if isNaN(cDate)
 				errors.push
-					attribute: 'completionDate'
-					message: "Assay completion date must be set"
+					attribute: 'creationDate'
+					message: "Assay creation date must be set"
 			notebook = @getNotebook().get('stringValue')
 			if notebook is "" or notebook is "unassigned" or notebook is undefined
 				errors.push

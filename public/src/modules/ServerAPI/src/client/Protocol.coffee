@@ -5,6 +5,9 @@ class window.Protocol extends BaseEntity
 		@.set subclass: "protocol"
 		super()
 
+	getCreationDate: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "dateValue", "creation date"
+
 	getAssayTreeRule: ->
 		assayTreeRule = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "stringValue", "assay tree rule"
 		if assayTreeRule.get('stringValue') is undefined
@@ -51,12 +54,12 @@ class window.Protocol extends BaseEntity
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
 		if attrs.subclass?
-			cDate = @getCompletionDate().get('dateValue')
+			cDate = @getCreationDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 			if isNaN(cDate)
 				errors.push
-					attribute: 'completionDate'
-					message: "Assay completion date must be set"
+					attribute: 'creationDate'
+					message: "Date must be set"
 			notebook = @getNotebook().get('stringValue')
 			if notebook is "" or notebook is "unassigned" or notebook is undefined
 				errors.push
@@ -81,6 +84,11 @@ class window.Protocol extends BaseEntity
 	isStub: ->
 		return @get('lsLabels').length == 0 #protocol stubs won't have this
 
+	duplicateEntity: =>
+		copiedEntity = super()
+		console.log "duplicate protocol"
+		console.log copiedEntity
+
 class window.ProtocolList extends Backbone.Collection
 	model: Protocol
 
@@ -94,6 +102,8 @@ class window.ProtocolBaseController extends BaseEntityController
 			"change .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayStage": "handleAssayStageChanged"
 			"change .bv_assayPrinciple": "handleAssayPrincipleChanged"
+			"change .bv_creationDate": "handleCreationDateChanged"
+			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
 
 		)
 
@@ -163,6 +173,10 @@ class window.ProtocolBaseController extends BaseEntityController
 		unless @model?
 			@model = new Protocol()
 		@setUpAssayStageSelect()
+		@$('.bv_creationDate').datepicker();
+		@$('.bv_creationDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+		if @model.getCreationDate().get('dateValue')?
+			@$('.bv_creationDate').val UtilityFunctions::convertMSToYMDDate(@model.getCreationDate().get('dateValue'))
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
 		super()
@@ -178,6 +192,14 @@ class window.ProtocolBaseController extends BaseEntityController
 				code: "unassigned"
 				name: "Select Assay Stage"
 			selectedCode: @model.getAssayStage().get('codeValue')
+
+	handleCreationDateChanged: =>
+		@model.getCreationDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
+		@model.trigger 'change'
+
+
+	handleCreationDateIconClicked: =>
+		@$( ".bv_creationDate" ).datepicker( "show" )
 
 	handleAssayStageChanged: =>
 		@model.getAssayStage().set

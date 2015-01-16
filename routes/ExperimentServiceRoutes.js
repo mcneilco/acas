@@ -199,7 +199,7 @@
     var baseurl, config, experimentId, request;
     config = require('../conf/compiled/conf.js');
     experimentId = req.params.id;
-    baseurl = config.all.client.service.persistence.fullpath + "experiments/" + experimentId;
+    baseurl = config.all.client.service.persistence.fullpath + "experiments/browser/" + experimentId;
     console.log(baseurl);
     request = require('request');
     return request({

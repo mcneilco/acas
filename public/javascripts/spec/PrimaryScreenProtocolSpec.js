@@ -518,9 +518,9 @@
                 this.pspmc.$('.bv_protocolName').change();
                 this.pspmc.$('.bv_recordedBy').val("nxm7557");
                 this.pspmc.$('.bv_recordedBy').change();
-                this.pspmc.$('.bv_completionDate').val(" 2013-3-16   ");
-                this.pspmc.$('.bv_completionDate').val(" 2013-3-16   ");
-                this.pspmc.$('.bv_completionDate').change();
+                this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
+                this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
+                this.pspmc.$('.bv_creationDate').change();
                 this.pspmc.$('.bv_notebook').val("my notebook");
                 this.pspmc.$('.bv_notebook').change();
                 this.pspmc.$('.bv_positiveControlBatch').val("test");
@@ -612,8 +612,8 @@
                 this.pspmc.$('.bv_protocolName').change();
                 this.pspmc.$('.bv_recordedBy').val("nxm7557");
                 this.pspmc.$('.bv_recordedBy').change();
-                this.pspmc.$('.bv_completionDate').val(" 2013-3-16   ");
-                this.pspmc.$('.bv_completionDate').change();
+                this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
+                this.pspmc.$('.bv_creationDate').change();
                 this.pspmc.$('.bv_notebook').val("my notebook");
                 this.pspmc.$('.bv_notebook').change();
                 this.pspmc.$('.bv_positiveControlBatch').val("test");

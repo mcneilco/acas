@@ -136,6 +136,7 @@ class window.ProtocolBrowserController extends Backbone.View
 		"click .bv_deleteProtocol": "handleDeleteProtocolClicked"
 		"click .bv_editProtocol": "handleEditProtocolClicked"
 		"click .bv_duplicateProtocol": "handleDuplicateProtocolClicked"
+		"click .bv_createExperiment": "handleCreateExperimentClicked"
 		"click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 
@@ -229,6 +230,16 @@ class window.ProtocolBrowserController extends Backbone.View
 			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
+
+	handleCreateExperimentClicked: =>
+#		window.open("/api/protocols/duplicate/#{@protocolController.model.get("codeName")}",'_blank');
+		protocolKind = @protocolController.model.get('lsKind')
+		if protocolKind is "Bio Activity"
+#			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
+			window.open("/")
+		else
+#			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
+			window.open("/")
 
 	destroyProtocolSummaryTable: =>
 		if @protocolSummaryTable?

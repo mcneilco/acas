@@ -74,8 +74,8 @@
           it('Protocol status should default to created ', function() {
             return expect(this.prot.getStatus().get('codeValue')).toEqual("created");
           });
-          return it('completionDate should be null ', function() {
-            return expect(this.prot.getCompletionDate().get('dateValue')).toEqual(null);
+          return it('creationDate should be null ', function() {
+            return expect(this.prot.getCreationDate().get('dateValue')).toEqual(null);
           });
         });
         return describe("other features", function() {
@@ -154,8 +154,8 @@
           it('Should have a notebook value', function() {
             return expect(this.prot.getNotebook().get('stringValue')).toEqual("912");
           });
-          it('Should have a completionDate value', function() {
-            return expect(this.prot.getCompletionDate().get('dateValue')).toEqual(1342080000000);
+          it('Should have a creationDate value', function() {
+            return expect(this.prot.getCreationDate().get('dateValue')).toEqual(1342080000000);
           });
           return it('Should have a status value', function() {
             return expect(this.prot.getStatus().get('codeValue')).toEqual("created");
@@ -354,14 +354,14 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        return it('should require that completionDate not be ""', function() {
+        return it('should require that creationDate not be ""', function() {
           var filtErrors;
-          this.prot.getCompletionDate().set({
+          this.prot.getCreationDate().set({
             dateValue: new Date("").getTime()
           });
           expect(this.prot.isValid()).toBeFalsy();
           filtErrors = _.filter(this.prot.validationError, function(err) {
-            return err.attribute === 'completionDate';
+            return err.attribute === 'creationDate';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -599,10 +599,10 @@
             this.pbc.$('.bv_protocolName').change();
             return expect(this.pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
           });
-          it("should update model when completion date is changed", function() {
-            this.pbc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.pbc.$('.bv_completionDate').change();
-            return expect(this.pbc.model.getCompletionDate().get('dateValue')).toEqual(new Date(2013, 2, 16).getTime());
+          it("should update model when creation date is changed", function() {
+            this.pbc.$('.bv_creationDate').val(" 2013-3-16   ");
+            this.pbc.$('.bv_creationDate').change();
+            return expect(this.pbc.model.getCreationDate().get('dateValue')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.pbc.$('.bv_notebook').val(" Updated notebook  ");
@@ -646,7 +646,7 @@
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("");
           });
           it("should not fill the date field", function() {
-            return expect(this.pbc.$('.bv_completionDate').val()).toEqual("");
+            return expect(this.pbc.$('.bv_creationDate').val()).toEqual("");
           });
           it("should show the save button text as Save", function() {
             return expect(this.pbc.$('.bv_save').html()).toEqual("Save");
@@ -685,8 +685,8 @@
             this.pbc.$('.bv_shortDescription').change();
             this.pbc.$('.bv_protocolName').val(" Updated entity name   ");
             this.pbc.$('.bv_protocolName').change();
-            this.pbc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.pbc.$('.bv_completionDate').change();
+            this.pbc.$('.bv_creationDate').val(" 2013-3-16   ");
+            this.pbc.$('.bv_creationDate').change();
             this.pbc.$('.bv_notebook').val("my notebook");
             return this.pbc.$('.bv_notebook').change();
           });
@@ -744,13 +744,13 @@
           describe("when date field not filled in", function() {
             beforeEach(function() {
               return runs(function() {
-                this.pbc.$('.bv_completionDate').val("");
-                return this.pbc.$('.bv_completionDate').change();
+                this.pbc.$('.bv_creationDate').val("");
+                return this.pbc.$('.bv_creationDate').change();
               });
             });
             return it("should show error in date field", function() {
               return runs(function() {
-                return expect(this.pbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
+                return expect(this.pbc.$('.bv_group_creationDate').hasClass('error')).toBeTruthy();
               });
             });
           });

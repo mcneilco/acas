@@ -145,6 +145,8 @@ class window.Experiment extends BaseEntity
 
 		status
 
+	getCompletionDate: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
 
 class window.ExperimentList extends Backbone.Collection
 	model: Experiment
@@ -159,6 +161,9 @@ class window.ExperimentBaseController extends BaseEntityController
 			"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
 			"change .bv_protocolCode": "handleProtocolCodeChanged"
 			"change .bv_projectCode": "handleProjectCodeChanged"
+			"change .bv_completionDate": "handleDateChanged"
+			"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+
 		)
 
 	initialize: ->
@@ -242,6 +247,10 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
 		@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
 		@setUseProtocolParametersDisabledState()
+		@$('.bv_completionDate').datepicker();
+		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+		if @model.getCompletionDate().get('dateValue')?
+			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		super()
 		@
 
@@ -338,6 +347,15 @@ class window.ExperimentBaseController extends BaseEntityController
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
 		@render()
+
+	handleDateChanged: =>
+		@model.getCompletionDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
+		@model.trigger 'change'
+
+
+	handleCompletionDateIconClicked: =>
+		@$( ".bv_completionDate" ).datepicker( "show" )
+
 
 	updateEditable: =>
 		super()
