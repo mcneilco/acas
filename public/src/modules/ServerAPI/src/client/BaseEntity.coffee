@@ -121,11 +121,12 @@ class window.BaseEntity extends Backbone.Model
 #			errors.push
 #				attribute: 'completionDate'
 #				message: "Assay completion date must be set"
-#		notebook = @getNotebook().get('stringValue')
-		if notebook is "" or notebook is "unassigned" or notebook is undefined
-			errors.push
-				attribute: 'notebook'
-				message: "Notebook must be set"
+		if attrs.subclass?
+			notebook = @getNotebook().get('stringValue')
+			if notebook is "" or notebook is "unassigned" or notebook is undefined
+				errors.push
+					attribute: 'notebook'
+					message: "Notebook must be set"
 
 		if errors.length > 0
 			return errors
@@ -187,7 +188,6 @@ class window.BaseEntity extends Backbone.Model
 			recordedDate: new Date().getTime()
 			version: 0
 		copiedEntity.getStatus().set codeValue: "created"
-		copiedEntity.getCompletionDate().set dateValue: null
 		copiedEntity.getNotebook().set stringValue: ""
 
 		copiedEntity
@@ -369,6 +369,7 @@ class window.BaseEntityController extends AbstractFormController
 		else
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_saving').show()
+		console.log "about to call save"
 		@model.save()
 
 	validationError: =>

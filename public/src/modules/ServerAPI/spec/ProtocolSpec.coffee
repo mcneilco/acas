@@ -545,6 +545,7 @@ describe "Protocol module testing", ->
 							@pbc.$('.bv_save').click()
 						waits(1000)
 						runs ->
+							console.log @pbc.model.validationError
 							expect(@pbc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
 					it "should show the save button text as Update", ->
 						runs ->

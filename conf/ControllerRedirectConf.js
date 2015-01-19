@@ -18,7 +18,7 @@
           deepLink: "experiment_base"
         },
         "Bio Activity": {
-          deepLink: "flipr_screening_assay"
+          deepLink: "primary_screen_experiment"
         }
       }
     };

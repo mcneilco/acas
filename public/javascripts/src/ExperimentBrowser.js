@@ -527,7 +527,7 @@
       var experimentKind;
       experimentKind = this.experimentController.model.get('lsKind');
       if (experimentKind === "Bio Activity") {
-        return window.open("/entity/copy/flipr_screening_assay/" + (this.experimentController.model.get("codeName")), '_blank');
+        return window.open("/entity/copy/primary_screen_experiment/" + (this.experimentController.model.get("codeName")), '_blank');
       } else {
         return window.open("/entity/copy/experiment_base/" + (this.experimentController.model.get("codeName")), '_blank');
       }

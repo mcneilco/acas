@@ -376,7 +376,7 @@ This service runs a primary data analysis.
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/codetables/analysis parameter/normalization",
+              url: "api/codetables/analysis parameter/normalization method",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;

@@ -178,11 +178,13 @@
       return State.__super__.constructor.apply(this, arguments);
     }
 
-    State.prototype.defaults = {
-      lsValues: new ValueList(),
-      ignored: false,
-      recordedDate: null,
-      recordedBy: ""
+    State.prototype.defaults = function() {
+      return {
+        lsValues: new ValueList(),
+        ignored: false,
+        recordedDate: null,
+        recordedBy: ""
+      };
     };
 
     State.prototype.initialize = function() {

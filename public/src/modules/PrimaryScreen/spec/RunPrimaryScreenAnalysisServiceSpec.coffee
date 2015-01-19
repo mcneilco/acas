@@ -264,7 +264,7 @@ describe 'Run primary analysis service testing', ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/codetables/analysis parameter/normalization"
+						url: "api/codetables/analysis parameter/normalization method"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>

@@ -224,7 +224,6 @@ class window.ProtocolBrowserController extends Backbone.View
 		window.open("/entity/edit/codeName/#{@protocolController.model.get("codeName")}",'_blank');
 
 	handleDuplicateProtocolClicked: =>
-#		window.open("/api/protocols/duplicate/#{@protocolController.model.get("codeName")}",'_blank');
 		protocolKind = @protocolController.model.get('lsKind')
 		if protocolKind is "Bio Activity"
 			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
@@ -232,14 +231,11 @@ class window.ProtocolBrowserController extends Backbone.View
 			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
 
 	handleCreateExperimentClicked: =>
-#		window.open("/api/protocols/duplicate/#{@protocolController.model.get("codeName")}",'_blank');
 		protocolKind = @protocolController.model.get('lsKind')
 		if protocolKind is "Bio Activity"
-#			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
-			window.open("/")
+			window.open("/primary_screen_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
 		else
-#			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
-			window.open("/")
+			window.open("/experiment_base/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
 
 	destroyProtocolSummaryTable: =>
 		if @protocolSummaryTable?

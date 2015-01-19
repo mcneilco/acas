@@ -35,24 +35,7 @@ class window.Protocol extends BaseEntity
 
 	validate: (attrs) ->
 		errors = []
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'protocolName'
-				message: attrs.subclass+" name must be set"
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-			errors.push
-				attribute: 'recordedBy'
-				message: "Scientist must be set"
+		errors.push super(attrs)...
 		if attrs.subclass?
 			cDate = @getCreationDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
@@ -60,11 +43,6 @@ class window.Protocol extends BaseEntity
 				errors.push
 					attribute: 'creationDate'
 					message: "Date must be set"
-			notebook = @getNotebook().get('stringValue')
-			if notebook is "" or notebook is "unassigned" or notebook is undefined
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
 		assayTreeRule = @getAssayTreeRule().get('stringValue')
 		unless assayTreeRule is "" or assayTreeRule is undefined or assayTreeRule is null
 			if assayTreeRule.charAt([0]) != "/"
@@ -86,8 +64,8 @@ class window.Protocol extends BaseEntity
 
 	duplicateEntity: =>
 		copiedEntity = super()
-		console.log "duplicate protocol"
-		console.log copiedEntity
+		copiedEntity.getCreationDate().set dateValue: null
+		copiedEntity
 
 class window.ProtocolList extends Backbone.Collection
 	model: Protocol
@@ -149,13 +127,13 @@ class window.ProtocolBaseController extends BaseEntityController
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
 		@model.on 'sync', =>
-			@trigger 'amClean'
 			unless @model.get('subclass')?
 				@model.set subclass: 'protocol'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
 			@$('.bv_save').attr('disabled', 'disabled')
 			@render()
+			@trigger 'amClean'
 		@model.on 'change', =>
 			@trigger 'amDirty'
 			@$('.bv_updateComplete').hide()

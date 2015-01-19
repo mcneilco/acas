@@ -81,7 +81,7 @@ class window.ValueList extends Backbone.Collection
 	model: Value
 
 class window.State extends Backbone.Model
-	defaults:
+	defaults: ->
 		lsValues: new ValueList()
 		ignored: false
 		recordedDate: null

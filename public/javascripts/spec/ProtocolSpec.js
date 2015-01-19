@@ -779,6 +779,7 @@
               });
               waits(1000);
               return runs(function() {
+                console.log(this.pbc.model.validationError);
                 return expect(this.pbc.$('.bv_protocolCode').html()).toEqual("PROT-00000001");
               });
             });

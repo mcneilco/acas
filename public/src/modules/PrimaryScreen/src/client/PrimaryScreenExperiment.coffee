@@ -1097,34 +1097,46 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
-					$.ajax
-						type: 'GET'
-						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
-						dataType: 'json'
-						error: (err) ->
-							alert 'Could not get experiment for code in this URL, creating new one'
-							@completeInitialization()
-						success: (json) =>
-							if json.length == 0
+					if window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity
+						console.log "create from other entity"
+						@createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code)
+						@completeInitialization()
+					else
+						$.ajax
+							type: 'GET'
+							url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+							dataType: 'json'
+							error: (err) ->
 								alert 'Could not get experiment for code in this URL, creating new one'
-							else
-								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								exp = new PrimaryScreenExperiment json
-								lsKind = json[0].lsKind
-								if lsKind is "Bio Activity"
-									exp = new PrimaryScreenExperiment json[0]
-									exp.set exp.parse(exp.attributes)
-									if window.AppLaunchParams.moduleLaunchParams.copy
-										@model = exp.duplicateEntity()
-									else
-										@model = exp
+								@completeInitialization()
+							success: (json) =>
+								if json.length == 0
+									alert 'Could not get experiment for code in this URL, creating new one'
 								else
-									alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
-							@completeInitialization()
+									#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+	#								exp = new PrimaryScreenExperiment json
+									lsKind = json[0].lsKind
+									if lsKind is "Bio Activity"
+										exp = new PrimaryScreenExperiment json[0]
+										exp.set exp.parse(exp.attributes)
+										if window.AppLaunchParams.moduleLaunchParams.copy
+											@model = exp.duplicateEntity()
+										else
+											@model = exp
+									else
+										alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
+								@completeInitialization()
 				else
 					@completeInitialization()
 			else
 				@completeInitialization()
+
+	createExperimentFromProtocol: (code) ->
+		@model = new PrimaryScreenExperiment()
+		@model.set protocol: new PrimaryScreenProtocol
+			codeName: code
+		@setupExperimentBaseController()
+		@experimentBaseController.getAndSetProtocol(code)
 
 	completeInitialization: =>
 		unless @model?
@@ -1132,15 +1144,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 		$(@el).html @template()
 		@model.on 'sync', @handleExperimentSaved
-		@experimentBaseController = new ExperimentBaseController
-			model: @model
-			el: @$('.bv_experimentBase')
-			protocolFilter: @protocolFilter
-			protocolKindFilter: @protocolKindFilter
-		@experimentBaseController.on 'amDirty', =>
-			@trigger 'amDirty'
-		@experimentBaseController.on 'amClean', =>
-			@trigger 'amClean'
+		@setupExperimentBaseController()
 		@analysisController = new PrimaryScreenAnalysisController
 			model: @model
 			el: @$('.bv_primaryScreenDataAnalysis')
@@ -1166,6 +1170,17 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@experimentBaseController.render()
 		@analysisController.render()
 		@modelFitController.render()
+
+	setupExperimentBaseController: ->
+		@experimentBaseController = new ExperimentBaseController
+			model: @model
+			el: @$('.bv_experimentBase')
+			protocolFilter: @protocolFilter
+			protocolKindFilter: @protocolKindFilter
+		@experimentBaseController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@experimentBaseController.on 'amClean', =>
+			@trigger 'amClean'
 
 	setupModelFitController: (modelFitControllerName) ->
 		newArgs =
@@ -1226,7 +1241,7 @@ class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExpe
 	modelFitControllerName: "DoseResponseAnalysisController"
 #	protocolFilter: "?protocolName=FLIPR"
 	protocolKindFilter: "?protocolKind=Bio Activity"
-	moduleLaunchName: "flipr_screening_assay"
+	moduleLaunchName: "primary_screen_experiment"
 
 
 

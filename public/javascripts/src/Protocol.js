@@ -67,34 +67,9 @@
     };
 
     Protocol.prototype.validate = function(attrs) {
-      var assayTreeRule, bestName, cDate, errors, nameError, notebook;
+      var assayTreeRule, cDate, errors;
       errors = [];
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'protocolName',
-          message: attrs.subclass + " name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: attrs.subclass + " date must be set"
-        });
-      }
-      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-        errors.push({
-          attribute: 'recordedBy',
-          message: "Scientist must be set"
-        });
-      }
+      errors.push.apply(errors, Protocol.__super__.validate.call(this, attrs));
       if (attrs.subclass != null) {
         cDate = this.getCreationDate().get('dateValue');
         if (cDate === void 0 || cDate === "" || cDate === null) {
@@ -104,13 +79,6 @@
           errors.push({
             attribute: 'creationDate',
             message: "Date must be set"
-          });
-        }
-        notebook = this.getNotebook().get('stringValue');
-        if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-          errors.push({
-            attribute: 'notebook',
-            message: "Notebook must be set"
           });
         }
       }
@@ -142,8 +110,10 @@
     Protocol.prototype.duplicateEntity = function() {
       var copiedEntity;
       copiedEntity = Protocol.__super__.duplicateEntity.call(this);
-      console.log("duplicate protocol");
-      return console.log(copiedEntity);
+      copiedEntity.getCreationDate().set({
+        dateValue: null
+      });
+      return copiedEntity;
     };
 
     return Protocol;
@@ -247,7 +217,6 @@
       $(this.el).html(this.template(this.model.attributes));
       this.model.on('sync', (function(_this) {
         return function() {
-          _this.trigger('amClean');
           if (_this.model.get('subclass') == null) {
             _this.model.set({
               subclass: 'protocol'
@@ -256,7 +225,8 @@
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
           _this.$('.bv_save').attr('disabled', 'disabled');
-          return _this.render();
+          _this.render();
+          return _this.trigger('amClean');
         };
       })(this));
       this.model.on('change', (function(_this) {

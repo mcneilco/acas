@@ -147,23 +147,23 @@ describe 'Experiment Service testing', ->
 				runs ->
 					expect(@serviceReturn.id).not.toBeNull()
 
-		describe 'when geting experiment state by id', ->
-			beforeEach ->
-				self = @
-				$.ajax
-					type: 'GET'
-					url: "api/experiments/state/11"
-					success: (json) ->
-						self.serviceReturn = json
-					error: (err) ->
-						console.log 'got ajax error'
-						self.serviceReturn = null
-					dataType: 'json'
-
-			it 'should return a full experiment', ->
-				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
-				runs ->
-					expect(@serviceReturn.lsKind).toEqual "experiment metadata"
+#		describe 'when geting experiment state by id', ->
+#			beforeEach ->
+#				self = @
+#				$.ajax
+#					type: 'GET'
+#					url: "api/experiments/state/11"
+#					success: (json) ->
+#						self.serviceReturn = json
+#					error: (err) ->
+#						console.log 'got ajax error'
+#						self.serviceReturn = null
+#					dataType: 'json'
+#
+#			it 'should return a full experiment', ->
+#				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+#				runs ->
+#					expect(@serviceReturn.lsKind).toEqual "experiment metadata"
 
 
 	describe "Experiment status code", ->

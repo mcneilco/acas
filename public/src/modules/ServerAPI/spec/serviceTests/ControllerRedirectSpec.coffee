@@ -48,7 +48,7 @@ describe "Controller Redirect service testing", ->
 					@response = response
 					done()
 			it "should return redirect", ->
-				assert.equal @response.request.uri.href.indexOf('flipr_screening_assay')>0, true
+				assert.equal @response.request.uri.href.indexOf('primary_screen_experiment')>0, true
 		describe "When user enters a not special protocol", ->
 			before (done) ->
 				request "http://localhost:"+config.all.server.nodeapi.port+"/entity/edit/codeName/EXPT-random", (error, response, body) =>

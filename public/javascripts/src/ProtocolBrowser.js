@@ -352,9 +352,9 @@
       var protocolKind;
       protocolKind = this.protocolController.model.get('lsKind');
       if (protocolKind === "Bio Activity") {
-        return window.open("/");
+        return window.open("/primary_screen_experiment/createFrom/" + (this.protocolController.model.get("codeName")), '_blank');
       } else {
-        return window.open("/");
+        return window.open("/experiment_base/createFrom/" + (this.protocolController.model.get("codeName")), '_blank');
       }
     };
 

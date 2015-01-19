@@ -157,7 +157,7 @@
     };
 
     BaseEntity.prototype.validate = function(attrs) {
-      var bestName, errors, nameError;
+      var bestName, errors, nameError, notebook;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = true;
@@ -185,11 +185,14 @@
           message: "Scientist must be set"
         });
       }
-      if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-        errors.push({
-          attribute: 'notebook',
-          message: "Notebook must be set"
-        });
+      if (attrs.subclass != null) {
+        notebook = this.getNotebook().get('stringValue');
+        if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
+          errors.push({
+            attribute: 'notebook',
+            message: "Notebook must be set"
+          });
+        }
       }
       if (errors.length > 0) {
         return errors;
@@ -290,9 +293,6 @@
       });
       copiedEntity.getStatus().set({
         codeValue: "created"
-      });
-      copiedEntity.getCompletionDate().set({
-        dateValue: null
       });
       copiedEntity.getNotebook().set({
         stringValue: ""
@@ -546,6 +546,7 @@
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
+      console.log("about to call save");
       return this.model.save();
     };
 

@@ -7,6 +7,7 @@
     __extends(Experiment, _super);
 
     function Experiment() {
+      this.duplicateEntity = __bind(this.duplicateEntity, this);
       this.parse = __bind(this.parse, this);
       return Experiment.__super__.constructor.apply(this, arguments);
     }
@@ -129,34 +130,9 @@
     };
 
     Experiment.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, nameError, notebook, projectCode;
+      var cDate, errors, projectCode;
       errors = [];
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'experimentName',
-          message: "Experiment name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: "Experiment date must be set"
-        });
-      }
-      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-        errors.push({
-          attribute: 'recordedBy',
-          message: "Scientist must be set"
-        });
-      }
+      errors.push.apply(errors, Experiment.__super__.validate.call(this, attrs));
       if (attrs.protocol === null) {
         errors.push({
           attribute: 'protocolCode',
@@ -164,13 +140,6 @@
         });
       }
       if (attrs.subclass != null) {
-        notebook = this.getNotebook().get('stringValue');
-        if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-          errors.push({
-            attribute: 'notebook',
-            message: "Notebook must be set"
-          });
-        }
         projectCode = this.getProjectCode().get('codeValue');
         if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
           errors.push({
@@ -232,6 +201,15 @@
       return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "dateValue", "completion date");
     };
 
+    Experiment.prototype.duplicateEntity = function() {
+      var copiedEntity;
+      copiedEntity = Experiment.__super__.duplicateEntity.call(this);
+      copiedEntity.getCompletionDate().set({
+        dateValue: null
+      });
+      return copiedEntity;
+    };
+
     return Experiment;
 
   })(BaseEntity);
@@ -284,37 +262,43 @@
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
-            return $.ajax({
-              type: 'GET',
-              url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
-              dataType: 'json',
-              error: function(err) {
-                alert('Could not get experiment for code in this URL, creating new one');
-                return this.completeInitialization();
-              },
-              success: (function(_this) {
-                return function(json) {
-                  var expt, lsKind;
-                  if (json.length === 0) {
-                    alert('Could not get experiment for code in this URL, creating new one');
-                  } else {
-                    lsKind = json[0].lsKind;
-                    if (lsKind === "default") {
-                      expt = new Experiment(json[0]);
-                      expt.set(expt.parse(expt.attributes));
-                      if (window.AppLaunchParams.moduleLaunchParams.copy) {
-                        _this.model = expt.duplicateEntity();
-                      } else {
-                        _this.model = expt;
-                      }
+            if (window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity) {
+              console.log("create from other entity");
+              this.createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code);
+              return this.completeInitialization();
+            } else {
+              return $.ajax({
+                type: 'GET',
+                url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+                dataType: 'json',
+                error: function(err) {
+                  alert('Could not get experiment for code in this URL, creating new one');
+                  return this.completeInitialization();
+                },
+                success: (function(_this) {
+                  return function(json) {
+                    var expt, lsKind;
+                    if (json.length === 0) {
+                      alert('Could not get experiment for code in this URL, creating new one');
                     } else {
-                      alert('Could not get experiment for code in this URL. Creating new experiment');
+                      lsKind = json[0].lsKind;
+                      if (lsKind === "default") {
+                        expt = new Experiment(json[0]);
+                        expt.set(expt.parse(expt.attributes));
+                        if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                          _this.model = expt.duplicateEntity();
+                        } else {
+                          _this.model = expt;
+                        }
+                      } else {
+                        alert('Could not get experiment for code in this URL. Creating new experiment');
+                      }
                     }
-                  }
-                  return _this.completeInitialization();
-                };
-              })(this)
-            });
+                    return _this.completeInitialization();
+                  };
+                })(this)
+              });
+            }
           } else {
             return this.completeInitialization();
           }
@@ -322,6 +306,16 @@
           return this.completeInitialization();
         }
       }
+    };
+
+    ExperimentBaseController.prototype.createExperimentFromProtocol = function(code) {
+      this.model = new Experiment();
+      this.model.set({
+        protocol: new Protocol({
+          codeName: code
+        })
+      });
+      return this.getAndSetProtocol(code);
     };
 
     ExperimentBaseController.prototype.completeInitialization = function() {
@@ -373,7 +367,8 @@
       this.model.getStatus().on('change', this.updateEditable);
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
-      return this.render();
+      this.render();
+      return console.log(this.model);
     };
 
     ExperimentBaseController.prototype.render = function() {
@@ -409,7 +404,7 @@
       } else {
         this.protocolList.url = "/api/protocolCodes/?protocolKind=default";
       }
-      return this.protocolListController = new PickListSelectController({
+      this.protocolListController = new PickListSelectController({
         el: this.$('.bv_protocolCode'),
         collection: this.protocolList,
         insertFirstOption: new PickList({
@@ -418,6 +413,8 @@
         }),
         selectedCode: protocolCode
       });
+      console.log("protocol list in set up ");
+      return console.log(this.protocolListController.collection);
     };
 
     ExperimentBaseController.prototype.setupProjectSelect = function() {
@@ -488,6 +485,12 @@
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
       var code;
       code = this.protocolListController.getSelectedCode();
+      return this.getAndSetProtocol(code);
+    };
+
+    ExperimentBaseController.prototype.getAndSetProtocol = function(code) {
+      console.log("getprotocol");
+      console.log(code);
       if (code === "" || code === "unassigned") {
         this.model.set({
           'protocol': null
@@ -500,7 +503,7 @@
           success: (function(_this) {
             return function(json) {
               if (json.length === 0) {
-                return alert("Could not find selected protocol in database, please get help");
+                return alert("Could not find selected protocol in database");
               } else {
                 _this.model.set({
                   protocol: new Protocol(json[0])
@@ -510,7 +513,7 @@
             };
           })(this),
           error: function(err) {
-            return alert('got ajax error from api/protocols/codename/ in Exeriment.coffee');
+            return alert('got ajax error from getting protocol ' + code);
           },
           dataType: 'json'
         });

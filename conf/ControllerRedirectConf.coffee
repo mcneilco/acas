@@ -14,7 +14,7 @@
 				default:
 					deepLink: "experiment_base"
 				"Bio Activity":
-					deepLink: "flipr_screening_assay"
+					deepLink: "primary_screen_experiment"
 		}
 
 ) (if (typeof process is "undefined" or not process.versions) then window.controllerRedirectConf = window.controllerRedirectConf or {} else exports)

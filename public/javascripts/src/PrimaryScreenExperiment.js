@@ -1667,37 +1667,43 @@
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
-            return $.ajax({
-              type: 'GET',
-              url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
-              dataType: 'json',
-              error: function(err) {
-                alert('Could not get experiment for code in this URL, creating new one');
-                return this.completeInitialization();
-              },
-              success: (function(_this) {
-                return function(json) {
-                  var exp, lsKind;
-                  if (json.length === 0) {
-                    alert('Could not get experiment for code in this URL, creating new one');
-                  } else {
-                    lsKind = json[0].lsKind;
-                    if (lsKind === "Bio Activity") {
-                      exp = new PrimaryScreenExperiment(json[0]);
-                      exp.set(exp.parse(exp.attributes));
-                      if (window.AppLaunchParams.moduleLaunchParams.copy) {
-                        _this.model = exp.duplicateEntity();
-                      } else {
-                        _this.model = exp;
-                      }
+            if (window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity) {
+              console.log("create from other entity");
+              this.createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code);
+              return this.completeInitialization();
+            } else {
+              return $.ajax({
+                type: 'GET',
+                url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+                dataType: 'json',
+                error: function(err) {
+                  alert('Could not get experiment for code in this URL, creating new one');
+                  return this.completeInitialization();
+                },
+                success: (function(_this) {
+                  return function(json) {
+                    var exp, lsKind;
+                    if (json.length === 0) {
+                      alert('Could not get experiment for code in this URL, creating new one');
                     } else {
-                      alert('Could not get primary screen experiment for code in this URL. Creating new primary screen experiment');
+                      lsKind = json[0].lsKind;
+                      if (lsKind === "Bio Activity") {
+                        exp = new PrimaryScreenExperiment(json[0]);
+                        exp.set(exp.parse(exp.attributes));
+                        if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                          _this.model = exp.duplicateEntity();
+                        } else {
+                          _this.model = exp;
+                        }
+                      } else {
+                        alert('Could not get primary screen experiment for code in this URL. Creating new primary screen experiment');
+                      }
                     }
-                  }
-                  return _this.completeInitialization();
-                };
-              })(this)
-            });
+                    return _this.completeInitialization();
+                  };
+                })(this)
+              });
+            }
           } else {
             return this.completeInitialization();
           }
@@ -1707,28 +1713,24 @@
       }
     };
 
+    AbstractPrimaryScreenExperimentController.prototype.createExperimentFromProtocol = function(code) {
+      this.model = new PrimaryScreenExperiment();
+      this.model.set({
+        protocol: new PrimaryScreenProtocol({
+          codeName: code
+        })
+      });
+      this.setupExperimentBaseController();
+      return this.experimentBaseController.getAndSetProtocol(code);
+    };
+
     AbstractPrimaryScreenExperimentController.prototype.completeInitialization = function() {
       if (this.model == null) {
         this.model = new PrimaryScreenExperiment();
       }
       $(this.el).html(this.template());
       this.model.on('sync', this.handleExperimentSaved);
-      this.experimentBaseController = new ExperimentBaseController({
-        model: this.model,
-        el: this.$('.bv_experimentBase'),
-        protocolFilter: this.protocolFilter,
-        protocolKindFilter: this.protocolKindFilter
-      });
-      this.experimentBaseController.on('amDirty', (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
-      this.experimentBaseController.on('amClean', (function(_this) {
-        return function() {
-          return _this.trigger('amClean');
-        };
-      })(this));
+      this.setupExperimentBaseController();
       this.analysisController = new PrimaryScreenAnalysisController({
         model: this.model,
         el: this.$('.bv_primaryScreenDataAnalysis'),
@@ -1779,6 +1781,25 @@
       this.experimentBaseController.render();
       this.analysisController.render();
       return this.modelFitController.render();
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.setupExperimentBaseController = function() {
+      this.experimentBaseController = new ExperimentBaseController({
+        model: this.model,
+        el: this.$('.bv_experimentBase'),
+        protocolFilter: this.protocolFilter,
+        protocolKindFilter: this.protocolKindFilter
+      });
+      this.experimentBaseController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      return this.experimentBaseController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupModelFitController = function(modelFitControllerName) {
@@ -1873,7 +1894,7 @@
 
     PrimaryScreenExperimentController.prototype.protocolKindFilter = "?protocolKind=Bio Activity";
 
-    PrimaryScreenExperimentController.prototype.moduleLaunchName = "flipr_screening_assay";
+    PrimaryScreenExperimentController.prototype.moduleLaunchName = "primary_screen_experiment";
 
     return PrimaryScreenExperimentController;
 
