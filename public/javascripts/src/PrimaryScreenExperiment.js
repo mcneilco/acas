@@ -1668,7 +1668,6 @@
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
             if (window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity) {
-              console.log("create from other entity");
               this.createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code);
               return this.completeInitialization();
             } else {

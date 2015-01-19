@@ -546,7 +546,6 @@
         this.$('.bv_updateComplete').html("Update Complete");
       }
       this.$('.bv_saving').show();
-      console.log("about to call save");
       return this.model.save();
     };
 

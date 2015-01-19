@@ -263,7 +263,6 @@
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
             if (window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity) {
-              console.log("create from other entity");
               this.createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code);
               return this.completeInitialization();
             } else {
@@ -367,8 +366,7 @@
       this.model.getStatus().on('change', this.updateEditable);
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
-      this.render();
-      return console.log(this.model);
+      return this.render();
     };
 
     ExperimentBaseController.prototype.render = function() {
@@ -404,7 +402,7 @@
       } else {
         this.protocolList.url = "/api/protocolCodes/?protocolKind=default";
       }
-      this.protocolListController = new PickListSelectController({
+      return this.protocolListController = new PickListSelectController({
         el: this.$('.bv_protocolCode'),
         collection: this.protocolList,
         insertFirstOption: new PickList({
@@ -413,8 +411,6 @@
         }),
         selectedCode: protocolCode
       });
-      console.log("protocol list in set up ");
-      return console.log(this.protocolListController.collection);
     };
 
     ExperimentBaseController.prototype.setupProjectSelect = function() {
@@ -489,8 +485,6 @@
     };
 
     ExperimentBaseController.prototype.getAndSetProtocol = function(code) {
-      console.log("getprotocol");
-      console.log(code);
       if (code === "" || code === "unassigned") {
         this.model.set({
           'protocol': null

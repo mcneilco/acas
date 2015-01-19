@@ -1098,7 +1098,6 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					if window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity
-						console.log "create from other entity"
 						@createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code)
 						@completeInitialization()
 					else

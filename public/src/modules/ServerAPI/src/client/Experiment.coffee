@@ -156,7 +156,6 @@ class window.ExperimentBaseController extends BaseEntityController
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					if window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity
-						console.log "create from other entity"
 						@createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code)
 						@completeInitialization()
 					else
@@ -232,7 +231,6 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
 		@setupProjectSelect()
 		@render()
-		console.log @model
 
 
 	render: =>
@@ -269,8 +267,6 @@ class window.ExperimentBaseController extends BaseEntityController
 				code: "unassigned"
 				name: "Select Protocol"
 			selectedCode: protocolCode
-		console.log "protocol list in set up "
-		console.log @protocolListController.collection
 
 	setupProjectSelect: ->
 		@projectList = new PickListList()
@@ -322,8 +318,6 @@ class window.ExperimentBaseController extends BaseEntityController
 		@getAndSetProtocol(code)
 
 	getAndSetProtocol: (code) ->
-		console.log ("getprotocol")
-		console.log code
 		if code == "" || code == "unassigned"
 			@model.set 'protocol': null
 			#@getFullProtocol()
