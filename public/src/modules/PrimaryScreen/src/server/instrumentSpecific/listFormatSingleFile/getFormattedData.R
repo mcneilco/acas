@@ -19,7 +19,7 @@ getFormattedData <- function(fileName, sepChar, begRow, endRow, headerExists, te
     skip=begRow - 1,
     nrows=endRow - begRow,
     header=headerExists, 
-    fill=FALSE,
+    fill=TRUE,
     check.names=FALSE,
     comment.char="",
     stringsAsFactors=FALSE
