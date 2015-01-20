@@ -9,8 +9,9 @@
     <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:350px;height:370px;background-color:#ffffff;">
         <div class="form form-inline" style="margin-bottom:5px;">
             <strong class="bv_formTitle" style="font-size:18px;">Global Fit Criteria</strong>
-            <input type="checkbox" class="bv_inverseAgonistMode" style="margin-left:10px;margin-bottom:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%> />
-            <label class="control-label bv_group_inverseAgonistMode" style="margin-left:0px;">Inverse Agonist Mode</label>
+            <input type="checkbox" class="bv_group_smartMode bv_smartMode" style="margin-left:10px;margin-bottom:5px;" <%if (smartMode){%>checked="checked"<%}%> />
+            <label class="control-label bv_group_smartMode" style="margin-left:0px;">Smart Mode</label>
+
         </div>
 
         <div class="well well-small" style="background-color:#ffffff;margin-bottom:10px;">
@@ -62,8 +63,14 @@
 		    </div>
 
         </div>
-
-        <h5>Inactive Threshold</h5>
+        <div class="form form-inline" style="margin-bottom:5px;">
+            <strong>Inverse Agonist Mode</strong>
+            <input type="checkbox" class="bv_inverseAgonistMode" style="margin-left:10px;margin-bottom:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%> />
+        </div>
+        <div class="form form-inline" style="margin-bottom:5px;">
+            <strong>Inactive Threshold</strong>
+            <input type="checkbox" class="bv_inactiveThresholdMode" style="margin-left:10px;margin-bottom:5px;" <%if (inactiveThresholdMode){%>checked="checked"<%}%> />
+        </div>
         <div class="bv_group_inactiveThreshold">
 	        <div class="bv_inactiveThreshold pull-left" style="width:280px;margin-top:8px;margin-left:10px;"></div>
 	        <div class="bv_inactiveThresholdDisplay well well-small pull-right" style="margin-bottom:5px;padding-top:5px;padding-right:7px;padding-bottom:5px;padding-left:7px;width:25px;"></div>

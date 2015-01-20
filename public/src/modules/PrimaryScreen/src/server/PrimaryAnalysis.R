@@ -43,8 +43,11 @@
 source("public/src/conf/customFunctions.R")
 
 getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
+  # flaggedWells: the name of a csv or Excel file that lists each well's barcode, 
+  #               well number, and if it's flagged. If NULL, the file did not exist,
+  #               and no wells are flagged. Also may include information to flag analysis groups.
   
-  if(flaggedWells == "") {
+  if(is.null(flaggedWells) || flaggedWells == "") {
     resultTable[, flag:= as.character(NA)]
     resultTable[, flagType:=NA_character_]
     resultTable[, flagObservation:=NA_character_]
@@ -180,6 +183,10 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
   }
   
   toleranceRange <- racas::applicationSettings$client.service.control.tolerance.percentage # percent
+  if (is.null(toleranceRange)) {
+    warnUser("Config issue: control tolerance not set")
+    toleranceRange <- 0
+  }
   #   toleranceRange <- 0.01
   
   posBatchFilter <- batchNames==positiveControl$batchCode & 
@@ -1706,7 +1713,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     if (TRUE) {  # racas::applicationSettings$client.blah.usespotfire
       # May need to return to using analysisGroupData eventually
       # this output table renames
-      # TODO: Should this be in an IFF specific "saveSpotfireFile" function?
+      # TODO: Move to a company specific "saveSpotfireFile" function
       outputTable <- ddply(resultTable, c("batchName", "hasAgonist", "assayBarcode", "wellType"), function(idf) {
         data.frame("Flag" = idf$flag,
                    "Corporate Batch ID" = as.character(idf$batchName),
@@ -1918,10 +1925,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
       
     ## TODO: decide if "resultTable" is the correct object to write
-    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation)
-    summaryInfo$info$"Spotfire" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
-                                          racas::applicationSettings$client.port,
-                                          '/dataFiles/', summaryInfo$dryRunReports, '" target="_blank">Spotfire</a>')
+    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
+                                                   experiment, user)
+    # TODO: loop or lapply to get all
+    singleDryRunReport <- summaryInfo$dryRunReports[[1]]
+    summaryInfo$info[[singleDryRunReport$title]] <- paste0(
+      '<a href="', singleDryRunReport$link, '" target="_blank">', singleDryRunReport$title, '</a>')
   
   } else { #This section is "If not dry run"
     if (!is.null(zipFile)) {
