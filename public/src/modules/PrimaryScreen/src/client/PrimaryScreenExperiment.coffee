@@ -208,19 +208,14 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'signalDirectionRule'
 				message: "Signal Direction Rule must be assigned"
-		if (attrs.aggregateBy is "unassigned" or attrs.aggregateBy is "") and (attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is "")
+		if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is ""
 			errors.push
-				attribute: 'aggregateByGroup'
-				message: "Aggregate By and Aggregation Method must be assigned"
-		else
-			if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is ""
-				errors.push
-					attribute: 'aggregateByGroup'
-					message: "Aggregate By must be assigned"
-			if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is ""
-				errors.push
-					attribute: 'aggregateByGroup'
-					message: "Aggregation method must be assigned"
+				attribute: 'aggregateBy'
+				message: "Aggregate By must be assigned"
+		if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is ""
+			errors.push
+				attribute: 'aggregationMethod'
+				message: "Aggregation method must be assigned"
 		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is ""
 			errors.push
 				attribute: 'normalizationRule'
@@ -576,6 +571,9 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	render: =>
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
+		@$("[data-toggle=popover]").popover();
+		@$("body").tooltip selector: '.bv_popover'
+
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
 		@setupAggregateBySelect()
@@ -619,7 +617,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			collection: @aggregateByList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select"
+				name: "Select Aggregate By"
 			selectedCode: @model.get('aggregateBy')
 
 	setupAggregationMethodSelect: ->
@@ -630,7 +628,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			collection: @aggregationMethodList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select"
+				name: "Select Aggregation Method"
 			selectedCode: @model.get('aggregationMethod')
 
 	setupNormalizationSelect: ->

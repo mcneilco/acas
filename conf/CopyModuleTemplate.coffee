@@ -34,7 +34,7 @@ if custom?
 
 if moduleName is "-h"
 	console.log "Usage: node CopyModuleTemplate.js [module name]"
-	console.log "       For acas_custom modules, add 'custom' at the end of the line\n"
+	console.log "       To create a module in the acas_custom directory, add 'custom' at the end of the line\n"
 	console.log "Examples: node CopyModuleTemplate.js TestModule"
 	console.log "          node CopyModuleTemplate.js TestModule custom\n"
 	console.log "To view your module in the GUI, edit the ModuleMenusConfiguration.coffee file in the modules/ModuleMenus directory."

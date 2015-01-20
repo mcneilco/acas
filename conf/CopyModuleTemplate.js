@@ -50,7 +50,7 @@
 
   if (moduleName === "-h") {
     console.log("Usage: node CopyModuleTemplate.js [module name]");
-    console.log("       For acas_custom modules, add 'custom' at the end of the line\n");
+    console.log("       To create a module in the acas_custom directory, add 'custom' at the end of the line\n");
     console.log("Examples: node CopyModuleTemplate.js TestModule");
     console.log("          node CopyModuleTemplate.js TestModule custom\n");
     console.log("To view your module in the GUI, edit the ModuleMenusConfiguration.coffee file in the modules/ModuleMenus directory.");
@@ -75,12 +75,12 @@
     }
     console.log("Module and example files created.");
     if (custom === "custom") {
+      console.log("Your files are in the acas_custom directory. Remember to run 'grunt copy' to copy all of your acas_custom files into the base acas directory.");
       ncp("../../public/src/modules/ModuleMenus/src/client/ModuleMenusConfiguration.coffee", "ModuleMenus/src/client/ModuleMenusConfiguration.coffee", moduleName, function(err) {
         if (err) {
           return console.error(err);
         }
       });
-      console.log("Your files are in the acas_custom directory. Remember to run 'grunt copy' to copy all of your acas_custom files into the base acas directory.");
     }
     console.log("Please replace the contents of the files for your module. The current contents in these files may be used as example code.");
     console.log("To view your module in the GUI, edit the ModuleMenusConfiguration.coffee file in the modules/ModuleMenus directory.");

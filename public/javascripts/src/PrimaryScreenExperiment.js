@@ -353,24 +353,17 @@
           message: "Signal Direction Rule must be assigned"
         });
       }
-      if ((attrs.aggregateBy === "unassigned" || attrs.aggregateBy === "") && (attrs.aggregationMethod === "unassigned" || attrs.aggregationMethod === "")) {
+      if (attrs.aggregateBy === "unassigned" || attrs.aggregateBy === "") {
         errors.push({
-          attribute: 'aggregateByGroup',
-          message: "Aggregate By and Aggregation Method must be assigned"
+          attribute: 'aggregateBy',
+          message: "Aggregate By must be assigned"
         });
-      } else {
-        if (attrs.aggregateBy === "unassigned" || attrs.aggregateBy === "") {
-          errors.push({
-            attribute: 'aggregateByGroup',
-            message: "Aggregate By must be assigned"
-          });
-        }
-        if (attrs.aggregationMethod === "unassigned" || attrs.aggregationMethod === "") {
-          errors.push({
-            attribute: 'aggregateByGroup',
-            message: "Aggregation method must be assigned"
-          });
-        }
+      }
+      if (attrs.aggregationMethod === "unassigned" || attrs.aggregationMethod === "") {
+        errors.push({
+          attribute: 'aggregationMethod',
+          message: "Aggregation method must be assigned"
+        });
       }
       if (attrs.normalizationRule === "unassigned" || attrs.normalizationRule === "") {
         errors.push({
@@ -945,6 +938,10 @@
     PrimaryScreenAnalysisParametersController.prototype.render = function() {
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate(this.model.attributes));
+      this.$("[data-toggle=popover]").popover();
+      this.$("body").tooltip({
+        selector: '.bv_popover'
+      });
       this.setupInstrumentReaderSelect();
       this.setupSignalDirectionSelect();
       this.setupAggregateBySelect();
@@ -993,7 +990,7 @@
         collection: this.aggregateByList,
         insertFirstOption: new PickList({
           code: "unassigned",
-          name: "Select"
+          name: "Select Aggregate By"
         }),
         selectedCode: this.model.get('aggregateBy')
       });
@@ -1007,7 +1004,7 @@
         collection: this.aggregationMethodList,
         insertFirstOption: new PickList({
           code: "unassigned",
-          name: "Select"
+          name: "Select Aggregation Method"
         }),
         selectedCode: this.model.get('aggregationMethod')
       });
