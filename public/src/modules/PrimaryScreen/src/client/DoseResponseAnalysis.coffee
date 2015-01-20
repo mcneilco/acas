@@ -1,7 +1,8 @@
 class window.DoseResponseAnalysisParameters extends Backbone.Model
 	defaults:
-		inactiveThreshold: 20
+		smartMode: true
 		inactiveThresholdMode: true
+		inactiveThreshold: 20
 		inverseAgonistMode: false
 		max: new Backbone.Model limitType: 'none'
 		min: new Backbone.Model limitType: 'none'
@@ -50,6 +51,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 	autofillTemplate: _.template($("#DoseResponseAnalysisParametersAutofillView").html())
 
 	events:
+		"change .bv_smartMode": "handleSmartModeChanged"
 		"change .bv_inverseAgonistMode": "handleInverseAgonistModeChanged"
 		"change .bv_inactiveThresholdMode": "handleInactiveThresholdModeChanged"
 		"click .bv_max_limitType_none": "handleMaxLimitTypeChanged"
@@ -81,17 +83,31 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@$('.bv_inactiveThreshold').on 'slidestop', @handleInactiveThresholdChanged
 		@updateThresholdDisplay(@model.get 'inactiveThreshold')
 		@setFormTitle()
-		@setThresholdEnabledState()
+		@setThresholdModeEnabledState()
+		@setInverseAgonistModeEnabledState()
 		@
 
 	updateThresholdDisplay: (val)->
 		@$('.bv_inactiveThresholdDisplay').html val
 
-	setThresholdEnabledState: ->
-		if @model.get 'inactiveThresholdMode'
+	setThresholdModeEnabledState: ->
+		if @model.get 'smartMode'
+			@$('.bv_inactiveThresholdMode').removeAttr('disabled')
+		else
+			@$('.bv_inactiveThresholdMode').attr('disabled','disabled')
+		@setThresholdSliderEnabledState()
+
+	setThresholdSliderEnabledState: ->
+		if @model.get('inactiveThresholdMode') and @model.get('smartMode')
 			@$('.bv_inactiveThreshold').slider('enable')
 		else
 			@$('.bv_inactiveThreshold').slider('disable')
+
+	setInverseAgonistModeEnabledState: ->
+		if @model.get 'smartMode'
+			@$('.bv_inverseAgonistMode').removeAttr('disabled')
+		else
+			@$('.bv_inverseAgonistMode').attr('disabled','disabled')
 
 	updateModel: =>
 		@model.get('max').set
@@ -104,10 +120,17 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			silent: true
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
 			silent: true
+		@model.set smartMode: @$('.bv_smartMode').is(":checked"),
+			silent: true
 		@model.trigger 'change'
 
+	handleSmartModeChanged: =>
+		@setThresholdModeEnabledState()
+		@setInverseAgonistModeEnabledState()
+		@attributeChanged()
+
 	handleInactiveThresholdModeChanged: =>
-		@setThresholdEnabledState()
+		@setThresholdSliderEnabledState()
 		@attributeChanged()
 
 	handleInactiveThresholdChanged: (event, ui) =>
@@ -263,5 +286,6 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			@$('.bv_fitModelButton').html "Re-Fit"
 		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
 		@$('.bv_modelFitStatus').html(json.results.status)
-		@$('.bv_resultsContainer').show()
+		@$('.bv_resultsContainer').show
+
 

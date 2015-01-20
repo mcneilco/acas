@@ -9,8 +9,9 @@
     <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:350px;height:370px;background-color:#ffffff;">
         <div class="form form-inline" style="margin-bottom:5px;">
             <strong class="bv_formTitle" style="font-size:18px;">Global Fit Criteria</strong>
-            <input type="checkbox" class="bv_inverseAgonistMode" style="margin-left:10px;margin-bottom:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%> />
-            <label class="control-label bv_group_inverseAgonistMode" style="margin-left:0px;">Inverse Agonist Mode</label>
+            <input type="checkbox" class="bv_group_smartMode bv_smartMode" style="margin-left:10px;margin-bottom:5px;" <%if (smartMode){%>checked="checked"<%}%> />
+            <label class="control-label bv_group_smartMode" style="margin-left:0px;">Smart Mode</label>
+
         </div>
 
         <div class="well well-small" style="background-color:#ffffff;margin-bottom:10px;">
@@ -61,6 +62,10 @@
 		        <input type="text" class="bv_group_slope_value bv_slope_value" style="width:315px;margin-bottom:0;" value="<%= slope.value%>" <% if (slope.limitType=="none"){ %> disabled="disabled"<% }%> />
 		    </div>
 
+        </div>
+        <div class="form form-inline" style="margin-bottom:5px;">
+            <strong>Inverse Agonist Mode</strong>
+            <input type="checkbox" class="bv_inverseAgonistMode" style="margin-left:10px;margin-bottom:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%> />
         </div>
         <div class="form form-inline" style="margin-bottom:5px;">
             <strong>Inactive Threshold</strong>

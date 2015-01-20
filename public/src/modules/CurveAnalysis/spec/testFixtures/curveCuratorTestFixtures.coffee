@@ -767,6 +767,7 @@
 					min: 10.533834599975
 
 			fitSettings:
+				smartMode: true
 				inactiveThreshold: 20
 				inactiveThresholdMode: true
 				inverseAgonistMode: true

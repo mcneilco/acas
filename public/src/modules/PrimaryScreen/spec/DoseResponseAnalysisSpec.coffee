@@ -14,6 +14,7 @@ describe "Dose Response Analysis Module Testing", ->
 				it "should be defined", ->
 					expect(@drap).toBeDefined()
 				it "should have defaults", ->
+					expect(@drap.get('smartMode')).toBeTruthy()
 					expect(@drap.get('inactiveThreshold')).toEqual 20
 					expect(@drap.get('inactiveThresholdMode')).toBeTruthy()
 					expect(@drap.get('inverseAgonistMode')).toBeFalsy()
@@ -108,6 +109,8 @@ describe "Dose Response Analysis Module Testing", ->
 				it 'should load a template', ->
 					expect(@drapc.$('.bv_inactiveThresholdMode').length).toEqual 1
 #			describe "render default parameters", ->
+				it 'should show smart mode mode', ->
+					expect(@drapc.$('.bv_smartMode').attr('checked')).toBeTruthy()
 				it 'should show the inverse agonist mode', ->
 					expect(@drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeFalsy()
 				it 'should show the inactive threshold mode', ->
@@ -135,6 +138,8 @@ describe "Dose Response Analysis Module Testing", ->
 					el: $('#fixture')
 				@drapc.render()
 			describe "render existing parameters", ->
+				it 'should show the smart mode', ->
+					expect(@drapc.$('.bv_smartMode').attr('checked')).toEqual 'checked'
 				it 'should show the inverse agonist mode', ->
 					expect(@drapc.$('.bv_inverseAgonistMode').attr('checked')).toEqual 'checked'
 				it 'should show the inactive threshold mode', ->
@@ -293,27 +298,35 @@ describe "Dose Response Analysis Module Testing", ->
 					@drapc.$('.bv_slope_value').change()
 					expect(@drapc.model.get('slope').get('value')).toEqual 16.5
 #				it 'should update the inactiveThreshold', ->
-#					#TODO figure out how to test the slider
 #					@drapc.$('.bv_inactiveThreshold').slider( "option", "values", [ 30 ] )
 #					expect(@drapc.model.get('inactiveThreshold')).toEqual 30
 #					expect(@drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual "30"
 			describe "behavior and validation", ->
-				#TODO figure out how to test if slider is in disabled or enabled stated
-#				it "should enable the inactive threshold if inactive threshold mode is not selected", ->
-#					@drapc.$('.bv_inactiveThresholdMode').click()
-#					expect(@drapc.model.get('inactiveThresholdMode')).toBeFalsy()
-#					expect(@drapc.$('.bv_inactiveThresholdMode').attr("disabled")).toBeUndefined()
-#				it "should disable the inactive threshold if inactive threshold mode is selected", ->
-#					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
-#					expect(@drapc.$('.bv_inactiveThresholdMode').attr("disabled")).toEqual "disabled"
-#				it "should disable the inactive threshold if inactive threshold mode is selected after deselection", ->
-#					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
-#					@drapc.$('.bv_inactiveThresholdMode').click()
-#					expect(@drapc.model.get('inactiveThresholdMode')).toBeFalsy()
-#					@drapc.$('.bv_inactiveThresholdMode').click()
-#					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
-#					expect(@drapc.$('.bv_inactiveThresholdMode').attr("disabled")).toEqual "disabled"
-#					@drapc.$('.bv_inactiveThresholdMode').click()
+				it "should enable inactive threshold if smart mode is selected", ->
+					@drapc.$('.bv_smartMode').click()
+					@drapc.$('.bv_smartMode').trigger('change')
+					waitsFor =>
+						@drapc.$('.bv_inactiveThresholdMode').attr('disabled')?
+					, 100
+					runs ->
+						expect(@drapc.$('.bv_inactiveThresholdMode').attr('disabled')).toEqual('disabled')
+						expect(@drapc.$('.bv_inactiveThreshold').slider( "option", "disabled" )).toBeTruthy()
+				it "should disable inactive threshold if smart mode is not selected", ->
+					@drapc.$('.bv_smartMode').click()
+					@drapc.$('.bv_smartMode').trigger('change')
+					waitsFor =>
+						expect(@drapc.$('.bv_inactiveThresholdMode').attr('disabled'))?
+					, 100
+					runs ->
+						expect(@drapc.$('.bv_inactiveThresholdMode').attr('disabled')).toBeDefined()
+						expect(@drapc.$('.bv_inactiveThreshold').slider( "option", "disabled" )).toBeTruthy()
+				it "should disable the inactive threshold slider if inactive threshold is deselected", ->
+					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
+					@drapc.$('.bv_inactiveThresholdMode').click()
+					expect(@drapc.model.get('inactiveThresholdMode')).toBeFalsy()
+					@drapc.$('.bv_inactiveThresholdMode').click()
+					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
+					expect(@drapc.$('.bv_inactiveThreshold').slider( "option", "disabled" )).toBeTruthy()
 			describe "validation testing", ->
 				describe "error notification", ->
 					it "should show error if max_limitType is set to pin and max_value is not set", ->
