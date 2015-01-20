@@ -34,7 +34,7 @@ describe "Reagent Registration Services tests", ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/reagentReg/hazardCatagories"
+						url: "api/codetables/reagentReg/hazardCategories"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>
