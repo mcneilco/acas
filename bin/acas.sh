@@ -46,7 +46,7 @@ export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH:=}
 
 
 running() {
-    runningCommand="forever list 2>/dev/null | grep $ACAS_HOME/app.js 2>&1 >/dev/null"
+    runningCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever list 2>/dev/null | grep $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != $ACAS_USER ]; then
         runningCommand="su - $ACAS_USER $suAdd -c \"($runningCommand)\""
     fi
@@ -55,7 +55,7 @@ running() {
 }
 
 start_server() {
-    startCommand="forever start --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
+    startCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever start --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != $ACAS_USER ]; then
         startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
     fi
@@ -65,7 +65,7 @@ start_server() {
 
 stop_server() {
 
-    stopCommand="forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
+    stopCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != $ACAS_USER ]; then
         stopCommand="su - $ACAS_USER $suAdd -c \"($stopCommand)\""
     fi
