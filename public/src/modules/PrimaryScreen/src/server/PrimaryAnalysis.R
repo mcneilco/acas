@@ -1520,7 +1520,7 @@ autoFlagWells <- function(resultTable, parameters) {
   }
   if(is.null(parameters$thresholdType) || parameters$thresholdType == "") {
     return(resultTable)
-  } else if(parameters$thresholdType == "efficacy") {
+  } else if(parameters$thresholdType == "percent efficacy") {
     hitThreshold <- parameters$hitEfficacyThreshold
     thresholdType <- "percent efficacy"
     
