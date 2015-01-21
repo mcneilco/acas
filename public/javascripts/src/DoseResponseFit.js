@@ -52,7 +52,10 @@
 
     DoseResponseFitController.prototype.initialize = function() {
       if (this.options.experimentCode == null) {
-        return alert("DoseResponseFitController must be initialized with an experimentCode");
+        alert("DoseResponseFitController must be initialized with an experimentCode");
+      }
+      if (this.options.modelHint == null) {
+        return alert("DoseResponseFitController must be initialized with a modelHint");
       }
     };
 

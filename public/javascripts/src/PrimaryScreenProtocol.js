@@ -818,8 +818,8 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenModelFitParametersController = function() {
-      this.primaryScreenModelFitParametersController = new DoseResponseAnalysisParametersController({
-        model: new DoseResponseAnalysisParameters(this.model.getModelFitParameters()),
+      this.primaryScreenModelFitParametersController = new DoseResponseKiAnalysisParametersController({
+        model: new DoseResponseKiAnalysisParameters(this.model.getModelFitParameters()),
         el: this.$('.bv_doseResponseAnalysisParameters')
       });
       this.primaryScreenModelFitParametersController.on('amDirty', (function(_this) {

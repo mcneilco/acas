@@ -13,7 +13,7 @@
 
     DoseResponseAnalysisParameters.prototype.defaults = {
       inactiveThreshold: 20,
-      inverseAgonistMode: true,
+      inverseAgonistMode: false,
       max: new Backbone.Model({
         limitType: 'none'
       }),

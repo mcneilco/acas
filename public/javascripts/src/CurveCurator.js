@@ -316,7 +316,7 @@
             });
           }
         }
-        if (curve.type === "Ki Fit") {
+        if (curve.type === "Ki") {
           fct = function(x) {
             return curve.max + (curve.min - curve.max) / (1 + Math.pow(10, x - log10(curve.ki * (1 + curve.ligandConc / curve.kd))));
           };
@@ -483,16 +483,26 @@
     };
 
     CurveDetail.prototype.fixCompositeClasses = function() {
-      if (!(this.get('fitSettings') instanceof DoseResponseKiAnalysisParameters)) {
+      if (!(this.get('fitSettings') instanceof DoseResponseAnalysisParameters)) {
+        this.get('fitSettings');
         return this.set({
-          fitSettings: new DoseResponseKiAnalysisParameters(this.get('fitSettings'))
+          fitSettings: new DoseResponseAnalysisParameters(this.get('fitSettings'))
         });
       }
     };
 
     CurveDetail.prototype.parse = function(resp) {
-      if (!(resp.fitSettings instanceof DoseResponseKiAnalysisParameters)) {
-        resp.fitSettings = new DoseResponseKiAnalysisParameters(resp.fitSettings);
+      var drapType;
+      drapType = (function() {
+        switch (resp.renderingHint) {
+          case "4 parameter D-R":
+            return DoseResponseAnalysisParameters;
+          case "Ki Fit":
+            return DoseResponseKiAnalysisParameters;
+        }
+      })();
+      if (!(resp.fitSettings instanceof drapType)) {
+        resp.fitSettings = new drapType(resp.fitSettings);
       }
       return resp;
     };

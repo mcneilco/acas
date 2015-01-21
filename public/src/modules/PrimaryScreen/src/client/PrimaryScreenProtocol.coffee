@@ -547,8 +547,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController.render()
 
 	setupPrimaryScreenModelFitParametersController: =>
-		@primaryScreenModelFitParametersController = new DoseResponseAnalysisParametersController
-			model: new DoseResponseAnalysisParameters @model.getModelFitParameters()
+		@primaryScreenModelFitParametersController = new DoseResponseKiAnalysisParametersController
+			model: new DoseResponseKiAnalysisParameters @model.getModelFitParameters()
 			el: @$('.bv_doseResponseAnalysisParameters')
 		@primaryScreenModelFitParametersController.on 'amDirty', =>
 			@trigger 'amDirty'

@@ -232,7 +232,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
 #				Vertical Line
 					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-			if curve.type == "Ki Fit"
+			if curve.type == "Ki"
 				fct = (x) ->
 					#Max + (Min - Max)/(1+10^(X-log(10^logKi*(1+ligandConc/Kd))))
 					#    cParm + (parmMat[,1]-cParm)/(1+10^(log10(dose)-log10(parmMat[,3]*(1+parmMat[,4]/parmMat[,5]))))
@@ -332,12 +332,18 @@ class window.CurveDetail extends Backbone.Model
 		return "/api/curve/detail/" + @id
 	initialize: ->
 		@fixCompositeClasses()
+
 	fixCompositeClasses: =>
-		if @get('fitSettings') not instanceof DoseResponseKiAnalysisParameters
-			@set fitSettings: new DoseResponseKiAnalysisParameters(@get('fitSettings'))
+		if @get('fitSettings') not instanceof DoseResponseAnalysisParameters
+			@get('fitSettings')
+			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
+
 	parse: (resp) =>
-		if resp.fitSettings not instanceof DoseResponseKiAnalysisParameters
-			resp.fitSettings = new DoseResponseKiAnalysisParameters(resp.fitSettings)
+		drapType = switch resp.renderingHint
+			when "4 parameter D-R" then DoseResponseAnalysisParameters
+			when "Ki Fit" then DoseResponseKiAnalysisParameters
+		if resp.fitSettings not instanceof drapType
+			resp.fitSettings = new drapType(resp.fitSettings)
 		return resp
 
 class window.CurveEditorController extends Backbone.View

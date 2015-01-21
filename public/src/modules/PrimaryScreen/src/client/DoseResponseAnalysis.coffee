@@ -1,7 +1,7 @@
 class window.DoseResponseAnalysisParameters extends Backbone.Model
 	defaults:
 		inactiveThreshold: 20
-		inverseAgonistMode: true
+		inverseAgonistMode: false
 		max: new Backbone.Model limitType: 'none'
 		min: new Backbone.Model limitType: 'none'
 		slope: new Backbone.Model limitType: 'none'

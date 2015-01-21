@@ -23,6 +23,9 @@ class window.DoseResponseFitController extends Backbone.View
 	initialize: ->
 		if !@options.experimentCode?
 			alert("DoseResponseFitController must be initialized with an experimentCode")
+		if !@options.modelHint?
+			alert("DoseResponseFitController must be initialized with a modelHint")
+
 
 	render: =>
 		@parameterController = null

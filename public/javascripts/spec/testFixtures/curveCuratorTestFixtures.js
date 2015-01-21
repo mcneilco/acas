@@ -38,7 +38,8 @@
             rsquare: 0.946776316924994,
             compoundCode: "CMPD-0000001-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00439997_6863",
@@ -52,7 +53,8 @@
             rsquare: 0.919530499769939,
             compoundCode: "CMPD-0000001-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00439998_6863",
@@ -66,7 +68,8 @@
             rsquare: 0.782752307697804,
             compoundCode: "CMPD-0000002-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00439999_6863",
@@ -80,7 +83,8 @@
             rsquare: 0.0951445604719756,
             compoundCode: "CMPD-0000003-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440000_6863",
@@ -94,7 +98,8 @@
             rsquare: 0.123604476015856,
             compoundCode: "CMPD-0000004-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440001_6863",
@@ -108,7 +113,8 @@
             rsquare: 0.000359308282537163,
             compoundCode: "CMPD-0000005-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440002_6863",
@@ -122,7 +128,8 @@
             rsquare: 0.951225393081596,
             compoundCode: "CMPD-0000006-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440003_6863",
@@ -136,7 +143,8 @@
             rsquare: 0.935854302423022,
             compoundCode: "CMPD-0000007-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440004_6863",
@@ -150,7 +158,8 @@
             rsquare: 0.963149223227534,
             compoundCode: "CMPD-0000008-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440005_6863",
@@ -164,7 +173,8 @@
             rsquare: 0.923193945242953,
             compoundCode: "CMPD-0000009-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440006_6863",
@@ -178,7 +188,8 @@
             rsquare: 0.927462465372627,
             compoundCode: "CMPD-0000010-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440007_6863",
@@ -192,7 +203,8 @@
             rsquare: 0.946944456523687,
             compoundCode: "CMPD-0000011-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440008_6863",
@@ -206,7 +218,8 @@
             rsquare: 0.994707600609522,
             compoundCode: "CMPD-0000007-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440009_6863",
@@ -220,7 +233,8 @@
             rsquare: 0.988665823997095,
             compoundCode: "CMPD-0000008-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440010_6863",
@@ -234,7 +248,8 @@
             rsquare: 0.971189108482617,
             compoundCode: "CMPD-0000009-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440011_6863",
@@ -248,7 +263,8 @@
             rsquare: 0.994331188111583,
             compoundCode: "CMPD-0000010-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "AG-00440012_6863",
@@ -262,7 +278,8 @@
             rsquare: "NA",
             compoundCode: "CMPD-0000011-01A",
             algorithmFlagStatus: "no fit",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }, {
           curveid: "CURVE-ERROR",
@@ -276,7 +293,8 @@
             rsquare: 0.946776316925164,
             compoundCode: "CMPD-0000012-01A",
             algorithmFlagStatus: "",
-            userFlagStatus: ""
+            userFlagStatus: "",
+            renderingHint: "4 parameter D-R"
           }
         }
       ]
@@ -338,7 +356,7 @@
           min: 17.150802531075,
           reported_ec50: 0.513604908525085,
           slope: -1.2441272623465,
-          type: "LL.4"
+          type: "4 parameter D-R"
         },
         plotWindow: [-1.90823440637806, 108.17261, 1.80102999566398, -2.83471],
         points: [
@@ -357,7 +375,7 @@
             preprocessFlagStatus: "",
             response: 88.51,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558169,
+            responseSubjectValueId: 4578652,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -379,7 +397,7 @@
             preprocessFlagStatus: "",
             response: 89.826,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558170,
+            responseSubjectValueId: 4578653,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -401,7 +419,7 @@
             preprocessFlagStatus: "",
             response: 89.883,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558172,
+            responseSubjectValueId: 4578655,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -423,7 +441,7 @@
             preprocessFlagStatus: "",
             response: 79.299,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558173,
+            responseSubjectValueId: 4578656,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -445,7 +463,7 @@
             preprocessFlagStatus: "",
             response: 67.286,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558174,
+            responseSubjectValueId: 4578657,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -467,7 +485,7 @@
             preprocessFlagStatus: "",
             response: 44.002,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558175,
+            responseSubjectValueId: 4578658,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -489,7 +507,7 @@
             preprocessFlagStatus: "",
             response: 38.853,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558176,
+            responseSubjectValueId: 4578659,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -511,7 +529,7 @@
             preprocessFlagStatus: "",
             response: 23.75,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558177,
+            responseSubjectValueId: 4578660,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -533,7 +551,7 @@
             preprocessFlagStatus: "",
             response: 32.331,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558178,
+            responseSubjectValueId: 4578661,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -555,7 +573,7 @@
             preprocessFlagStatus: "",
             response: 11.565,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558179,
+            responseSubjectValueId: 4578662,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -577,7 +595,7 @@
             preprocessFlagStatus: "",
             response: 80,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558180,
+            responseSubjectValueId: 4578663,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -599,7 +617,7 @@
             preprocessFlagStatus: "",
             response: 95.546,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558181,
+            responseSubjectValueId: 4578664,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -621,7 +639,7 @@
             preprocessFlagStatus: "",
             response: 92.743,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558182,
+            responseSubjectValueId: 4578665,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -643,7 +661,7 @@
             preprocessFlagStatus: "",
             response: 89.54,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558183,
+            responseSubjectValueId: 4578666,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -665,7 +683,7 @@
             preprocessFlagStatus: "",
             response: 71.805,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558184,
+            responseSubjectValueId: 4578667,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -687,7 +705,7 @@
             preprocessFlagStatus: "",
             response: 60.993,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558185,
+            responseSubjectValueId: 4578668,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -709,7 +727,7 @@
             preprocessFlagStatus: "",
             response: 49.322,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558186,
+            responseSubjectValueId: 4578669,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -731,7 +749,7 @@
             preprocessFlagStatus: "",
             response: 32.789,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558187,
+            responseSubjectValueId: 4578670,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -753,7 +771,7 @@
             preprocessFlagStatus: "",
             response: 20.146,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558188,
+            responseSubjectValueId: 4578671,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -775,7 +793,7 @@
             preprocessFlagStatus: "",
             response: 27.354,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558189,
+            responseSubjectValueId: 4578672,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -797,7 +815,7 @@
             preprocessFlagStatus: "",
             response: 82,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558190,
+            responseSubjectValueId: 4578673,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -819,7 +837,7 @@
             preprocessFlagStatus: "",
             response: 92.286,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558191,
+            responseSubjectValueId: 4578674,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -841,7 +859,7 @@
             preprocessFlagStatus: "",
             response: 90.112,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558192,
+            responseSubjectValueId: 4578675,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -863,7 +881,7 @@
             preprocessFlagStatus: "",
             response: 87.423,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558193,
+            responseSubjectValueId: 4578676,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -885,7 +903,7 @@
             preprocessFlagStatus: "",
             response: 75.924,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558194,
+            responseSubjectValueId: 4578677,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -907,7 +925,7 @@
             preprocessFlagStatus: "",
             response: 50.581,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558195,
+            responseSubjectValueId: 4578678,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -929,7 +947,7 @@
             preprocessFlagStatus: "",
             response: 48.864,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558196,
+            responseSubjectValueId: 4578679,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -951,7 +969,7 @@
             preprocessFlagStatus: "",
             response: 37.48,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558197,
+            responseSubjectValueId: 4578680,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -973,7 +991,7 @@
             preprocessFlagStatus: "",
             response: 31.015,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558198,
+            responseSubjectValueId: 4578681,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -995,7 +1013,7 @@
             preprocessFlagStatus: "",
             response: 6.4159,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558199,
+            responseSubjectValueId: 4578682,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1017,7 +1035,7 @@
             preprocessFlagStatus: "",
             response: 79,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558200,
+            responseSubjectValueId: 4578683,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1039,7 +1057,7 @@
             preprocessFlagStatus: "",
             response: 98.922,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558201,
+            responseSubjectValueId: 4578684,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1061,7 +1079,7 @@
             preprocessFlagStatus: "",
             response: 91.256,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558202,
+            responseSubjectValueId: 4578685,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1083,7 +1101,7 @@
             preprocessFlagStatus: "",
             response: 85.077,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558203,
+            responseSubjectValueId: 4578686,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1105,7 +1123,7 @@
             preprocessFlagStatus: "",
             response: 75.295,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558204,
+            responseSubjectValueId: 4578687,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1127,7 +1145,7 @@
             preprocessFlagStatus: "",
             response: 60.821,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558205,
+            responseSubjectValueId: 4578688,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1149,7 +1167,7 @@
             preprocessFlagStatus: "",
             response: 41.656,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558206,
+            responseSubjectValueId: 4578689,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1171,7 +1189,7 @@
             preprocessFlagStatus: "",
             response: 36.965,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558207,
+            responseSubjectValueId: 4578690,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1193,7 +1211,7 @@
             preprocessFlagStatus: "",
             response: 25.295,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558208,
+            responseSubjectValueId: 4578691,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1215,7 +1233,7 @@
             preprocessFlagStatus: "",
             response: 18.086,
             responseKind: "transformed efficacy",
-            responseSubjectValueId: 4558209,
+            responseSubjectValueId: 4578692,
             responseUnits: "efficacy",
             tempFlagStatus: "",
             userFlagComment: "",
@@ -1225,10 +1243,10 @@
           }
         ]
       },
+      renderingHint: "4 parameter D-R",
       reportedValues: "<table >  <tr> <td> min </td> <td align=\"right\"> 17.15 </td> </tr>  <tr> <td> max </td> <td align=\"right\"> 91.52 </td> </tr>  <tr> <td> slope </td> <td align=\"right\"> 1.24 </td> </tr>  <tr> <td> ec50 </td> <td align=\"right\"> 0.51 </td> </tr>   </table>",
-      sessionID: "/var/folders/5b/s62pqy655kx6929zhxrml5c80000gn/T//rSe-134ae3fa3472c",
-      userFlagStatus: "",
-      renderingHint: "4 parameter D-R"
+      sessionID: "/var/folders/5b/s62pqy655kx6929zhxrml5c80000gn/T//rSe-f2b33320e896",
+      userFlagStatus: ""
     };
   })((typeof process === "undefined" || !process.versions ? window.curveCuratorTestJSON = window.curveCuratorTestJSON || {} : exports));
 
