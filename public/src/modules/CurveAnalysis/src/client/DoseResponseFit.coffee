@@ -30,10 +30,17 @@ class window.DoseResponseFitController extends Backbone.View
 		$(@el).html @template()
 		@setupCurveFitAnalysisParameterController()
 
-	setupCurveFitAnalysisParameterController: ->
+
+	setupCurveFitAnalysisParameterController: ()->
+		if @options? && @options.initialAnalysisParameters?
+			drap = new DoseResponseAnalysisParameters @options.initialAnalysisParameters
+		else
+			drap = new DoseResponseAnalysisParameters()
+
 		@parameterController = new DoseResponseAnalysisParametersController
 			el: @$('.bv_analysisParameterForm')
-			model: new DoseResponseAnalysisParameters()
+			model: drap
+
 		@parameterController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@parameterController.on 'amClean', =>
@@ -108,8 +115,9 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 		if @modelFitController?
 			@modelFitController.undelegateEvents()
 		@modelFitController = new DoseResponseFitController
-			experimentCode: @drdpc.getNewExperimentCode()
+			f: @drdpc.getNewExperimentCode()
 			el: @$('.bv_doseResponseAnalysis')
+
 		@modelFitController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@modelFitController.on 'amClean', =>
