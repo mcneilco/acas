@@ -122,15 +122,14 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			silent: true
 		@model.set smartMode: @$('.bv_smartMode').is(":checked"),
 			silent: true
+		@setThresholdModeEnabledState()
+		@setInverseAgonistModeEnabledState()
 		@model.trigger 'change'
 
 	handleSmartModeChanged: =>
-		@setThresholdModeEnabledState()
-		@setInverseAgonistModeEnabledState()
 		@attributeChanged()
 
 	handleInactiveThresholdModeChanged: =>
-		@setThresholdSliderEnabledState()
 		@attributeChanged()
 
 	handleInactiveThresholdChanged: (event, ui) =>
