@@ -2009,6 +2009,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       resultTable[, tempId:=index]
       subjectDataLong <- meltKnownTypes(resultTable, resultTypes, "saveAsSubject")
+      # Remove empty rows (getting rid of NA flags)
+      subjectDataLong <- subjectDataLong[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
       
       treatmentGroupDataLong <- meltKnownTypes(treatmentGroupData, resultTypes, "saveAsTreatment")
       
