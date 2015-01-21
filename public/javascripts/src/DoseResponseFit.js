@@ -67,9 +67,15 @@
     };
 
     DoseResponseFitController.prototype.setupCurveFitAnalysisParameterController = function() {
+      var drap;
+      if ((this.options != null) && (this.options.initialAnalysisParameters != null)) {
+        drap = new DoseResponseAnalysisParameters(this.options.initialAnalysisParameters);
+      } else {
+        drap = new DoseResponseAnalysisParameters();
+      }
       this.parameterController = new DoseResponseAnalysisParametersController({
         el: this.$('.bv_analysisParameterForm'),
-        model: new DoseResponseAnalysisParameters()
+        model: drap
       });
       this.parameterController.on('amDirty', (function(_this) {
         return function() {
@@ -186,7 +192,7 @@
         this.modelFitController.undelegateEvents();
       }
       this.modelFitController = new DoseResponseFitController({
-        experimentCode: this.drdpc.getNewExperimentCode(),
+        f: this.drdpc.getNewExperimentCode(),
         el: this.$('.bv_doseResponseAnalysis')
       });
       this.modelFitController.on('amDirty', (function(_this) {
