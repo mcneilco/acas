@@ -54,8 +54,8 @@ describe "Protocol module testing", ->
 					expect(@prot.getNotebook() instanceof Value).toBeTruthy()
 				it 'Protocol status should default to created ', ->
 					expect(@prot.getStatus().get('codeValue')).toEqual "created"
-				it 'completionDate should be null ', ->
-					expect(@prot.getCompletionDate().get('dateValue')).toEqual null
+				it 'creationDate should be null ', ->
+					expect(@prot.getCreationDate().get('dateValue')).toEqual null
 			describe "other features", ->
 				describe "should tell you if it is editable based on status", ->
 					it "should be locked if status is created", ->
@@ -102,8 +102,8 @@ describe "Protocol module testing", ->
 					expect(@prot.getComments().get('clobValue')).toEqual "protocol comments go here"
 				it 'Should have a notebook value', ->
 					expect(@prot.getNotebook().get('stringValue')).toEqual "912"
-				it 'Should have a completionDate value', ->
-					expect(@prot.getCompletionDate().get('dateValue')).toEqual 1342080000000
+				it 'Should have a creationDate value', ->
+					expect(@prot.getCreationDate().get('dateValue')).toEqual 1342080000000
 				it 'Should have a status value', ->
 					expect(@prot.getStatus().get('codeValue')).toEqual "created"
 
@@ -233,12 +233,12 @@ describe "Protocol module testing", ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it 'should require that completionDate not be ""', ->
-				@prot.getCompletionDate().set
+			it 'should require that creationDate not be ""', ->
+				@prot.getCreationDate().set
 					dateValue: new Date("").getTime()
 				expect(@prot.isValid()).toBeFalsy()
 				filtErrors = _.filter(@prot.validationError, (err) ->
-					err.attribute=='completionDate'
+					err.attribute=='creationDate'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 		describe "prepare to save", ->
@@ -419,10 +419,10 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_protocolName').val(" Updated protocol name   ")
 					@pbc.$('.bv_protocolName').change()
 					expect(@pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
-				it "should update model when completion date is changed", ->
-					@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@pbc.$('.bv_completionDate').change()
-					expect(@pbc.model.getCompletionDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
+				it "should update model when creation date is changed", ->
+					@pbc.$('.bv_creationDate').val(" 2013-3-16   ")
+					@pbc.$('.bv_creationDate').change()
+					expect(@pbc.model.getCreationDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@pbc.$('.bv_notebook').val(" Updated notebook  ")
 					@pbc.$('.bv_notebook').change()
@@ -455,7 +455,7 @@ describe "Protocol module testing", ->
 				it "should have protocol name not set", ->
 					expect(@pbc.$('.bv_protocolName').val()).toEqual ""
 				it "should not fill the date field", ->
-					expect(@pbc.$('.bv_completionDate').val()).toEqual ""
+					expect(@pbc.$('.bv_creationDate').val()).toEqual ""
 				it "should show the save button text as Save", ->
 					expect(@pbc.$('.bv_save').html()).toEqual "Save"
 				it "should show the save button disabled", ->
@@ -484,8 +484,8 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_shortDescription').change()
 					@pbc.$('.bv_protocolName').val(" Updated entity name   ")
 					@pbc.$('.bv_protocolName').change()
-					@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@pbc.$('.bv_completionDate').change()
+					@pbc.$('.bv_creationDate').val(" 2013-3-16   ")
+					@pbc.$('.bv_creationDate').change()
 					@pbc.$('.bv_notebook').val("my notebook")
 					@pbc.$('.bv_notebook').change()
 				describe "form validation setup", ->
@@ -523,11 +523,11 @@ describe "Protocol module testing", ->
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
-							@pbc.$('.bv_completionDate').val("")
-							@pbc.$('.bv_completionDate').change()
+							@pbc.$('.bv_creationDate').val("")
+							@pbc.$('.bv_creationDate').change()
 					it "should show error in date field", ->
 						runs ->
-							expect(@pbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_creationDate').hasClass('error')).toBeTruthy()
 				describe "when notebook not filled", ->
 					beforeEach ->
 						runs ->
@@ -545,6 +545,7 @@ describe "Protocol module testing", ->
 							@pbc.$('.bv_save').click()
 						waits(1000)
 						runs ->
+							console.log @pbc.model.validationError
 							expect(@pbc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
 					it "should show the save button text as Update", ->
 						runs ->

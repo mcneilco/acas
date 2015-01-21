@@ -1,7 +1,7 @@
 ((exports) ->
 	exports.controllerRedirectConf =
 		{
-			PROT:
+			PRCL:
 				entityName: "protocols"
 				stub: true #route will return a stub. this is only used for stubsMode testing
 				default:
@@ -14,7 +14,7 @@
 				default:
 					deepLink: "experiment_base"
 				"Bio Activity":
-					deepLink: "flipr_screening_assay"
+					deepLink: "primary_screen_experiment"
 		}
 
 ) (if (typeof process is "undefined" or not process.versions) then window.controllerRedirectConf = window.controllerRedirectConf or {} else exports)

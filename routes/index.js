@@ -10,6 +10,7 @@
       app.get('/', loginRoutes.ensureAuthenticated, exports.index);
       app.get('/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode);
       app.get('/entity/copy/:moduleName/:code', loginRoutes.ensureAuthenticated, exports.copyAndLaunchWithCode);
+      app.get('/:moduleName/createFrom/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchCreateFromOtherEntity);
     } else {
 
     }
@@ -26,7 +27,8 @@
     moduleLaunchParams = {
       moduleName: req.params.moduleName,
       code: req.params.code,
-      copy: false
+      copy: false,
+      createFromOtherEntity: false
     };
     return exports.index(req, res, moduleLaunchParams);
   };
@@ -36,7 +38,19 @@
     moduleLaunchParams = {
       moduleName: req.params.moduleName,
       code: req.params.code,
-      copy: true
+      copy: true,
+      createFromOtherEntity: false
+    };
+    return exports.index(req, res, moduleLaunchParams);
+  };
+
+  exports.autoLaunchCreateFromOtherEntity = function(req, res) {
+    var moduleLaunchParams;
+    moduleLaunchParams = {
+      moduleName: req.params.moduleName,
+      code: req.params.code,
+      copy: false,
+      createFromOtherEntity: true
     };
     return exports.index(req, res, moduleLaunchParams);
   };

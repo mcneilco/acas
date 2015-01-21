@@ -392,7 +392,7 @@
             });
             expect(this.psap.isValid()).toBeFalsy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
-              return err.attribute === 'aggregateByGroup';
+              return err.attribute === 'aggregateBy';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -403,7 +403,7 @@
             });
             expect(this.psap.isValid()).toBeFalsy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
-              return err.attribute === 'aggregateByGroup';
+              return err.attribute === 'aggregationMethod';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -1355,7 +1355,7 @@
             return runs(function() {
               this.psapc.$('.bv_aggregateBy').val("unassigned");
               this.psapc.$('.bv_aggregateBy').change();
-              return expect(this.psapc.$('.bv_group_aggregateByGroup').hasClass("error")).toBeTruthy();
+              return expect(this.psapc.$('.bv_group_aggregateBy').hasClass("error")).toBeTruthy();
             });
           });
           it("should show error if aggregationMethod is unassigned", function() {
@@ -1365,7 +1365,7 @@
             return runs(function() {
               this.psapc.$('.bv_aggregationMethod').val("unassigned");
               this.psapc.$('.bv_aggregationMethod').change();
-              return expect(this.psapc.$('.bv_group_aggregateByGroup').hasClass("error")).toBeTruthy();
+              return expect(this.psapc.$('.bv_group_aggregationMethod').hasClass("error")).toBeTruthy();
             });
           });
           it("should show error if normalizationRule is unassigned", function() {

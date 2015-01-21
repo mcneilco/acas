@@ -19,7 +19,9 @@
             return expect(this.drap).toBeDefined();
           });
           return it("should have defaults", function() {
+            expect(this.drap.get('smartMode')).toBeTruthy();
             expect(this.drap.get('inactiveThreshold')).toEqual(20);
+            expect(this.drap.get('inactiveThresholdMode')).toBeTruthy();
             expect(this.drap.get('inverseAgonistMode')).toBeFalsy();
             expect(this.drap.get('max') instanceof Backbone.Model).toBeTruthy();
             expect(this.drap.get('min') instanceof Backbone.Model).toBeTruthy();
@@ -163,8 +165,17 @@
           it('should load a template', function() {
             return expect(this.drapc.$('.bv_inverseAgonistMode').length).toEqual(1);
           });
+          it('should load a template', function() {
+            return expect(this.drapc.$('.bv_inactiveThresholdMode').length).toEqual(1);
+          });
+          it('should show smart mode mode', function() {
+            return expect(this.drapc.$('.bv_smartMode').attr('checked')).toBeTruthy();
+          });
           it('should show the inverse agonist mode', function() {
-            return expect(this.drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeUndefined();
+            return expect(this.drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeFalsy();
+          });
+          it('should show the inactive threshold mode', function() {
+            return expect(this.drapc.$('.bv_inactiveThresholdMode').attr('checked')).toBeTruthy();
           });
           it('should start with max_limitType radio set', function() {
             return expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('none');
@@ -200,8 +211,14 @@
           return this.drapc.render();
         });
         describe("render existing parameters", function() {
+          it('should show the smart mode', function() {
+            return expect(this.drapc.$('.bv_smartMode').attr('checked')).toEqual('checked');
+          });
           it('should show the inverse agonist mode', function() {
             return expect(this.drapc.$('.bv_inverseAgonistMode').attr('checked')).toEqual('checked');
+          });
+          it('should show the inactive threshold mode', function() {
+            return expect(this.drapc.$('.bv_inactiveThresholdMode').attr('checked')).toEqual('checked');
           });
           it('should start with max_limitType radio set', function() {
             return expect(this.drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual('pin');
@@ -244,6 +261,13 @@
             expect(this.drapc.model.get('inverseAgonistMode')).toBeFalsy();
             this.drapc.$('.bv_inverseAgonistMode').click();
             return expect(this.drapc.model.get('inverseAgonistMode')).toBeTruthy();
+          });
+          it('should update the inactive threshold mode', function() {
+            expect(this.drapc.model.get('inactiveThresholdMode')).toBeTruthy();
+            this.drapc.$('.bv_inactiveThresholdMode').click();
+            expect(this.drapc.model.get('inactiveThresholdMode')).toBeFalsy();
+            this.drapc.$('.bv_inactiveThresholdMode').click();
+            return expect(this.drapc.model.get('inactiveThresholdMode')).toBeTruthy();
           });
           it('should update the max_limitType radio to none', function() {
             this.drapc.$(".bv_max_limitType_pin").click();
@@ -384,7 +408,42 @@
             return expect(this.drapc.model.get('slope').get('value')).toEqual(16.5);
           });
         });
-        describe("behavior and validation", function() {});
+        describe("behavior and validation", function() {
+          it("should enable inactive threshold if smart mode is selected", function() {
+            this.drapc.$('.bv_smartMode').click();
+            this.drapc.$('.bv_smartMode').trigger('change');
+            waitsFor((function(_this) {
+              return function() {
+                return _this.drapc.$('.bv_inactiveThresholdMode').attr('disabled') != null;
+              };
+            })(this), 100);
+            return runs(function() {
+              expect(this.drapc.$('.bv_inactiveThresholdMode').attr('disabled')).toEqual('disabled');
+              return expect(this.drapc.$('.bv_inactiveThreshold').slider("option", "disabled")).toBeTruthy();
+            });
+          });
+          it("should disable inactive threshold if smart mode is not selected", function() {
+            this.drapc.$('.bv_smartMode').click();
+            this.drapc.$('.bv_smartMode').trigger('change');
+            waitsFor((function(_this) {
+              return function() {
+                return expect(_this.drapc.$('.bv_inactiveThresholdMode').attr('disabled')) != null;
+              };
+            })(this), 100);
+            return runs(function() {
+              expect(this.drapc.$('.bv_inactiveThresholdMode').attr('disabled')).toBeDefined();
+              return expect(this.drapc.$('.bv_inactiveThreshold').slider("option", "disabled")).toBeTruthy();
+            });
+          });
+          return it("should disable the inactive threshold slider if inactive threshold is deselected", function() {
+            expect(this.drapc.model.get('inactiveThresholdMode')).toBeTruthy();
+            this.drapc.$('.bv_inactiveThresholdMode').click();
+            expect(this.drapc.model.get('inactiveThresholdMode')).toBeFalsy();
+            this.drapc.$('.bv_inactiveThresholdMode').click();
+            expect(this.drapc.model.get('inactiveThresholdMode')).toBeTruthy();
+            return expect(this.drapc.$('.bv_inactiveThreshold').slider("option", "disabled")).toBeTruthy();
+          });
+        });
         return describe("validation testing", function() {
           return describe("error notification", function() {
             it("should show error if max_limitType is set to pin and max_value is not set", function() {

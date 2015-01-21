@@ -62,6 +62,8 @@
 		slope:
 			limitType: "limit"# none, pin or limit
 			value: 1.5
+		smartMode: true
+		inactiveThresholdMode: true
 		inactiveThreshold: 20
 		inverseAgonistMode: true
 

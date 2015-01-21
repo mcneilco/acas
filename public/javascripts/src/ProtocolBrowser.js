@@ -221,6 +221,7 @@
     function ProtocolBrowserController() {
       this.render = __bind(this.render, this);
       this.destroyProtocolSummaryTable = __bind(this.destroyProtocolSummaryTable, this);
+      this.handleCreateExperimentClicked = __bind(this.handleCreateExperimentClicked, this);
       this.handleDuplicateProtocolClicked = __bind(this.handleDuplicateProtocolClicked, this);
       this.handleEditProtocolClicked = __bind(this.handleEditProtocolClicked, this);
       this.handleCancelDeleteClicked = __bind(this.handleCancelDeleteClicked, this);
@@ -235,6 +236,7 @@
       "click .bv_deleteProtocol": "handleDeleteProtocolClicked",
       "click .bv_editProtocol": "handleEditProtocolClicked",
       "click .bv_duplicateProtocol": "handleDuplicateProtocolClicked",
+      "click .bv_createExperiment": "handleCreateExperimentClicked",
       "click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked",
       "click .bv_cancelDelete": "handleCancelDeleteClicked"
     };
@@ -343,6 +345,16 @@
         return window.open("/entity/copy/primary_screen_protocol/" + (this.protocolController.model.get("codeName")), '_blank');
       } else {
         return window.open("/entity/copy/protocol_base/" + (this.protocolController.model.get("codeName")), '_blank');
+      }
+    };
+
+    ProtocolBrowserController.prototype.handleCreateExperimentClicked = function() {
+      var protocolKind;
+      protocolKind = this.protocolController.model.get('lsKind');
+      if (protocolKind === "Bio Activity") {
+        return window.open("/primary_screen_experiment/createFrom/" + (this.protocolController.model.get("codeName")), '_blank');
+      } else {
+        return window.open("/experiment_base/createFrom/" + (this.protocolController.model.get("codeName")), '_blank');
       }
     };
 

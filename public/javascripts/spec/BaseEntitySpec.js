@@ -56,14 +56,11 @@
           it('Should have a notebook value', function() {
             return expect(this.bem.getNotebook() instanceof Value).toBeTruthy();
           });
-          it('Entity status should default to created and should have default code type, kind, and origin', function() {
+          return it('Entity status should default to created and should have default code type, kind, and origin', function() {
             expect(this.bem.getStatus().get('codeValue')).toEqual("created");
             expect(this.bem.getStatus().get('codeType')).toEqual("entity");
             expect(this.bem.getStatus().get('codeKind')).toEqual("status");
             return expect(this.bem.getStatus().get('codeOrigin')).toEqual("ACAS DDICT");
-          });
-          return it('completionDate should be null ', function() {
-            return expect(this.bem.getCompletionDate().get('dateValue')).toEqual(null);
           });
         });
         return describe("other features", function() {
@@ -129,9 +126,6 @@
           });
           it('Should have a notebook value', function() {
             return expect(this.bem.getNotebook().get('stringValue')).toEqual("911");
-          });
-          it('Should have a completionDate value', function() {
-            return expect(this.bem.getCompletionDate().get('dateValue')).toEqual(1342080000000);
           });
           return it('Should have a status value', function() {
             console.log(this.bem.getStatus());
@@ -236,7 +230,7 @@
             return err.attribute === 'recordedBy';
           });
         });
-        it("should be invalid when notebook is empty", function() {
+        return it("should be invalid when notebook is empty", function() {
           var filtErrors;
           this.bem.getNotebook().set({
             stringValue: "",
@@ -245,17 +239,6 @@
           expect(this.bem.isValid()).toBeFalsy();
           filtErrors = _.filter(this.bem.validationError, function(err) {
             return err.attribute === 'notebook';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        return it('should require that completionDate not be ""', function() {
-          var filtErrors;
-          this.bem.getCompletionDate().set({
-            dateValue: new Date("").getTime()
-          });
-          expect(this.bem.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.bem.validationError, function(err) {
-            return err.attribute === 'completionDate';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -381,9 +364,6 @@
         });
         it("should have the recorded date be set to now", function() {
           return expect(new Date(this.copiedEntity.get('recordedDate')).getHours()).toEqual(new Date().getHours());
-        });
-        it("should have the completion date be empty", function() {
-          return expect(this.copiedEntity.getCompletionDate().get('dateValue')).toEqual(null);
         });
         it("should have the protocol be duplicated when the entity is an experiment", function() {
           return expect(this.copiedEntity.get('protocol')).toEqual(this.bem.get('protocol'));
@@ -575,11 +555,6 @@
             this.bec.$('.bv_entityName').change();
             return expect(this.bec.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated entity name");
           });
-          it("should update model when completion date is changed", function() {
-            this.bec.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.bec.$('.bv_completionDate').change();
-            return expect(this.bec.model.getCompletionDate().get('dateValue')).toEqual(new Date(2013, 2, 16).getTime());
-          });
           it("should update model when notebook is changed", function() {
             this.bec.$('.bv_notebook').val(" Updated notebook  ");
             this.bec.$('.bv_notebook').change();
@@ -621,9 +596,6 @@
           it("should have entity name not set", function() {
             return expect(this.bec.$('.bv_entityName').val()).toEqual("");
           });
-          it("should not fill the date field", function() {
-            return expect(this.bec.$('.bv_completionDate').val()).toEqual("");
-          });
           it("should show the save button text as Save", function() {
             return expect(this.bec.$('.bv_save').html()).toEqual("Save");
           });
@@ -662,8 +634,6 @@
             this.bec.$('.bv_shortDescription').change();
             this.bec.$('.bv_entityName').val(" Updated entity name   ");
             this.bec.$('.bv_entityName').change();
-            this.bec.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.bec.$('.bv_completionDate').change();
             this.bec.$('.bv_notebook').val("my notebook");
             return this.bec.$('.bv_notebook').change();
           });
@@ -715,19 +685,6 @@
             return it("should show error on scientist dropdown", function() {
               return runs(function() {
                 return expect(this.bec.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-          describe("when date field not filled in", function() {
-            beforeEach(function() {
-              return runs(function() {
-                this.bec.$('.bv_completionDate').val("");
-                return this.bec.$('.bv_completionDate').change();
-              });
-            });
-            return it("should show error in date field", function() {
-              return runs(function() {
-                return expect(this.bec.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
               });
             });
           });

@@ -168,12 +168,12 @@ class window.PrimaryScreenProtocol extends Protocol
 				attribute: 'recordedBy'
 				message: "Scientist must be set"
 		if attrs.subclass?
-			cDate = @getCompletionDate().get('dateValue')
+			cDate = @getCreationDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 			if isNaN(cDate)
 				errors.push
-					attribute: 'completionDate'
-					message: "Assay completion date must be set"
+					attribute: 'creationDate'
+					message: "Assay creation date must be set"
 			notebook = @getNotebook().get('stringValue')
 			if notebook is "" or notebook is "unassigned" or notebook is undefined
 				errors.push
@@ -451,7 +451,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								prot = new PrimaryScreenProtocol json
 								lsKind = json[0].lsKind
-								if lsKind is "Bio Activity "
+								if lsKind is "Bio Activity"
 									prot = new PrimaryScreenProtocol json[0]
 									prot.set prot.parse(prot.attributes)
 									if window.AppLaunchParams.moduleLaunchParams.copy

@@ -290,14 +290,14 @@
         });
       }
       if (attrs.subclass != null) {
-        cDate = this.getCompletionDate().get('dateValue');
+        cDate = this.getCreationDate().get('dateValue');
         if (cDate === void 0 || cDate === "" || cDate === null) {
           cDate = "fred";
         }
         if (isNaN(cDate)) {
           errors.push({
-            attribute: 'completionDate',
-            message: "Assay completion date must be set"
+            attribute: 'creationDate',
+            message: "Assay creation date must be set"
           });
         }
         notebook = this.getNotebook().get('stringValue');
@@ -689,7 +689,7 @@
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
                     lsKind = json[0].lsKind;
-                    if (lsKind === "Bio Activity ") {
+                    if (lsKind === "Bio Activity") {
                       prot = new PrimaryScreenProtocol(json[0]);
                       prot.set(prot.parse(prot.attributes));
                       if (window.AppLaunchParams.moduleLaunchParams.copy) {

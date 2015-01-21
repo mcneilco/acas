@@ -75,7 +75,7 @@ describe 'Protocol CRUD testing', ->
 				self = @
 				$.ajax
 					type: 'PUT'
-					url: "api/protocols"
+					url: "api/protocols/1234"
 					data: window.protocolServiceTestJSON.fullSavedProtocol
 					success: (json) ->
 						self.serviceReturn = json

@@ -1,4 +1,4 @@
-saveSpotfireFile <- function(inputTable, saveLocation) {
+saveSpotfireFile <- function(inputTable, saveLocation, experiment, recordedBy) {
   
   inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman")
 
@@ -29,11 +29,24 @@ saveSpotfireFile <- function(inputTable, saveLocation) {
   
   setcolorder(inputTable, requiredColumns)
   
-  write.table(inputTable, file=file.path(saveLocation,"spotfire-DRAFT.txt"), quote=FALSE, na="", row.names=FALSE, sep="\t")
+  fileLocation <- file.path(saveLocation,"spotfire-DRAFT.txt")
+  write.table(inputTable, file=fileLocation, quote=FALSE, na="", row.names=FALSE, sep="\t")
   
-  return(file.path(saveLocation, "spotfire-DRAFT.txt"))
+  # targetPath is only for testing
+  finalLocation <- moveFileToFileServer(fileLocation, experiment = experiment, recordedBy = recordedBy, 
+                                        targetPath = "testSpotfire.txt")
+  
+  if (racas::applicationSettings$server.service.external.file.type == "custom") {
+    # example: tibcospotfire:server:http\://dsantsptdxp/:analysis:/Tien/HTSWells:configurationBlock:HTSExperimentCode=\'EXPT-0002\';HTSDataURL=\'http\://imapp01-d\:8080/DNS/files/v1/Files/FILE1419587.txt\
+    spotfirePrefix <- "tibcospotfire:server:http\\://dsantsptdxp/:analysis:/Tien/HTSWells:configurationBlock:"
+    experimentParam <- paste0("HTSExperimentCode=\\'", experiment$codeName, "\\'")
+    fileParam <- paste0("HTSDataURL=\\'", 
+                        gsub(":", "\\\\:", racas::applicationSettings$server.service.external.file.service.url), 
+                        finalLocation, "\\'")
+    fileLink <- paste0(spotfirePrefix, experimentParam, ";", fileParam, ";")
+  } else {
+    fileLink <- paste0('http://', racas::applicationSettings$client.host, ":", 
+                       racas::applicationSettings$client.port, '/dataFiles/', finalLocation)
+  }
+  return(list(title="Spotfire", link=fileLink))
 }
-
-
-  
-  

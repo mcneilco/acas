@@ -338,6 +338,8 @@
 			curveid: "AG-00439996_6863"
 			dirty: false
 			fitSettings:
+				smartMode: true
+				inactiveThresholdMode: true
 				inactiveThreshold: 20
 				inverseAgonistMode: true
 				max:

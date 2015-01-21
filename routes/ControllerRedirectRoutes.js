@@ -63,10 +63,13 @@
       if (queryPrefix !== null) {
         return request({
           json: true,
-          url: "http://localhost:" + config.all.server.nodeapi.port + "/api/" + controllerRedirectConf[queryPrefix]["entityName"] + "/codename/" + req.params.code
+          url: config.all.server.nodeapi.path + "/api/" + controllerRedirectConf[queryPrefix]["entityName"] + "/codename/" + req.params.code
         }, (function(_this) {
           return function(error, response, body) {
             var deepLink, kind;
+            console.log(error);
+            console.log(response);
+            console.log(body);
             kind = response.body[0].lsKind;
             deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"];
             return resp.redirect("/" + deepLink + "/codeName/" + req.params.code);

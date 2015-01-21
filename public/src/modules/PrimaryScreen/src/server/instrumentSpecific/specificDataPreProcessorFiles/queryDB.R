@@ -10,7 +10,7 @@
 # could expand to more robust racas version
 #######################################################################################
 
-sqlQuery <- function(queryString='sql query', host='***REMOVED***', port='1521', sid='ORATEST', ***REMOVED***, ***REMOVED***){
+sqlQuery <- function(queryString='sql query', host='***REMOVED***', port='1521', sid='ORADEV', ***REMOVED***, ***REMOVED***){
   require(RJDBC)
   jdbcDriverJar  <- file.path("public/src/modules/PrimaryScreen/spec/RTestSet/docs", "ojdbc6.jar")  
   drv <- JDBC('oracle.jdbc.driver.OracleDriver', jdbcDriverJar);

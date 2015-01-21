@@ -31,7 +31,7 @@
       isHeader: false,
       menuName: "Analyze FLIPR Data",
       mainControllerClassName: "PrimaryScreenExperimentController",
-      autoLaunchName: "flipr_screening_assay"
+      autoLaunchName: "primary_screen_experiment"
     }, {
       isHeader: true,
       menuName: "Inventory"

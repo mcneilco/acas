@@ -1,7 +1,7 @@
 (function() {
   (function(exports) {
     return exports.controllerRedirectConf = {
-      PROT: {
+      PRCL: {
         entityName: "protocols",
         stub: true,
         "default": {
@@ -18,7 +18,7 @@
           deepLink: "experiment_base"
         },
         "Bio Activity": {
-          deepLink: "flipr_screening_assay"
+          deepLink: "primary_screen_experiment"
         }
       }
     };

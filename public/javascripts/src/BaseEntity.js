@@ -89,12 +89,6 @@
       return comments;
     };
 
-    BaseEntity.prototype.getCompletionDate = function() {
-      var metadataKind;
-      metadataKind = this.get('subclass') + " metadata";
-      return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "dateValue", "completion date");
-    };
-
     BaseEntity.prototype.getNotebook = function() {
       var metadataKind;
       metadataKind = this.get('subclass') + " metadata";
@@ -163,7 +157,7 @@
     };
 
     BaseEntity.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, nameError, notebook;
+      var bestName, errors, nameError, notebook;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = true;
@@ -191,22 +185,14 @@
           message: "Scientist must be set"
         });
       }
-      cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "" || cDate === null) {
-        cDate = "fred";
-      }
-      if (isNaN(cDate)) {
-        errors.push({
-          attribute: 'completionDate',
-          message: "Assay completion date must be set"
-        });
-      }
-      notebook = this.getNotebook().get('stringValue');
-      if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-        errors.push({
-          attribute: 'notebook',
-          message: "Notebook must be set"
-        });
+      if (attrs.subclass != null) {
+        notebook = this.getNotebook().get('stringValue');
+        if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
+          errors.push({
+            attribute: 'notebook',
+            message: "Notebook must be set"
+          });
+        }
       }
       if (errors.length > 0) {
         return errors;
@@ -308,9 +294,6 @@
       copiedEntity.getStatus().set({
         codeValue: "created"
       });
-      copiedEntity.getCompletionDate().set({
-        dateValue: null
-      });
       copiedEntity.getNotebook().set({
         stringValue: ""
       });
@@ -346,8 +329,6 @@
       this.updateEditable = __bind(this.updateEditable, this);
       this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.handleNotebookChanged = __bind(this.handleNotebookChanged, this);
-      this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
-      this.handleDateChanged = __bind(this.handleDateChanged, this);
       this.handleNameChanged = __bind(this.handleNameChanged, this);
       this.handleCommentsChanged = __bind(this.handleCommentsChanged, this);
       this.handleDetailsChanged = __bind(this.handleDetailsChanged, this);
@@ -366,8 +347,6 @@
         "change .bv_details": "handleDetailsChanged",
         "change .bv_comments": "handleCommentsChanged",
         "change .bv_entityName": "handleNameChanged",
-        "change .bv_completionDate": "handleDateChanged",
-        "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
         "change .bv_notebook": "handleNotebookChanged",
         "change .bv_status": "handleStatusChanged",
         "click .bv_save": "handleSaveClicked"
@@ -425,11 +404,6 @@
       this.$('.bv_' + subclass + 'Kind').html(this.model.get('lsKind'));
       this.$('.bv_details').html(this.model.getDetails().get('clobValue'));
       this.$('.bv_comments').html(this.model.getComments().get('clobValue'));
-      this.$('.bv_completionDate').datepicker();
-      this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
-      if (this.model.getCompletionDate().get('dateValue') != null) {
-        this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
-      }
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
       this.$('.bv_status').val(this.model.getStatus().get('codeValue'));
       if (this.model.isNew()) {
@@ -521,17 +495,6 @@
         recordedBy: this.model.get('recordedBy')
       }));
       return this.model.trigger('change');
-    };
-
-    BaseEntityController.prototype.handleDateChanged = function() {
-      this.model.getCompletionDate().set({
-        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')))
-      });
-      return this.model.trigger('change');
-    };
-
-    BaseEntityController.prototype.handleCompletionDateIconClicked = function() {
-      return this.$(".bv_completionDate").datepicker("show");
     };
 
     BaseEntityController.prototype.handleNotebookChanged = function() {

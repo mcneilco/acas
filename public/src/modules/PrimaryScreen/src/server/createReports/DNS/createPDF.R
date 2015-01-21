@@ -1,9 +1,8 @@
 createPDF <- function(resultTable, parameters, summaryInfo, threshold, experiment, dryRun=F) {
   # DNS
-  require('gplots')
-  require('gridExtra')
   require('data.table')
   require('reshape')
+  require('gplots')
   source("public/src/modules/PrimaryScreen/src/server/primaryAnalysisPlots.R")
   
   allResultTable <- resultTable
@@ -18,7 +17,7 @@ createPDF <- function(resultTable, parameters, summaryInfo, threshold, experimen
   pdfSave <- racas::getUploadedFilePath(pdfLocation)
   pdf(file = pdfSave, width = 8.5, height = 11)
   if(dryRun) {
-    textplot("Validation DRAFT")
+    gplots::textplot("Validation DRAFT")
   }
   textToShow <- paste0("------------------------------------------------------------------------------------------------\n",
                        paste(paste0(names(summaryInfo$info),": ",summaryInfo$info),collapse="\n"))
