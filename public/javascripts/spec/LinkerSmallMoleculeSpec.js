@@ -423,8 +423,18 @@
             it("Should have a model attribute for notebook", function() {
               return expect(this.lsmb.get("notebook")).toBeDefined();
             });
-            it("Should have a model attribute for amount", function() {
-              return expect(this.lsmb.get("amount")).toBeDefined();
+            it("Should have a model attribute for source", function() {
+              expect(this.lsmb.get("source").get).toBeDefined();
+              return expect(this.lsmb.get("source").get('value')).toEqual("Avidity");
+            });
+            it("Should have a model attribute for source id", function() {
+              return expect(this.lsmb.get("source id")).toBeDefined();
+            });
+            it("Should have a model attribute for purity", function() {
+              return expect(this.lsmb.get("purity")).toBeDefined();
+            });
+            it("Should have a model attribute for amount made", function() {
+              return expect(this.lsmb.get("amount made")).toBeDefined();
             });
             return it("Should have a model attribute for location", function() {
               return expect(this.lsmb.get("location")).toBeDefined();
@@ -464,8 +474,17 @@
           it("Should have a notebook value", function() {
             return expect(this.lsmb.get("notebook").get("value")).toEqual("Notebook 1");
           });
-          it("Should have an amount value", function() {
-            return expect(this.lsmb.get("amount").get("value")).toEqual(2.3);
+          it("Should have a source value", function() {
+            return expect(this.lsmb.get("source").get("value")).toEqual("Avidity");
+          });
+          it("Should have a source id", function() {
+            return expect(this.lsmb.get("source id").get("value")).toEqual("12345");
+          });
+          it("Should have a purity value", function() {
+            return expect(this.lsmb.get("purity").get("value")).toEqual(92);
+          });
+          it("Should have an amount made value", function() {
+            return expect(this.lsmb.get("amount made").get("value")).toEqual(2.3);
           });
           return it("Should have a location value", function() {
             return expect(this.lsmb.get("location").get("value")).toEqual("Cabinet 1");
@@ -518,12 +537,29 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        it("should be invalid when amount is NaN", function() {
+        it("should be invalid when source is not selected", function() {
           var filtErrors;
-          this.lsmb.get("amount").set("value", "fred");
+          this.lsmb.get("source").set("value", "unassigned");
+          expect(this.lsmb.isValid()).toBeFalsy();
+          return filtErrors = _.filter(this.lsmb.validationError, function(err) {
+            return err.attribute === 'source';
+          });
+        });
+        it("should be invalid when purity is NaN", function() {
+          var filtErrors;
+          this.lsmb.get("purity").set("value", "fred");
           expect(this.lsmb.isValid()).toBeFalsy();
           filtErrors = _.filter(this.lsmb.validationError, function(err) {
-            return err.attribute === 'amount';
+            return err.attribute === 'purity';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when amount made is NaN", function() {
+          var filtErrors;
+          this.lsmb.get("amount made").set("value", "fred");
+          expect(this.lsmb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.lsmb.validationError, function(err) {
+            return err.attribute === 'amountMade';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -584,8 +620,22 @@
           it("should fill the notebook field", function() {
             return expect(this.lsmbc.$('.bv_notebook').val()).toEqual("Notebook 1");
           });
-          it("should fill the amount field", function() {
-            return expect(this.lsmbc.$('.bv_amount').val()).toEqual("2.3");
+          it("should fill the source field", function() {
+            waitsFor(function() {
+              return this.lsmbc.$('.bv_source option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.lsmbc.$('.bv_source').val()).toEqual("Avidity");
+            });
+          });
+          it("should fill the source id field", function() {
+            return expect(this.lsmbc.$('.bv_sourceId').val()).toEqual("12345");
+          });
+          it("should fill the purity field", function() {
+            return expect(this.lsmbc.$('.bv_purity').val()).toEqual("92");
+          });
+          it("should fill the amount made field", function() {
+            return expect(this.lsmbc.$('.bv_amountMade').val()).toEqual("2.3");
           });
           return it("should fill the location field", function() {
             return expect(this.lsmbc.$('.bv_location').val()).toEqual("Cabinet 1");
@@ -612,10 +662,30 @@
             this.lsmbc.$('.bv_notebook').keyup();
             return expect(this.lsmbc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
-          it("should update model when amount is changed", function() {
-            this.lsmbc.$('.bv_amount').val(" 12  ");
-            this.lsmbc.$('.bv_amount').keyup();
-            return expect(this.lsmbc.model.get('amount').get('value')).toEqual(12);
+          it("should update model when the source is changed", function() {
+            waitsFor(function() {
+              return this.lsmbc.$('.bv_source option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.lsmbc.$('.bv_source').val('unassigned');
+              this.lsmbc.$('.bv_source').change();
+              return expect(this.lsmbc.model.get('source').get('value')).toEqual("unassigned");
+            });
+          });
+          it("should update model when source id is changed", function() {
+            this.lsmbc.$('.bv_sourceId').val(" 252  ");
+            this.lsmbc.$('.bv_sourceId').keyup();
+            return expect(this.lsmbc.model.get('source id').get('value')).toEqual("252");
+          });
+          it("should update model when purity is changed", function() {
+            this.lsmbc.$('.bv_purity').val(" 29  ");
+            this.lsmbc.$('.bv_purity').keyup();
+            return expect(this.lsmbc.model.get('purity').get('value')).toEqual(29);
+          });
+          it("should update model when amount made is changed", function() {
+            this.lsmbc.$('.bv_amountMade').val(" 12  ");
+            this.lsmbc.$('.bv_amountMade').keyup();
+            return expect(this.lsmbc.model.get('amount made').get('value')).toEqual(12);
           });
           return it("should update model when location is changed", function() {
             this.lsmbc.$('.bv_location').val(" Updated location  ");
@@ -635,8 +705,14 @@
               this.lsmbc.$('.bv_completionDate').keyup();
               this.lsmbc.$('.bv_notebook').val("my notebook");
               this.lsmbc.$('.bv_notebook').keyup();
-              this.lsmbc.$('.bv_amount').val(" 24");
-              this.lsmbc.$('.bv_amount').keyup();
+              this.lsmbc.$('.bv_source').val("vendor A");
+              this.lsmbc.$('.bv_source').change();
+              this.lsmbc.$('.bv_sourceId').val(" 24");
+              this.lsmbc.$('.bv_sourceId').keyup();
+              this.lsmbc.$('.bv_purity').val(" 82");
+              this.lsmbc.$('.bv_purity').keyup();
+              this.lsmbc.$('.bv_amountMade').val(" 24");
+              this.lsmbc.$('.bv_amountMade').keyup();
               this.lsmbc.$('.bv_location').val(" Hood 4");
               return this.lsmbc.$('.bv_location').keyup();
             });
@@ -697,16 +773,47 @@
               });
             });
           });
-          describe("when amount not filled", function() {
+          describe("when source not selected", function() {
             beforeEach(function() {
               return runs(function() {
-                this.lsmbc.$('.bv_amount').val("");
-                return this.lsmbc.$('.bv_amount').keyup();
+                this.lsmbc.$('.bv_source').val("");
+                return this.lsmbc.$('.bv_source').change();
               });
             });
-            return it("should show error on amount field", function() {
+            it("should show error on source dropdown", function() {
               return runs(function() {
-                return expect(this.lsmbc.$('.bv_group_amount').hasClass('error')).toBeTruthy();
+                return expect(this.lsmbc.$('.bv_group_source').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.lsmbc.$('.bv_saveBatch').attr('disabled')).toEqual('disabled');
+              });
+            });
+          });
+          describe("when purity not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.lsmbc.$('.bv_purity').val("");
+                return this.lsmbc.$('.bv_purity').keyup();
+              });
+            });
+            return it("should show error on purity  field", function() {
+              return runs(function() {
+                return expect(this.lsmbc.$('.bv_group_purity').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          describe("when amount made not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.lsmbc.$('.bv_amountMade').val("");
+                return this.lsmbc.$('.bv_amountMade').keyup();
+              });
+            });
+            return it("should show error on amount made field", function() {
+              return runs(function() {
+                return expect(this.lsmbc.$('.bv_group_amountMade').hasClass('error')).toBeTruthy();
               });
             });
           });
@@ -822,10 +929,16 @@
               this.lsmc.$('.bv_completionDate').keyup();
               this.lsmc.$('.bv_notebook').val("my notebook");
               this.lsmc.$('.bv_notebook').keyup();
+              this.lsmc.$('.bv_source').val("Avidity");
+              this.lsmc.$('.bv_source').change();
+              this.lsmc.$('.bv_sourceId').val("12345");
+              this.lsmc.$('.bv_sourceId').keyup();
               this.lsmc.$('.bv_molecularWeight').val(" 24");
               this.lsmc.$('.bv_molecularWeight').keyup();
-              this.lsmc.$('.bv_amount').val(" 24");
-              this.lsmc.$('.bv_amount').keyup();
+              this.lsmc.$('.bv_purity').val(" 24");
+              this.lsmc.$('.bv_purity').keyup();
+              this.lsmc.$('.bv_amountMade').val(" 24");
+              this.lsmc.$('.bv_amountMade').keyup();
               this.lsmc.$('.bv_location').val(" Hood 4");
               return this.lsmc.$('.bv_location').keyup();
             });

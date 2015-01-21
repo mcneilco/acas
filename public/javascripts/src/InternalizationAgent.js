@@ -65,51 +65,9 @@
     };
 
     InternalizationAgentParent.prototype.validate = function(attrs) {
-      var bestName, cDate, conjugationSite, conjugationType, errors, nameError, notebook;
+      var conjugationSite, conjugationType, errors;
       errors = [];
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: "Recorded date must be set"
-        });
-      }
-      if (!this.isNew()) {
-        if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-          errors.push({
-            attribute: 'recordedBy',
-            message: "Scientist must be set"
-          });
-        }
-        if (attrs["completion date"] != null) {
-          cDate = attrs["completion date"].get('value');
-          if (cDate === void 0 || cDate === "") {
-            cDate = "fred";
-          }
-          if (isNaN(cDate)) {
-            errors.push({
-              attribute: 'completionDate',
-              message: "Date must be set"
-            });
-          }
-        }
-        if (attrs.notebook != null) {
-          notebook = attrs.notebook.get('value');
-          if (notebook === "" || notebook === void 0) {
-            errors.push({
-              attribute: 'notebook',
-              message: "Notebook must be set"
-            });
-          }
-        }
-      }
+      errors.push.apply(errors, InternalizationAgentParent.__super__.validate.call(this, attrs));
       if (attrs["conjugation type"] != null) {
         conjugationType = attrs["conjugation type"].get('value');
         if (conjugationType === "unassigned" || conjugationType === "" || conjugationType === void 0) {
@@ -172,6 +130,22 @@
           type: 'stringValue',
           kind: 'notebook'
         }, {
+          key: 'source',
+          stateType: 'metadata',
+          stateKind: 'internalization agent batch',
+          type: 'codeValue',
+          kind: 'source',
+          value: 'Avidity',
+          codeType: 'component',
+          codeKind: 'source',
+          codeOrigin: 'ACAS DDICT'
+        }, {
+          key: 'source id',
+          stateType: 'metadata',
+          stateKind: 'internalization agent batch',
+          type: 'stringValue',
+          kind: 'source id'
+        }, {
           key: 'molecular weight',
           stateType: 'metadata',
           stateKind: 'internalization agent batch',
@@ -188,11 +162,11 @@
           unitType: 'percentage',
           unitKind: '% purity'
         }, {
-          key: 'amount',
+          key: 'amount made',
           stateType: 'metadata',
           stateKind: 'inventory',
           type: 'numericValue',
-          kind: 'amount',
+          kind: 'amount made',
           unitType: 'mass',
           unitKind: 'g'
         }, {
@@ -206,41 +180,9 @@
     };
 
     InternalizationAgentBatch.prototype.validate = function(attrs) {
-      var amount, cDate, errors, location, mw, notebook, purity;
+      var errors, mw, purity;
       errors = [];
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: "Recorded date must be set"
-        });
-      }
-      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-        errors.push({
-          attribute: 'recordedBy',
-          message: "Scientist must be set"
-        });
-      }
-      if (attrs["completion date"] != null) {
-        cDate = attrs["completion date"].get('value');
-        if (cDate === void 0 || cDate === "") {
-          cDate = "fred";
-        }
-        if (isNaN(cDate)) {
-          errors.push({
-            attribute: 'completionDate',
-            message: "Date must be set"
-          });
-        }
-      }
-      if (attrs.notebook != null) {
-        notebook = attrs.notebook.get('value');
-        if (notebook === "" || notebook === void 0) {
-          errors.push({
-            attribute: 'notebook',
-            message: "Notebook must be set"
-          });
-        }
-      }
+      errors.push.apply(errors, InternalizationAgentBatch.__super__.validate.call(this, attrs));
       if (attrs["molecular weight"] != null) {
         mw = attrs["molecular weight"].get('value');
         if (mw === "" || mw === void 0 || isNaN(mw)) {
@@ -256,24 +198,6 @@
           errors.push({
             attribute: 'purity',
             message: "Purity must be set"
-          });
-        }
-      }
-      if (attrs.amount != null) {
-        amount = attrs.amount.get('value');
-        if (amount === "" || amount === void 0 || isNaN(amount)) {
-          errors.push({
-            attribute: 'amount',
-            message: "Amount must be set"
-          });
-        }
-      }
-      if (attrs.location != null) {
-        location = attrs.location.get('value');
-        if (location === "" || location === void 0) {
-          errors.push({
-            attribute: 'location',
-            message: "Location must be set"
           });
         }
       }
@@ -388,8 +312,8 @@
 
     InternalizationAgentBatchController.prototype.events = function() {
       return _(InternalizationAgentBatchController.__super__.events.call(this)).extend({
-        "change .bv_molecularWeight": "attributeChanged",
-        "change .bv_purity": "attributeChanged"
+        "keyup .bv_molecularWeight": "attributeChanged",
+        "keyup .bv_purity": "attributeChanged"
       });
     };
 

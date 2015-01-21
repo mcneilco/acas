@@ -228,11 +228,11 @@ describe 'Internalization Agent testing', ->
 						expect(@iapc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@iapc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@iapc.$('.bv_completionDate').change()
+					@iapc.$('.bv_completionDate').keyup()
 					expect(@iapc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@iapc.$('.bv_notebook').val(" Updated notebook  ")
-					@iapc.$('.bv_notebook').change()
+					@iapc.$('.bv_notebook').keyup()
 					expect(@iapc.model.get('notebook').get('value')).toEqual "Updated notebook"
 				it "should update model when the conjugation type is changed", ->
 					waitsFor ->
@@ -261,9 +261,9 @@ describe 'Internalization Agent testing', ->
 						@iapc.$('.bv_recordedBy').val("bob")
 						@iapc.$('.bv_recordedBy').change()
 						@iapc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@iapc.$('.bv_completionDate').change()
+						@iapc.$('.bv_completionDate').keyup()
 						@iapc.$('.bv_notebook').val("my notebook")
-						@iapc.$('.bv_notebook').change()
+						@iapc.$('.bv_notebook').keyup()
 						@iapc.$('.bv_conjugationType').val("unconjugated")
 						@iapc.$('.bv_conjugationType').change()
 						@iapc.$('.bv_conjugationSite').val("lys")
@@ -301,7 +301,7 @@ describe 'Internalization Agent testing', ->
 					beforeEach ->
 						runs ->
 							@iapc.$('.bv_completionDate').val("")
-							@iapc.$('.bv_completionDate').change()
+							@iapc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@iapc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -309,7 +309,7 @@ describe 'Internalization Agent testing', ->
 					beforeEach ->
 						runs ->
 							@iapc.$('.bv_notebook').val("")
-							@iapc.$('.bv_notebook').change()
+							@iapc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@iapc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -354,14 +354,19 @@ describe 'Internalization Agent testing', ->
 						expect(@iab.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
 						expect(@iab.get("notebook")).toBeDefined()
+					it "Should have a model attribute for source", ->
+						expect(@iab.get("source").get).toBeDefined()
+						expect(@iab.get("source").get('value')).toEqual "Avidity"
+					it "Should have a model attribute for source id", ->
+						expect(@iab.get("source id")).toBeDefined()
 					#					it "Should have a model attribute for analytical method file type", ->
 					#						expect(@iab.get("analytical file type")).toBeDefined()
 					it "Should have a model attribute for molecular weight", ->
 						expect(@iab.get("molecular weight")).toBeDefined()
 					it "Should have a model attribute for purity", ->
 						expect(@iab.get("purity")).toBeDefined()
-					it "Should have a model attribute for amount", ->
-						expect(@iab.get("amount")).toBeDefined()
+					it "Should have a model attribute for amount made", ->
+						expect(@iab.get("amount made")).toBeDefined()
 					it "Should have a model attribute for location", ->
 						expect(@iab.get("location")).toBeDefined()
 
@@ -388,12 +393,16 @@ describe 'Internalization Agent testing', ->
 					expect(@iab.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
 					expect(@iab.get("notebook").get("value")).toEqual "Notebook 1"
+				it "Should have a source value", ->
+					expect(@iab.get("source").get("value")).toEqual "Avidity"
+				it "Should have a source id", ->
+					expect(@iab.get("source id").get("value")).toEqual "12345"
 				it "Should have a molecular weight value", ->
 					expect(@iab.get("molecular weight").get("value")).toEqual 231
 				it "Should have a purity value", ->
 					expect(@iab.get("purity").get("value")).toEqual 92
-				it "Should have an amount value", ->
-					expect(@iab.get("amount").get("value")).toEqual 2.3
+				it "Should have an amount made value", ->
+					expect(@iab.get("amount made").get("value")).toEqual 2.3
 				it "Should have a location value", ->
 					expect(@iab.get("location").get("value")).toEqual "Cabinet 1"
 
@@ -430,6 +439,12 @@ describe 'Internalization Agent testing', ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when source is not selected", ->
+				@iab.get("source").set("value", "unassigned")
+				expect(@iab.isValid()).toBeFalsy()
+				filtErrors = _.filter(@iab.validationError, (err) ->
+					err.attribute=='source'
+				)
 			it "should be invalid when molecular weight is NaN", ->
 				@iab.get("molecular weight").set("value", "fred")
 				expect(@iab.isValid()).toBeFalsy()
@@ -444,11 +459,11 @@ describe 'Internalization Agent testing', ->
 					err.attribute=='purity'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when amount is NaN", ->
-				@iab.get("amount").set("value", "fred")
+			it "should be invalid when amount made is NaN", ->
+				@iab.get("amount made").set("value", "fred")
 				expect(@iab.isValid()).toBeFalsy()
 				filtErrors = _.filter(@iab.validationError, (err) ->
-					err.attribute=='amount'
+					err.attribute=='amountMade'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when location is empty", ->
@@ -494,8 +509,16 @@ describe 'Internalization Agent testing', ->
 					expect(@iabc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
 					expect(@iabc.$('.bv_notebook').val()).toEqual "Notebook 1"
-				it "should fill the amount field", ->
-					expect(@iabc.$('.bv_amount').val()).toEqual "2.3"
+				it "should fill the source field", ->
+					waitsFor ->
+						@iabc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						expect(@iabc.$('.bv_source').val()).toEqual "Avidity"
+				it "should fill the source id field", ->
+					expect(@iabc.$('.bv_sourceId').val()).toEqual "12345"
+				it "should fill the amount made field", ->
+					expect(@iabc.$('.bv_amountMade').val()).toEqual "2.3"
 				it "should fill the molecular weight field", ->
 					expect(@iabc.$('.bv_molecularWeight').val()).toEqual "231"
 				it "should fill the purity field", ->
@@ -513,27 +536,39 @@ describe 'Internalization Agent testing', ->
 						expect(@iabc.model.get('recordedBy')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@iabc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@iabc.$('.bv_completionDate').change()
+					@iabc.$('.bv_completionDate').keyup()
 					expect(@iabc.model.get('completion date').get('value')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@iabc.$('.bv_notebook').val(" Updated notebook  ")
-					@iabc.$('.bv_notebook').change()
+					@iabc.$('.bv_notebook').keyup()
 					expect(@iabc.model.get('notebook').get('value')).toEqual "Updated notebook"
+				it "should update model when the source is changed", ->
+					waitsFor ->
+						@iabc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						@iabc.$('.bv_source').val('unassigned')
+						@iabc.$('.bv_source').change()
+						expect(@iabc.model.get('source').get('value')).toEqual "unassigned"
+				it "should update model when source id is changed", ->
+					@iabc.$('.bv_sourceId').val(" 252  ")
+					@iabc.$('.bv_sourceId').keyup()
+					expect(@iabc.model.get('source id').get('value')).toEqual "252"
 				it "should update model when molecular weight is changed", ->
 					@iabc.$('.bv_molecularWeight').val(" 12  ")
-					@iabc.$('.bv_molecularWeight').change()
+					@iabc.$('.bv_molecularWeight').keyup()
 					expect(@iabc.model.get('molecular weight').get('value')).toEqual 12
 				it "should update model when purity is changed", ->
 					@iabc.$('.bv_purity').val(" 22  ")
-					@iabc.$('.bv_purity').change()
+					@iabc.$('.bv_purity').keyup()
 					expect(@iabc.model.get('purity').get('value')).toEqual 22
-				it "should update model when amount is changed", ->
-					@iabc.$('.bv_amount').val(" 12  ")
-					@iabc.$('.bv_amount').change()
-					expect(@iabc.model.get('amount').get('value')).toEqual 12
+				it "should update model when amount made is changed", ->
+					@iabc.$('.bv_amountMade').val(" 12  ")
+					@iabc.$('.bv_amountMade').keyup()
+					expect(@iabc.model.get('amount made').get('value')).toEqual 12
 				it "should update model when location is changed", ->
 					@iabc.$('.bv_location').val(" Updated location  ")
-					@iabc.$('.bv_location').change()
+					@iabc.$('.bv_location').keyup()
 					expect(@iabc.model.get('location').get('value')).toEqual "Updated location"
 
 			describe "controller validation rules", ->
@@ -545,17 +580,21 @@ describe 'Internalization Agent testing', ->
 						@iabc.$('.bv_recordedBy').val("bob")
 						@iabc.$('.bv_recordedBy').change()
 						@iabc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@iabc.$('.bv_completionDate').change()
+						@iabc.$('.bv_completionDate').keyup()
 						@iabc.$('.bv_notebook').val("my notebook")
-						@iabc.$('.bv_notebook').change()
+						@iabc.$('.bv_notebook').keyup()
+						@iabc.$('.bv_source').val("vendor A")
+						@iabc.$('.bv_source').change()
+						@iabc.$('.bv_sourceId').val(" 24")
+						@iabc.$('.bv_sourceId').keyup()
 						@iabc.$('.bv_molecularWeight').val(" 24")
-						@iabc.$('.bv_molecularWeight').change()
+						@iabc.$('.bv_molecularWeight').keyup()
 						@iabc.$('.bv_purity').val(" 85")
-						@iabc.$('.bv_purity').change()
-						@iabc.$('.bv_amount').val(" 24")
-						@iabc.$('.bv_amount').change()
+						@iabc.$('.bv_purity').keyup()
+						@iabc.$('.bv_amountMade').val(" 24")
+						@iabc.$('.bv_amountMade').keyup()
 						@iabc.$('.bv_location').val(" Hood 4")
-						@iabc.$('.bv_location').change()
+						@iabc.$('.bv_location').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -578,7 +617,7 @@ describe 'Internalization Agent testing', ->
 					beforeEach ->
 						runs ->
 							@iabc.$('.bv_completionDate').val("")
-							@iabc.$('.bv_completionDate').change()
+							@iabc.$('.bv_completionDate').keyup()
 					it "should show error in date field", ->
 						runs ->
 							expect(@iabc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
@@ -586,15 +625,26 @@ describe 'Internalization Agent testing', ->
 					beforeEach ->
 						runs ->
 							@iabc.$('.bv_notebook').val("")
-							@iabc.$('.bv_notebook').change()
+							@iabc.$('.bv_notebook').keyup()
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@iabc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
+				describe "when source not selected", ->
+					beforeEach ->
+						runs ->
+							@iabc.$('.bv_source').val("")
+							@iabc.$('.bv_source').change()
+					it "should show error on source dropdown", ->
+						runs ->
+							expect(@iabc.$('.bv_group_source').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@iabc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
 				describe "when molecular weight not filled", ->
 					beforeEach ->
 						runs ->
 							@iabc.$('.bv_molecularWeight').val("")
-							@iabc.$('.bv_molecularWeight').change()
+							@iabc.$('.bv_molecularWeight').keyup()
 					it "should show error on molecular weight field", ->
 						runs ->
 							expect(@iabc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy()
@@ -602,23 +652,23 @@ describe 'Internalization Agent testing', ->
 					beforeEach ->
 						runs ->
 							@iabc.$('.bv_purity').val("")
-							@iabc.$('.bv_purity').change()
+							@iabc.$('.bv_purity').keyup()
 					it "should show error on purity field", ->
 						runs ->
 							expect(@iabc.$('.bv_group_purity').hasClass('error')).toBeTruthy()
-				describe "when amount not filled", ->
+				describe "when amount made not filled", ->
 					beforeEach ->
 						runs ->
-							@iabc.$('.bv_amount').val("")
-							@iabc.$('.bv_amount').change()
-					it "should show error on amount field", ->
+							@iabc.$('.bv_amountMade').val("")
+							@iabc.$('.bv_amountMade').keyup()
+					it "should show error on amount made field", ->
 						runs ->
-							expect(@iabc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
+							expect(@iabc.$('.bv_group_amountMade').hasClass('error')).toBeTruthy()
 				describe "when location not filled", ->
 					beforeEach ->
 						runs ->
 							@iabc.$('.bv_location').val("")
-							@iabc.$('.bv_location').change()
+							@iabc.$('.bv_location').keyup()
 					it "should show error on location field", ->
 						runs ->
 							expect(@iabc.$('.bv_group_location').hasClass('error')).toBeTruthy()
@@ -692,21 +742,25 @@ describe 'Internalization Agent testing', ->
 						@iac.$('.bv_recordedBy').val("bob")
 						@iac.$('.bv_recordedBy').change()
 						@iac.$('.bv_completionDate').val(" 2013-3-16   ")
-						@iac.$('.bv_completionDate').change()
+						@iac.$('.bv_completionDate').keyup()
 						@iac.$('.bv_notebook').val("my notebook")
-						@iac.$('.bv_notebook').change()
+						@iac.$('.bv_notebook').keyup()
+						@iac.$('.bv_source').val("Avidity")
+						@iac.$('.bv_source').change()
+						@iac.$('.bv_sourceId').val("12345")
+						@iac.$('.bv_sourceId').keyup()
 						@iac.$('.bv_conjugationType').val(" mab")
 						@iac.$('.bv_conjugationType').change()
 						@iac.$('.bv_conjugationSite').val(" AUC")
 						@iac.$('.bv_conjugationSite').change()
 						@iac.$('.bv_molecularWeight').val(" 14")
-						@iac.$('.bv_molecularWeight').change()
+						@iac.$('.bv_molecularWeight').keyup()
 						@iac.$('.bv_purity').val(" 74")
-						@iac.$('.bv_purity').change()
-						@iac.$('.bv_amount').val(" 24")
-						@iac.$('.bv_amount').change()
+						@iac.$('.bv_purity').keyup()
+						@iac.$('.bv_amountMade').val(" 24")
+						@iac.$('.bv_amountMade').keyup()
 						@iac.$('.bv_location').val(" Hood 4")
-						@iac.$('.bv_location').change()
+						@iac.$('.bv_location').keyup()
 					waitsFor ->
 						@iac.$('.bv_recordedBy option').length > 0
 					, 1000

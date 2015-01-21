@@ -27,66 +27,7 @@ class window.CationicBlockParent extends AbstractBaseComponentParent
 			stateKind: 'cationic block parent'
 			type: 'stringValue'
 			kind: 'notebook'
-		,
-			key: 'molecular weight'
-			stateType: 'metadata'
-			stateKind: 'cationic block parent'
-			type: 'numericValue' #used to set the lsValue subclass of the object
-			kind: 'molecular weight'
-			unitType: 'molecular weight'
-			unitKind: 'g/mol'
 		]
-
-	validate: (attrs) ->
-		errors = []
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'parentName'
-				message: "Name must be set"
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: "Recorded date must be set"
-		#		unless attrs.codeName is undefined
-		unless @isNew()
-			if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-				errors.push
-					attribute: 'recordedBy'
-					message: "Scientist must be set"
-			if attrs["completion date"]?
-				cDate = attrs["completion date"].get('value')
-				if cDate is undefined or cDate is "" then cDate = "fred"
-				if isNaN(cDate)
-					errors.push
-						attribute: 'completionDate'
-						message: "Date must be set"
-			if attrs.notebook?
-				notebook = attrs.notebook.get('value')
-				if notebook is "" or notebook is undefined
-					errors.push
-						attribute: 'notebook'
-						message: "Notebook must be set"
-		if attrs["molecular weight"]?
-			mw = attrs["molecular weight"].get('value')
-			if mw is "" or mw is undefined
-				errors.push
-					attribute: 'molecularWeight'
-					message: "Molecular weight must be set"
-			if isNaN(mw)
-				errors.push
-					attribute: 'molecularWeight'
-					message: "Molecular weight must be a number"
-
-		if errors.length > 0
-			return errors
-		else
-			return null
 
 
 class window.CationicBlockBatch extends AbstractBaseComponentBatch
@@ -116,11 +57,43 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 			type: 'stringValue'
 			kind: 'notebook'
 		,
-			key: 'amount'
+			key: 'source'
+			stateType: 'metadata'
+			stateKind: 'cationic block batch'
+			type: 'codeValue'
+			kind: 'source'
+			value: 'Avidity'
+			codeType: 'component'
+			codeKind: 'source'
+			codeOrigin: 'ACAS DDICT'
+		,
+			key: 'source id'
+			stateType: 'metadata'
+			stateKind: 'cationic block batch'
+			type: 'stringValue'
+			kind: 'source id'
+		,
+			key: 'molecular weight'
+			stateType: 'metadata'
+			stateKind: 'cationic block batch'
+			type: 'numericValue'
+			kind: 'molecular weight'
+			unitType: 'molecular weight'
+			unitKind: 'g/mol'
+		,
+			key: 'purity'
+			stateType: 'metadata'
+			stateKind: 'cationic block batch'
+			type: 'numericValue'
+			kind: 'purity'
+			unitType: 'percentage'
+			unitKind: '% purity'
+		,
+			key: 'amount made'
 			stateType: 'metadata'
 			stateKind: 'inventory'
-			type: 'numericValue' #used to set the lsValue subclass of the object
-			kind: 'amount'
+			type: 'numericValue'
+			kind: 'amount made'
 			unitType: 'mass'
 			unitKind: 'g'
 		,
@@ -131,13 +104,40 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 			kind: 'location'
 		]
 
+	validate: (attrs) ->
+		errors = []
+		errors.push super(attrs)...
+		if attrs["molecular weight"]?
+			mw = attrs["molecular weight"].get('value')
+			if mw is "" or mw is undefined
+				errors.push
+					attribute: 'molecularWeight'
+					message: "Molecular weight must be set"
+			if isNaN(mw)
+				errors.push
+					attribute: 'molecularWeight'
+					message: "Molecular weight must be a number"
+		if attrs.purity?
+			console.log "purity"
+			purity = attrs.purity.get('value')
+			console.log purity
+			if purity is "" or purity is undefined
+				errors.push
+					attribute: 'purity'
+					message: "Purity must be set"
+			if isNaN(purity)
+				errors.push
+					attribute: 'purity'
+					message: "Purity must be a number"
+
+
+		if errors.length > 0
+			return errors
+		else
+			return null
+
 class window.CationicBlockParentController extends AbstractBaseComponentParentController
 	additionalParentAttributesTemplate: _.template($("#CationicBlockParentView").html())
-
-	events: ->
-		_(super()).extend(
-			"keyup .bv_molecularWeight": "attributeChanged"
-		)
 
 	initialize: ->
 		unless @model?
@@ -151,16 +151,32 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 		unless @model?
 			@model = new CationicBlockParent()
 		super()
-		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
+		@setupStructuralFileController()
+
+	setupStructuralFileController: ->
+		@structuralFileController= new AttachFileListController
+			canRemoveAttachFileModel: false
+			el: @$('.bv_structuralFile')
+			collection: new AttachFileList()
+		@structuralFileController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@structuralFileController.on 'amClean', =>
+			@trigger 'amClean'
+		@structuralFileController.render()
 
 	updateModel: =>
 		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
-		@model.get("molecular weight").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_molecularWeight')))
-		console.log "updating parent name"
 		super()
 
 
 class window.CationicBlockBatchController extends AbstractBaseComponentBatchController
+	additionalBatchAttributesTemplate: _.template($("#CationicBlockBatchView").html())
+
+	events: ->
+		_(super()).extend(
+			"keyup .bv_molecularWeight": "attributeChanged"
+			"keyup .bv_purity": "attributeChanged"
+		)
 
 	initialize: ->
 		unless @model?
@@ -173,6 +189,13 @@ class window.CationicBlockBatchController extends AbstractBaseComponentBatchCont
 		unless @model?
 			console.log "create new model"
 			@model = new CationicBlockBatch()
+		super()
+		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
+		@$('.bv_purity').val(@model.get('purity').get('value'))
+
+	updateModel: =>
+		@model.get("molecular weight").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_molecularWeight')))
+		@model.get("purity").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_purity')))
 		super()
 
 class window.CationicBlockBatchSelectController extends AbstractBaseComponentBatchSelectController

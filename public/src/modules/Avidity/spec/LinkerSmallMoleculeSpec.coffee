@@ -301,10 +301,17 @@ describe 'Linker Small Molecule testing', ->
 						expect(@lsmb.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
 						expect(@lsmb.get("notebook")).toBeDefined()
+					it "Should have a model attribute for source", ->
+						expect(@lsmb.get("source").get).toBeDefined()
+						expect(@lsmb.get("source").get('value')).toEqual "Avidity"
+					it "Should have a model attribute for source id", ->
+						expect(@lsmb.get("source id")).toBeDefined()
 					#					it "Should have a model attribute for analytical method file type", ->
 					#						expect(@lsmb.get("analytical file type")).toBeDefined()
-					it "Should have a model attribute for amount", ->
-						expect(@lsmb.get("amount")).toBeDefined()
+					it "Should have a model attribute for purity", ->
+						expect(@lsmb.get("purity")).toBeDefined()
+					it "Should have a model attribute for amount made", ->
+						expect(@lsmb.get("amount made")).toBeDefined()
 					it "Should have a model attribute for location", ->
 						expect(@lsmb.get("location")).toBeDefined()
 
@@ -331,8 +338,14 @@ describe 'Linker Small Molecule testing', ->
 					expect(@lsmb.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
 					expect(@lsmb.get("notebook").get("value")).toEqual "Notebook 1"
-				it "Should have an amount value", ->
-					expect(@lsmb.get("amount").get("value")).toEqual 2.3
+				it "Should have a source value", ->
+					expect(@lsmb.get("source").get("value")).toEqual "Avidity"
+				it "Should have a source id", ->
+					expect(@lsmb.get("source id").get("value")).toEqual "12345"
+				it "Should have a purity value", ->
+					expect(@lsmb.get("purity").get("value")).toEqual 92
+				it "Should have an amount made value", ->
+					expect(@lsmb.get("amount made").get("value")).toEqual 2.3
 				it "Should have a location value", ->
 					expect(@lsmb.get("location").get("value")).toEqual "Cabinet 1"
 
@@ -368,11 +381,24 @@ describe 'Linker Small Molecule testing', ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when amount is NaN", ->
-				@lsmb.get("amount").set("value", "fred")
+			it "should be invalid when source is not selected", ->
+				@lsmb.get("source").set("value", "unassigned")
 				expect(@lsmb.isValid()).toBeFalsy()
 				filtErrors = _.filter(@lsmb.validationError, (err) ->
-					err.attribute=='amount'
+					err.attribute=='source'
+				)
+			it "should be invalid when purity is NaN", ->
+				@lsmb.get("purity").set("value", "fred")
+				expect(@lsmb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@lsmb.validationError, (err) ->
+					err.attribute=='purity'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when amount made is NaN", ->
+				@lsmb.get("amount made").set("value", "fred")
+				expect(@lsmb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@lsmb.validationError, (err) ->
+					err.attribute=='amountMade'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when location is empty", ->
@@ -416,8 +442,18 @@ describe 'Linker Small Molecule testing', ->
 					expect(@lsmbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
 					expect(@lsmbc.$('.bv_notebook').val()).toEqual "Notebook 1"
-				it "should fill the amount field", ->
-					expect(@lsmbc.$('.bv_amount').val()).toEqual "2.3"
+				it "should fill the source field", ->
+					waitsFor ->
+						@lsmbc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						expect(@lsmbc.$('.bv_source').val()).toEqual "Avidity"
+				it "should fill the source id field", ->
+					expect(@lsmbc.$('.bv_sourceId').val()).toEqual "12345"
+				it "should fill the purity field", ->
+					expect(@lsmbc.$('.bv_purity').val()).toEqual "92"
+				it "should fill the amount made field", ->
+					expect(@lsmbc.$('.bv_amountMade').val()).toEqual "2.3"
 				it "should fill the location field", ->
 					expect(@lsmbc.$('.bv_location').val()).toEqual "Cabinet 1"
 			describe "model updates", ->
@@ -437,10 +473,26 @@ describe 'Linker Small Molecule testing', ->
 					@lsmbc.$('.bv_notebook').val(" Updated notebook  ")
 					@lsmbc.$('.bv_notebook').keyup()
 					expect(@lsmbc.model.get('notebook').get('value')).toEqual "Updated notebook"
-				it "should update model when amount is changed", ->
-					@lsmbc.$('.bv_amount').val(" 12  ")
-					@lsmbc.$('.bv_amount').keyup()
-					expect(@lsmbc.model.get('amount').get('value')).toEqual 12
+				it "should update model when the source is changed", ->
+					waitsFor ->
+						@lsmbc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						@lsmbc.$('.bv_source').val('unassigned')
+						@lsmbc.$('.bv_source').change()
+						expect(@lsmbc.model.get('source').get('value')).toEqual "unassigned"
+				it "should update model when source id is changed", ->
+					@lsmbc.$('.bv_sourceId').val(" 252  ")
+					@lsmbc.$('.bv_sourceId').keyup()
+					expect(@lsmbc.model.get('source id').get('value')).toEqual "252"
+				it "should update model when purity is changed", ->
+					@lsmbc.$('.bv_purity').val(" 29  ")
+					@lsmbc.$('.bv_purity').keyup()
+					expect(@lsmbc.model.get('purity').get('value')).toEqual 29
+				it "should update model when amount made is changed", ->
+					@lsmbc.$('.bv_amountMade').val(" 12  ")
+					@lsmbc.$('.bv_amountMade').keyup()
+					expect(@lsmbc.model.get('amount made').get('value')).toEqual 12
 				it "should update model when location is changed", ->
 					@lsmbc.$('.bv_location').val(" Updated location  ")
 					@lsmbc.$('.bv_location').keyup()
@@ -458,8 +510,14 @@ describe 'Linker Small Molecule testing', ->
 						@lsmbc.$('.bv_completionDate').keyup()
 						@lsmbc.$('.bv_notebook').val("my notebook")
 						@lsmbc.$('.bv_notebook').keyup()
-						@lsmbc.$('.bv_amount').val(" 24")
-						@lsmbc.$('.bv_amount').keyup()
+						@lsmbc.$('.bv_source').val("vendor A")
+						@lsmbc.$('.bv_source').change()
+						@lsmbc.$('.bv_sourceId').val(" 24")
+						@lsmbc.$('.bv_sourceId').keyup()
+						@lsmbc.$('.bv_purity').val(" 82")
+						@lsmbc.$('.bv_purity').keyup()
+						@lsmbc.$('.bv_amountMade').val(" 24")
+						@lsmbc.$('.bv_amountMade').keyup()
 						@lsmbc.$('.bv_location').val(" Hood 4")
 						@lsmbc.$('.bv_location').keyup()
 				describe "form validation setup", ->
@@ -496,14 +554,33 @@ describe 'Linker Small Molecule testing', ->
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@lsmbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
-				describe "when amount not filled", ->
+				describe "when source not selected", ->
 					beforeEach ->
 						runs ->
-							@lsmbc.$('.bv_amount').val("")
-							@lsmbc.$('.bv_amount').keyup()
-					it "should show error on amount field", ->
+							@lsmbc.$('.bv_source').val("")
+							@lsmbc.$('.bv_source').change()
+					it "should show error on source dropdown", ->
 						runs ->
-							expect(@lsmbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
+							expect(@lsmbc.$('.bv_group_source').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@lsmbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
+				describe "when purity not filled", ->
+					beforeEach ->
+						runs ->
+							@lsmbc.$('.bv_purity').val("")
+							@lsmbc.$('.bv_purity').keyup()
+					it "should show error on purity  field", ->
+						runs ->
+							expect(@lsmbc.$('.bv_group_purity').hasClass('error')).toBeTruthy()
+				describe "when amount made not filled", ->
+					beforeEach ->
+						runs ->
+							@lsmbc.$('.bv_amountMade').val("")
+							@lsmbc.$('.bv_amountMade').keyup()
+					it "should show error on amount made field", ->
+						runs ->
+							expect(@lsmbc.$('.bv_group_amountMade').hasClass('error')).toBeTruthy()
 				describe "when location not filled", ->
 					beforeEach ->
 						runs ->
@@ -585,10 +662,16 @@ describe 'Linker Small Molecule testing', ->
 						@lsmc.$('.bv_completionDate').keyup()
 						@lsmc.$('.bv_notebook').val("my notebook")
 						@lsmc.$('.bv_notebook').keyup()
+						@lsmc.$('.bv_source').val("Avidity")
+						@lsmc.$('.bv_source').change()
+						@lsmc.$('.bv_sourceId').val("12345")
+						@lsmc.$('.bv_sourceId').keyup()
 						@lsmc.$('.bv_molecularWeight').val(" 24")
 						@lsmc.$('.bv_molecularWeight').keyup()
-						@lsmc.$('.bv_amount').val(" 24")
-						@lsmc.$('.bv_amount').keyup()
+						@lsmc.$('.bv_purity').val(" 24")
+						@lsmc.$('.bv_purity').keyup()
+						@lsmc.$('.bv_amountMade').val(" 24")
+						@lsmc.$('.bv_amountMade').keyup()
 						@lsmc.$('.bv_location').val(" Hood 4")
 						@lsmc.$('.bv_location').keyup()
 					waitsFor ->

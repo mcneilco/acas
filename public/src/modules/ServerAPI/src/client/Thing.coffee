@@ -78,12 +78,9 @@ class window.Thing extends Backbone.Model
 			newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
 			@set dLabel.key, newLabel
 			newLabel.set preferred: dLabel.preferred
-		console.log "created default labels"
-		console.log @
 
 
 	createDefaultStates: =>
-		console.log "creating default states function"
 		for dValue in @lsProperties.defaultValues
 			#Adding the new state and value to @
 			newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
@@ -103,6 +100,8 @@ class window.Thing extends Backbone.Model
 			#Setting dValue.key attribute in @ to point to the newValue
 			@set dValue.key, newValue
 
+			if dValue.value?
+				newValue.set dValue.type, dValue.value
 			#setting top level model attribute's value to equal valueType's value
 			# (ie set "value" to equal value in "stringValue")
 			@get(dValue.kind).set("value", newValue.get(dValue.type))
@@ -130,7 +129,6 @@ class window.Thing extends Backbone.Model
 
 
 	reformatBeforeSaving: =>
-		console.log "callMeBeforeCallingSave"
 		for dLabel in @lsProperties.defaultLabels
 			@unset(dLabel.key)
 
@@ -142,7 +140,6 @@ class window.Thing extends Backbone.Model
 			if _.isFunction(@attributes[i])
 				delete @attributes[i]
 			else if !isNaN(i)
-				console.log "delete number"
 				delete @attributes[i]
 
 # moved this example to ThingSpec.coffee

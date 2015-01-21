@@ -344,10 +344,15 @@ describe 'Protein testing', ->
 						expect(@pb.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
 						expect(@pb.get("notebook")).toBeDefined()
+					it "Should have a model attribute for source", ->
+						expect(@pb.get("source").get).toBeDefined()
+						expect(@pb.get("source").get('value')).toEqual "Avidity"
+					it "Should have a model attribute for source id", ->
+						expect(@pb.get("source id")).toBeDefined()
 					#					it "Should have a model attribute for analytical method file type", ->
 					#						expect(@pb.get("analytical file type")).toBeDefined()
-					it "Should have a model attribute for amount", ->
-						expect(@pb.get("amount")).toBeDefined()
+					it "Should have a model attribute for amount made", ->
+						expect(@pb.get("amount made")).toBeDefined()
 					it "Should have a model attribute for location", ->
 						expect(@pb.get("location")).toBeDefined()
 
@@ -374,8 +379,12 @@ describe 'Protein testing', ->
 					expect(@pb.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
 					expect(@pb.get("notebook").get("value")).toEqual "Notebook 1"
-				it "Should have an amount value", ->
-					expect(@pb.get("amount").get("value")).toEqual 2.3
+				it "Should have a source value", ->
+					expect(@pb.get("source").get("value")).toEqual "Avidity"
+				it "Should have a source id", ->
+					expect(@pb.get("source id").get("value")).toEqual "12345"
+				it "Should have an amount made value", ->
+					expect(@pb.get("amount made").get("value")).toEqual 2.3
 				it "Should have a location value", ->
 					expect(@pb.get("location").get("value")).toEqual "Cabinet 1"
 
@@ -411,11 +420,17 @@ describe 'Protein testing', ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when amount is NaN", ->
-				@pb.get("amount").set("value", "fred")
+			it "should be invalid when source is not selected", ->
+				@pb.get("source").set("value", "unassigned")
 				expect(@pb.isValid()).toBeFalsy()
 				filtErrors = _.filter(@pb.validationError, (err) ->
-					err.attribute=='amount'
+					err.attribute=='source'
+				)
+			it "should be invalid when amount made is NaN", ->
+				@pb.get("amount made").set("value", "fred")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
+					err.attribute=='amountMade'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when location is empty", ->
@@ -459,8 +474,16 @@ describe 'Protein testing', ->
 					expect(@pbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
 					expect(@pbc.$('.bv_notebook').val()).toEqual "Notebook 1"
-				it "should fill the amount field", ->
-					expect(@pbc.$('.bv_amount').val()).toEqual "2.3"
+				it "should fill the source field", ->
+					waitsFor ->
+						@pbc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_source').val()).toEqual "Avidity"
+				it "should fill the source id field", ->
+					expect(@pbc.$('.bv_sourceId').val()).toEqual "12345"
+				it "should fill the amount made field", ->
+					expect(@pbc.$('.bv_amountMade').val()).toEqual "2.3"
 				it "should fill the location field", ->
 					expect(@pbc.$('.bv_location').val()).toEqual "Cabinet 1"
 			describe "model updates", ->
@@ -480,10 +503,22 @@ describe 'Protein testing', ->
 					@pbc.$('.bv_notebook').val(" Updated notebook  ")
 					@pbc.$('.bv_notebook').keyup()
 					expect(@pbc.model.get('notebook').get('value')).toEqual "Updated notebook"
-				it "should update model when amount is changed", ->
-					@pbc.$('.bv_amount').val(" 12  ")
-					@pbc.$('.bv_amount').keyup()
-					expect(@pbc.model.get('amount').get('value')).toEqual 12
+				it "should update model when the source is changed", ->
+					waitsFor ->
+						@pbc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_source').val('unassigned')
+						@pbc.$('.bv_source').change()
+						expect(@pbc.model.get('source').get('value')).toEqual "unassigned"
+				it "should update model when source id is changed", ->
+					@pbc.$('.bv_sourceId').val(" 252  ")
+					@pbc.$('.bv_sourceId').keyup()
+					expect(@pbc.model.get('source id').get('value')).toEqual "252"
+				it "should update model when amount made is changed", ->
+					@pbc.$('.bv_amountMade').val(" 12  ")
+					@pbc.$('.bv_amountMade').keyup()
+					expect(@pbc.model.get('amount made').get('value')).toEqual 12
 				it "should update model when location is changed", ->
 					@pbc.$('.bv_location').val(" Updated location  ")
 					@pbc.$('.bv_location').keyup()
@@ -501,8 +536,12 @@ describe 'Protein testing', ->
 						@pbc.$('.bv_completionDate').keyup()
 						@pbc.$('.bv_notebook').val("my notebook")
 						@pbc.$('.bv_notebook').keyup()
-						@pbc.$('.bv_amount').val(" 24")
-						@pbc.$('.bv_amount').keyup()
+						@pbc.$('.bv_source').val("vendor A")
+						@pbc.$('.bv_source').change()
+						@pbc.$('.bv_sourceId').val(" 24")
+						@pbc.$('.bv_sourceId').keyup()
+						@pbc.$('.bv_amountMade').val(" 24")
+						@pbc.$('.bv_amountMade').keyup()
 						@pbc.$('.bv_location').val(" Hood 4")
 						@pbc.$('.bv_location').keyup()
 				describe "form validation setup", ->
@@ -539,14 +578,25 @@ describe 'Protein testing', ->
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@pbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
-				describe "when amount not filled", ->
+				describe "when source not selected", ->
 					beforeEach ->
 						runs ->
-							@pbc.$('.bv_amount').val("")
-							@pbc.$('.bv_amount').keyup()
-					it "should show error on amount field", ->
+							@pbc.$('.bv_source').val("")
+							@pbc.$('.bv_source').change()
+					it "should show error on source dropdown", ->
 						runs ->
-							expect(@pbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_source').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@pbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
+				describe "when amount made not filled", ->
+					beforeEach ->
+						runs ->
+							@pbc.$('.bv_amountMade').val("")
+							@pbc.$('.bv_amountMade').keyup()
+					it "should show error on amount made field", ->
+						runs ->
+							expect(@pbc.$('.bv_group_amountMade').hasClass('error')).toBeTruthy()
 				describe "when location not filled", ->
 					beforeEach ->
 						runs ->
@@ -632,8 +682,12 @@ describe 'Protein testing', ->
 						@pc.$('.bv_type').change()
 						@pc.$('.bv_sequence').val(" AUC")
 						@pc.$('.bv_sequence').keyup()
-						@pc.$('.bv_amount').val(" 24")
-						@pc.$('.bv_amount').keyup()
+						@pc.$('.bv_source').val("Avidity")
+						@pc.$('.bv_source').change()
+						@pc.$('.bv_sourceId').val("12345")
+						@pc.$('.bv_sourceId').keyup()
+						@pc.$('.bv_amountMade').val(" 24")
+						@pc.$('.bv_amountMade').keyup()
 						@pc.$('.bv_location').val(" Hood 4")
 						@pc.$('.bv_location').keyup()
 					waitsFor ->

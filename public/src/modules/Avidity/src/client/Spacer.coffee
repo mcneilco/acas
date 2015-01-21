@@ -116,11 +116,27 @@ class window.SpacerBatch extends AbstractBaseComponentBatch
 			type: 'stringValue'
 			kind: 'notebook'
 		,
-			key: 'amount'
+			key: 'source'
+			stateType: 'metadata'
+			stateKind: 'spacer batch'
+			type: 'codeValue'
+			kind: 'source'
+			value: 'Avidity'
+			codeType: 'component'
+			codeKind: 'source'
+			codeOrigin: 'ACAS DDICT'
+		,
+			key: 'source id'
+			stateType: 'metadata'
+			stateKind: 'spacer batch'
+			type: 'stringValue'
+			kind: 'source id'
+		,
+			key: 'amount made'
 			stateType: 'metadata'
 			stateKind: 'inventory'
 			type: 'numericValue' #used to set the lsValue subclass of the object
-			kind: 'amount'
+			kind: 'amount made'
 			unitType: 'mass'
 			unitKind: 'g'
 		,

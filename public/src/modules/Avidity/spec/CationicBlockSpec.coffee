@@ -36,8 +36,6 @@ describe 'Cationic Block testing', ->
 						expect(@cbp.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
 						expect(@cbp.get("notebook")).toBeDefined()
-					it "Should have a model attribute for molecular weight", ->
-						expect(@cbp.get("molecular weight")).toBeDefined()
 			describe "model validation", ->
 				it "should be invalid when name is empty", ->
 					@cbp.get("cationic block name").set("labelText", "")
@@ -51,13 +49,6 @@ describe 'Cationic Block testing', ->
 					expect(@cbp.isValid()).toBeFalsy()
 					filtErrors = _.filter(@cbp.validationError, (err) ->
 						err.attribute=='recordedDate'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when molecular weight is NaN", ->
-					@cbp.get("molecular weight").set("value", "fred")
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
-						err.attribute=='molecularWeight'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 
@@ -89,8 +80,6 @@ describe 'Cationic Block testing', ->
 					expect(@cbp.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
 					expect(@cbp.get("notebook").get("value")).toEqual "Notebook 1"
-				it "Should have a molecular weight value", ->
-					expect(@cbp.get("molecular weight").get("value")).toEqual 231
 
 			describe "model validation", ->
 				beforeEach ->
@@ -132,13 +121,150 @@ describe 'Cationic Block testing', ->
 						err.attribute=='notebook'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when molecular weight is NaN", ->
-					@cbp.get("molecular weight").set("value", "fred")
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
-						err.attribute=='molecularWeight'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
+
+	describe "Cationic Block Batch model testing", ->
+		describe "when loaded from new", ->
+			beforeEach ->
+				@cbb= new CationicBlockBatch()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@cbb).toBeDefined()
+				it "should have a type", ->
+					expect(@cbb.get('lsType')).toEqual "batch"
+				it "should have a kind", ->
+					expect(@cbb.get('lsKind')).toEqual "cationic block"
+				it "should have an empty scientist", ->
+					expect(@cbb.get('recordedBy')).toEqual ""
+				it "should have a recordedDate set to now", ->
+					expect(new Date(@cbb.get('recordedDate')).getHours()).toEqual new Date().getHours()
+				#				it "should have an analytical method file type", ->
+				#					expect(@cbb.get('analyticalFileType')).toEqual "unassigned"
+				#				it "should have an analytical method fileValue", ->
+				#					expect(@cbb.get('analyticalFileType')).toEqual "unassigned"
+				describe "model attributes for each value in defaultValues", ->
+					it "Should have a model attribute for completion date", ->
+						expect(@cbb.get("completion date")).toBeDefined()
+					it "Should have a model attribute for notebook", ->
+						expect(@cbb.get("notebook")).toBeDefined()
+					it "Should have a model attribute for source", ->
+						expect(@cbb.get("source").get).toBeDefined()
+						expect(@cbb.get("source").get('value')).toEqual "Avidity"
+					it "Should have a model attribute for source id", ->
+						expect(@cbb.get("source id")).toBeDefined()
+					#					it "Should have a model attribute for analytical method file type", ->
+					#						expect(@cbb.get("analytical file type")).toBeDefined()
+					it "Should have a model attribute for molecular weight", ->
+						expect(@cbb.get("molecular weight")).toBeDefined()
+					it "Should have a model attribute for purity", ->
+						expect(@cbb.get("purity")).toBeDefined()
+					it "Should have a model attribute for amount made", ->
+						expect(@cbb.get("amount made")).toBeDefined()
+					it "Should have a model attribute for location", ->
+						expect(@cbb.get("location")).toBeDefined()
+
+		describe "When created from existing", ->
+			beforeEach ->
+				@cbb = new CationicBlockBatch JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockBatch))
+			describe "after initial load", ->
+				it "should be defined", ->
+					expect(@cbb).toBeDefined()
+				it "should have a type", ->
+					expect(@cbb.get('lsType')).toEqual "batch"
+				it "should have a kind", ->
+					expect(@cbb.get('lsKind')).toEqual "cationic block"
+				it "should have a scientist set", ->
+					expect(@cbb.get('recordedBy')).toEqual "jane"
+				it "should have a recordedDate set", ->
+					expect(@cbb.get('recordedDate')).toEqual 1375141508000
+				it "Should have a lsStates with the states in defaultStates", ->
+					expect(@cbb.get('lsStates')).toBeDefined()
+					expect(@cbb.get("lsStates").length).toEqual 2
+					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block batch").length).toEqual 1
+					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
+				it "Should have a completion date value", ->
+					expect(@cbb.get("completion date").get("value")).toEqual 1342080000000
+				it "Should have a notebook value", ->
+					expect(@cbb.get("notebook").get("value")).toEqual "Notebook 1"
+				it "Should have a source value", ->
+					expect(@cbb.get("source").get("value")).toEqual "Avidity"
+				it "Should have a source id", ->
+					expect(@cbb.get("source id").get("value")).toEqual "12345"
+				it "Should have a molecular weight value", ->
+					expect(@cbb.get("molecular weight").get("value")).toEqual 231
+				it "Should have a purity value", ->
+					expect(@cbb.get("purity").get("value")).toEqual 92
+				it "Should have an amount made value", ->
+					expect(@cbb.get("amount made").get("value")).toEqual 2.3
+				it "Should have a location value", ->
+					expect(@cbb.get("location").get("value")).toEqual "Cabinet 1"
+
+		describe "model validation", ->
+			beforeEach ->
+				@cbb = new CationicBlockBatch window.cationicBlockTestJSON.cationicBlockBatch
+			it "should be valid when loaded from saved", ->
+				expect(@cbb.isValid()).toBeTruthy()
+			it "should be invalid when recorded date is empty", ->
+				@cbb.set recordedDate: new Date("").getTime()
+				expect(@cbb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@cbb.validationError, (err) ->
+					err.attribute=='recordedDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when scientist not selected", ->
+				@cbb.set recordedBy: ""
+				expect(@cbb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@cbb.validationError, (err) ->
+					err.attribute=='recordedBy'
+				)
+			it "should be invalid when completion date is empty", ->
+				@cbb.get("completion date").set("value", new Date("").getTime())
+				expect(@cbb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@cbb.validationError, (err) ->
+					err.attribute=='completionDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when notebook is empty", ->
+				@cbb.get("notebook").set("value", "")
+				expect(@cbb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@cbb.validationError, (err) ->
+					err.attribute=='notebook'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when source is not selected", ->
+				@cbb.get("source").set("value", "unassigned")
+				expect(@cbb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@cbb.validationError, (err) ->
+					err.attribute=='source'
+				)
+			it "should be invalid when molecular weight is NaN", ->
+				@cbb.get("molecular weight").set("value", "fred")
+				expect(@cbb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@cbb.validationError, (err) ->
+					err.attribute=='molecularWeight'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when purity is NaN", ->
+				@cbb.get("purity").set("value", "fred")
+				expect(@cbb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@cbb.validationError, (err) ->
+					err.attribute=='purity'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when amount made is NaN", ->
+				@cbb.get("amount made").set("value", "fred")
+				expect(@cbb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@cbb.validationError, (err) ->
+					err.attribute=='amountMade'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when location is empty", ->
+				@cbb.get("location").set("value", "")
+				expect(@cbb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@cbb.validationError, (err) ->
+					err.attribute=='location'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+
 
 	describe "Cationic Block Parent Controller testing", ->
 		describe "When instantiated from new", ->
@@ -154,7 +280,7 @@ describe 'Cationic Block testing', ->
 				it "should load the template", ->
 					expect(@cbpc.$('.bv_parentCode').html()).toEqual "Autofilled when saved"
 				it "should load the additional parent attributes temlate", ->
-					expect(@cbpc.$('.bv_molecularWeight').length).toEqual 1
+					expect(@cbpc.$('.bv_structuralFile').length).toEqual 1
 		describe "When instantiated from existing", ->
 			beforeEach ->
 				@cbp = new CationicBlockParent JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockParent))
@@ -178,8 +304,6 @@ describe 'Cationic Block testing', ->
 					expect(@cbpc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
 					expect(@cbpc.$('.bv_notebook').val()).toEqual "Notebook 1"
-				it "should fill the molecular weight field", ->
-					expect(@cbpc.$('.bv_molecularWeight').val()).toEqual "231"
 
 			describe "model updates", ->
 				it "should update model when parent name is changed", ->
@@ -202,10 +326,6 @@ describe 'Cationic Block testing', ->
 					@cbpc.$('.bv_notebook').val(" Updated notebook  ")
 					@cbpc.$('.bv_notebook').keyup()
 					expect(@cbpc.model.get('notebook').get('value')).toEqual "Updated notebook"
-				it "should update model when molecular weight is changed", ->
-					@cbpc.$('.bv_molecularWeight').val(" 12  ")
-					@cbpc.$('.bv_molecularWeight').keyup()
-					expect(@cbpc.model.get('molecular weight').get('value')).toEqual 12
 
 			describe "controller validation rules", ->
 				beforeEach ->
@@ -221,8 +341,6 @@ describe 'Cationic Block testing', ->
 						@cbpc.$('.bv_completionDate').keyup()
 						@cbpc.$('.bv_notebook').val("my notebook")
 						@cbpc.$('.bv_notebook').keyup()
-						@cbpc.$('.bv_molecularWeight').val(" 24")
-						@cbpc.$('.bv_molecularWeight').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -268,120 +386,6 @@ describe 'Cationic Block testing', ->
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@cbpc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
-				describe "when molecular weight not filled", ->
-					beforeEach ->
-						runs ->
-							@cbpc.$('.bv_molecularWeight').val("")
-							@cbpc.$('.bv_molecularWeight').keyup()
-					it "should show error on molecular weight field", ->
-						runs ->
-							expect(@cbpc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy()
-
-	describe "Cationic Block Batch model testing", ->
-		describe "when loaded from new", ->
-			beforeEach ->
-				@cbb= new CationicBlockBatch()
-			describe "Existence and Defaults", ->
-				it "should be defined", ->
-					expect(@cbb).toBeDefined()
-				it "should have a type", ->
-					expect(@cbb.get('lsType')).toEqual "batch"
-				it "should have a kind", ->
-					expect(@cbb.get('lsKind')).toEqual "cationic block"
-				it "should have an empty scientist", ->
-					expect(@cbb.get('recordedBy')).toEqual ""
-				it "should have a recordedDate set to now", ->
-					expect(new Date(@cbb.get('recordedDate')).getHours()).toEqual new Date().getHours()
-				#				it "should have an analytical method file type", ->
-				#					expect(@cbb.get('analyticalFileType')).toEqual "unassigned"
-				#				it "should have an analytical method fileValue", ->
-				#					expect(@cbb.get('analyticalFileType')).toEqual "unassigned"
-				describe "model attributes for each value in defaultValues", ->
-					it "Should have a model attribute for completion date", ->
-						expect(@cbb.get("completion date")).toBeDefined()
-					it "Should have a model attribute for notebook", ->
-						expect(@cbb.get("notebook")).toBeDefined()
-					#					it "Should have a model attribute for analytical method file type", ->
-					#						expect(@cbb.get("analytical file type")).toBeDefined()
-					it "Should have a model attribute for amount", ->
-						expect(@cbb.get("amount")).toBeDefined()
-					it "Should have a model attribute for location", ->
-						expect(@cbb.get("location")).toBeDefined()
-
-		describe "When created from existing", ->
-			beforeEach ->
-				@cbb = new CationicBlockBatch JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockBatch))
-			describe "after initial load", ->
-				it "should be defined", ->
-					expect(@cbb).toBeDefined()
-				it "should have a type", ->
-					expect(@cbb.get('lsType')).toEqual "batch"
-				it "should have a kind", ->
-					expect(@cbb.get('lsKind')).toEqual "cationic block"
-				it "should have a scientist set", ->
-					expect(@cbb.get('recordedBy')).toEqual "jane"
-				it "should have a recordedDate set", ->
-					expect(@cbb.get('recordedDate')).toEqual 1375141508000
-				it "Should have a lsStates with the states in defaultStates", ->
-					expect(@cbb.get('lsStates')).toBeDefined()
-					expect(@cbb.get("lsStates").length).toEqual 2
-					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block batch").length).toEqual 1
-					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
-				it "Should have a completion date value", ->
-					expect(@cbb.get("completion date").get("value")).toEqual 1342080000000
-				it "Should have a notebook value", ->
-					expect(@cbb.get("notebook").get("value")).toEqual "Notebook 1"
-				it "Should have an amount value", ->
-					expect(@cbb.get("amount").get("value")).toEqual 2.3
-				it "Should have a location value", ->
-					expect(@cbb.get("location").get("value")).toEqual "Cabinet 1"
-
-		describe "model validation", ->
-			beforeEach ->
-				@cbb = new CationicBlockBatch window.cationicBlockTestJSON.cationicBlockBatch
-			it "should be valid when loaded from saved", ->
-				expect(@cbb.isValid()).toBeTruthy()
-			it "should be invalid when recorded date is empty", ->
-				@cbb.set recordedDate: new Date("").getTime()
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
-					err.attribute=='recordedDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when scientist not selected", ->
-				@cbb.set recordedBy: ""
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
-					err.attribute=='recordedBy'
-				)
-			it "should be invalid when completion date is empty", ->
-				@cbb.get("completion date").set("value", new Date("").getTime())
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
-					err.attribute=='completionDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when notebook is empty", ->
-				@cbb.get("notebook").set("value", "")
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
-					err.attribute=='notebook'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when amount is NaN", ->
-				@cbb.get("amount").set("value", "fred")
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
-					err.attribute=='amount'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when location is empty", ->
-				@cbb.get("location").set("value", "")
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
-					err.attribute=='location'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Cationic Block Batch Controller testing", ->
 		describe "When instantiated from new", ->
@@ -416,8 +420,20 @@ describe 'Cationic Block testing', ->
 					expect(@cbbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
 					expect(@cbbc.$('.bv_notebook').val()).toEqual "Notebook 1"
-				it "should fill the amount field", ->
-					expect(@cbbc.$('.bv_amount').val()).toEqual "2.3"
+				it "should fill the source field", ->
+					waitsFor ->
+						@cbbc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						expect(@cbbc.$('.bv_source').val()).toEqual "Avidity"
+				it "should fill the source id field", ->
+					expect(@cbbc.$('.bv_sourceId').val()).toEqual "12345"
+				it "should fill the molecular weight field", ->
+					expect(@cbbc.$('.bv_molecularWeight').val()).toEqual "231"
+				it "should fill the purity field", ->
+					expect(@cbbc.$('.bv_purity').val()).toEqual "92"
+				it "should fill the amountMade field", ->
+					expect(@cbbc.$('.bv_amountMade').val()).toEqual "2.3"
 				it "should fill the location field", ->
 					expect(@cbbc.$('.bv_location').val()).toEqual "Cabinet 1"
 			describe "model updates", ->
@@ -437,10 +453,30 @@ describe 'Cationic Block testing', ->
 					@cbbc.$('.bv_notebook').val(" Updated notebook  ")
 					@cbbc.$('.bv_notebook').keyup()
 					expect(@cbbc.model.get('notebook').get('value')).toEqual "Updated notebook"
-				it "should update model when amount is changed", ->
-					@cbbc.$('.bv_amount').val(" 12  ")
-					@cbbc.$('.bv_amount').keyup()
-					expect(@cbbc.model.get('amount').get('value')).toEqual 12
+				it "should update model when the source is changed", ->
+					waitsFor ->
+						@cbbc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						@cbbc.$('.bv_source').val('unassigned')
+						@cbbc.$('.bv_source').change()
+						expect(@cbbc.model.get('source').get('value')).toEqual "unassigned"
+				it "should update model when source id is changed", ->
+					@cbbc.$('.bv_sourceId').val(" 252  ")
+					@cbbc.$('.bv_sourceId').keyup()
+					expect(@cbbc.model.get('source id').get('value')).toEqual "252"
+				it "should update model when molecular weight is changed", ->
+					@cbbc.$('.bv_molecularWeight').val(" 12  ")
+					@cbbc.$('.bv_molecularWeight').keyup()
+					expect(@cbbc.model.get('molecular weight').get('value')).toEqual 12
+				it "should update model when purity is changed", ->
+					@cbbc.$('.bv_purity').val(" 29  ")
+					@cbbc.$('.bv_purity').keyup()
+					expect(@cbbc.model.get('purity').get('value')).toEqual 29
+				it "should update model when amount made is changed", ->
+					@cbbc.$('.bv_amountMade').val(" 12  ")
+					@cbbc.$('.bv_amountMade').keyup()
+					expect(@cbbc.model.get('amount made').get('value')).toEqual 12
 				it "should update model when location is changed", ->
 					@cbbc.$('.bv_location').val(" Updated location  ")
 					@cbbc.$('.bv_location').keyup()
@@ -458,8 +494,16 @@ describe 'Cationic Block testing', ->
 						@cbbc.$('.bv_completionDate').keyup()
 						@cbbc.$('.bv_notebook').val("my notebook")
 						@cbbc.$('.bv_notebook').keyup()
-						@cbbc.$('.bv_amount').val(" 24")
-						@cbbc.$('.bv_amount').keyup()
+						@cbbc.$('.bv_source').val("vendor A")
+						@cbbc.$('.bv_source').change()
+						@cbbc.$('.bv_sourceId').val(" 24")
+						@cbbc.$('.bv_sourceId').keyup()
+						@cbbc.$('.bv_molecularWeight').val(" 24")
+						@cbbc.$('.bv_molecularWeight').keyup()
+						@cbbc.$('.bv_purity').val(" 82")
+						@cbbc.$('.bv_purity').keyup()
+						@cbbc.$('.bv_amountMade').val(" 24")
+						@cbbc.$('.bv_amountMade').keyup()
 						@cbbc.$('.bv_location').val(" Hood 4")
 						@cbbc.$('.bv_location').keyup()
 				describe "form validation setup", ->
@@ -496,14 +540,41 @@ describe 'Cationic Block testing', ->
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@cbbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
-				describe "when amount not filled", ->
+				describe "when source not selected", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_amount').val("")
-							@cbbc.$('.bv_amount').keyup()
-					it "should show error on amount field", ->
+							@cbbc.$('.bv_source').val("")
+							@cbbc.$('.bv_source').change()
+					it "should show error on source dropdown", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
+							expect(@cbbc.$('.bv_group_source').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@cbbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
+				describe "when molecular weight not filled", ->
+					beforeEach ->
+						runs ->
+							@cbbc.$('.bv_molecularWeight').val("")
+							@cbbc.$('.bv_molecularWeight').keyup()
+					it "should show error on molecular weight field", ->
+						runs ->
+							expect(@cbbc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy()
+				describe "when purity not filled", ->
+					beforeEach ->
+						runs ->
+							@cbbc.$('.bv_purity').val("")
+							@cbbc.$('.bv_purity').keyup()
+					it "should show error on purity  field", ->
+						runs ->
+							expect(@cbbc.$('.bv_group_purity').hasClass('error')).toBeTruthy()
+				describe "when amount made not filled", ->
+					beforeEach ->
+						runs ->
+							@cbbc.$('.bv_amountMade').val("")
+							@cbbc.$('.bv_amountMade').keyup()
+					it "should show error on amount made field", ->
+						runs ->
+							expect(@cbbc.$('.bv_group_amountMade').hasClass('error')).toBeTruthy()
 				describe "when location not filled", ->
 					beforeEach ->
 						runs ->
@@ -585,10 +656,16 @@ describe 'Cationic Block testing', ->
 						@cbc.$('.bv_completionDate').keyup()
 						@cbc.$('.bv_notebook').val("my notebook")
 						@cbc.$('.bv_notebook').keyup()
+						@cbc.$('.bv_source').val("Avidity")
+						@cbc.$('.bv_source').change()
+						@cbc.$('.bv_sourceId').val("12345")
+						@cbc.$('.bv_sourceId').keyup()
 						@cbc.$('.bv_molecularWeight').val(" 24")
 						@cbc.$('.bv_molecularWeight').keyup()
-						@cbc.$('.bv_amount').val(" 24")
-						@cbc.$('.bv_amount').keyup()
+						@cbc.$('.bv_purity').val(" 24")
+						@cbc.$('.bv_purity').keyup()
+						@cbc.$('.bv_amountMade').val(" 24")
+						@cbc.$('.bv_amountMade').keyup()
 						@cbc.$('.bv_location').val(" Hood 4")
 						@cbc.$('.bv_location').keyup()
 					waitsFor ->

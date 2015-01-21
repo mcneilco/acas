@@ -10,6 +10,65 @@
       return AbstractBaseComponentParent.__super__.constructor.apply(this, arguments);
     }
 
+    AbstractBaseComponentParent.prototype.validate = function(attrs) {
+      var bestName, cDate, errors, nameError, notebook;
+      errors = [];
+      bestName = attrs.lsLabels.pickBestName();
+      nameError = true;
+      if (bestName != null) {
+        nameError = true;
+        if (bestName.get('labelText') !== "") {
+          nameError = false;
+        }
+      }
+      if (nameError) {
+        errors.push({
+          attribute: 'parentName',
+          message: "Name must be set"
+        });
+      }
+      if (_.isNaN(attrs.recordedDate)) {
+        errors.push({
+          attribute: 'recordedDate',
+          message: "Recorded date must be set"
+        });
+      }
+      if (!this.isNew()) {
+        if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
+          errors.push({
+            attribute: 'recordedBy',
+            message: "Scientist must be set"
+          });
+        }
+        if (attrs["completion date"] != null) {
+          cDate = attrs["completion date"].get('value');
+          if (cDate === void 0 || cDate === "") {
+            cDate = "fred";
+          }
+          if (isNaN(cDate)) {
+            errors.push({
+              attribute: 'completionDate',
+              message: "Date must be set"
+            });
+          }
+        }
+        if (attrs.notebook != null) {
+          notebook = attrs.notebook.get('value');
+          if (notebook === "" || notebook === void 0) {
+            errors.push({
+              attribute: 'notebook',
+              message: "Notebook must be set"
+            });
+          }
+        }
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
+    };
+
     AbstractBaseComponentParent.prototype.prepareToSave = function() {
       var rBy, rDate;
       rBy = this.get('recordedBy');
@@ -67,7 +126,7 @@
     }
 
     AbstractBaseComponentBatch.prototype.validate = function(attrs) {
-      var amount, cDate, errors, location, notebook;
+      var amountMade, cDate, errors, location, notebook, source;
       errors = [];
       if (_.isNaN(attrs.recordedDate)) {
         errors.push({
@@ -93,6 +152,15 @@
           });
         }
       }
+      if (attrs.source != null) {
+        source = attrs.source.get('value');
+        if (source === "unassigned" || source === "" || source === void 0) {
+          errors.push({
+            attribute: 'source',
+            message: "Source must be set"
+          });
+        }
+      }
       if (attrs.notebook != null) {
         notebook = attrs.notebook.get('value');
         if (notebook === "" || notebook === void 0) {
@@ -102,17 +170,17 @@
           });
         }
       }
-      if (attrs.amount != null) {
-        amount = attrs.amount.get('value');
-        if (amount === "" || amount === void 0 || isNaN(amount)) {
+      if (attrs["amount made"] != null) {
+        amountMade = attrs["amount made"].get('value');
+        if (amountMade === "" || amountMade === void 0 || isNaN(amountMade)) {
           errors.push({
-            attribute: 'amount',
+            attribute: 'amountMade',
             message: "Amount must be set"
           });
         }
-        if (isNaN(amount)) {
+        if (isNaN(amountMade)) {
           errors.push({
-            attribute: 'amount',
+            attribute: 'amountMade',
             message: "Amount must be a number"
           });
         }
@@ -197,14 +265,11 @@
     };
 
     AbstractBaseComponentParentController.prototype.initialize = function() {
-      console.log("initialize parent controller");
       this.setBindings();
       this.listenTo(this.model, 'sync', this.modelSaveCallback);
       this.listenTo(this.model, 'change', this.modelChangeCallback);
       $(this.el).empty();
       $(this.el).html(this.template());
-      console.log("autofill template?");
-      console.log(this.additionalParentAttributesTemplate != null);
       if (this.componentPickerTemplate != null) {
         this.setupComponentPickerController();
       }
@@ -224,7 +289,6 @@
         this.$('.bv_parentName').val(bestName.get('labelText'));
       }
       this.$('.bv_recordedBy').val(this.model.get('recordedBy'));
-      console.log(this.model.get('recordedBy'));
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
       if (this.model.get('completion date').get('value') != null) {
@@ -232,7 +296,6 @@
       }
       this.$('.bv_notebook').val(this.model.get('notebook').get('value'));
       if (this.model.isNew()) {
-        console.log("model is new");
         this.$('.bv_recordedBy').attr('disabled', 'disabled');
         this.$('.bv_completionDate').attr('disabled', 'disabled');
         this.$('.bv_notebook').attr('disabled', 'disabled');
@@ -240,7 +303,6 @@
           return false;
         });
       } else {
-        console.log("model is not new");
         this.$('.bv_recordedBy').removeAttr('disabled');
         this.$('.bv_completionDate').removeAttr('disabled');
         this.$('.bv_notebook').removeAttr('disabled');
@@ -252,7 +314,6 @@
     };
 
     AbstractBaseComponentParentController.prototype.modelSaveCallback = function(method, model) {
-      console.log("sync in parent controller");
       this.$('.bv_updateParent').show();
       this.$('.bv_updateParent').attr('disabled', 'disabled');
       this.$('.bv_updateParentComplete').show();
@@ -286,8 +347,6 @@
 
     AbstractBaseComponentParentController.prototype.setupRecordedBySelect = function() {
       var defaultOption;
-      console.log("setup recorded by");
-      console.log(this.model.get('recordedBy'));
       if (this.model.isNew()) {
         defaultOption = "Filled from first batch";
       } else {
@@ -329,7 +388,6 @@
     };
 
     AbstractBaseComponentParentController.prototype.handleUpdateParent = function() {
-      console.log("handle update parent");
       this.model.reformatBeforeSaving();
       this.$('.bv_updatingParent').show();
       this.$('.bv_updateParentComplete').html('Update Complete.');
@@ -361,25 +419,26 @@
         "change .bv_recordedBy": "attributeChanged",
         "keyup .bv_completionDate": "attributeChanged",
         "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
+        "change .bv_source": "attributeChanged",
+        "keyup .bv_sourceId": "attributeChanged",
         "keyup .bv_notebook": "attributeChanged",
-        "keyup .bv_amount": "attributeChanged",
+        "keyup .bv_amountMade": "attributeChanged",
         "keyup .bv_location": "attributeChanged",
         "click .bv_saveBatch": "handleSaveBatch"
       };
     };
 
     AbstractBaseComponentBatchController.prototype.initialize = function() {
-      console.log("initialize batch controller");
       this.setBindings();
       this.listenTo(this.model, 'sync', this.modelSaveCallback);
       this.listenTo(this.model, 'change', this.modelChangeCallback);
       $(this.el).empty();
       $(this.el).html(this.template());
-      console.log(this.additionalBatchAttributesTemplate != null);
       if (this.additionalBatchAttributesTemplate != null) {
         this.$('.bv_additionalBatchAttributes').html(this.additionalBatchAttributesTemplate());
       }
       this.setupRecordedBySelect();
+      this.setupSourceSelect();
       return this.setupAttachFileListController();
     };
 
@@ -394,14 +453,15 @@
       } else {
         this.$('.bv_completionDate').val("");
       }
+      this.$('.bv_source').val(this.model.get('source').get('value'));
+      this.$('.bv_sourceId').val(this.model.get('source id').get('value'));
       this.$('.bv_notebook').val(this.model.get('notebook').get('value'));
-      this.$('.bv_amount').val(this.model.get('amount').get('value'));
+      this.$('.bv_amountMade').val(this.model.get('amount made').get('value'));
       this.$('.bv_location').val(this.model.get('location').get('value'));
       return this;
     };
 
     AbstractBaseComponentBatchController.prototype.modelSaveCallback = function(method, model) {
-      console.log("sync in batch controller");
       this.$('.bv_saveBatch').show();
       this.$('.bv_saveBatch').attr('disabled', 'disabled');
       this.$('.bv_saveBatchComplete').show();
@@ -430,6 +490,20 @@
       });
     };
 
+    AbstractBaseComponentBatchController.prototype.setupSourceSelect = function() {
+      this.sourceList = new PickListList();
+      this.sourceList.url = "/api/dataDict/component/source";
+      return this.sourceListController = new PickListSelectController({
+        el: this.$('.bv_source'),
+        collection: this.sourceList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Source"
+        }),
+        selectedCode: this.model.get('source').get('value')
+      });
+    };
+
     AbstractBaseComponentBatchController.prototype.setupAttachFileListController = function() {
       return $.ajax({
         type: 'GET',
@@ -444,8 +518,6 @@
             if (json.length === 0) {
               return alert('Got empty list of analytical file types');
             } else {
-              console.log("success");
-              console.log(json);
               attachFileList = _this.model.getAnalyticalFiles(json);
               return _this.finishSetupAttachFileListController(attachFileList);
             }
@@ -455,8 +527,6 @@
     };
 
     AbstractBaseComponentBatchController.prototype.finishSetupAttachFileListController = function(attachFileList) {
-      console.log(attachFileList);
-      console.log("finish set up attach file list controller");
       this.attachFileListController = new AttachFileListController({
         canRemoveAttachFileModel: false,
         el: this.$('.bv_attachFileList'),
@@ -464,7 +534,6 @@
       });
       this.attachFileListController.on('amDirty', (function(_this) {
         return function() {
-          console.log("aflc trigger dirty to batch controller");
           return _this.trigger('amDirty');
         };
       })(this));
@@ -481,13 +550,14 @@
     };
 
     AbstractBaseComponentBatchController.prototype.updateModel = function() {
-      console.log("update batch model");
       this.model.set({
         recordedBy: this.$('.bv_recordedBy').val()
       });
+      this.model.get("source").set("value", this.sourceListController.getSelectedCode());
+      this.model.get("source id").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_sourceId')));
       this.model.get("notebook").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook')));
       this.model.get("completion date").set("value", UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate'))));
-      this.model.get("amount").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_amount'))));
+      this.model.get("amount made").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_amountMade'))));
       return this.model.get("location").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_location')));
     };
 
@@ -502,11 +572,8 @@
     };
 
     AbstractBaseComponentBatchController.prototype.handleSaveBatch = function() {
-      console.log("handle save batch");
       this.model.reformatBeforeSaving();
       this.$('.bv_savingBatch').show();
-      console.log(this.model);
-      console.log(this.model.get('id'));
       return this.model.save();
     };
 
@@ -539,7 +606,6 @@
     };
 
     AbstractBaseComponentBatchSelectController.prototype.setupBatchSelect = function() {
-      console.log("setup Batch Select");
       this.batchList = new PickListList();
       this.batchList.url = "/api/batches/parentCodename/" + this.parentCodeName;
       return this.batchListController = new PickListSelectController({
@@ -556,7 +622,6 @@
     AbstractBaseComponentBatchSelectController.prototype.setupBatchRegForm = function(batch) {
       this.batchController.on('amDirty', (function(_this) {
         return function() {
-          console.log("batch controller trigger dirty to batch select controller");
           return _this.trigger('amDirty');
         };
       })(this));
@@ -567,7 +632,6 @@
       })(this));
       this.batchController.on('batchSaved', (function(_this) {
         return function() {
-          console.log("batch adn batch select trigger");
           _this.setupBatchSelect();
           _this.batchListController.setSelectedCode(_this.batchController.model.get('codeName'));
           return _this.trigger('batchSaved');
@@ -575,7 +639,6 @@
       })(this));
       this.batchController.render();
       this.$('.bv_saveBatch').attr('disabled', 'disabled');
-      console.log("is model new?");
       if (this.batchController.model.isNew()) {
         this.$('.bv_saveBatch').html("Save Batch");
         return this.$('.bv_saveBatchComplete').html("Save Complete");
@@ -586,7 +649,6 @@
     };
 
     AbstractBaseComponentBatchSelectController.prototype.checkIfFirstBatch = function() {
-      console.log("checkIfFirstBatch");
       return this.batchListController.collection.length === 1;
     };
 
@@ -645,7 +707,6 @@
         };
       })(this));
       this.parentController.render();
-      console.log("rendered parent controller");
       this.$('.bv_updateParent').attr('disabled', 'disabled');
       return this.firstSave = this.parentController.model.isNew();
     };
@@ -663,7 +724,6 @@
     AbstractBaseComponentController.prototype.setupBatchSelectController = function() {
       this.batchSelectController.on('amDirty', (function(_this) {
         return function() {
-          console.log("batch select controller trigger amDirty to base batch component controller");
           _this.trigger('amDirty');
           return _this.checkFormValid();
         };
@@ -682,7 +742,6 @@
     };
 
     AbstractBaseComponentController.prototype.handleBatchSaved = function() {
-      console.log("first batch saved	");
       if (this.batchSelectController.checkIfFirstBatch()) {
         this.$('.bv_saveFirstBatchComplete').show();
       } else {
@@ -693,9 +752,6 @@
     };
 
     AbstractBaseComponentController.prototype.checkFormValid = function() {
-      console.log("check form valid");
-      console.log(this.parentController.model.validationError);
-      console.log(this.batchSelectController.batchController.model.validationError);
       if (this.parentController.isValid() && this.batchSelectController.batchController.isValid()) {
         return this.$('.bv_save').removeAttr('disabled');
       } else {
@@ -704,7 +760,6 @@
     };
 
     AbstractBaseComponentController.prototype.handleSaveClicked = function() {
-      console.log("save clicked");
       this.saveNewParentAttributes();
       this.parentController.model.prepareToSave();
       this.batchSelectController.batchController.model.prepareToSave();
@@ -712,7 +767,6 @@
       this.$('.bv_saving').show();
       this.parentController.model.reformatBeforeSaving();
       this.batchSelectController.batchController.model.reformatBeforeSaving();
-      console.log(this.parentController.model);
       this.$('.bv_updateParentComplete').html("Save Complete");
       this.$('.bv_saveBatch').html("Save Batch");
       this.parentController.model.save();

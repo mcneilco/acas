@@ -314,12 +314,12 @@
           });
           it("should update model when completion date is changed", function() {
             this.iapc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.iapc.$('.bv_completionDate').change();
+            this.iapc.$('.bv_completionDate').keyup();
             return expect(this.iapc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.iapc.$('.bv_notebook').val(" Updated notebook  ");
-            this.iapc.$('.bv_notebook').change();
+            this.iapc.$('.bv_notebook').keyup();
             return expect(this.iapc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
           it("should update model when the conjugation type is changed", function() {
@@ -354,9 +354,9 @@
               this.iapc.$('.bv_recordedBy').val("bob");
               this.iapc.$('.bv_recordedBy').change();
               this.iapc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.iapc.$('.bv_completionDate').change();
+              this.iapc.$('.bv_completionDate').keyup();
               this.iapc.$('.bv_notebook').val("my notebook");
-              this.iapc.$('.bv_notebook').change();
+              this.iapc.$('.bv_notebook').keyup();
               this.iapc.$('.bv_conjugationType').val("unconjugated");
               this.iapc.$('.bv_conjugationType').change();
               this.iapc.$('.bv_conjugationSite').val("lys");
@@ -415,7 +415,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.iapc.$('.bv_completionDate').val("");
-                return this.iapc.$('.bv_completionDate').change();
+                return this.iapc.$('.bv_completionDate').keyup();
               });
             });
             return it("should show error in date field", function() {
@@ -428,7 +428,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.iapc.$('.bv_notebook').val("");
-                return this.iapc.$('.bv_notebook').change();
+                return this.iapc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook field", function() {
@@ -494,14 +494,21 @@
             it("Should have a model attribute for notebook", function() {
               return expect(this.iab.get("notebook")).toBeDefined();
             });
+            it("Should have a model attribute for source", function() {
+              expect(this.iab.get("source").get).toBeDefined();
+              return expect(this.iab.get("source").get('value')).toEqual("Avidity");
+            });
+            it("Should have a model attribute for source id", function() {
+              return expect(this.iab.get("source id")).toBeDefined();
+            });
             it("Should have a model attribute for molecular weight", function() {
               return expect(this.iab.get("molecular weight")).toBeDefined();
             });
             it("Should have a model attribute for purity", function() {
               return expect(this.iab.get("purity")).toBeDefined();
             });
-            it("Should have a model attribute for amount", function() {
-              return expect(this.iab.get("amount")).toBeDefined();
+            it("Should have a model attribute for amount made", function() {
+              return expect(this.iab.get("amount made")).toBeDefined();
             });
             return it("Should have a model attribute for location", function() {
               return expect(this.iab.get("location")).toBeDefined();
@@ -541,14 +548,20 @@
           it("Should have a notebook value", function() {
             return expect(this.iab.get("notebook").get("value")).toEqual("Notebook 1");
           });
+          it("Should have a source value", function() {
+            return expect(this.iab.get("source").get("value")).toEqual("Avidity");
+          });
+          it("Should have a source id", function() {
+            return expect(this.iab.get("source id").get("value")).toEqual("12345");
+          });
           it("Should have a molecular weight value", function() {
             return expect(this.iab.get("molecular weight").get("value")).toEqual(231);
           });
           it("Should have a purity value", function() {
             return expect(this.iab.get("purity").get("value")).toEqual(92);
           });
-          it("Should have an amount value", function() {
-            return expect(this.iab.get("amount").get("value")).toEqual(2.3);
+          it("Should have an amount made value", function() {
+            return expect(this.iab.get("amount made").get("value")).toEqual(2.3);
           });
           return it("Should have a location value", function() {
             return expect(this.iab.get("location").get("value")).toEqual("Cabinet 1");
@@ -602,6 +615,14 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
+        it("should be invalid when source is not selected", function() {
+          var filtErrors;
+          this.iab.get("source").set("value", "unassigned");
+          expect(this.iab.isValid()).toBeFalsy();
+          return filtErrors = _.filter(this.iab.validationError, function(err) {
+            return err.attribute === 'source';
+          });
+        });
         it("should be invalid when molecular weight is NaN", function() {
           var filtErrors;
           this.iab.get("molecular weight").set("value", "fred");
@@ -620,12 +641,12 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        it("should be invalid when amount is NaN", function() {
+        it("should be invalid when amount made is NaN", function() {
           var filtErrors;
-          this.iab.get("amount").set("value", "fred");
+          this.iab.get("amount made").set("value", "fred");
           expect(this.iab.isValid()).toBeFalsy();
           filtErrors = _.filter(this.iab.validationError, function(err) {
-            return err.attribute === 'amount';
+            return err.attribute === 'amountMade';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -689,8 +710,19 @@
           it("should fill the notebook field", function() {
             return expect(this.iabc.$('.bv_notebook').val()).toEqual("Notebook 1");
           });
-          it("should fill the amount field", function() {
-            return expect(this.iabc.$('.bv_amount').val()).toEqual("2.3");
+          it("should fill the source field", function() {
+            waitsFor(function() {
+              return this.iabc.$('.bv_source option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.iabc.$('.bv_source').val()).toEqual("Avidity");
+            });
+          });
+          it("should fill the source id field", function() {
+            return expect(this.iabc.$('.bv_sourceId').val()).toEqual("12345");
+          });
+          it("should fill the amount made field", function() {
+            return expect(this.iabc.$('.bv_amountMade').val()).toEqual("2.3");
           });
           it("should fill the molecular weight field", function() {
             return expect(this.iabc.$('.bv_molecularWeight').val()).toEqual("231");
@@ -715,32 +747,47 @@
           });
           it("should update model when completion date is changed", function() {
             this.iabc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.iabc.$('.bv_completionDate').change();
+            this.iabc.$('.bv_completionDate').keyup();
             return expect(this.iabc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.iabc.$('.bv_notebook').val(" Updated notebook  ");
-            this.iabc.$('.bv_notebook').change();
+            this.iabc.$('.bv_notebook').keyup();
             return expect(this.iabc.model.get('notebook').get('value')).toEqual("Updated notebook");
+          });
+          it("should update model when the source is changed", function() {
+            waitsFor(function() {
+              return this.iabc.$('.bv_source option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.iabc.$('.bv_source').val('unassigned');
+              this.iabc.$('.bv_source').change();
+              return expect(this.iabc.model.get('source').get('value')).toEqual("unassigned");
+            });
+          });
+          it("should update model when source id is changed", function() {
+            this.iabc.$('.bv_sourceId').val(" 252  ");
+            this.iabc.$('.bv_sourceId').keyup();
+            return expect(this.iabc.model.get('source id').get('value')).toEqual("252");
           });
           it("should update model when molecular weight is changed", function() {
             this.iabc.$('.bv_molecularWeight').val(" 12  ");
-            this.iabc.$('.bv_molecularWeight').change();
+            this.iabc.$('.bv_molecularWeight').keyup();
             return expect(this.iabc.model.get('molecular weight').get('value')).toEqual(12);
           });
           it("should update model when purity is changed", function() {
             this.iabc.$('.bv_purity').val(" 22  ");
-            this.iabc.$('.bv_purity').change();
+            this.iabc.$('.bv_purity').keyup();
             return expect(this.iabc.model.get('purity').get('value')).toEqual(22);
           });
-          it("should update model when amount is changed", function() {
-            this.iabc.$('.bv_amount').val(" 12  ");
-            this.iabc.$('.bv_amount').change();
-            return expect(this.iabc.model.get('amount').get('value')).toEqual(12);
+          it("should update model when amount made is changed", function() {
+            this.iabc.$('.bv_amountMade').val(" 12  ");
+            this.iabc.$('.bv_amountMade').keyup();
+            return expect(this.iabc.model.get('amount made').get('value')).toEqual(12);
           });
           return it("should update model when location is changed", function() {
             this.iabc.$('.bv_location').val(" Updated location  ");
-            this.iabc.$('.bv_location').change();
+            this.iabc.$('.bv_location').keyup();
             return expect(this.iabc.model.get('location').get('value')).toEqual("Updated location");
           });
         });
@@ -753,17 +800,21 @@
               this.iabc.$('.bv_recordedBy').val("bob");
               this.iabc.$('.bv_recordedBy').change();
               this.iabc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.iabc.$('.bv_completionDate').change();
+              this.iabc.$('.bv_completionDate').keyup();
               this.iabc.$('.bv_notebook').val("my notebook");
-              this.iabc.$('.bv_notebook').change();
+              this.iabc.$('.bv_notebook').keyup();
+              this.iabc.$('.bv_source').val("vendor A");
+              this.iabc.$('.bv_source').change();
+              this.iabc.$('.bv_sourceId').val(" 24");
+              this.iabc.$('.bv_sourceId').keyup();
               this.iabc.$('.bv_molecularWeight').val(" 24");
-              this.iabc.$('.bv_molecularWeight').change();
+              this.iabc.$('.bv_molecularWeight').keyup();
               this.iabc.$('.bv_purity').val(" 85");
-              this.iabc.$('.bv_purity').change();
-              this.iabc.$('.bv_amount').val(" 24");
-              this.iabc.$('.bv_amount').change();
+              this.iabc.$('.bv_purity').keyup();
+              this.iabc.$('.bv_amountMade').val(" 24");
+              this.iabc.$('.bv_amountMade').keyup();
               this.iabc.$('.bv_location').val(" Hood 4");
-              return this.iabc.$('.bv_location').change();
+              return this.iabc.$('.bv_location').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -800,7 +851,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.iabc.$('.bv_completionDate').val("");
-                return this.iabc.$('.bv_completionDate').change();
+                return this.iabc.$('.bv_completionDate').keyup();
               });
             });
             return it("should show error in date field", function() {
@@ -813,7 +864,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.iabc.$('.bv_notebook').val("");
-                return this.iabc.$('.bv_notebook').change();
+                return this.iabc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook field", function() {
@@ -822,11 +873,29 @@
               });
             });
           });
+          describe("when source not selected", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.iabc.$('.bv_source').val("");
+                return this.iabc.$('.bv_source').change();
+              });
+            });
+            it("should show error on source dropdown", function() {
+              return runs(function() {
+                return expect(this.iabc.$('.bv_group_source').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.iabc.$('.bv_saveBatch').attr('disabled')).toEqual('disabled');
+              });
+            });
+          });
           describe("when molecular weight not filled", function() {
             beforeEach(function() {
               return runs(function() {
                 this.iabc.$('.bv_molecularWeight').val("");
-                return this.iabc.$('.bv_molecularWeight').change();
+                return this.iabc.$('.bv_molecularWeight').keyup();
               });
             });
             return it("should show error on molecular weight field", function() {
@@ -839,7 +908,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.iabc.$('.bv_purity').val("");
-                return this.iabc.$('.bv_purity').change();
+                return this.iabc.$('.bv_purity').keyup();
               });
             });
             return it("should show error on purity field", function() {
@@ -848,16 +917,16 @@
               });
             });
           });
-          describe("when amount not filled", function() {
+          describe("when amount made not filled", function() {
             beforeEach(function() {
               return runs(function() {
-                this.iabc.$('.bv_amount').val("");
-                return this.iabc.$('.bv_amount').change();
+                this.iabc.$('.bv_amountMade').val("");
+                return this.iabc.$('.bv_amountMade').keyup();
               });
             });
-            return it("should show error on amount field", function() {
+            return it("should show error on amount made field", function() {
               return runs(function() {
-                return expect(this.iabc.$('.bv_group_amount').hasClass('error')).toBeTruthy();
+                return expect(this.iabc.$('.bv_group_amountMade').hasClass('error')).toBeTruthy();
               });
             });
           });
@@ -865,7 +934,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.iabc.$('.bv_location').val("");
-                return this.iabc.$('.bv_location').change();
+                return this.iabc.$('.bv_location').keyup();
               });
             });
             return it("should show error on location field", function() {
@@ -970,21 +1039,25 @@
               this.iac.$('.bv_recordedBy').val("bob");
               this.iac.$('.bv_recordedBy').change();
               this.iac.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.iac.$('.bv_completionDate').change();
+              this.iac.$('.bv_completionDate').keyup();
               this.iac.$('.bv_notebook').val("my notebook");
-              this.iac.$('.bv_notebook').change();
+              this.iac.$('.bv_notebook').keyup();
+              this.iac.$('.bv_source').val("Avidity");
+              this.iac.$('.bv_source').change();
+              this.iac.$('.bv_sourceId').val("12345");
+              this.iac.$('.bv_sourceId').keyup();
               this.iac.$('.bv_conjugationType').val(" mab");
               this.iac.$('.bv_conjugationType').change();
               this.iac.$('.bv_conjugationSite').val(" AUC");
               this.iac.$('.bv_conjugationSite').change();
               this.iac.$('.bv_molecularWeight').val(" 14");
-              this.iac.$('.bv_molecularWeight').change();
+              this.iac.$('.bv_molecularWeight').keyup();
               this.iac.$('.bv_purity').val(" 74");
-              this.iac.$('.bv_purity').change();
-              this.iac.$('.bv_amount').val(" 24");
-              this.iac.$('.bv_amount').change();
+              this.iac.$('.bv_purity').keyup();
+              this.iac.$('.bv_amountMade').val(" 24");
+              this.iac.$('.bv_amountMade').keyup();
               this.iac.$('.bv_location').val(" Hood 4");
-              return this.iac.$('.bv_location').change();
+              return this.iac.$('.bv_location').keyup();
             });
             return waitsFor(function() {
               return this.iac.$('.bv_recordedBy option').length > 0;

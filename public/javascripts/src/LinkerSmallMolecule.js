@@ -165,11 +165,35 @@
           type: 'stringValue',
           kind: 'notebook'
         }, {
-          key: 'amount',
+          key: 'source',
+          stateType: 'metadata',
+          stateKind: 'linker small molecule batch',
+          type: 'codeValue',
+          kind: 'source',
+          value: 'Avidity',
+          codeType: 'component',
+          codeKind: 'source',
+          codeOrigin: 'ACAS DDICT'
+        }, {
+          key: 'source id',
+          stateType: 'metadata',
+          stateKind: 'linker small molecule batch',
+          type: 'stringValue',
+          kind: 'source id'
+        }, {
+          key: 'purity',
+          stateType: 'metadata',
+          stateKind: 'linker small molecule batch',
+          type: 'numericValue',
+          kind: 'purity',
+          unitType: 'percentage',
+          unitKind: '% purity'
+        }, {
+          key: 'amount made',
           stateType: 'metadata',
           stateKind: 'inventory',
           type: 'numericValue',
-          kind: 'amount',
+          kind: 'amount made',
           unitType: 'mass',
           unitKind: 'g'
         }, {
@@ -180,6 +204,34 @@
           kind: 'location'
         }
       ]
+    };
+
+    LinkerSmallMoleculeBatch.prototype.validate = function(attrs) {
+      var errors, purity;
+      errors = [];
+      errors.push.apply(errors, LinkerSmallMoleculeBatch.__super__.validate.call(this, attrs));
+      if (attrs.purity != null) {
+        console.log("purity");
+        purity = attrs.purity.get('value');
+        console.log(purity);
+        if (purity === "" || purity === void 0) {
+          errors.push({
+            attribute: 'purity',
+            message: "Purity must be set"
+          });
+        }
+        if (isNaN(purity)) {
+          errors.push({
+            attribute: 'purity',
+            message: "Purity must be a number"
+          });
+        }
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
     };
 
     return LinkerSmallMoleculeBatch;
@@ -255,9 +307,18 @@
     __extends(LinkerSmallMoleculeBatchController, _super);
 
     function LinkerSmallMoleculeBatchController() {
+      this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return LinkerSmallMoleculeBatchController.__super__.constructor.apply(this, arguments);
     }
+
+    LinkerSmallMoleculeBatchController.prototype.additionalBatchAttributesTemplate = _.template($("#LinkerSmallMoleculeBatchView").html());
+
+    LinkerSmallMoleculeBatchController.prototype.events = function() {
+      return _(LinkerSmallMoleculeBatchController.__super__.events.call(this)).extend({
+        "keyup .bv_purity": "attributeChanged"
+      });
+    };
 
     LinkerSmallMoleculeBatchController.prototype.initialize = function() {
       if (this.model == null) {
@@ -273,7 +334,13 @@
         console.log("create new model");
         this.model = new LinkerSmallMoleculeBatch();
       }
-      return LinkerSmallMoleculeBatchController.__super__.render.call(this);
+      LinkerSmallMoleculeBatchController.__super__.render.call(this);
+      return this.$('.bv_purity').val(this.model.get('purity').get('value'));
+    };
+
+    LinkerSmallMoleculeBatchController.prototype.updateModel = function() {
+      this.model.get("purity").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_purity'))));
+      return LinkerSmallMoleculeBatchController.__super__.updateModel.call(this);
     };
 
     return LinkerSmallMoleculeBatchController;
@@ -363,13 +430,13 @@
               },
               success: (function(_this) {
                 return function(json) {
-                  var cbp;
+                  var lsmp;
                   if (json.length === 0) {
                     alert('Could not get parent for code in this URL, creating new one');
                   } else {
-                    cbp = new LinkerSmallMoleculeParent(json);
-                    cbp.set(cbp.parse(cbp.attributes));
-                    _this.model = cbp;
+                    lsmp = new LinkerSmallMoleculeParent(json);
+                    lsmp.set(lsmp.parse(lsmp.attributes));
+                    _this.model = lsmp;
                   }
                   return _this.completeInitialization();
                 };

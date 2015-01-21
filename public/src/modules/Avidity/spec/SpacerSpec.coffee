@@ -301,10 +301,16 @@ describe 'Spacer testing', ->
 						expect(@sb.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
 						expect(@sb.get("notebook")).toBeDefined()
+					it "Should have a model attribute for source", ->
+						expect(@sb.get("source").get).toBeDefined()
+						expect(@sb.get("source").get('value')).toEqual "Avidity"
+					it "Should have a model attribute for source id", ->
+						expect(@sb.get("source id")).toBeDefined()
+
 					#					it "Should have a model attribute for analytical method file type", ->
 					#						expect(@sb.get("analytical file type")).toBeDefined()
-					it "Should have a model attribute for amount", ->
-						expect(@sb.get("amount")).toBeDefined()
+					it "Should have a model attribute for amount made", ->
+						expect(@sb.get("amount made")).toBeDefined()
 					it "Should have a model attribute for location", ->
 						expect(@sb.get("location")).toBeDefined()
 
@@ -331,8 +337,12 @@ describe 'Spacer testing', ->
 					expect(@sb.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
 					expect(@sb.get("notebook").get("value")).toEqual "Notebook 1"
-				it "Should have an amount value", ->
-					expect(@sb.get("amount").get("value")).toEqual 2.3
+				it "Should have a source value", ->
+					expect(@sb.get("source").get("value")).toEqual "Avidity"
+				it "Should have a source id", ->
+					expect(@sb.get("source id").get("value")).toEqual "12345"
+				it "Should have an amount made value", ->
+					expect(@sb.get("amount made").get("value")).toEqual 2.3
 				it "Should have a location value", ->
 					expect(@sb.get("location").get("value")).toEqual "Cabinet 1"
 
@@ -368,11 +378,17 @@ describe 'Spacer testing', ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when amount is NaN", ->
-				@sb.get("amount").set("value", "fred")
+			it "should be invalid when source is not selected", ->
+				@sb.get("source").set("value", "unassigned")
 				expect(@sb.isValid()).toBeFalsy()
 				filtErrors = _.filter(@sb.validationError, (err) ->
-					err.attribute=='amount'
+					err.attribute=='source'
+				)
+			it "should be invalid when amount made is NaN", ->
+				@sb.get("amount made").set("value", "fred")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
+					err.attribute=='amountMade'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when location is empty", ->
@@ -416,8 +432,16 @@ describe 'Spacer testing', ->
 					expect(@sbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
 					expect(@sbc.$('.bv_notebook').val()).toEqual "Notebook 1"
-				it "should fill the amount field", ->
-					expect(@sbc.$('.bv_amount').val()).toEqual "2.3"
+				it "should fill the source field", ->
+					waitsFor ->
+						@sbc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						expect(@sbc.$('.bv_source').val()).toEqual "Avidity"
+				it "should fill the source id field", ->
+					expect(@sbc.$('.bv_sourceId').val()).toEqual "12345"
+				it "should fill the amountMade field", ->
+					expect(@sbc.$('.bv_amountMade').val()).toEqual "2.3"
 				it "should fill the location field", ->
 					expect(@sbc.$('.bv_location').val()).toEqual "Cabinet 1"
 			describe "model updates", ->
@@ -437,10 +461,22 @@ describe 'Spacer testing', ->
 					@sbc.$('.bv_notebook').val(" Updated notebook  ")
 					@sbc.$('.bv_notebook').keyup()
 					expect(@sbc.model.get('notebook').get('value')).toEqual "Updated notebook"
-				it "should update model when amount is changed", ->
-					@sbc.$('.bv_amount').val(" 12  ")
-					@sbc.$('.bv_amount').keyup()
-					expect(@sbc.model.get('amount').get('value')).toEqual 12
+				it "should update model when the source is changed", ->
+					waitsFor ->
+						@sbc.$('.bv_source option').length > 0
+					, 1000
+					runs ->
+						@sbc.$('.bv_source').val('unassigned')
+						@sbc.$('.bv_source').change()
+						expect(@sbc.model.get('source').get('value')).toEqual "unassigned"
+				it "should update model when source id is changed", ->
+					@sbc.$('.bv_sourceId').val(" 252  ")
+					@sbc.$('.bv_sourceId').keyup()
+					expect(@sbc.model.get('source id').get('value')).toEqual "252"
+				it "should update model when amount made is changed", ->
+					@sbc.$('.bv_amountMade').val(" 12  ")
+					@sbc.$('.bv_amountMade').keyup()
+					expect(@sbc.model.get('amount made').get('value')).toEqual 12
 				it "should update model when location is changed", ->
 					@sbc.$('.bv_location').val(" Updated location  ")
 					@sbc.$('.bv_location').keyup()
@@ -458,8 +494,12 @@ describe 'Spacer testing', ->
 						@sbc.$('.bv_completionDate').keyup()
 						@sbc.$('.bv_notebook').val("my notebook")
 						@sbc.$('.bv_notebook').keyup()
-						@sbc.$('.bv_amount').val(" 24")
-						@sbc.$('.bv_amount').keyup()
+						@sbc.$('.bv_source').val("vendor A")
+						@sbc.$('.bv_source').change()
+						@sbc.$('.bv_sourceId').val(" 24")
+						@sbc.$('.bv_sourceId').keyup()
+						@sbc.$('.bv_amountMade').val(" 24")
+						@sbc.$('.bv_amountMade').keyup()
 						@sbc.$('.bv_location').val(" Hood 4")
 						@sbc.$('.bv_location').keyup()
 				describe "form validation setup", ->
@@ -496,14 +536,25 @@ describe 'Spacer testing', ->
 					it "should show error on notebook field", ->
 						runs ->
 							expect(@sbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
-				describe "when amount not filled", ->
+				describe "when source not selected", ->
 					beforeEach ->
 						runs ->
-							@sbc.$('.bv_amount').val("")
-							@sbc.$('.bv_amount').keyup()
-					it "should show error on amount field", ->
+							@sbc.$('.bv_source').val("")
+							@sbc.$('.bv_source').change()
+					it "should show error on source dropdown", ->
 						runs ->
-							expect(@sbc.$('.bv_group_amount').hasClass('error')).toBeTruthy()
+							expect(@sbc.$('.bv_group_source').hasClass('error')).toBeTruthy()
+					it "should have the update button be disabled", ->
+						runs ->
+							expect(@sbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
+				describe "when amount made not filled", ->
+					beforeEach ->
+						runs ->
+							@sbc.$('.bv_amountMade').val("")
+							@sbc.$('.bv_amountMade').keyup()
+					it "should show error on amount made field", ->
+						runs ->
+							expect(@sbc.$('.bv_group_amountMade').hasClass('error')).toBeTruthy()
 				describe "when location not filled", ->
 					beforeEach ->
 						runs ->
@@ -557,70 +608,74 @@ describe 'Spacer testing', ->
 
 	describe "Spacer Controller", ->
 		beforeEach ->
-			@cbc = new SpacerController
+			@sbc = new SpacerController
 				model: new SpacerParent()
 				el: $('#fixture')
-			@cbc.render()
+			@sbc.render()
 		describe "Basic loading", ->
 			it "Class should exist", ->
-				expect(@cbc).toBeDefined()
+				expect(@sbc).toBeDefined()
 			it "Should load the template", ->
-				expect(@cbc.$('.bv_save').length).toEqual 1
+				expect(@sbc.$('.bv_save').length).toEqual 1
 			it "Should load a parent controller", ->
-				expect(@cbc.$('.bv_parent .bv_parentCode').length).toEqual 1
+				expect(@sbc.$('.bv_parent .bv_parentCode').length).toEqual 1
 			it "Should load a batch controller", ->
-				expect(@cbc.$('.bv_batch .bv_batchCode').length).toEqual 1
+				expect(@sbc.$('.bv_batch .bv_batchCode').length).toEqual 1
 		describe "saving parent/batch for the first time", ->
 			describe "when form is initialized", ->
 				it "should have the save button be disabled initially", ->
-					expect(@cbc.$('.bv_save').attr('disabled')).toEqual 'disabled'
+					expect(@sbc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 			describe 'when save is clicked', ->
 				beforeEach ->
 					runs ->
-						@cbc.$('.bv_parentName').val(" Updated entity name   ")
-						@cbc.$('.bv_parentName').keyup()
-						@cbc.$('.bv_recordedBy').val("bob")
-						@cbc.$('.bv_recordedBy').change()
-						@cbc.$('.bv_completionDate').val(" 2013-3-16   ")
-						@cbc.$('.bv_completionDate').keyup()
-						@cbc.$('.bv_notebook').val("my notebook")
-						@cbc.$('.bv_notebook').keyup()
-						@cbc.$('.bv_molecularWeight').val(" 24")
-						@cbc.$('.bv_molecularWeight').keyup()
-						@cbc.$('.bv_amount').val(" 24")
-						@cbc.$('.bv_amount').keyup()
-						@cbc.$('.bv_location').val(" Hood 4")
-						@cbc.$('.bv_location').keyup()
+						@sbc.$('.bv_parentName').val(" Updated entity name   ")
+						@sbc.$('.bv_parentName').keyup()
+						@sbc.$('.bv_recordedBy').val("bob")
+						@sbc.$('.bv_recordedBy').change()
+						@sbc.$('.bv_completionDate').val(" 2013-3-16   ")
+						@sbc.$('.bv_completionDate').keyup()
+						@sbc.$('.bv_notebook').val("my notebook")
+						@sbc.$('.bv_notebook').keyup()
+						@sbc.$('.bv_source').val("Avidity")
+						@sbc.$('.bv_source').change()
+						@sbc.$('.bv_sourceId').val("12345")
+						@sbc.$('.bv_sourceId').keyup()
+						@sbc.$('.bv_molecularWeight').val(" 24")
+						@sbc.$('.bv_molecularWeight').keyup()
+						@sbc.$('.bv_amountMade').val(" 24")
+						@sbc.$('.bv_amountMade').keyup()
+						@sbc.$('.bv_location').val(" Hood 4")
+						@sbc.$('.bv_location').keyup()
 					waitsFor ->
-						@cbc.$('.bv_recordedBy option').length > 0
+						@sbc.$('.bv_recordedBy option').length > 0
 					, 1000
 				it "should have the save button be enabled", ->
 					runs ->
-						expect(@cbc.$('.bv_save').attr('disabled')).toBeUndefined()
+						expect(@sbc.$('.bv_save').attr('disabled')).toBeUndefined()
 				it "should update the parent code", ->
 					runs ->
-						@cbc.$('.bv_save').click()
+						@sbc.$('.bv_save').click()
 					waits(1000)
 					runs ->
-						expect(@cbc.$('.bv_parentCode').html()).toEqual "SP000001"
+						expect(@sbc.$('.bv_parentCode').html()).toEqual "SP000001"
 				it "should update the batch code", ->
 					runs ->
-						@cbc.$('.bv_save').click()
+						@sbc.$('.bv_save').click()
 					waits(1000)
 					runs ->
-						expect(@cbc.$('.bv_batchCode').html()).toEqual "SP000001-1"
+						expect(@sbc.$('.bv_batchCode').html()).toEqual "SP000001-1"
 				it "should show the update parent button", ->
 					runs ->
-						@cbc.$('.bv_save').click()
+						@sbc.$('.bv_save').click()
 					waits(1000)
 					runs ->
-						expect(@cbc.$('.bv_updateParent')).toBeVisible()
+						expect(@sbc.$('.bv_updateParent')).toBeVisible()
 				it "should show the update batch button", ->
 					runs ->
-						@cbc.$('.bv_save').click()
+						@sbc.$('.bv_save').click()
 					waits(1000)
 					runs ->
-						expect(@cbc.$('.bv_saveBatch')).toBeVisible()
+						expect(@sbc.$('.bv_saveBatch')).toBeVisible()
 
 
 

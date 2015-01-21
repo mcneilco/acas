@@ -47,11 +47,8 @@
             it("Should have a model attribute for completion date", function() {
               return expect(this.cbp.get("completion date")).toBeDefined();
             });
-            it("Should have a model attribute for notebook", function() {
+            return it("Should have a model attribute for notebook", function() {
               return expect(this.cbp.get("notebook")).toBeDefined();
-            });
-            return it("Should have a model attribute for molecular weight", function() {
-              return expect(this.cbp.get("molecular weight")).toBeDefined();
             });
           });
         });
@@ -65,7 +62,7 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should invalid when recorded date is empty", function() {
+          return it("should invalid when recorded date is empty", function() {
             var filtErrors;
             this.cbp.set({
               recordedDate: new Date("").getTime()
@@ -73,15 +70,6 @@
             expect(this.cbp.isValid()).toBeFalsy();
             filtErrors = _.filter(this.cbp.validationError, function(err) {
               return err.attribute === 'recordedDate';
-            });
-            return expect(filtErrors.length).toBeGreaterThan(0);
-          });
-          return it("should be invalid when molecular weight is NaN", function() {
-            var filtErrors;
-            this.cbp.get("molecular weight").set("value", "fred");
-            expect(this.cbp.isValid()).toBeFalsy();
-            filtErrors = _.filter(this.cbp.validationError, function(err) {
-              return err.attribute === 'molecularWeight';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -123,11 +111,8 @@
           it("Should have a completion date value", function() {
             return expect(this.cbp.get("completion date").get("value")).toEqual(1342080000000);
           });
-          it("Should have a notebook value", function() {
+          return it("Should have a notebook value", function() {
             return expect(this.cbp.get("notebook").get("value")).toEqual("Notebook 1");
-          });
-          return it("Should have a molecular weight value", function() {
-            return expect(this.cbp.get("molecular weight").get("value")).toEqual(231);
           });
         });
         return describe("model validation", function() {
@@ -177,7 +162,7 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when notebook is empty", function() {
+          return it("should be invalid when notebook is empty", function() {
             var filtErrors;
             this.cbp.get("notebook").set("value", "");
             expect(this.cbp.isValid()).toBeFalsy();
@@ -186,15 +171,200 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          return it("should be invalid when molecular weight is NaN", function() {
-            var filtErrors;
-            this.cbp.get("molecular weight").set("value", "fred");
-            expect(this.cbp.isValid()).toBeFalsy();
-            filtErrors = _.filter(this.cbp.validationError, function(err) {
-              return err.attribute === 'molecularWeight';
-            });
-            return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+      });
+    });
+    describe("Cationic Block Batch model testing", function() {
+      describe("when loaded from new", function() {
+        beforeEach(function() {
+          return this.cbb = new CationicBlockBatch();
+        });
+        return describe("Existence and Defaults", function() {
+          it("should be defined", function() {
+            return expect(this.cbb).toBeDefined();
           });
+          it("should have a type", function() {
+            return expect(this.cbb.get('lsType')).toEqual("batch");
+          });
+          it("should have a kind", function() {
+            return expect(this.cbb.get('lsKind')).toEqual("cationic block");
+          });
+          it("should have an empty scientist", function() {
+            return expect(this.cbb.get('recordedBy')).toEqual("");
+          });
+          it("should have a recordedDate set to now", function() {
+            return expect(new Date(this.cbb.get('recordedDate')).getHours()).toEqual(new Date().getHours());
+          });
+          return describe("model attributes for each value in defaultValues", function() {
+            it("Should have a model attribute for completion date", function() {
+              return expect(this.cbb.get("completion date")).toBeDefined();
+            });
+            it("Should have a model attribute for notebook", function() {
+              return expect(this.cbb.get("notebook")).toBeDefined();
+            });
+            it("Should have a model attribute for source", function() {
+              expect(this.cbb.get("source").get).toBeDefined();
+              return expect(this.cbb.get("source").get('value')).toEqual("Avidity");
+            });
+            it("Should have a model attribute for source id", function() {
+              return expect(this.cbb.get("source id")).toBeDefined();
+            });
+            it("Should have a model attribute for molecular weight", function() {
+              return expect(this.cbb.get("molecular weight")).toBeDefined();
+            });
+            it("Should have a model attribute for purity", function() {
+              return expect(this.cbb.get("purity")).toBeDefined();
+            });
+            it("Should have a model attribute for amount made", function() {
+              return expect(this.cbb.get("amount made")).toBeDefined();
+            });
+            return it("Should have a model attribute for location", function() {
+              return expect(this.cbb.get("location")).toBeDefined();
+            });
+          });
+        });
+      });
+      describe("When created from existing", function() {
+        beforeEach(function() {
+          return this.cbb = new CationicBlockBatch(JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockBatch)));
+        });
+        return describe("after initial load", function() {
+          it("should be defined", function() {
+            return expect(this.cbb).toBeDefined();
+          });
+          it("should have a type", function() {
+            return expect(this.cbb.get('lsType')).toEqual("batch");
+          });
+          it("should have a kind", function() {
+            return expect(this.cbb.get('lsKind')).toEqual("cationic block");
+          });
+          it("should have a scientist set", function() {
+            return expect(this.cbb.get('recordedBy')).toEqual("jane");
+          });
+          it("should have a recordedDate set", function() {
+            return expect(this.cbb.get('recordedDate')).toEqual(1375141508000);
+          });
+          it("Should have a lsStates with the states in defaultStates", function() {
+            expect(this.cbb.get('lsStates')).toBeDefined();
+            expect(this.cbb.get("lsStates").length).toEqual(2);
+            expect(this.cbb.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block batch").length).toEqual(1);
+            return expect(this.cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual(1);
+          });
+          it("Should have a completion date value", function() {
+            return expect(this.cbb.get("completion date").get("value")).toEqual(1342080000000);
+          });
+          it("Should have a notebook value", function() {
+            return expect(this.cbb.get("notebook").get("value")).toEqual("Notebook 1");
+          });
+          it("Should have a source value", function() {
+            return expect(this.cbb.get("source").get("value")).toEqual("Avidity");
+          });
+          it("Should have a source id", function() {
+            return expect(this.cbb.get("source id").get("value")).toEqual("12345");
+          });
+          it("Should have a molecular weight value", function() {
+            return expect(this.cbb.get("molecular weight").get("value")).toEqual(231);
+          });
+          it("Should have a purity value", function() {
+            return expect(this.cbb.get("purity").get("value")).toEqual(92);
+          });
+          it("Should have an amount made value", function() {
+            return expect(this.cbb.get("amount made").get("value")).toEqual(2.3);
+          });
+          return it("Should have a location value", function() {
+            return expect(this.cbb.get("location").get("value")).toEqual("Cabinet 1");
+          });
+        });
+      });
+      return describe("model validation", function() {
+        beforeEach(function() {
+          return this.cbb = new CationicBlockBatch(window.cationicBlockTestJSON.cationicBlockBatch);
+        });
+        it("should be valid when loaded from saved", function() {
+          return expect(this.cbb.isValid()).toBeTruthy();
+        });
+        it("should be invalid when recorded date is empty", function() {
+          var filtErrors;
+          this.cbb.set({
+            recordedDate: new Date("").getTime()
+          });
+          expect(this.cbb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.cbb.validationError, function(err) {
+            return err.attribute === 'recordedDate';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when scientist not selected", function() {
+          var filtErrors;
+          this.cbb.set({
+            recordedBy: ""
+          });
+          expect(this.cbb.isValid()).toBeFalsy();
+          return filtErrors = _.filter(this.cbb.validationError, function(err) {
+            return err.attribute === 'recordedBy';
+          });
+        });
+        it("should be invalid when completion date is empty", function() {
+          var filtErrors;
+          this.cbb.get("completion date").set("value", new Date("").getTime());
+          expect(this.cbb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.cbb.validationError, function(err) {
+            return err.attribute === 'completionDate';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when notebook is empty", function() {
+          var filtErrors;
+          this.cbb.get("notebook").set("value", "");
+          expect(this.cbb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.cbb.validationError, function(err) {
+            return err.attribute === 'notebook';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when source is not selected", function() {
+          var filtErrors;
+          this.cbb.get("source").set("value", "unassigned");
+          expect(this.cbb.isValid()).toBeFalsy();
+          return filtErrors = _.filter(this.cbb.validationError, function(err) {
+            return err.attribute === 'source';
+          });
+        });
+        it("should be invalid when molecular weight is NaN", function() {
+          var filtErrors;
+          this.cbb.get("molecular weight").set("value", "fred");
+          expect(this.cbb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.cbb.validationError, function(err) {
+            return err.attribute === 'molecularWeight';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when purity is NaN", function() {
+          var filtErrors;
+          this.cbb.get("purity").set("value", "fred");
+          expect(this.cbb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.cbb.validationError, function(err) {
+            return err.attribute === 'purity';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when amount made is NaN", function() {
+          var filtErrors;
+          this.cbb.get("amount made").set("value", "fred");
+          expect(this.cbb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.cbb.validationError, function(err) {
+            return err.attribute === 'amountMade';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it("should be invalid when location is empty", function() {
+          var filtErrors;
+          this.cbb.get("location").set("value", "");
+          expect(this.cbb.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.cbb.validationError, function(err) {
+            return err.attribute === 'location';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
         });
       });
     });
@@ -216,7 +386,7 @@
             return expect(this.cbpc.$('.bv_parentCode').html()).toEqual("Autofilled when saved");
           });
           return it("should load the additional parent attributes temlate", function() {
-            return expect(this.cbpc.$('.bv_molecularWeight').length).toEqual(1);
+            return expect(this.cbpc.$('.bv_structuralFile').length).toEqual(1);
           });
         });
       });
@@ -248,11 +418,8 @@
           it("should fill the completion date field", function() {
             return expect(this.cbpc.$('.bv_completionDate').val()).toEqual("2012-07-12");
           });
-          it("should fill the notebook field", function() {
+          return it("should fill the notebook field", function() {
             return expect(this.cbpc.$('.bv_notebook').val()).toEqual("Notebook 1");
-          });
-          return it("should fill the molecular weight field", function() {
-            return expect(this.cbpc.$('.bv_molecularWeight').val()).toEqual("231");
           });
         });
         describe("model updates", function() {
@@ -276,15 +443,10 @@
             this.cbpc.$('.bv_completionDate').keyup();
             return expect(this.cbpc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
           });
-          it("should update model when notebook is changed", function() {
+          return it("should update model when notebook is changed", function() {
             this.cbpc.$('.bv_notebook').val(" Updated notebook  ");
             this.cbpc.$('.bv_notebook').keyup();
             return expect(this.cbpc.model.get('notebook').get('value')).toEqual("Updated notebook");
-          });
-          return it("should update model when molecular weight is changed", function() {
-            this.cbpc.$('.bv_molecularWeight').val(" 12  ");
-            this.cbpc.$('.bv_molecularWeight').keyup();
-            return expect(this.cbpc.model.get('molecular weight').get('value')).toEqual(12);
           });
         });
         return describe("controller validation rules", function() {
@@ -300,9 +462,7 @@
               this.cbpc.$('.bv_completionDate').val(" 2013-3-16   ");
               this.cbpc.$('.bv_completionDate').keyup();
               this.cbpc.$('.bv_notebook').val("my notebook");
-              this.cbpc.$('.bv_notebook').keyup();
-              this.cbpc.$('.bv_molecularWeight').val(" 24");
-              return this.cbpc.$('.bv_molecularWeight').keyup();
+              return this.cbpc.$('.bv_notebook').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -366,7 +526,7 @@
               });
             });
           });
-          describe("when notebook not filled", function() {
+          return describe("when notebook not filled", function() {
             beforeEach(function() {
               return runs(function() {
                 this.cbpc.$('.bv_notebook').val("");
@@ -379,162 +539,6 @@
               });
             });
           });
-          return describe("when molecular weight not filled", function() {
-            beforeEach(function() {
-              return runs(function() {
-                this.cbpc.$('.bv_molecularWeight').val("");
-                return this.cbpc.$('.bv_molecularWeight').keyup();
-              });
-            });
-            return it("should show error on molecular weight field", function() {
-              return runs(function() {
-                return expect(this.cbpc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-        });
-      });
-    });
-    describe("Cationic Block Batch model testing", function() {
-      describe("when loaded from new", function() {
-        beforeEach(function() {
-          return this.cbb = new CationicBlockBatch();
-        });
-        return describe("Existence and Defaults", function() {
-          it("should be defined", function() {
-            return expect(this.cbb).toBeDefined();
-          });
-          it("should have a type", function() {
-            return expect(this.cbb.get('lsType')).toEqual("batch");
-          });
-          it("should have a kind", function() {
-            return expect(this.cbb.get('lsKind')).toEqual("cationic block");
-          });
-          it("should have an empty scientist", function() {
-            return expect(this.cbb.get('recordedBy')).toEqual("");
-          });
-          it("should have a recordedDate set to now", function() {
-            return expect(new Date(this.cbb.get('recordedDate')).getHours()).toEqual(new Date().getHours());
-          });
-          return describe("model attributes for each value in defaultValues", function() {
-            it("Should have a model attribute for completion date", function() {
-              return expect(this.cbb.get("completion date")).toBeDefined();
-            });
-            it("Should have a model attribute for notebook", function() {
-              return expect(this.cbb.get("notebook")).toBeDefined();
-            });
-            it("Should have a model attribute for amount", function() {
-              return expect(this.cbb.get("amount")).toBeDefined();
-            });
-            return it("Should have a model attribute for location", function() {
-              return expect(this.cbb.get("location")).toBeDefined();
-            });
-          });
-        });
-      });
-      describe("When created from existing", function() {
-        beforeEach(function() {
-          return this.cbb = new CationicBlockBatch(JSON.parse(JSON.stringify(window.cationicBlockTestJSON.cationicBlockBatch)));
-        });
-        return describe("after initial load", function() {
-          it("should be defined", function() {
-            return expect(this.cbb).toBeDefined();
-          });
-          it("should have a type", function() {
-            return expect(this.cbb.get('lsType')).toEqual("batch");
-          });
-          it("should have a kind", function() {
-            return expect(this.cbb.get('lsKind')).toEqual("cationic block");
-          });
-          it("should have a scientist set", function() {
-            return expect(this.cbb.get('recordedBy')).toEqual("jane");
-          });
-          it("should have a recordedDate set", function() {
-            return expect(this.cbb.get('recordedDate')).toEqual(1375141508000);
-          });
-          it("Should have a lsStates with the states in defaultStates", function() {
-            expect(this.cbb.get('lsStates')).toBeDefined();
-            expect(this.cbb.get("lsStates").length).toEqual(2);
-            expect(this.cbb.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block batch").length).toEqual(1);
-            return expect(this.cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual(1);
-          });
-          it("Should have a completion date value", function() {
-            return expect(this.cbb.get("completion date").get("value")).toEqual(1342080000000);
-          });
-          it("Should have a notebook value", function() {
-            return expect(this.cbb.get("notebook").get("value")).toEqual("Notebook 1");
-          });
-          it("Should have an amount value", function() {
-            return expect(this.cbb.get("amount").get("value")).toEqual(2.3);
-          });
-          return it("Should have a location value", function() {
-            return expect(this.cbb.get("location").get("value")).toEqual("Cabinet 1");
-          });
-        });
-      });
-      return describe("model validation", function() {
-        beforeEach(function() {
-          return this.cbb = new CationicBlockBatch(window.cationicBlockTestJSON.cationicBlockBatch);
-        });
-        it("should be valid when loaded from saved", function() {
-          return expect(this.cbb.isValid()).toBeTruthy();
-        });
-        it("should be invalid when recorded date is empty", function() {
-          var filtErrors;
-          this.cbb.set({
-            recordedDate: new Date("").getTime()
-          });
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
-            return err.attribute === 'recordedDate';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when scientist not selected", function() {
-          var filtErrors;
-          this.cbb.set({
-            recordedBy: ""
-          });
-          expect(this.cbb.isValid()).toBeFalsy();
-          return filtErrors = _.filter(this.cbb.validationError, function(err) {
-            return err.attribute === 'recordedBy';
-          });
-        });
-        it("should be invalid when completion date is empty", function() {
-          var filtErrors;
-          this.cbb.get("completion date").set("value", new Date("").getTime());
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
-            return err.attribute === 'completionDate';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when notebook is empty", function() {
-          var filtErrors;
-          this.cbb.get("notebook").set("value", "");
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
-            return err.attribute === 'notebook';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        it("should be invalid when amount is NaN", function() {
-          var filtErrors;
-          this.cbb.get("amount").set("value", "fred");
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
-            return err.attribute === 'amount';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
-        });
-        return it("should be invalid when location is empty", function() {
-          var filtErrors;
-          this.cbb.get("location").set("value", "");
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
-            return err.attribute === 'location';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
         });
       });
     });
@@ -584,8 +588,25 @@
           it("should fill the notebook field", function() {
             return expect(this.cbbc.$('.bv_notebook').val()).toEqual("Notebook 1");
           });
-          it("should fill the amount field", function() {
-            return expect(this.cbbc.$('.bv_amount').val()).toEqual("2.3");
+          it("should fill the source field", function() {
+            waitsFor(function() {
+              return this.cbbc.$('.bv_source option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.cbbc.$('.bv_source').val()).toEqual("Avidity");
+            });
+          });
+          it("should fill the source id field", function() {
+            return expect(this.cbbc.$('.bv_sourceId').val()).toEqual("12345");
+          });
+          it("should fill the molecular weight field", function() {
+            return expect(this.cbbc.$('.bv_molecularWeight').val()).toEqual("231");
+          });
+          it("should fill the purity field", function() {
+            return expect(this.cbbc.$('.bv_purity').val()).toEqual("92");
+          });
+          it("should fill the amountMade field", function() {
+            return expect(this.cbbc.$('.bv_amountMade').val()).toEqual("2.3");
           });
           return it("should fill the location field", function() {
             return expect(this.cbbc.$('.bv_location').val()).toEqual("Cabinet 1");
@@ -612,10 +633,35 @@
             this.cbbc.$('.bv_notebook').keyup();
             return expect(this.cbbc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
-          it("should update model when amount is changed", function() {
-            this.cbbc.$('.bv_amount').val(" 12  ");
-            this.cbbc.$('.bv_amount').keyup();
-            return expect(this.cbbc.model.get('amount').get('value')).toEqual(12);
+          it("should update model when the source is changed", function() {
+            waitsFor(function() {
+              return this.cbbc.$('.bv_source option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.cbbc.$('.bv_source').val('unassigned');
+              this.cbbc.$('.bv_source').change();
+              return expect(this.cbbc.model.get('source').get('value')).toEqual("unassigned");
+            });
+          });
+          it("should update model when source id is changed", function() {
+            this.cbbc.$('.bv_sourceId').val(" 252  ");
+            this.cbbc.$('.bv_sourceId').keyup();
+            return expect(this.cbbc.model.get('source id').get('value')).toEqual("252");
+          });
+          it("should update model when molecular weight is changed", function() {
+            this.cbbc.$('.bv_molecularWeight').val(" 12  ");
+            this.cbbc.$('.bv_molecularWeight').keyup();
+            return expect(this.cbbc.model.get('molecular weight').get('value')).toEqual(12);
+          });
+          it("should update model when purity is changed", function() {
+            this.cbbc.$('.bv_purity').val(" 29  ");
+            this.cbbc.$('.bv_purity').keyup();
+            return expect(this.cbbc.model.get('purity').get('value')).toEqual(29);
+          });
+          it("should update model when amount made is changed", function() {
+            this.cbbc.$('.bv_amountMade').val(" 12  ");
+            this.cbbc.$('.bv_amountMade').keyup();
+            return expect(this.cbbc.model.get('amount made').get('value')).toEqual(12);
           });
           return it("should update model when location is changed", function() {
             this.cbbc.$('.bv_location').val(" Updated location  ");
@@ -635,8 +681,16 @@
               this.cbbc.$('.bv_completionDate').keyup();
               this.cbbc.$('.bv_notebook').val("my notebook");
               this.cbbc.$('.bv_notebook').keyup();
-              this.cbbc.$('.bv_amount').val(" 24");
-              this.cbbc.$('.bv_amount').keyup();
+              this.cbbc.$('.bv_source').val("vendor A");
+              this.cbbc.$('.bv_source').change();
+              this.cbbc.$('.bv_sourceId').val(" 24");
+              this.cbbc.$('.bv_sourceId').keyup();
+              this.cbbc.$('.bv_molecularWeight').val(" 24");
+              this.cbbc.$('.bv_molecularWeight').keyup();
+              this.cbbc.$('.bv_purity').val(" 82");
+              this.cbbc.$('.bv_purity').keyup();
+              this.cbbc.$('.bv_amountMade').val(" 24");
+              this.cbbc.$('.bv_amountMade').keyup();
               this.cbbc.$('.bv_location').val(" Hood 4");
               return this.cbbc.$('.bv_location').keyup();
             });
@@ -697,16 +751,60 @@
               });
             });
           });
-          describe("when amount not filled", function() {
+          describe("when source not selected", function() {
             beforeEach(function() {
               return runs(function() {
-                this.cbbc.$('.bv_amount').val("");
-                return this.cbbc.$('.bv_amount').keyup();
+                this.cbbc.$('.bv_source').val("");
+                return this.cbbc.$('.bv_source').change();
               });
             });
-            return it("should show error on amount field", function() {
+            it("should show error on source dropdown", function() {
               return runs(function() {
-                return expect(this.cbbc.$('.bv_group_amount').hasClass('error')).toBeTruthy();
+                return expect(this.cbbc.$('.bv_group_source').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.cbbc.$('.bv_saveBatch').attr('disabled')).toEqual('disabled');
+              });
+            });
+          });
+          describe("when molecular weight not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.cbbc.$('.bv_molecularWeight').val("");
+                return this.cbbc.$('.bv_molecularWeight').keyup();
+              });
+            });
+            return it("should show error on molecular weight field", function() {
+              return runs(function() {
+                return expect(this.cbbc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          describe("when purity not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.cbbc.$('.bv_purity').val("");
+                return this.cbbc.$('.bv_purity').keyup();
+              });
+            });
+            return it("should show error on purity  field", function() {
+              return runs(function() {
+                return expect(this.cbbc.$('.bv_group_purity').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          describe("when amount made not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.cbbc.$('.bv_amountMade').val("");
+                return this.cbbc.$('.bv_amountMade').keyup();
+              });
+            });
+            return it("should show error on amount made field", function() {
+              return runs(function() {
+                return expect(this.cbbc.$('.bv_group_amountMade').hasClass('error')).toBeTruthy();
               });
             });
           });
@@ -822,10 +920,16 @@
               this.cbc.$('.bv_completionDate').keyup();
               this.cbc.$('.bv_notebook').val("my notebook");
               this.cbc.$('.bv_notebook').keyup();
+              this.cbc.$('.bv_source').val("Avidity");
+              this.cbc.$('.bv_source').change();
+              this.cbc.$('.bv_sourceId').val("12345");
+              this.cbc.$('.bv_sourceId').keyup();
               this.cbc.$('.bv_molecularWeight').val(" 24");
               this.cbc.$('.bv_molecularWeight').keyup();
-              this.cbc.$('.bv_amount').val(" 24");
-              this.cbc.$('.bv_amount').keyup();
+              this.cbc.$('.bv_purity').val(" 24");
+              this.cbc.$('.bv_purity').keyup();
+              this.cbc.$('.bv_amountMade').val(" 24");
+              this.cbc.$('.bv_amountMade').keyup();
               this.cbc.$('.bv_location').val(" Hood 4");
               return this.cbc.$('.bv_location').keyup();
             });

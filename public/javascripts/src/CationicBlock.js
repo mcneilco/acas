@@ -42,90 +42,8 @@
           stateKind: 'cationic block parent',
           type: 'stringValue',
           kind: 'notebook'
-        }, {
-          key: 'molecular weight',
-          stateType: 'metadata',
-          stateKind: 'cationic block parent',
-          type: 'numericValue',
-          kind: 'molecular weight',
-          unitType: 'molecular weight',
-          unitKind: 'g/mol'
         }
       ]
-    };
-
-    CationicBlockParent.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, mw, nameError, notebook;
-      errors = [];
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'parentName',
-          message: "Name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: "Recorded date must be set"
-        });
-      }
-      if (!this.isNew()) {
-        if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-          errors.push({
-            attribute: 'recordedBy',
-            message: "Scientist must be set"
-          });
-        }
-        if (attrs["completion date"] != null) {
-          cDate = attrs["completion date"].get('value');
-          if (cDate === void 0 || cDate === "") {
-            cDate = "fred";
-          }
-          if (isNaN(cDate)) {
-            errors.push({
-              attribute: 'completionDate',
-              message: "Date must be set"
-            });
-          }
-        }
-        if (attrs.notebook != null) {
-          notebook = attrs.notebook.get('value');
-          if (notebook === "" || notebook === void 0) {
-            errors.push({
-              attribute: 'notebook',
-              message: "Notebook must be set"
-            });
-          }
-        }
-      }
-      if (attrs["molecular weight"] != null) {
-        mw = attrs["molecular weight"].get('value');
-        if (mw === "" || mw === void 0) {
-          errors.push({
-            attribute: 'molecularWeight',
-            message: "Molecular weight must be set"
-          });
-        }
-        if (isNaN(mw)) {
-          errors.push({
-            attribute: 'molecularWeight',
-            message: "Molecular weight must be a number"
-          });
-        }
-      }
-      if (errors.length > 0) {
-        return errors;
-      } else {
-        return null;
-      }
     };
 
     return CationicBlockParent;
@@ -165,11 +83,43 @@
           type: 'stringValue',
           kind: 'notebook'
         }, {
-          key: 'amount',
+          key: 'source',
+          stateType: 'metadata',
+          stateKind: 'cationic block batch',
+          type: 'codeValue',
+          kind: 'source',
+          value: 'Avidity',
+          codeType: 'component',
+          codeKind: 'source',
+          codeOrigin: 'ACAS DDICT'
+        }, {
+          key: 'source id',
+          stateType: 'metadata',
+          stateKind: 'cationic block batch',
+          type: 'stringValue',
+          kind: 'source id'
+        }, {
+          key: 'molecular weight',
+          stateType: 'metadata',
+          stateKind: 'cationic block batch',
+          type: 'numericValue',
+          kind: 'molecular weight',
+          unitType: 'molecular weight',
+          unitKind: 'g/mol'
+        }, {
+          key: 'purity',
+          stateType: 'metadata',
+          stateKind: 'cationic block batch',
+          type: 'numericValue',
+          kind: 'purity',
+          unitType: 'percentage',
+          unitKind: '% purity'
+        }, {
+          key: 'amount made',
           stateType: 'metadata',
           stateKind: 'inventory',
           type: 'numericValue',
-          kind: 'amount',
+          kind: 'amount made',
           unitType: 'mass',
           unitKind: 'g'
         }, {
@@ -180,6 +130,49 @@
           kind: 'location'
         }
       ]
+    };
+
+    CationicBlockBatch.prototype.validate = function(attrs) {
+      var errors, mw, purity;
+      errors = [];
+      errors.push.apply(errors, CationicBlockBatch.__super__.validate.call(this, attrs));
+      if (attrs["molecular weight"] != null) {
+        mw = attrs["molecular weight"].get('value');
+        if (mw === "" || mw === void 0) {
+          errors.push({
+            attribute: 'molecularWeight',
+            message: "Molecular weight must be set"
+          });
+        }
+        if (isNaN(mw)) {
+          errors.push({
+            attribute: 'molecularWeight',
+            message: "Molecular weight must be a number"
+          });
+        }
+      }
+      if (attrs.purity != null) {
+        console.log("purity");
+        purity = attrs.purity.get('value');
+        console.log(purity);
+        if (purity === "" || purity === void 0) {
+          errors.push({
+            attribute: 'purity',
+            message: "Purity must be set"
+          });
+        }
+        if (isNaN(purity)) {
+          errors.push({
+            attribute: 'purity',
+            message: "Purity must be a number"
+          });
+        }
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
     };
 
     return CationicBlockBatch;
@@ -197,12 +190,6 @@
 
     CationicBlockParentController.prototype.additionalParentAttributesTemplate = _.template($("#CationicBlockParentView").html());
 
-    CationicBlockParentController.prototype.events = function() {
-      return _(CationicBlockParentController.__super__.events.call(this)).extend({
-        "keyup .bv_molecularWeight": "attributeChanged"
-      });
-    };
-
     CationicBlockParentController.prototype.initialize = function() {
       if (this.model == null) {
         console.log("create new model in initialize");
@@ -217,13 +204,30 @@
         this.model = new CationicBlockParent();
       }
       CationicBlockParentController.__super__.render.call(this);
-      return this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
+      return this.setupStructuralFileController();
+    };
+
+    CationicBlockParentController.prototype.setupStructuralFileController = function() {
+      this.structuralFileController = new AttachFileListController({
+        canRemoveAttachFileModel: false,
+        el: this.$('.bv_structuralFile'),
+        collection: new AttachFileList()
+      });
+      this.structuralFileController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.structuralFileController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      return this.structuralFileController.render();
     };
 
     CationicBlockParentController.prototype.updateModel = function() {
       this.model.get("cationic block name").set("labelText", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_parentName')));
-      this.model.get("molecular weight").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_molecularWeight'))));
-      console.log("updating parent name");
       return CationicBlockParentController.__super__.updateModel.call(this);
     };
 
@@ -235,9 +239,19 @@
     __extends(CationicBlockBatchController, _super);
 
     function CationicBlockBatchController() {
+      this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return CationicBlockBatchController.__super__.constructor.apply(this, arguments);
     }
+
+    CationicBlockBatchController.prototype.additionalBatchAttributesTemplate = _.template($("#CationicBlockBatchView").html());
+
+    CationicBlockBatchController.prototype.events = function() {
+      return _(CationicBlockBatchController.__super__.events.call(this)).extend({
+        "keyup .bv_molecularWeight": "attributeChanged",
+        "keyup .bv_purity": "attributeChanged"
+      });
+    };
 
     CationicBlockBatchController.prototype.initialize = function() {
       if (this.model == null) {
@@ -253,7 +267,15 @@
         console.log("create new model");
         this.model = new CationicBlockBatch();
       }
-      return CationicBlockBatchController.__super__.render.call(this);
+      CationicBlockBatchController.__super__.render.call(this);
+      this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
+      return this.$('.bv_purity').val(this.model.get('purity').get('value'));
+    };
+
+    CationicBlockBatchController.prototype.updateModel = function() {
+      this.model.get("molecular weight").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_molecularWeight'))));
+      this.model.get("purity").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_purity'))));
+      return CationicBlockBatchController.__super__.updateModel.call(this);
     };
 
     return CationicBlockBatchController;

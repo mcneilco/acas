@@ -49,35 +49,7 @@ class window.InternalizationAgentParent extends AbstractBaseComponentParent
 
 	validate: (attrs) ->
 		errors = []
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: "Recorded date must be set"
-		#		unless attrs.codeName is undefined
-		unless @isNew()
-			if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-				errors.push
-					attribute: 'recordedBy'
-					message: "Scientist must be set"
-			if attrs["completion date"]?
-				cDate = attrs["completion date"].get('value')
-				if cDate is undefined or cDate is "" then cDate = "fred"
-				if isNaN(cDate)
-					errors.push
-						attribute: 'completionDate'
-						message: "Date must be set"
-			if attrs.notebook?
-				notebook = attrs.notebook.get('value')
-				if notebook is "" or notebook is undefined
-					errors.push
-						attribute: 'notebook'
-						message: "Notebook must be set"
+		errors.push super(attrs)...
 		if attrs["conjugation type"]?
 			conjugationType = attrs["conjugation type"].get('value')
 			if conjugationType is "unassigned" or conjugationType is "" or conjugationType is undefined
@@ -124,6 +96,22 @@ class window.InternalizationAgentBatch extends AbstractBaseComponentBatch
 			type: 'stringValue'
 			kind: 'notebook'
 		,
+			key: 'source'
+			stateType: 'metadata'
+			stateKind: 'internalization agent batch'
+			type: 'codeValue'
+			kind: 'source'
+			value: 'Avidity'
+			codeType: 'component'
+			codeKind: 'source'
+			codeOrigin: 'ACAS DDICT'
+		,
+			key: 'source id'
+			stateType: 'metadata'
+			stateKind: 'internalization agent batch'
+			type: 'stringValue'
+			kind: 'source id'
+		,
 			key: 'molecular weight'
 			stateType: 'metadata'
 			stateKind: 'internalization agent batch'
@@ -140,11 +128,11 @@ class window.InternalizationAgentBatch extends AbstractBaseComponentBatch
 			unitType: 'percentage'
 			unitKind: '% purity'
 		,
-			key: 'amount'
+			key: 'amount made'
 			stateType: 'metadata'
 			stateKind: 'inventory'
 			type: 'numericValue' #used to set the lsValue subclass of the object
-			kind: 'amount'
+			kind: 'amount made'
 			unitType: 'mass'
 			unitKind: 'g'
 		,
@@ -157,27 +145,7 @@ class window.InternalizationAgentBatch extends AbstractBaseComponentBatch
 
 	validate: (attrs) ->
 		errors = []
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: "Recorded date must be set"
-		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-			errors.push
-				attribute: 'recordedBy'
-				message: "Scientist must be set"
-		if attrs["completion date"]?
-			cDate = attrs["completion date"].get('value')
-			if cDate is undefined or cDate is "" then cDate = "fred"
-			if isNaN(cDate)
-				errors.push
-					attribute: 'completionDate'
-					message: "Date must be set"
-		if attrs.notebook?
-			notebook = attrs.notebook.get('value')
-			if notebook is "" or notebook is undefined
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
+		errors.push super(attrs)...
 		if attrs["molecular weight"]?
 			mw = attrs["molecular weight"].get('value')
 			if mw is "" or mw is undefined or isNaN(mw)
@@ -190,18 +158,6 @@ class window.InternalizationAgentBatch extends AbstractBaseComponentBatch
 				errors.push
 					attribute: 'purity'
 					message: "Purity must be set"
-		if attrs.amount?
-			amount = attrs.amount.get('value')
-			if amount is "" or amount is undefined or isNaN(amount)
-				errors.push
-					attribute: 'amount'
-					message: "Amount must be set"
-		if attrs.location?
-			location = attrs.location.get('value')
-			if location is "" or location is undefined
-				errors.push
-					attribute: 'location'
-					message: "Location must be set"
 
 		if errors.length > 0
 			return errors
@@ -276,8 +232,8 @@ class window.InternalizationAgentBatchController extends AbstractBaseComponentBa
 
 	events: ->
 		_(super()).extend(
-			"change .bv_molecularWeight": "attributeChanged"
-			"change .bv_purity": "attributeChanged"
+			"keyup .bv_molecularWeight": "attributeChanged"
+			"keyup .bv_purity": "attributeChanged"
 		)
 	initialize: ->
 		unless @model?

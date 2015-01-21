@@ -87,23 +87,22 @@
     };
 
     Thing.prototype.createDefaultLabels = function() {
-      var dLabel, newLabel, _i, _len, _ref;
+      var dLabel, newLabel, _i, _len, _ref, _results;
       _ref = this.lsProperties.defaultLabels;
+      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dLabel = _ref[_i];
         newLabel = this.get('lsLabels').getOrCreateLabelByTypeAndKind(dLabel.type, dLabel.kind);
         this.set(dLabel.key, newLabel);
-        newLabel.set({
+        _results.push(newLabel.set({
           preferred: dLabel.preferred
-        });
+        }));
       }
-      console.log("created default labels");
-      return console.log(this);
+      return _results;
     };
 
     Thing.prototype.createDefaultStates = function() {
       var dValue, newValue, _i, _len, _ref, _results;
-      console.log("creating default states function");
       _ref = this.lsProperties.defaultValues;
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -135,6 +134,9 @@
           });
         }
         this.set(dValue.key, newValue);
+        if (dValue.value != null) {
+          newValue.set(dValue.type, dValue.value);
+        }
         _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
       }
       return _results;
@@ -161,7 +163,6 @@
 
     Thing.prototype.reformatBeforeSaving = function() {
       var dLabel, dValue, i, _i, _j, _len, _len1, _ref, _ref1, _results;
-      console.log("callMeBeforeCallingSave");
       _ref = this.lsProperties.defaultLabels;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dLabel = _ref[_i];
@@ -180,7 +181,6 @@
         if (_.isFunction(this.attributes[i])) {
           _results.push(delete this.attributes[i]);
         } else if (!isNaN(i)) {
-          console.log("delete number");
           _results.push(delete this.attributes[i]);
         } else {
           _results.push(void 0);

@@ -116,11 +116,35 @@ class window.LinkerSmallMoleculeBatch extends AbstractBaseComponentBatch
 			type: 'stringValue'
 			kind: 'notebook'
 		,
-			key: 'amount'
+			key: 'source'
+			stateType: 'metadata'
+			stateKind: 'linker small molecule batch'
+			type: 'codeValue'
+			kind: 'source'
+			value: 'Avidity'
+			codeType: 'component'
+			codeKind: 'source'
+			codeOrigin: 'ACAS DDICT'
+		,
+			key: 'source id'
+			stateType: 'metadata'
+			stateKind: 'linker small molecule batch'
+			type: 'stringValue'
+			kind: 'source id'
+		,
+			key: 'purity'
+			stateType: 'metadata'
+			stateKind: 'linker small molecule batch'
+			type: 'numericValue'
+			kind: 'purity'
+			unitType: 'percentage'
+			unitKind: '% purity'
+		,
+			key: 'amount made'
 			stateType: 'metadata'
 			stateKind: 'inventory'
-			type: 'numericValue' #used to set the lsValue subclass of the object
-			kind: 'amount'
+			type: 'numericValue'
+			kind: 'amount made'
 			unitType: 'mass'
 			unitKind: 'g'
 		,
@@ -130,6 +154,28 @@ class window.LinkerSmallMoleculeBatch extends AbstractBaseComponentBatch
 			type: 'stringValue'
 			kind: 'location'
 		]
+
+	validate: (attrs) ->
+		errors = []
+		errors.push super(attrs)...
+		if attrs.purity?
+			console.log "purity"
+			purity = attrs.purity.get('value')
+			console.log purity
+			if purity is "" or purity is undefined
+				errors.push
+					attribute: 'purity'
+					message: "Purity must be set"
+			if isNaN(purity)
+				errors.push
+					attribute: 'purity'
+					message: "Purity must be a number"
+
+
+		if errors.length > 0
+			return errors
+		else
+			return null
 
 class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentParentController
 	additionalParentAttributesTemplate: _.template($("#LinkerSmallMoleculeParentView").html())
@@ -166,27 +212,6 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 			@trigger 'amClean'
 		@structuralFileController.render()
 
-#		@lsFileChooser = new LSFileChooserController({
-#			el: @$('.bv_structuralFile'),
-#			formId: 'fieldBlah',
-#			maxNumberOfFiles: 1,
-#			requiresValidation: false
-#			url: UtilityFunctions::getFileServiceURL()
-#			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'zip']
-#			hideDelete: true
-#		});
-#		@lsFileChooser.render()
-#		@lsFileChooser.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
-#
-#		@
-#
-#	handleFileUpload: (nameOnServer) =>
-#		@model.set fileValue: nameOnServer
-#		#		@model.getFileInfo().set
-#		#			fileValue: "path to file"
-#		console.log @model.get('fileValue')
-#		@trigger 'fileUploaded'
-#		@trigger 'amDirty'
 
 	updateModel: =>
 		@model.get("linker small molecule name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
@@ -195,6 +220,13 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 
 
 class window.LinkerSmallMoleculeBatchController extends AbstractBaseComponentBatchController
+	additionalBatchAttributesTemplate: _.template($("#LinkerSmallMoleculeBatchView").html())
+
+	events: ->
+		_(super()).extend(
+			"keyup .bv_purity": "attributeChanged"
+		)
+
 
 	initialize: ->
 		unless @model?
@@ -207,6 +239,11 @@ class window.LinkerSmallMoleculeBatchController extends AbstractBaseComponentBat
 		unless @model?
 			console.log "create new model"
 			@model = new LinkerSmallMoleculeBatch()
+		super()
+		@$('.bv_purity').val(@model.get('purity').get('value'))
+
+	updateModel: =>
+		@model.get("purity").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_purity')))
 		super()
 
 class window.LinkerSmallMoleculeBatchSelectController extends AbstractBaseComponentBatchSelectController
@@ -265,10 +302,9 @@ class window.LinkerSmallMoleculeController extends AbstractBaseComponentControll
 								alert 'Could not get parent for code in this URL, creating new one'
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								cbp = new CationicBlockParent json
-								cbp = new LinkerSmallMoleculeParent json
-								cbp.set cbp.parse(cbp.attributes)
-								@model = cbp
+								lsmp = new LinkerSmallMoleculeParent json
+								lsmp.set lsmp.parse(lsmp.attributes)
+								@model = lsmp
 							@completeInitialization()
 				else
 					@completeInitialization()

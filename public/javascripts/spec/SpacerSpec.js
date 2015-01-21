@@ -423,8 +423,15 @@
             it("Should have a model attribute for notebook", function() {
               return expect(this.sb.get("notebook")).toBeDefined();
             });
-            it("Should have a model attribute for amount", function() {
-              return expect(this.sb.get("amount")).toBeDefined();
+            it("Should have a model attribute for source", function() {
+              expect(this.sb.get("source").get).toBeDefined();
+              return expect(this.sb.get("source").get('value')).toEqual("Avidity");
+            });
+            it("Should have a model attribute for source id", function() {
+              return expect(this.sb.get("source id")).toBeDefined();
+            });
+            it("Should have a model attribute for amount made", function() {
+              return expect(this.sb.get("amount made")).toBeDefined();
             });
             return it("Should have a model attribute for location", function() {
               return expect(this.sb.get("location")).toBeDefined();
@@ -464,8 +471,14 @@
           it("Should have a notebook value", function() {
             return expect(this.sb.get("notebook").get("value")).toEqual("Notebook 1");
           });
-          it("Should have an amount value", function() {
-            return expect(this.sb.get("amount").get("value")).toEqual(2.3);
+          it("Should have a source value", function() {
+            return expect(this.sb.get("source").get("value")).toEqual("Avidity");
+          });
+          it("Should have a source id", function() {
+            return expect(this.sb.get("source id").get("value")).toEqual("12345");
+          });
+          it("Should have an amount made value", function() {
+            return expect(this.sb.get("amount made").get("value")).toEqual(2.3);
           });
           return it("Should have a location value", function() {
             return expect(this.sb.get("location").get("value")).toEqual("Cabinet 1");
@@ -518,12 +531,20 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        it("should be invalid when amount is NaN", function() {
+        it("should be invalid when source is not selected", function() {
           var filtErrors;
-          this.sb.get("amount").set("value", "fred");
+          this.sb.get("source").set("value", "unassigned");
+          expect(this.sb.isValid()).toBeFalsy();
+          return filtErrors = _.filter(this.sb.validationError, function(err) {
+            return err.attribute === 'source';
+          });
+        });
+        it("should be invalid when amount made is NaN", function() {
+          var filtErrors;
+          this.sb.get("amount made").set("value", "fred");
           expect(this.sb.isValid()).toBeFalsy();
           filtErrors = _.filter(this.sb.validationError, function(err) {
-            return err.attribute === 'amount';
+            return err.attribute === 'amountMade';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -584,8 +605,19 @@
           it("should fill the notebook field", function() {
             return expect(this.sbc.$('.bv_notebook').val()).toEqual("Notebook 1");
           });
-          it("should fill the amount field", function() {
-            return expect(this.sbc.$('.bv_amount').val()).toEqual("2.3");
+          it("should fill the source field", function() {
+            waitsFor(function() {
+              return this.sbc.$('.bv_source option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.sbc.$('.bv_source').val()).toEqual("Avidity");
+            });
+          });
+          it("should fill the source id field", function() {
+            return expect(this.sbc.$('.bv_sourceId').val()).toEqual("12345");
+          });
+          it("should fill the amountMade field", function() {
+            return expect(this.sbc.$('.bv_amountMade').val()).toEqual("2.3");
           });
           return it("should fill the location field", function() {
             return expect(this.sbc.$('.bv_location').val()).toEqual("Cabinet 1");
@@ -612,10 +644,25 @@
             this.sbc.$('.bv_notebook').keyup();
             return expect(this.sbc.model.get('notebook').get('value')).toEqual("Updated notebook");
           });
-          it("should update model when amount is changed", function() {
-            this.sbc.$('.bv_amount').val(" 12  ");
-            this.sbc.$('.bv_amount').keyup();
-            return expect(this.sbc.model.get('amount').get('value')).toEqual(12);
+          it("should update model when the source is changed", function() {
+            waitsFor(function() {
+              return this.sbc.$('.bv_source option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.sbc.$('.bv_source').val('unassigned');
+              this.sbc.$('.bv_source').change();
+              return expect(this.sbc.model.get('source').get('value')).toEqual("unassigned");
+            });
+          });
+          it("should update model when source id is changed", function() {
+            this.sbc.$('.bv_sourceId').val(" 252  ");
+            this.sbc.$('.bv_sourceId').keyup();
+            return expect(this.sbc.model.get('source id').get('value')).toEqual("252");
+          });
+          it("should update model when amount made is changed", function() {
+            this.sbc.$('.bv_amountMade').val(" 12  ");
+            this.sbc.$('.bv_amountMade').keyup();
+            return expect(this.sbc.model.get('amount made').get('value')).toEqual(12);
           });
           return it("should update model when location is changed", function() {
             this.sbc.$('.bv_location').val(" Updated location  ");
@@ -635,8 +682,12 @@
               this.sbc.$('.bv_completionDate').keyup();
               this.sbc.$('.bv_notebook').val("my notebook");
               this.sbc.$('.bv_notebook').keyup();
-              this.sbc.$('.bv_amount').val(" 24");
-              this.sbc.$('.bv_amount').keyup();
+              this.sbc.$('.bv_source').val("vendor A");
+              this.sbc.$('.bv_source').change();
+              this.sbc.$('.bv_sourceId').val(" 24");
+              this.sbc.$('.bv_sourceId').keyup();
+              this.sbc.$('.bv_amountMade').val(" 24");
+              this.sbc.$('.bv_amountMade').keyup();
               this.sbc.$('.bv_location').val(" Hood 4");
               return this.sbc.$('.bv_location').keyup();
             });
@@ -697,16 +748,34 @@
               });
             });
           });
-          describe("when amount not filled", function() {
+          describe("when source not selected", function() {
             beforeEach(function() {
               return runs(function() {
-                this.sbc.$('.bv_amount').val("");
-                return this.sbc.$('.bv_amount').keyup();
+                this.sbc.$('.bv_source').val("");
+                return this.sbc.$('.bv_source').change();
               });
             });
-            return it("should show error on amount field", function() {
+            it("should show error on source dropdown", function() {
               return runs(function() {
-                return expect(this.sbc.$('.bv_group_amount').hasClass('error')).toBeTruthy();
+                return expect(this.sbc.$('.bv_group_source').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.sbc.$('.bv_saveBatch').attr('disabled')).toEqual('disabled');
+              });
+            });
+          });
+          describe("when amount made not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.sbc.$('.bv_amountMade').val("");
+                return this.sbc.$('.bv_amountMade').keyup();
+              });
+            });
+            return it("should show error on amount made field", function() {
+              return runs(function() {
+                return expect(this.sbc.$('.bv_group_amountMade').hasClass('error')).toBeTruthy();
               });
             });
           });
@@ -785,93 +854,97 @@
     });
     return describe("Spacer Controller", function() {
       beforeEach(function() {
-        this.cbc = new SpacerController({
+        this.sbc = new SpacerController({
           model: new SpacerParent(),
           el: $('#fixture')
         });
-        return this.cbc.render();
+        return this.sbc.render();
       });
       describe("Basic loading", function() {
         it("Class should exist", function() {
-          return expect(this.cbc).toBeDefined();
+          return expect(this.sbc).toBeDefined();
         });
         it("Should load the template", function() {
-          return expect(this.cbc.$('.bv_save').length).toEqual(1);
+          return expect(this.sbc.$('.bv_save').length).toEqual(1);
         });
         it("Should load a parent controller", function() {
-          return expect(this.cbc.$('.bv_parent .bv_parentCode').length).toEqual(1);
+          return expect(this.sbc.$('.bv_parent .bv_parentCode').length).toEqual(1);
         });
         return it("Should load a batch controller", function() {
-          return expect(this.cbc.$('.bv_batch .bv_batchCode').length).toEqual(1);
+          return expect(this.sbc.$('.bv_batch .bv_batchCode').length).toEqual(1);
         });
       });
       return describe("saving parent/batch for the first time", function() {
         describe("when form is initialized", function() {
           return it("should have the save button be disabled initially", function() {
-            return expect(this.cbc.$('.bv_save').attr('disabled')).toEqual('disabled');
+            return expect(this.sbc.$('.bv_save').attr('disabled')).toEqual('disabled');
           });
         });
         return describe('when save is clicked', function() {
           beforeEach(function() {
             runs(function() {
-              this.cbc.$('.bv_parentName').val(" Updated entity name   ");
-              this.cbc.$('.bv_parentName').keyup();
-              this.cbc.$('.bv_recordedBy').val("bob");
-              this.cbc.$('.bv_recordedBy').change();
-              this.cbc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.cbc.$('.bv_completionDate').keyup();
-              this.cbc.$('.bv_notebook').val("my notebook");
-              this.cbc.$('.bv_notebook').keyup();
-              this.cbc.$('.bv_molecularWeight').val(" 24");
-              this.cbc.$('.bv_molecularWeight').keyup();
-              this.cbc.$('.bv_amount').val(" 24");
-              this.cbc.$('.bv_amount').keyup();
-              this.cbc.$('.bv_location').val(" Hood 4");
-              return this.cbc.$('.bv_location').keyup();
+              this.sbc.$('.bv_parentName').val(" Updated entity name   ");
+              this.sbc.$('.bv_parentName').keyup();
+              this.sbc.$('.bv_recordedBy').val("bob");
+              this.sbc.$('.bv_recordedBy').change();
+              this.sbc.$('.bv_completionDate').val(" 2013-3-16   ");
+              this.sbc.$('.bv_completionDate').keyup();
+              this.sbc.$('.bv_notebook').val("my notebook");
+              this.sbc.$('.bv_notebook').keyup();
+              this.sbc.$('.bv_source').val("Avidity");
+              this.sbc.$('.bv_source').change();
+              this.sbc.$('.bv_sourceId').val("12345");
+              this.sbc.$('.bv_sourceId').keyup();
+              this.sbc.$('.bv_molecularWeight').val(" 24");
+              this.sbc.$('.bv_molecularWeight').keyup();
+              this.sbc.$('.bv_amountMade').val(" 24");
+              this.sbc.$('.bv_amountMade').keyup();
+              this.sbc.$('.bv_location').val(" Hood 4");
+              return this.sbc.$('.bv_location').keyup();
             });
             return waitsFor(function() {
-              return this.cbc.$('.bv_recordedBy option').length > 0;
+              return this.sbc.$('.bv_recordedBy option').length > 0;
             }, 1000);
           });
           it("should have the save button be enabled", function() {
             return runs(function() {
-              return expect(this.cbc.$('.bv_save').attr('disabled')).toBeUndefined();
+              return expect(this.sbc.$('.bv_save').attr('disabled')).toBeUndefined();
             });
           });
           it("should update the parent code", function() {
             runs(function() {
-              return this.cbc.$('.bv_save').click();
+              return this.sbc.$('.bv_save').click();
             });
             waits(1000);
             return runs(function() {
-              return expect(this.cbc.$('.bv_parentCode').html()).toEqual("SP000001");
+              return expect(this.sbc.$('.bv_parentCode').html()).toEqual("SP000001");
             });
           });
           it("should update the batch code", function() {
             runs(function() {
-              return this.cbc.$('.bv_save').click();
+              return this.sbc.$('.bv_save').click();
             });
             waits(1000);
             return runs(function() {
-              return expect(this.cbc.$('.bv_batchCode').html()).toEqual("SP000001-1");
+              return expect(this.sbc.$('.bv_batchCode').html()).toEqual("SP000001-1");
             });
           });
           it("should show the update parent button", function() {
             runs(function() {
-              return this.cbc.$('.bv_save').click();
+              return this.sbc.$('.bv_save').click();
             });
             waits(1000);
             return runs(function() {
-              return expect(this.cbc.$('.bv_updateParent')).toBeVisible();
+              return expect(this.sbc.$('.bv_updateParent')).toBeVisible();
             });
           });
           return it("should show the update batch button", function() {
             runs(function() {
-              return this.cbc.$('.bv_save').click();
+              return this.sbc.$('.bv_save').click();
             });
             waits(1000);
             return runs(function() {
-              return expect(this.cbc.$('.bv_saveBatch')).toBeVisible();
+              return expect(this.sbc.$('.bv_saveBatch')).toBeVisible();
             });
           });
         });

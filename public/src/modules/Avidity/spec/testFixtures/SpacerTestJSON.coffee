@@ -225,6 +225,60 @@
 				lsTypeAndKind: "stringValue_notebook"
 				valueUnit: null
 				version: 0
+			,
+				clobValue: null
+				codeValue: "Avidity"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 1233
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "source"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_source"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 123357
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: "12345"
+				uncertainty: null
+				urlValue: null
+				lsKind: "source id"
+				valueOperator: null
+				lsType: "stringValue"
+				lsTypeAndKind: "stringValue_source id"
+				valueUnit: null
+				version: 0
 			]
 		,
 			comments: null
@@ -255,10 +309,10 @@
 				stringValue: null
 				uncertainty: null
 				urlValue: null
-				lsKind: "amount"
+				lsKind: "amount made"
 				valueOperator: null
 				lsType: "numericValue"
-				lsTypeAndKind: "numericValue_amount"
+				lsTypeAndKind: "numericValue_amount made"
 				unitKind: "g"
 				unitType: "mass"
 				valueUnit: null
