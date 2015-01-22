@@ -176,12 +176,13 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		if positiveControl is "" or positiveControl is undefined
 			errors.push
 				attribute: 'positiveControlBatch'
-				message: "Positive control batch muct be set"
+				message: "Positive control batch must be set"
 		positiveControlConc = @get('positiveControl').get('concentration')
 		if _.isNaN(positiveControlConc) or positiveControlConc is undefined or positiveControlConc is null or positiveControlConc is ""
 			errors.push
 				attribute: 'positiveControlConc'
 				message: "Positive control conc must be set"
+
 		negativeControl = @get('negativeControl').get('batchCode')
 		if negativeControl is "" or negativeControl is undefined
 			errors.push
@@ -759,6 +760,11 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@readListController.matchReadNameChanged(matchReadName)
 		unless skipUpdate is true
 			@attributeChanged()
+
+	enableAllInputs: ->
+		super()
+		if @$('.bv_matchReadName').is(":checked")
+			@$('.bv_readPosition').attr 'disabled','disabled'
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 #	See UploadAndRunPrimaryAnalsysisController for example required initialization function

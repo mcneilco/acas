@@ -555,8 +555,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenModelFitParametersController.on 'amClean', =>
 			@trigger 'amClean'
 		@primaryScreenModelFitParametersController.render()
+		@updateModelFitClobValue()
 		@primaryScreenModelFitParametersController.on 'updateState', @updateModelFitClobValue
-		@primaryScreenModelFitParametersController.render()
 
 	updateAnalysisClobValue: =>
 		if @primaryScreenAnalysisParametersController.model.get('positiveControl').get('concentration') is Infinity
@@ -580,7 +580,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		if @model.isNew()
 			@$('.bv_updateModuleComplete').html "Save Complete"
 		else
-			@$('.bv_updateModuleComplete').html "Update Complete"
+			@$('.bv_updateModuleComplete').html "c Complete"
 
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 		@model.save()

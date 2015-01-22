@@ -307,7 +307,7 @@
       if (positiveControl === "" || positiveControl === void 0) {
         errors.push({
           attribute: 'positiveControlBatch',
-          message: "Positive control batch muct be set"
+          message: "Positive control batch must be set"
         });
       }
       positiveControlConc = this.get('positiveControl').get('concentration');
@@ -1193,6 +1193,13 @@
       this.readListController.matchReadNameChanged(matchReadName);
       if (skipUpdate !== true) {
         return this.attributeChanged();
+      }
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.enableAllInputs = function() {
+      PrimaryScreenAnalysisParametersController.__super__.enableAllInputs.call(this);
+      if (this.$('.bv_matchReadName').is(":checked")) {
+        return this.$('.bv_readPosition').attr('disabled', 'disabled');
       }
     };
 

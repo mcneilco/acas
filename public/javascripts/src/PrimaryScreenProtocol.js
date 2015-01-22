@@ -833,8 +833,8 @@
         };
       })(this));
       this.primaryScreenModelFitParametersController.render();
-      this.primaryScreenModelFitParametersController.on('updateState', this.updateModelFitClobValue);
-      return this.primaryScreenModelFitParametersController.render();
+      this.updateModelFitClobValue();
+      return this.primaryScreenModelFitParametersController.on('updateState', this.updateModelFitClobValue);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.updateAnalysisClobValue = function() {
@@ -871,7 +871,7 @@
       if (this.model.isNew()) {
         this.$('.bv_updateModuleComplete').html("Save Complete");
       } else {
-        this.$('.bv_updateModuleComplete').html("Update Complete");
+        this.$('.bv_updateModuleComplete').html("c Complete");
       }
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       return this.model.save();
