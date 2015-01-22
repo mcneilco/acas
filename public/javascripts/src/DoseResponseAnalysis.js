@@ -206,18 +206,17 @@
       }, {
         silent: true
       });
+      this.setThresholdModeEnabledState();
+      this.setInverseAgonistModeEnabledState();
       this.model.trigger('change');
       return this.trigger('updateState');
     };
 
     DoseResponseAnalysisParametersController.prototype.handleSmartModeChanged = function() {
-      this.setThresholdModeEnabledState();
-      this.setInverseAgonistModeEnabledState();
       return this.attributeChanged();
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdModeChanged = function() {
-      this.setThresholdSliderEnabledState();
       return this.attributeChanged();
     };
 
