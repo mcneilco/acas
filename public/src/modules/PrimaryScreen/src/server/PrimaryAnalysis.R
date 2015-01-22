@@ -1531,6 +1531,8 @@ autoFlagWells <- function(resultTable, parameters) {
     hitThreshold <- parameters$hitSDThreshold
     thresholdType <- "standard deviation"
     resultTable[transformed_sd > hitThreshold , autoFlagType := "HIT"]
+  } else {
+    stopUser(paste0("Config error: threshold type of ", parameters$thresholdType, " not recognized"))
   }
   
   resultTable[autoFlagType == "HIT", autoFlagObservation := paste0(">",hitThreshold)]
@@ -1647,7 +1649,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
   
-  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchName, concentrations=resultTable$cmpdConc, 
+  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                        concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
                                        positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
                                        vehicleControl=parameters$vehicleControl, testMode=testMode)
