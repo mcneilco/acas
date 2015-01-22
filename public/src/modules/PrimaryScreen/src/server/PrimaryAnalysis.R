@@ -1520,7 +1520,7 @@ autoFlagWells <- function(resultTable, parameters) {
   }
   if(is.null(parameters$thresholdType) || parameters$thresholdType == "") {
     return(resultTable)
-  } else if(parameters$thresholdType == "percent efficacy") {
+  } else if(parameters$thresholdType == "efficacy") {
     hitThreshold <- parameters$hitEfficacyThreshold
     thresholdType <- "percent efficacy"
     
@@ -1531,6 +1531,8 @@ autoFlagWells <- function(resultTable, parameters) {
     hitThreshold <- parameters$hitSDThreshold
     thresholdType <- "standard deviation"
     resultTable[transformed_sd > hitThreshold , autoFlagType := "HIT"]
+  } else {
+    stopUser(paste0("Config error: threshold type of ", parameters$thresholdType, " not recognized"))
   }
   
   resultTable[autoFlagType == "HIT", autoFlagObservation := paste0(">",hitThreshold)]
