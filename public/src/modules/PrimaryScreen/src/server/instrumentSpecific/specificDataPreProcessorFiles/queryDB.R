@@ -17,14 +17,14 @@ sqlQuery <- function(queryString='sql query', host='***REMOVED***', port='1521',
                          server.database.name = sid,
                          server.database.username = userName,
                          server.database.password = userPassword)
-  tryCatch({
-    conn <- getDatabaseConnection(connectionInfo)
+  conn <- tryCatch({
+    getDatabaseConnection(connectionInfo)
   }, error = function(e) {
     # This section for local development when it may be easier to use JDBC rather than other drivers
     library(RJDBC)
     jdbcDriverJar  <- file.path("public/src/modules/PrimaryScreen/spec/RTestSet/docs", "ojdbc6.jar")  
     connectionInfo$server.database.r.driver <- "JDBC('oracle.jdbc.driver.OracleDriver', jdbcDriverJar)"
-    conn <- getDatabaseConnection(connectionInfo)
+    getDatabaseConnection(connectionInfo)
   })
   on.exit({DBI::dbDisconnect(conn)})
   #conn<- dbConnect(drv, jdbcURL, userName, userPassword);
