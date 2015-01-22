@@ -1649,7 +1649,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
   
-  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchName, concentrations=resultTable$cmpdConc, 
+  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                        concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
                                        positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
                                        vehicleControl=parameters$vehicleControl, testMode=testMode)
