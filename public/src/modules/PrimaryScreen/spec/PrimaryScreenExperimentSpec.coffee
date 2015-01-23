@@ -772,7 +772,9 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the positiveControl ", ->
 					@psapc.$('.bv_positiveControlBatch').val(' pos cont ')
 					@psapc.$('.bv_positiveControlBatch').change()
-					expect(@psapc.model.get('positiveControl').get('batchCode')).toEqual "pos cont"
+					waits(1000)
+					runs ->
+						expect(@psapc.model.get('positiveControl').get('batchCode')).toEqual "pos cont"
 				it "should update the positiveControl conc ", ->
 					@psapc.$('.bv_positiveControlConc').val(' 250753.77 ')
 					@psapc.$('.bv_positiveControlConc').change()
@@ -780,7 +782,9 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the negativeControl ", ->
 					@psapc.$('.bv_negativeControlBatch').val(' neg cont ')
 					@psapc.$('.bv_negativeControlBatch').change()
-					expect(@psapc.model.get('negativeControl').get('batchCode')).toEqual "neg cont"
+					waits(1000)
+					runs ->
+						expect(@psapc.model.get('negativeControl').get('batchCode')).toEqual "neg cont"
 				it "should update the negativeControl conc ", ->
 					@psapc.$('.bv_negativeControlConc').val(' 62 ')
 					@psapc.$('.bv_negativeControlConc').change()
@@ -788,11 +792,15 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the vehicleControl ", ->
 					@psapc.$('.bv_vehicleControlBatch').val(' veh cont ')
 					@psapc.$('.bv_vehicleControlBatch').change()
-					expect(@psapc.model.get('vehicleControl').get('batchCode')).toEqual "veh cont"
+					waits(1000)
+					runs ->
+						expect(@psapc.model.get('vehicleControl').get('batchCode')).toEqual "veh cont"
 				it "should update the agonistControl", ->
 					@psapc.$('.bv_agonistControlBatch').val(' ag cont ')
 					@psapc.$('.bv_agonistControlBatch').change()
-					expect(@psapc.model.get('agonistControl').get('batchCode')).toEqual "ag cont"
+					waits(1000)
+					runs ->
+						expect(@psapc.model.get('agonistControl').get('batchCode')).toEqual "ag cont"
 				it "should update the agonistControl conc", ->
 					@psapc.$('bv_agonistControlConc').val(' 2 ')
 					@psapc.$('.bv_agonistControlConc').change()
@@ -849,8 +857,17 @@ describe "Primary Screen Experiment module testing", ->
 				it "should show error if positiveControl batch is not set", ->
 					@psapc.$('.bv_positiveControlBatch').val ""
 					@psapc.$('.bv_positiveControlBatch').change()
-					expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
-					expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
+				it "should show error if positiveControl batch is not a preferred batch", ->
+					@psapc.$('.bv_positiveControlBatch').val "none"
+					@psapc.$('.bv_positiveControlBatch').change()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
 				it "should show error if positiveControl conc is not set", ->
 					@psapc.$('.bv_positiveControlConc').val ""
 					@psapc.$('.bv_positiveControlConc').change()
@@ -858,7 +875,15 @@ describe "Primary Screen Experiment module testing", ->
 				it "should show error if negativeControl batch is not set", ->
 					@psapc.$('.bv_negativeControlBatch').val ""
 					@psapc.$('.bv_negativeControlBatch').change()
-					expect(@psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy()
+				it "should show error if negativeControl batch is not a preferred batch", ->
+					@psapc.$('.bv_negativeControlBatch').val "none"
+					@psapc.$('.bv_negativeControlBatch').change()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy()
 				it "should show error if negativeControl conc is not set", ->
 					@psapc.$('.bv_negativeControlConc').val ""
 					@psapc.$('.bv_negativeControlConc').change()
@@ -868,33 +893,55 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_agonistControlBatch').change()
 					@psapc.$('.bv_agonistControlConc').val ""
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
-					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
 				it "should not show error if agonistControl batch and conc are set correctly", ->
 					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
 					@psapc.$('.bv_agonistControlBatch').change()
 					@psapc.$('.bv_agonistControlConc').val 12
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
-					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
 				it "should show error if agonistControl batch is correct but conc is NaN or empty", ->
 					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
 					@psapc.$('.bv_agonistControlBatch').change()
 					@psapc.$('.bv_agonistControlConc').val ""
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
-					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy()
 				it "should show error if agonistControl batch is empty but conc is a number", ->
 					@psapc.$('.bv_agonistControlBatch').val ""
 					@psapc.$('.bv_agonistControlBatch').change()
 					@psapc.$('.bv_agonistControlConc').val 23
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
-					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+				it "should show error if agonistControl batch is not a preferred batch", ->
+					@psapc.$('.bv_agonistControlBatch').val "none"
+					@psapc.$('.bv_agonistControlBatch').change()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
+				it "should show error if vehicleControl batch is not a preferred batch", ->
+					@psapc.$('.bv_vehicleControlBatch').val "none"
+					@psapc.$('.bv_vehicleControlBatch').change()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy()
 				it "should not show error if vehicleControl is not set", ->
 					@psapc.$('.bv_vehicleControlBatch').val ""
 					@psapc.$('.bv_vehicleControlBatch').change()
-					expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy()
 				it "should not show error if instrumentReader is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_instrumentReader option').length > 0

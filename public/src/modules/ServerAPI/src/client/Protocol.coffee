@@ -131,7 +131,6 @@ class window.ProtocolBaseController extends BaseEntityController
 				@model.set subclass: 'protocol'
 			@$('.bv_saving').hide()
 			@$('.bv_updateComplete').show()
-			@$('.bv_save').attr('disabled', 'disabled')
 			@render()
 			@trigger 'amClean'
 		@model.on 'change', =>
@@ -139,7 +138,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_updateComplete').hide()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
-		@setupRecordedBySelect()
+		@setupScientistSelect()
 		@setupTagList()
 		@setUpAssayStageSelect()
 		@model.getStatus().on 'change', @updateEditable
@@ -187,7 +186,6 @@ class window.ProtocolBaseController extends BaseEntityController
 	handleAssayPrincipleChanged: =>
 		@model.getAssayPrinciple().set
 			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
-			recordedBy: @model.get('recordedBy')
 
 	handleAssayTreeRuleChanged: =>
 		@model.getAssayTreeRule().set

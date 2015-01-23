@@ -40,7 +40,10 @@ class window.Experiment extends BaseEntity
 			resp
 
 	copyProtocolAttributes: (protocol) ->
+		console.log "copy protocol attributes"
+		console.log @
 		#cache values I don't want to overwrite
+		scientist = @getScientist().get('codeValue')
 		notebook = @getNotebook().get('stringValue')
 		completionDate = @getCompletionDate().get('dateValue')
 		project = @getProjectCode().get('codeValue')
@@ -55,11 +58,11 @@ class window.Experiment extends BaseEntity
 				evals = new ValueList()
 				svals = st.get('lsValues')
 				svals.each (sv) ->
-					unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project" || sv.get('lsKind')=="completion date"
-						evalue = new Value(sv.attributes)
-						evalue.unset 'id'
-						evalue.unset 'lsTransaction'
-						evals.add(evalue)
+#					unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project" || sv.get('lsKind')=="completion date" || sv.get('lsKind')=="scientist"
+					evalue = new Value(sv.attributes)
+					evalue.unset 'id'
+					evalue.unset 'lsTransaction'
+					evals.add(evalue)
 				estate.set lsValues: evals
 				estates.add(estate)
 		@set
@@ -67,6 +70,7 @@ class window.Experiment extends BaseEntity
 			protocol: protocol
 #			shortDescription: protocol.get('shortDescription')
 			lsStates: estates
+		@getScientist().set codeValue: scientist
 		@getNotebook().set stringValue: notebook
 		@getCompletionDate().set dateValue: completionDate
 		@getProjectCode().set codeValue: project
@@ -212,7 +216,6 @@ class window.ExperimentBaseController extends BaseEntityController
 			unless @model.get('subclass')?
 				@model.set subclass: 'experiment'
 			@$('.bv_saving').hide()
-			@$('.bv_save').attr('disabled', 'disabled')
 			if @$('.bv_saveFailed').is(":visible")
 				@$('.bv_updateComplete').hide()
 				@trigger 'amDirty'
@@ -225,7 +228,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_updateComplete').hide()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
-		@setupRecordedBySelect()
+		@setupScientistSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)

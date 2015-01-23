@@ -319,7 +319,7 @@
       this.model.on("sync", this.handleExperimentSaved);
       this.model.getStatus().on('change', this.handleStatusChanged);
       this.parameterController = null;
-      this.analyzedPreviously = this.model.getModelFitStatus().get('stringValue') === "not started" ? false : true;
+      this.analyzedPreviously = this.model.getModelFitStatus().get('codeValue') === "not started" ? false : true;
       $(this.el).empty();
       $(this.el).html(this.template());
       return this.testReadyForFit();
@@ -334,7 +334,7 @@
 
     DoseResponseAnalysisController.prototype.showExistingResults = function() {
       var fitStatus, res, resultValue;
-      fitStatus = this.model.getModelFitStatus().get('stringValue');
+      fitStatus = this.model.getModelFitStatus().get('codeValue');
       this.$('.bv_modelFitStatus').html(fitStatus);
       resultValue = this.model.getModelFitResultHTML();
       if (!!this.analyzedPreviously) {
@@ -351,7 +351,7 @@
     };
 
     DoseResponseAnalysisController.prototype.testReadyForFit = function() {
-      if (this.model.getAnalysisStatus().get('stringValue') === "not started") {
+      if (this.model.getAnalysisStatus().get('codeValue') === "not started") {
         return this.setNotReadyForFit();
       } else {
         return this.setReadyForFit();
@@ -365,7 +365,7 @@
     };
 
     DoseResponseAnalysisController.prototype.setReadyForFit = function() {
-      if (!this.parameterController) {
+      if (!this.parameterontroller) {
         this.setupCurveFitAnalysisParameterController();
       }
       this.$('.bv_fitOptionWrapper').show();

@@ -189,7 +189,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@model.on "sync", @handleExperimentSaved
 		@model.getStatus().on 'change', @handleStatusChanged
 		@parameterController = null
-		@analyzedPreviously = if @model.getModelFitStatus().get('stringValue') == "not started" then false else true
+		@analyzedPreviously = if @model.getModelFitStatus().get('codeValue') == "not started" then false else true
 		$(@el).empty()
 		$(@el).html @template()
 		@testReadyForFit()
@@ -200,10 +200,10 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_fitModelButton').html buttonText
 
 	showExistingResults: ->
-		fitStatus = @model.getModelFitStatus().get('stringValue')
+		fitStatus = @model.getModelFitStatus().get('codeValue')
 		@$('.bv_modelFitStatus').html(fitStatus)
 		resultValue = @model.getModelFitResultHTML()
-		unless not @analyzedPreviously
+		unless not @analyzedPreviously #unless it has been analyzed previously
 			if resultValue != null
 				res = resultValue.get('clobValue')
 				if res == ""
@@ -213,7 +213,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 					@$('.bv_resultsContainer').show()
 
 	testReadyForFit: =>
-		if @model.getAnalysisStatus().get('stringValue') == "not started"
+		if @model.getAnalysisStatus().get('codeValue') == "not started"
 			@setNotReadyForFit()
 		else
 			@setReadyForFit()
@@ -224,7 +224,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_analyzeExperimentToFit').show()
 
 	setReadyForFit: =>
-		unless @parameterController
+		unless @parameterontroller
 			@setupCurveFitAnalysisParameterController()
 		@$('.bv_fitOptionWrapper').show()
 		@$('.bv_fitModelButton').show()

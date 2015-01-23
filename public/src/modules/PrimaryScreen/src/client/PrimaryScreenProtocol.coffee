@@ -150,23 +150,7 @@ class window.PrimaryScreenProtocol extends Protocol
 		errors.push psModelFitParametersErrors...
 
 		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'protocolName'
-				message: attrs.subclass+" name must be set"
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is ""
-			errors.push
-				attribute: 'recordedBy'
-				message: "Scientist must be set"
+		errors.push super(attrs)...
 		if attrs.subclass?
 			cDate = @getCreationDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
@@ -174,21 +158,6 @@ class window.PrimaryScreenProtocol extends Protocol
 				errors.push
 					attribute: 'creationDate'
 					message: "Assay creation date must be set"
-			notebook = @getNotebook().get('stringValue')
-			if notebook is "" or notebook is "unassigned" or notebook is undefined
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
-		assayTreeRule = @getAssayTreeRule().get('stringValue')
-		unless assayTreeRule is "" or assayTreeRule is undefined or assayTreeRule is null
-			if assayTreeRule.charAt([0]) != "/"
-				errors.push
-					attribute: 'assayTreeRule'
-					message: "Assay tree rule must start with '/'"
-			else if assayTreeRule.charAt([assayTreeRule.length-1]) is "/"
-				errors.push
-					attribute: 'assayTreeRule'
-					message: "Assay tree rule should not end with '/'"
 
 		if errors.length > 0
 			return errors

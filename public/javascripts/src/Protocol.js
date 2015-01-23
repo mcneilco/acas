@@ -224,7 +224,6 @@
           }
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
-          _this.$('.bv_save').attr('disabled', 'disabled');
           _this.render();
           return _this.trigger('amClean');
         };
@@ -237,7 +236,7 @@
       })(this));
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
-      this.setupRecordedBySelect();
+      this.setupScientistSelect();
       this.setupTagList();
       this.setUpAssayStageSelect();
       this.model.getStatus().on('change', this.updateEditable);
@@ -295,8 +294,7 @@
 
     ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
       return this.model.getAssayPrinciple().set({
-        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple')),
-        recordedBy: this.model.get('recordedBy')
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple'))
       });
     };
 

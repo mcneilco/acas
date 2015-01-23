@@ -252,7 +252,7 @@
     };
 
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
-      var assayTreeRule, bestName, cDate, errors, nameError, notebook, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
+      var bestName, cDate, errors, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
       errors = [];
       psProtocolParameters = this.getPrimaryScreenProtocolParameters();
       psProtocolParametersErrors = psProtocolParameters.validate();
@@ -264,31 +264,7 @@
       psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes);
       errors.push.apply(errors, psModelFitParametersErrors);
       bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'protocolName',
-          message: attrs.subclass + " name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: attrs.subclass + " date must be set"
-        });
-      }
-      if (attrs.recordedBy === "") {
-        errors.push({
-          attribute: 'recordedBy',
-          message: "Scientist must be set"
-        });
-      }
+      errors.push.apply(errors, PrimaryScreenProtocol.__super__.validate.call(this, attrs));
       if (attrs.subclass != null) {
         cDate = this.getCreationDate().get('dateValue');
         if (cDate === void 0 || cDate === "" || cDate === null) {
@@ -298,27 +274,6 @@
           errors.push({
             attribute: 'creationDate',
             message: "Assay creation date must be set"
-          });
-        }
-        notebook = this.getNotebook().get('stringValue');
-        if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-          errors.push({
-            attribute: 'notebook',
-            message: "Notebook must be set"
-          });
-        }
-      }
-      assayTreeRule = this.getAssayTreeRule().get('stringValue');
-      if (!(assayTreeRule === "" || assayTreeRule === void 0 || assayTreeRule === null)) {
-        if (assayTreeRule.charAt([0]) !== "/") {
-          errors.push({
-            attribute: 'assayTreeRule',
-            message: "Assay tree rule must start with '/'"
-          });
-        } else if (assayTreeRule.charAt([assayTreeRule.length - 1]) === "/") {
-          errors.push({
-            attribute: 'assayTreeRule',
-            message: "Assay tree rule should not end with '/'"
           });
         }
       }

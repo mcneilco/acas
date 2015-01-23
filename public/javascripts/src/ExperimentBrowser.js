@@ -338,7 +338,7 @@
         protocolName: this.model.get('protocol').get("codeName"),
         recordedBy: this.model.get('recordedBy'),
         status: this.model.getStatus().get("codeValue"),
-        analysisStatus: this.model.getAnalysisStatus().get("stringValue"),
+        analysisStatus: this.model.getAnalysisStatus().get("codeValue"),
         recordedDate: this.model.get("recordedDate")
       };
       $(this.el).html(this.template(toDisplay));

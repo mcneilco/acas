@@ -170,6 +170,38 @@
 				version: 0
 			,
 				clobValue: null
+				codeOrigin: "ACAS authors"
+				codeValue: "jane"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 523
+				ignored: false
+				lsKind: "scientist"
+				lsTransaction: 2
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_scientist"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: null
 				codeValue: null
 				comments: null
 				dateValue: null

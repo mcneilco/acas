@@ -173,10 +173,10 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		transformationErrors = @get('transformationRuleList').validateCollection()
 		errors.push transformationErrors...
 		positiveControl = @get('positiveControl').get('batchCode')
-		if positiveControl is "" or positiveControl is undefined
+		if positiveControl is "" or positiveControl is undefined or positiveControl is "invalid"
 			errors.push
 				attribute: 'positiveControlBatch'
-				message: "Positive control batch must be set"
+				message: "A registered batch number must be provided."
 		positiveControlConc = @get('positiveControl').get('concentration')
 		if _.isNaN(positiveControlConc) or positiveControlConc is undefined or positiveControlConc is null or positiveControlConc is ""
 			errors.push
@@ -184,10 +184,10 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				message: "Positive control conc must be set"
 
 		negativeControl = @get('negativeControl').get('batchCode')
-		if negativeControl is "" or negativeControl is undefined
+		if negativeControl is "" or negativeControl is undefined or negativeControl is "invalid"
 			errors.push
 				attribute: 'negativeControlBatch'
-				message: "Negative control batch must be set"
+				message: "A registered batch number must be provided."
 		negativeControlConc = @get('negativeControl').get('concentration')
 		if _.isNaN(negativeControlConc) || negativeControlConc is undefined || negativeControlConc is null or negativeControlConc is ""
 			errors.push
@@ -197,14 +197,20 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
 		if (agonistControl !="" and agonistControl != undefined) or (agonistControlConc != "" and agonistControlConc != undefined) # at least one of the agonist control fields is filled
-			if agonistControl is "" or agonistControl is undefined or agonistControl is null
+			if agonistControl is "" or agonistControl is undefined or agonistControl is null or agonistControl is "invalid"
 				errors.push
 					attribute: 'agonistControlBatch'
-					message: "Agonist control batch must be set"
+					message: "A registered batch number must be provided."
 			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is "" || agonistControlConc is null
 				errors.push
 					attribute: 'agonistControlConc'
 					message: "Agonist control conc must be set"
+		vehicleControl = @get('vehicleControl').get('batchCode')
+		if vehicleControl is "invalid"
+			errors.push
+				attribute: 'vehicleControlBatch'
+				message: "A registered batch number must be provided."
+
 		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
 			errors.push
 				attribute: 'signalDirectionRule'
@@ -538,12 +544,12 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_transferVolume": "handleTransferVolumeChanged"
 		"change .bv_hitEfficacyThreshold": "attributeChanged"
 		"change .bv_hitSDThreshold": "attributeChanged"
-		"change .bv_positiveControlBatch": "attributeChanged"
+		"change .bv_positiveControlBatch": "handlePositiveControlBatchChanged"
 		"change .bv_positiveControlConc": "attributeChanged"
-		"change .bv_negativeControlBatch": "attributeChanged"
+		"change .bv_negativeControlBatch": "handleNegativeControlBatchChanged"
 		"change .bv_negativeControlConc": "attributeChanged"
-		"change .bv_vehicleControlBatch": "attributeChanged"
-		"change .bv_agonistControlBatch": "attributeChanged"
+		"change .bv_vehicleControlBatch": "handleVehicleControlBatchChanged"
+		"change .bv_agonistControlBatch": "handleAgonistControlBatchChanged"
 		"change .bv_agonistControlConc": "attributeChanged"
 		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
@@ -682,21 +688,81 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		if @model.get('dilutionFactor') != ""
 			@model.set dilutionFactor: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor'))
 		@model.get('positiveControl').set
-			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
 			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_positiveControlConc'))
 		@model.get('negativeControl').set
-			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_negativeControlBatch')
 			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_negativeControlConc'))
 		@model.get('vehicleControl').set
-			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_vehicleControlBatch')
 			concentration: null
 		@model.get('agonistControl').set
-			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
 			concentration: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc')
 		if @model.get('agonistControl').get('concentration') != ""
 			@model.get('agonistControl').set
 				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
 		@trigger 'updateState'
+
+	handlePositiveControlBatchChanged: ->
+		console.log "handle pos cont batch changed"
+		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
+		@getPreferredBatchId(batchCode, 'positiveControl')
+
+	handleNegativeControlBatchChanged: ->
+		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_negativeControlBatch')
+		@getPreferredBatchId(batchCode, 'negativeControl')
+
+	handleAgonistControlBatchChanged: ->
+		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
+		@getPreferredBatchId(batchCode, 'agonistControl')
+
+	handleVehicleControlBatchChanged: ->
+		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_vehicleControlBatch')
+		@getPreferredBatchId(batchCode, 'vehicleControl')
+
+	getPreferredBatchId: (batchId, control) ->
+		console.log "beg of getPreferredBatchId"
+		@requestData =
+			requests: [
+				{requestName: batchId}
+			]
+		$.ajax
+			type: 'POST'
+			url: "/api/preferredBatchId"
+			data: @requestData
+			success: (json) =>
+				@handlePreferredBatchIdReturn(json, control)
+			error: (err) =>
+				console.log 'got ajax error'
+				@serviceReturn = null
+			dataType: 'json'
+
+	handlePreferredBatchIdReturn: (json, control) =>
+		console.log "beg of handle preferred batch id return"
+		if json.results?
+			results = (json.results)[0]
+			console.log results
+			preferredName = results.preferredName
+			requestName = results.requestName
+			if preferredName == requestName
+				if requestName == "" and control != 'agonistControl' and control != 'vehicleControl'
+					@model.get(control).set batchCode: "invalid"
+					@attributeChanged()
+					console.log "invalid id"
+				else
+					@model.get(control).set batchCode: UtilityFunctions::getTrimmedInput @$('.bv_'+control+'Batch')
+					@attributeChanged()
+					console.log "valid id"
+				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
+
+			else if preferredName == ""
+				@model.get(control).set batchCode: "invalid"
+				@attributeChanged()
+				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
+				console.log "invalid id"
+			else
+				console.log "alias"
+				@$('.bv_group_'+control+'Batch').addClass 'input_alias alias'
+				@$('.bv_group_'+control+'Batch').attr('data-toggle', 'tooltip')
+				@$('.bv_group_'+control+'Batch').attr('data-placement', 'bottom')
+				@$('.bv_group_'+control+'Batch').attr('data-original-title', 'This is an alias for a valid batch number ('+preferredName+')')
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
