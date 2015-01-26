@@ -178,7 +178,7 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
     negativeControl$concentration <- Inf
   }
   
-  if(vehicleControl$batchCode != "null") {
+  if(!is.null(vehicleControl$batchCode) && vehicleControl$batchCode != "null") {
     wellTypes[batchNames==vehicleControl$batchCode] <- "VC"
   }
   
