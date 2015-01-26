@@ -471,11 +471,11 @@
     };
 
     BaseEntityController.prototype.handleScientistChanged = function() {
-      this.model.getScientist().set({
+      return this.model.getScientist().set({
         codeValue: this.scientistListController.getSelectedCode(),
-        recordedBy: window.AppLaunchParams.loginUser.username
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
-      return this.handleNameChanged();
     };
 
     BaseEntityController.prototype.handleShortDescriptionChanged = function() {
@@ -483,24 +483,32 @@
       trimmedDesc = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_shortDescription'));
       if (trimmedDesc !== "") {
         return this.model.set({
-          shortDescription: trimmedDesc
+          shortDescription: trimmedDesc,
+          recordedBy: window.AppLaunchParams.loginUser.username,
+          recordedDate: new Date().getTime()
         });
       } else {
         return this.model.set({
-          shortDescription: " "
+          shortDescription: " ",
+          recordedBy: window.AppLaunchParams.loginUser.username,
+          recordedDate: new Date().getTime()
         });
       }
     };
 
     BaseEntityController.prototype.handleDetailsChanged = function() {
       return this.model.getDetails().set({
-        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_details'))
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_details')),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 
     BaseEntityController.prototype.handleCommentsChanged = function() {
       return this.model.getComments().set({
-        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_comments'))
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_comments')),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 
@@ -510,21 +518,27 @@
       newName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + subclass + 'Name'));
       this.model.get('lsLabels').setBestName(new Label({
         lsKind: subclass + " name",
-        labelText: newName
+        labelText: newName,
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       }));
       return this.model.trigger('change');
     };
 
     BaseEntityController.prototype.handleNotebookChanged = function() {
       this.model.getNotebook().set({
-        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook'))
+        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook')),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.model.trigger('change');
     };
 
     BaseEntityController.prototype.handleStatusChanged = function() {
       this.model.getStatus().set({
-        codeValue: this.statusListController.getSelectedCode()
+        codeValue: this.statusListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.updateEditable();
     };

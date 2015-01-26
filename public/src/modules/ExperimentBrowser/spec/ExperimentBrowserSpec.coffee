@@ -104,7 +104,7 @@ describe "Experiment Browser module testing", ->
 			it "should show the protocolName", ->
 				expect(@ersc.$('.bv_protocolName').html()).toEqual "protocol name"
 			it "should show the scientist", ->
-				expect(@ersc.$('.bv_recordedBy').html()).toEqual "jmcneil"
+				expect(@ersc.$('.bv_scientist').html()).toEqual "jane"
 		describe "basic behavior", ->
 			it "should trigger gotClick when the row is clicked", ->
 				@clickTriggered = false

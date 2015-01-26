@@ -336,10 +336,10 @@
         experimentName: this.model.get('lsLabels').pickBestName().get('labelText'),
         experimentCode: this.model.get('codeName'),
         protocolName: this.model.get('protocol').get("codeName"),
-        recordedBy: this.model.get('recordedBy'),
+        scientist: this.model.getScientist().get('codeValue'),
         status: this.model.getStatus().get("codeValue"),
         analysisStatus: this.model.getAnalysisStatus().get("codeValue"),
-        recordedDate: this.model.get("recordedDate")
+        completionDate: this.model.getCompletionDate().get('dateValue')
       };
       $(this.el).html(this.template(toDisplay));
       return this;

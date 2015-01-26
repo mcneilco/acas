@@ -198,6 +198,10 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@showExistingResults()
 		buttonText = if @analyzedPreviously then "Re-Fit" else "Fit Data"
 		@$('.bv_fitModelButton').html buttonText
+		if @analyzedPreviously
+			@$('.bv_group_modelFitStatus').show()
+		else
+			@$('.bv_group_modelFitStatus').hide()
 
 	showExistingResults: ->
 		fitStatus = @model.getModelFitStatus().get('codeValue')

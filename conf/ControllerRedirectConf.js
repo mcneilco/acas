@@ -1,7 +1,7 @@
 (function() {
   (function(exports) {
     return exports.controllerRedirectConf = {
-      PRCl: {
+      PRCL: {
         entityName: "protocols",
         stub: true,
         "default": {

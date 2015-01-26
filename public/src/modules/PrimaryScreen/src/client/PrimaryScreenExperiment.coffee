@@ -719,20 +719,25 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	getPreferredBatchId: (batchId, control) ->
 		console.log "beg of getPreferredBatchId"
-		@requestData =
-			requests: [
-				{requestName: batchId}
-			]
-		$.ajax
-			type: 'POST'
-			url: "/api/preferredBatchId"
-			data: @requestData
-			success: (json) =>
-				@handlePreferredBatchIdReturn(json, control)
-			error: (err) =>
-				console.log 'got ajax error'
-				@serviceReturn = null
-			dataType: 'json'
+		if batchId == ""
+			@model.get(control).set batchCode: UtilityFunctions::getTrimmedInput @$('.bv_'+control+'Batch')
+			@attributeChanged()
+			return
+		else
+			@requestData =
+				requests: [
+					{requestName: batchId}
+				]
+			$.ajax
+				type: 'POST'
+				url: "/api/preferredBatchId"
+				data: @requestData
+				success: (json) =>
+					@handlePreferredBatchIdReturn(json, control)
+				error: (err) =>
+					console.log 'got ajax error'
+					@serviceReturn = null
+				dataType: 'json'
 
 	handlePreferredBatchIdReturn: (json, control) =>
 		console.log "beg of handle preferred batch id return"
@@ -742,14 +747,9 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			preferredName = results.preferredName
 			requestName = results.requestName
 			if preferredName == requestName
-				if requestName == "" and control != 'agonistControl' and control != 'vehicleControl'
-					@model.get(control).set batchCode: "invalid"
-					@attributeChanged()
-					console.log "invalid id"
-				else
-					@model.get(control).set batchCode: UtilityFunctions::getTrimmedInput @$('.bv_'+control+'Batch')
-					@attributeChanged()
-					console.log "valid id"
+				@model.get(control).set batchCode: UtilityFunctions::getTrimmedInput @$('.bv_'+control+'Batch')
+				@attributeChanged()
+				console.log "valid id"
 				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
 
 			else if preferredName == ""
@@ -763,6 +763,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				@$('.bv_group_'+control+'Batch').attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+control+'Batch').attr('data-placement', 'bottom')
 				@$('.bv_group_'+control+'Batch').attr('data-original-title', 'This is an alias for a valid batch number ('+preferredName+')')
+			@attributeChanged()
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()

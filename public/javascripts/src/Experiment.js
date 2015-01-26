@@ -519,7 +519,9 @@
 
     ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
       this.model.getProjectCode().set({
-        codeValue: this.projectListController.getSelectedCode()
+        codeValue: this.projectListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.model.trigger('change');
     };
@@ -531,7 +533,9 @@
 
     ExperimentBaseController.prototype.handleDateChanged = function() {
       this.model.getCompletionDate().set({
-        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')))
+        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate'))),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.model.trigger('change');
     };

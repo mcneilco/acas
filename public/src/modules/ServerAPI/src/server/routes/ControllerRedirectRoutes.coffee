@@ -1,9 +1,10 @@
 _ = require 'underscore'
 request = require 'request'
 
+
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor
-
+	app.get '/api/labelsequences', loginRoutes.ensureAuthenticated, exports.getLabelSequences
 
 config = require '../conf/compiled/conf.js'
 
@@ -65,3 +66,7 @@ exports.redirectToEditor = (req, resp) ->
 		else
 			resp.redirect "/#"
 
+exports.getLabelSequences = (req, resp) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"/labelsequences"
+	serverUtilityFunctions.getFromACASServer(baseurl, resp)

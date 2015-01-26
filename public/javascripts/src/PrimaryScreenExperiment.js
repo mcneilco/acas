@@ -1136,30 +1136,37 @@
 
     PrimaryScreenAnalysisParametersController.prototype.getPreferredBatchId = function(batchId, control) {
       console.log("beg of getPreferredBatchId");
-      this.requestData = {
-        requests: [
-          {
-            requestName: batchId
-          }
-        ]
-      };
-      return $.ajax({
-        type: 'POST',
-        url: "/api/preferredBatchId",
-        data: this.requestData,
-        success: (function(_this) {
-          return function(json) {
-            return _this.handlePreferredBatchIdReturn(json, control);
-          };
-        })(this),
-        error: (function(_this) {
-          return function(err) {
-            console.log('got ajax error');
-            return _this.serviceReturn = null;
-          };
-        })(this),
-        dataType: 'json'
-      });
+      if (batchId === "") {
+        this.model.get(control).set({
+          batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + control + 'Batch'))
+        });
+        this.attributeChanged();
+      } else {
+        this.requestData = {
+          requests: [
+            {
+              requestName: batchId
+            }
+          ]
+        };
+        return $.ajax({
+          type: 'POST',
+          url: "/api/preferredBatchId",
+          data: this.requestData,
+          success: (function(_this) {
+            return function(json) {
+              return _this.handlePreferredBatchIdReturn(json, control);
+            };
+          })(this),
+          error: (function(_this) {
+            return function(err) {
+              console.log('got ajax error');
+              return _this.serviceReturn = null;
+            };
+          })(this),
+          dataType: 'json'
+        });
+      }
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handlePreferredBatchIdReturn = function(json, control) {
@@ -1171,34 +1178,27 @@
         preferredName = results.preferredName;
         requestName = results.requestName;
         if (preferredName === requestName) {
-          if (requestName === "" && control !== 'agonistControl' && control !== 'vehicleControl') {
-            this.model.get(control).set({
-              batchCode: "invalid"
-            });
-            this.attributeChanged();
-            console.log("invalid id");
-          } else {
-            this.model.get(control).set({
-              batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + control + 'Batch'))
-            });
-            this.attributeChanged();
-            console.log("valid id");
-          }
-          return this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
+          this.model.get(control).set({
+            batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + control + 'Batch'))
+          });
+          this.attributeChanged();
+          console.log("valid id");
+          this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
         } else if (preferredName === "") {
           this.model.get(control).set({
             batchCode: "invalid"
           });
           this.attributeChanged();
           this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
-          return console.log("invalid id");
+          console.log("invalid id");
         } else {
           console.log("alias");
           this.$('.bv_group_' + control + 'Batch').addClass('input_alias alias');
           this.$('.bv_group_' + control + 'Batch').attr('data-toggle', 'tooltip');
           this.$('.bv_group_' + control + 'Batch').attr('data-placement', 'bottom');
-          return this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
+          this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
         }
+        return this.attributeChanged();
       }
     };
 

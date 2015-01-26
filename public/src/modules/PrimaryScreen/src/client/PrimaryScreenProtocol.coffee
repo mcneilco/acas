@@ -180,14 +180,14 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 
 	events:
 		"click .bv_customerMolecularTargetDDictChkbx": "handleMolecularTargetDDictChanged"
-		"change .bv_maxY": "attributeChanged"
-		"change .bv_minY": "attributeChanged"
-		"change .bv_assayActivity": "attributeChanged"
-		"change .bv_molecularTarget": "attributeChanged"
-		"change .bv_targetOrigin": "attributeChanged"
-		"change .bv_assayType": "attributeChanged"
-		"change .bv_assayTechnology": "attributeChanged"
-		"change .bv_cellLine": "attributeChanged"
+		"change .bv_maxY": "handleCurveDisplayMaxChanged"
+		"change .bv_minY": "handleCurveDisplayMinChanged"
+		"change .bv_assayActivity": "handleAssayActivityChanged"
+		"change .bv_molecularTarget": "handleMolecularTargetChanged"
+		"change .bv_targetOrigin": "handleTargetOriginChanged"
+		"change .bv_assayType": "handleAssayTypeChanged"
+		"change .bv_assayTechnology": "handleAssayTechnologyChanged"
+		"change .bv_cellLine": "handleCellLineChanged"
 
 
 	initialize: ->
@@ -305,24 +305,53 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		else
 			@molecularTargetListController.showAddOptionButton()
 
-	updateModel: =>
+	handleAssayActivityChanged: =>
 		@model.getAssayActivity().set
 			codeValue: @assayActivityListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleMolecularTargetChanged: =>
 		@model.getMolecularTarget().set
 			codeValue: @molecularTargetListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleTargetOriginChanged: =>
 		@model.getTargetOrigin().set
 			codeValue: @targetOriginListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleAssayTypeChanged: =>
 		@model.getAssayType().set
 			codeValue: @assayTypeListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleAssayTechnologyChanged: =>
 		@model.getAssayTechnology().set
 			codeValue: @assayTechnologyListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleCellLineChanged: =>
 		@model.getCellLine().set
 			codeValue: @cellLineListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleCurveDisplayMaxChanged: =>
 		@model.getCurveDisplayMax().set
 			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_maxY'))
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleCurveDisplayMinChanged: =>
 		@model.getCurveDisplayMin().set
 			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_minY'))
-
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleMolecularTargetDDictChanged: =>
 		customerDDict = @$('.bv_customerMolecularTargetDDictChkbx').is(":checked")
@@ -336,7 +365,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			@molecularTargetListController.render()
 			@molecularTargetListController.showAddOptionButton()
 
-		@attributeChanged()
+		@handleMolecularTargetChanged()
 
 
 	saveNewPickListOptions: (callback) =>
@@ -531,11 +560,17 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		if @primaryScreenAnalysisParametersController.model.get('positiveControl').get('concentration') is Infinity
 			@primaryScreenAnalysisParametersController.model.get('positiveControl').set concentration: "Infinity" #JSON doesn't store Infinity as value
 		ap = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
-		ap.set clobValue: JSON.stringify @primaryScreenAnalysisParametersController.model.attributes
+		ap.set
+			clobValue: JSON.stringify @primaryScreenAnalysisParametersController.model.attributes
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	updateModelFitClobValue: =>
 		mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
-		mfp.set clobValue: JSON.stringify @primaryScreenModelFitParametersController.model.attributes
+		mfp.set
+			clobValue: JSON.stringify @primaryScreenModelFitParametersController.model.attributes
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleSaveModule: =>
 		@$('.bv_savingModule').show()

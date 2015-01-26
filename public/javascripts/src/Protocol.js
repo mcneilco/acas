@@ -276,7 +276,9 @@
 
     ProtocolBaseController.prototype.handleCreationDateChanged = function() {
       this.model.getCreationDate().set({
-        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_creationDate')))
+        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_creationDate'))),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.model.trigger('change');
     };
@@ -287,20 +289,26 @@
 
     ProtocolBaseController.prototype.handleAssayStageChanged = function() {
       this.model.getAssayStage().set({
-        codeValue: this.assayStageListController.getSelectedCode()
+        codeValue: this.assayStageListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.trigger('change');
     };
 
     ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
       return this.model.getAssayPrinciple().set({
-        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple'))
+        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple')),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 
     ProtocolBaseController.prototype.handleAssayTreeRuleChanged = function() {
       return this.model.getAssayTreeRule().set({
-        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayTreeRule'))
+        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayTreeRule')),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 

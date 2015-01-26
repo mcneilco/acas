@@ -171,7 +171,10 @@ class window.ProtocolBaseController extends BaseEntityController
 			selectedCode: @model.getAssayStage().get('codeValue')
 
 	handleCreationDateChanged: =>
-		@model.getCreationDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
+		@model.getCreationDate().set
+			dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		@model.trigger 'change'
 
 
@@ -181,12 +184,18 @@ class window.ProtocolBaseController extends BaseEntityController
 	handleAssayStageChanged: =>
 		@model.getAssayStage().set
 			codeValue: @assayStageListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		@trigger 'change'
 
 	handleAssayPrincipleChanged: =>
 		@model.getAssayPrinciple().set
 			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleAssayTreeRuleChanged: =>
 		@model.getAssayTreeRule().set
 			stringValue: UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()

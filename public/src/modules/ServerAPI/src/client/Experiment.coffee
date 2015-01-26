@@ -340,7 +340,10 @@ class window.ExperimentBaseController extends BaseEntityController
 				dataType: 'json'
 
 	handleProjectCodeChanged: =>
-		@model.getProjectCode().set codeValue: @projectListController.getSelectedCode()
+		@model.getProjectCode().set
+			codeValue: @projectListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		@model.trigger 'change'
 
 	handleUseProtocolParametersClicked: =>
@@ -348,7 +351,10 @@ class window.ExperimentBaseController extends BaseEntityController
 		@render()
 
 	handleDateChanged: =>
-		@model.getCompletionDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
+		@model.getCompletionDate().set
+			dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		@model.trigger 'change'
 
 

@@ -329,7 +329,12 @@
       var buttonText;
       this.showExistingResults();
       buttonText = this.analyzedPreviously ? "Re-Fit" : "Fit Data";
-      return this.$('.bv_fitModelButton').html(buttonText);
+      this.$('.bv_fitModelButton').html(buttonText);
+      if (this.analyzedPreviously) {
+        return this.$('.bv_group_modelFitStatus').show();
+      } else {
+        return this.$('.bv_group_modelFitStatus').hide();
+      }
     };
 
     DoseResponseAnalysisController.prototype.showExistingResults = function() {

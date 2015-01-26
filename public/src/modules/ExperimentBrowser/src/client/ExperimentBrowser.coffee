@@ -226,10 +226,10 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			experimentName: @model.get('lsLabels').pickBestName().get('labelText')
 			experimentCode: @model.get('codeName')
 			protocolName: @model.get('protocol').get("codeName")
-			recordedBy: @model.get('recordedBy')
+			scientist: @model.getScientist().get('codeValue')
 			status: @model.getStatus().get("codeValue")
 			analysisStatus: @model.getAnalysisStatus().get("codeValue")
-			recordedDate: @model.get("recordedDate")
+			completionDate: @model.getCompletionDate().get('dateValue')
 		$(@el).html(@template(toDisplay))
 
 		@

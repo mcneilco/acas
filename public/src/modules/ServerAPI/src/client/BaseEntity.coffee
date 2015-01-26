@@ -247,10 +247,6 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
 		@$('.bv_details').html(@model.getDetails().get('clobValue'))
 		@$('.bv_comments').html(@model.getComments().get('clobValue'))
-#		@$('.bv_completionDate').datepicker();
-#		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
-#		if @model.getCompletionDate().get('dateValue')?
-#			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('codeValue'))
 		if @model.isNew()
@@ -293,22 +289,32 @@ class window.BaseEntityController extends AbstractFormController
 		@model.getScientist().set
 			codeValue: @scientistListController.getSelectedCode()
 			recordedBy: window.AppLaunchParams.loginUser.username
-		@handleNameChanged()
+			recordedDate: new Date().getTime()
 
 	handleShortDescriptionChanged: =>
 		trimmedDesc = UtilityFunctions::getTrimmedInput @$('.bv_shortDescription')
 		if trimmedDesc != ""
-			@model.set shortDescription: trimmedDesc
+			@model.set
+				shortDescription: trimmedDesc
+				recordedBy: window.AppLaunchParams.loginUser.username
+				recordedDate: new Date().getTime()
 		else
-			@model.set shortDescription: " " #fix for oracle persistance bug
+			@model.set
+				shortDescription: " " #fix for oracle persistance bug
+				recordedBy: window.AppLaunchParams.loginUser.username
+				recordedDate: new Date().getTime()
 
 	handleDetailsChanged: =>
 		@model.getDetails().set
 			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_details')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleCommentsChanged: =>
 		@model.getComments().set
 			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_comments')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleNameChanged: =>
 		subclass = @model.get('subclass')
@@ -316,15 +322,23 @@ class window.BaseEntityController extends AbstractFormController
 		@model.get('lsLabels').setBestName new Label
 			lsKind: subclass+" name"
 			labelText: newName
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		#TODO label change propagation isn't really working, so this is the work-around
 		@model.trigger 'change'
 
 	handleNotebookChanged: =>
-		@model.getNotebook().set stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
+		@model.getNotebook().set
+			stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		@model.trigger 'change'
 
 	handleStatusChanged: =>
-		@model.getStatus().set codeValue: @statusListController.getSelectedCode()
+		@model.getStatus().set
+			codeValue: @statusListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
 
