@@ -1138,7 +1138,7 @@
       console.log("beg of getPreferredBatchId");
       if (batchId === "") {
         this.model.get(control).set({
-          batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + control + 'Batch'))
+          batchCode: ""
         });
         this.attributeChanged();
       } else {
@@ -1179,20 +1179,21 @@
         requestName = results.requestName;
         if (preferredName === requestName) {
           this.model.get(control).set({
-            batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + control + 'Batch'))
+            batchCode: preferredName
           });
-          this.attributeChanged();
           console.log("valid id");
           this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
         } else if (preferredName === "") {
           this.model.get(control).set({
             batchCode: "invalid"
           });
-          this.attributeChanged();
           this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
           console.log("invalid id");
         } else {
           console.log("alias");
+          this.model.get(control).set({
+            batchCode: preferredName
+          });
           this.$('.bv_group_' + control + 'Batch').addClass('input_alias alias');
           this.$('.bv_group_' + control + 'Batch').attr('data-toggle', 'tooltip');
           this.$('.bv_group_' + control + 'Batch').attr('data-placement', 'bottom');
@@ -1656,10 +1657,10 @@
       resultHTML = this.model.getAnalysisResultHTML().get('clobValue');
       if (this.dataAnalysisController != null) {
         this.dataAnalysisController.showFileUploadCompletePhase();
+        this.dataAnalysisController.disableAllInputs();
       }
       this.$('.bv_resultStatus').html(resultStatus);
-      this.$('.bv_htmlSummary').html(resultHTML);
-      return this.dataAnalysisController.disableAllInputs();
+      return this.$('.bv_htmlSummary').html(resultHTML);
     };
 
     PrimaryScreenAnalysisController.prototype.showDryRunResults = function(dryRunStatus) {
@@ -1675,10 +1676,10 @@
         this.dataAnalysisController.filePassedValidation = true;
         this.dataAnalysisController.showFileUploadPhase();
         this.dataAnalysisController.handleFormValid();
+        this.dataAnalysisController.disableAllInputs();
       }
       this.$('.bv_resultStatus').html(resultStatus);
-      this.$('.bv_htmlSummary').html(resultHTML);
-      return this.dataAnalysisController.disableAllInputs();
+      return this.$('.bv_htmlSummary').html(resultHTML);
     };
 
     PrimaryScreenAnalysisController.prototype.showUploadWrapper = function() {
