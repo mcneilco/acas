@@ -150,23 +150,7 @@ class window.PrimaryScreenProtocol extends Protocol
 		errors.push psModelFitParametersErrors...
 
 		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'protocolName'
-				message: attrs.subclass+" name must be set"
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is ""
-			errors.push
-				attribute: 'recordedBy'
-				message: "Scientist must be set"
+		errors.push super(attrs)...
 		if attrs.subclass?
 			cDate = @getCreationDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
@@ -174,21 +158,6 @@ class window.PrimaryScreenProtocol extends Protocol
 				errors.push
 					attribute: 'creationDate'
 					message: "Assay creation date must be set"
-			notebook = @getNotebook().get('stringValue')
-			if notebook is "" or notebook is "unassigned" or notebook is undefined
-				errors.push
-					attribute: 'notebook'
-					message: "Notebook must be set"
-		assayTreeRule = @getAssayTreeRule().get('stringValue')
-		unless assayTreeRule is "" or assayTreeRule is undefined or assayTreeRule is null
-			if assayTreeRule.charAt([0]) != "/"
-				errors.push
-					attribute: 'assayTreeRule'
-					message: "Assay tree rule must start with '/'"
-			else if assayTreeRule.charAt([assayTreeRule.length-1]) is "/"
-				errors.push
-					attribute: 'assayTreeRule'
-					message: "Assay tree rule should not end with '/'"
 
 		if errors.length > 0
 			return errors
@@ -211,14 +180,14 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 
 	events:
 		"click .bv_customerMolecularTargetDDictChkbx": "handleMolecularTargetDDictChanged"
-		"change .bv_maxY": "attributeChanged"
-		"change .bv_minY": "attributeChanged"
-		"change .bv_assayActivity": "attributeChanged"
-		"change .bv_molecularTarget": "attributeChanged"
-		"change .bv_targetOrigin": "attributeChanged"
-		"change .bv_assayType": "attributeChanged"
-		"change .bv_assayTechnology": "attributeChanged"
-		"change .bv_cellLine": "attributeChanged"
+		"change .bv_maxY": "handleCurveDisplayMaxChanged"
+		"change .bv_minY": "handleCurveDisplayMinChanged"
+		"change .bv_assayActivity": "handleAssayActivityChanged"
+		"change .bv_molecularTarget": "handleMolecularTargetChanged"
+		"change .bv_targetOrigin": "handleTargetOriginChanged"
+		"change .bv_assayType": "handleAssayTypeChanged"
+		"change .bv_assayTechnology": "handleAssayTechnologyChanged"
+		"change .bv_cellLine": "handleCellLineChanged"
 
 
 	initialize: ->
@@ -336,24 +305,53 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		else
 			@molecularTargetListController.showAddOptionButton()
 
-	updateModel: =>
+	handleAssayActivityChanged: =>
 		@model.getAssayActivity().set
 			codeValue: @assayActivityListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleMolecularTargetChanged: =>
 		@model.getMolecularTarget().set
 			codeValue: @molecularTargetListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleTargetOriginChanged: =>
 		@model.getTargetOrigin().set
 			codeValue: @targetOriginListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleAssayTypeChanged: =>
 		@model.getAssayType().set
 			codeValue: @assayTypeListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleAssayTechnologyChanged: =>
 		@model.getAssayTechnology().set
 			codeValue: @assayTechnologyListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleCellLineChanged: =>
 		@model.getCellLine().set
 			codeValue: @cellLineListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleCurveDisplayMaxChanged: =>
 		@model.getCurveDisplayMax().set
 			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_maxY'))
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+
+	handleCurveDisplayMinChanged: =>
 		@model.getCurveDisplayMin().set
 			numericValue: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_minY'))
-
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleMolecularTargetDDictChanged: =>
 		customerDDict = @$('.bv_customerMolecularTargetDDictChkbx').is(":checked")
@@ -367,7 +365,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			@molecularTargetListController.render()
 			@molecularTargetListController.showAddOptionButton()
 
-		@attributeChanged()
+		@handleMolecularTargetChanged()
 
 
 	saveNewPickListOptions: (callback) =>
@@ -555,18 +553,24 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenModelFitParametersController.on 'amClean', =>
 			@trigger 'amClean'
 		@primaryScreenModelFitParametersController.render()
+		@updateModelFitClobValue()
 		@primaryScreenModelFitParametersController.on 'updateState', @updateModelFitClobValue
-		@primaryScreenModelFitParametersController.render()
 
 	updateAnalysisClobValue: =>
 		if @primaryScreenAnalysisParametersController.model.get('positiveControl').get('concentration') is Infinity
 			@primaryScreenAnalysisParametersController.model.get('positiveControl').set concentration: "Infinity" #JSON doesn't store Infinity as value
 		ap = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
-		ap.set clobValue: JSON.stringify @primaryScreenAnalysisParametersController.model.attributes
+		ap.set
+			clobValue: JSON.stringify @primaryScreenAnalysisParametersController.model.attributes
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	updateModelFitClobValue: =>
 		mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
-		mfp.set clobValue: JSON.stringify @primaryScreenModelFitParametersController.model.attributes
+		mfp.set
+			clobValue: JSON.stringify @primaryScreenModelFitParametersController.model.attributes
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleSaveModule: =>
 		@$('.bv_savingModule').show()
@@ -580,7 +584,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		if @model.isNew()
 			@$('.bv_updateModuleComplete').html "Save Complete"
 		else
-			@$('.bv_updateModuleComplete').html "Update Complete"
+			@$('.bv_updateModuleComplete').html "c Complete"
 
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 		@model.save()

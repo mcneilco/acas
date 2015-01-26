@@ -53,21 +53,21 @@
       var errors, limitType;
       errors = [];
       limitType = attrs.min.get('limitType');
-      if ((limitType === "pin" || limitType === "limit") && _.isNaN(attrs.min.get('value'))) {
+      if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.min.get('value')) || attrs.min.get('value') === null)) {
         errors.push({
           attribute: 'min_value',
           message: "Min threshold value must be set when limit type is pin or limit"
         });
       }
       limitType = attrs.max.get('limitType');
-      if ((limitType === "pin" || limitType === "limit") && _.isNaN(attrs.max.get('value'))) {
+      if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.max.get('value')) || attrs.max.get('value') === null)) {
         errors.push({
           attribute: 'max_value',
           message: "Max threshold value must be set when limit type is pin or limit"
         });
       }
       limitType = attrs.slope.get('limitType');
-      if ((limitType === "pin" || limitType === "limit") && _.isNaN(attrs.slope.get('value'))) {
+      if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.slope.get('value')) || attrs.slope.get('value') === null)) {
         errors.push({
           attribute: 'slope_value',
           message: "Slope threshold value must be set when limit type is pin or limit"
@@ -206,17 +206,17 @@
       }, {
         silent: true
       });
-      return this.model.trigger('change');
+      this.setThresholdModeEnabledState();
+      this.setInverseAgonistModeEnabledState();
+      this.model.trigger('change');
+      return this.trigger('updateState');
     };
 
     DoseResponseAnalysisParametersController.prototype.handleSmartModeChanged = function() {
-      this.setThresholdModeEnabledState();
-      this.setInverseAgonistModeEnabledState();
       return this.attributeChanged();
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdModeChanged = function() {
-      this.setThresholdSliderEnabledState();
       return this.attributeChanged();
     };
 
@@ -319,7 +319,7 @@
       this.model.on("sync", this.handleExperimentSaved);
       this.model.getStatus().on('change', this.handleStatusChanged);
       this.parameterController = null;
-      this.analyzedPreviously = this.model.getModelFitStatus().get('stringValue') === "not started" ? false : true;
+      this.analyzedPreviously = this.model.getModelFitStatus().get('codeValue') === "not started" ? false : true;
       $(this.el).empty();
       $(this.el).html(this.template());
       return this.testReadyForFit();
@@ -329,12 +329,17 @@
       var buttonText;
       this.showExistingResults();
       buttonText = this.analyzedPreviously ? "Re-Fit" : "Fit Data";
-      return this.$('.bv_fitModelButton').html(buttonText);
+      this.$('.bv_fitModelButton').html(buttonText);
+      if (this.analyzedPreviously) {
+        return this.$('.bv_group_modelFitStatus').show();
+      } else {
+        return this.$('.bv_group_modelFitStatus').hide();
+      }
     };
 
     DoseResponseAnalysisController.prototype.showExistingResults = function() {
       var fitStatus, res, resultValue;
-      fitStatus = this.model.getModelFitStatus().get('stringValue');
+      fitStatus = this.model.getModelFitStatus().get('codeValue');
       this.$('.bv_modelFitStatus').html(fitStatus);
       resultValue = this.model.getModelFitResultHTML();
       if (!!this.analyzedPreviously) {
@@ -351,7 +356,7 @@
     };
 
     DoseResponseAnalysisController.prototype.testReadyForFit = function() {
-      if (this.model.getAnalysisStatus().get('stringValue') === "not started") {
+      if (this.model.getAnalysisStatus().get('codeValue') === "not started") {
         return this.setNotReadyForFit();
       } else {
         return this.setReadyForFit();
@@ -365,7 +370,7 @@
     };
 
     DoseResponseAnalysisController.prototype.setReadyForFit = function() {
-      if (!this.parameterController) {
+      if (!this.parameterontroller) {
         this.setupCurveFitAnalysisParameterController();
       }
       this.$('.bv_fitOptionWrapper').show();

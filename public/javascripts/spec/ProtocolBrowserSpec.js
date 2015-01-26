@@ -68,7 +68,7 @@
           return expect(this.prsc.$('.bv_protocolKind').html()).toEqual("default");
         });
         it("should show the scientist", function() {
-          return expect(this.prsc.$('.bv_recordedBy').html()).toEqual("jane");
+          return expect(this.prsc.$('.bv_scientist').html()).toEqual("jane");
         });
         it("should show the status", function() {
           return expect(this.prsc.$('.bv_status').html()).toEqual("created");

@@ -115,7 +115,8 @@
     AbstractFormController.prototype.enableAllInputs = function() {
       this.$('input').removeAttr('disabled');
       this.$('select').removeAttr('disabled');
-      return this.$("textarea").removeAttr('disabled');
+      this.$("textarea").removeAttr('disabled');
+      return this.$('button').removeAttr('disabled');
     };
 
     return AbstractFormController;

@@ -35,7 +35,10 @@
             return expect(this.prot.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
-            return expect(this.prot.get('recordedBy')).toEqual("");
+            return expect(this.prot.getScientist().get('codeValue')).toEqual("unassigned");
+          });
+          it('Should have the recordedBy set to the loginUser username', function() {
+            return expect(this.prot.get('recordedBy')).toEqual("jmcneil");
           });
           it('Should have an recordedDate set to now', function() {
             return expect(new Date(this.prot.get('recordedDate')).getHours()).toEqual(new Date().getHours());
@@ -334,19 +337,18 @@
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
-          this.prot.set({
-            recordedBy: ""
+          this.prot.getScientist().set({
+            codeValue: "unassigned"
           });
           expect(this.prot.isValid()).toBeFalsy();
           return filtErrors = _.filter(this.prot.validationError, function(err) {
-            return err.attribute === 'recordedBy';
+            return err.attribute === 'scientist';
           });
         });
         it("should be invalid when notebook is empty", function() {
           var filtErrors;
           this.prot.getNotebook().set({
-            stringValue: "",
-            recordedBy: this.prot.get('recordedBy')
+            stringValue: ""
           });
           expect(this.prot.isValid()).toBeFalsy();
           filtErrors = _.filter(this.prot.validationError, function(err) {
@@ -456,12 +458,12 @@
           xit("should fill the protocol name field", function() {
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("FLIPR target A biochemical");
           });
-          it("should fill the user field", function() {
+          it("should fill the scientist field", function() {
             waitsFor(function() {
-              return this.pbc.$('.bv_recordedBy option').length > 0;
+              return this.pbc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.pbc.$('.bv_recordedBy').val()).toEqual("jane");
+              return expect(this.pbc.$('.bv_scientist').val()).toEqual("jane");
             });
           });
           it("should fill the protocol code field", function() {
@@ -525,14 +527,14 @@
         });
         return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
-            expect(this.pbc.model.get('recordedBy')).toEqual("jane");
+            expect(this.pbc.model.getScientist().get('codeValue')).toEqual("jane");
             waitsFor(function() {
-              return this.pbc.$('.bv_recordedBy option').length > 0;
+              return this.pbc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              this.pbc.$('.bv_recordedBy').val('unassigned');
-              this.pbc.$('.bv_recordedBy').change();
-              return expect(this.pbc.model.get('recordedBy')).toEqual("unassigned");
+              this.pbc.$('.bv_scientist').val('unassigned');
+              this.pbc.$('.bv_scientist').change();
+              return expect(this.pbc.model.getScientist().get('codeValue')).toEqual("unassigned");
             });
           });
           it("should update model when shortDescription is changed", function() {
@@ -679,8 +681,8 @@
         });
         return describe("controller validation rules", function() {
           beforeEach(function() {
-            this.pbc.$('.bv_recordedBy').val("nxm7557");
-            this.pbc.$('.bv_recordedBy').change();
+            this.pbc.$('.bv_scientist').val("bob");
+            this.pbc.$('.bv_scientist').change();
             this.pbc.$('.bv_shortDescription').val(" New short description   ");
             this.pbc.$('.bv_shortDescription').change();
             this.pbc.$('.bv_protocolName').val(" Updated entity name   ");
@@ -728,16 +730,16 @@
           describe("when scientist not selected", function() {
             beforeEach(function() {
               waitsFor(function() {
-                return this.pbc.$('.bv_recordedBy option').length > 0;
+                return this.pbc.$('.bv_scientist option').length > 0;
               }, 1000);
               return runs(function() {
-                this.pbc.$('.bv_recordedBy').val("");
-                return this.pbc.$('.bv_recordedBy').change();
+                this.pbc.$('.bv_scientist').val("unassigned");
+                return this.pbc.$('.bv_scientist').change();
               });
             });
             return it("should show error on scientist dropdown", function() {
               return runs(function() {
-                return expect(this.pbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+                return expect(this.pbc.$('.bv_group_scientist').hasClass('error')).toBeTruthy();
               });
             });
           });

@@ -27,7 +27,9 @@ describe "Base Entity testing", ->
 					expect(@bem.get('lsStates').length).toEqual 0
 					expect(@bem.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
-					expect(@bem.get('recordedBy')).toEqual ""
+					expect(@bem.getScientist().get('codeValue')).toEqual "unassigned"
+				it 'Should have the recordedBy set to the loginUser username', ->
+					expect(@bem.get('recordedBy')).toEqual "jmcneil"
 				it 'Should have an recordedDate set to now', ->
 					expect(new Date(@bem.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				it 'Should have an empty short description with a space as an oracle work-around', ->
@@ -154,15 +156,14 @@ describe "Base Entity testing", ->
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
-				@bem.set recordedBy: ""
+				@bem.getScientist().set codeValue: "unassigned"
 				expect(@bem.isValid()).toBeFalsy()
 				filtErrors = _.filter(@bem.validationError, (err) ->
-					err.attribute=='recordedBy'
+					err.attribute=='scientist'
 				)
 			it "should be invalid when notebook is empty", ->
 				@bem.getNotebook().set
 					stringValue: ""
-					recordedBy: @bem.get('recordedBy')
 				expect(@bem.isValid()).toBeFalsy()
 				filtErrors = _.filter(@bem.validationError, (err) ->
 					err.attribute=='notebook'
@@ -254,8 +255,10 @@ describe "Base Entity testing", ->
 			it "should have the entity name be empty", ->
 				expect(@copiedEntity.get('lsLabels').length).toEqual 0
 				expect(@copiedEntity.get('lsLabels') instanceof LabelList).toBeTruthy()
-			it "should have the scientist be empty", ->
-				expect(@copiedEntity.get('recordedBy')).toEqual ""
+			it "should have the scientist be unassigned", ->
+				expect(@copiedEntity.getScientist().get('codeValue')).toEqual "unassigned"
+			it "should have the recordedBy be jmcneil", ->
+				expect(@copiedEntity.get('recordedBy')).toEqual "jmcneil"
 			it "should have the recorded date be set to now", ->
 				expect(new Date(@copiedEntity.get('recordedDate')).getHours()).toEqual new Date().getHours()
 #			it "should have the completion date be empty", ->
@@ -306,12 +309,12 @@ describe "Base Entity testing", ->
 				# then setting model attribites changes the hash
 				xit "should fill the entity name field", ->
 					expect(@bec.$('.bv_entityName').val()).toEqual "FLIPR target A biochemical"
-				it "should fill the user field", ->
+				it "should fill the scientist field", ->
 					waitsFor ->
-						@bec.$('.bv_recordedBy option').length > 0
+						@bec.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						expect(@bec.$('.bv_recordedBy').val()).toEqual "jane"
+						expect(@bec.$('.bv_scientist').val()).toEqual "jane"
 				it "should fill the entity code field", ->
 					@bem.set subclass: "entity" # work around for the spec to pass. In a subclass, the dom element would be .bv_[subclass]Code not .bv_entityCode
 					@bec.render()
@@ -362,14 +365,14 @@ describe "Base Entity testing", ->
 						expect(@bec.$('.bv_lock')).toBeVisible()
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
-					expect(@bec.model.get 'recordedBy').toEqual "jane"
+					expect(@bec.model.getScientist().get('codeValue')).toEqual "jane"
 					waitsFor ->
-						@bec.$('.bv_recordedBy option').length > 0
+						@bec.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@bec.$('.bv_recordedBy').val('unassigned')
-						@bec.$('.bv_recordedBy').change()
-						expect(@bec.model.get('recordedBy')).toEqual "unassigned"
+						@bec.$('.bv_scientist').val('unassigned')
+						@bec.$('.bv_scientist').change()
+						expect(@bec.model.getScientist().get('codeValue')).toEqual "unassigned"
 				it "should update model when shortDescription is changed", ->
 					@bec.$('.bv_shortDescription').val(" New short description   ")
 					@bec.$('.bv_shortDescription').change()
@@ -463,8 +466,8 @@ describe "Base Entity testing", ->
 						expect(@bec2.$('.bv_status').val()).toEqual 'created'
 			describe "controller validation rules", ->
 				beforeEach ->
-					@bec.$('.bv_recordedBy').val("nxm7557")
-					@bec.$('.bv_recordedBy').change()
+					@bec.$('.bv_scientist').val("bob")
+					@bec.$('.bv_scientist').change()
 					@bec.$('.bv_shortDescription').val(" New short description   ")
 					@bec.$('.bv_shortDescription').change()
 					@bec.$('.bv_entityName').val(" Updated entity name   ")
@@ -497,14 +500,14 @@ describe "Base Entity testing", ->
 				describe "when scientist not selected", ->
 					beforeEach ->
 						waitsFor ->
-							@bec.$('.bv_recordedBy option').length > 0
+							@bec.$('.bv_scientist option').length > 0
 						, 1000
 						runs ->
-							@bec.$('.bv_recordedBy').val("")
-							@bec.$('.bv_recordedBy').change()
+							@bec.$('.bv_scientist').val("unassigned")
+							@bec.$('.bv_scientist').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@bec.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@bec.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
 #				describe "when date field not filled in", ->
 #					beforeEach ->
 #						runs ->

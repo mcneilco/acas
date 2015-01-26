@@ -81,7 +81,10 @@
     };
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
-      var completionDate, estates, notebook, project, pstates;
+      var completionDate, estates, notebook, project, pstates, scientist;
+      console.log("copy protocol attributes");
+      console.log(this);
+      scientist = this.getScientist().get('codeValue');
       notebook = this.getNotebook().get('stringValue');
       completionDate = this.getCompletionDate().get('dateValue');
       project = this.getProjectCode().get('codeValue');
@@ -98,12 +101,10 @@
           svals = st.get('lsValues');
           svals.each(function(sv) {
             var evalue;
-            if (!(sv.get('lsKind') === "notebook" || sv.get('lsKind') === "project" || sv.get('lsKind') === "completion date")) {
-              evalue = new Value(sv.attributes);
-              evalue.unset('id');
-              evalue.unset('lsTransaction');
-              return evals.add(evalue);
-            }
+            evalue = new Value(sv.attributes);
+            evalue.unset('id');
+            evalue.unset('lsTransaction');
+            return evals.add(evalue);
           });
           estate.set({
             lsValues: evals
@@ -115,6 +116,9 @@
         lsKind: protocol.get('lsKind'),
         protocol: protocol,
         lsStates: estates
+      });
+      this.getScientist().set({
+        codeValue: scientist
       });
       this.getNotebook().set({
         stringValue: notebook
@@ -342,7 +346,6 @@
             });
           }
           _this.$('.bv_saving').hide();
-          _this.$('.bv_save').attr('disabled', 'disabled');
           if (_this.$('.bv_saveFailed').is(":visible")) {
             _this.$('.bv_updateComplete').hide();
             _this.trigger('amDirty');
@@ -361,7 +364,7 @@
       })(this));
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
-      this.setupRecordedBySelect();
+      this.setupScientistSelect();
       this.setupTagList();
       this.model.getStatus().on('change', this.updateEditable);
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
@@ -516,7 +519,9 @@
 
     ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
       this.model.getProjectCode().set({
-        codeValue: this.projectListController.getSelectedCode()
+        codeValue: this.projectListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.model.trigger('change');
     };
@@ -528,7 +533,9 @@
 
     ExperimentBaseController.prototype.handleDateChanged = function() {
       this.model.getCompletionDate().set({
-        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')))
+        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate'))),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.model.trigger('change');
     };

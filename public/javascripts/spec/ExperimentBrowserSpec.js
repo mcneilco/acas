@@ -145,7 +145,7 @@
           return expect(this.ersc.$('.bv_protocolName').html()).toEqual("protocol name");
         });
         return it("should show the scientist", function() {
-          return expect(this.ersc.$('.bv_recordedBy').html()).toEqual("jmcneil");
+          return expect(this.ersc.$('.bv_scientist').html()).toEqual("jane");
         });
       });
       return describe("basic behavior", function() {

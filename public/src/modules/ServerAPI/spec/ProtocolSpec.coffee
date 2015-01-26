@@ -26,7 +26,9 @@ describe "Protocol module testing", ->
 					expect(@prot.get('lsStates').length).toEqual 0
 					expect(@prot.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
-					expect(@prot.get('recordedBy')).toEqual ""
+					expect(@prot.getScientist().get('codeValue')).toEqual "unassigned"
+				it 'Should have the recordedBy set to the loginUser username', ->
+					expect(@prot.get('recordedBy')).toEqual "jmcneil"
 				it 'Should have an recordedDate set to now', ->
 					expect(new Date(@prot.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				it 'Should have an empty short description with a space as an oracle work-around', ->
@@ -219,15 +221,14 @@ describe "Protocol module testing", ->
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
-				@prot.set recordedBy: ""
+				@prot.getScientist().set codeValue: "unassigned"
 				expect(@prot.isValid()).toBeFalsy()
 				filtErrors = _.filter(@prot.validationError, (err) ->
-					err.attribute=='recordedBy'
+					err.attribute=='scientist'
 				)
 			it "should be invalid when notebook is empty", ->
 				@prot.getNotebook().set
 					stringValue: ""
-					recordedBy: @prot.get('recordedBy')
 				expect(@prot.isValid()).toBeFalsy()
 				filtErrors = _.filter(@prot.validationError, (err) ->
 					err.attribute=='notebook'
@@ -307,12 +308,12 @@ describe "Protocol module testing", ->
 				# then setting model attribites changes the hash
 				xit "should fill the protocol name field", ->
 					expect(@pbc.$('.bv_protocolName').val()).toEqual "FLIPR target A biochemical"
-				it "should fill the user field", ->
+				it "should fill the scientist field", ->
 					waitsFor ->
-						@pbc.$('.bv_recordedBy option').length > 0
+						@pbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						expect(@pbc.$('.bv_recordedBy').val()).toEqual "jane"
+						expect(@pbc.$('.bv_scientist').val()).toEqual "jane"
 				it "should fill the protocol code field", ->
 					expect(@pbc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
 				it "should fill the protocol kind field", ->
@@ -359,14 +360,14 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_lock')).toBeVisible()
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
-					expect(@pbc.model.get 'recordedBy').toEqual "jane"
+					expect(@pbc.model.getScientist().get('codeValue')).toEqual "jane"
 					waitsFor ->
-						@pbc.$('.bv_recordedBy option').length > 0
+						@pbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@pbc.$('.bv_recordedBy').val('unassigned')
-						@pbc.$('.bv_recordedBy').change()
-						expect(@pbc.model.get('recordedBy')).toEqual "unassigned"
+						@pbc.$('.bv_scientist').val('unassigned')
+						@pbc.$('.bv_scientist').change()
+						expect(@pbc.model.getScientist().get('codeValue')).toEqual "unassigned"
 				it "should update model when shortDescription is changed", ->
 					@pbc.$('.bv_shortDescription').val(" New short description   ")
 					@pbc.$('.bv_shortDescription').change()
@@ -478,8 +479,8 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_assayStage').val()).toEqual "unassigned"
 			describe "controller validation rules", ->
 				beforeEach ->
-					@pbc.$('.bv_recordedBy').val("nxm7557")
-					@pbc.$('.bv_recordedBy').change()
+					@pbc.$('.bv_scientist').val("bob")
+					@pbc.$('.bv_scientist').change()
 					@pbc.$('.bv_shortDescription').val(" New short description   ")
 					@pbc.$('.bv_shortDescription').change()
 					@pbc.$('.bv_protocolName').val(" Updated entity name   ")
@@ -512,14 +513,14 @@ describe "Protocol module testing", ->
 				describe "when scientist not selected", ->
 					beforeEach ->
 						waitsFor ->
-							@pbc.$('.bv_recordedBy option').length > 0
+							@pbc.$('.bv_scientist option').length > 0
 						, 1000
 						runs ->
-							@pbc.$('.bv_recordedBy').val("")
-							@pbc.$('.bv_recordedBy').change()
+							@pbc.$('.bv_scientist').val("unassigned")
+							@pbc.$('.bv_scientist').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@pbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
