@@ -552,7 +552,7 @@
             el: $('#fixture')
           });
           this.drac.model.getAnalysisStatus().set({
-            stringValue: "analsysis complete"
+            codeValue: "analsysis complete"
           });
           this.drac.primaryAnalysisCompleted();
           return this.drac.render();
@@ -592,10 +592,10 @@
         beforeEach(function() {
           this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
           this.exp.getAnalysisStatus().set({
-            stringValue: "analsysis complete"
+            codeValue: "analsysis complete"
           });
           this.exp.getModelFitStatus().set({
-            stringValue: "model fit complete"
+            codeValue: "model fit complete"
           });
           this.drac = new DoseResponseAnalysisController({
             model: this.exp,

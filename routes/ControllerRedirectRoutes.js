@@ -6,7 +6,8 @@
   request = require('request');
 
   exports.setupRoutes = function(app, loginRoutes) {
-    return app.get('/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor);
+    app.get('/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor);
+    return app.get('/api/labelsequences', loginRoutes.ensureAuthenticated, exports.getLabelSequences);
   };
 
   config = require('../conf/compiled/conf.js');
@@ -79,6 +80,13 @@
         return resp.redirect("/#");
       }
     }
+  };
+
+  exports.getLabelSequences = function(req, resp) {
+    var baseurl, serverUtilityFunctions;
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    baseurl = config.all.client.service.persistence.fullpath + "/labelsequences";
+    return serverUtilityFunctions.getFromACASServer(baseurl, resp);
   };
 
 }).call(this);

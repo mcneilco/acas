@@ -94,8 +94,8 @@
 		<td class='bv_experimentCode'><%=experimentCode%></td>
 		<td class='bv_experimentName'><%=experimentName%></td>
     <td class='bv_protocolName'><%=protocolName%></td>
-    <td class='bv_recordedBy'><%=recordedBy%></td>
-    <td class='bv_recordedDate'><%=new Date(recordedDate).toLocaleDateString()%></td>
+    <td class='bv_scientist'><%=scientist%></td>
+    <td class='bv_completionDate'><%=moment(completionDate).format("YYYY-MM-DD")%></td>
     <td class='bv_status'><%=status%></td>
     <td class='bv_analysisStatus'><%=analysisStatus%></td>
 </script>

@@ -35,7 +35,10 @@
             return expect(this.bem.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
-            return expect(this.bem.get('recordedBy')).toEqual("");
+            return expect(this.bem.getScientist().get('codeValue')).toEqual("unassigned");
+          });
+          it('Should have the recordedBy set to the loginUser username', function() {
+            return expect(this.bem.get('recordedBy')).toEqual("jmcneil");
           });
           it('Should have an recordedDate set to now', function() {
             return expect(new Date(this.bem.get('recordedDate')).getHours()).toEqual(new Date().getHours());
@@ -222,19 +225,18 @@
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
-          this.bem.set({
-            recordedBy: ""
+          this.bem.getScientist().set({
+            codeValue: "unassigned"
           });
           expect(this.bem.isValid()).toBeFalsy();
           return filtErrors = _.filter(this.bem.validationError, function(err) {
-            return err.attribute === 'recordedBy';
+            return err.attribute === 'scientist';
           });
         });
         return it("should be invalid when notebook is empty", function() {
           var filtErrors;
           this.bem.getNotebook().set({
-            stringValue: "",
-            recordedBy: this.bem.get('recordedBy')
+            stringValue: ""
           });
           expect(this.bem.isValid()).toBeFalsy();
           filtErrors = _.filter(this.bem.validationError, function(err) {
@@ -359,8 +361,11 @@
           expect(this.copiedEntity.get('lsLabels').length).toEqual(0);
           return expect(this.copiedEntity.get('lsLabels') instanceof LabelList).toBeTruthy();
         });
-        it("should have the scientist be empty", function() {
-          return expect(this.copiedEntity.get('recordedBy')).toEqual("");
+        it("should have the scientist be unassigned", function() {
+          return expect(this.copiedEntity.getScientist().get('codeValue')).toEqual("unassigned");
+        });
+        it("should have the recordedBy be jmcneil", function() {
+          return expect(this.copiedEntity.get('recordedBy')).toEqual("jmcneil");
         });
         it("should have the recorded date be set to now", function() {
           return expect(new Date(this.copiedEntity.get('recordedDate')).getHours()).toEqual(new Date().getHours());
@@ -427,12 +432,12 @@
           xit("should fill the entity name field", function() {
             return expect(this.bec.$('.bv_entityName').val()).toEqual("FLIPR target A biochemical");
           });
-          it("should fill the user field", function() {
+          it("should fill the scientist field", function() {
             waitsFor(function() {
-              return this.bec.$('.bv_recordedBy option').length > 0;
+              return this.bec.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.bec.$('.bv_recordedBy').val()).toEqual("jane");
+              return expect(this.bec.$('.bv_scientist').val()).toEqual("jane");
             });
           });
           it("should fill the entity code field", function() {
@@ -504,14 +509,14 @@
         });
         return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
-            expect(this.bec.model.get('recordedBy')).toEqual("jane");
+            expect(this.bec.model.getScientist().get('codeValue')).toEqual("jane");
             waitsFor(function() {
-              return this.bec.$('.bv_recordedBy option').length > 0;
+              return this.bec.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              this.bec.$('.bv_recordedBy').val('unassigned');
-              this.bec.$('.bv_recordedBy').change();
-              return expect(this.bec.model.get('recordedBy')).toEqual("unassigned");
+              this.bec.$('.bv_scientist').val('unassigned');
+              this.bec.$('.bv_scientist').change();
+              return expect(this.bec.model.getScientist().get('codeValue')).toEqual("unassigned");
             });
           });
           it("should update model when shortDescription is changed", function() {
@@ -628,8 +633,8 @@
         });
         return describe("controller validation rules", function() {
           beforeEach(function() {
-            this.bec.$('.bv_recordedBy').val("nxm7557");
-            this.bec.$('.bv_recordedBy').change();
+            this.bec.$('.bv_scientist').val("bob");
+            this.bec.$('.bv_scientist').change();
             this.bec.$('.bv_shortDescription').val(" New short description   ");
             this.bec.$('.bv_shortDescription').change();
             this.bec.$('.bv_entityName').val(" Updated entity name   ");
@@ -675,16 +680,16 @@
           describe("when scientist not selected", function() {
             beforeEach(function() {
               waitsFor(function() {
-                return this.bec.$('.bv_recordedBy option').length > 0;
+                return this.bec.$('.bv_scientist option').length > 0;
               }, 1000);
               return runs(function() {
-                this.bec.$('.bv_recordedBy').val("");
-                return this.bec.$('.bv_recordedBy').change();
+                this.bec.$('.bv_scientist').val("unassigned");
+                return this.bec.$('.bv_scientist').change();
               });
             });
             return it("should show error on scientist dropdown", function() {
               return runs(function() {
-                return expect(this.bec.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+                return expect(this.bec.$('.bv_group_scientist').hasClass('error')).toBeTruthy();
               });
             });
           });

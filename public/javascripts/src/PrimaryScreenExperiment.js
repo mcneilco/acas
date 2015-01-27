@@ -297,17 +297,17 @@
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
-      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, readErrors, transformationErrors;
+      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, readErrors, transformationErrors, vehicleControl;
       errors = [];
       readErrors = this.get('primaryAnalysisReadList').validateCollection(attrs.matchReadName);
       errors.push.apply(errors, readErrors);
       transformationErrors = this.get('transformationRuleList').validateCollection();
       errors.push.apply(errors, transformationErrors);
       positiveControl = this.get('positiveControl').get('batchCode');
-      if (positiveControl === "" || positiveControl === void 0) {
+      if (positiveControl === "" || positiveControl === void 0 || positiveControl === "invalid") {
         errors.push({
           attribute: 'positiveControlBatch',
-          message: "Positive control batch muct be set"
+          message: "A registered batch number must be provided."
         });
       }
       positiveControlConc = this.get('positiveControl').get('concentration');
@@ -318,10 +318,10 @@
         });
       }
       negativeControl = this.get('negativeControl').get('batchCode');
-      if (negativeControl === "" || negativeControl === void 0) {
+      if (negativeControl === "" || negativeControl === void 0 || negativeControl === "invalid") {
         errors.push({
           attribute: 'negativeControlBatch',
-          message: "Negative control batch must be set"
+          message: "A registered batch number must be provided."
         });
       }
       negativeControlConc = this.get('negativeControl').get('concentration');
@@ -334,10 +334,10 @@
       agonistControl = this.get('agonistControl').get('batchCode');
       agonistControlConc = this.get('agonistControl').get('concentration');
       if ((agonistControl !== "" && agonistControl !== void 0) || (agonistControlConc !== "" && agonistControlConc !== void 0)) {
-        if (agonistControl === "" || agonistControl === void 0 || agonistControl === null) {
+        if (agonistControl === "" || agonistControl === void 0 || agonistControl === null || agonistControl === "invalid") {
           errors.push({
             attribute: 'agonistControlBatch',
-            message: "Agonist control batch must be set"
+            message: "A registered batch number must be provided."
           });
         }
         if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === "" || agonistControlConc === null) {
@@ -346,6 +346,13 @@
             message: "Agonist control conc must be set"
           });
         }
+      }
+      vehicleControl = this.get('vehicleControl').get('batchCode');
+      if (vehicleControl === "invalid") {
+        errors.push({
+          attribute: 'vehicleControlBatch',
+          message: "A registered batch number must be provided."
+        });
       }
       if (attrs.signalDirectionRule === "unassigned" || attrs.signalDirectionRule === "") {
         errors.push({
@@ -884,6 +891,7 @@
       this.handleDilutionFactorChanged = __bind(this.handleDilutionFactorChanged, this);
       this.handleTransferVolumeChanged = __bind(this.handleTransferVolumeChanged, this);
       this.handleAssayVolumeChanged = __bind(this.handleAssayVolumeChanged, this);
+      this.handlePreferredBatchIdReturn = __bind(this.handlePreferredBatchIdReturn, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return PrimaryScreenAnalysisParametersController.__super__.constructor.apply(this, arguments);
@@ -904,12 +912,12 @@
       "change .bv_transferVolume": "handleTransferVolumeChanged",
       "change .bv_hitEfficacyThreshold": "attributeChanged",
       "change .bv_hitSDThreshold": "attributeChanged",
-      "change .bv_positiveControlBatch": "attributeChanged",
+      "change .bv_positiveControlBatch": "handlePositiveControlBatchChanged",
       "change .bv_positiveControlConc": "attributeChanged",
-      "change .bv_negativeControlBatch": "attributeChanged",
+      "change .bv_negativeControlBatch": "handleNegativeControlBatchChanged",
       "change .bv_negativeControlConc": "attributeChanged",
-      "change .bv_vehicleControlBatch": "attributeChanged",
-      "change .bv_agonistControlBatch": "attributeChanged",
+      "change .bv_vehicleControlBatch": "handleVehicleControlBatchChanged",
+      "change .bv_agonistControlBatch": "handleAgonistControlBatchChanged",
       "change .bv_agonistControlConc": "attributeChanged",
       "change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged",
       "change .bv_thresholdTypeSD": "handleThresholdTypeChanged",
@@ -1082,19 +1090,15 @@
         });
       }
       this.model.get('positiveControl').set({
-        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_positiveControlBatch')),
         concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_positiveControlConc')))
       });
       this.model.get('negativeControl').set({
-        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_negativeControlBatch')),
         concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_negativeControlConc')))
       });
       this.model.get('vehicleControl').set({
-        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_vehicleControlBatch')),
         concentration: null
       });
       this.model.get('agonistControl').set({
-        batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlBatch')),
         concentration: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlConc'))
       });
       if (this.model.get('agonistControl').get('concentration') !== "") {
@@ -1103,6 +1107,99 @@
         });
       }
       return this.trigger('updateState');
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handlePositiveControlBatchChanged = function() {
+      var batchCode;
+      console.log("handle pos cont batch changed");
+      batchCode = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_positiveControlBatch'));
+      return this.getPreferredBatchId(batchCode, 'positiveControl');
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handleNegativeControlBatchChanged = function() {
+      var batchCode;
+      batchCode = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_negativeControlBatch'));
+      return this.getPreferredBatchId(batchCode, 'negativeControl');
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handleAgonistControlBatchChanged = function() {
+      var batchCode;
+      batchCode = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlBatch'));
+      return this.getPreferredBatchId(batchCode, 'agonistControl');
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handleVehicleControlBatchChanged = function() {
+      var batchCode;
+      batchCode = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_vehicleControlBatch'));
+      return this.getPreferredBatchId(batchCode, 'vehicleControl');
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.getPreferredBatchId = function(batchId, control) {
+      console.log("beg of getPreferredBatchId");
+      if (batchId === "") {
+        this.model.get(control).set({
+          batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + control + 'Batch'))
+        });
+        this.attributeChanged();
+      } else {
+        this.requestData = {
+          requests: [
+            {
+              requestName: batchId
+            }
+          ]
+        };
+        return $.ajax({
+          type: 'POST',
+          url: "/api/preferredBatchId",
+          data: this.requestData,
+          success: (function(_this) {
+            return function(json) {
+              return _this.handlePreferredBatchIdReturn(json, control);
+            };
+          })(this),
+          error: (function(_this) {
+            return function(err) {
+              console.log('got ajax error');
+              return _this.serviceReturn = null;
+            };
+          })(this),
+          dataType: 'json'
+        });
+      }
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.handlePreferredBatchIdReturn = function(json, control) {
+      var preferredName, requestName, results;
+      console.log("beg of handle preferred batch id return");
+      if (json.results != null) {
+        results = json.results[0];
+        console.log(results);
+        preferredName = results.preferredName;
+        requestName = results.requestName;
+        if (preferredName === requestName) {
+          this.model.get(control).set({
+            batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + control + 'Batch'))
+          });
+          this.attributeChanged();
+          console.log("valid id");
+          this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
+        } else if (preferredName === "") {
+          this.model.get(control).set({
+            batchCode: "invalid"
+          });
+          this.attributeChanged();
+          this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
+          console.log("invalid id");
+        } else {
+          console.log("alias");
+          this.$('.bv_group_' + control + 'Batch').addClass('input_alias alias');
+          this.$('.bv_group_' + control + 'Batch').attr('data-toggle', 'tooltip');
+          this.$('.bv_group_' + control + 'Batch').attr('data-placement', 'bottom');
+          this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
+        }
+        return this.attributeChanged();
+      }
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleAssayVolumeChanged = function() {
@@ -1193,6 +1290,13 @@
       this.readListController.matchReadNameChanged(matchReadName);
       if (skipUpdate !== true) {
         return this.attributeChanged();
+      }
+    };
+
+    PrimaryScreenAnalysisParametersController.prototype.enableAllInputs = function() {
+      PrimaryScreenAnalysisParametersController.__super__.enableAllInputs.call(this);
+      if (this.$('.bv_matchReadName').is(":checked")) {
+        return this.$('.bv_readPosition').attr('disabled', 'disabled');
       }
     };
 

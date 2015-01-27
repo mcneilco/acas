@@ -23,17 +23,17 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 	validate: (attrs) ->
 		errors = []
 		limitType = attrs.min.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && _.isNaN(attrs.min.get('value'))
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.min.get('value')) or attrs.min.get('value') == null)
 			errors.push
 				attribute: 'min_value'
 				message: "Min threshold value must be set when limit type is pin or limit"
 		limitType = attrs.max.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && _.isNaN(attrs.max.get('value'))
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.max.get('value')) or attrs.max.get('value') == null)
 			errors.push
 				attribute: 'max_value'
 				message: "Max threshold value must be set when limit type is pin or limit"
 		limitType = attrs.slope.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && _.isNaN(attrs.slope.get('value'))
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.slope.get('value')) or attrs.slope.get('value') == null)
 			errors.push
 				attribute: 'slope_value'
 				message: "Slope threshold value must be set when limit type is pin or limit"
@@ -125,6 +125,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@setThresholdModeEnabledState()
 		@setInverseAgonistModeEnabledState()
 		@model.trigger 'change'
+		@trigger 'updateState'
 
 	handleSmartModeChanged: =>
 		@attributeChanged()
@@ -188,7 +189,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@model.on "sync", @handleExperimentSaved
 		@model.getStatus().on 'change', @handleStatusChanged
 		@parameterController = null
-		@analyzedPreviously = if @model.getModelFitStatus().get('stringValue') == "not started" then false else true
+		@analyzedPreviously = if @model.getModelFitStatus().get('codeValue') == "not started" then false else true
 		$(@el).empty()
 		$(@el).html @template()
 		@testReadyForFit()
@@ -197,12 +198,16 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@showExistingResults()
 		buttonText = if @analyzedPreviously then "Re-Fit" else "Fit Data"
 		@$('.bv_fitModelButton').html buttonText
+		if @analyzedPreviously
+			@$('.bv_group_modelFitStatus').show()
+		else
+			@$('.bv_group_modelFitStatus').hide()
 
 	showExistingResults: ->
-		fitStatus = @model.getModelFitStatus().get('stringValue')
+		fitStatus = @model.getModelFitStatus().get('codeValue')
 		@$('.bv_modelFitStatus').html(fitStatus)
 		resultValue = @model.getModelFitResultHTML()
-		unless not @analyzedPreviously
+		unless not @analyzedPreviously #unless it has been analyzed previously
 			if resultValue != null
 				res = resultValue.get('clobValue')
 				if res == ""
@@ -212,7 +217,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 					@$('.bv_resultsContainer').show()
 
 	testReadyForFit: =>
-		if @model.getAnalysisStatus().get('stringValue') == "not started"
+		if @model.getAnalysisStatus().get('codeValue') == "not started"
 			@setNotReadyForFit()
 		else
 			@setReadyForFit()
@@ -223,7 +228,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_analyzeExperimentToFit').show()
 
 	setReadyForFit: =>
-		unless @parameterController
+		unless @parameterontroller
 			@setupCurveFitAnalysisParameterController()
 		@$('.bv_fitOptionWrapper').show()
 		@$('.bv_fitModelButton').show()

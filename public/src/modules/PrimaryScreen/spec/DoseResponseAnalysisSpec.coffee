@@ -398,7 +398,7 @@ describe "Dose Response Analysis Module Testing", ->
 				@drac = new DoseResponseAnalysisController
 					model: @exp
 					el: $('#fixture')
-				@drac.model.getAnalysisStatus().set stringValue: "analsysis complete"
+				@drac.model.getAnalysisStatus().set codeValue: "analsysis complete"
 				@drac.primaryAnalysisCompleted()
 				@drac.render()
 			describe "experiment status change handling", ->
@@ -421,8 +421,8 @@ describe "Dose Response Analysis Module Testing", ->
 		describe "handling re-fit", ->
 			beforeEach ->
 				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
-				@exp.getAnalysisStatus().set stringValue: "analsysis complete"
-				@exp.getModelFitStatus().set stringValue: "model fit complete"
+				@exp.getAnalysisStatus().set codeValue: "analsysis complete"
+				@exp.getModelFitStatus().set codeValue: "model fit complete"
 				@drac = new DoseResponseAnalysisController
 					model: @exp
 					el: $('#fixture')

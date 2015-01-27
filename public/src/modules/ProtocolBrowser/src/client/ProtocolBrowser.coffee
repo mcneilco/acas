@@ -94,12 +94,11 @@ class window.ProtocolRowSummaryController extends Backbone.View
 			protocolName: @model.get('lsLabels').pickBestName().get('labelText')
 			protocolCode: @model.get('codeName')
 			protocolKind: @model.get('lsKind')
-			recordedBy: @model.get('recordedBy')
+			scientist: @model.getScientist().get('codeValue')
 			assayStage: @model.getAssayStage().get("codeValue")
 			status: @model.getStatus().get("codeValue")
 			experimentCount: @model.get('experimentCount')
-#			analysisStatus: @model.getAnalysisStatus().get("stringValue")
-			recordedDate: @model.get("recordedDate")
+			creationDate: @model.getCreationDate().get('dateValue')
 		$(@el).html(@template(toDisplay))
 
 		@

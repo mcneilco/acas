@@ -21,7 +21,7 @@
         subclass: "entity",
         lsType: "default",
         lsKind: "default",
-        recordedBy: "",
+        recordedBy: window.AppLaunchParams.loginUser.username,
         recordedDate: new Date().getTime(),
         shortDescription: " ",
         lsLabels: new LabelList(),
@@ -63,6 +63,21 @@
         })(this));
       }
       return resp;
+    };
+
+    BaseEntity.prototype.getScientist = function() {
+      var metadataKind, scientist;
+      metadataKind = this.get('subclass') + " metadata";
+      scientist = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "scientist");
+      if (scientist.get('codeValue') === void 0) {
+        scientist.set({
+          codeValue: "unassigned"
+        });
+        scientist.set({
+          codeOrigin: window.conf.scientistCodeOrigin
+        });
+      }
+      return scientist;
     };
 
     BaseEntity.prototype.getDetails = function() {
@@ -157,7 +172,7 @@
     };
 
     BaseEntity.prototype.validate = function(attrs) {
-      var bestName, errors, nameError, notebook;
+      var bestName, errors, nameError, notebook, scientist;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = true;
@@ -179,18 +194,19 @@
           message: attrs.subclass + " date must be set"
         });
       }
-      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-        errors.push({
-          attribute: 'recordedBy',
-          message: "Scientist must be set"
-        });
-      }
       if (attrs.subclass != null) {
         notebook = this.getNotebook().get('stringValue');
-        if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
+        if (notebook === "" || notebook === void 0) {
           errors.push({
             attribute: 'notebook',
             message: "Notebook must be set"
+          });
+        }
+        scientist = this.getScientist().get('codeValue');
+        if (scientist === "unassigned" || scientist === void 0 || scientist === "") {
+          errors.push({
+            attribute: 'scientist',
+            message: "Scientist must be set"
           });
         }
       }
@@ -203,7 +219,7 @@
 
     BaseEntity.prototype.prepareToSave = function() {
       var rBy, rDate;
-      rBy = this.get('recordedBy');
+      rBy = window.AppLaunchParams.loginUser.username;
       rDate = new Date().getTime();
       this.set({
         recordedDate: rDate
@@ -287,7 +303,7 @@
       copiedEntity.set({
         lsLabels: new LabelList(),
         lsStates: copiedStates,
-        recordedBy: "",
+        recordedBy: window.AppLaunchParams.loginUser.username,
         recordedDate: new Date().getTime(),
         version: 0
       });
@@ -296,6 +312,9 @@
       });
       copiedEntity.getNotebook().set({
         stringValue: ""
+      });
+      copiedEntity.getScientist().set({
+        codeValue: "unassigned"
       });
       return copiedEntity;
     };
@@ -333,7 +352,7 @@
       this.handleCommentsChanged = __bind(this.handleCommentsChanged, this);
       this.handleDetailsChanged = __bind(this.handleDetailsChanged, this);
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
-      this.handleRecordedByChanged = __bind(this.handleRecordedByChanged, this);
+      this.handleScientistChanged = __bind(this.handleScientistChanged, this);
       this.render = __bind(this.render, this);
       return BaseEntityController.__super__.constructor.apply(this, arguments);
     }
@@ -342,7 +361,7 @@
 
     BaseEntityController.prototype.events = function() {
       return {
-        "change .bv_recordedBy": "handleRecordedByChanged",
+        "change .bv_scientist": "handleScientistChanged",
         "change .bv_shortDescription": "handleShortDescriptionChanged",
         "change .bv_details": "handleDetailsChanged",
         "change .bv_comments": "handleCommentsChanged",
@@ -367,7 +386,6 @@
           }
           _this.$('.bv_saving').hide();
           _this.$('.bv_updateComplete').show();
-          _this.$('.bv_save').attr('disabled', 'disabled');
           return _this.render();
         };
       })(this));
@@ -383,7 +401,7 @@
       $(this.el).html(this.template());
       this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
-      this.setupRecordedBySelect();
+      this.setupScientistSelect();
       this.setupTagList();
       return this.model.getStatus().on('change', this.updateEditable);
     };
@@ -394,12 +412,14 @@
         this.model = new BaseEntity();
       }
       subclass = this.model.get('subclass');
-      this.$('.bv_shortDescription').html(this.model.get('shortDescription'));
+      if (this.model.get('shortDescription') !== " ") {
+        this.$('.bv_shortDescription').html(this.model.get('shortDescription'));
+      }
       bestName = this.model.get('lsLabels').pickBestName();
       if (bestName != null) {
         this.$('.bv_' + subclass + 'Name').val(bestName.get('labelText'));
       }
-      this.$('.bv_recordedBy').val(this.model.get('recordedBy'));
+      this.$('.bv_scientist').val(this.model.getScientist().get('codeValue'));
       this.$('.bv_' + subclass + 'Code').html(this.model.get('codeName'));
       this.$('.bv_' + subclass + 'Kind').html(this.model.get('lsKind'));
       this.$('.bv_details').html(this.model.getDetails().get('clobValue'));
@@ -427,17 +447,17 @@
       });
     };
 
-    BaseEntityController.prototype.setupRecordedBySelect = function() {
-      this.recordedByList = new PickListList();
-      this.recordedByList.url = "/api/authors";
-      return this.recordedByListController = new PickListSelectController({
-        el: this.$('.bv_recordedBy'),
-        collection: this.recordedByList,
+    BaseEntityController.prototype.setupScientistSelect = function() {
+      this.scientistList = new PickListList();
+      this.scientistList.url = "/api/authors";
+      return this.scientistListController = new PickListSelectController({
+        el: this.$('.bv_scientist'),
+        collection: this.scientistList,
         insertFirstOption: new PickList({
           code: "unassigned",
           name: "Select Scientist"
         }),
-        selectedCode: this.model.get('recordedBy')
+        selectedCode: this.model.getScientist().get('codeValue')
       });
     };
 
@@ -450,11 +470,12 @@
       return this.tagListController.render();
     };
 
-    BaseEntityController.prototype.handleRecordedByChanged = function() {
-      this.model.set({
-        recordedBy: this.$('.bv_recordedBy').val()
+    BaseEntityController.prototype.handleScientistChanged = function() {
+      return this.model.getScientist().set({
+        codeValue: this.scientistListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
-      return this.handleNameChanged();
     };
 
     BaseEntityController.prototype.handleShortDescriptionChanged = function() {
@@ -462,11 +483,15 @@
       trimmedDesc = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_shortDescription'));
       if (trimmedDesc !== "") {
         return this.model.set({
-          shortDescription: trimmedDesc
+          shortDescription: trimmedDesc,
+          recordedBy: window.AppLaunchParams.loginUser.username,
+          recordedDate: new Date().getTime()
         });
       } else {
         return this.model.set({
-          shortDescription: " "
+          shortDescription: " ",
+          recordedBy: window.AppLaunchParams.loginUser.username,
+          recordedDate: new Date().getTime()
         });
       }
     };
@@ -474,14 +499,16 @@
     BaseEntityController.prototype.handleDetailsChanged = function() {
       return this.model.getDetails().set({
         clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_details')),
-        recordedBy: this.model.get('recordedBy')
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 
     BaseEntityController.prototype.handleCommentsChanged = function() {
       return this.model.getComments().set({
         clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_comments')),
-        recordedBy: this.model.get('recordedBy')
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 
@@ -492,21 +519,26 @@
       this.model.get('lsLabels').setBestName(new Label({
         lsKind: subclass + " name",
         labelText: newName,
-        recordedBy: this.model.get('recordedBy')
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       }));
       return this.model.trigger('change');
     };
 
     BaseEntityController.prototype.handleNotebookChanged = function() {
       this.model.getNotebook().set({
-        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook'))
+        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook')),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.model.trigger('change');
     };
 
     BaseEntityController.prototype.handleStatusChanged = function() {
       this.model.getStatus().set({
-        codeValue: this.statusListController.getSelectedCode()
+        codeValue: this.statusListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.updateEditable();
     };
@@ -515,6 +547,7 @@
       if (this.model.isEditable()) {
         this.enableAllInputs();
         this.$('.bv_lock').hide();
+        this.$('.bv_save').attr('disabled', 'disabled');
       } else {
         this.disableAllInputs();
         this.$('.bv_status').removeAttr('disabled');

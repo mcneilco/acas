@@ -82,3 +82,4 @@ class window.AbstractFormController extends Backbone.View
 		@$('input').removeAttr 'disabled'
 		@$('select').removeAttr 'disabled'
 		@$("textarea").removeAttr 'disabled'
+		@$('button').removeAttr 'disabled'

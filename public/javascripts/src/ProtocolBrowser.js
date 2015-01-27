@@ -154,11 +154,11 @@
         protocolName: this.model.get('lsLabels').pickBestName().get('labelText'),
         protocolCode: this.model.get('codeName'),
         protocolKind: this.model.get('lsKind'),
-        recordedBy: this.model.get('recordedBy'),
+        scientist: this.model.getScientist().get('codeValue'),
         assayStage: this.model.getAssayStage().get("codeValue"),
         status: this.model.getStatus().get("codeValue"),
         experimentCount: this.model.get('experimentCount'),
-        recordedDate: this.model.get("recordedDate")
+        creationDate: this.model.getCreationDate().get('dateValue')
       };
       $(this.el).html(this.template(toDisplay));
       return this;
