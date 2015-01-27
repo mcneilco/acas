@@ -20,8 +20,6 @@ parseAssayPlateFiles <- function(assayFileName = "assayFileName", instrumentType
   # runlog
   write.table(paste0(Sys.time(), "\tbegin parseAssayPlateFiles\tassayFileName=",assayFileName,"\tinstrumentType=",instrumentType), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  print(paste0("instrument type is ", instrumentType))
-  
   # returns a list of the params
   instrumentParams <- loadInstrumentReadParameters(instrumentType=instrumentType)
   
