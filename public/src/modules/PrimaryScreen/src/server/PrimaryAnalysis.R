@@ -1574,9 +1574,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   require("data.table")
   library(plyr)
   
-  folderToParse <- racas::getUploadedFilePath(folderToParse)
+  fullPathToParse <- racas::getUploadedFilePath(folderToParse)
   
-  if (!file.exists(folderToParse)) {
+  if (!file.exists(fullPathToParse)) {
     stopUser("Input file not found")
   }
   
@@ -1606,7 +1606,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
   
   
-  # If the folderToParse is actually a zip file
+  # If the fullPathToParse is actually a zip file
   zipFile <- NULL
   experimentFolderPath <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName)
   
@@ -1616,9 +1616,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   dir.create(dryRunFileLocation, showWarnings = FALSE)
   dir.create(specDataPrepFileLocation, showWarnings = FALSE)
   
-  if (!file.info(folderToParse)$isdir) {
-    originalZipFile <- folderToParse
-    folderToParse <- unzipDataFolder(folderToParse, targetLocation, experiment)
+  if (!file.info(fullPathToParse)$isdir) {
+    fullPathToParse <- unzipDataFolder(fullPathToParse, targetLocation, experiment)
   } 
   
   # GREEN (instrument-specific)
@@ -1634,7 +1633,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                    clientName,"specificDataPreProcessor.R"))
   
   instrumentData <- specificDataPreProcessor(parameters=parameters, 
-                                             folderToParse=folderToParse, 
+                                             folderToParse=fullPathToParse, 
                                              errorEnv=errorEnv, 
                                              dryRun=dryRun, 
                                              instrumentClass=instrumentReadParams$dataFormat, 
@@ -1647,7 +1646,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"getCompoundAssignments.R"))
   
-  resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
+  resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
   
   resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                        concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
@@ -1868,7 +1867,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   if (dryRun && !testMode) {
     saveAcasFileToExperiment(
-      originalZipFile, experiment, 
+      folderToParse, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
   }
   
@@ -2572,7 +2571,8 @@ runPrimaryAnalysis <- function(request) {
       path= getwd(),
       folderToParse= folderToParse,
       dryRun= dryRun,
-      htmlSummary= htmlSummary
+      htmlSummary= htmlSummary,
+      jsonSummary= list(dryRunReports = loadResult$value$dryRunReports)
     ),
     hasError= hasError,
     hasWarning= hasWarning,
