@@ -1183,23 +1183,25 @@
           });
           console.log("valid id");
           this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
+          return this.attributeChanged();
         } else if (preferredName === "") {
           this.model.get(control).set({
             batchCode: "invalid"
           });
           this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
           console.log("invalid id");
+          return this.attributeChanged();
         } else {
-          console.log("alias");
+          console.log("alias, save full name");
           this.model.get(control).set({
             batchCode: preferredName
           });
+          this.attributeChanged();
           this.$('.bv_group_' + control + 'Batch').addClass('input_alias alias');
           this.$('.bv_group_' + control + 'Batch').attr('data-toggle', 'tooltip');
           this.$('.bv_group_' + control + 'Batch').attr('data-placement', 'bottom');
-          this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
+          return this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
         }
-        return this.attributeChanged();
       }
     };
 

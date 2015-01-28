@@ -31,7 +31,7 @@
       return describe("Upon init", function() {
         it("should get options from server", function() {
           return runs(function() {
-            return expect(this.pickListList.length).toEqual(4);
+            return expect(this.pickListList.length).toEqual(5);
           });
         });
         return it("should return non-ignored values", function() {
@@ -120,7 +120,7 @@
               return this.pickListList.length > 0;
             });
           });
-          it("should have five choices", function() {
+          it("should have four choices", function() {
             return runs(function() {
               return expect(this.pickListController.$("option").length).toEqual(4);
             });
@@ -152,6 +152,97 @@
           return it("should set selected", function() {
             return runs(function() {
               return expect($(this.pickListController.el).val()).toEqual("not_set");
+            });
+          });
+        });
+        describe("when selectedCode is not an option in the passed in collection", function() {
+          return it("should add the option to the collection", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "new project",
+              autoFetch: false
+            });
+            return runs(function() {
+              expect(this.pickListController.getSelectedCode()).toEqual("new project");
+              return expect((this.pickListController.collection.where({
+                code: "new project"
+              })).length).toEqual(1);
+            });
+          });
+        });
+        describe('when displayed from collection with ignored values and show ignored option is set to true', function() {
+          it("should have six choices when selected code is not ignored", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "not_set",
+              autoFetch: false,
+              showIgnored: true
+            });
+            return runs(function() {
+              return expect(this.pickListController.getSelectedCode()).toEqual("not_set");
+            });
+          });
+          return it("should have six choices when selected code is ignored", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "proj3ct3",
+              autoFetch: false,
+              showIgnored: true
+            });
+            return runs(function() {
+              waits(1000);
+              return expect(this.pickListController.getSelectedCode()).toEqual("proj3ct3");
+            });
+          });
+        });
+        describe('when displayed from collection with ignored values and show ignored option is set to false', function() {
+          it("should have four choices when selected code is not ignored", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "project1",
+              autoFetch: false,
+              showIgnored: false
+            });
+            return runs(function() {
+              expect(this.pickListController.$("option").length).toEqual(4);
+              return expect(this.pickListController.getSelectedCode()).toEqual("project1");
+            });
+          });
+          return it("should have five choices when selected code is ignored", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "proj3ct3",
+              autoFetch: false,
+              showIgnored: false
+            });
+            return runs(function() {
+              expect(this.pickListController.$("option").length).toEqual(5);
+              return expect(this.pickListController.getSelectedCode()).toEqual("proj3ct3");
             });
           });
         });
