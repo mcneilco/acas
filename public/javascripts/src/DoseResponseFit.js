@@ -54,8 +54,8 @@
       if (this.options.experimentCode == null) {
         alert("DoseResponseFitController must be initialized with an experimentCode");
       }
-      if (this.options.modelHint == null) {
-        return alert("DoseResponseFitController must be initialized with a modelHint");
+      if (this.options.renderingHint == null) {
+        return alert("DoseResponseFitController must be initialized with a renderingHint");
       }
     };
 
@@ -67,13 +67,32 @@
     };
 
     DoseResponseFitController.prototype.setupCurveFitAnalysisParameterController = function() {
-      var drap;
+      var drap, drapType, drapcType;
+      console.log('here i am');
+      drapType = (function() {
+        switch (this.options.renderingHint) {
+          case "4 parameter D-R":
+            return DoseResponseAnalysisParameters;
+          case "Ki Fit":
+            return DoseResponseKiAnalysisParameters;
+        }
+      }).call(this);
+      console.log(drapType);
       if ((this.options != null) && (this.options.initialAnalysisParameters != null)) {
-        drap = new DoseResponseAnalysisParameters(this.options.initialAnalysisParameters);
+        drap = new drapType(this.options.initialAnalysisParameters);
       } else {
-        drap = new DoseResponseAnalysisParameters();
+        drap = new drapType();
       }
-      this.parameterController = new DoseResponseAnalysisParametersController({
+      drapcType = (function() {
+        switch (this.options.renderingHint) {
+          case "4 parameter D-R":
+            return DoseResponseAnalysisParametersController;
+          case "Ki Fit":
+            return DoseResponseKiAnalysisParametersController;
+        }
+      }).call(this);
+      console.log(drapcType);
+      this.parameterController = new drapcType({
         el: this.$('.bv_analysisParameterForm'),
         model: drap
       });
@@ -192,7 +211,8 @@
         this.modelFitController.undelegateEvents();
       }
       this.modelFitController = new DoseResponseFitController({
-        f: this.drdpc.getNewExperimentCode(),
+        experimentCode: this.drdpc.getNewExperimentCode(),
+        renderingHint: '4 parameter D-R',
         el: this.$('.bv_doseResponseAnalysis')
       });
       this.modelFitController.on('amDirty', (function(_this) {

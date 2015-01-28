@@ -158,6 +158,7 @@
         includePoints = (function(_this) {
           return function(selectedPoints) {
             selectedPoints.forEach(function(selectedPoint) {
+              _this.points[selectedPoint.idx].algorithmFlagStatus = "";
               _this.points[selectedPoint.idx].algorithmFlagObservation = "";
               _this.points[selectedPoint.idx].algorithmFlagReason = "";
               _this.points[selectedPoint.idx].algorithmFlagComment = "";
@@ -316,7 +317,7 @@
             });
           }
         }
-        if (curve.type === "Ki") {
+        if (curve.type === "Ki Fit") {
           fct = function(x) {
             return curve.max + (curve.min - curve.max) / (1 + Math.pow(10, x - log10(curve.ki * (1 + curve.ligandConc / curve.kd))));
           };

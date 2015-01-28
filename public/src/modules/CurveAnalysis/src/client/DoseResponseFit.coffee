@@ -23,8 +23,8 @@ class window.DoseResponseFitController extends Backbone.View
 	initialize: ->
 		if !@options.experimentCode?
 			alert("DoseResponseFitController must be initialized with an experimentCode")
-		if !@options.modelHint?
-			alert("DoseResponseFitController must be initialized with a modelHint")
+		if !@options.renderingHint?
+			alert("DoseResponseFitController must be initialized with a renderingHint")
 
 
 	render: =>
@@ -35,12 +35,22 @@ class window.DoseResponseFitController extends Backbone.View
 
 
 	setupCurveFitAnalysisParameterController: ()->
-		if @options? && @options.initialAnalysisParameters?
-			drap = new DoseResponseAnalysisParameters @options.initialAnalysisParameters
-		else
-			drap = new DoseResponseAnalysisParameters()
+		console.log 'here i am'
+		drapType = switch @options.renderingHint
+			when "4 parameter D-R" then DoseResponseAnalysisParameters
+			when "Ki Fit" then DoseResponseKiAnalysisParameters
+		console.log drapType
 
-		@parameterController = new DoseResponseAnalysisParametersController
+		if @options? && @options.initialAnalysisParameters?
+			drap = new drapType @options.initialAnalysisParameters
+		else
+			drap = new drapType()
+
+		drapcType = switch @options.renderingHint
+			when "4 parameter D-R" then DoseResponseAnalysisParametersController
+			when "Ki Fit" then DoseResponseKiAnalysisParametersController
+		console.log drapcType
+		@parameterController = new drapcType
 			el: @$('.bv_analysisParameterForm')
 			model: drap
 
@@ -118,7 +128,8 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 		if @modelFitController?
 			@modelFitController.undelegateEvents()
 		@modelFitController = new DoseResponseFitController
-			f: @drdpc.getNewExperimentCode()
+			experimentCode: @drdpc.getNewExperimentCode()
+			renderingHint: '4 parameter D-R'
 			el: @$('.bv_doseResponseAnalysis')
 
 		@modelFitController.on 'amDirty', =>

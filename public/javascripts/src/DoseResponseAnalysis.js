@@ -432,6 +432,7 @@
         inputParameters: JSON.stringify(this.parameterController.model),
         user: window.AppLaunchParams.loginUserName,
         experimentCode: this.model.get('codeName'),
+        renderingHint: this.model.get('renderingHint'),
         testMode: false
       };
       return $.ajax({

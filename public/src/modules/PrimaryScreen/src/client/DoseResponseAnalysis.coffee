@@ -273,6 +273,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			user: window.AppLaunchParams.loginUserName
 #			experimentCode: "fail"
 			experimentCode: @model.get('codeName')
+			renderingHint: @model.get('renderingHint')
 			testMode: false
 
 		$.ajax

@@ -97,6 +97,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 			includePoints = (selectedPoints) =>
 				selectedPoints.forEach (selectedPoint) =>
+					@points[selectedPoint.idx].algorithmFlagStatus = ""
 					@points[selectedPoint.idx].algorithmFlagObservation = ""
 					@points[selectedPoint.idx].algorithmFlagReason = ""
 					@points[selectedPoint.idx].algorithmFlagComment = ""
@@ -232,7 +233,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
 #				Vertical Line
 					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-			if curve.type == "Ki"
+			if curve.type == "Ki Fit"
 				fct = (x) ->
 					#Max + (Min - Max)/(1+10^(X-log(10^logKi*(1+ligandConc/Kd))))
 					#    cParm + (parmMat[,1]-cParm)/(1+10^(log10(dose)-log10(parmMat[,3]*(1+parmMat[,4]/parmMat[,5]))))
