@@ -32,6 +32,8 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, recordedBy) {
   fileLocation <- file.path(saveLocation,"spotfire-DRAFT.txt")
   write.table(inputTable, file=fileLocation, quote=FALSE, na="", row.names=FALSE, sep="\t")
   
+  fileText <- readChar(fileLocation, nchar=file.info(fileLocation)$size)
+  
   # targetPath is only for testing
   finalLocation <- moveFileToFileServer(fileLocation, experiment = experiment, recordedBy = recordedBy, 
                                         targetPath = "testSpotfire.txt")
@@ -43,10 +45,12 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, recordedBy) {
     fileParam <- paste0("HTSDataURL=\\'", 
                         gsub(":", "\\\\:", racas::applicationSettings$server.service.external.file.service.url), 
                         finalLocation, "\\'")
-    fileLink <- paste0(spotfirePrefix, experimentParam, ";", fileParam, ";")
+    userLink <- paste0(spotfirePrefix, experimentParam, ";", fileParam, ";")
+    fileLink <- paste0(racas::applicationSettings$server.service.external.file.service.url, finalLocation)
   } else {
-    fileLink <- paste0('http://', racas::applicationSettings$client.host, ":", 
+    userLink <- paste0('http://', racas::applicationSettings$client.host, ":", 
                        racas::applicationSettings$client.port, '/dataFiles/', finalLocation)
+    fileLink <- paste0(racas::applicationSettings$server.nodeapi.path, '/dataFiles/', finalLocation)
   }
-  return(list(title="Spotfire", link=fileLink))
+  return(list(title="Spotfire", link=userLink, fileLink=fileLink, fileText=fileText))
 }
