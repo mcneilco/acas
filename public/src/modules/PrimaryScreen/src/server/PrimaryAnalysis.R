@@ -1756,7 +1756,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     summaryInfo <- list(
       info = list(
-        "Sweetener" = parameters$agonist$batchCode,
         "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
         "Compounds analyzed" = length(unique(resultTable$batchName)),
         "Hits" = sum(tolower(analysisGroupData$userHit) == "yes"),
@@ -1771,6 +1770,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
+    if (!is.null(parameters$agonist$batchCode)) {
+      summaryInfo$info$"Agonist" <- parameters$agonist$batchCode
+    }
     library('RCurl')
     row.names(outputTable) <- NULL
     # Check if we should create the "User Defined Hit" column from scratch, or if we can
@@ -1841,7 +1843,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     summaryInfo <- list(
       info = list(
-        "Sweetener" = parameters$agonist$batchCode,
         "Plates analyzed" = paste0(length(unique(resultTable$assayBarcode)), " plates:\n  ", paste(unique(resultTable$assayBarcode), collapse = "\n  ")),
         "Compounds analyzed" = length(unique(resultTable$batchCode)),
         # "Hits" = sum(analysisGroupData$threshold),
@@ -1856,6 +1857,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
+    if (!is.null(parameters$agonist$batchCode)) {
+      summaryInfo$info$"Agonist" <- parameters$agonist$batchCode
+    }
   }
   
   # This runs on dryRun and save, could be split to save different values

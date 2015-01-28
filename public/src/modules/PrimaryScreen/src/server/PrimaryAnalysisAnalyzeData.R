@@ -2,6 +2,11 @@
 require(data.table)
 
 source("public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R")
+
+myMessenger <- Messenger$new()
+myMessenger$logger <- logger(logName = "com.acas.reanalysis", logToConsole = FALSE)
+myMessenger$logger$debug("primary reanalysis initiated")
+
 write_csv <- function(x, file, rows = 1000L, ...) {
   passes <- NROW(x) %/% rows
   remaining <- NROW(x) %% rows
@@ -64,11 +69,13 @@ normalizeDataOriginal <- function() {
 }
 
 normalizeData <- function() {
-  setwd(Sys.getenv("ACAS_HOME"))
+  setwd(racas::applicationSettings$appHome)
   experimentCode <- POST$experimentCode
   flagFile <- getUploadedFilePath(FILES$file$name)
   file.copy(FILES$file$tmp_name, flagFile, overwrite = T)
   csvText <- spotfireWrapperFunction(experimentCode, flagFile)
+  #myMessenger$capture_output({csvText <- spotfireWrapperFunction(experimentCode, flagFile)})
+  #myMessenger$logger$debug(csvText)
   setHeader("Access-Control-Allow-Origin","*")
   setHeader("Content-Length",nchar(csvText))
   setContentType("text/csv;")
@@ -85,6 +92,9 @@ spotfireWrapperFunction <- function(experimentCode, wellFlagFile) {
   experimentStates <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]
   experimentClobValues <- getValuesByTypeAndKind(experimentStates, "clobValue_data analysis parameters")[[1]]
   experimentFolderPath <- getValuesByTypeAndKind(experimentStates, "fileValue_dryrun source file")[[1]]
+  
+  # wellFlagFile is passed a location relative from ACAS_HOME, but expects one from privateUploads
+  wellFlagFile <- gsub(getUploadedFilePath(""), "", wellFlagFile)
   
   request <- list()
   request$inputParameters <- experimentClobValues$clobValue
